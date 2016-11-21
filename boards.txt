@@ -1,0 +1,479 @@
+# Copyright (c) 2014-2015 Arduino LLC.  All right reserved.
+# Copyright (c) 2016 Sandeep Mistry All right reserved.
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+menu.chip=Chip
+menu.softdevice=Softdevice
+menu.version=Version
+menu.lfclk=Low Frequency Clock
+menu.board_variant=Board Variant
+
+nRF52DK.name=nRF52 DK
+
+nRF52DK.vid.0=0x1366
+nRF52DK.pid.0=0x1015
+
+nRF52DK.upload.tool=sandeepmistry:openocd
+nRF52DK.upload.protocol=
+nRF52DK.upload.interface=jlink
+nRF52DK.upload.target=nrf52
+nRF52DK.upload.maximum_size=524288
+nRF52DK.upload.setup_command=transport select swd;
+nRF52DK.upload.use_1200bps_touch=false
+nRF52DK.upload.wait_for_upload_port=false
+nRF52DK.upload.native_usb=false
+
+nRF52DK.bootloader.tool=sandeepmistry:openocd
+
+nRF52DK.build.mcu=cortex-m4
+nRF52DK.build.f_cpu=16000000
+nRF52DK.build.board=NRF52_DK
+nRF52DK.build.core=nRF5
+nRF52DK.build.variant=nRF52DK
+nRF52DK.build.variant_system_lib=
+nRF52DK.build.extra_flags=-DNRF52
+nRF52DK.build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
+nRF52DK.build.ldscript=nrf52_xxaa.ld
+
+nRF52DK.menu.softdevice.none=None
+nRF52DK.menu.softdevice.none.softdevice=none
+
+nRF52DK.menu.softdevice.s132=S132
+nRF52DK.menu.softdevice.s132.softdevice=s132
+nRF52DK.menu.softdevice.s132.softdeviceversion=2.0.1
+nRF52DK.menu.softdevice.s132.upload.maximum_size=409600
+nRF52DK.menu.softdevice.s132.build.extra_flags=-DNRF52 -DS132 -DNRF51_S132
+nRF52DK.menu.softdevice.s132.build.ldscript=armgcc_s132_nrf52832_xxaa.ld
+
+nRF52DK.menu.lfclk.lfxo=Crystal Oscillator
+nRF52DK.menu.lfclk.lfxo.build.lfclk_flags=-DUSE_LFXO
+nRF52DK.menu.lfclk.lfrc=RC Oscillator
+nRF52DK.menu.lfclk.lfrc.build.lfclk_flags=-DUSE_LFRC
+nRF52DK.menu.lfclk.lfsynt=Synthesized
+nRF52DK.menu.lfclk.lfsynt.build.lfclk_flags=-DUSE_LFSYNT
+
+
+STCT_nRF52_minidev.name=Taida Century nRF52 mini board
+
+STCT_nRF52_minidev.upload.tool=sandeepmistry:openocd
+STCT_nRF52_minidev.upload.target=nrf52
+STCT_nRF52_minidev.upload.maximum_size=524288
+
+STCT_nRF52_minidev.bootloader.tool=sandeepmistry:openocd
+
+STCT_nRF52_minidev.build.mcu=cortex-m4
+STCT_nRF52_minidev.build.f_cpu=16000000
+STCT_nRF52_minidev.build.board=STCT_NRF52_minidev
+STCT_nRF52_minidev.build.core=nRF5
+STCT_nRF52_minidev.build.variant=Taida_Century_nRF52_minidev
+STCT_nRF52_minidev.build.variant_system_lib=
+STCT_nRF52_minidev.build.extra_flags=-DNRF52
+STCT_nRF52_minidev.build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
+STCT_nRF52_minidev.build.ldscript=nrf52_xxaa.ld
+
+STCT_nRF52_minidev.menu.softdevice.none=None
+STCT_nRF52_minidev.menu.softdevice.none.softdevice=none
+
+STCT_nRF52_minidev.menu.softdevice.s132=S132
+STCT_nRF52_minidev.menu.softdevice.s132.softdevice=s132
+STCT_nRF52_minidev.menu.softdevice.s132.softdeviceversion=2.0.1
+STCT_nRF52_minidev.menu.softdevice.s132.upload.maximum_size=409600
+STCT_nRF52_minidev.menu.softdevice.s132.build.extra_flags=-DNRF52 -DS132 -DNRF51_S132
+STCT_nRF52_minidev.menu.softdevice.s132.build.ldscript=armgcc_s132_nrf52832_xxaa.ld
+
+STCT_nRF52_minidev.menu.lfclk.lfxo=Crystal Oscillator
+STCT_nRF52_minidev.menu.lfclk.lfxo.build.lfclk_flags=-DUSE_LFXO
+STCT_nRF52_minidev.menu.lfclk.lfrc=RC Oscillator
+STCT_nRF52_minidev.menu.lfclk.lfrc.build.lfclk_flags=-DUSE_LFRC
+STCT_nRF52_minidev.menu.lfclk.lfsynt=Synthesized
+STCT_nRF52_minidev.menu.lfclk.lfsynt.build.lfclk_flags=-DUSE_LFSYNT
+
+
+BluzDK.name=Bluz DK
+
+BluzDK.upload.tool=sandeepmistry:openocd
+BluzDK.upload.target=nrf51
+BluzDK.upload.maximum_size=262144
+
+BluzDK.bootloader.tool=sandeepmistry:openocd
+
+BluzDK.build.mcu=cortex-m0
+BluzDK.build.f_cpu=16000000
+BluzDK.build.board=BLUZ_DK
+BluzDK.build.core=nRF5
+BluzDK.build.variant=BluzDK
+BluzDK.build.variant_system_lib=
+BluzDK.build.extra_flags=-DNRF51
+BluzDK.build.float_flags=
+BluzDK.build.ldscript=nrf51_xxac.ld
+
+BluzDK.menu.softdevice.none=None
+BluzDK.menu.softdevice.none.softdevice=none
+
+BluzDK.menu.softdevice.s110=S110
+BluzDK.menu.softdevice.s110.softdevice=s110
+BluzDK.menu.softdevice.s110.softdeviceversion=8.0.0
+BluzDK.menu.softdevice.s110.upload.maximum_size=151552
+BluzDK.menu.softdevice.s110.build.extra_flags=-DNRF51 -DS110 -DNRF51_S110
+BluzDK.menu.softdevice.s110.build.ldscript=armgcc_s110_nrf51822_xxac.ld
+
+BluzDK.menu.softdevice.s130=S130
+BluzDK.menu.softdevice.s130.softdevice=s130
+BluzDK.menu.softdevice.s130.softdeviceversion=2.0.1
+BluzDK.menu.softdevice.s130.upload.maximum_size=151552
+BluzDK.menu.softdevice.s130.build.extra_flags=-DNRF51 -DS130 -DNRF51_S130
+BluzDK.menu.softdevice.s130.build.ldscript=armgcc_s130_nrf51822_xxac.ld
+
+
+BLENano.name=RedBearLab BLE Nano
+
+BLENano.upload.tool=sandeepmistry:openocd
+BLENano.upload.interface=cmsisdap
+BLENano.upload.target=nrf51
+BLENano.upload.maximum_size=262144
+
+BLENano.bootloader.tool=sandeepmistry:openocd
+
+BLENano.build.mcu=cortex-m0
+BLENano.build.f_cpu=16000000
+BLENano.build.board=BLE_NANO
+BLENano.build.core=nRF5
+BLENano.build.variant=BLENano
+BLENano.build.variant_system_lib=
+BLENano.build.extra_flags=-DNRF51
+BLENano.build.float_flags=
+BLENano.build.ldscript=nrf51_{build.chip}.ld
+
+BLENano.menu.version.1_0=1.0
+BLENano.menu.version.1_0.build.chip=xxaa
+BLENano.menu.version.1_5=1.5
+BLENano.menu.version.1_5.build.chip=xxac
+
+BLENano.menu.softdevice.none=None
+BLENano.menu.softdevice.none.softdevice=none
+
+BLENano.menu.softdevice.s110=S110
+BLENano.menu.softdevice.s110.softdevice=s110
+BLENano.menu.softdevice.s110.softdeviceversion=8.0.0
+BLENano.menu.softdevice.s110.upload.maximum_size=151552
+BLENano.menu.softdevice.s110.build.extra_flags=-DNRF51 -DS110 -DNRF51_S110
+BLENano.menu.softdevice.s110.build.ldscript=armgcc_s110_nrf51822_{build.chip}.ld
+
+BLENano.menu.softdevice.s130=S130
+BLENano.menu.softdevice.s130.softdevice=s130
+BLENano.menu.softdevice.s130.softdeviceversion=2.0.1
+BLENano.menu.softdevice.s130.upload.maximum_size=151552
+BLENano.menu.softdevice.s130.build.extra_flags=-DNRF51 -DS130 -DNRF51_S130
+BLENano.menu.softdevice.s130.build.ldscript=armgcc_s130_nrf51822_{build.chip}.ld
+
+
+RedBearLab_nRF51822.name=RedBearLab nRF51822
+
+RedBearLab_nRF51822.upload.tool=sandeepmistry:openocd
+RedBearLab_nRF51822.upload.interface=cmsisdap
+RedBearLab_nRF51822.upload.target=nrf51
+RedBearLab_nRF51822.upload.maximum_size=262144
+
+RedBearLab_nRF51822.bootloader.tool=sandeepmistry:openocd
+
+RedBearLab_nRF51822.build.mcu=cortex-m0
+RedBearLab_nRF51822.build.f_cpu=16000000
+RedBearLab_nRF51822.build.board=REDBEARLAB_NRF51822
+RedBearLab_nRF51822.build.core=nRF5
+RedBearLab_nRF51822.build.variant=RedBearLab_nRF51822
+RedBearLab_nRF51822.build.variant_system_lib=
+RedBearLab_nRF51822.build.extra_flags=-DNRF51
+RedBearLab_nRF51822.build.float_flags=
+RedBearLab_nRF51822.build.ldscript=nrf51_{build.chip}.ld
+
+RedBearLab_nRF51822.menu.version.1_0=1.0
+RedBearLab_nRF51822.menu.version.1_0.build.chip=xxaa
+RedBearLab_nRF51822.menu.version.1_5=1.5
+RedBearLab_nRF51822.menu.version.1_5.build.chip=xxac
+
+RedBearLab_nRF51822.menu.softdevice.none=None
+RedBearLab_nRF51822.menu.softdevice.none.softdevice=none
+
+RedBearLab_nRF51822.menu.softdevice.s110=S110
+RedBearLab_nRF51822.menu.softdevice.s110.softdevice=s110
+RedBearLab_nRF51822.menu.softdevice.s110.softdeviceversion=8.0.0
+RedBearLab_nRF51822.menu.softdevice.s110.upload.maximum_size=151552
+RedBearLab_nRF51822.menu.softdevice.s110.build.extra_flags=-DNRF51 -DS110 -DNRF51_S110
+RedBearLab_nRF51822.menu.softdevice.s110.build.ldscript=armgcc_s110_nrf51822_{build.chip}.ld
+
+RedBearLab_nRF51822.menu.softdevice.s130=S130
+RedBearLab_nRF51822.menu.softdevice.s130.softdevice=s130
+RedBearLab_nRF51822.menu.softdevice.s130.softdeviceversion=2.0.1
+RedBearLab_nRF51822.menu.softdevice.s130.upload.maximum_size=151552
+RedBearLab_nRF51822.menu.softdevice.s130.build.extra_flags=-DNRF51 -DS130 -DNRF51_S130
+RedBearLab_nRF51822.menu.softdevice.s130.build.ldscript=armgcc_s130_nrf51822_{build.chip}.ld
+
+BBCmicrobit.name=BBC micro:bit
+
+BBCmicrobit.vid.0=0x0d28
+BBCmicrobit.pid.0=0x0204
+
+BBCmicrobit.upload.tool=sandeepmistry:openocd
+BBCmicrobit.upload.target=nrf51
+BBCmicrobit.upload.maximum_size=262144
+
+BBCmicrobit.bootloader.tool=sandeepmistry:openocd
+
+BBCmicrobit.build.mcu=cortex-m0
+BBCmicrobit.build.f_cpu=16000000
+BBCmicrobit.build.board=BLUZ_DK
+BBCmicrobit.build.core=nRF5
+BBCmicrobit.build.variant=BBCmicrobit
+BBCmicrobit.build.variant_system_lib=
+BBCmicrobit.build.extra_flags=-DNRF51
+BBCmicrobit.build.float_flags=
+BBCmicrobit.build.ldscript=nrf51_xxaa.ld
+
+BBCmicrobit.build.lfclk_flags=-DUSE_LFRC
+
+BBCmicrobit.menu.softdevice.none=None
+BBCmicrobit.menu.softdevice.none.softdevice=none
+
+BBCmicrobit.menu.softdevice.s110=S110
+BBCmicrobit.menu.softdevice.s110.softdevice=s110
+BBCmicrobit.menu.softdevice.s110.softdeviceversion=8.0.0
+BBCmicrobit.menu.softdevice.s110.upload.maximum_size=151552
+BBCmicrobit.menu.softdevice.s110.build.extra_flags=-DNRF51 -DS110 -DNRF51_S110
+BBCmicrobit.menu.softdevice.s110.build.ldscript=armgcc_s110_nrf51822_xxaa.ld
+
+BBCmicrobit.menu.softdevice.s130=S130
+BBCmicrobit.menu.softdevice.s130.softdevice=s130
+BBCmicrobit.menu.softdevice.s130.softdeviceversion=2.0.1
+BBCmicrobit.menu.softdevice.s130.upload.maximum_size=151552
+BBCmicrobit.menu.softdevice.s130.build.extra_flags=-DNRF51 -DS130 -DNRF51_S130
+BBCmicrobit.menu.softdevice.s130.build.ldscript=armgcc_s130_nrf51822_xxaa.ld
+
+
+Generic_nRF51822.name=Generic nRF51
+
+Generic_nRF51822.upload.tool=sandeepmistry:openocd
+Generic_nRF51822.upload.target=nrf51
+Generic_nRF51822.upload.maximum_size=262144
+
+Generic_nRF51822.bootloader.tool=sandeepmistry:openocd
+
+Generic_nRF51822.build.mcu=cortex-m0
+Generic_nRF51822.build.f_cpu=16000000
+Generic_nRF51822.build.board=GENERIC
+Generic_nRF51822.build.core=nRF5
+Generic_nRF51822.build.variant=Generic
+Generic_nRF51822.build.variant_system_lib=
+Generic_nRF51822.build.extra_flags=-DNRF51
+Generic_nRF51822.build.float_flags=
+Generic_nRF51822.build.ldscript=nrf51_{build.chip}.ld
+
+Generic_nRF51822.menu.chip.xxaa=16 kB RAM, 256 kB flash (xxaa)
+Generic_nRF51822.menu.chip.xxaa.build.chip=xxaa
+Generic_nRF51822.menu.chip.xxac=32 kB RAM, 256 kB flash (xxac)
+Generic_nRF51822.menu.chip.xxac.build.chip=xxac
+
+Generic_nRF51822.menu.softdevice.none=None
+Generic_nRF51822.menu.softdevice.none.softdevice=none
+
+Generic_nRF51822.menu.softdevice.s110=S110
+Generic_nRF51822.menu.softdevice.s110.softdevice=s110
+Generic_nRF51822.menu.softdevice.s110.softdeviceversion=8.0.0
+Generic_nRF51822.menu.softdevice.s110.upload.maximum_size=151552
+Generic_nRF51822.menu.softdevice.s110.build.extra_flags=-DNRF51 -DS110 -DNRF51_S110
+Generic_nRF51822.menu.softdevice.s110.build.ldscript=armgcc_s110_nrf51822_{build.chip}.ld
+
+Generic_nRF51822.menu.softdevice.s130=S130
+Generic_nRF51822.menu.softdevice.s130.softdevice=s130
+Generic_nRF51822.menu.softdevice.s130.softdeviceversion=2.0.1
+Generic_nRF51822.menu.softdevice.s130.upload.maximum_size=151552
+Generic_nRF51822.menu.softdevice.s130.build.extra_flags=-DNRF51 -DS130 -DNRF51_S130
+Generic_nRF51822.menu.softdevice.s130.build.ldscript=armgcc_s130_nrf51822_{build.chip}.ld
+
+Generic_nRF51822.menu.lfclk.lfxo=Crystal Oscillator
+Generic_nRF51822.menu.lfclk.lfxo.build.lfclk_flags=-DUSE_LFXO
+Generic_nRF51822.menu.lfclk.lfrc=RC Oscillator
+Generic_nRF51822.menu.lfclk.lfrc.build.lfclk_flags=-DUSE_LFRC
+Generic_nRF51822.menu.lfclk.lfsynt=Synthesized
+Generic_nRF51822.menu.lfclk.lfsynt.build.lfclk_flags=-DUSE_LFSYNT
+
+
+Generic_nRF52832.name=Generic nRF52
+
+Generic_nRF52832.upload.tool=sandeepmistry:openocd
+Generic_nRF52832.upload.target=nrf52
+Generic_nRF52832.upload.maximum_size=524288
+
+Generic_nRF52832.bootloader.tool=sandeepmistry:openocd
+
+Generic_nRF52832.build.mcu=cortex-m4
+Generic_nRF52832.build.f_cpu=16000000
+Generic_nRF52832.build.board=GENERIC
+Generic_nRF52832.build.core=nRF5
+Generic_nRF52832.build.variant=Generic
+Generic_nRF52832.build.variant_system_lib=
+Generic_nRF52832.build.extra_flags=-DNRF52
+Generic_nRF52832.build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
+Generic_nRF52832.build.ldscript=nrf52_xxaa.ld
+
+Generic_nRF52832.menu.softdevice.none=None
+Generic_nRF52832.menu.softdevice.none.softdevice=none
+
+Generic_nRF52832.menu.softdevice.s132=S132
+Generic_nRF52832.menu.softdevice.s132.softdevice=s132
+Generic_nRF52832.menu.softdevice.s132.softdeviceversion=2.0.1
+Generic_nRF52832.menu.softdevice.s132.upload.maximum_size=409600
+Generic_nRF52832.menu.softdevice.s132.build.extra_flags=-DNRF52 -DS132 -DNRF51_S132
+Generic_nRF52832.menu.softdevice.s132.build.ldscript=armgcc_s132_nrf52832_xxaa.ld
+
+Generic_nRF52832.menu.lfclk.lfxo=Crystal Oscillator
+Generic_nRF52832.menu.lfclk.lfxo.build.lfclk_flags=-DUSE_LFXO
+Generic_nRF52832.menu.lfclk.lfrc=RC Oscillator
+Generic_nRF52832.menu.lfclk.lfrc.build.lfclk_flags=-DUSE_LFRC
+Generic_nRF52832.menu.lfclk.lfsynt=Synthesized
+Generic_nRF52832.menu.lfclk.lfsynt.build.lfclk_flags=-DUSE_LFSYNT
+
+
+Waveshare_BLE400.name=Waveshare BLE400
+
+Waveshare_BLE400.upload.tool=sandeepmistry:openocd
+Waveshare_BLE400.upload.target=nrf51
+Waveshare_BLE400.upload.maximum_size=262144
+
+Waveshare_BLE400.bootloader.tool=sandeepmistry:openocd
+
+Waveshare_BLE400.build.mcu=cortex-m0
+Waveshare_BLE400.build.f_cpu=16000000
+Waveshare_BLE400.build.board=WAVESHARE_BLE400
+Waveshare_BLE400.build.core=nRF5
+Waveshare_BLE400.build.variant=Waveshare_BLE400
+Waveshare_BLE400.build.variant_system_lib=
+Waveshare_BLE400.build.extra_flags=-DNRF51
+Waveshare_BLE400.build.float_flags=
+Waveshare_BLE400.build.ldscript=nrf51_{build.chip}.ld
+
+Waveshare_BLE400.menu.chip.xxaa=16 kB RAM, 256 kB flash (xxaa)
+Waveshare_BLE400.menu.chip.xxaa.build.chip=xxaa
+Waveshare_BLE400.menu.chip.xxac=32 kB RAM, 256 kB flash (xxac)
+Waveshare_BLE400.menu.chip.xxac.build.chip=xxac
+
+Waveshare_BLE400.menu.softdevice.none=None
+Waveshare_BLE400.menu.softdevice.none.softdevice=none
+
+Waveshare_BLE400.menu.softdevice.s110=S110
+Waveshare_BLE400.menu.softdevice.s110.softdevice=s110
+Waveshare_BLE400.menu.softdevice.s110.softdeviceversion=8.0.0
+Waveshare_BLE400.menu.softdevice.s110.upload.maximum_size=151552
+Waveshare_BLE400.menu.softdevice.s110.build.extra_flags=-DNRF51 -DS110 -DNRF51_S110
+Waveshare_BLE400.menu.softdevice.s110.build.ldscript=armgcc_s110_nrf51822_{build.chip}.ld
+
+Waveshare_BLE400.menu.softdevice.s130=S130
+Waveshare_BLE400.menu.softdevice.s130.softdevice=s130
+Waveshare_BLE400.menu.softdevice.s130.softdeviceversion=2.0.1
+Waveshare_BLE400.menu.softdevice.s130.upload.maximum_size=151552
+Waveshare_BLE400.menu.softdevice.s130.build.extra_flags=-DNRF51 -DS130 -DNRF51_S130
+Waveshare_BLE400.menu.softdevice.s130.build.ldscript=armgcc_s130_nrf51822_{build.chip}.ld
+
+
+OSHChip.name=OSHChip
+
+OSHChip.upload.tool=sandeepmistry:openocd
+OSHChip.upload.target=nrf51
+OSHChip.upload.maximum_size=262144
+
+OSHChip.bootloader.tool=sandeepmistry:openocd
+
+OSHChip.build.mcu=cortex-m0
+OSHChip.build.f_cpu=16000000
+OSHChip.build.board=BLUZ_DK
+OSHChip.build.core=nRF5
+OSHChip.build.variant=OSHChip
+OSHChip.build.variant_system_lib=
+OSHChip.build.extra_flags=-DNRF51
+OSHChip.build.float_flags=
+OSHChip.build.ldscript=nrf51_xxac.ld
+
+OSHChip.build.lfclk_flags=-DUSE_LFRC
+
+OSHChip.menu.softdevice.none=None
+OSHChip.menu.softdevice.none.softdevice=none
+
+OSHChip.menu.softdevice.s110=S110
+OSHChip.menu.softdevice.s110.softdevice=s110
+OSHChip.menu.softdevice.s110.softdeviceversion=8.0.0
+OSHChip.menu.softdevice.s110.upload.maximum_size=151552
+OSHChip.menu.softdevice.s110.build.extra_flags=-DNRF51 -DS110 -DNRF51_S110
+OSHChip.menu.softdevice.s110.build.ldscript=armgcc_s110_nrf51822_xxac.ld
+
+OSHChip.menu.softdevice.s130=S130
+OSHChip.menu.softdevice.s130.softdevice=s130
+OSHChip.menu.softdevice.s130.softdeviceversion=2.0.1
+OSHChip.menu.softdevice.s130.upload.maximum_size=151552
+OSHChip.menu.softdevice.s130.build.extra_flags=-DNRF51 -DS130 -DNRF51_S130
+OSHChip.menu.softdevice.s130.build.ldscript=armgcc_s130_nrf51822_xxac.ld
+
+PCA1000X.name=nRF51X22 Development Kit(PCA1000X)
+
+PCA1000X.upload.tool=sandeepmistry:openocd
+PCA1000X.upload.target=nrf51
+PCA1000X.upload.maximum_size=262144
+
+PCA1000X.bootloader.tool=sandeepmistry:openocd
+
+PCA1000X.build.mcu=cortex-m0
+PCA1000X.build.f_cpu=16000000
+PCA1000X.build.board=PCA1000X
+PCA1000X.build.core=nRF5
+PCA1000X.build.variant=PCA1000X
+PCA1000X.build.variant_system_lib=
+PCA1000X.build.extra_flags=-DNRF51 -D{board.variant}
+PCA1000X.build.float_flags=
+PCA1000X.build.ldscript=nrf51_xxaa.ld
+
+PCA1000X.upload.tool=sandeepmistry:openocd
+PCA1000X.upload.protocol=
+PCA1000X.upload.interface=jlink
+PCA1000X.upload.target=nrf51
+PCA1000X.upload.maximum_size=262144
+PCA1000X.upload.setup_command=transport select swd; set WORKAREASIZE 0;
+
+PCA1000X.menu.board_variant.pca10000=PCA10000
+PCA1000X.menu.board_variant.pca10000.board.variant=PCA10000
+PCA1000X.menu.board_variant.nrf6310=PCA1000X (via nRF6310)
+PCA1000X.menu.board_variant.nrf6310.board.variant=NRF6310
+
+PCA1000X.menu.softdevice.none=None
+PCA1000X.menu.softdevice.none.softdevice=none
+
+PCA1000X.menu.softdevice.s110=S110
+PCA1000X.menu.softdevice.s110.softdevice=s110
+PCA1000X.menu.softdevice.s110.softdeviceversion=8.0.0
+PCA1000X.menu.softdevice.s110.upload.maximum_size=151552
+PCA1000X.menu.softdevice.s110.build.extra_flags=-DNRF51 -DS110 -DNRF51_S110
+PCA1000X.menu.softdevice.s110.build.ldscript=armgcc_s110_nrf51822_xxaa.ld
+
+PCA1000X.menu.softdevice.s130=S130
+PCA1000X.menu.softdevice.s130.softdevice=s130
+PCA1000X.menu.softdevice.s130.softdeviceversion=2.0.1
+PCA1000X.menu.softdevice.s130.upload.maximum_size=151552
+PCA1000X.menu.softdevice.s130.build.extra_flags=-DNRF51 -DS130 -DNRF51_S130
+PCA1000X.menu.softdevice.s130.build.ldscript=armgcc_s130_nrf51822_xxaa.ld
+
+PCA1000X.menu.lfclk.lfxo=Crystal Oscillator
+PCA1000X.menu.lfclk.lfxo.build.lfclk_flags=-DUSE_LFXO
+PCA1000X.menu.lfclk.lfrc=RC Oscillator
+PCA1000X.menu.lfclk.lfrc.build.lfclk_flags=-DUSE_LFRC
+PCA1000X.menu.lfclk.lfsynt=Synthesized
+PCA1000X.menu.lfclk.lfsynt.build.lfclk_flags=-DUSE_LFSYNT
