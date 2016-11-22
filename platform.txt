@@ -129,3 +129,15 @@ tools.openocd.erase.pattern=
 tools.openocd.bootloader.params.verbose=-d2
 tools.openocd.bootloader.params.quiet=-d0
 tools.openocd.bootloader.pattern="{path}/{cmd}" {bootloader.verbose} -f interface/{program.interface}.cfg -c "{program.setup_command}" -f target/{upload.target}.cfg -c "init; halt; nrf51 mass_erase; program {{{runtime.platform.path}/cores/nRF5/SDK/components/softdevice/{softdevice}/hex/{softdevice}_{upload.target}_{softdeviceversion}_softdevice.hex}} verify reset; shutdown;"
+
+
+# nrfjprog bootloader
+tools.nrfjprog.cmd=nrfjprog
+tools.nrfjprog.bootloader.params.verbose=-v
+tools.nrfjprog.bootloader.params.quiet=
+tools.nrfjprog.bootloader.pattern="{cmd}" --program "{runtime.platform.path}/bootloader/bootloader_with_s132.hex" -f nrf52 --chiperase --reset
+
+# nrfjprog auto erase flash page while programming
+tools.nrfjprog.erase.params.verbose=
+tools.nrfjprog.erase.params.quiet=
+tools.nrfjprog.erase.pattern=

@@ -6,21 +6,25 @@ Program your [Nordic Semiconductor](https://www.nordicsemi.com) nRF51 or nRF52 b
 
 Does not require a custom bootloader on the device.
 
-## Tools
-
-sudo pip install nrfutil
-
-
-## Supported boards
-
-### nRF52
- * [Plain nRF52 MCU](https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF52832)
- * [Nordic Semiconductor nRF52 DK](https://www.nordicsemi.com/eng/Products/Bluetooth-Smart-Bluetooth-low-energy/nRF52-DK)
-   * For boards prior to ```2016.9``` (see sticker), the lastest JLink bootloader is required to upload sketches. To upgrade, press the boot/reset button while powering on the board and copy over the latest [bootloader](https://www.nordicsemi.com/eng/nordic/Products/nRF52-DK/nRF5x-OB-JLink-IF/52275).
- * [Shenzhen Taida Century Technology nRF52 low cost development board](https://www.aliexpress.com/item/NRF52832-high-cost-development-board-gold-core-board/32725601299.html)
-
 ## Installing
 
+### Tools
+
+Jlink
+	
+    Download and install jlink from segger
+
+nrfutil
+  
+ - cd tools/nrfutil-0.5.2
+ - sudo pip install nrfutil
+
+nrfjprog
+
+- download nRF5x-Command-Line-Tools-OSX/Linux/Win32 https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF52832#Downloads
+- Extract downloaded file and add extracted path to Environment Path
+- Check to make sure you could run nrfjprog from your terminal/command prompt
+  
 ### Board Manager
 
  1. [Download and install the Arduino IDE](https://www.arduino.cc/en/Main/Software) (At least v1.6.12)
