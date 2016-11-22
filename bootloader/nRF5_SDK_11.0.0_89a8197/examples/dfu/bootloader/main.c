@@ -60,8 +60,10 @@
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 1                                                       /**< Include the service_changed characteristic. For DFU this should normally be the case. */
 
-#define BOOTLOADER_BUTTON               BSP_BUTTON_3                                            /**< Button used to enter SW update mode. */
-#define UPDATE_IN_PROGRESS_LED          BSP_LED_2                                               /**< Led used to indicate that DFU is active. */
+#define LED_STATUS_PIN                  17
+#define LED_CONNECTION_PIN              19
+
+#define BOOTLOADER_BUTTON               20                                            /**< Button used to enter SW update mode. */
 
 #define APP_TIMER_PRESCALER             0                                                       /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE         4                                                       /**< Size of timer operation queues. */
@@ -70,6 +72,7 @@
 
 #define SCHED_QUEUE_SIZE                20                                                      /**< Maximum number of events in the scheduler queue. */
 
+bool isDfuUploading = false;
 
 /**@brief Callback function for asserts in the SoftDevice.
  *
@@ -92,10 +95,26 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
  */
 static void leds_init(void)
 {
-    nrf_gpio_range_cfg_output(LED_START, LED_STOP);
-    nrf_gpio_pins_set(LEDS_MASK);
+    nrf_gpio_cfg_output(LED_STATUS_PIN);
+    nrf_gpio_cfg_output(LED_CONNECTION_PIN);
+
+    nrf_gpio_pin_write(LED_STATUS_PIN, 0);
+    nrf_gpio_pin_write(LED_CONNECTION_PIN, 0);
 }
 
+static void blinky_handler(void * p_context)
+{
+  static uint32_t count = 0;
+  count++;
+
+  // if not uploading then blink slow (interval/2)
+  if ( !isDfuUploading && count%2 ) return;
+
+  nrf_gpio_pin_toggle(LED_STATUS_PIN);
+
+  // Feed Watchdog just in case application enable it (WDT last through a soft reboot to bootloader)
+  if ( NRF_WDT->RUNSTATUS ) NRF_WDT->RR[0] = WDT_RR_RR_Reload;
+}
 
 /**@brief Function for initializing the timer handler module (app_timer).
  */
@@ -105,6 +124,10 @@ static void timers_init(void)
     APP_TIMER_APPSH_INIT(APP_TIMER_PRESCALER, APP_TIMER_OP_QUEUE_SIZE, true);
 }
 
+void blinky_fast_set(bool isFast)
+{
+  isDfuUploading = isFast;
+}
 
 /**@brief Function for initializing the button module.
  */
@@ -175,6 +198,11 @@ static void ble_stack_init(bool init_softdevice)
 static void scheduler_init(void)
 {
     APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
+
+    /* Initialize a blinky timer to show that we're in bootloader */
+    APP_TIMER_DEF( blinky_timer_id );
+    (void) app_timer_create(&blinky_timer_id, APP_TIMER_MODE_REPEATED, blinky_handler);
+    app_timer_start(blinky_timer_id, APP_TIMER_TICKS(125, APP_TIMER_PRESCALER), NULL);
 }
 
 
@@ -206,8 +234,6 @@ int main(void)
 
     if (bootloader_dfu_sd_in_progress())
     {
-        nrf_gpio_pin_clear(UPDATE_IN_PROGRESS_LED);
-
         err_code = bootloader_dfu_sd_update_continue();
         APP_ERROR_CHECK(err_code);
 
@@ -216,8 +242,6 @@ int main(void)
 
         err_code = bootloader_dfu_sd_update_finalize();
         APP_ERROR_CHECK(err_code);
-
-        nrf_gpio_pin_set(UPDATE_IN_PROGRESS_LED);
     }
     else
     {
@@ -233,13 +257,9 @@ int main(void)
     
     if (dfu_start || (!bootloader_app_is_valid(DFU_BANK_0_REGION_START)))
     {
-        nrf_gpio_pin_clear(UPDATE_IN_PROGRESS_LED);
-
         // Initiate an update of the firmware.
         err_code = bootloader_dfu_start();
         APP_ERROR_CHECK(err_code);
-
-        nrf_gpio_pin_set(UPDATE_IN_PROGRESS_LED);
     }
 
     if (bootloader_app_is_valid(DFU_BANK_0_REGION_START) && !bootloader_dfu_sd_in_progress())
