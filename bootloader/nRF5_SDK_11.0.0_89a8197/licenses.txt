@@ -1,0 +1,18 @@
+The nRF5 SDK licensing is split between the portion of the source code that
+originates from Nordic Semiconductor ASA/Dynastream Innovations Inc. and the
+portion that originates from third-parties.
+
+* All source code contained under the following folders originates from Nordic
+  Semiconductor/Dynastream Innovations Inc. and is covered by the license present 
+  in documentation/license.txt:
+
+    - components
+    - examples
+    - SVD
+
+* All source code contained under the following folders originates from third
+  parties, and is covered by the corresponding licenses found in each of their
+  respective subfolders:
+
+    - external
+
