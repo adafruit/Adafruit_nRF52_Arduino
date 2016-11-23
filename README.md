@@ -1,25 +1,21 @@
 # Arduino Core for Nordic Semiconductor nRF5 based boards
 
-[![Build Status](https://travis-ci.org/sandeepmistry/arduino-nRF5.svg?branch=master)](https://travis-ci.org/sandeepmistry/arduino-nRF5)
-
-Program your [Nordic Semiconductor](https://www.nordicsemi.com) nRF51 or nRF52 board using the [Arduino](https://www.arduino.cc) IDE.
-
-Does not require a custom bootloader on the device.
-
 ## Installing
 
 ### Tools
 
-Jlink
+#### Jlink
 	
     Download and install jlink from segger
 
-nrfutil
+#### nrfutil
   
  - cd tools/nrfutil-0.5.2
  - sudo pip install nrfutil
 
-nrfjprog
+#### nrfjprog
+
+For burning bootloader with jlink, you will nrfjprog. Not required if you only upload sketch.
 
 - download nRF5x-Command-Line-Tools-OSX/Linux/Win32 https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF52832#Downloads
 - Extract downloaded file and add extracted path to Environment Path
@@ -34,44 +30,6 @@ nrfjprog
  5. Open the Boards Manager from the Tools -> Board menu and install "Nordic Semiconductor nRF5 Boards"
  6. Select your nRF5 board from the Tools -> Board menu
 
-#### OS Specific Setup
-
-##### OS X
-
-No additional setup required.
-
-##### Linux
-
-No additional setup required.
-
-#####  Windows
-
-###### Driver Setup for Segger J-Link
-
- 1. Download [Zadig](http://zadig.akeo.ie)
- 2. Plugin Segger J-Link or DK board
- 3. Start ```Zadig```
- 4. Select ```Options -> List All Devices```
- 5. Select ```J-Link (Interface 2)``` from the device dropdown
- 6. Click ```Replace Driver```
-
-### Flashing a SoftDevice
-
- 1. ```cd <SKETCHBOOK>```, where ```<SKETCHBOOK>``` is your Arduino Sketch folder:
-  * OS X: ```~/Documents/Arduino```
-  * Linux: ```~/Arduino```
-  * Windows: ```~/Documents/Arduino```
- 2. Create the following directories: ```tools/nRF5FlashSoftDevice/tool/```
- 3. Download [nRF5FlashSoftDevice.jar](https://github.com/sandeepmistry/arduino-nRF5/releases/download/tools/nRF5FlashSoftDevice.jar) to ```<SKETCHBOOK>/tools/nRF5FlashSoftDevice/tool/```
- 4. Restart the Arduino IDE
- 5. Select your nRF board from the Tools -> Board menu
- 6. Select a SoftDevice from the Tools -> "SoftDevice: " menu
- 7. Select a Programmer (J-Link, ST-Link V2, or CMSIS-DAP) from the Tools -> "Programmer: " menu
- 8. Select Tools -> nRF5 Flash SoftDevice
- 9. Read license agreement
- 10. Click "Accept" to accept license and continue, or "Decline" to decline and abort
- 11. If accepted, SoftDevice binary will be flashed to the board
-
 ### From git (for core development)
 
  1. Follow steps from Board Manager section above
@@ -80,7 +38,7 @@ No additional setup required.
   * Linux: ```~/Arduino```
   * Windows: ```~/Documents/Arduino```
  3. Create a folder named ```hardware```, if it does not exist, and change directories to it
- 4. Clone this repo: ```git clone https://github.com/sandeepmistry/arduino-nRF5.git sandeepmistry/nRF5```
+ 4. Clone this repo: `git clone git@github.com:adafruit/Adafruit_nRF52_Arduino.git`
  5. Restart the Arduino IDE
 
 ## BLE
