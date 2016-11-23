@@ -26,12 +26,12 @@ nRF52DK.name=nRF52 DK
 nRF52DK.vid.0=0x1366
 nRF52DK.pid.0=0x1015
 
-nRF52DK.upload.tool=sandeepmistry:openocd
-nRF52DK.upload.protocol=
-nRF52DK.upload.interface=jlink
+#nRF52DK.upload.tool=sandeepmistry:openocd
+nRF52DK.upload.tool=nrfutil
+nRF52DK.upload.protocol=nrfutil
+nRF52DK.upload.interface=serial
 nRF52DK.upload.target=nrf52
-nRF52DK.upload.maximum_size=524288
-nRF52DK.upload.setup_command=transport select swd;
+nRF52DK.upload.maximum_size=174080
 nRF52DK.upload.use_1200bps_touch=false
 nRF52DK.upload.wait_for_upload_port=false
 nRF52DK.upload.native_usb=false
@@ -49,8 +49,8 @@ nRF52DK.build.extra_flags=-DNRF52
 nRF52DK.build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
 nRF52DK.build.ldscript=nrf52_xxaa.ld
 
-nRF52DK.menu.softdevice.none=None
-nRF52DK.menu.softdevice.none.softdevice=none
+#nRF52DK.menu.softdevice.none=None
+#nRF52DK.menu.softdevice.none.softdevice=none
 
 nRF52DK.menu.softdevice.s132=S132
 nRF52DK.menu.softdevice.s132.softdevice=s132

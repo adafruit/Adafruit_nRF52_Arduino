@@ -85,10 +85,13 @@ recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} {compil
 recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} "-L{nrf.sdk.path}/components/toolchain/gcc/" "-L{nrf.sdk.path}/components/softdevice/{softdevice}/toolchain/armgcc/" "-T{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" --specs=nano.specs --specs=nosys.specs {compiler.ldflags} -o "{build.path}/{build.project_name}.elf" {object_files} -Wl,--start-group -lm "{build.path}/{archive_file}" -Wl,--end-group
 
 ## Create output (bin file)
-recipe.objcopy.bin.pattern="{compiler.path}{compiler.elf2bin.cmd}" {compiler.elf2bin.flags} {compiler.elf2bin.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.bin"
+#recipe.objcopy.bin.pattern="{compiler.path}{compiler.elf2bin.cmd}" {compiler.elf2bin.flags} {compiler.elf2bin.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.bin"
 
 ## Create output (hex file)
 recipe.objcopy.hex.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} {compiler.elf2hex.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.hex"
+
+## Creat dfu package zip file
+recipe.objcopy.zip.pattern=nrfutil dfu genpkg --application "{build.path}/{build.project_name}.hex" "{build.path}/{build.project_name}.zip"
 
 ## Save bin
 recipe.output.tmp_file_bin={build.project_name}.bin
@@ -107,35 +110,28 @@ recipe.output.tmp_file={build.project_name}.hex
 recipe.output.save_file={build.project_name}.{build.variant}.hex
 
 #
-# OpenOCD sketch upload
+# nrfutil for uploading
+#
+tools.nrfutil.cmd=nrfutil
+tools.nrfutil.upload.params.verbose=--verbose
+tools.nrfutil.upload.params.quiet=
+tools.nrfutil.upload.pattern={cmd} dfu serial -pkg "{build.path}/{build.project_name}.zip" -p {serial.port} -b 115200
+
+#
+# Using jlink with nrfjprog
 #
 
-tools.openocd.path={runtime.tools.openocd-0.10.0-dev.nrf5.path}
-tools.openocd.cmd=bin/openocd
-tools.openocd.cmd.windows=bin/openocd.exe
-
-tools.openocd.upload.params.verbose=-d2
-tools.openocd.upload.params.quiet=-d0
-tools.openocd.upload.pattern="{path}/{cmd}" {upload.verbose} -f interface/{upload.interface}.cfg -c "{upload.setup_command}" -f target/{upload.target}.cfg -c "program {{{build.path}/{build.project_name}.hex}} verify reset; shutdown;"
-
-tools.openocd.program.params.verbose=-d2
-tools.openocd.program.params.quiet=-d0
-tools.openocd.program.pattern="{path}/{cmd}" {program.verbose} -f interface/{program.interface}.cfg -c "{program.setup_command}" -f target/{upload.target}.cfg -c "program {{{build.path}/{build.project_name}.hex}} verify reset; shutdown;"
-
-tools.openocd.erase.params.verbose=-d3
-tools.openocd.erase.params.quiet=-d0
-tools.openocd.erase.pattern=
-
-tools.openocd.bootloader.params.verbose=-d2
-tools.openocd.bootloader.params.quiet=-d0
-tools.openocd.bootloader.pattern="{path}/{cmd}" {bootloader.verbose} -f interface/{program.interface}.cfg -c "{program.setup_command}" -f target/{upload.target}.cfg -c "init; halt; nrf51 mass_erase; program {{{runtime.platform.path}/cores/nRF5/SDK/components/softdevice/{softdevice}/hex/{softdevice}_{upload.target}_{softdeviceversion}_softdevice.hex}} verify reset; shutdown;"
-
-
-# nrfjprog bootloader
+## nrfjprog bootloader
 tools.nrfjprog.cmd=nrfjprog
-tools.nrfjprog.bootloader.params.verbose=-v
-tools.nrfjprog.bootloader.params.quiet=
+tools.nrfjprog.bootloader.params.verbose=
+tools.nrfjprog.bootloader.params.quiet=-q
 tools.nrfjprog.bootloader.pattern="{cmd}" --program "{runtime.platform.path}/bootloader/bootloader_with_s132.hex" -f nrf52 --chiperase --reset
+
+## nrfjprog program (won't work, need to update bootloader validation setting)
+tools.nrfjprog.cmd=nrfjprog
+tools.nrfjprog.program.params.verbose=
+tools.nrfjprog.program.params.quiet=-q
+tools.nrfjprog.program.pattern="{cmd}" --program "{build.path}/{build.project_name}.hex" -f nrf52
 
 # nrfjprog auto erase flash page while programming
 tools.nrfjprog.erase.params.verbose=
