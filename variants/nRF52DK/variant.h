@@ -1,4 +1,4 @@
-/*
+ /*
   Copyright (c) 2014-2015 Arduino LLC.  All right reserved.
   Copyright (c) 2016 Sandeep Mistry All right reserved.
   This library is free software; you can redistribute it and/or
@@ -39,9 +39,9 @@ extern "C"
 
 // LEDs
 #define PIN_LED1                (6)
-#define PIN_LED2                (7)
-#define PIN_LED3                (8)
-#define PIN_LED4                (9)
+#define PIN_LED2                (8)
+//#define PIN_LED3                (8)
+//#define PIN_LED4                (9)
 #define LED_BUILTIN             PIN_LED1
 
 // Buttons
