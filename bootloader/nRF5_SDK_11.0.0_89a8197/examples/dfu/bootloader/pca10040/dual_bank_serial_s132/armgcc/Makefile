@@ -1,4 +1,5 @@
 PROJECT_NAME := dfu_dual_bank_serial_s132_pca10040
+SDK_PATH = ../../../../../../components
 
 export OUTPUT_FILENAME
 #MAKEFILE_NAME := $(CURDIR)/$(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST))
@@ -37,66 +38,71 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 
 #source common to all targets
 C_SOURCE_FILES += \
-$(abspath ../../../../../../components/libraries/util/app_error.c) \
-$(abspath ../../../../../../components/libraries/util/app_error_weak.c) \
-$(abspath ../../../../../../components/libraries/scheduler/app_scheduler.c) \
-$(abspath ../../../../../../components/libraries/timer/app_timer.c) \
-$(abspath ../../../../../../components/libraries/timer/app_timer_appsh.c) \
-$(abspath ../../../../../../components/libraries/util/app_util_platform.c) \
-$(abspath ../../../../../../components/libraries/bootloader_dfu/bootloader.c) \
-$(abspath ../../../../../../components/libraries/bootloader_dfu/bootloader_settings.c) \
-$(abspath ../../../../../../components/libraries/bootloader_dfu/bootloader_util.c) \
-$(abspath ../../../../../../components/libraries/crc16/crc16.c) \
-$(abspath ../../../../../../components/libraries/bootloader_dfu/dfu_dual_bank.c) \
-$(abspath ../../../../../../components/libraries/bootloader_dfu/dfu_init_template.c) \
-$(abspath ../../../../../../components/libraries/bootloader_dfu/dfu_transport_serial.c) \
-$(abspath ../../../../../../components/libraries/hci/hci_mem_pool.c) \
-$(abspath ../../../../../../components/libraries/hci/hci_slip.c) \
-$(abspath ../../../../../../components/libraries/hci/hci_transport.c) \
-$(abspath ../../../../../../components/libraries/util/nrf_assert.c) \
-$(abspath ../../../../../../components/libraries/uart/app_uart.c) \
-$(abspath ../../../../../../components/drivers_nrf/delay/nrf_delay.c) \
-$(abspath ../../../../../../components/drivers_nrf/common/nrf_drv_common.c) \
-$(abspath ../../../../../../components/drivers_nrf/uart/nrf_drv_uart.c) \
-$(abspath ../../../../../../components/drivers_nrf/pstorage/pstorage_raw.c) \
 $(abspath ../../../main.c) \
-$(abspath ../../../../../../components/ble/common/ble_advdata.c) \
-$(abspath ../../../../../../components/ble/common/ble_conn_params.c) \
-$(abspath ../../../../../../components/ble/common/ble_srv_common.c) \
-$(abspath ../../../../../../components/toolchain/system_nrf52.c) \
-$(abspath ../../../../../../components/softdevice/common/softdevice_handler/softdevice_handler.c) \
-$(abspath ../../../../../../components/softdevice/common/softdevice_handler/softdevice_handler_appsh.c) \
+$(abspath ../../../dfu_ble_svc.c) \
+$(abspath $(SDK_PATH)/libraries/util/app_error.c) \
+$(abspath $(SDK_PATH)/libraries/util/app_error_weak.c) \
+$(abspath $(SDK_PATH)/libraries/scheduler/app_scheduler.c) \
+$(abspath $(SDK_PATH)/libraries/timer/app_timer.c) \
+$(abspath $(SDK_PATH)/libraries/timer/app_timer_appsh.c) \
+$(abspath $(SDK_PATH)/libraries/util/app_util_platform.c) \
+$(abspath $(SDK_PATH)/libraries/bootloader_dfu/bootloader.c) \
+$(abspath $(SDK_PATH)/libraries/bootloader_dfu/bootloader_settings.c) \
+$(abspath $(SDK_PATH)/libraries/bootloader_dfu/bootloader_util.c) \
+$(abspath $(SDK_PATH)/libraries/crc16/crc16.c) \
+$(abspath $(SDK_PATH)/libraries/bootloader_dfu/dfu_dual_bank.c) \
+$(abspath $(SDK_PATH)/libraries/bootloader_dfu/dfu_init_template.c) \
+$(abspath $(SDK_PATH)/libraries/bootloader_dfu/dfu_transport_serial.c) \
+$(abspath $(SDK_PATH)/libraries/bootloader_dfu/dfu_transport_ble.c)\
+$(abspath $(SDK_PATH)/libraries/hci/hci_mem_pool.c) \
+$(abspath $(SDK_PATH)/libraries/hci/hci_slip.c) \
+$(abspath $(SDK_PATH)/libraries/hci/hci_transport.c) \
+$(abspath $(SDK_PATH)/libraries/util/nrf_assert.c) \
+$(abspath $(SDK_PATH)/libraries/uart/app_uart.c) \
+$(abspath $(SDK_PATH)/drivers_nrf/delay/nrf_delay.c) \
+$(abspath $(SDK_PATH)/drivers_nrf/common/nrf_drv_common.c) \
+$(abspath $(SDK_PATH)/drivers_nrf/uart/nrf_drv_uart.c) \
+$(abspath $(SDK_PATH)/drivers_nrf/pstorage/pstorage_raw.c) \
+$(abspath $(SDK_PATH)/ble/common/ble_advdata.c) \
+$(abspath $(SDK_PATH)/ble/common/ble_conn_params.c) \
+$(abspath $(SDK_PATH)/ble/ble_services/ble_dfu/ble_dfu.c) \
+$(abspath $(SDK_PATH)/ble/common/ble_srv_common.c) \
+$(abspath $(SDK_PATH)/toolchain/system_nrf52.c) \
+$(abspath $(SDK_PATH)/softdevice/common/softdevice_handler/softdevice_handler.c) \
+$(abspath $(SDK_PATH)/softdevice/common/softdevice_handler/softdevice_handler_appsh.c) \
+
 
 #assembly files common to all targets
-ASM_SOURCE_FILES  = $(abspath ../../../../../../components/toolchain/gcc/gcc_startup_nrf52.s)
+ASM_SOURCE_FILES  = $(abspath $(SDK_PATH)/toolchain/gcc/gcc_startup_nrf52.s)
 
 #includes common to all targets
 INC_PATHS  = -I$(abspath ../../../config/dfu_dual_bank_serial_s132_pca10040)
 INC_PATHS += -I$(abspath ../../../config)
-INC_PATHS += -I$(abspath ../../../../../../components/libraries/bootloader_dfu/hci_transport)
-INC_PATHS += -I$(abspath ../../../../../../components/libraries/bootloader_dfu)
-INC_PATHS += -I$(abspath ../../../../../../components/libraries/scheduler)
-INC_PATHS += -I$(abspath ../../../../../../components/drivers_nrf/config)
+INC_PATHS += -I$(abspath $(SDK_PATH)/libraries/bootloader_dfu/hci_transport)
+INC_PATHS += -I$(abspath $(SDK_PATH)/libraries/bootloader_dfu)
+INC_PATHS += -I$(abspath $(SDK_PATH)/libraries/scheduler)
+INC_PATHS += -I$(abspath $(SDK_PATH)/drivers_nrf/config)
 INC_PATHS += -I$(abspath ../../../../../bsp)
-INC_PATHS += -I$(abspath ../../../../../../components/drivers_nrf/delay)
-INC_PATHS += -I$(abspath ../../../../../../components/libraries/crc16)
-INC_PATHS += -I$(abspath ../../../../../../components/softdevice/s132/headers/nrf52)
-INC_PATHS += -I$(abspath ../../../../../../components/libraries/util)
-INC_PATHS += -I$(abspath ../../../../../../components/drivers_nrf/pstorage)
-INC_PATHS += -I$(abspath ../../../../../../components/drivers_nrf/uart)
-INC_PATHS += -I$(abspath ../../../../../../components/ble/common)
-INC_PATHS += -I$(abspath ../../../../../../components/libraries/hci/config)
-INC_PATHS += -I$(abspath ../../../../../../components/libraries/uart)
-INC_PATHS += -I$(abspath ../../../../../../components/device)
-INC_PATHS += -I$(abspath ../../../../../../components/libraries/hci)
-INC_PATHS += -I$(abspath ../../../../../../components/libraries/timer)
-INC_PATHS += -I$(abspath ../../../../../../components/softdevice/s132/headers)
-INC_PATHS += -I$(abspath ../../../../../../components/toolchain/CMSIS/Include)
-INC_PATHS += -I$(abspath ../../../../../../components/drivers_nrf/hal)
-INC_PATHS += -I$(abspath ../../../../../../components/toolchain/gcc)
-INC_PATHS += -I$(abspath ../../../../../../components/toolchain)
-INC_PATHS += -I$(abspath ../../../../../../components/drivers_nrf/common)
-INC_PATHS += -I$(abspath ../../../../../../components/softdevice/common/softdevice_handler)
+INC_PATHS += -I$(abspath $(SDK_PATH)/drivers_nrf/delay)
+INC_PATHS += -I$(abspath $(SDK_PATH)/libraries/crc16)
+INC_PATHS += -I$(abspath $(SDK_PATH)/softdevice/s132/headers/nrf52)
+INC_PATHS += -I$(abspath $(SDK_PATH)/libraries/util)
+INC_PATHS += -I$(abspath $(SDK_PATH)/drivers_nrf/pstorage)
+INC_PATHS += -I$(abspath $(SDK_PATH)/drivers_nrf/uart)
+INC_PATHS += -I$(abspath $(SDK_PATH)/ble/common)
+INC_PATHS += -I$(abspath $(SDK_PATH)/libraries/hci/config)
+INC_PATHS += -I$(abspath $(SDK_PATH)/libraries/uart)
+INC_PATHS += -I$(abspath $(SDK_PATH)/device)
+INC_PATHS += -I$(abspath $(SDK_PATH)/libraries/hci)
+INC_PATHS += -I$(abspath $(SDK_PATH)/libraries/timer)
+INC_PATHS += -I$(abspath $(SDK_PATH)/softdevice/s132/headers)
+INC_PATHS += -I$(abspath $(SDK_PATH)/toolchain/CMSIS/Include)
+INC_PATHS += -I$(abspath $(SDK_PATH)/drivers_nrf/hal)
+INC_PATHS += -I$(abspath $(SDK_PATH)/toolchain/gcc)
+INC_PATHS += -I$(abspath $(SDK_PATH)/toolchain)
+INC_PATHS += -I$(abspath $(SDK_PATH)/drivers_nrf/common)
+INC_PATHS += -I$(abspath $(SDK_PATH)/softdevice/common/softdevice_handler)
+INC_PATHS += -I$(abspath $(SDK_PATH)/ble/ble_services/ble_dfu)
 
 OBJECT_DIRECTORY = _build
 LISTING_DIRECTORY = $(OBJECT_DIRECTORY)

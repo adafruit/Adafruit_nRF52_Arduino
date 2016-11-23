@@ -279,7 +279,7 @@ void rpc_transport_event_handler(hci_transport_evt_t event)
 }
 
 
-uint32_t dfu_transport_update_start(void)
+uint32_t dfu_transport_serial_update_start(void)
 {
     uint32_t err_code;
 
@@ -300,7 +300,7 @@ uint32_t dfu_transport_update_start(void)
 }
 
 
-uint32_t dfu_transport_close(void)
+uint32_t dfu_transport_serial_close(void)
 {
     // Remove all buffered packets.
     data_queue_flush();

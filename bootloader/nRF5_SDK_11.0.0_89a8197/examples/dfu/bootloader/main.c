@@ -62,7 +62,7 @@
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 1                                                       /**< Include the service_changed characteristic. For DFU this should normally be the case. */
 
-
+#define LED_BLINK_INTERVAL              100
 #define LED_STATUS_PIN                  17
 #define LED_CONNECTION_PIN              19
 
@@ -83,6 +83,13 @@ bool isDfuUploading = false;
 
 APP_TIMER_DEF( blinky_timer_id );
 
+// true if ble, false if serial
+bool _ota_update = false;
+
+bool is_ota(void)
+{
+  return _ota_update;
+}
 
 #define BOOTLOADER_DFU_START2          0x4e
 
@@ -212,7 +219,7 @@ static void scheduler_init(void)
 
     /* Initialize a blinky timer to show that we're in bootloader */
     (void) app_timer_create(&blinky_timer_id, APP_TIMER_MODE_REPEATED, blinky_handler);
-    app_timer_start(blinky_timer_id, APP_TIMER_TICKS(125, APP_TIMER_PRESCALER), NULL);
+    app_timer_start(blinky_timer_id, APP_TIMER_TICKS(LED_BLINK_INTERVAL, APP_TIMER_PRESCALER), NULL);
 }
 
 
@@ -223,6 +230,8 @@ int main(void)
     uint32_t err_code;
     bool     dfu_start = false;
     bool     app_reset = (NRF_POWER->GPREGRET == BOOTLOADER_DFU_START);
+
+    _ota_update = (NRF_POWER->GPREGRET == BOOTLOADER_DFU_START);
 
     if (app_reset)
     {
@@ -266,7 +275,7 @@ int main(void)
     if (dfu_start || (!bootloader_app_is_valid(DFU_BANK_0_REGION_START)))
     {
         // Initiate an update of the firmware.
-        err_code = bootloader_dfu_start();
+        err_code = bootloader_dfu_start(_ota_update, 0);
         APP_ERROR_CHECK(err_code);
     }
 

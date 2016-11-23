@@ -44,6 +44,9 @@ typedef enum
 static pstorage_handle_t        m_bootsettings_handle;  /**< Pstorage handle to use for registration and identifying the bootloader module on subsequent calls to the pstorage module for load and store of bootloader setting in flash. */
 static bootloader_status_t      m_update_status;        /**< Current update status for the bootloader module to ensure correct behaviour when updating settings and when update completes. */
 
+// Adafruit modification for dual transports
+extern bool is_ota(void);
+
 /**@brief   Function for handling callbacks from pstorage module.
  *
  * @details Handles pstorage results for clear and storage operation. For detailed description of
@@ -216,7 +219,14 @@ void bootloader_dfu_update_process(dfu_update_status_t update_status)
     else if (update_status.status_code == DFU_TIMEOUT)
     {
         // Timeout has occurred. Close the connection with the DFU Controller.
-        uint32_t err_code = dfu_transport_close();
+        uint32_t err_code;
+        if ( is_ota() )
+        {
+          err_code = dfu_transport_ble_close();
+        }else
+        {
+          err_code = dfu_transport_serial_close();
+        }
         APP_ERROR_CHECK(err_code);
 
         m_update_status = BOOTLOADER_TIMEOUT;
@@ -256,7 +266,7 @@ uint32_t bootloader_init(void)
 }
 
 
-uint32_t bootloader_dfu_start(void)
+uint32_t bootloader_dfu_start(bool ota, uint32_t timeout_ms)
 {
     uint32_t err_code;
 
@@ -264,7 +274,13 @@ uint32_t bootloader_dfu_start(void)
     err_code = dfu_init(); 
     VERIFY_SUCCESS(err_code);
 
-    err_code = dfu_transport_update_start();
+    if ( ota )
+    {
+      err_code = dfu_transport_ble_update_start();
+    }else
+    {
+      err_code = dfu_transport_serial_update_start();
+    }
 
     wait_for_events();
 

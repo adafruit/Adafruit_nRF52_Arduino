@@ -45,7 +45,7 @@ bool bootloader_app_is_valid(uint32_t app_addr);
  * 
  * @retval     NRF_SUCCESS If new application image was successfully transferred.
  */
-uint32_t bootloader_dfu_start(void);
+uint32_t bootloader_dfu_start(bool ota, uint32_t timeout_ms);
 
 /**@brief Function for exiting bootloader and booting into application.
  *

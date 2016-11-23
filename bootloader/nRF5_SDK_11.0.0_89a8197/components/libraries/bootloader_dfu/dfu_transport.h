@@ -27,13 +27,17 @@
  *
  * @retval NRF_SUCCESS Operation success.   
  */
-uint32_t dfu_transport_update_start(void);
+uint32_t dfu_transport_serial_update_start(void);
 
 /**@brief Function for closing the transport layer.
  *
  * @retval NRF_SUCCESS Operation success.    
  */
-uint32_t dfu_transport_close(void);
+uint32_t dfu_transport_serial_close(void);
+
+
+uint32_t dfu_transport_ble_update_start(void);
+uint32_t dfu_transport_ble_close();
 
 #endif // DFU_TRANSPORT_H__
 
