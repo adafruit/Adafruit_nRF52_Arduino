@@ -62,8 +62,8 @@
 
 #define BUTTONS_MASK   0x001E0000
 
-#define RX_PIN_NUMBER  12 // 8
-#define TX_PIN_NUMBER  11 // 6
+#define RX_PIN_NUMBER  8 // 12
+#define TX_PIN_NUMBER  6 // 11
 #define CTS_PIN_NUMBER 7
 #define RTS_PIN_NUMBER 5
 #define HWFC           true

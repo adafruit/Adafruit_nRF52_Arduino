@@ -106,7 +106,9 @@ OUTPUT_BINARY_DIRECTORY = $(OBJECT_DIRECTORY)
 BUILD_DIRECTORIES := $(sort $(OBJECT_DIRECTORY) $(OUTPUT_BINARY_DIRECTORY) $(LISTING_DIRECTORY) )
 
 #flags common to all targets
-CFLAGS  = -DNRF52
+#CFLAGS += -DENABLE_SWO
+
+CFLAGS += -DNRF52
 CFLAGS += -DBOARD_PCA10040
 CFLAGS += -DNRF52_PAN_12
 CFLAGS += -DNRF52_PAN_15
@@ -245,6 +247,7 @@ genhex:
 	@echo Preparing: $(OUTPUT_FILENAME).hex
 	$(NO_ECHO)$(OBJCOPY) -O ihex $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).out $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex
 	@cp $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex ../../../../../../../bootloader.hex
+	@mergehex -m ../../../../../../../bootloader.hex ../../../../../../../s132_nrf52_2.0.0_softdevice.hex -o ../../../../../../../bootloader_with_s132.hex
 	 
 echosize:
 	-@echo ''

@@ -50,6 +50,8 @@
 #include "nrf_mbr.h"
 #include "nrf_log.h"
 
+#include "nrf_delay.h"
+
 #if BUTTONS_NUMBER < 1
 #error "Not enough buttons on board"
 #endif
@@ -60,8 +62,13 @@
 
 #define IS_SRVC_CHANGED_CHARACT_PRESENT 1                                                       /**< Include the service_changed characteristic. For DFU this should normally be the case. */
 
+
 #define LED_STATUS_PIN                  17
 #define LED_CONNECTION_PIN              19
+
+#define LED_STATE_ON                    0
+#define led_on(pin)                     nrf_gpio_pin_write(pin, LED_STATE_ON)
+#define led_off(pin)                    nrf_gpio_pin_write(pin, 1-LED_STATE_ON)
 
 #define BOOTLOADER_BUTTON               20                                            /**< Button used to enter SW update mode. */
 
@@ -73,6 +80,11 @@
 #define SCHED_QUEUE_SIZE                20                                                      /**< Maximum number of events in the scheduler queue. */
 
 bool isDfuUploading = false;
+
+APP_TIMER_DEF( blinky_timer_id );
+
+
+#define BOOTLOADER_DFU_START2          0x4e
 
 /**@brief Callback function for asserts in the SoftDevice.
  *
@@ -90,7 +102,6 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
     app_error_handler(0xDEADBEEF, line_num, p_file_name);
 }
 
-
 /**@brief Function for initialization of LEDs.
  */
 static void leds_init(void)
@@ -98,8 +109,8 @@ static void leds_init(void)
     nrf_gpio_cfg_output(LED_STATUS_PIN);
     nrf_gpio_cfg_output(LED_CONNECTION_PIN);
 
-    nrf_gpio_pin_write(LED_STATUS_PIN, 0);
-    nrf_gpio_pin_write(LED_CONNECTION_PIN, 0);
+    led_off(LED_STATUS_PIN);
+    led_off(LED_CONNECTION_PIN);
 }
 
 static void blinky_handler(void * p_context)
@@ -200,7 +211,6 @@ static void scheduler_init(void)
     APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
 
     /* Initialize a blinky timer to show that we're in bootloader */
-    APP_TIMER_DEF( blinky_timer_id );
     (void) app_timer_create(&blinky_timer_id, APP_TIMER_MODE_REPEATED, blinky_handler);
     app_timer_start(blinky_timer_id, APP_TIMER_TICKS(125, APP_TIMER_PRESCALER), NULL);
 }
@@ -218,7 +228,7 @@ int main(void)
     {
         NRF_POWER->GPREGRET = 0;
     }
-    
+
     leds_init();
 
     // This check ensures that the defined fields in the bootloader corresponds with actual
@@ -252,15 +262,15 @@ int main(void)
 
     dfu_start  = app_reset;
     dfu_start |= ((nrf_gpio_pin_read(BOOTLOADER_BUTTON) == 0) ? true: false);
-    
-    
-    
+
     if (dfu_start || (!bootloader_app_is_valid(DFU_BANK_0_REGION_START)))
     {
         // Initiate an update of the firmware.
         err_code = bootloader_dfu_start();
         APP_ERROR_CHECK(err_code);
     }
+
+    app_timer_stop(blinky_timer_id);
 
     if (bootloader_app_is_valid(DFU_BANK_0_REGION_START) && !bootloader_dfu_sd_in_progress())
     {
