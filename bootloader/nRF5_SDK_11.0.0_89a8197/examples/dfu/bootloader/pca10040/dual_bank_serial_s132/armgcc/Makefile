@@ -252,8 +252,8 @@ genbin:
 genhex: 
 	@echo Preparing: $(OUTPUT_FILENAME).hex
 	$(NO_ECHO)$(OBJCOPY) -O ihex $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).out $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex
-	@cp $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex ../../../../../../../bootloader.hex
-	@mergehex -m ../../../../../../../bootloader.hex ../../../../../../../s132_nrf52_2.0.0_softdevice.hex -o ../../../../../../../bootloader_with_s132.hex
+	#@cp $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex ../../../../../../../bootloader.hex
+	@mergehex -m $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_FILENAME).hex ../../../../../../../s132_nrf52_2.0.0_softdevice.hex -o ../../../../../../../bootloader_with_s132.hex
 	 
 echosize:
 	-@echo ''
