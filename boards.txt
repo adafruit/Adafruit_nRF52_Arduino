@@ -21,48 +21,48 @@ menu.version=Version
 menu.lfclk=Low Frequency Clock
 menu.board_variant=Board Variant
 
-nRF52DK.name=nRF52 DK
+feather52.name=Feather52
 
-nRF52DK.vid.0=0x1366
-nRF52DK.pid.0=0x1015
+feather52.vid.0=0x1366
+feather52.pid.0=0x1015
 
-#nRF52DK.upload.tool=sandeepmistry:openocd
-nRF52DK.upload.tool=nrfutil
-nRF52DK.upload.protocol=nrfutil
-nRF52DK.upload.interface=serial
-nRF52DK.upload.target=nrf52
-nRF52DK.upload.maximum_size=174080
-nRF52DK.upload.use_1200bps_touch=false
-nRF52DK.upload.wait_for_upload_port=false
-nRF52DK.upload.native_usb=false
+#feather52.upload.tool=sandeepmistry:openocd
+feather52.upload.tool=nrfutil
+feather52.upload.protocol=nrfutil
+feather52.upload.interface=serial
+feather52.upload.target=nrf52
+feather52.upload.maximum_size=174080
+feather52.upload.use_1200bps_touch=false
+feather52.upload.wait_for_upload_port=false
+feather52.upload.native_usb=false
 
-#nRF52DK.bootloader.tool=sandeepmistry:openocd
-nRF52DK.bootloader.tool=nrfjprog
+#feather52.bootloader.tool=sandeepmistry:openocd
+feather52.bootloader.tool=nrfjprog
 
-nRF52DK.build.mcu=cortex-m4
-nRF52DK.build.f_cpu=16000000
-nRF52DK.build.board=NRF52_DK
-nRF52DK.build.core=nRF5
-nRF52DK.build.variant=nRF52DK
-nRF52DK.build.variant_system_lib=
-nRF52DK.build.extra_flags=-DNRF52
-nRF52DK.build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
-nRF52DK.build.ldscript=nrf52_xxaa.ld
+feather52.build.mcu=cortex-m4
+feather52.build.f_cpu=16000000
+feather52.build.board=FEATHER52
+feather52.build.core=nRF5
+feather52.build.variant=feather52
+feather52.build.variant_system_lib=
+feather52.build.extra_flags=-DNRF52
+feather52.build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
+feather52.build.ldscript=nrf52_xxaa.ld
 
-#nRF52DK.menu.softdevice.none=None
-#nRF52DK.menu.softdevice.none.softdevice=none
+#feather52.menu.softdevice.none=None
+#feather52.menu.softdevice.none.softdevice=none
 
-nRF52DK.menu.softdevice.s132=S132
-nRF52DK.menu.softdevice.s132.softdevice=s132
-nRF52DK.menu.softdevice.s132.softdeviceversion=2.0.1
-nRF52DK.menu.softdevice.s132.upload.maximum_size=409600
-nRF52DK.menu.softdevice.s132.build.extra_flags=-DNRF52 -DS132 -DNRF51_S132
-nRF52DK.menu.softdevice.s132.build.ldscript=armgcc_s132_nrf52832_xxaa.ld
+feather52.menu.softdevice.s132=S132
+feather52.menu.softdevice.s132.softdevice=s132
+feather52.menu.softdevice.s132.softdeviceversion=2.0.1
+feather52.menu.softdevice.s132.upload.maximum_size=409600
+feather52.menu.softdevice.s132.build.extra_flags=-DNRF52 -DS132 -DNRF51_S132
+feather52.menu.softdevice.s132.build.ldscript=armgcc_s132_nrf52832_xxaa.ld
 
-nRF52DK.menu.lfclk.lfxo=Crystal Oscillator
-nRF52DK.menu.lfclk.lfxo.build.lfclk_flags=-DUSE_LFXO
-nRF52DK.menu.lfclk.lfrc=RC Oscillator
-nRF52DK.menu.lfclk.lfrc.build.lfclk_flags=-DUSE_LFRC
-nRF52DK.menu.lfclk.lfsynt=Synthesized
-nRF52DK.menu.lfclk.lfsynt.build.lfclk_flags=-DUSE_LFSYNT
+feather52.menu.lfclk.lfxo=Crystal Oscillator
+feather52.menu.lfclk.lfxo.build.lfclk_flags=-DUSE_LFXO
+feather52.menu.lfclk.lfrc=RC Oscillator
+feather52.menu.lfclk.lfrc.build.lfclk_flags=-DUSE_LFRC
+feather52.menu.lfclk.lfsynt=Synthesized
+feather52.menu.lfclk.lfsynt.build.lfclk_flags=-DUSE_LFSYNT
 
