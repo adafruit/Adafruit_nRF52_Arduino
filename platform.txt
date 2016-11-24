@@ -113,6 +113,7 @@ recipe.output.save_file={build.project_name}.{build.variant}.hex
 # nrfutil for uploading
 #
 tools.nrfutil.cmd=nrfutil
+tools.nrfutil.cmd.macosx=/usr/local/bin/nrfutil
 tools.nrfutil.upload.params.verbose=--verbose
 tools.nrfutil.upload.params.quiet=
 tools.nrfutil.upload.pattern={cmd} dfu serial -pkg "{build.path}/{build.project_name}.zip" -p {serial.port} -b 115200
