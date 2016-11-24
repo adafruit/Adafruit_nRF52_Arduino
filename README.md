@@ -65,6 +65,13 @@ Once the tools above have been installed and added to your system path, from the
 - Select `Tools > Programmer > J-Link with Feather52`
 - Select `Tools > Burn Bootloader` with the board and J-Link connected
 
+#### Manually Burning the Bootloader via nrfjprog
+
+You can also manually burn the bootloader from the command line via `nrfjprog` as follows:
+
+  $ nrfjprog -e -f nrf52
+  $ nrfjprog --program bootloader_with_s132.hex -f nrf52
+
 ## BLE Arduino Support
 
 This Arduino Core does **not** contain any Arduino style API's for BLE functionality. All the relevant Nordic SoftDevice (S110, S130, S132) header files are included build path when a SoftDevice is selected via the `Tools` menu.
