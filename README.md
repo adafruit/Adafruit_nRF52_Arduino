@@ -35,6 +35,12 @@ The Adafruit nRF52 BSP includes a [python wrapper](https://github.com/NordicSemi
  
  **Note**: if this fails you may need to run `$ sudo pip install -r requirements.txt` from the same folder.
 
+## Bootloader Support
+
+### Third Party Tools
+
+To burn the bootloader from within the Arduino IDE, you will need the following tools installed on your system and available in the system path:
+
 #### Jlink Driver and Tools (To Flash Bootloader)
 
 Download and install the [JLink Software and Documentation Pack](https://www.segger.com/downloads/jlink) from Segger, which will also install a set of command line tools.
@@ -47,9 +53,9 @@ For burning bootloader with jlink, you will nrfjprog. Not required if you only u
 - Extract downloaded file and add extracted path to Environment Path
 - Check to make sure you could run nrfjprog from your terminal/command prompt
 
-## Burning the Bootloader
+### Burning the Bootloader
 
-In the Arduino IDE:
+Once the tools above have been installed and added to your system path, from the Arduino IDE:
 
 - Select `Tools > Board > Feather52`
 - Select `Tools > Programmer > J-Link with nrfjprog`
