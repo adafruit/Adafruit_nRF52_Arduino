@@ -51,7 +51,7 @@ For burning bootloader with jlink, you will nrfjprog. Not required if you only u
 
 In the Arduino IDE:
 
-- Select `Tools > Board > Feather52'
+- Select `Tools > Board > Feather52`
 - Select `Tools > Programmer > J-Link with nrfjprog`
 - Select `Tools > Burn Bootloader` with the board and J-Link connected
 
