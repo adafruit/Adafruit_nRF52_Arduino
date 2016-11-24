@@ -70,7 +70,8 @@
 #define led_on(pin)                     nrf_gpio_pin_write(pin, LED_STATE_ON)
 #define led_off(pin)                    nrf_gpio_pin_write(pin, 1-LED_STATE_ON)
 
-#define BOOTLOADER_BUTTON               20                                            /**< Button used to enter SW update mode. */
+#define BOOTLOADER_BUTTON               20                                                      /**< Button used to enter SW update mode. */
+#define BOOTLOADER_OTA_BUTTON           13  // Button used in addition to DFU button, to force OTA DFU
 
 #define APP_TIMER_PRESCALER             0                                                       /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE         4                                                       /**< Size of timer operation queues. */
@@ -151,10 +152,13 @@ void blinky_fast_set(bool isFast)
  */
 static void buttons_init(void)
 {
-    nrf_gpio_cfg_sense_input(BOOTLOADER_BUTTON,
-                             BUTTON_PULL, 
-                             NRF_GPIO_PIN_SENSE_LOW);
+    nrf_gpio_cfg_sense_input(BOOTLOADER_BUTTON, BUTTON_PULL, NRF_GPIO_PIN_SENSE_LOW);
+    nrf_gpio_cfg_sense_input(BOOTLOADER_OTA_BUTTON, BUTTON_PULL, NRF_GPIO_PIN_SENSE_LOW);
+}
 
+bool button_pressed(uint32_t pin)
+{
+  return (nrf_gpio_pin_read(pin) == 0) ? true : false;
 }
 
 
@@ -228,9 +232,14 @@ static void scheduler_init(void)
 int main(void)
 {
     uint32_t err_code;
-    bool     dfu_start = false;
+
+    // Reset from app, used to not re-initialized SoftDevice
     bool     app_reset = (NRF_POWER->GPREGRET == BOOTLOADER_DFU_START);
 
+    // start bootloader either serial or ble
+    bool     dfu_start = false;
+
+    // Start bootloader in BLE OTA mode
     _ota_update = (NRF_POWER->GPREGRET == BOOTLOADER_DFU_START);
 
     if (app_reset)
@@ -269,14 +278,25 @@ int main(void)
         scheduler_init();
     }
 
-    dfu_start  = app_reset;
-    dfu_start |= ((nrf_gpio_pin_read(BOOTLOADER_BUTTON) == 0) ? true: false);
+    // DFU button pressed
+    dfu_start  = app_reset || button_pressed(BOOTLOADER_BUTTON);
+
+    // DFU + DFU OTA are pressed
+    _ota_update = _ota_update  || ( button_pressed(BOOTLOADER_BUTTON) && button_pressed(BOOTLOADER_OTA_BUTTON) ) ;
 
     if (dfu_start || (!bootloader_app_is_valid(DFU_BANK_0_REGION_START)))
     {
         // Initiate an update of the firmware.
         err_code = bootloader_dfu_start(_ota_update, 0);
         APP_ERROR_CHECK(err_code);
+    }
+    else
+    {
+      /* Adafruit Modification
+       * Even DFU is not active, we still force an 1000 ms dfu serial mode when startup
+       * to support auto programming from Arduino IDE
+       */
+      (void) bootloader_dfu_start(false, 1000);
     }
 
     app_timer_stop(blinky_timer_id);
