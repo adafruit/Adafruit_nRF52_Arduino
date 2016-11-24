@@ -58,7 +58,7 @@ For burning bootloader with jlink, you will nrfjprog. Not required if you only u
 Once the tools above have been installed and added to your system path, from the Arduino IDE:
 
 - Select `Tools > Board > Feather52`
-- Select `Tools > Programmer > J-Link with nrfjprog`
+- Select `Tools > Programmer > J-Link with Feather52`
 - Select `Tools > Burn Bootloader` with the board and J-Link connected
 
 ## BLE Arduino Support
