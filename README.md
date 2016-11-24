@@ -74,6 +74,7 @@ You can also manually burn the bootloader from the command line via `nrfjprog` a
 ```
 $ nrfjprog -e -f nrf52
 $ nrfjprog --program bootloader_with_s132.hex -f nrf52
+$ nrfjprog --reset -f nrf52
 ```
 
 ## BLE Arduino Support
