@@ -4,6 +4,8 @@
   
 ### Arduino nRF5x BSP via Board Manager
 
+**NOTE:** For now, you need to install this BSP to gain access to the compiler. In the future, only the Adafruit nRF52 BSP will be required.
+
  1. [Download and install the Arduino IDE](https://www.arduino.cc/en/Main/Software) (At least v1.6.12)
  2. Start the Arduino IDE
  3. Go into Preferences
