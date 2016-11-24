@@ -55,7 +55,9 @@ In order to burn the bootloader with a J-Link, you will need `nrfjprog` from Nor
 
 **OS X Note** At present, you will need to create a symlink in `/usr/local/bin` to the `nrfjprog` tool wherever you have added it. You can run the following command, for example:
 
-  $ ln -s $HOME/prog/nordic/nrfjprog/nrfjprog /usr/local/bin/nrfjprog
+```
+$ ln -s $HOME/prog/nordic/nrfjprog/nrfjprog /usr/local/bin/nrfjprog
+```
 
 ### Burning the Bootloader
 
