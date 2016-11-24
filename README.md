@@ -1,27 +1,10 @@
 # Arduino Core for Nordic Semiconductor nRF5 based boards
 
 ## Installing
-
-### Tools
-
-#### Jlink
-	
-    Download and install jlink from segger
-
-#### nrfutil
   
- - cd tools/nrfutil-0.5.2
- - sudo pip install nrfutil
+### Arduino nRF5x BSP via Board Manager
 
-#### nrfjprog
-
-For burning bootloader with jlink, you will nrfjprog. Not required if you only upload sketch.
-
-- download nRF5x-Command-Line-Tools-OSX/Linux/Win32 https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF52832#Downloads
-- Extract downloaded file and add extracted path to Environment Path
-- Check to make sure you could run nrfjprog from your terminal/command prompt
-  
-### Board Manager
+**NOTE:** For now, you need to install this BSP to gain access to the compiler. In the future, only the Adafruit nRF52 BSP will be required.
 
  1. [Download and install the Arduino IDE](https://www.arduino.cc/en/Main/Software) (At least v1.6.12)
  2. Start the Arduino IDE
@@ -30,18 +13,39 @@ For burning bootloader with jlink, you will nrfjprog. Not required if you only u
  5. Open the Boards Manager from the Tools -> Board menu and install "Nordic Semiconductor nRF5 Boards"
  6. Select your nRF5 board from the Tools -> Board menu
 
-### From git (for core development)
+### Adafruit nRF52 BSP via git (for core development)
 
  1. Follow steps from Board Manager section above
  2. ```cd <SKETCHBOOK>```, where ```<SKETCHBOOK>``` is your Arduino Sketch folder:
   * OS X: ```~/Documents/Arduino```
   * Linux: ```~/Arduino```
   * Windows: ```~/Documents/Arduino```
- 3. Create a folder named ```hardware```, if it does not exist, and change directories to it
+ 3. Create a folder named ```hardware/Adafruit```, if it does not exist, and change directories to it
  4. Clone this repo: `git clone git@github.com:adafruit/Adafruit_nRF52_Arduino.git`
  5. Restart the Arduino IDE
 
-## BLE
+### Required Third Party Tools
+
+#### nrfutil
+
+The Adafruit nRF52 BSP includes a [python wrapper](https://github.com/NordicSemiconductor/pc-nrfutil) for Nordic's `nrfutil`, which is used to flash boards. Go into the BSP folder (`hardware/Adafruit/Adafruit_nRF52_Arduino`), and run the following to make this available to the Arduino IDE:
+
+ - cd tools/nrfutil-0.5.2
+ - sudo pip install nrfutil
+
+#### Jlink Driver and Tools (To Flash Bootloader)
+
+Download and install the [JLink Software and Documentation Pack](https://www.segger.com/downloads/jlink) from Segger, which will also install a set of command line tools.
+
+#### nrfjprog (To Flash Bootloader)
+
+For burning bootloader with jlink, you will nrfjprog. Not required if you only upload sketch.
+
+- download nRF5x-Command-Line-Tools-OSX/Linux/Win32 https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF52832#Downloads
+- Extract downloaded file and add extracted path to Environment Path
+- Check to make sure you could run nrfjprog from your terminal/command prompt
+
+## BLE Arduino Support
 
 This Arduino Core does **not** contain any Arduino style API's for BLE functionality. All the relevant Nordic SoftDevice (S110, S130, S132) header files are included build path when a SoftDevice is selected via the `Tools` menu.
 
