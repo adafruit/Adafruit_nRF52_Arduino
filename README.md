@@ -37,7 +37,7 @@ For burning bootloader with jlink, you will nrfjprog. Not required if you only u
   * OS X: ```~/Documents/Arduino```
   * Linux: ```~/Arduino```
   * Windows: ```~/Documents/Arduino```
- 3. Create a folder named ```hardware```, if it does not exist, and change directories to it
+ 3. Create a folder named ```hardware/Adafruit```, if it does not exist, and change directories to it
  4. Clone this repo: `git clone git@github.com:adafruit/Adafruit_nRF52_Arduino.git`
  5. Restart the Arduino IDE
 
