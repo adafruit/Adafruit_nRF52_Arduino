@@ -124,6 +124,7 @@ tools.nrfutil.upload.pattern={cmd} dfu serial -pkg "{build.path}/{build.project_
 
 ## nrfjprog bootloader
 tools.nrfjprog.cmd=nrfjprog
+tools.nrfjprog.cmd.macosx=/usr/local/bin/nrfjprog
 tools.nrfjprog.bootloader.params.verbose=
 tools.nrfjprog.bootloader.params.quiet=-q
 tools.nrfjprog.bootloader.pattern="{cmd}" --program "{runtime.platform.path}/bootloader/bootloader_with_s132.hex" -f nrf52 --chiperase --reset
