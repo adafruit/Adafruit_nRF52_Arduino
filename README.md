@@ -28,7 +28,7 @@
 
 #### nrfutil
 
-The Adafruit nRF52 BSP includes a python wrapper for Nordic's `nrfutil`, which is used to flash boards. Go into the BSP folder (`hardware/Adafruit/Adafruit_nRF52_Arduino`), and run the following to make this available to the Arduino IDE:
+The Adafruit nRF52 BSP includes a [python wrapper](https://github.com/NordicSemiconductor/pc-nrfutil) for Nordic's `nrfutil`, which is used to flash boards. Go into the BSP folder (`hardware/Adafruit/Adafruit_nRF52_Arduino`), and run the following to make this available to the Arduino IDE:
 
  - cd tools/nrfutil-0.5.2
  - sudo pip install nrfutil
