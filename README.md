@@ -69,8 +69,10 @@ Once the tools above have been installed and added to your system path, from the
 
 You can also manually burn the bootloader from the command line via `nrfjprog` as follows:
 
-  $ nrfjprog -e -f nrf52
-  $ nrfjprog --program bootloader_with_s132.hex -f nrf52
+```
+$ nrfjprog -e -f nrf52
+$ nrfjprog --program bootloader_with_s132.hex -f nrf52
+```
 
 ## BLE Arduino Support
 
