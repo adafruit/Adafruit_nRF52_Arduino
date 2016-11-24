@@ -33,7 +33,7 @@ The Adafruit nRF52 BSP includes a [python wrapper](https://github.com/NordicSemi
  - cd tools/nrfutil-0.5.2
  - sudo pip install nrfutil
  
- Note, if this fails you may need to run `$ sudo pip install -r requirements.txt` from the same folder.
+ **Note**: if this fails you may need to run `$ sudo pip install -r requirements.txt` from the same folder.
 
 #### Jlink Driver and Tools (To Flash Bootloader)
 
