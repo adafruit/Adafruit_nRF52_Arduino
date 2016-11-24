@@ -47,11 +47,11 @@ Download and install the [JLink Software and Documentation Pack](https://www.seg
 
 #### nrfjprog
 
-For burning bootloader with jlink, you will nrfjprog. Not required if you only upload sketch.
+In order to burn the bootloader with a J-Link, you will need `nrfjprog` from Nordic:
 
-- download nRF5x-Command-Line-Tools-OSX/Linux/Win32 https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF52832#Downloads
-- Extract downloaded file and add extracted path to Environment Path
-- Check to make sure you could run nrfjprog from your terminal/command prompt
+- Download [nRF5x-Command-Line-Tools](https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF52832#Downloads) for OSX/Linux/Win32
+- Extract the downloaded file and add the extracted path to your environment `PATH` variable
+- Check to make sure you can run `nrfjprog` from your terminal/command prompt
 
 ### Burning the Bootloader
 
