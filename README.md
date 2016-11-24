@@ -24,7 +24,7 @@
  4. Clone this repo: `git clone git@github.com:adafruit/Adafruit_nRF52_Arduino.git`
  5. Restart the Arduino IDE
 
-### Required Third Party Tools
+### Third Party Tools
 
 #### nrfutil
 
