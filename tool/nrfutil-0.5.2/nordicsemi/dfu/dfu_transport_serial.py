@@ -51,8 +51,8 @@ class DfuTransportSerial(DfuTransport):
     DEFAULT_FLOW_CONTROL = False
     DEFAULT_SERIAL_PORT_TIMEOUT = 1.0  # Timeout time on serial port read
     ACK_PACKET_TIMEOUT = 1.0  # Timeout time for for ACK packet received before reporting timeout through event system
-    SEND_INIT_PACKET_WAIT_TIME = 1.0  # Time to wait before communicating with bootloader after init packet is sent
-    SEND_START_DFU_WAIT_TIME = 10.0  # Time to wait before communicating with bootloader after start DFU packet is sent
+    SEND_INIT_PACKET_WAIT_TIME = 0.5 # 1.0  # Time to wait before communicating with bootloader after init packet is sent
+    SEND_START_DFU_WAIT_TIME = 0.5 #10.0  # Time to wait before communicating with bootloader after start DFU packet is sent
     DFU_PACKET_MAX_SIZE = 512  # The DFU packet max size
 
     def __init__(self, com_port, baud_rate=DEFAULT_BAUD_RATE, flow_control=DEFAULT_FLOW_CONTROL, timeout=DEFAULT_SERIAL_PORT_TIMEOUT):
