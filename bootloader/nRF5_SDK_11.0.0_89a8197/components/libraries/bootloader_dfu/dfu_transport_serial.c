@@ -196,6 +196,10 @@ static void process_dfu_packet(void * p_event_data, uint16_t event_size)
     uint32_t              index;
     dfu_update_packet_t * packet;
 
+    // Adafruit modification for startup dfu
+    extern bool forced_startup_dfu_packet_received;
+    forced_startup_dfu_packet_received = true;
+
         while (false == DATA_QUEUE_EMPTY())
         {
             // Fetch the element to be processed.

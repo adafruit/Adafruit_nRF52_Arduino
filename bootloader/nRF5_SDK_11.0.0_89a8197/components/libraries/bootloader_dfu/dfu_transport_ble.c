@@ -44,7 +44,7 @@
 #define DFU_SERVICE_HANDLE                   0x000C                                                  /**< Handle of DFU service when DFU service is first service initialized. */
 #define BLE_HANDLE_MAX                       0xFFFF                                                  /**< Max handle value is BLE. */
 
-#define DEVICE_NAME                          "Bluefruit"                                               /**< Name of device. Will be included in the advertising data. */
+#define DEVICE_NAME                          "AdaDfu" // limit of 8 chars                                                /**< Name of device. Will be included in the advertising data. */
 //#define MANUFACTURER_NAME                    "NordicSemiconductor"                                   /**< Manufacturer. Will be passed to Device Information Service. */
 
 #define MIN_CONN_INTERVAL                    (uint16_t)(MSEC_TO_UNITS(15, UNIT_1_25_MS))             /**< Minimum acceptable connection interval (11.25 milliseconds). */

@@ -70,8 +70,10 @@
 #define led_on(pin)                     nrf_gpio_pin_write(pin, LED_STATE_ON)
 #define led_off(pin)                    nrf_gpio_pin_write(pin, 1-LED_STATE_ON)
 
+#define BOOTLOADER_STARTUP_DFU_INTERVAL 1000
+
 #define BOOTLOADER_BUTTON               20                                                      /**< Button used to enter SW update mode. */
-#define BOOTLOADER_OTA_BUTTON           13  // Button used in addition to DFU button, to force OTA DFU
+#define BOOTLOADER_OTA_BUTTON           22  // Button used in addition to DFU button, to force OTA DFU
 
 #define APP_TIMER_PRESCALER             0                                                       /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE         4                                                       /**< Size of timer operation queues. */
@@ -123,13 +125,20 @@ static void leds_init(void)
 
 static void blinky_handler(void * p_context)
 {
+  static uint8_t state = 0;
   static uint32_t count = 0;
+
   count++;
 
   // if not uploading then blink slow (interval/2)
   if ( !isDfuUploading && count%2 ) return;
 
-  nrf_gpio_pin_toggle(LED_STATUS_PIN);
+  state = 1-state;
+
+  nrf_gpio_pin_write(LED_STATUS_PIN, state);
+
+  if (is_ota()) nrf_gpio_pin_write(LED_CONNECTION_PIN, state);
+
 
   // Feed Watchdog just in case application enable it (WDT last through a soft reboot to bootloader)
   if ( NRF_WDT->RUNSTATUS ) NRF_WDT->RR[0] = WDT_RR_RR_Reload;
@@ -296,7 +305,7 @@ int main(void)
        * Even DFU is not active, we still force an 1000 ms dfu serial mode when startup
        * to support auto programming from Arduino IDE
        */
-      (void) bootloader_dfu_start(false, 1000);
+      (void) bootloader_dfu_start(false, BOOTLOADER_STARTUP_DFU_INTERVAL);
     }
 
     app_timer_stop(blinky_timer_id);

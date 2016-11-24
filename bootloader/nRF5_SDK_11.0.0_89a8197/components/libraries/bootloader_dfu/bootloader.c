@@ -27,6 +27,10 @@
 #include "nrf_delay.h"
 #include "sdk_common.h"
 
+#include "app_timer_appsh.h"
+
+#define APP_TIMER_PRESCALER         0
+
 #define IRQ_ENABLED             0x01                    /**< Field identifying if an interrupt is enabled. */
 #define MAX_NUMBER_INTERRUPTS   32                      /**< Maximum number of interrupts available. */
 
@@ -44,8 +48,12 @@ typedef enum
 static pstorage_handle_t        m_bootsettings_handle;  /**< Pstorage handle to use for registration and identifying the bootloader module on subsequent calls to the pstorage module for load and store of bootloader setting in flash. */
 static bootloader_status_t      m_update_status;        /**< Current update status for the bootloader module to ensure correct behaviour when updating settings and when update completes. */
 
-// Adafruit modification for dual transports
+// Adafruit modification for dual transports and forced startup DFU
 extern bool is_ota(void);
+
+APP_TIMER_DEF( _forced_startup_dfu_timer );
+volatile bool forced_startup_dfu_packet_received = false;
+volatile static bool _terminate_startup_dfu = false;
 
 /**@brief   Function for handling callbacks from pstorage module.
  *
@@ -68,6 +76,27 @@ static void pstorage_callback_handler(pstorage_handle_t * p_handle,
     APP_ERROR_CHECK(result);
 }
 
+// Adafruit modifcation
+static void terminate_startup_dfu(void * p_event_data, uint16_t event_size)
+{
+  (void) p_event_data;
+  (void) event_size;
+
+  _terminate_startup_dfu = true;
+}
+
+/* Terminate the forced DFU mode on startup if no packets is received
+ * by put an terminal handler to scheduler
+ */
+static void forced_startup_dfu_timer_handler(void * p_context)
+{
+  // No packets are received within timeout, terminal and DFU mode
+  // forced_startup_dfu_packet_received is set by process_dfu_packet() in dfu_transport_serial.c
+  if (!forced_startup_dfu_packet_received)
+  {
+    app_sched_event_put(NULL, 0, terminate_startup_dfu);
+  }
+}
 
 /**@brief   Function for waiting for events.
  *
@@ -94,6 +123,13 @@ static void wait_for_events(void)
         {
             // When update has completed or a timeout/reset occured we will return.
             return;
+        }
+
+        // Forced startup dfu mode timeout without any received packet
+        if (_terminate_startup_dfu)
+        {
+          dfu_transport_serial_close();
+          return;
         }
     }
 }
@@ -279,6 +315,16 @@ uint32_t bootloader_dfu_start(bool ota, uint32_t timeout_ms)
       err_code = dfu_transport_ble_update_start();
     }else
     {
+      // timeout_ms > 0 is forced startup DFU
+      if ( timeout_ms )
+      {
+        forced_startup_dfu_packet_received = false;
+        _terminate_startup_dfu = false;
+
+        (void) app_timer_create(&_forced_startup_dfu_timer, APP_TIMER_MODE_SINGLE_SHOT, forced_startup_dfu_timer_handler);
+        app_timer_start(_forced_startup_dfu_timer, APP_TIMER_TICKS(timeout_ms, APP_TIMER_PRESCALER), NULL);
+      }
+
       err_code = dfu_transport_serial_update_start();
     }
 
