@@ -53,6 +53,12 @@ In order to burn the bootloader with a J-Link, you will need `nrfjprog` from Nor
 - Extract the downloaded file and add the extracted path to your environment `PATH` variable
 - Check to make sure you can run `nrfjprog` from your terminal/command prompt
 
+**OS X Note** At present, you will need to create a symlink in `/usr/local/bin` to the `nrfjprog` tool wherever you have added it. You can run the following command, for example:
+
+```
+$ ln -s $HOME/prog/nordic/nrfjprog/nrfjprog /usr/local/bin/nrfjprog
+```
+
 ### Burning the Bootloader
 
 Once the tools above have been installed and added to your system path, from the Arduino IDE:
@@ -60,6 +66,16 @@ Once the tools above have been installed and added to your system path, from the
 - Select `Tools > Board > Feather52`
 - Select `Tools > Programmer > J-Link with Feather52`
 - Select `Tools > Burn Bootloader` with the board and J-Link connected
+
+#### Manually Burning the Bootloader via nrfjprog
+
+You can also manually burn the bootloader from the command line via `nrfjprog` as follows:
+
+```
+$ nrfjprog -e -f nrf52
+$ nrfjprog --program bootloader_with_s132.hex -f nrf52
+$ nrfjprog --reset -f nrf52
+```
 
 ## BLE Arduino Support
 
