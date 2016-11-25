@@ -127,7 +127,7 @@ tools.nrfjprog.cmd=nrfjprog
 tools.nrfjprog.bootloader.params.verbose=
 tools.nrfjprog.bootloader.params.quiet=-q
 #tools.nrfjprog.bootloader.pattern="{cmd}" --program "{runtime.platform.path}/bin/bootloader/bootloader_v08_s132_v200.hex" -f nrf52 --chiperase --reset
-tools.nrfjprog.bootloader.pattern=python {runtime.platform.path}/tools/pydfu/burnbootloader.py "{runtime.platform.path}/bin/bootloader/bootloader_v08_s132_v200.hex"
+tools.nrfjprog.bootloader.pattern=python {runtime.platform.path}/tools/pyburnboot/pyburnboot.py "{runtime.platform.path}/bin/bootloader/bootloader_v08_s132_v200.hex"
 
 ## nrfjprog program (won't work, need to update bootloader validation setting)
 tools.nrfjprog.program.params.verbose=
