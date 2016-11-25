@@ -48,6 +48,8 @@ feather52.build.variant_system_lib=
 feather52.build.extra_flags=-DNRF52
 feather52.build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
 feather52.build.ldscript=nrf52_xxaa.ld
+feather52.build.genpkg=nrfutil
+feather52.build.genpkg.macosx=/usr/local/bin/nrfutil
 
 #feather52.menu.softdevice.none=None
 #feather52.menu.softdevice.none.softdevice=none
