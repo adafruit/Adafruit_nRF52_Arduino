@@ -1,0 +1,706 @@
+Release 9.1.0
+Changelog
+---------------------------------------
+- (Exe)     Provided option --jdll to manually select desired Segger's JLinkARM dll instead of automatically search for latest installed Segger's JLinkARM dll.
+
+- (Dll)     Added NRFJPROG_read_connected_emu_fwstr() function to read emulator firmware string.
+
+- (Python)  Added support for NRFJPROG_read_connected_emu_fwstr().
+
+
+Release 9.0.0
+Changelog
+---------------------------------------
+- (WindowsRelease)    Updated Segger JLinkARM installer to Setup_JLinkV512g.exe
+
+- (Exe)     Provided better feedback when --eraseuicr operation fails due to missing pre-programmed ANT softdevice for nRF51.
+- (Exe)     Corrected minor bug in opening hex file in --program. If the user has no read permission on the file, a new error NoReadPermissionError is thrown, instead of InvalidHexFileError.
+- (Exe)     Modified error NrfjprogIniFormatError. That error was used in very different situations. Now possible errors of ini file parsing are NrfjprogIniCannotBeOpenedError, NrfjprogIniFamilyMissingError and NrfjprogIniClockspeedMissingError.
+- (Exe)     Modified parsing of nrfjprog.ini files to be performed only if needed.
+- (Exe)     Fixed --recover for nRF52 devices. In rare circumstances, --recover failed and did not unportect the device.
+
+- (Dll)     Added NRFJPROG_read_connected_emu_snr() function.
+- (Dll)     Fixed error in NRFJPPROG_recover() function. In rare circumstances, NRFJPPROG_recover() failed and did not unportect the device.
+- (Dll)     Documented a missing side-effect of NRFJPROG_recover() function for nRF51 devices. All peripherals will be reset.
+- (Dll)     Documented a missing side-effect of NRFJPROG_recover() function for nRF52 devices. If the device was readback protected, the RAM will be erased.
+- (Dll)     Added a side-effect to NRFJPROG_recover() function. Register RESETREAS in POWER peripheral will be cleared after the operation.
+- (Dll)     Added new possible error return in NRFJPROG_erase_uicr() NRFJPROG_erase_all functions for nRF51. Returning NOT_AVAILABLE_BECAUSE_MPU_CONFIG instead of NOT_AVAILABLE_BECAUSE_PROTECTION error.
+
+- (Python)  Moved MultiAPI class to its own module MultiAPI.py.
+- (Python)  Added read_connected_emu_snr() function.
+- (Python)  Added optional parameter encoding to rtt_read and rtt_write data. Different encodings can be now used to write and interpret the read data from the device. If None, they will not be interpreted.
+- (Python)  Corrected error in log functionality. Previous release changes set the default error output to sys.stdout.
+- (Python)  Corrected error in log functionality. Previous release had b'' in the log in Python 3.
+- (Python)  Added new possible error NOT_AVAILABLE_BECAUSE_MPU_CONFIG to API.NrfjprogdllErr enums.
+
+
+Release 8.5.0
+Changelog
+---------------------------------------
+- (WindowsRelease)    Updated Segger JLinkARM installer to Setup_JLinkV512f.exe
+
+- (Exe)     Added the possibility to perform --reset as part of the --program operations.
+- (Exe)     Added the possibility to perform --debugreset as part of the --program operations.
+- (Exe)     Corrected bug in getting correct SEGGER .dylib version in OS X.
+
+- (Dll)     Corrected bug in NRFJPROG_rtt_start() function for NRF51_XLR3P devices. If the RTT buffer address was in the range 0x20004000-0x20008000, the RTT buffer was never discovered.
+- (Dll)     Corrected bug in NRFJPROG_rtt_start() function for NRF52_FP1_ENGA devices. If the RTT buffer address was in the range 0x08000000-0x08008000, the RTT buffer was never discovered.
+- (Dll)     Added WRONG_FAMILY_FOR_DEVICE as a possible return value for NRFJPROG_rtt_start() function.
+
+- (Python)  Fixed problem in JLink.py. In Linux Segger release V5.10s or latter, the 64-bit and 32-bit shared objects were both included. The wrong one was selected.
+- (Python)  Fixed problem in JLink.py. If Segger installation folder does not exist, return None.
+- (Python)  Corrected bug in JLink.py getting correct SEGGER .dylib version in OS X.
+- (Python)  Added optional log, log_str and log_file_path parameters to API and MultiAPI class's constructors so user can define logging, a log string to precede debug output and/or a file where all debug output should be redirected.
+- (Python)  Removed log_str_cb parameter from MultiAPI class's constructor as it was not functional.
+- (Python)  Performed a general refactor of the code with no effect on API or performance.
+- (Python)  Allow arrays and other containers to be passed to write() instead of just lists and tuples.
+- (Python)  Deprecated Hex.py. We recommend using intelhex for parsing hex files. Hex.py is still available for compatibility with old scripts.
+
+
+Release 8.4.0
+Changelog
+---------------------------------------
+- (WindowsRelease)    Added nrf51_nrfjprogdll.h and nrf52_nrfjprogdll.h headers to the release.
+
+- (OSXRelease)        Added nrf51_nrfjprogdll.h and nrf52_nrfjprogdll.h headers to the release.
+
+- (LinuxRelease)      Added nrf51_nrfjprogdll.h and nrf52_nrfjprogdll.h headers to the release.
+
+- (Exe)     Added --pinresetenable option.
+
+- (Dll)     Eliminated undesired side effect in NRFJPROG_go() function. If the device CPU was not halted when NRFJPROG_go() function was called, the device CPU was temporarily halted and restarted again.
+- (Dll)     Corrected error in NRFJPROG_open_dll() function when detecting that the JLinkARM.dll version was too old.
+- (Dll)     Required device connection for function NRFJPROG_read_device_version() for nRF52 devices. It will therefore fail if the device is readback protected.
+- (Dll)     Modified reset performed during NRFJPROG_readback_protect() from NRFJPROG_sys_reset() to NRFJPROG_debug_reset() to avoid problems when just protecting for nRF52 devices.
+- (Dll)     Fixed wrong return in NRFJPROG_readback_protect() function for nRF52 Engineering Sample A devices. Now it correctly fails with INVALID_DEVICE_FOR_OPERATION.
+- (Dll)     Disable trace resources when performing a NRFJPROG_readback_protect() to avoid current consumption until a hard reset was performed for nRF52 devices.
+- (Dll)     Eliminated the check for correct family in NRFJPROG_readback_protect(), NRFJPROG_recover(), NRFJPROG_disable_bprot(), NRFJPROG_erase_all(), NRFJPROG_erase_page(), NRFJPROG_erase_uicr(), NRFJPROG_write_u32(), NRFJPROG_write(), NRFJPROG_read_u32(), NRFJPROG_read(), NRFJPROG_is_ram_powered(), NRFJPROG_power_ram_all() and NRFJPROG_unpower_ram_section() functions for nRF52 devices.
+- (Dll)     Eliminated the check for correct family in NRFJPROG_readback_protect(), NRFJPROG_readback_status(), NRFJPROG_read_region_0_size_andsource(), NRFJPROG_disable_bprot(), NRFJPROG_erase_all(), NRFJPROG_erase_page(), NRFJPROG_erase_uicr(), NRFJPROG_write_u32(), NRFJPROG_write(), NRFJPROG_read_u32(), NRFJPROG_read(), NRFJPROG_power_ram_all() and NRFJPROG_unpower_ram_section() functions for nRF51 devices.
+
+- (Python)  Added nrf51_nrfjprogdll.h and nrf52_nrfjprogdll.h headers to the docs folder.
+- (Python)  Updated setup.py with OSX information.
+
+
+Release 8.3.0
+Changelog
+---------------------------------------
+- (Exe)     Fixed bug in parsing a hex file in --program and --verify when hex file contained a line with less than 4 bytes of data.
+
+- (Dll)     Improved NRFJPROG_write() function to handle non multiple of 4 write lengths.
+- (Dll)     Added NRFJPROG_rtt_is_control_block_found() function.
+- (Dll)     Fixed bug in NRFJPROG_rtt_stop(). If the sequence NRFJPROG_rtt_start() -> NRFJPROG_rtt_stop() -> NRFJPROG_rtt_start() was executed, the second
+            NRFJPROG_rtt_start () only searched for the RTT Control Block in the address the block was found in the first NRFJPROG_rtt_start().  The side-effect
+            of this fix is that if you were performing NRFJPROG_rtt_start() -> NRFJPROG_rtt_stop() -> NRFJPROG_rtt_start() with the RTT Control Block in the
+            same address, the second NRFJPROG_rtt_start() will take longer than before.
+- (Dll)     Modifed the way devices are identified.
+
+- (Python)  Change made in API.py to remove Python 3 warning of deprecated os function call.
+- (Python)  Added rtt_is_control_block_found() function.
+
+
+Release 8.2.0
+Changelog
+---------------------------------------
+- (WindowsRelease)    Updated Segger JLinkARM installer to Setup_JLinkV510i.exe
+
+- (OSXRelease)  Added OSX release in nRF5x-Command-Line-Tools_8_2_0_OSX.tar
+
+- (Exe)     Ported to OSX.
+- (Exe)     Fixed bug in --recover for NRF52 devices.
+- (Exe)     Fixed bug in --reset and --run. The CPU core was halted some ms after the operation took effect and restarted restart later.
+
+- (Dll)     Ported to OSX.
+- (Dll)     Fixed bug in NRFJPROG_recover() function for NRF52 devices.
+- (Dll)     Corrected header file documentation for function NRFJPROG_disconnect_from_emulator(). One possible return value for nRF52 devices was missing.
+
+- (Python)  Ported to OSX.
+- (Python)  Added object MultiAPI to be able to debug more than one device at the same time.
+- (Python)  Fixed bug in get_latest_dll() in file JLink.py. In Python 3 this function failed because you cannot compare an int to a string.
+
+
+Release 8.1.0
+Changelog
+---------------------------------------
+- (Exe)     Eliminated sys_reset when performing --erasepage operation.
+- (Exe)     Fixed small bug in --memrd. If the device was an nRF52 EngA version, the checking of the power state of the RAM was wrong. See Errata-65 for nRF52 devices for details.
+- (Exe)     Fixed small bug in --memwr. If the device was an nRF52 EngA version, the checking of the power state of the RAM was wrong. See Errata-65 for nRF52 devices for details.
+- (Exe)     Fixed small bug in --ramwr. If the device was an nRF52 EngA version, the checking of the power state of the RAM was wrong. See Errata-65 for nRF52 devices for details.
+
+- (Dll)     Added NRFJPROG_step() function.
+- (Dll)     Updated commentary in NRFJPROG_unpower_ram_section() function. Referenced Errata-65 for nRF52 devices EngA version.
+- (Dll)     Updated commentary in NRFJPROG_is_ram_powered() function. Referenced Errata-65 for nRF52 devices EngA version.
+
+- (Python)  Added step() function.
+- (Python)  Fixed mix of tabs and spaces in program_multiple_hex_files.py.
+
+Release 8.0.0
+Changelog
+---------------------------------------
+- (WindowsRelease)    Renamed installer to nRF5x-Command-Line-Tools_x_x_x_Installer.exe.
+- (WindowsRelease)    Added nrfjprog.h to release.
+- (WindowsRelease)    Updated installer to Setup_JLinkV510d.exe
+
+- (LinuxRelease)    Added nrfjprog.h to release.
+- (LinuxRelease)    Changed structure of release.
+- (LinuxRelease)    Included 32-bit versions of tools.
+
+- (Exe)     Fixed bug in --sectoranduicrerase option for NRF51.
+- (Exe)     Changed how shared libraries are found on Linux.
+- (Exe)     Fixed minor bug in Segger JLinkARM dll version when minor version was 0x in --version.
+- (Exe)     Added 32-bit support for Linux.
+- (Exe)     Updated help text for clockspeed option.
+- (Exe)     Added --debugreset option.
+- (exe)     Improved detection of error in --family parameter.
+
+- (Dll)     Fixed bug in enum_emu_snr() and connect_to_emu_without_snr(). Could sometimes cause a freeze of the Segger emulator.
+- (Dll)     Sped up read_u32() and write_u32() functions.
+- (Dll)     Added functions for RTT.
+- (Dll)     Renamed exported functions to avoid collision with a C++ library in OSX.
+- (Dll)     Renamed device NRF52_FP1_MPW3 to NRF52_FP1_ENGA and NRF52_FP1 to NRF52_FP1_ENGB.
+- (Dll)     Added device NRF52_FP1.
+- (Dll)     Added 32-bit support for Linux.
+- (Dll)     Changed JLINKARM_SWD_MAX_SPEED_KHZ from 12000 to 50000.
+- (Dll)     Change all functions calls that are with connection to the device to return a new error if the device is not of the family used in open_dll() function.
+
+- (Python)  Added functions for RTT.
+- (Python)  Adapted to name change in exported functions.
+- (Python)  Changed location of dll in installation.
+- (Python)  Renamed DeviceVersion enumerations NRF52_FP1_MPW3 to NRF52_FP1_ENGA and NRF52_FP1 to NRF52_FP1_ENGB.
+- (Python)  Added DeviceVersion enumeration NRF52_FP1.
+- (Python)  Added 32-bit support for Linux.
+- (Python)  Added debug_reset function.
+- (Python)  Added new error from the dll.
+- (Python)  Updated examples to changes from the dll.
+- (Python)  In Windows, JLink.py now finds most recent JLinkARM.dll in default SEGGER directory when folders other than Jlink software packs are present.
+
+
+
+
+Release 7.7.0
+Changelog
+---------------------------------------
+- (Exe)     Ported to linux.
+- (Exe)     Clockspeed default is now read from the nrfjprog.ini file.
+
+- (Dll)     Ported to linux.
+- (Dll)     Added fix for write function for FPGA problem.
+
+- (Python)  Ported to linux.
+- (Python)  Changed import of nrfjprog dll from ordinal linking to symbolic linking.
+
+
+Release 7.6.0
+Changelog
+---------------------------------------
+- (Bundle)  Updated installer to Setup_JLinkV502.exe
+
+- (Exe)     Added --sectoranduicrerase for --program operations and NRF52.
+- (Exe)     Added --verify as a stand alone operation.
+- (Exe)     Improved the --help output.
+
+- (Dll)     Updated minimum JLinkARM.dll version to 5.02.
+- (Dll)     Eliminated disabling of Supply Power to device in connexion to the emulator.
+- (Dll)     Cleared the header commentaries.
+
+- (Python)  Added new example for pynrfjprog (program_multiple_hex_files.py).
+- (Python)  Updated hex files used by program_hex.py to work on development boards.
+- (Python)  Cleared the commentaries.
+
+Release 7.5.2
+Changelog
+---------------------------------------
+- (Exe)     Changed functionality of --program --sectorerase with respects to UICR.
+
+- (Dll)     Fixed problem in dll closing.
+
+Release 7.5.1
+Changelog
+---------------------------------------
+- (Exe)     Fixed problem with programming files whose length of segments were not multiple of 4.
+- (Exe)     Eliminated --clean option in --program.
+- (Exe)     Added --chiperase and --sectorerase in --program.
+
+- (Dll)     Added disabling of trace resources when disconnecting.
+- (Dll)     Improved speed.
+- (Dll)     Corrected problems in recover() for nrf52.
+- (Dll)     Corrected problems in pin_reset() for nrf52.
+- (Dll)     Workaround for Errata 44 "Read flash after erase is unpredictable" added for nrf52.
+
+- (Python)  Added BSD license to project.
+- (Python)  Fixed api for function disconnect_from_emu().
+- (Python)  Updated Hex.py with extended segment address.
+- (Python)  Added comments and new example.
+
+
+Release 7.5.0
+Changelog
+---------------------------------------
+- (Bundle)  Updated installer to Setup_JLinkV498c.exe. Corrects a bug in OBD for our device programming.
+
+- (Msi)     Pynrfjprog is no longer copied with nrfjprog installation. Own installation will be provided.
+- (Msi)     Solved problem of installing into older versions.
+- (Msi)     Added documentation folder for the release notes.
+- (Msi)     Added header folder for the dll header files.
+
+- (Exe)     Modified default family, it is now taken from nrfjprog.ini file.
+- (Exe)     Modified --family and --rbp to accept the parameters in any combination of lower and upper case.
+- (Exe)     Added --quiet option.
+- (Exe)     Eliminated change introduced in 7.3.2 to avoid problems with our OBD. Program is fast again.
+- (Exe)     Fixed bug in --eraseuicr. It could not be executed.
+- (Exe)     Made return codes for nrfjprog POSIX compliant.
+- (Exe)     Added --erasepage function.
+- (Exe)     Eliminated --erasecode function.
+- (Exe)     Enforcing that PC address in --run must be thumb mode.
+- (Exe)     It is now possible to make unaligned reads. Default width depends on the alignment.
+- (Exe)     Fixed bug in --ficrwr. It will not masserase if it is not necessary.
+- (Exe)     Modified --memwr so it fails if the area to write is not erased.
+
+- (Dll)     Renamed power_ram() function to power_ram_all().
+- (Dll)     Added unpower_ram_section() function.
+- (Dll)     Modified read() function so addresses no longer need to be word aligned.
+- (Dll)     Corrected bug in readback_protect for XLR and XLR2 devices.
+
+- (Python)  Adapted to dll api changes.
+- (Python)  Eliminated Enums.py. Used library available in Python 2.7.9 enum34. Installed automatically by the egg.
+- (Python)  Eliminated unnecessary check for length 0 in read(). The dll already takes care of that case.
+- (Python)  Added header files to the egg.
+- (Python)  Added examples to egg.
+- (Python)  Moved headers to own folder.
+
+
+Release 7.4.0
+Changelog
+---------------------------------------
+- (Bundle)  Updated installer to Setup_JLinkV498b.exe
+- (Exe)     Corrected bug introduced in 7.2.2 release. -d will reset the device and run.
+- (Exe)     Eliminated --disablepinreset and --enablepinreset. The functionality is not going to be present in the ASIC.
+- (Dll)     Updated minimum JLinkARM.dll version to 4.98.
+- (Dll)     Extending waiting time for NVMC operations hundredfold. Some operations were failing.
+- (Dll)     Eliminated disable_pin_reset() and enable_pin_reset(). The functionality is not going to be present in the ASIC.
+- (Dll)     Eliminated read_debug_register(). Added read_debug_port_register() and read_access_port_register() instead.
+- (Dll)     Eliminated write_debug_register(). Added write_debug_port_register() and write_access_port_register() instead.
+- (Python)  Adapted to dll api changes.
+- (Python)  Added JLink.py that helps in finding the latest dll.
+- (Python)  Modified open() function api. Eliminated redundant parameter, since the constructor already receives it.
+
+
+Release 7.3.2
+Changelog
+---------------------------------------
+- (Exe)     Fixed bug in --program for NRF51 introduced in 7.3.1
+- (Exe)     Modified --program to avoid problems with the OBD debugger in our boards. Side effect is that now program uses more time.
+
+
+Release 7.3.1
+Changelog
+---------------------------------------
+- (Exe)     Adapted for NRF52_FP1.
+- (Dll)     Eliminated all use of pin_reset() for NRF52. It might not be enabled in the UICR.
+- (Dll)     Added NRF52_FP1 type device.
+- (Python)  Make a proper package installation for pynrfjprog.
+
+
+Release 7.2.3
+Changelog
+---------------------------------------
+- (Exe)     Corrected bug introduced in 7.2.2 release. -r and -p will reset the device and run. all other operations will not.
+- (Python)  Optimized Hex.py to accelerate downloading.
+
+
+Release 7.2.2
+Changelog
+---------------------------------------
+- (Exe)     Corrected serious bug. When closing the core was restarted. If there was no code in the device, a hardfault and lockup reset was produced, resetting the device and clearing write operations.
+
+
+Release 7.2.1
+Changelog
+---------------------------------------
+- (Exe)     Corrected serious bug. When the Dll returned error, the close_dll() function was not called. After several errors the Segger emulator needed to be unpowered since there were too many connexions open to it.
+- (Exe)     Corrected minor bug. After erasing an nRF51 device protected by MPU, a reset was not performed, so the device still thought it was protected. A sys_reset is performed after --eraseall and --clean during program.
+
+
+Release 7.2.0
+Changelog
+---------------------------------------
+- (Exe)     Renamed --rawwr to --ramwr.
+- (Dll)     recover() functions now switches on all RAM.
+- (Dll)     Segger debugger unpowers the debug port when close_dll() is called.
+- (Python)  Added Hex.py to parse hex files to use with API.API.write function.
+
+
+Release 7.1.0
+Changelog
+---------------------------------------
+- (Exe) Added --clean option to --program. --clean erases all user available flash (including UICR).
+- (Exe) RAM is turned on in the --program operation.
+- (Exe) Added error and corresponding user feedback for a too old version of JLinkARM.dll used in the machine.
+- (Exe) Added warning when --family is not used.
+- (Exe) A --memrd, --memwr, --rawwr and --readram will fail if the target RAM is unpowered.
+- (Dll) Added function is_ram_powered().
+- (Dll) Added function power_ram().
+- (Dll) Added function read_debug_register().
+- (Dll) Added function write_debug_register().
+- (Dll) Function open_dll() returns new error JLINKARM_DLL_TOO_OLD.
+- (Dll) Fixed connexion problems under certain circumstances. Device selection was missing.
+- (Dll) Fixed caching problems when reading after erase.
+
+
+Release 7.0.0
+Changelog
+---------------------------------------
+- (Exe) Added support for NRF52. In order to accomplish this, required option --family is added.
+- (Exe) Added used JLinkARM.dll version to --version output.
+- (Exe) Simplified interface. No longer is possible to concatenate program, erase and reset operations.
+- (Exe) Simplified interface. Eliminated all options that dealt with SoftDevice: --programs, --recovers, --eraseapp, --erasecr1 and --programapp.
+- (Exe) Simplified interface. --program can no longer have two hex files as parameters.
+- (Exe) --program does not automatically erase target area. --clean option added to --program to erase all flash (same as --eraseall) before programming.
+- (Exe) Eliminated --quiet option.
+- (Exe) Eliminated --logids option. Use pipes for the same effect.
+- (Exe) Eliminated deprecated option --dso.
+- (Exe) Modified --eraseall. Now it erases all user available flash. It will automatically handle SoftDevice programmed at Nordic factory.
+- (Exe) Added --erasecode operation.
+- (Exe) Eliminated --erasepage operation.
+- (Exe) Eliminated --hexuicrinfo operation.
+- (Exe) Memory operations do not automatically check result. Added --verify for verification. Eliminated --ramwr since it does not have sense any more.
+- (Dll) Published dll interface and python bindings for use by customer.
+
+
+Release 5.1.3
+Changelog
+---------------------------------------
+- (Micro) Now nrfjprog.dll and nrfjprog.exe versions upgrade together.
+
+
+Release 5.1.1
+Changelog
+---------------------------------------
+- (Major) Corrected error with --dfu option of --programs.
+
+
+Release 5.1.0
+Changelog
+---------------------------------------
+- (Dll.Minor) Eliminated all pop-ups.
+- (Dll.Micro) Corrected minor error in loading several JLinkARM.dll functions that were not used.
+- (Dll.Micro) Added loading of JLinkARM.dll GetHWInfo() function.
+
+
+Release 5.0.1
+Changelog
+---------------------------------------
+- (EXE.Micro) Corrected bug in new SDV download (SDV.hex does not contain UICR values). Version 5.0.0 is useless for the purpose it was intended.
+
+Release 5.0.0
+Changelog
+---------------------------------------
+- (EXE.Major) Changed to look for the location of the nrfjprog.dll in the local directory of the executable, not in the registry.
+- (EXE.Major) Adapted --recovers, --eraseapp,  --eraseall, --eraseuicr, --erasecr1, programapp and --programs to take into account the new SDV Info struct and maybe no protection.
+- (EXE.Minor) Eliminated options --clenr0 and --fwid to --programs.
+- (EXE.Micro) Added several parameters for the SoftDevice information. Memory buffers now take into account the size of the SDV, not of region 0.
+- (EXE.Micro) Cleaned --ids and --logids to prepare for future changes.
+- (EXE.Micro) Cleaned the initialization of path strings.
+- (EXE.Micro) Corrected the feedback with incompatible arguments in the --help option.
+- (EXE.Micro) Corrected the loading of the nrfjprog dll library. It now occurs with LoadLibraryW as it should.
+- (DLL.Major) Added new function read_softdevice_info().
+- (DLL.Micro) Corrected minor bug in length of the m_jlink_arm_dll_path array.
+- (DLL.Micro) Eliminated extra popup window when disabling system off.
+- (DLL.Micro) Changed default value for no emulator selected.
+- (DLL.Micro) Disabled caching of the flash.
+
+
+Release 4.0.5
+Changelog
+---------------------------------------
+- (Micro) Adapted to XLR3+ device.
+- (Micro) UICR is not read from the device when programming unless the hex file(s) provided have UICR. Speeds programming.
+
+
+Release 4.0.4
+Changelog
+---------------------------------------
+- (Micro) Optimized the dynamic memory allocation and deallocation.
+- (Micro) Optimized the information functions to DeviceInfo.
+- (DLL) Made function pin_reset_ignore_pall work for Quark MPW1.
+
+Release 4.0.3
+Changelog
+---------------------------------------
+- (Micro) Eliminated some safety check that was not needed.
+- (Micro) Eliminated a deprecated safety check.
+- (Micro) For some device FICR and UICR sizes and code page sizes are different. Now really changed everywhere.
+
+Release 4.0.2
+Changelog
+---------------------------------------
+- (Micro) For some device FICR and UICR sizes and code page sizes are different. Changed everywhere.
+
+Release 4.0.1
+Changelog
+---------------------------------------
+- (DLL)   Fixed problem identifying MPW1.
+- (DLL)   Added a lot of functionality related to the MPU to the nrf51dll.dll.
+
+Release 4.0.0
+Changelog
+---------------------------------------
+- (DLL)   Adapted to deprecation in SIZERAMBLOCK[i] registers.
+- (Major) Added Quark MPW1 as one of the valid devices.
+- (Micro) Eliminated several bugs in parsing the page number in --erasepage.
+- (Micro) Added some formating to log.log and error.log so we can see the different commands. Command line is also written.
+- (Micro) Corrected default values of RAM and Flash size depending on the device.
+
+Release 3.1.1
+Changelog
+---------------------------------------
+- (DLL)   --pinreset makes now a system reset, halts and then pinresets to avoid a problem with emulated system off.
+- (Micro) System Reset is perfrom before any erase operations to avoid problems with emulated system off.
+
+Release 3.1.0
+Changelog
+---------------------------------------
+- (DLL)   Added function check_region_access_ignore_protenset.
+- (DLL)   Hardcoded protenset to 4kb as is in XLR2, XLR3 and L3.
+- (DLL)   Solved problem with download of programs in XLR in certain circumstances. RAM was off after certain resets.
+- (Minor) Added --halt option.
+- (Minor) Disable protenset during a memory write operation will only happen during a --memwr to flash area.
+- (Micro) Added some information to the help of erase and program operations.
+- (Micro) Disable protenset during a program operation will only happen if there is a download to flash area.
+- (Micro) Disable protenset will not happen during check flash region access operations.
+
+Release 3.0.1
+Changelog
+---------------------------------------
+- (Micro) Corrected typo in --programs help.
+
+Release 3.0.0
+Changelog
+---------------------------------------
+- (Major) Pin reset and reset cannot be combined.
+- (Major) Added --deviceversion option.
+- (Minor) Improved recover operation again.
+- (Minor) Now --help and --version can be combined.
+- (Minor) Corrected error with --pinreset when we have just protected with PALL.
+- (Minor) Improved all erase operations, including adding system reset after them.
+- (Minor) Added check for PALL protection before programming.
+- (Minor) Better check for UICR conflicts when programming.
+- (Micro) Corrected bug in programming under weird circunstances. Probably nobody hit this error.
+- (Micro) Corrected typo in name of our company.
+- (Micro) Cleaned up the calls for the information functions.
+- (Micro) Corrected bug with pinreset when PALL. Now I inform the user that it may not work.
+- (Micro) Eliminated bug, by checking PALL before calling disable_proten.
+- (Micro) Corrected several errors in --programapp check for correctness.
+- (Micro) Corrected bug in fwid option.
+- (Micro) Updated device info after erasing.
+- (Micro) Using default values for flash and ram sizes if the FICR is a little wrong.
+- (Micro) Corrected bug in --fwid option check.
+- (Micro) Corrected bug --recovers and --eraseapp. BOOTLOADERADDR in UICR was not being erased.
+- (Micro) Corrected return value when only a secondary argument is given.
+- (Micro) Corrected bug in --recovers.
+- (Micro) Corrected bug in --memwr, --ramwr and --rawwr trying to write into FICR area.
+- (Micro) Improve feedback on failed --recover.
+- (Micro) Corrected small bug with --memrd and wrong --n parameter.
+- (Micro) Corrected error when --memwr and PALL for certain registers.
+
+
+Release 2.6.0
+Changelog
+---------------------------------------
+- (Minor) Improved recover operation. Several attempts are made to recover the device, not just one.
+- (Micro) Corrected some erros in error reporting.
+
+
+Release 2.5.0
+Changelog
+---------------------------------------
+- Clarified error messages and help of --programs.
+- Added --fwid secondary option to --programs option.
+- Corrected minor bug in --logids activity report.
+- Corrected typo in error MisalignedOperation name.
+- Corrected minor typo in --version report.
+- Improved --ficrwritereg to avoid the erasing when only 1s are changed.
+- Corrected typos in error reporting.
+- Provided warnings with meaningless erase operations in the presence of --eraseall.
+- UICR locations to download are checked during --program, --programapp and --programs to see if they are erased.
+    If not, it will give an error.
+- Removed bug in --ficrwritereg CLENR0 values.
+
+Release 2.4.0
+Changelog
+---------------------------------------
+- Corrected help for coderead.
+- Added hexdump printing to memrd functionality.
+- Corrected 2 typos in user feedback printing.
+- Correct error in --quiet option. One command was not quiet.
+- Provided popup window if several devices are present but none is sellected by -s or --snr in options.
+
+Release 2.2.0
+Changelog
+---------------------------------------
+- Corrected bug in --program checking the last byte is in code.
+- Added --readregs function into the nrfjprog.
+- Improved the check of the erased region when programming.
+
+Release 2.1.1
+Changelog
+---------------------------------------
+- Corrected bug in --readcode under certain conditions.
+- Corrected bug in reporting of error in programs for missing CLENR0.
+
+Release 2.1.0
+Changelog
+---------------------------------------
+- Added support for old FICR files.
+- Added read code area function, including checking if the user has read access tot he area requested.
+
+Release 2.0.4
+Changelog
+---------------------------------------
+- Registry search for the nrfjprog.dll location takes into account the version of nrfjprog.
+
+Release 2.0.3
+Changelog
+---------------------------------------
+- Beta release of new nrfjprog. Complete redesign of nrfjprog tool.
+
+Release 1.0.7
+Changelog
+---------------------------------------
+- Fixed the crash caused when using --verify option.
+- --verify option speed optimized to be 4 times faster.
+
+Release 1.0.6
+Changelog
+---------------------------------------
+- Recompilation.
+
+Release 1.0.5
+Changelog
+---------------------------------------
+- Fixed a problem in --program and --programs.
+
+Release 1.0.4
+Changelog
+---------------------------------------
+- Fixed an incorrect parameter when reading a registry value.
+- Fixed minor typos in the std out comment.
+- Fixed pin reset bug.
+
+
+Release 1.0.3
+Changelog
+---------------------------------------
+- Fixed the utility to work again with WinXP-32-bit machines
+- Added verify option that can verify device memory contents with given hex file.
+
+
+Release 1.0.2
+Changelog
+---------------------------------------
+- Minor bug fix.
+
+
+Release 1.0.1
+Changelog
+---------------------------------------
+- fixing bug with buffer size.
+
+
+Release 1.0.0
+Changelog
+---------------------------------------
+- Code Reviewed: Bug fixes + optimizations.
+- default output for --memrd + --n option, when not using --w, is changed from 8-bit to 32-bit as that will be used more.
+- adding -q --quiet option (do not print any log)
+- adding --dso disable system off until next reset.
+- fixing bug with pin reset that did not switch the debug mode back to SWD from JTAG
+
+Release 0.2.5
+Changelog
+---------------------------------------
+-- removing uicrwritereg option as same functionality can be achieved using memwr option.
+-- using --memwr for non-flash addresses will not configure nvmc for write/read/erase enable.
+-- adding --hexuicrinfo that reads the hex file and dumps (to stdout) UICR-> CR0, RBPCONF and/or FWID if they are to be programmed from hex file
+-- changed the default J-Link speed to 10MHz (previous 1MHz) if not set expplicitly by --clockspeed option
+-- added --dmemwr option, dumb write instruction to cpu. This option is not flash aware. It takes the same arguments like memwr,
+
+Known Issuees
+----------------------
+-- writing to a flash memory using --memwr option is erasing the page first before write, this is done within segger dll and this issue
+   will be addressed very soon.
+
+Release 0.2.4
+Differences from the previous release
+---------------------------------------
+-- implemented --w option for --memrd. you can dump values in either 8(Default). 16 or 32 bit format
+-- implemented --recover option which can be used to disable system off and erase code regions and then enable system off again
+       can be used to recover chips in system off without wakeup source configured
+
+Release 0.2.3
+Differences from the previous release
+---------------------------------------
+- fixed a bug that is causing the pop up window with multiple seggers connected and even if serial number was given as argument.
+
+Release 0.2.2
+Differences from the previous release
+---------------------------------------
+ - fixed bug that --n option (as in --memrd 0XSomething --n 20) was considering the number in hex, its a number of bytes
+       in decimal radix 10.
+ - added -p, --pinreset option to do a hard pin reset
+ - adding --run option to set --pc (program counter) and --sp (stack pointer)
+ - added  --hexuicrinfo    <hex_file>         Reads the hex file and dumps (to stdout) UICR-> CR0, RBPCONF and/or FWID if they are to be programmed from hex file
+                                              Note: only those registers are shown whose addresses exist in the hex file
+ - more bug fixes.
+
+
+Release 0.2.1
+Differences from the previous release
+---------------------------------------
+ - bug with the utility that did not work on XP (now fixed)
+ - "--rbp CR0" is not allowed when CR0 is not defined in FICR or UICR. (use --clenr0 to set the CR0 first)
+ - --rbp is allowed to be used with --program (application) option
+ - auto backup file extention changed from .txt to .log which are easy for auto clean operations.
+ - --eraseuicr option added
+ - added info that -e, --eraseall is not available for factory programmed chips
+ - added more checks for eraseall and eraseuicr for factory programmed and non factory programmed.
+ - added --memrd option (courtesy nrfprog, works exactly the same way)
+ - added --memwr option
+
+Release 0.2
+Differences from the previous release
+---------------------------------------
+ - Adding -v or --version option to know the version of this utility
+ - EraseAll will not do an implicit reset (but --programs will do implicit eraseall and a reset)
+ - --clenr0 and/or --rbp options cannot be used with --program
+ - cannot use --clenr0 option with --programs if the hex file is programming to UICR->CLENR0
+ - cannot use --rbp option with --programs if the hex file is programming to UICR->RBP
+ - hex files can now contain uicr address ranges (usable only by --programs).
+ - bufferring all flash segment writes so that user sees only one write operation per hex file
+ - check first in the local directory for JLinkARM.dll (useful for standalone apps) before checking registry for its installed path.
+ - hex files cannot contain uicr address range with --program option
+ - check application base address to match CR1 base address (on protected chips), if not match then return error with flash untouched.
+ - removing --bin option to keep it simple
+ - added few more error codes
+ - wrong serial number given as the argument will return error and the program will quit
+
+
+Release 0.1.3
+Differences from the previous release
+----------------------------------------
+ - added error codes to handle different errors and return to the caller (for error codes @ref nrfjprog.h)
+ - added --rbp option to enable readback protection for cr0 and cr0+cr1
+ - when using --programs option readback protection is not changed (in earlier version using this option would set RBPCONF to CR0)
+ - --clenr0 option must now be used with --programs to protect the softdevice else programming softdevice will fail
+ - added --readuicr option to read uicr page into given file
+ - removed flashing binary file check and support for --program
+ - able to read uicr address range from hex file and write to UICR page
+
+Release 0.1.2
+differences from the previous release
+---------------------------------------
+ - few bug fixes
+ - reducing wait time for each operation by correctly waiting on the ready flag
+ - adding reset -r option (-e option does an reset implicitly)
+ - added --uicrwritereg value to write to uicr register (remember only 1's can be changed to 0's)
+ - Searching segger installation in HKEY_LOCAL_MACHINE also for buildservers to work properly. Segger will include
+            in their next release to add a key to HKEY_LOCAL_MACHINE root
