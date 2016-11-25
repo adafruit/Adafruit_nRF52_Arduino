@@ -28,12 +28,14 @@
 
 #### nrfutil
 
-The Adafruit nRF52 BSP includes a [python wrapper](https://github.com/NordicSemiconductor/pc-nrfutil) for Nordic's `nrfutil`, which is used to flash boards. Go into the BSP folder (`hardware/Adafruit/Adafruit_nRF52_Arduino`), and run the following to make this available to the Arduino IDE:
+The Adafruit nRF52 BSP includes a [python wrapper](https://github.com/NordicSemiconductor/pc-nrfutil) for Nordic's `nrfutil`, which is used to flash boards. Go into the BSP folder (`hardware/Adafruit/Adafruit_nRF52_Arduino/tools/nrfutil-0.5.2`), and run the following to make this available to the Arduino IDE:
 
- - cd tools/nrfutil-0.5.2
- - sudo pip install nrfutil
- 
- **Note**: if this fails you may need to run `$ sudo pip install -r requirements.txt` from the same folder.
+```
+$ sudo pip install -r requirements.txt
+$ sudo pip install nrfutil
+```
+
+**Notes** : dont install nrfutil from pip package the latest nrfutil does not support DFU via Serial.
 
 ## Bootloader Support
 
@@ -45,9 +47,25 @@ To burn the bootloader from within the Arduino IDE, you will need the following 
 
 Download and install the [JLink Software and Documentation Pack](https://www.segger.com/downloads/jlink) from Segger, which will also install a set of command line tools.
 
-#### nrfjprog
+#### pynrfjprog
 
-In order to burn the bootloader with a J-Link, you will need `nrfjprog` from Nordic:
+In order to burn the bootloader with a J-Link, you will need `pynrfjprog` from Nordic:
+
+```
+$ sudo pip install pynrfjprog
+```
+
+### Burning the Bootloader
+
+Once the tools above have been installed and added to your system path, from the Arduino IDE:
+
+- Select `Tools > Board > Adafruit Bluefruit Feather52`
+- Select `Tools > Programmer > J-Link for Feather52`
+- Select `Tools > Burn Bootloader` with the board and J-Link connected
+
+#### Manually Burning the Bootloader via nrfjprog
+
+You can also manually burn the bootloader from the command line, you will need `nrfjprog` from Nordic: 
 
 - Download [nRF5x-Command-Line-Tools](https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF52832#Downloads) for OSX/Linux/Win32
 - Extract the downloaded file and add the extracted path to your environment `PATH` variable
@@ -59,17 +77,7 @@ In order to burn the bootloader with a J-Link, you will need `nrfjprog` from Nor
 $ ln -s $HOME/prog/nordic/nrfjprog/nrfjprog /usr/local/bin/nrfjprog
 ```
 
-### Burning the Bootloader
-
-Once the tools above have been installed and added to your system path, from the Arduino IDE:
-
-- Select `Tools > Board > Feather52`
-- Select `Tools > Programmer > J-Link with Feather52`
-- Select `Tools > Burn Bootloader` with the board and J-Link connected
-
-#### Manually Burning the Bootloader via nrfjprog
-
-You can also manually burn the bootloader from the command line via `nrfjprog` as follows:
+Then run the command as follows:
 
 ```
 $ nrfjprog -e -f nrf52
