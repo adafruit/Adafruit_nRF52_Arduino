@@ -21,7 +21,7 @@ menu.version=Version
 menu.lfclk=Low Frequency Clock
 menu.board_variant=Board Variant
 
-feather52.name=Feather52
+feather52.name=Adafruit Bluefruit Feather52
 
 feather52.vid.0=0x1366
 feather52.pid.0=0x1015
@@ -31,7 +31,7 @@ feather52.upload.tool=nrfutil
 feather52.upload.protocol=nrfutil
 feather52.upload.interface=serial
 feather52.upload.target=nrf52
-feather52.upload.maximum_size=174080
+feather52.upload.maximum_size=161792
 feather52.upload.use_1200bps_touch=false
 feather52.upload.wait_for_upload_port=false
 feather52.upload.native_usb=false
