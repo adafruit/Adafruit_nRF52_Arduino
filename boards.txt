@@ -23,8 +23,8 @@ menu.board_variant=Board Variant
 
 feather52.name=Adafruit Bluefruit Feather52
 
-feather52.vid.0=0x1366
-feather52.pid.0=0x1015
+feather52.vid.0=0x10C4
+feather52.pid.0=0xEA60
 
 #feather52.upload.tool=sandeepmistry:openocd
 feather52.upload.tool=nrfutil
