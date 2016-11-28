@@ -16,8 +16,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 menu.chip=Chip
-menu.softdevice=Softdevice
-menu.version=Version
+#menu.softdevice=Softdevice
+#menu.version=Version
 menu.lfclk=Low Frequency Clock
 menu.board_variant=Board Variant
 
@@ -45,23 +45,13 @@ feather52.build.board=FEATHER52
 feather52.build.core=nRF5
 feather52.build.variant=feather52
 feather52.build.variant_system_lib=
-feather52.build.extra_flags=-DNRF52
+feather52.build.extra_flags=-DNRF52 -DS132 -DNRF51_S132
 feather52.build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
-feather52.build.ldscript=nrf52_xxaa.ld
+feather52.build.ldscript=armgcc_s132_nrf52832_xxaa.ld
 
 feather52.build.nrfutil=nrfutil
 feather52.build.nrfutil.windows={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/win32/nrfutil.exe
 feather52.build.nrfutil.macosx=/usr/local/bin/nrfutil
-
-#feather52.menu.softdevice.none=None
-#feather52.menu.softdevice.none.softdevice=none
-
-feather52.menu.softdevice.s132=S132
-feather52.menu.softdevice.s132.softdevice=s132
-feather52.menu.softdevice.s132.softdeviceversion=2.0.1
-feather52.menu.softdevice.s132.upload.maximum_size=409600
-feather52.menu.softdevice.s132.build.extra_flags=-DNRF52 -DS132 -DNRF51_S132
-feather52.menu.softdevice.s132.build.ldscript=armgcc_s132_nrf52832_xxaa.ld
 
 feather52.menu.lfclk.lfxo=Crystal Oscillator
 feather52.menu.lfclk.lfxo.build.lfclk_flags=-DUSE_LFXO
@@ -69,4 +59,13 @@ feather52.menu.lfclk.lfrc=RC Oscillator
 feather52.menu.lfclk.lfrc.build.lfclk_flags=-DUSE_LFRC
 feather52.menu.lfclk.lfsynt=Synthesized
 feather52.menu.lfclk.lfsynt.build.lfclk_flags=-DUSE_LFSYNT
+
+#feather52.menu.softdevice.none=None
+#feather52.menu.softdevice.none.softdevice=none
+#feather52.menu.softdevice.s132=S132
+#feather52.menu.softdevice.s132.softdevice=s132
+#feather52.menu.softdevice.s132.softdeviceversion=2.0.1
+#feather52.menu.softdevice.s132.upload.maximum_size=409600
+#feather52.menu.softdevice.s132.build.extra_flags=-DNRF52 -DS132 -DNRF51_S132
+#feather52.menu.softdevice.s132.build.ldscript=armgcc_s132_nrf52832_xxaa.ld
 
