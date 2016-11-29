@@ -47,9 +47,10 @@ logger = logging.getLogger(__name__)
 
 class DfuTransportSerial(DfuTransport):
 
-    DEFAULT_BAUD_RATE = 38400
+    DEFAULT_BAUD_RATE = 115200
     DEFAULT_FLOW_CONTROL = False
     DEFAULT_SERIAL_PORT_TIMEOUT = 1.0  # Timeout time on serial port read
+    SERIAL_PORT_OPEN_WAIT_TIME = 1.0
     ACK_PACKET_TIMEOUT = 1.0  # Timeout time for for ACK packet received before reporting timeout through event system
     SEND_INIT_PACKET_WAIT_TIME = 0.5 # 1.0  # Time to wait before communicating with bootloader after init packet is sent
     SEND_START_DFU_WAIT_TIME = 0.5 #10.0  # Time to wait before communicating with bootloader after start DFU packet is sent
@@ -71,6 +72,8 @@ class DfuTransportSerial(DfuTransport):
             self.serial_port = Serial(port=self.com_port, baudrate=self.baud_rate, rtscts=self.flow_control, timeout=self.timeout)
         except Exception, e:
             raise NordicSemiException("Serial port could not be opened on {0}. Reason: {1}".format(self.com_port, e.message))
+
+        time.sleep(DfuTransportSerial.SERIAL_PORT_OPEN_WAIT_TIME)
 
     def close(self):
         super(DfuTransportSerial, self).close()
