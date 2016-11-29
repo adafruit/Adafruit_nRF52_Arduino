@@ -31,11 +31,12 @@
 The Adafruit nRF52 BSP includes a [python wrapper](https://github.com/NordicSemiconductor/pc-nrfutil) for Nordic's `nrfutil`, which is used to flash boards. Go into the BSP folder (`hardware/Adafruit/Adafruit_nRF52_Arduino/tools/nrfutil-0.5.2`), and run the following to make this available to the Arduino IDE:
 
 ```
+$ cd tools/nrfutil-0.5.2
 $ sudo pip install -r requirements.txt
-$ sudo pip install nrfutil
+$ sudo python setup.py install
 ```
 
-**Notes** : dont install nrfutil from pip package the latest nrfutil does not support DFU via Serial.
+**Notes** : Don't install nrfutil from the pip package (ex. `sudo pip install nrfutil`). The latest nrfutil does not support DFU via Serial, and you should install the local copy of 0.5.2 included with the BSP via the `python setup.py install` command above.
 
 ## Bootloader Support
 
@@ -94,6 +95,30 @@ This Arduino Core does **not** contain any Arduino style API's for BLE functiona
  * [BLEPeripheral](https://github.com/sandeepmistry/arduino-BLEPeripheral)
    * v0.3.0 and greater, available via the Arduino IDE's library manager.
    * Supports peripheral mode only.
+
+## Misc Notes
+
+#### nRF52DK Jlink Issue on OS X
+
+If developping with the nRF52DK on OS X, there is a bug where only 64 bytes can be sent over the USB CDC interface, which will prevent you from using the serial bootloader from the Arduino IDE with an error like this:
+
+```
+Upgrading target on /dev/cu.usbmodem1421 with DFU package /private/var/folders/86/hb2vp14n5_5_yvdz_z8w9x_c0000gn/T/arduino_build_267869/nRF51Blinky.ino.zip. Flow control is disabled.
+
+
+Timed out waiting for acknowledgement from device.
+
+Failed to upgrade target. Error is: No data received on serial port. Not able to proceed.
+
+Possible causes:
+- bootloader, SoftDevice or application on target does not match the requirements in the DFU package.
+- baud rate or flow control is not the same as in the target bootloader.
+- target is not in DFU mode. If using the SDK examples, press Button 4 and RESET and release both to enter DFU mode.
+```
+
+To resolve this and enable 512 byte packets over USB serial, you must disable the Mass Storage Device interface on the JLink-OB, which will free up two of the 512 byte USB end points. (For details see [this article](https://wiki.segger.com/index.php?title=J-Link-OB_SAM3U).) 
+
+You can do so by running `JLinkExe` from the command line, and then entering the `MSDDisable` command, and power cycling your nRF52DK. To re-enable MSD support, do the same but enter the `MSDEnable` command.
 
 ## Credits
 
