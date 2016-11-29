@@ -21,3 +21,9 @@
 # Executables
 *.out
 *.app
+
+*.pyc
+/tools/nrfutil-0.5.2/build/
+/tools/nrfutil-0.5.2/dist/
+/tools/nrfutil-0.5.2/nrfutil.egg-info/
+/tools/.idea/
