@@ -33,10 +33,10 @@ The Adafruit nRF52 BSP includes a [python wrapper](https://github.com/NordicSemi
 ```
 $ cd tools/nrfutil-0.5.2
 $ sudo pip install -r requirements.txt
-$ sudo pip install nrfutil
+$ sudo pip install nrfutil --ignore-installed six
 ```
 
-**Notes** : dont install nrfutil from pip package the latest nrfutil does not support DFU via Serial.
+**Notes** : Don't install nrfutil from the pip package. The latest nrfutil does not support DFU via Serial, and you should install the local copy of 0.5.2 included with the BSP.
 
 ## Bootloader Support
 
