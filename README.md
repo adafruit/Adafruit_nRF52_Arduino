@@ -1,6 +1,6 @@
 # Arduino Core for Nordic Semiconductor nRF5 based boards
 
-## Installing
+## BSP Installation
   
 ### Arduino nRF5x BSP via Board Manager
 
@@ -37,6 +37,16 @@ $ sudo python setup.py install
 ```
 
 **Notes** : Don't install nrfutil from the pip package (ex. `sudo pip install nrfutil`). The latest nrfutil does not support DFU via Serial, and you should install the local copy of 0.5.2 included with the BSP via the `python setup.py install` command above.
+
+## Arduino BLE Application Support
+
+This Arduino Core does **not** contain any Arduino style API's for BLE functionality. All the relevant Nordic SoftDevice (S110, S130, S132) header files are included build path when a SoftDevice is selected via the `Tools` menu.
+
+### Recommend BLE Libraries
+
+ * [BLEPeripheral](https://github.com/sandeepmistry/arduino-BLEPeripheral)
+   * v0.3.0 and greater, available via the Arduino IDE's library manager.
+   * Supports peripheral mode only.
 
 ## Bootloader Support
 
@@ -85,16 +95,6 @@ $ nrfjprog -e -f nrf52
 $ nrfjprog --program bootloader_with_s132.hex -f nrf52
 $ nrfjprog --reset -f nrf52
 ```
-
-## BLE Arduino Support
-
-This Arduino Core does **not** contain any Arduino style API's for BLE functionality. All the relevant Nordic SoftDevice (S110, S130, S132) header files are included build path when a SoftDevice is selected via the `Tools` menu.
-
-### Recommend BLE Libraries
-
- * [BLEPeripheral](https://github.com/sandeepmistry/arduino-BLEPeripheral)
-   * v0.3.0 and greater, available via the Arduino IDE's library manager.
-   * Supports peripheral mode only.
 
 ## Misc Notes
 
