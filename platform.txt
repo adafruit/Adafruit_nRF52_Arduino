@@ -91,7 +91,7 @@ recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}"
 recipe.objcopy.hex.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} {compiler.elf2hex.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.hex"
 
 ## Creat dfu package zip file
-recipe.objcopy.zip.pattern={build.nrfutil} dfu genpkg --application "{build.path}/{build.project_name}.hex" "{build.path}/{build.project_name}.zip"
+recipe.objcopy.zip.pattern="{build.nrfutil}" dfu genpkg --application "{build.path}/{build.project_name}.hex" "{build.path}/{build.project_name}.zip"
 
 ## Save bin
 recipe.output.tmp_file_bin={build.project_name}.bin
