@@ -82,6 +82,10 @@ class DfuTransportSerial(DfuTransport):
 
         time.sleep(DfuTransportSerial.SERIAL_PORT_OPEN_WAIT_TIME)
 
+        # Toggle DTR to reset the board and enter DFU mode
+        self.serial_port.setDTR(False)
+        self.serial_port.setDTR(True)
+
     def close(self):
         super(DfuTransportSerial, self).close()
         self.serial_port.close()
