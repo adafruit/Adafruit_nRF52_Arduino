@@ -107,6 +107,14 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 #define PIN_WIRE_SDA         (25u)
 #define PIN_WIRE_SCL         (26u)
 
+/* Bootloader version, may move to other file. Assigned by
+ * initVariant() upon running.
+ * - value of 0x000500 is version 0.5.0
+ */
+extern uint32_t bootloaderVersion;
+
+//extern void initVariant();
+
 #ifdef __cplusplus
 }
 #endif
