@@ -113,8 +113,6 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
  */
 extern uint32_t bootloaderVersion;
 
-//extern void initVariant();
-
 #ifdef __cplusplus
 }
 #endif
