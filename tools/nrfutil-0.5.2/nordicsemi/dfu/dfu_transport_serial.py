@@ -80,11 +80,12 @@ class DfuTransportSerial(DfuTransport):
         except Exception, e:
             raise NordicSemiException("Serial port could not be opened on {0}. Reason: {1}".format(self.com_port, e.message))
 
-        time.sleep(DfuTransportSerial.SERIAL_PORT_OPEN_WAIT_TIME)
-
         # Toggle DTR to reset the board and enter DFU mode
         self.serial_port.setDTR(False)
+        time.sleep(0.05)
         self.serial_port.setDTR(True)
+
+        time.sleep(DfuTransportSerial.SERIAL_PORT_OPEN_WAIT_TIME)
 
     def close(self):
         super(DfuTransportSerial, self).close()
