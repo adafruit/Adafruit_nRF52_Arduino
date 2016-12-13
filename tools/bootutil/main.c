@@ -63,12 +63,11 @@ bootutil_err_invalid_arg(char *cmd_name)
 static int
 bootutil_help(void)
 {
-    printf("bootutil port cmd [flags...]\n");
+    printf("bootutil port cmd\n");
     printf("cmd:\n");
-    printf("  init\n");
-    printf("  debug [verbose]\n");
-    printf("  fill <color:0xFFFF>\n");
-    printf("  p <x> <y> <color:0xFFFF>\n");
+    printf("  reset\n");
+    printf("\n");
+    printf("Ex: $ bootutil /dev/tty.SLAB_USBtoUART reset\n");    
 
     return 0;
 }
