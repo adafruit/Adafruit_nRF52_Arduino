@@ -50,7 +50,7 @@ class DfuTransportSerial(DfuTransport):
     DEFAULT_BAUD_RATE = 115200
     DEFAULT_FLOW_CONTROL = False
     DEFAULT_SERIAL_PORT_TIMEOUT = 1.0  # Timeout time on serial port read
-    SERIAL_PORT_OPEN_WAIT_TIME = 1.0
+    SERIAL_PORT_OPEN_WAIT_TIME = 0.5
     ACK_PACKET_TIMEOUT = 1.0  # Timeout time for for ACK packet received before reporting timeout through event system
     SEND_INIT_PACKET_WAIT_TIME = 0.5 # 1.0  # Time to wait before communicating with bootloader after init packet is sent
 
@@ -84,6 +84,8 @@ class DfuTransportSerial(DfuTransport):
         self.serial_port.setDTR(False)
         time.sleep(0.05)
         self.serial_port.setDTR(True)
+        time.sleep(0.05)
+        self.serial_port.setDTR(False)
 
         time.sleep(DfuTransportSerial.SERIAL_PORT_OPEN_WAIT_TIME)
 
