@@ -7,6 +7,7 @@
 
 volatile int g_bootutil_serport_open = 0;
 
+/*
 static int
 bootutil_stol(char *param_val, long min, long max, long *output, uint8_t b)
 {
@@ -27,7 +28,9 @@ bootutil_stol(char *param_val, long min, long max, long *output, uint8_t b)
 
     return 0;
 }
+*/
 
+/*
 static int
 bootutil_err_too_few_args(char *cmd_name)
 {
@@ -35,6 +38,7 @@ bootutil_err_too_few_args(char *cmd_name)
                    cmd_name);
     return EINVAL;
 }
+*/
 
 static int
 bootutil_err_too_many_args(char *cmd_name)
@@ -52,6 +56,7 @@ bootutil_err_unknown_arg(char *cmd_name)
     return EINVAL;
 }
 
+/*
 static int
 bootutil_err_invalid_arg(char *cmd_name)
 {
@@ -59,6 +64,7 @@ bootutil_err_invalid_arg(char *cmd_name)
                    cmd_name);
     return EINVAL;
 }
+*/
 
 static int
 bootutil_help(void)
@@ -67,7 +73,7 @@ bootutil_help(void)
     printf("cmd:\n");
     printf("  reset\n");
     printf("\n");
-    printf("Ex: $ bootutil /dev/tty.SLAB_USBtoUART reset\n");    
+    printf("Ex: $ bootutil /dev/tty.SLAB_USBtoUART reset\n");
 
     return 0;
 }
@@ -75,8 +81,6 @@ bootutil_help(void)
 static int
 bootutil_cmd_reset(int argc, char **argv)
 {
-    int rc;
-
     if (argc > 3) {
         return bootutil_err_too_many_args(argv[1]);
     }
@@ -87,10 +91,7 @@ bootutil_cmd_reset(int argc, char **argv)
     serialport_set_dtr(1);
     serialport_set_dtr(0);
 
-    rc = 0;
-
-error:
-    return rc;
+    return 0;
 }
 
 static int
