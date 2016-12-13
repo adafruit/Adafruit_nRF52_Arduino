@@ -51,6 +51,7 @@ class DfuTransportSerial(DfuTransport):
     DEFAULT_FLOW_CONTROL = False
     DEFAULT_SERIAL_PORT_TIMEOUT = 1.0  # Timeout time on serial port read
     SERIAL_PORT_OPEN_WAIT_TIME = 0.1
+    NRF52_RESET_WAIT_TIME = 0.1
     ACK_PACKET_TIMEOUT = 1.0  # Timeout time for for ACK packet received before reporting timeout through event system
     SEND_INIT_PACKET_WAIT_TIME = 0.5 # 1.0  # Time to wait before communicating with bootloader after init packet is sent
 
@@ -80,9 +81,22 @@ class DfuTransportSerial(DfuTransport):
         except Exception, e:
             raise NordicSemiException("Serial port could not be opened on {0}. Reason: {1}".format(self.com_port, e.message))
 
+        # Wait for the system to reset
+        time.sleep(DfuTransportSerial.SERIAL_PORT_OPEN_WAIT_TIME)
+    def open(self):
+        super(DfuTransportSerial, self).open()
+
+        try:
+            self.serial_port = Serial(port=self.com_port, baudrate=self.baud_rate, rtscts=self.flow_control, timeout=self.timeout)
+        except Exception, e:
+            raise NordicSemiException("Serial port could not be opened on {0}. Reason: {1}".format(self.com_port, e.message))
+
         time.sleep(DfuTransportSerial.SERIAL_PORT_OPEN_WAIT_TIME)
 
         # Toggle DTR to reset the board and enter DFU mode
+        # Note: This double reset may or may not be necessary depending on the
+        # CP21xx configuration, but we'll perform a second reset here to be
+        # sure
         self.serial_port.setDTR(False)
         time.sleep(0.05)
         self.serial_port.setDTR(True)
@@ -90,7 +104,7 @@ class DfuTransportSerial(DfuTransport):
         self.serial_port.setDTR(False)
 
         # Delay to allow device to boot up
-        time.sleep(DfuTransportSerial.SERIAL_PORT_OPEN_WAIT_TIME)
+        time.sleep(DfuTransportSerial.NRF52_RESET_WAIT_TIME)
 
     def close(self):
         super(DfuTransportSerial, self).close()
