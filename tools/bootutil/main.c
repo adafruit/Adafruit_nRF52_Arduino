@@ -3,7 +3,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
+#include <limits.h>
+#include <ctype.h>
 #include "serialport.h"
+
+#ifdef _WIN32
+char *progname = "bootutil.exe";
+#else
+char *progname = "bootutil";
+#endif
 
 volatile int g_bootutil_serport_open = 0;
 
@@ -30,62 +39,61 @@ bootutil_stol(char *param_val, long min, long max, long *output, uint8_t b)
 }
 */
 
-/*
 static int
-bootutil_err_too_few_args(char *cmd_name)
+bootutil_err_too_many_instances_arg(char *arg_name)
 {
-    printf("Error: too few arguments for command \"%s\"\n",
-                   cmd_name);
-    return EINVAL;
-}
-*/
-
-static int
-bootutil_err_too_many_args(char *cmd_name)
-{
-    printf("Error: too many arguments for command \"%s\"\n",
-                   cmd_name);
+    printf("Error: multiple instances of \"%s\"\n",
+                   arg_name);
     return EINVAL;
 }
 
 static int
-bootutil_err_unknown_arg(char *cmd_name)
+bootutil_err_missing_arg(char *arg_name)
+{
+    printf("Error: missing argument \"%s\"\n",
+                   arg_name);
+    return EINVAL;
+}
+
+static int
+bootutil_err_unknown_arg(char *arg_name)
 {
     printf("Error: unknown argument \"%s\"\n",
-                   cmd_name);
+                   arg_name);
     return EINVAL;
 }
 
-/*
 static int
-bootutil_err_invalid_arg(char *cmd_name)
+bootutil_err_invalid_arg(char *arg_name)
 {
     printf("Error: invalid argument \"%s\"\n",
-                   cmd_name);
+                   arg_name);
     return EINVAL;
 }
-*/
 
-static int
-bootutil_help(void)
+static void
+bootutil_help(int rc)
 {
-    printf("bootutil port cmd\n");
-    printf("cmd:\n");
-    printf("  reset\n");
+    printf("Bootloader utility for the Adafruit nRF52 board family.\n");
     printf("\n");
-    printf("Ex: $ bootutil /dev/tty.SLAB_USBtoUART reset\n");
+    printf("Usage: %s -d [TTY.DEVICE] -chr?\n", progname);
+    printf("\n");
+    printf("  -d [TTY.DEVICE] : serial/tty port name (mandatory)\n");
+    printf("  -c [command]    : execute the specified command\n");
+    printf("     reset        : perform a system reset (toggle DTR)\n");
+    printf("  -h              : show help\n");
+    printf("  -r              : perform a system reset (toggle DTR)\n");
+    printf("  -?              : show help\n");
+    printf("\n");
+    printf("Ex: $ %s -d /dev/tty.SLAB_USBtoUART -r\n", progname);
 
-    return 0;
+    exit(rc);
 }
 
 static int
-bootutil_cmd_reset(int argc, char **argv)
+bootutil_cmd_reset(void)
 {
-    if (argc > 3) {
-        return bootutil_err_too_many_args(argv[1]);
-    }
-
-    printf("Resetting `%s` (Toggling DTR)\n", argv[1]);
+    printf("Attempting to reset (toggling DTR)\n");
 
     /* Toggle the DTR line to provoke a reset */
     serialport_set_dtr(1);
@@ -95,11 +103,28 @@ bootutil_cmd_reset(int argc, char **argv)
 }
 
 static int
-bootutil_serport_open(int argc, char **argv)
+bootutil_cmd_parse(char *argv)
+{
+    int i = 0;
+
+    while(argv[i]) {
+        argv[i] = tolower(argv[i]);
+        i++;
+    }
+
+    if (strcmp(argv, "reset") == 0) {
+        return bootutil_cmd_reset();
+    } else {
+        return bootutil_err_unknown_arg(argv);
+    }
+}
+
+static int
+bootutil_serport_open(char *argv)
 {
     int serport;
 
-    serport = serialport_open(argv[1], 115200);
+    serport = serialport_open(argv, 115200);
     if (serport != 0) {
         g_bootutil_serport_open = 1;
     }
@@ -121,32 +146,86 @@ bootutil_serport_close(void)
 int
 main(int argc, char **argv)
 {
-    int rc;
+    int ch;
+    int rc = -1;
+    int rstflag = 0;
+    int cmdflag = 0;
+    char cmd[256];
+    char tty[PATH_MAX + NAME_MAX];
 
+    memset(cmd, '\0', sizeof(cmd));
+    memset(tty, '\0', sizeof(cmd));
+
+    /* Display help menu on zero params */
     if (argc == 1) {
-        return bootutil_help();
+        bootutil_help(0);
     }
 
-    /* Attempt to open the serial port */
-    rc = bootutil_serport_open(argc, argv);
-    if (g_bootutil_serport_open != 1) {
-        goto error;
+    /* Parse input params */
+    while ((ch = getopt(argc, argv, "d:c:rh")) != -1) {
+        switch (ch) {
+        case 'd':
+            strncpy(tty, optarg, sizeof(tty)-1);
+            break;
+        case 'c':
+            /* Check if we've already received a command */
+            if (cmdflag == 1) {
+                exit(bootutil_err_too_many_instances_arg("-c"));
+            }
+            cmdflag = 1;
+            strncpy(cmd, optarg, sizeof(cmd)-1);
+            break;
+        case 'r':
+            rstflag = 1;
+            break;
+        case 'h':
+        case '?':
+            bootutil_help(0);
+            break;
+        }
     }
 
-    /* Command handlers */
-    rc = 0;
-    if (argc == 3 && strcmp(argv[2], "reset") == 0) {
-        rc = bootutil_cmd_reset(argc, argv);
+    /* Make sure a serial port was specified */
+    if (tty[0] == '\0') {
+        exit(bootutil_err_missing_arg("-d"));
     } else {
-        return bootutil_err_unknown_arg(argv[1]);
+        /* Try to open the serial port */
+        printf("Opening %s\n", tty);
+        bootutil_serport_open(tty);
+        /* Make sure the serial port was actually opened */
+        if (g_bootutil_serport_open != 1) {
+            exit(bootutil_err_invalid_arg(tty));
+        }
     }
 
-    /* Giving an error warning if relevant */
+    /* Check if a system reset was requested (perform this first) */
+    if (rstflag) {
+        rc = bootutil_cmd_reset();
+        if (rc != 0) {
+            goto error;
+        }
+    }
+
+    /* Command handler */
+    if (cmdflag) {
+        /* Make sure we have a valid command */
+        if (cmd[0] == '\0') {
+            rc = bootutil_err_missing_arg("-c");
+            goto error;
+        }
+        /* Try to parse the supplied command */
+        rc = bootutil_cmd_parse(cmd);
+        if (rc != 0) {
+            goto error;
+        }
+    }
+
+    /* Give an error warning for any unhandled errors */
     if (rc != 0) {
         printf("RC = 0x%04X (%u): %s\n", rc, rc, strerror(rc));
     }
 
 error:
     bootutil_serport_close();
-    return rc;
+    exit(rc);
 }
