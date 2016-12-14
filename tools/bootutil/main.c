@@ -212,11 +212,6 @@ main(int argc, char **argv)
 
     /* Command handler */
     if (cmdflag) {
-        /* Make sure we have a valid command */
-        if (cmd[0] == '\0') {
-            rc = bootutil_err_missing_arg("-c");
-            goto error;
-        }
         /* Try to parse the supplied command */
         rc = bootutil_cmd_parse(cmd);
         if (rc != 0) {
