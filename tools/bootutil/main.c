@@ -85,7 +85,11 @@ bootutil_help(int rc)
     printf("  -r              : perform a system reset (toggle DTR)\n");
     printf("  -?              : show help\n");
     printf("\n");
+#ifdef _WIN32
+    printf("Ex: $ %s -d COM14 -r\n", progname);
+#else
     printf("Ex: $ %s -d /dev/tty.SLAB_USBtoUART -r\n", progname);
+#endif
 
     exit(rc);
 }
