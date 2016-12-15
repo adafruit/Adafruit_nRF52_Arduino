@@ -1,12 +1,13 @@
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
 #include <limits.h>
-#include <ctype.h>
 #include "serialport.h"
+#include "infohelper.h"
+#include "gui.h"
+#include "commands.h"
 
 #ifdef _WIN32
 char *progname = "bootutil.exe";
@@ -14,68 +15,29 @@ char *progname = "bootutil.exe";
 char *progname = "bootutil";
 #endif
 
-volatile int g_bootutil_serport_open = 0;
-
-/*
-static int
-bootutil_stol(char *param_val, long min, long max, long *output, uint8_t b)
-{
-    char *endptr;
-    long lval;
-
-    if ((b != 10) && (b != 16)) {
-        return EINVAL;
-    }
-
-    lval = strtol(param_val, &endptr, b);
-    if (param_val != '\0' && *endptr == '\0' &&
-        lval >= min && lval <= max) {
-            *output = lval;
-    } else {
-        return EINVAL;
-    }
-
-    return 0;
-}
-*/
+static volatile int g_bootutil_serport_open = 0;
 
 static int
 bootutil_err_too_many_instances(char *arg_name)
 {
-    printf("Error: multiple instances of \"%s\"\n",
-                   arg_name);
+    LOGERR("multiple instances of \"%s\"\n",
+            arg_name);
     return EINVAL;
 }
 
 static int
 bootutil_err_missing_arg(char *arg_name)
 {
-    printf("Error: missing argument \"%s\"\n",
-                   arg_name);
+    LOGERR("missing argument \"%s\"\n",
+            arg_name);
     return EINVAL;
 }
 
 static int
 bootutil_err_missing_value(char *arg_name)
 {
-    printf("Error: missing value for argument \"%s\"\n",
-                   arg_name);
-    return EINVAL;
-}
-
-static int
-bootutil_err_unknown_arg(char *arg_name)
-{
-    printf("Error: unknown argument \"%s\"\n",
-                   arg_name);
-    return EINVAL;
-}
-
-static int
-bootutil_err_invalid_arg(char *arg_name)
-{
-    printf("Error: invalid argument \"%s\"\n",
-                   arg_name);
+    LOGERR("missing value for argument \"%s\"\n",
+            arg_name);
     return EINVAL;
 }
 
@@ -84,14 +46,15 @@ bootutil_help(int rc)
 {
     printf("Bootloader utility for the Adafruit nRF52 board family.\n");
     printf("\n");
-    printf("Usage: %s -d [TTY.DEVICE] -chr?\n", progname);
+    printf("Usage: %s -d <TTY.DEVICE> [-c <cmd>] [-ghrv]\n", progname);
     printf("\n");
-    printf("  -d [TTY.DEVICE] : serial/tty port name (mandatory)\n");
-    printf("  -c [command]    : execute the specified command\n");
+    printf("  -d <TTY.DEVICE> : serial/tty port name (mandatory)\n");
+    printf("  -c <cmd>        : execute the specified command\n");
     printf("     reset        : perform a system reset (toggle DTR)\n");
+    printf("  -g              : show GUI\n");
     printf("  -h              : show help\n");
     printf("  -r              : perform a system reset (toggle DTR)\n");
-    printf("  -?              : show help\n");
+    printf("  -v              : verbose output\n");
     printf("\n");
 #ifdef _WIN32
     printf("Ex: $ %s -d COM14 -r\n", progname);
@@ -100,35 +63,6 @@ bootutil_help(int rc)
 #endif
 
     exit(rc);
-}
-
-static int
-bootutil_cmd_reset(void)
-{
-    printf("Attempting to reset (toggling DTR)\n");
-
-    /* Toggle the DTR line to provoke a reset */
-    serialport_set_dtr(1);
-    serialport_set_dtr(0);
-
-    return 0;
-}
-
-static int
-bootutil_cmd_parse(char *argv)
-{
-    int i = 0;
-
-    while(argv[i]) {
-        argv[i] = tolower(argv[i]);
-        i++;
-    }
-
-    if (strcmp(argv, "reset") == 0) {
-        return bootutil_cmd_reset();
-    } else {
-        return bootutil_err_unknown_arg(argv);
-    }
 }
 
 static int
@@ -163,6 +97,8 @@ main(int argc, char **argv)
     int ttyflag = 0;
     int rstflag = 0;
     int cmdflag = 0;
+    int guiflag = 0;
+    int vrbflag = 0;
     char cmd[256];
     char tty[PATH_MAX + NAME_MAX];
 
@@ -175,7 +111,7 @@ main(int argc, char **argv)
     }
 
     /* Parse input params */
-    while ((ch = getopt(argc, argv, "d:c:rh")) != -1) {
+    while ((ch = getopt(argc, argv, "d:c:ghrv")) != -1) {
         switch (ch) {
         case 'd':
             /* Make sure we have a valid command (isn't another param) */
@@ -199,8 +135,14 @@ main(int argc, char **argv)
             cmdflag = 1;
             strncpy(cmd, optarg, sizeof(cmd)-1);
             break;
+        case 'g':
+            guiflag = 1;
+            break;
         case 'r':
             rstflag = 1;
+            break;
+        case 'v':
+            vrbflag = 1;
             break;
         case 'h':
         case '?':
@@ -210,10 +152,13 @@ main(int argc, char **argv)
     }
 
     /* Make sure we have something to do first */
-    if ((!rstflag) && (!cmdflag)) {
-        printf("No action requested\n");
-        /* Display help if no action requested */
-        bootutil_help(0);
+    if ((!rstflag) && (!cmdflag) && (!guiflag)) {
+        LOGERR("no action requested\n");
+    }
+
+    /* Set logger level to verbose if requested */
+    if (vrbflag == 1) {
+        infohelper_set_infolevel(2);
     }
 
     /* Try to open the serial port */
@@ -221,17 +166,17 @@ main(int argc, char **argv)
         rc = bootutil_err_missing_arg("-d");
         goto error;
     } else {
-        printf("Opening %s\n", tty);
         bootutil_serport_open(tty);
         /* Make sure the serial port was actually opened */
         if (g_bootutil_serport_open != 1) {
-            exit(bootutil_err_invalid_arg(tty));
+            rc = EINVAL;
+            goto error;
         }
     }
 
     /* Check if a system reset was requested (perform this first) */
     if (rstflag) {
-        rc = bootutil_cmd_reset();
+        rc = commands_cmd_reset();
         if (rc != 0) {
             goto error;
         }
@@ -240,7 +185,15 @@ main(int argc, char **argv)
     /* Command handler */
     if (cmdflag) {
         /* Try to parse the supplied command */
-        rc = bootutil_cmd_parse(cmd);
+        rc = commands_parse(cmd);
+        if (rc != 0) {
+            goto error;
+        }
+    }
+
+    /* GUI handler */
+    if (guiflag) {
+        rc = gui_init();
         if (rc != 0) {
             goto error;
         }
@@ -248,7 +201,7 @@ main(int argc, char **argv)
 
     /* Give an error warning for any unhandled errors */
     if (rc != 0) {
-        printf("RC = 0x%04X (%u): %s\n", rc, rc, strerror(rc));
+        LOGERR("rc = 0x%04X (%u): %s\n", rc, rc, strerror(rc));
     }
 
 error:

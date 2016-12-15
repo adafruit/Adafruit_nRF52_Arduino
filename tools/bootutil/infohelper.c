@@ -68,7 +68,7 @@ void infohelper_output(int loglevel, const char* format, ...)
 {
     if (infolevel < loglevel)
         return;
-    const char* log_level_names[] = {"error: ", "warning: ", "", "\t", "\t\t"};
+    const char* log_level_names[] = {"Error: ", "Warning: ", "", "\t", "\t\t"};
     const int log_level_names_count = sizeof(log_level_names) / sizeof(const char*);
     if (loglevel >= log_level_names_count)
         loglevel = log_level_names_count - 1;
