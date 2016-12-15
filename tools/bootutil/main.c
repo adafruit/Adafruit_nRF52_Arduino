@@ -40,7 +40,7 @@ bootutil_stol(char *param_val, long min, long max, long *output, uint8_t b)
 */
 
 static int
-bootutil_err_too_many_instances_arg(char *arg_name)
+bootutil_err_too_many_instances(char *arg_name)
 {
     printf("Error: multiple instances of \"%s\"\n",
                    arg_name);
@@ -48,9 +48,9 @@ bootutil_err_too_many_instances_arg(char *arg_name)
 }
 
 static int
-bootutil_err_missing_arg(char *arg_name)
+bootutil_err_missing_value(char *arg_name)
 {
-    printf("Error: missing argument \"%s\"\n",
+    printf("Error: missing value for argument \"%s\"\n",
                    arg_name);
     return EINVAL;
 }
@@ -169,12 +169,22 @@ main(int argc, char **argv)
     while ((ch = getopt(argc, argv, "d:c:rh")) != -1) {
         switch (ch) {
         case 'd':
+            /* Make sure we have a valid command (isn't another param) */
+            if (optarg[0] == '-') {
+                rc = bootutil_err_missing_value("-d");
+                goto error;
+            }
             strncpy(tty, optarg, sizeof(tty)-1);
             break;
         case 'c':
             /* Check if we've already received a command */
             if (cmdflag == 1) {
-                exit(bootutil_err_too_many_instances_arg("-c"));
+                exit(bootutil_err_too_many_instances("-c"));
+            }
+            /* Make sure we have a valid command (isn't another param) */
+            if (optarg[0] == '-') {
+                rc = bootutil_err_missing_value("-c");
+                goto error;
             }
             cmdflag = 1;
             strncpy(cmd, optarg, sizeof(cmd)-1);
@@ -191,7 +201,7 @@ main(int argc, char **argv)
 
     /* Make sure a serial port was specified */
     if (tty[0] == '\0') {
-        exit(bootutil_err_missing_arg("-d"));
+        exit(bootutil_err_missing_value("-d"));
     } else {
         /* Try to open the serial port */
         printf("Opening %s\n", tty);
