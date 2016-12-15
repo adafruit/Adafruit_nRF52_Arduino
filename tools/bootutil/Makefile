@@ -1,5 +1,5 @@
 TARGET = bootutil
-#LIBS = -lm
+LIBS = -lncurses
 CC = gcc
 CFLAGS = -g -Wall
 
@@ -17,7 +17,7 @@ HEADERS = $(wildcard *.h)
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(OBJECTS) -Wall $(LIBS) -o $@
+	$(CC) $(OBJECTS) -Wall -o $@ $(LIBS)
 
 clean:
 	-rm -f *.o
