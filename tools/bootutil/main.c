@@ -48,6 +48,14 @@ bootutil_err_too_many_instances(char *arg_name)
 }
 
 static int
+bootutil_err_missing_arg(char *arg_name)
+{
+    printf("Error: missing argument \"%s\"\n",
+                   arg_name);
+    return EINVAL;
+}
+
+static int
 bootutil_err_missing_value(char *arg_name)
 {
     printf("Error: missing value for argument \"%s\"\n",
@@ -152,6 +160,7 @@ main(int argc, char **argv)
 {
     int ch;
     int rc = -1;
+    int ttyflag = 0;
     int rstflag = 0;
     int cmdflag = 0;
     char cmd[256];
@@ -174,6 +183,7 @@ main(int argc, char **argv)
                 rc = bootutil_err_missing_value("-d");
                 goto error;
             }
+            ttyflag = 1;
             strncpy(tty, optarg, sizeof(tty)-1);
             break;
         case 'c':
@@ -199,11 +209,18 @@ main(int argc, char **argv)
         }
     }
 
-    /* Make sure a serial port was specified */
-    if (tty[0] == '\0') {
-        exit(bootutil_err_missing_value("-d"));
+    /* Make sure we have something to do first */
+    if ((!rstflag) && (!cmdflag)) {
+        printf("No action requested\n");
+        /* Display help if no action requested */
+        bootutil_help(0);
+    }
+
+    /* Try to open the serial port */
+    if (!ttyflag) {
+        rc = bootutil_err_missing_arg("-d");
+        goto error;
     } else {
-        /* Try to open the serial port */
         printf("Opening %s\n", tty);
         bootutil_serport_open(tty);
         /* Make sure the serial port was actually opened */
