@@ -6,6 +6,8 @@
 #include "serialport.h"
 #include "infohelper.h"
 
+extern int g_bootutil_gui_mode; /* Defined in main.c */
+
 /*
 static int
 commands_stol(char *param_val, long min, long max, long *output, uint8_t b)
@@ -40,8 +42,10 @@ commands_err_unknown_arg(char *arg_name)
 int
 commands_cmd_reset(void)
 {
-    // Can't log data w/GUI since it kills ncurses with -g option
-    //LOGINFO("attempting to reset (toggling DTR)\n");
+    /* Can't log data with -g option since stdout use kills ncurses  */
+    if (g_bootutil_gui_mode == 0) {
+        LOGINFO("attempting to reset (toggling DTR)\n");
+    }
 
     /* Toggle the DTR line to provoke a reset */
     serialport_set_dtr(1);

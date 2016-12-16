@@ -1,3 +1,5 @@
+#ifndef _WIN32
+
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -241,3 +243,5 @@ cleanup:
 
     return EXIT_SUCCESS;
 }
+
+#endif /* _WIN32 */

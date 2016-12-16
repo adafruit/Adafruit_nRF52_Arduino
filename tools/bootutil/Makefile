@@ -1,7 +1,9 @@
 TARGET = bootutil
-LIBS = -lncurses
 CC = gcc
 CFLAGS = -g -Wall
+ifneq ($(OS),Windows_NT) # ncurses support limited to *NIX for now
+LIBS = -lncurses
+endif
 
 .PHONY: default all clean
 

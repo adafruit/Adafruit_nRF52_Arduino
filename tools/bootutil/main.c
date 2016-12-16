@@ -6,8 +6,10 @@
 #include <limits.h>
 #include "serialport.h"
 #include "infohelper.h"
-#include "gui.h"
 #include "commands.h"
+#ifndef _WIN32
+#include "gui.h"
+#endif
 
 #ifdef _WIN32
 char *progname = "bootutil.exe";
@@ -15,7 +17,12 @@ char *progname = "bootutil.exe";
 char *progname = "bootutil";
 #endif
 
-static volatile int g_bootutil_serport_open = 0;
+#define BOOTUTIL_VER_MAJOR      (0U)
+#define BOOTUTIL_VER_MINOR      (0U)
+#define BOOTUTIL_VER_REVISION   (1U)
+
+volatile int g_bootutil_serport_open = 0;
+volatile int g_bootutil_gui_mode = 0;
 
 static int
 bootutil_err_too_many_instances(char *arg_name)
@@ -45,13 +52,22 @@ static void
 bootutil_help(int rc)
 {
     printf("Bootloader utility for the Adafruit nRF52 board family.\n");
+    printf("Version: %u.%u.%u\n", BOOTUTIL_VER_MAJOR,
+                                  BOOTUTIL_VER_MINOR,
+                                  BOOTUTIL_VER_REVISION);
     printf("\n");
+#ifndef _WIN32
     printf("Usage: %s -d <TTY.DEVICE> [-c <cmd>] [-ghrv]\n", progname);
+#else
+    printf("Usage: %s -d <TTY.DEVICE> [-c <cmd>] [-hrv]\n", progname);
+#endif
     printf("\n");
     printf("  -d <TTY.DEVICE> : serial/tty port name (mandatory)\n");
     printf("  -c <cmd>        : execute the specified command\n");
     printf("     reset        : perform a system reset (toggle DTR)\n");
+#ifndef _WIN32
     printf("  -g              : show GUI\n");
+#endif
     printf("  -h              : show help\n");
     printf("  -r              : perform a system reset (toggle DTR)\n");
     printf("  -v              : verbose output\n");
@@ -97,7 +113,6 @@ main(int argc, char **argv)
     int ttyflag = 0;
     int rstflag = 0;
     int cmdflag = 0;
-    int guiflag = 0;
     int vrbflag = 0;
     char cmd[256];
     char tty[PATH_MAX + NAME_MAX];
@@ -135,9 +150,11 @@ main(int argc, char **argv)
             cmdflag = 1;
             strncpy(cmd, optarg, sizeof(cmd)-1);
             break;
+#ifndef _WIN32
         case 'g':
-            guiflag = 1;
+            g_bootutil_gui_mode = 1;
             break;
+#endif
         case 'r':
             rstflag = 1;
             break;
@@ -152,7 +169,7 @@ main(int argc, char **argv)
     }
 
     /* Make sure we have something to do first */
-    if ((!rstflag) && (!cmdflag) && (!guiflag)) {
+    if ((!rstflag) && (!cmdflag) && (!g_bootutil_gui_mode)) {
         LOGERR("no action requested\n");
     }
 
@@ -191,13 +208,15 @@ main(int argc, char **argv)
         }
     }
 
+#ifndef _WIN32
     /* GUI handler */
-    if (guiflag) {
+    if (g_bootutil_gui_mode) {
         rc = gui_init(tty);
         if (rc != 0) {
             goto error;
         }
     }
+#endif
 
     /* Give an error warning for any unhandled errors */
     if (rc != 0) {
