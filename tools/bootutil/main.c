@@ -193,7 +193,7 @@ main(int argc, char **argv)
 
     /* GUI handler */
     if (guiflag) {
-        rc = gui_init();
+        rc = gui_init(tty);
         if (rc != 0) {
             goto error;
         }

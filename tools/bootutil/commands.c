@@ -40,7 +40,8 @@ commands_err_unknown_arg(char *arg_name)
 int
 commands_cmd_reset(void)
 {
-    LOGINFO("attempting to reset (toggling DTR)\n");
+    // Can't log data w/GUI since it kills ncurses with -g option
+    //LOGINFO("attempting to reset (toggling DTR)\n");
 
     /* Toggle the DTR line to provoke a reset */
     serialport_set_dtr(1);
