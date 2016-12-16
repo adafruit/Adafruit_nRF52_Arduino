@@ -114,8 +114,11 @@ main(int argc, char **argv)
     memset(cmd, '\0', sizeof(cmd));
     memset(tty, '\0', sizeof(cmd));
 
-    /* Display help menu on zero params */
+    /* Display help menu on zero params or '?' */
     if (argc == 1) {
+        bootutil_help(0);
+    }
+    if ((argc == 2) && (strcmp(argv[1], "?") == 0)) {
         bootutil_help(0);
     }
 
