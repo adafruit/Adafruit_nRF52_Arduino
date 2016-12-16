@@ -14,6 +14,15 @@ enum gui_action {
     GUI_ACTION_NONE = 0xFF,
 };
 
+struct gui_frame_cfg {
+    int x;
+    int y;
+    int w;
+    int h;
+    int titlebar;
+    int colorpair;
+};
+
 /* Advanced prototypes for command handler functions */
 int gui_handler_about(void);
 int gui_handler_reset(void);
@@ -59,11 +68,86 @@ gui_config(void)
     /* Setup color pairs */
 	init_pair(1, COLOR_CYAN, COLOR_BLACK);
 	init_pair(2, COLOR_BLACK, COLOR_BLACK);
+	init_pair(3, COLOR_WHITE, COLOR_BLUE);
     /* Hide the cursor by default */
     curs_set(0);
 }
 
-void gui_menu_print(WINDOW *win, int highlight)
+/*
+struct gui_frame_cfg cfg = {
+    .x = 1, .y = 1, .w = 10, .h = 2, .titlebar = true, .colorpair = 3
+};
+gui_draw_frame(mainwin, &cfg);
+*/
+static void
+gui_draw_frame(WINDOW *win, const struct gui_frame_cfg *cfg)
+{
+    int i, hpad;
+
+    if ((cfg->x < 0) || (cfg->y < 0)) {
+        return;
+    }
+
+    if ((!cfg->w) || (!cfg->h)) {
+        return;
+    }
+
+    /* Check if we need hpadding for the titlebar */
+    if (cfg->colorpair > 0) {
+        hpad = cfg->titlebar ? 2 : 0;
+    }
+
+    /* Set the frame colors */
+    attron(COLOR_PAIR(cfg->colorpair));
+
+    /* Top bar */
+    wmove(win, cfg->y, cfg->x);
+    addch(ACS_ULCORNER);
+    for (i=0;i<cfg->w;i++) {
+        addch(ACS_HLINE);
+    }
+    addch(ACS_URCORNER);
+
+    /* Title section if requested */
+    if (cfg->titlebar) {
+        wmove(win, cfg->y+1, cfg->x);
+        addch(ACS_VLINE);
+        wmove(win, cfg->y+1, cfg->x+cfg->w+1);
+        addch(ACS_VLINE);
+        wmove(win, cfg->y+2, cfg->x);
+        addch(ACS_LTEE);
+        for (i=0;i<cfg->w;i++) {
+            addch(ACS_HLINE);
+        }
+        addch(ACS_RTEE);
+    }
+
+    /* Middle lines */
+    for (i=0;i<cfg->h;i++) {
+        wmove(win, cfg->y+i+hpad+1, cfg->x);
+        addch(ACS_VLINE);
+        wmove(win, cfg->y+i+hpad+1, cfg->x+cfg->w+1);
+        addch(ACS_VLINE);
+    }
+
+    /* Bottom bar */
+    wmove(win,cfg-> y+cfg->h+hpad+1, cfg->x);
+    addch(ACS_LLCORNER);
+    for (i=0;i<cfg->w;i++) {
+        addch(ACS_HLINE);
+    }
+    addch(ACS_LRCORNER);
+
+    /* Clear the frame colors */
+    if (cfg->colorpair > 0) {
+        attroff(COLOR_PAIR(cfg->colorpair));
+    }
+
+	wrefresh(win);
+}
+
+static void
+gui_menu_print(WINDOW *win, int highlight)
 {
     int rows, cols;
 	int x, y, i;
