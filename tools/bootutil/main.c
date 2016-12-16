@@ -11,12 +11,6 @@
 #include "gui.h"
 #endif
 
-#ifdef _WIN32
-char *progname = "bootutil.exe";
-#else
-char *progname = "bootutil";
-#endif
-
 #define BOOTUTIL_VER_MAJOR      (0U)
 #define BOOTUTIL_VER_MINOR      (0U)
 #define BOOTUTIL_VER_REVISION   (1U)
@@ -57,9 +51,9 @@ bootutil_help(int rc)
                                   BOOTUTIL_VER_REVISION);
     printf("\n");
 #ifndef _WIN32
-    printf("Usage: %s -d <TTY.DEVICE> [-c <cmd>] [-ghrv]\n", progname);
+    printf("Usage: bootutil.exe -d <TTY.DEVICE> [-c <cmd>] [-ghrv]\n");
 #else
-    printf("Usage: %s -d <TTY.DEVICE> [-c <cmd>] [-hrv]\n", progname);
+    printf("Usage: bootutil -d <TTY.DEVICE> [-c <cmd>] [-hrv]\n");
 #endif
     printf("\n");
     printf("  -d <TTY.DEVICE> : serial/tty port name (mandatory)\n");
@@ -73,9 +67,9 @@ bootutil_help(int rc)
     printf("  -v              : verbose output\n");
     printf("\n");
 #ifdef _WIN32
-    printf("Ex: $ %s -d COM14 -r\n", progname);
+    printf("Ex: $ bootutil.exe -d COM14 -r\n");
 #else
-    printf("Ex: $ %s -d /dev/tty.SLAB_USBtoUART -r\n", progname);
+    printf("Ex: $ bootutil -d /dev/tty.SLAB_USBtoUART -r\n");
 #endif
 
     exit(rc);
