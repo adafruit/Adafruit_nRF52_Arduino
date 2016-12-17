@@ -168,6 +168,7 @@ main(int argc, char **argv)
     /* Make sure we have something to do first */
     if (!rstflag && !cmdflag && !g_bootutil_gui_mode) {
         LOGERR("no action requested\n");
+        goto error;
     }
 
     /* Set logger level to verbose if requested */
