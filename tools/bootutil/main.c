@@ -125,48 +125,48 @@ main(int argc, char **argv)
     /* Parse input params */
     while ((ch = getopt(argc, argv, "d:c:ghrv")) != -1) {
         switch (ch) {
-        case 'd':
-            /* Make sure we have a valid command (isn't another param) */
-            if (optarg[0] == '-') {
-                rc = bootutil_err_missing_value("-d");
-                goto error;
-            }
-            ttyflag = 1;
-            strncpy(tty, optarg, sizeof(tty)-1);
-            break;
-        case 'c':
-            /* Check if we've already received a command */
-            if (cmdflag == 1) {
-                exit(bootutil_err_too_many_instances("-c"));
-            }
-            /* Make sure we have a valid command (isn't another param) */
-            if (optarg[0] == '-') {
-                rc = bootutil_err_missing_value("-c");
-                goto error;
-            }
-            cmdflag = 1;
-            strncpy(cmd, optarg, sizeof(cmd)-1);
-            break;
+            case 'd':
+                /* Make sure we have a valid command (isn't another param) */
+                if (optarg[0] == '-') {
+                    rc = bootutil_err_missing_value("-d");
+                    goto error;
+                }
+                ttyflag = 1;
+                strncpy(tty, optarg, sizeof(tty)-1);
+                break;
+            case 'c':
+                /* Check if we've already received a command */
+                if (cmdflag == 1) {
+                    exit(bootutil_err_too_many_instances("-c"));
+                }
+                /* Make sure we have a valid command (isn't another param) */
+                if (optarg[0] == '-') {
+                    rc = bootutil_err_missing_value("-c");
+                    goto error;
+                }
+                cmdflag = 1;
+                strncpy(cmd, optarg, sizeof(cmd)-1);
+                break;
 #ifndef _WIN32
-        case 'g':
-            g_bootutil_gui_mode = 1;
-            break;
+            case 'g':
+                g_bootutil_gui_mode = 1;
+                break;
 #endif
-        case 'r':
-            rstflag = 1;
-            break;
-        case 'v':
-            vrbflag = 1;
-            break;
-        case 'h':
-        case '?':
-            bootutil_help(0);
-            break;
+            case 'r':
+                rstflag = 1;
+                break;
+            case 'v':
+                vrbflag = 1;
+                break;
+            case 'h':
+            case '?':
+                bootutil_help(0);
+                break;
         }
     }
 
     /* Make sure we have something to do first */
-    if ((!rstflag) && (!cmdflag) && (!g_bootutil_gui_mode)) {
+    if (!rstflag && !cmdflag && !g_bootutil_gui_mode) {
         LOGERR("no action requested\n");
     }
 
@@ -215,7 +215,7 @@ main(int argc, char **argv)
     }
 #endif
 
-    /* Give an error warning for any unhandled errors */
+    /* Display the return code of any unhandled errors */
     if (rc != 0) {
         LOGERR("rc = 0x%04X (%u): %s\n", rc, rc, strerror(rc));
     }

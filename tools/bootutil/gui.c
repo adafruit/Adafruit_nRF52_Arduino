@@ -73,12 +73,6 @@ gui_config(void)
     curs_set(0);
 }
 
-/*
-struct gui_frame_cfg cfg = {
-    .x = 1, .y = 1, .w = 10, .h = 2, .titlebar = true, .colorpair = 3
-};
-gui_draw_frame(mainwin, &cfg);
-*/
 static void
 gui_draw_frame(WINDOW *win, const struct gui_frame_cfg *cfg)
 {
@@ -93,12 +87,12 @@ gui_draw_frame(WINDOW *win, const struct gui_frame_cfg *cfg)
     }
 
     /* Check if we need hpadding for the titlebar */
-    if (cfg->colorpair > 0) {
-        hpad = cfg->titlebar ? 2 : 0;
-    }
+    hpad = cfg->titlebar ? 2 : 0;
 
     /* Set the frame colors */
-    attron(COLOR_PAIR(cfg->colorpair));
+    if (cfg->colorpair > 0) {
+        attron(COLOR_PAIR(cfg->colorpair));
+    }
 
     /* Top bar */
     wmove(win, cfg->y, cfg->x);
@@ -155,8 +149,18 @@ gui_menu_print(WINDOW *win, int highlight)
     /* Get the window dimenstions */
     getmaxyx(stdscr, rows, cols);
 
-    /* Draw some borders (hack, remove) */
-	box(win, 0, 0);
+    /* Draw some borders */
+    struct gui_frame_cfg cfg = {
+        .x = 0,
+        .y = 0,
+        .w = cols-2,
+        .h = rows-2,
+        .titlebar = false,
+        .colorpair = 0
+    };
+    gui_draw_frame(win, &cfg);
+
+	//box(win, 0, 0);
 
     /* Add the title */
     char *title = "Adafruit nRF52 Bootloader Utility";
@@ -220,7 +224,6 @@ gui_init(const char *ttyname)
     gui_config();
 
     /* Count the total menu items */
-    /* Check how many menu items we have */
     g_gui_menu_item_count = -1;
     while (gui_menu_items[++g_gui_menu_item_count].action != GUI_ACTION_NONE) {
     }
@@ -240,7 +243,7 @@ gui_init(const char *ttyname)
 	attroff(A_BOLD);
     attroff(COLOR_PAIR(2));
 
-    /* Navigation help menu */
+    /* Help message on navigation */
     char *dataentry = "Use the arrow or shortcut keys to continue, 'X' to exit";
     attron(COLOR_PAIR(1));
 	attron(A_BOLD);
@@ -252,7 +255,7 @@ gui_init(const char *ttyname)
     selected_menu_item = 1;
     gui_menu_print(mainwin, selected_menu_item);
 
-    /* Loop until we get a non navigation */
+    /* Check input until we get an exit request */
     while(1) {
         ch = getch();
         execute_menu_item = -1;
@@ -260,7 +263,7 @@ gui_init(const char *ttyname)
             case KEY_F(1):
                 break;
             case KEY_LEFT:
-    	        selected_menu_item --;
+    	        selected_menu_item--;
     			break;
     		case KEY_RIGHT:
     	        selected_menu_item++;
