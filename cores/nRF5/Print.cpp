@@ -17,6 +17,7 @@
 */
 
 #include <stdlib.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -186,6 +187,21 @@ size_t Print::println(const Printable& x)
   return n;
 }
 
+size_t Print::printf(const char * format, ...)
+{
+  char buf[256];
+  int len;
+
+  va_list ap;
+  va_start(ap, format);
+
+  len = vsnprintf(buf, 256, format, ap);
+  this->write(buf, len);
+
+  va_end(ap);
+  return len;
+}
+
 // Private Methods /////////////////////////////////////////////////////////////
 
 size_t Print::printNumber(unsigned long n, uint8_t base)
@@ -208,6 +224,20 @@ size_t Print::printNumber(unsigned long n, uint8_t base)
   return write(str);
 }
 
+size_t Print::printFloat(double number, uint8_t digits)
+{
+  char buf[256];
+  size_t s=0;
+
+  char format[] = "%.0f";
+  format[2] += digits;
+
+  s = snprintf(buf, 256, format, number);
+  s = write(buf, s);
+  return s;
+}
+
+#if 0
 size_t Print::printFloat(double number, uint8_t digits)
 {
   size_t n = 0;
@@ -252,3 +282,6 @@ size_t Print::printFloat(double number, uint8_t digits)
 
   return n;
 }
+#endif
+
+

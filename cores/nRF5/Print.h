@@ -78,6 +78,8 @@ class Print
     size_t println(double, int = 2);
     size_t println(const Printable&);
     size_t println(void);
+
+    size_t printf(const char * format, ...);
 };
 
 #endif

@@ -18,6 +18,8 @@
 */
 
 #include "variant.h"
+#include "wiring_constants.h"
+#include "wiring_digital.h"
 #include <nrf.h>
 
 // Must match temp register in bootloader
@@ -73,5 +75,12 @@ uint32_t bootloaderVersion = 0;
 void initVariant()
 {
   bootloaderVersion = BOOTLOADER_VERSION_REGISTER;
+
+  // LED1 & LED2
+  pinMode(PIN_LED1, OUTPUT);
+  digitalWrite(PIN_LED1, LOW);
+
+  pinMode(PIN_LED2, OUTPUT);
+  digitalWrite(PIN_LED2, LOW);
 }
 

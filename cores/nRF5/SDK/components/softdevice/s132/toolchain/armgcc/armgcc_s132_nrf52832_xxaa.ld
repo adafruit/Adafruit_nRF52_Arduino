@@ -6,7 +6,10 @@ GROUP(-lgcc -lc -lnosys)
 MEMORY
 {
   FLASH (rx) : ORIGIN = 0x1c000, LENGTH = 0x64000
-  RAM (rwx) :  ORIGIN = 0x20002080, LENGTH = 0xdf80
+  
+  /* RAM (rwx) :  ORIGIN = 0x20002080, LENGTH = 0xdf80  default ATTR SIZE of 0x580 */
+  /* Increase Attr Table Size to 0x1000 */
+  RAM (rwx) :  ORIGIN = 0x20002B00, LENGTH = 0xD500
 }
 
 SECTIONS
