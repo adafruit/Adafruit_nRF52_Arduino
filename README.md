@@ -40,11 +40,14 @@ $ sudo python setup.py install
 
 ## Arduino BLE Application Support
 
-This Arduino Core does **not** contain any Arduino style API's for BLE functionality. All the relevant Nordic SoftDevice (S110, S130, S132) header files are included build path when a SoftDevice is selected via the `Tools` menu.
+This Arduino Core does **not** contain any Arduino style API's for BLE functionality. All the relevant Nordic SoftDevice (S110, S130, S132) header files are included in the build path when a SoftDevice is selected via the `Tools` menu, and you can use the Nordic SDK to generate your own example code, or use one of the following libraries:
 
 ### Recommend BLE Libraries
 
- * [BLEPeripheral](https://github.com/sandeepmistry/arduino-BLEPeripheral)
+  * [Adafruit_nRF52_Arduino_Helpers](https://github.com/adafruit/Adafruit_nRF52_Arduino_Helpers)
+    * Recommended BLE library to use with the Adafruit nRF52 Feather board
+    * Contains base classes for BLE services and characteristics, and helper classes for BLE UART, DIS (Device Information Service) and OTA DFU.
+  * [BLEPeripheral](https://github.com/sandeepmistry/arduino-BLEPeripheral)
    * v0.3.0 and greater, available via the Arduino IDE's library manager.
    * Supports peripheral mode only.
 
