@@ -413,14 +413,14 @@ static void adafruit_bluefruit_task(void* arg)
 
   while (1)
   {
-    Bluefruit.poll();
+    Bluefruit._poll();
 
     vTaskDelay(1);
     //sd_app_evt_wait();
   }
 }
 
-void AdafruitBluefruit::poll(void)
+void AdafruitBluefruit::_poll(void)
 {
   enum { BLE_STACK_EVT_MSG_BUF_SIZE = (sizeof(ble_evt_t) + (GATT_MTU_SIZE_DEFAULT)) };
 

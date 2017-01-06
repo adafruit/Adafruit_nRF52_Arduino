@@ -68,8 +68,6 @@ void setupAdv(void)
 
 void loop() 
 {
-  Bluefruit.poll();
-
   // Toggle both LEDs every 1 second
   if ( millis() - ms >= 1000 )
   {

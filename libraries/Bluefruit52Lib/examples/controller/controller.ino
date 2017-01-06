@@ -71,8 +71,6 @@ void setupAdv(void)
 /**************************************************************************/
 void loop(void)
 {
-  Bluefruit.poll();
-  
   /* Wait for new data to arrive */
   uint8_t len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
   if (len == 0) return;

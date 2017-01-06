@@ -90,7 +90,6 @@ class AdafruitBluefruit
     err_t startAdvertising(void);
     void  stopAdvertising(void);
 
-    void poll(void);
 
     // Add service without using BLEService instance
     err_t addService(uint16_t uuid16);
@@ -106,6 +105,7 @@ class AdafruitBluefruit
 
     // internal usage only
     err_t _registerCharacteristic(BLECharacteristic* chars);
+    void _poll(void);
 
   private:
     BLEDfu _dfu_svc;
