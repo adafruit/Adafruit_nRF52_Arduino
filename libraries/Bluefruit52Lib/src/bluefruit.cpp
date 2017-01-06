@@ -79,7 +79,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _tx_power = 0;
 
   strcpy(_name, CFG_DEFAULT_NAME);
-  _txbuf_left = _txbuf_max = 0;
+  _txbuf_sem = NULL;
 
   _conn_hdl = BLE_GATT_HANDLE_INVALID;
 
@@ -390,14 +390,9 @@ ble_gap_addr_t AdafruitBluefruit::peerAddr(void)
   return _peer_addr;
 }
 
-bool AdafruitBluefruit::txbuf_available(void)
+bool AdafruitBluefruit::txbuf_get(uint32_t ms)
 {
-  return _txbuf_left > 0;
-}
-
-void AdafruitBluefruit::txbuf_decrease(void)
-{
-  _txbuf_left--;
+  return xSemaphoreTake(_txbuf_sem, ms2tick(ms));
 }
 
 /**
@@ -443,13 +438,17 @@ void AdafruitBluefruit::poll(void)
         _conn_hdl = evt->evt.gap_evt.conn_handle;
         _peer_addr = evt->evt.gap_evt.params.connected.peer_addr;
 
-        (void) sd_ble_tx_packet_count_get(_conn_hdl, &_txbuf_max);
-        _txbuf_left = _txbuf_max;
+        uint8_t txbuf_max;
+        (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
+        _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
       break;
 
       case BLE_GAP_EVT_DISCONNECTED:
         _conn_hdl = BLE_GATT_HANDLE_INVALID;
         digitalWrite(LED_CONN, LOW);
+
+        vSemaphoreDelete(_txbuf_sem);
+
         startAdvertising();
       break;
 
@@ -462,7 +461,10 @@ void AdafruitBluefruit::poll(void)
       break;
 
       case BLE_EVT_TX_COMPLETE:
-        _txbuf_left += evt->evt.common_evt.params.tx_complete.count;
+        for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
+        {
+          xSemaphoreGive(_txbuf_sem);
+        }
       break;
 
 #if 0

@@ -99,8 +99,7 @@ class AdafruitBluefruit
     uint16_t connHandle(void);
     ble_gap_addr_t peerAddr(void);
 
-    void txbuf_decrease(void);
-    bool txbuf_available(void);
+    bool txbuf_get(uint32_t ms);
 
     void disconnect(void);
     bool connected(void);
@@ -131,8 +130,7 @@ class AdafruitBluefruit
     ble_gap_addr_t    _peer_addr;
 
     // Transmission Buffer Count for HVX notification, max is seen at 7
-    uint8_t _txbuf_max;
-    uint8_t _txbuf_left;
+    SemaphoreHandle_t _txbuf_sem;
 
     bool _addToAdv(bool scan_resp, uint8_t type, const void* data, uint8_t len);
 };

@@ -124,22 +124,7 @@ size_t BLEUart::write (uint8_t b)
 
 size_t BLEUart::write (const uint8_t *content, size_t len)
 {
-#if 0 // need rtos for timeout waiting
-  TimeoutTimer tt(100);
-
-  while ( !Bluefruit.txbuf_available() && !tt.expired() )
-  {
-    delay(1);
-  }
-
-  if ( tt.expired() ) return 0;
-#endif
-
-  if ( !Bluefruit.txbuf_available() ) return 0;
-
-  _txd.notify(content, len);
-
-  return len;
+  return (_txd.notify(content, len) == NRF_SUCCESS) ? len : 0;
 }
 
 int BLEUart::available (void)
