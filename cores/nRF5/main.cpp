@@ -21,6 +21,27 @@
 void initVariant() __attribute__((weak));
 void initVariant() { }
 
+TaskHandle_t  _loopHandle;
+uint32_t _loopStacksize = 1024*2;
+
+void setLoopStacksize(uint32_t size)
+{
+  _loopStacksize = size;
+}
+
+static void loop_task(void* arg)
+{
+  (void) arg;
+
+  while (1)
+  {
+    loop();
+
+    // To compatible with most code where loop is not rtos-aware
+    taskYIELD();
+  }
+}
+
 /*
  * \brief Main entry point of Arduino application
  */
@@ -34,11 +55,19 @@ int main( void )
 
   setup();
 
-  for (;;)
-  {
-    loop();
-    if (serialEventRun) serialEventRun();
-  }
+  // Create a task for loop()
+  xTaskCreate( loop_task, "loop", _loopStacksize, NULL, TASK_PRIO_NORMAL, &_loopHandle);
+
+  // Start FreeRTOS scheduler.
+  vTaskStartScheduler();
+
+  NVIC_SystemReset();
+
+//  for (;;)
+//  {
+//    loop();
+//    if (serialEventRun) serialEventRun();
+//  }
 
   return 0;
 }

@@ -35,6 +35,8 @@ void yield( void ) ;
 void setup( void ) ;
 void loop( void ) ;
 
+void setLoopStacksize(uint32_t size);
+
 #include "WVariant.h"
 
 #ifdef __cplusplus
@@ -50,8 +52,10 @@ void loop( void ) ;
   #include "HardwareSerial.h"
   #include "pulse.h"
 #endif
+
 #include "delay.h"
 #include "binary.h"
+
 #ifdef __cplusplus
   #include "Uart.h"
 #endif
@@ -64,6 +68,23 @@ void loop( void ) ;
 #include "wiring_analog.h"
 #include "wiring_shift.h"
 #include "WInterrupts.h"
+
+// RTOS
+#include "FreeRTOS.h"
+#include "task.h"
+#include "timers.h"
+#include "queue.h"
+#include "semphr.h"
+
+enum
+{
+  TASK_PRIO_HIGHEST = 0,
+  TASK_PRIO_HIGH    = 1,
+  TASK_PRIO_NORMAL  = 2,
+  TASK_PRIO_LOW     = 3,
+  TASK_PRIO_LOWEST  = 4
+};
+
 
 // undefine stdlib's abs if encountered
 #ifdef abs
@@ -111,9 +132,5 @@ void loop( void ) ;
 
 // Interrupts
 #define digitalPinToInterrupt(P)   ( P )
-
-#ifdef __cplusplus
-#include "Uart.h"
-#endif // __cplusplus
 
 #endif // Arduino_h
