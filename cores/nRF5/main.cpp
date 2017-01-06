@@ -21,7 +21,6 @@
 void initVariant() __attribute__((weak));
 void initVariant() { }
 
-TaskHandle_t  _loopHandle;
 uint32_t _loopStacksize = 1024*2;
 
 void setLoopStacksize(uint32_t size)
@@ -38,7 +37,7 @@ static void loop_task(void* arg)
     loop();
 
     // To compatible with most code where loop is not rtos-aware
-    taskYIELD();
+    vTaskDelay(1); //taskYIELD();
   }
 }
 
@@ -56,6 +55,7 @@ int main( void )
   setup();
 
   // Create a task for loop()
+  TaskHandle_t  _loopHandle;
   xTaskCreate( loop_task, "loop", _loopStacksize, NULL, TASK_PRIO_NORMAL, &_loopHandle);
 
   // Start FreeRTOS scheduler.
