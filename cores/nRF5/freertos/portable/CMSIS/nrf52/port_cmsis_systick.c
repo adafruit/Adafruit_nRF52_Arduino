@@ -70,7 +70,9 @@
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "task.h"
-#include "app_util.h"
+//#include "app_util.h"
+
+#define ROUNDED_DIV(A, B) (((A) + ((B) / 2)) / (B))
 
 /*-----------------------------------------------------------
  * Implementation of functions defined in portable.h for the ARM CM4F port.
@@ -143,8 +145,8 @@ void vPortSetupTimerInterrupt( void )
 #error This port does not support 16 bit ticks.
 #endif
 
-#include "nrf_rtc.h"
-#include "nrf_drv_clock.h"
+//#include "nrf_rtc.h"
+//#include "nrf_drv_clock.h"
 
 
 /*-----------------------------------------------------------*/

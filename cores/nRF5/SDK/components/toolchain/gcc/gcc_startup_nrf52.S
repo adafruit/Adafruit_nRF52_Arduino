@@ -34,7 +34,7 @@
 #ifdef __STACK_SIZE
     .equ    Stack_Size, __STACK_SIZE
 #else
-    .equ    Stack_Size, 8192
+    .equ    Stack_Size, 8192 /* Reduce could affect SD function */
 #endif
     .globl __StackTop
     .globl __StackLimit
@@ -49,7 +49,7 @@ __StackTop:
 #ifdef __HEAP_SIZE
     .equ Heap_Size, __HEAP_SIZE
 #else
-    .equ    Heap_Size, 8192
+    .equ    Heap_Size,  24576 /* TODO Should be all space left */
 #endif
     .globl __HeapBase
     .globl __HeapLimit

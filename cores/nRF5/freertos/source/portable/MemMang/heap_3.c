@@ -67,8 +67,6 @@
     1 tab == 4 spaces!
 */
 
-#if 0
-
 /*
  * Implementation of pvPortMalloc() and vPortFree() that relies on the
  * compilers own malloc() and free() implementations.
@@ -133,5 +131,3 @@ void vPortFree( void *pv )
 }
 
 
-
-#endif
