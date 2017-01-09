@@ -111,6 +111,14 @@ int digitalRead( uint32_t ulPin )
   return ((NRF_GPIO->IN >> ulPin) & 1UL) ? HIGH : LOW ;
 }
 
+// TODO toggle not work !!!
+int digitalToggle( uint32_t pin )
+{
+  int state = 1 - (((NRF_GPIO->OUT >> pin) & 1UL) ? HIGH : LOW);
+  digitalWrite(pin, state);
+  return state;
+}
+
 #ifdef __cplusplus
 }
 #endif
