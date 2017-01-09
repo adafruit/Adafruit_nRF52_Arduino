@@ -41,22 +41,32 @@
 /*!
     @brief  Constructor
 
-    @param[in] buffer
-               Memory location to store data
     @param[in] depth
                Maximum number of items can be hold in buffer
     @param[in] item_size
                Number of bytes of each item
     @param[in] overwrite
-               Should the buffer is overwitten to the first item when it is full
+               Should the buffer is overwritten to the first item when it is full
 */
 /******************************************************************************/
-Adafruit_FIFO::Adafruit_FIFO(void* buffer, uint16_t depth, uint8_t item_size, bool overwrite)
-  : _buffer( (uint8_t*) buffer), _depth(depth), _item_size(item_size), _overwritable(overwrite)
+Adafruit_FIFO::Adafruit_FIFO(uint16_t depth, uint8_t item_size, bool overwrite)
+  : _depth(depth), _item_size(item_size), _overwritable(overwrite)
 {
+  _buffer = (uint8_t*) malloc(item_size*depth); // use malloc_name for debug
   _count = _wr_idx = _rd_idx = 0;
 
   _mutex = xSemaphoreCreateMutex();
+}
+
+
+/**
+ * Destructor
+ * @return
+ */
+Adafruit_FIFO::~Adafruit_FIFO()
+{
+  vSemaphoreDelete(_mutex);
+  free(_buffer); // use free_name for debug
 }
 
 bool Adafruit_FIFO::_mutex_lock(bool isr)
@@ -79,7 +89,9 @@ bool Adafruit_FIFO::_mutex_unlock(bool isr)
 /******************************************************************************/
 void Adafruit_FIFO::clear(void)
 {
+  _mutex_lock(false);
   _rd_idx = _wr_idx = _count = 0;
+  _mutex_unlock(false);
 }
 
 /******************************************************************************/

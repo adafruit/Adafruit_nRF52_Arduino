@@ -63,9 +63,9 @@ const uint8_t BLEUART_UUID_CHR_TXD[] =
 /**
  * Constructor
  */
-BLEUart::BLEUart(void)
+BLEUart::BLEUart(uint16_t fifo_depth)
   : BLEService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD),
-    _rxd_fifo(_rxd_buf, sizeof(_rxd_buf), 1, true)
+    _rxd_fifo(fifo_depth, 1)
 {
 
 }

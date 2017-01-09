@@ -224,6 +224,7 @@ size_t Print::printNumber(unsigned long n, uint8_t base)
   return write(str);
 }
 
+#if 0
 size_t Print::printFloat(double number, uint8_t digits)
 {
   char buf[256];
@@ -237,7 +238,7 @@ size_t Print::printFloat(double number, uint8_t digits)
   return s;
 }
 
-#if 0
+#else
 size_t Print::printFloat(double number, uint8_t digits)
 {
   size_t n = 0;

@@ -42,7 +42,7 @@
 #include "BLECharacteristic.h"
 #include "BLEService.h"
 
-#define BLE_UART_FIFO_LEN   64
+#define BLE_UART_DEFAULT_FIFO_DEPTH   256
 
 class BLEUart : public BLEService, public Stream
 {
@@ -50,11 +50,10 @@ class BLEUart : public BLEService, public Stream
     BLECharacteristic _txd;
     BLECharacteristic _rxd;
 
-    uint8_t           _rxd_buf[BLE_UART_FIFO_LEN];
     Adafruit_FIFO     _rxd_fifo;
 
   public:
-    BLEUart(void);
+    BLEUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
 
     virtual err_t start(void);
 

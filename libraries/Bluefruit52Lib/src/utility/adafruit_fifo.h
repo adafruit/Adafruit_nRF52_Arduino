@@ -59,7 +59,10 @@ class Adafruit_FIFO
 
   public:
     // Constructor
-    Adafruit_FIFO(void* buffer, uint16_t depth, uint8_t item_size, bool overwrite);
+    Adafruit_FIFO(uint16_t depth, uint8_t item_size, bool overwrite = false);
+
+    virtual ~Adafruit_FIFO();
+
 
     void clear(void);
     bool peek(void* buffer);
