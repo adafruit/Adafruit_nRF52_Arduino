@@ -23,14 +23,13 @@ void initVariant() { }
 
 uint32_t _loopStacksize = 1024*2;
 
-void setLoopStacksize(uint32_t size)
-{
-  _loopStacksize = size;
-}
+uint32_t setLoopStacksize(void) __attribute__ ((weak));
 
 static void loop_task(void* arg)
 {
   (void) arg;
+
+  setup();
 
   while (1)
   {
@@ -50,9 +49,12 @@ int main( void )
 
   initVariant();
 
-  delay(1);
+  delay_blocking(1);
 
-  setup();
+  if (setLoopStacksize)
+  {
+    _loopStacksize = setLoopStacksize();
+  }
 
   // Create a task for loop()
   TaskHandle_t  _loopHandle;

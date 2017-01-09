@@ -34,7 +34,8 @@ void yield( void ) ;
 /* sketch */
 void setup( void ) ;
 void loop( void ) ;
-void setLoopStacksize(uint32_t size);
+
+uint32_t setLoopStacksize(void);
 
 #include "WVariant.h"
 

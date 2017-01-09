@@ -48,7 +48,4 @@
 #include "queue.h"
 #include "semphr.h"
 
-#define rtos_delay(ms)    vTaskDelay(ms2tick(ms))
-
-
 #endif /* RTOS_H_ */

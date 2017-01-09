@@ -19,10 +19,9 @@ BLEBas blebas;
 
 void setup() 
 {
-  pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(115200);
 
-  Serial.println("BLEUART Example");
+  Serial.println("Bluefruit52 BLEUART Example");
 
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");

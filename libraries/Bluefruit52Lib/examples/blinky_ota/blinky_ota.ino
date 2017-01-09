@@ -16,7 +16,6 @@
 
 void setup() 
 {
-  pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 Blinky Example");
@@ -48,6 +47,6 @@ void loop()
   digitalToggle(LED_BUILTIN);
   digitalToggle(LED_CONN);
 
-  rtos_delay(1000);
+  delay(1000);
 }
 
