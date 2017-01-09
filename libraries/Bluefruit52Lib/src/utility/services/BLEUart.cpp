@@ -73,7 +73,7 @@ BLEUart::BLEUart(void)
 void bleuart_rxd_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
 {
   BLEUart& uart_svc = (BLEUart&) chr.parentService();
-  uart_svc._rxd_fifo.write_n(request->data, request->len);
+  uart_svc._rxd_fifo.write(request->data, request->len);
 }
 
 err_t BLEUart::start(void)
@@ -114,7 +114,7 @@ int BLEUart::read (void)
 
 int BLEUart::read (uint8_t * buf, size_t size)
 {
-  return _rxd_fifo.read_n(buf, size);
+  return _rxd_fifo.read(buf, size);
 }
 
 size_t BLEUart::write (uint8_t b)

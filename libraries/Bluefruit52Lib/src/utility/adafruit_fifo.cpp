@@ -55,7 +55,22 @@ Adafruit_FIFO::Adafruit_FIFO(void* buffer, uint16_t depth, uint8_t item_size, bo
   : _buffer( (uint8_t*) buffer), _depth(depth), _item_size(item_size), _overwritable(overwrite)
 {
   _count = _wr_idx = _rd_idx = 0;
+
+  _mutex = xSemaphoreCreateMutex();
 }
+
+bool Adafruit_FIFO::_mutex_lock(bool isr)
+{
+  (void) isr;
+  return xSemaphoreTake(_mutex, portMAX_DELAY);
+}
+
+bool Adafruit_FIFO::_mutex_unlock(bool isr)
+{
+  (void) isr;
+  return xSemaphoreGive(_mutex);
+}
+
 
 /******************************************************************************/
 /*!
@@ -75,9 +90,11 @@ void Adafruit_FIFO::clear(void)
                Memory address of the item
 */
 /******************************************************************************/
-bool Adafruit_FIFO::write(void const* item)
+uint16_t Adafruit_FIFO::write(void const* item)
 {
-  if ( full() && !_overwritable ) return false;
+  if ( full() && !_overwritable ) return 0;
+
+  _mutex_lock(false);
 
   memcpy( _buffer + (_wr_idx * _item_size),
           item,
@@ -94,7 +111,9 @@ bool Adafruit_FIFO::write(void const* item)
     _count++;
   }
 
-  return true;
+  _mutex_unlock(false);
+
+  return 1;
 }
 
 /******************************************************************************/
@@ -109,7 +128,7 @@ bool Adafruit_FIFO::write(void const* item)
     @return    Number of written items
 */
 /******************************************************************************/
-uint16_t Adafruit_FIFO::write_n(void const * data, uint16_t n)
+uint16_t Adafruit_FIFO::write(void const * data, uint16_t n)
 {
   if ( n == 0 ) return 0;
 
@@ -133,9 +152,11 @@ uint16_t Adafruit_FIFO::write_n(void const * data, uint16_t n)
                Memory address to store item
 */
 /******************************************************************************/
-bool Adafruit_FIFO::read(void* buffer)
+uint16_t Adafruit_FIFO::read(void* buffer)
 {
-  if( empty() ) return false;
+  if( empty() ) return 0;
+
+  _mutex_lock(false);
 
   memcpy(buffer,
          _buffer + (_rd_idx * _item_size),
@@ -143,7 +164,9 @@ bool Adafruit_FIFO::read(void* buffer)
   _rd_idx = (_rd_idx + 1) % _depth;
   _count--;
 
-  return true;
+  _mutex_unlock(false);
+
+  return 1;
 }
 
 /******************************************************************************/
@@ -158,8 +181,7 @@ bool Adafruit_FIFO::read(void* buffer)
     @return    Number of read items
 */
 /******************************************************************************/
-
-uint16_t Adafruit_FIFO::read_n (void * buffer, uint16_t n)
+uint16_t Adafruit_FIFO::read(void * buffer, uint16_t n)
 {
   if( n == 0 ) return 0;
 

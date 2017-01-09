@@ -39,6 +39,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <Arduino.h>
 
 class Adafruit_FIFO
 {
@@ -51,6 +52,11 @@ class Adafruit_FIFO
     volatile uint16_t _wr_idx       ; ///< write pointer
     volatile uint16_t _rd_idx       ; ///< read pointer
 
+    SemaphoreHandle_t _mutex;
+
+    bool _mutex_lock(bool isr);
+    bool _mutex_unlock(bool isr);
+
   public:
     // Constructor
     Adafruit_FIFO(void* buffer, uint16_t depth, uint8_t item_size, bool overwrite);
@@ -59,11 +65,14 @@ class Adafruit_FIFO
     bool peek(void* buffer);
     bool peekAt(uint16_t position, void * p_buffer);
 
-    bool write(void const* item);
-    uint16_t write_n(void const * data, uint16_t n);
+    uint16_t write(void const* item);
+    uint16_t write(void const * data, uint16_t n);
 
-    bool read(void* buffer);
-    uint16_t read_n (void * buffer, uint16_t n);
+    uint16_t read(void* buffer);
+    uint16_t read(void * buffer, uint16_t n);
+
+//    uint16_t read_isr(void* buffer);
+//    uint16_t read_isr(void * buffer, uint16_t n);
 
     inline bool     empty(void)     { return _count == 0;      }
     inline bool     full(void)      { return _count == _depth; }
