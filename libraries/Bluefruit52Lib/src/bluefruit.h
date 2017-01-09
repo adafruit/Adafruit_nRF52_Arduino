@@ -46,6 +46,7 @@
 #include "utility/services/BLEDfu.h"
 #include "utility/services/BLEUart.h"
 #include "utility/services/BLEBas.h"
+#include "utility/services/BLEBeacon.h"
 
 #define BLE_MAX_CHARS         50
 
@@ -75,6 +76,8 @@ class AdafruitBluefruit
     bool addAdvUuid(uint16_t uuid16);
     bool addAdvUuid(uint8_t const  uuid128[]);
     bool addAdvService(BLEService& service);
+
+    bool setAdvBeacon(BLEBeacon& beacon);
 
     // Scan Response Data (less helper than Adv packet)
     uint8_t getScanLen(void);

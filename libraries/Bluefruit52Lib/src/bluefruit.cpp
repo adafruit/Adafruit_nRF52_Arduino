@@ -245,6 +245,11 @@ bool AdafruitBluefruit::addAdvFlags(uint8_t flags)
   return addAdvData(BLE_GAP_AD_TYPE_FLAGS, &flags, 1);
 }
 
+bool AdafruitBluefruit::setAdvBeacon(BLEBeacon& beacon)
+{
+  return beacon.start();
+}
+
 uint8_t AdafruitBluefruit::getAdvLen(void)
 {
   return _adv.count;

@@ -25,7 +25,7 @@ void setup()
   Serial.println("BLEUART Example");
 
   Bluefruit.begin();
-  Bluefruit.setName("Bluefruit 52");
+  Bluefruit.setName("Bluefruit52");
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
