@@ -69,11 +69,7 @@ void setLoopStacksize(uint32_t size);
 #include "WInterrupts.h"
 
 // RTOS
-#include "FreeRTOS.h"
-#include "task.h"
-#include "timers.h"
-#include "queue.h"
-#include "semphr.h"
+#include "rtos.h"
 
 enum
 {

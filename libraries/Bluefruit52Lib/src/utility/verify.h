@@ -60,7 +60,7 @@ extern "C"
   #define _VERIFY_COUNTER __LINE__
 #endif
 
-#define VERIFY_STATIC(const_expr, message) enum { XSTRING_CONCAT_(static_verify_, _VERIFY_COUNTER) = 1/(!!(const_expr)) }
+#define VERIFY_STATIC(const_expr) enum { XSTRING_CONCAT_(static_verify_, _VERIFY_COUNTER) = 1/(!!(const_expr)) }
 
 //--------------------------------------------------------------------+
 // VERIFY Helper
