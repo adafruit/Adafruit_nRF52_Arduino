@@ -67,7 +67,7 @@
 #define BLUEFRUIT_TASK_STACKSIZE   (1024*4)
 
 
-static void adafruit_bluefruit_task(void* arg);
+void adafruit_bluefruit_task(void* arg);
 
 AdafruitBluefruit Bluefruit;
 
@@ -412,7 +412,7 @@ enum {
   SEC_PARAM_MAX_KEY_SIZE    = 16
 };
 
-static void adafruit_bluefruit_task(void* arg)
+void adafruit_bluefruit_task(void* arg)
 {
   (void) arg;
 

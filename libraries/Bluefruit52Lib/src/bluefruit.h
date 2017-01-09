@@ -108,7 +108,6 @@ class AdafruitBluefruit
 
     // internal usage only
     err_t _registerCharacteristic(BLECharacteristic* chars);
-    void _poll(void);
 
   private:
     BLEDfu _dfu_svc;
@@ -136,6 +135,9 @@ class AdafruitBluefruit
     SemaphoreHandle_t _txbuf_sem;
 
     bool _addToAdv(bool scan_resp, uint8_t type, const void* data, uint8_t len);
+    void _poll(void);
+
+    friend void adafruit_bluefruit_task(void* arg);
 };
 
 extern AdafruitBluefruit Bluefruit;
