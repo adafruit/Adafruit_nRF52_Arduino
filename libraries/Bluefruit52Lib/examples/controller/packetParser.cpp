@@ -1,13 +1,6 @@
 #include <string.h>
 #include <Arduino.h>
-#include <SPI.h>
-#if not defined (_VARIANT_ARDUINO_DUE_X_) && not defined (_VARIANT_ARDUINO_ZERO_)
-  #include <SoftwareSerial.h>
-#endif
-
-#include "Adafruit_BLE.h"
-#include "Adafruit_BluefruitLE_SPI.h"
-#include "Adafruit_BluefruitLE_UART.h"
+#include <bluefruit.h>
 
 
 #define PACKET_ACC_LEN                  (15)
@@ -74,7 +67,7 @@ void printHex(const uint8_t * data, const uint32_t numBytes)
     @brief  Waits for incoming data and parses it
 */
 /**************************************************************************/
-uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout) 
+uint8_t readPacket(BLEUart *ble_uart, uint16_t timeout) 
 {
   uint16_t origtimeout = timeout, replyidx = 0;
 
@@ -97,8 +90,8 @@ uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout)
     if ((packetbuffer[1] == 'L') && (replyidx == PACKET_LOCATION_LEN))
       break;
 
-    while (ble->available()) {
-      char c =  ble->read();
+    while (ble_uart->available()) {
+      char c =  ble_uart->read();
       if (c == '!') {
         replyidx = 0;
       }

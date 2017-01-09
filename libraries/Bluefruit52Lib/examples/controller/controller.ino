@@ -17,7 +17,7 @@
 BLEUart bleuart;
 
 // function prototypes over in packetparser.cpp
-uint8_t readPacket(Adafruit_BLE *ble, uint16_t timeout);
+uint8_t readPacket(BLEUart *ble_uart, uint16_t timeout);
 float parsefloat(uint8_t *buffer);
 void printHex(const uint8_t * data, const uint32_t numBytes);
 
@@ -34,11 +34,11 @@ extern uint8_t packetbuffer[];
 void setup(void)
 {
   Serial.begin(115200);
-  Serial.println(F("Adafruit Bluefruit App Controller Example"));
-  Serial.println(F("-----------------------------------------"));
+  Serial.println(F("Adafruit Bluefruit52 App Controller Example"));
+  Serial.println(F("-------------------------------------------"));
 
   Bluefruit.begin();
-  Bluefruit.setName("Bluefruit");
+  Bluefruit.setName("Bluefruit52");
 
   // Configure and Start BLE Uart Service
   bleuart.start();
@@ -72,7 +72,7 @@ void setupAdv(void)
 void loop(void)
 {
   /* Wait for new data to arrive */
-  uint8_t len = readPacket(&ble, BLE_READPACKET_TIMEOUT);
+  uint8_t len = readPacket(&bleuart, 500);
   if (len == 0) return;
 
   /* Got a packet! */
