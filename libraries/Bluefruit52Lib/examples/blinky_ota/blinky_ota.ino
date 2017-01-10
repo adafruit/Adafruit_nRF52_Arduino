@@ -45,7 +45,6 @@ void loop()
 {
   // Toggle both LEDs every 1 second
   digitalToggle(LED_BUILTIN);
-  digitalToggle(LED_CONN);
 
   delay(1000);
 }

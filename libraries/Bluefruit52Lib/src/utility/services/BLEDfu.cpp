@@ -127,8 +127,12 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
       Bluefruit.disconnect();
       Bluefruit.stopAdvertising();
 
+      // Disable Systick to prevent Interrupt happens after changing vector table
+      bitClear(SysTick->CTRL, SysTick_CTRL_ENABLE_Pos);
+
       // Set GPReset to DFU OTA
       enum { DFU_OTA_MAGIC = 0xB1 };
+      sd_power_gpregret_clr(0xFF);
       VERIFY_STATUS( sd_power_gpregret_set(DFU_OTA_MAGIC), RETURN_VOID);
       VERIFY_STATUS( sd_softdevice_disable(), RETURN_VOID );
       VERIFY_STATUS( sd_softdevice_vector_table_base_set(NRF_UICR->NRFFW[0]), RETURN_VOID);
@@ -137,14 +141,15 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
       peer_data->addr = Bluefruit.peerAddr();
       peer_data->crc16 = crc16((uint8_t*) peer_data, offsetof(peer_data_t, crc16));
 
-      NVIC_ClearPendingIRQ(SWI2_IRQn);
+      NVIC_ClearPendingIRQ(SD_EVT_IRQn);
 
       // Disable all interrupts
-      for(int i=0; i<FPU_IRQn; i++)
+      for(int i=0; i <= FPU_IRQn; i++)
       {
         NVIC_DisableIRQ( (IRQn_Type) i );
       }
 
+      __set_CONTROL(0); // switch to MSP, required if using FreeRTOS
       bootloader_util_app_start(NRF_UICR->NRFFW[0]);
     }
   }

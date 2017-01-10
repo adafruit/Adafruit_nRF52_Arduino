@@ -89,7 +89,7 @@
  * See http://www.freertos.org/a00110.html.
  *----------------------------------------------------------*/
 
-#define configTICK_SOURCE                                                         FREERTOS_USE_SYSTICK // FREERTOS_USE_RTC
+#define configTICK_SOURCE                                                         FREERTOS_USE_SYSTICK
 
 #define configUSE_PREEMPTION                                                      1
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION                                   0
@@ -207,6 +207,7 @@ standard names - or at least those used in the unmodified vector table. */
 /* Code below should be only used by the compiler, and not the assembler. */
 #if !(defined(__ASSEMBLY__) || defined(__ASSEMBLER__))
     #include "nrf.h"
+    //#include "nrf_assert.h"
 
     /* This part of definitions may be problematic in assembly - it uses definitions from files that are not assembly compatible. */
     /* Cortex-M specific definitions. */
