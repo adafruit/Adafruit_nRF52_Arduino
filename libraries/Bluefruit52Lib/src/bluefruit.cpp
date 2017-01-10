@@ -64,7 +64,7 @@
 // To change this value, an adjustment for SRAM is required in linker script
 #define BLE_GATTS_ATTR_TABLE_SIZE   0x1000
 
-#define BLUEFRUIT_TASK_STACKSIZE   (1024*4)
+#define BLUEFRUIT_TASK_STACKSIZE   (1024*5)
 
 extern "C" void SD_EVT_IRQHandler(void);
 void adafruit_bluefruit_task(void* arg);
@@ -74,6 +74,8 @@ AdafruitBluefruit Bluefruit;
 AdafruitBluefruit::AdafruitBluefruit(void)
 {
   _ble_event_sem = NULL;
+
+  _led_conn = true;
 
   varclr(&_adv);
   varclr(&_scan_resp);
@@ -162,6 +164,11 @@ err_t AdafruitBluefruit::begin(void)
 void AdafruitBluefruit::setName(const char* str)
 {
   strncpy(_name, str, 32);
+}
+
+void AdafruitBluefruit::enableLedConn(bool enabled)
+{
+  _led_conn = enabled;
 }
 
 bool AdafruitBluefruit::connected(void)
@@ -451,7 +458,7 @@ void AdafruitBluefruit::_poll(void)
       switch ( evt->header.evt_id  )
       {
         case BLE_GAP_EVT_CONNECTED:
-          digitalWrite(LED_CONN, HIGH);
+          if (_led_conn) digitalWrite(LED_CONN, HIGH);
 
           _conn_hdl = evt->evt.gap_evt.conn_handle;
           _peer_addr = evt->evt.gap_evt.params.connected.peer_addr;
@@ -462,8 +469,9 @@ void AdafruitBluefruit::_poll(void)
         break;
 
         case BLE_GAP_EVT_DISCONNECTED:
+          if (_led_conn)  digitalWrite(LED_CONN, LOW);
+
           _conn_hdl = BLE_GATT_HANDLE_INVALID;
-          digitalWrite(LED_CONN, LOW);
 
           vSemaphoreDelete(_txbuf_sem);
 

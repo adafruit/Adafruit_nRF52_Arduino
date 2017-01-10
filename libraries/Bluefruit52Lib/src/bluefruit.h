@@ -60,6 +60,8 @@ class AdafruitBluefruit
 
     err_t begin(void);
     
+    void enableLedConn(bool enabled);
+
     void setName(const char* str);
 //    bool setTxPower(int8_t power);
 
@@ -112,8 +114,9 @@ class AdafruitBluefruit
 
   private:
     SemaphoreHandle_t _ble_event_sem;
-
     BLEDfu _dfu_svc;
+
+    bool _led_conn;
 
     // ADV Data
     struct {
