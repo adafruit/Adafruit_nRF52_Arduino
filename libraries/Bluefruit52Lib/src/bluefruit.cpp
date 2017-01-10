@@ -66,13 +66,15 @@
 
 #define BLUEFRUIT_TASK_STACKSIZE   (1024*4)
 
-
+extern "C" void SD_EVT_IRQHandler(void);
 void adafruit_bluefruit_task(void* arg);
 
 AdafruitBluefruit Bluefruit;
 
 AdafruitBluefruit::AdafruitBluefruit(void)
 {
+  _ble_event_sem = NULL;
+
   varclr(&_adv);
   varclr(&_scan_resp);
 
@@ -149,6 +151,10 @@ err_t AdafruitBluefruit::begin(void)
   // Create RTOS Task for BLE Event
   TaskHandle_t task_hdl;
   xTaskCreate( adafruit_bluefruit_task, "ble handler", BLUEFRUIT_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &task_hdl);
+
+  _ble_event_sem = xSemaphoreCreateBinary();
+  VERIFY(_ble_event_sem, NRF_ERROR_NO_MEM);
+  NVIC_EnableIRQ(SD_EVT_IRQn);
 
   return NRF_SUCCESS;
 }
@@ -400,10 +406,6 @@ bool AdafruitBluefruit::txbuf_get(uint32_t ms)
   return xSemaphoreTake(_txbuf_sem, ms2tick(ms));
 }
 
-/**
- *
- */
-
 enum {
   SEC_PARAM_TIMEOUT         = 30 , /**< Timeout for Pairing Request or Security Request (in seconds). */
   SEC_PARAM_BOND            = 1  , /**< Perform bonding. */
@@ -419,124 +421,136 @@ void adafruit_bluefruit_task(void* arg)
   while (1)
   {
     Bluefruit._poll();
-
-    vTaskDelay(1);
-    //sd_app_evt_wait();
   }
+}
+
+void SD_EVT_IRQHandler(void)
+{
+  Bluefruit._sd_event_isr();
+}
+
+void AdafruitBluefruit::_sd_event_isr(void)
+{
+  BaseType_t yield_req = pdFALSE;
+  xSemaphoreGiveFromISR(_ble_event_sem, &yield_req);
+  portYIELD_FROM_ISR(yield_req);
 }
 
 void AdafruitBluefruit::_poll(void)
 {
   enum { BLE_STACK_EVT_MSG_BUF_SIZE = (sizeof(ble_evt_t) + (GATT_MTU_SIZE_DEFAULT)) };
 
-  uint32_t ev_buf[BLE_STACK_EVT_MSG_BUF_SIZE/4 + 4];
-  uint16_t ev_len = sizeof(ev_buf);
-  ble_evt_t* evt = (ble_evt_t*) ev_buf;
-
-  if( NRF_SUCCESS == sd_ble_evt_get((uint8_t*)ev_buf, &ev_len))
+  if ( xSemaphoreTake(_ble_event_sem, portMAX_DELAY) )
   {
-    switch ( evt->header.evt_id  )
+    uint32_t ev_buf[BLE_STACK_EVT_MSG_BUF_SIZE/4 + 4];
+    uint16_t ev_len = sizeof(ev_buf);
+    ble_evt_t* evt = (ble_evt_t*) ev_buf;
+
+    if( NRF_SUCCESS == sd_ble_evt_get((uint8_t*)ev_buf, &ev_len))
     {
-      case BLE_GAP_EVT_CONNECTED:
-        digitalWrite(LED_CONN, HIGH);
-
-        _conn_hdl = evt->evt.gap_evt.conn_handle;
-        _peer_addr = evt->evt.gap_evt.params.connected.peer_addr;
-
-        uint8_t txbuf_max;
-        (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
-        _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
-      break;
-
-      case BLE_GAP_EVT_DISCONNECTED:
-        _conn_hdl = BLE_GATT_HANDLE_INVALID;
-        digitalWrite(LED_CONN, LOW);
-
-        vSemaphoreDelete(_txbuf_sem);
-
-        startAdvertising();
-      break;
-
-      case BLE_GAP_EVT_TIMEOUT:
-        if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISING)
-        {
-          // Restart Advertising
-          startAdvertising();
-        }
-      break;
-
-      case BLE_EVT_TX_COMPLETE:
-        for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
-        {
-          xSemaphoreGive(_txbuf_sem);
-        }
-      break;
-
-#if 0
-      case BLE_GAP_EVT_SEC_INFO_REQUEST:
-        if (_enc_key.master_id.ediv == evt->evt.gap_evt.params.sec_info_request.master_id.ediv)
-        {
-          sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_enc_key.enc_info, NULL, NULL);
-        } else
-        {
-          sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
-        }
-      break;
-
-      case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
+      switch ( evt->header.evt_id  )
       {
-        ble_gap_sec_params_t sec_para =
+        case BLE_GAP_EVT_CONNECTED:
+          digitalWrite(LED_CONN, HIGH);
+
+          _conn_hdl = evt->evt.gap_evt.conn_handle;
+          _peer_addr = evt->evt.gap_evt.params.connected.peer_addr;
+
+          uint8_t txbuf_max;
+          (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
+          _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
+        break;
+
+        case BLE_GAP_EVT_DISCONNECTED:
+          _conn_hdl = BLE_GATT_HANDLE_INVALID;
+          digitalWrite(LED_CONN, LOW);
+
+          vSemaphoreDelete(_txbuf_sem);
+
+          startAdvertising();
+        break;
+
+        case BLE_GAP_EVT_TIMEOUT:
+          if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISING)
+          {
+            // Restart Advertising
+            startAdvertising();
+          }
+        break;
+
+        case BLE_EVT_TX_COMPLETE:
+          for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
+          {
+            xSemaphoreGive(_txbuf_sem);
+          }
+        break;
+
+  #if 0
+        case BLE_GAP_EVT_SEC_INFO_REQUEST:
+          if (_enc_key.master_id.ediv == evt->evt.gap_evt.params.sec_info_request.master_id.ediv)
+          {
+            sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_enc_key.enc_info, NULL, NULL);
+          } else
+          {
+            sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
+          }
+        break;
+
+        case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
         {
-            .bond         = SEC_PARAM_BOND            ,
-            .mitm         = 0, //CFG_PIN_ENABLED ? nvm_data.core.passkey_enable : 0,
-            .lesc         = 0,
-            .keypress     = 0,
-            .io_caps      = BLE_GAP_IO_CAPS_NONE, // (CFG_PIN_ENABLED && nvm_data.core.passkey_enable) ? BLE_GAP_IO_CAPS_DISPLAY_ONLY : BLE_GAP_IO_CAPS_NONE ,
-            .oob          = SEC_PARAM_OOB             ,
-            .min_key_size = SEC_PARAM_MIN_KEY_SIZE    ,
-            .max_key_size = SEC_PARAM_MAX_KEY_SIZE
-        };
+          ble_gap_sec_params_t sec_para =
+          {
+              .bond         = SEC_PARAM_BOND            ,
+              .mitm         = 0, //CFG_PIN_ENABLED ? nvm_data.core.passkey_enable : 0,
+              .lesc         = 0,
+              .keypress     = 0,
+              .io_caps      = BLE_GAP_IO_CAPS_NONE, // (CFG_PIN_ENABLED && nvm_data.core.passkey_enable) ? BLE_GAP_IO_CAPS_DISPLAY_ONLY : BLE_GAP_IO_CAPS_NONE ,
+              .oob          = SEC_PARAM_OOB             ,
+              .min_key_size = SEC_PARAM_MIN_KEY_SIZE    ,
+              .max_key_size = SEC_PARAM_MAX_KEY_SIZE
+          };
 
-        ble_gap_sec_keyset_t keyset =
-        {
-            .keys_own = {
-                .p_enc_key  = &_enc_key,
-                .p_id_key   = NULL,
-                .p_sign_key = NULL,
-                .p_pk       = NULL
-            },
+          ble_gap_sec_keyset_t keyset =
+          {
+              .keys_own = {
+                  .p_enc_key  = &_enc_key,
+                  .p_id_key   = NULL,
+                  .p_sign_key = NULL,
+                  .p_pk       = NULL
+              },
 
-            .keys_peer = { NULL, NULL, NULL, NULL }
-        };
+              .keys_peer = { NULL, NULL, NULL, NULL }
+          };
 
-        VERIFY_STATUS(sd_ble_gap_sec_params_reply(evt->evt.gap_evt.conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &sec_para, &keyset),
-                      RETURN_VOID);
-      }
-      break;
-
-      case BLE_GAP_EVT_AUTH_STATUS:
-        // Bonding succeeded --> save encryption keys
-        if (BLE_GAP_SEC_STATUS_SUCCESS == evt->evt.gap_evt.params.auth_status.auth_status)
-        {
-
+          VERIFY_STATUS(sd_ble_gap_sec_params_reply(evt->evt.gap_evt.conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &sec_para, &keyset),
+                        RETURN_VOID);
         }
-      break;
+        break;
 
-      case BLE_GATTS_EVT_SYS_ATTR_MISSING:
-        sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
-      break;
-#endif
+        case BLE_GAP_EVT_AUTH_STATUS:
+          // Bonding succeeded --> save encryption keys
+          if (BLE_GAP_SEC_STATUS_SUCCESS == evt->evt.gap_evt.params.auth_status.auth_status)
+          {
 
-      case BLE_GAP_EVT_CONN_SEC_UPDATE:
-      break;
+          }
+        break;
 
-      default: break;
-    }
+        case BLE_GATTS_EVT_SYS_ATTR_MISSING:
+          sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
+        break;
+  #endif
 
-    // GATTs characteristics event handler
-    for(int i=0; i<_chars_count; i++)
-    {
-      _chars_list[i]->eventHandler(evt);
+        case BLE_GAP_EVT_CONN_SEC_UPDATE:
+        break;
+
+        default: break;
+      }
+
+      // GATTs characteristics event handler
+      for(int i=0; i<_chars_count; i++)
+      {
+        _chars_list[i]->eventHandler(evt);
+      }
     }
   }
 }

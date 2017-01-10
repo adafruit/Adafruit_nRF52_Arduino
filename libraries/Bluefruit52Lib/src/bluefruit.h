@@ -108,8 +108,11 @@ class AdafruitBluefruit
 
     // internal usage only
     err_t _registerCharacteristic(BLECharacteristic* chars);
+    void  _sd_event_isr(void);
 
   private:
+    SemaphoreHandle_t _ble_event_sem;
+
     BLEDfu _dfu_svc;
 
     // ADV Data
