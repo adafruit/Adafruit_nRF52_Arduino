@@ -25,38 +25,15 @@
 extern "C" {
 #endif
 
-static volatile uint32_t overflows = 0;
-
 uint32_t millis( void )
 {
-  uint64_t ticks = (uint64_t)((uint64_t)overflows << (uint64_t)32) | (uint64_t)(NRF_RTC1->COUNTER);
-
-  return (ticks * 1000) / 32768;
+  return tick2ms(xTaskGetTickCount());
 }
 
 uint32_t micros( void )
 {
-  uint64_t ticks = (uint64_t)((uint64_t)overflows << (uint64_t)32) | (uint64_t)(NRF_RTC1->COUNTER);
-
-  return (ticks * 1000000) / 32768;
+  return tick2us(xTaskGetTickCount());
 }
-
-#if 0
-void delay( uint32_t ms )
-{
-  if ( ms == 0 )
-  {
-    return ;
-  }
-
-  uint32_t start = millis() ;
-
-  do
-  {
-    yield() ;
-  } while ( millis() - start < ms ) ;
-}
-#else
 
 void delay_blocking(uint32_t ms)
 {
@@ -76,20 +53,6 @@ void delay_blocking(uint32_t ms)
 void delay( uint32_t ms )
 {
   vTaskDelay(ms2tick(ms));
-}
-
-#endif
-
-void RTC1_IRQHandler(void)
-{
-  NRF_RTC1->EVENTS_OVRFLW = 0;
-
-#if __CORTEX_M == 0x04
-    volatile uint32_t dummy = NRF_RTC1->EVENTS_OVRFLW;
-    (void)dummy;
-#endif
-
-  overflows = (overflows + 1) & 0xff;
 }
 
 #ifdef __cplusplus

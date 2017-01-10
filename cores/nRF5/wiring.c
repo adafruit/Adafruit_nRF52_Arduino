@@ -27,17 +27,8 @@ extern "C" {
 
 void init( void )
 {
-  NVIC_SetPriority(RTC1_IRQn, 15);
-  NVIC_ClearPendingIRQ(RTC1_IRQn);
-  NVIC_EnableIRQ(RTC1_IRQn);
-
   NRF_CLOCK->LFCLKSRC = (uint32_t)((CLOCK_LFCLKSRC_SRC_RC << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);
   NRF_CLOCK->TASKS_LFCLKSTART = 1UL;
-
-  NRF_RTC1->PRESCALER = 0;
-  NRF_RTC1->EVTENSET = offsetof(NRF_RTC_Type, EVENTS_OVRFLW);
-  NRF_RTC1->INTENSET = offsetof(NRF_RTC_Type, EVENTS_OVRFLW);
-  NRF_RTC1->TASKS_START = 1;
 }
 
 #ifdef __cplusplus

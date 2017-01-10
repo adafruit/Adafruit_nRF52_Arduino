@@ -35,6 +35,8 @@ static void loop_task(void* arg)
   {
     loop();
 
+//    if (serialEventRun) serialEventRun();
+
     // To compatible with most code where loop is not rtos-aware
     vTaskDelay(1); //taskYIELD();
   }
@@ -49,8 +51,6 @@ int main( void )
 
   initVariant();
 
-  delay_blocking(1);
-
   if (setLoopStacksize)
   {
     _loopStacksize = setLoopStacksize();
@@ -64,12 +64,6 @@ int main( void )
   vTaskStartScheduler();
 
   NVIC_SystemReset();
-
-//  for (;;)
-//  {
-//    loop();
-//    if (serialEventRun) serialEventRun();
-//  }
 
   return 0;
 }
