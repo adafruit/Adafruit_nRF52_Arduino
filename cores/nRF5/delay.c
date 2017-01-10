@@ -35,21 +35,6 @@ uint32_t micros( void )
   return tick2us(xTaskGetTickCount());
 }
 
-void delay_blocking(uint32_t ms)
-{
-  if ( ms == 0 )
-  {
-    return ;
-  }
-
-  uint32_t start = millis() ;
-
-  do
-  {
-//    yield() ;
-  } while ( millis() - start < ms ) ;
-}
-
 void delay( uint32_t ms )
 {
   vTaskDelay(ms2tick(ms));

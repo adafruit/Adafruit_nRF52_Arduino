@@ -59,12 +59,6 @@ extern uint32_t micros( void ) ;
 extern void delay( uint32_t dwMs ) ;
 
 /**
- * Delay blocking without using RTOS API to suspend running thread
- * @param ms
- */
-extern void delay_blocking(uint32_t ms);
-
-/**
  * \brief Pauses the program for the amount of time (in microseconds) specified as parameter.
  *
  * \param dwUs the number of microseconds to pause (uint32_t)
