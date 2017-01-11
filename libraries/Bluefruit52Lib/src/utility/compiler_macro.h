@@ -44,10 +44,6 @@
 #ifndef _COMPILER_MACRO_H_
 #define _COMPILER_MACRO_H_
 
-#ifdef __cplusplus
- extern "C" {
-#endif
-
 #define STRING_(x)                  #x                   // stringify without expand
 #define XSTRING_(x)                 STRING_(x)           // expand then stringify
 #define STRING_CONCAT_(a, b)        a##b                 // concat without expand
@@ -125,12 +121,6 @@
 #define ATTR_UNUSED                __attribute__ ((unused))
 
 #define ATTR_OPTIMIZE(n)          __attribute__ ((optimize(XSTRING_(O##n))))
-
-/** @} */
-
-#ifdef __cplusplus
- }
-#endif
 
 #endif /* _COMPILER_MACRO_H_ */
 
