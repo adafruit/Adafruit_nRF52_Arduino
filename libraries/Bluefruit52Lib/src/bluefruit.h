@@ -42,11 +42,11 @@
 #include "BLEService.h"
 
 // Services
-#include "utility/services/BLEDis.h"
-#include "utility/services/BLEDfu.h"
-#include "utility/services/BLEUart.h"
-#include "utility/services/BLEBas.h"
-#include "utility/services/BLEBeacon.h"
+#include "services/BLEDis.h"
+#include "services/BLEDfu.h"
+#include "services/BLEUart.h"
+#include "services/BLEBas.h"
+#include "services/BLEBeacon.h"
 
 #define BLE_MAX_CHARS         50
 
