@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
-    @file     common_inc.h
+    @file     bluefruit_common.h
     @author   hathach
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2016, Adafruit Industries (adafruit.com)
+    Copyright (c) 2017, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,8 +33,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef COMMON_INC_H_
-#define COMMON_INC_H_
+#ifndef BLUEFRUIT_COMMON_H_
+#define BLUEFRUIT_COMMON_H_
 
 #include <Arduino.h>
 #include "ble.h"
@@ -43,8 +43,4 @@
 
 typedef uint32_t err_t;
 
-#include "utility/compiler_macro.h"
-#include "utility/verify.h"
-#include "utility/common_func.h"
-
-#endif /* COMMON_INC_H_ */
+#endif /* BLUEFRUIT_COMMON_H_ */

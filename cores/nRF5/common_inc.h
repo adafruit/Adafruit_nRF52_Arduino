@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLEUart.h
+    @file     common_inc.h
     @author   hathach
 
     @section LICENSE
@@ -33,42 +33,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLEUART_H_
-#define BLEUART_H_
+#ifndef COMMON_INC_H_
+#define COMMON_INC_H_
 
-#include "bluefruit_common.h"
-#include "utility/adafruit_fifo.h"
+#include "compiler_macro.h"
+#include "verify.h"
+#include "common_func.h"
 
-#include "BLECharacteristic.h"
-#include "BLEService.h"
-
-#define BLE_UART_DEFAULT_FIFO_DEPTH   256
-
-class BLEUart : public BLEService, public Stream
-{
-  protected:
-    BLECharacteristic _txd;
-    BLECharacteristic _rxd;
-
-    Adafruit_FIFO     _rxd_fifo;
-
-  public:
-    BLEUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
-
-    virtual err_t start(void);
-
-    // Stream API
-    virtual int       read       ( void );
-    virtual int       read       ( uint8_t * buf, size_t size );
-    virtual size_t    write      ( uint8_t b );
-    virtual size_t    write      ( const uint8_t *content, size_t len );
-    virtual int       available  ( void );
-    virtual int       peek       ( void );
-    virtual void      flush      ( void );
-
-    friend void bleuart_rxd_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
-};
-
-
-
-#endif /* BLEUART_H_ */
+#endif /* COMMON_INC_H_ */

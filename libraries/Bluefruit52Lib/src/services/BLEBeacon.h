@@ -36,7 +36,7 @@
 #ifndef BLEBEACON_H_
 #define BLEBEACON_H_
 
-#include "utility/common_inc.h"
+#include "bluefruit_common.h"
 
 #include "BLECharacteristic.h"
 #include "BLEService.h"

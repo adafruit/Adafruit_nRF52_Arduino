@@ -36,7 +36,7 @@
 #ifndef BLEDIS_H_
 #define BLEDIS_H_
 
-#include "utility/common_inc.h"
+#include "bluefruit_common.h"
 
 #include "BLECharacteristic.h"
 #include "BLEService.h"

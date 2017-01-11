@@ -35,7 +35,7 @@
 /**************************************************************************/
 
 #include <Arduino.h>
-#include "utility/common_inc.h"
+#include "bluefruit_common.h"
 
 #include "BLEUuid.h"
 #include "BLECharacteristic.h"
