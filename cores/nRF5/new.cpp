@@ -17,19 +17,20 @@
 */
 
 #include <stdlib.h>
+#include "rtos.h"
 
 void *operator new(size_t size) {
-  return malloc(size);
+  return rtos_malloc(size);
 }
 
 void *operator new[](size_t size) {
-  return malloc(size);
+  return rtos_malloc(size);
 }
 
 void operator delete(void * ptr) {
-  free(ptr);
+  rtos_free(ptr);
 }
 
 void operator delete[](void * ptr) {
-  free(ptr);
+  rtos_free(ptr);
 }

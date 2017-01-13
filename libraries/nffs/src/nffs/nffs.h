@@ -65,6 +65,8 @@ int nffs_format(const struct nffs_area_desc *area_descs);
 
 int nffs_misc_desc_from_flash_area(int idx, int *cnt, struct nffs_area_desc *nad);
 
+void nffs_pkg_init(void);
+
 #ifdef __cplusplus
 }
 #endif

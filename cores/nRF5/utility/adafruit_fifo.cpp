@@ -52,7 +52,7 @@
 Adafruit_FIFO::Adafruit_FIFO(uint16_t depth, uint8_t item_size, bool overwrite)
   : _depth(depth), _item_size(item_size), _overwritable(overwrite)
 {
-  _buffer = (uint8_t*) malloc(item_size*depth); // use malloc_name for debug
+  _buffer = (uint8_t*) rtos_malloc(item_size*depth); // use malloc_name for debug
   _count = _wr_idx = _rd_idx = 0;
 
   _mutex = xSemaphoreCreateMutex();
@@ -66,7 +66,7 @@ Adafruit_FIFO::Adafruit_FIFO(uint16_t depth, uint8_t item_size, bool overwrite)
 Adafruit_FIFO::~Adafruit_FIFO()
 {
   vSemaphoreDelete(_mutex);
-  free(_buffer); // use free_name for debug
+  rtos_free(_buffer); // use free_name for debug
 }
 
 bool Adafruit_FIFO::_mutex_lock(bool isr)

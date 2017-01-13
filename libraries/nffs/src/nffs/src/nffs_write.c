@@ -18,7 +18,7 @@
  */
 
 #include <assert.h>
-#include "testutil/testutil.h"
+//#include "testutil/testutil.h"
 #include "nffs/nffs.h"
 #include "nffs_priv.h"
 

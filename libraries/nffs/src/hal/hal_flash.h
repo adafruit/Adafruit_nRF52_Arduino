@@ -6,7 +6,7 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
@@ -16,24 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef __FS_PRIV_H__
-#define __FS_PRIV_H__
 
-#include "syscfg/syscfg.h"
+#ifndef H_HAL_FLASH_
+#define H_HAL_FLASH_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct fs_ops;
-extern const struct fs_ops *fs_root_ops;
+#include <inttypes.h>
 
-#if MYNEWT_VAL(FS_CLI)
-void fs_cli_init(void);
-#endif
+int hal_flash_read(uint8_t flash_id, uint32_t address, void *dst,
+  uint32_t num_bytes);
+int hal_flash_write(uint8_t flash_id, uint32_t address, const void *src,
+  uint32_t num_bytes);
+int hal_flash_erase_sector(uint8_t flash_id, uint32_t sector_address);
+int hal_flash_erase(uint8_t flash_id, uint32_t address, uint32_t num_bytes);
+uint8_t hal_flash_align(uint8_t flash_id);
+int hal_flash_init(void);
+
+struct hal_flash;
+const struct hal_flash *hal_bsp_flash_dev(uint8_t flash_id);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif /* H_HAL_FLASH_ */

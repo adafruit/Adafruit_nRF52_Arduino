@@ -19,11 +19,27 @@
 
 #include <assert.h>
 #include "flash_map/flash_map.h"
-#include "hal/hal_bsp.h"
+#include "hal/hal_flash.h"
 #include "hal/hal_flash_int.h"
 #include "os/os_malloc.h"
 #include "nffs/nffs.h"
 #include "nffs_priv.h"
+
+static const struct flash_area sysflash_map_dfl =
+{
+    .fa_id = 0,
+    .fa_device_id = 0,
+    .fa_off = 0x6D000,
+    .fa_size = 7*4096, /* 28 kB */
+};
+
+static int
+flash_area_open(uint8_t id, const struct flash_area **fap)
+{
+  (void) id;
+  *fap = &sysflash_map_dfl;
+  return 0;
+}
 
 /**
  * Determines if the file system contains a valid root directory.  For the root

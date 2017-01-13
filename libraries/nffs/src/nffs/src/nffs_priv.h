@@ -22,8 +22,9 @@
 
 #include <inttypes.h>
 //#include "log/log.h"
-//#include "os/queue.h"
-//#include "os/os_mempool.h"
+
+#include "os/queue.h"
+#include "os/os_mempool.h"
 #include "nffs/nffs.h"
 #include "fs/fs.h"
 #include "crc/crc16.h"
@@ -246,28 +247,31 @@ struct nffs_dir {
     struct nffs_dirent nd_dirent;
 };
 
-STATS_SECT_START(nffs_stats)
-    STATS_SECT_ENTRY(nffs_hashcnt_ins)
-    STATS_SECT_ENTRY(nffs_hashcnt_rm)
-    STATS_SECT_ENTRY(nffs_object_count)
-    STATS_SECT_ENTRY(nffs_iocnt_read)
-    STATS_SECT_ENTRY(nffs_iocnt_write)
-    STATS_SECT_ENTRY(nffs_gccnt)
-    STATS_SECT_ENTRY(nffs_readcnt_data)
-    STATS_SECT_ENTRY(nffs_readcnt_block)
-    STATS_SECT_ENTRY(nffs_readcnt_crc)
-    STATS_SECT_ENTRY(nffs_readcnt_copy)
-    STATS_SECT_ENTRY(nffs_readcnt_format)
-    STATS_SECT_ENTRY(nffs_readcnt_gccollate)
-    STATS_SECT_ENTRY(nffs_readcnt_inode)
-    STATS_SECT_ENTRY(nffs_readcnt_inodeent)
-    STATS_SECT_ENTRY(nffs_readcnt_rename)
-    STATS_SECT_ENTRY(nffs_readcnt_update)
-    STATS_SECT_ENTRY(nffs_readcnt_filename)
-    STATS_SECT_ENTRY(nffs_readcnt_object)
-    STATS_SECT_ENTRY(nffs_readcnt_detect)
-STATS_SECT_END
-extern STATS_SECT_DECL(nffs_stats) nffs_stats;
+//STATS_SECT_START(nffs_stats)
+//    STATS_SECT_ENTRY(nffs_hashcnt_ins)
+//    STATS_SECT_ENTRY(nffs_hashcnt_rm)
+//    STATS_SECT_ENTRY(nffs_object_count)
+//    STATS_SECT_ENTRY(nffs_iocnt_read)
+//    STATS_SECT_ENTRY(nffs_iocnt_write)
+//    STATS_SECT_ENTRY(nffs_gccnt)
+//    STATS_SECT_ENTRY(nffs_readcnt_data)
+//    STATS_SECT_ENTRY(nffs_readcnt_block)
+//    STATS_SECT_ENTRY(nffs_readcnt_crc)
+//    STATS_SECT_ENTRY(nffs_readcnt_copy)
+//    STATS_SECT_ENTRY(nffs_readcnt_format)
+//    STATS_SECT_ENTRY(nffs_readcnt_gccollate)
+//    STATS_SECT_ENTRY(nffs_readcnt_inode)
+//    STATS_SECT_ENTRY(nffs_readcnt_inodeent)
+//    STATS_SECT_ENTRY(nffs_readcnt_rename)
+//    STATS_SECT_ENTRY(nffs_readcnt_update)
+//    STATS_SECT_ENTRY(nffs_readcnt_filename)
+//    STATS_SECT_ENTRY(nffs_readcnt_object)
+//    STATS_SECT_ENTRY(nffs_readcnt_detect)
+//STATS_SECT_END
+//extern STATS_SECT_DECL(nffs_stats) nffs_stats;
+
+#define STATS_INC(x, y)
+#define ASSERT_IF_TEST(x)
 
 extern void *nffs_file_mem;
 extern void *nffs_block_entry_mem;
@@ -522,8 +526,12 @@ int nffs_write_to_file(struct nffs_file *file, const void *data, int len);
 #endif
 #endif /* 0 */
 
+#if 0
 #define NFFS_LOG(lvl, ...) \
     LOG_ ## lvl(&nffs_log, LOG_MODULE_NFFS, __VA_ARGS__)
+#endif
+
+#define NFFS_LOG(lvl, ...)
 
 #ifdef __cplusplus
 }

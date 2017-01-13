@@ -16,21 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-#ifndef __FS_PRIV_H__
-#define __FS_PRIV_H__
 
-#include "syscfg/syscfg.h"
+#ifndef H_OS_MALLOC_
+#define H_OS_MALLOC_
+
+//#include "os/os_heap.h"
+#include "rtos.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct fs_ops;
-extern const struct fs_ops *fs_root_ops;
+#undef  malloc
+#define malloc  rtos_malloc
 
-#if MYNEWT_VAL(FS_CLI)
-void fs_cli_init(void);
-#endif
+#undef  free
+#define free    rtos_free
+
+//#undef  realloc
+//#define realloc  rtos_realloc
 
 #ifdef __cplusplus
 }

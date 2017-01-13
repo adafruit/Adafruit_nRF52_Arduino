@@ -22,14 +22,26 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#define NFFS_AREA_MAX         8
+
+#define SYSINIT_ASSERT_ACTIVE()
+#define SYSINIT_PANIC_ASSERT(rc) do \
+{                                   \
+    if (!(rc)) {                    \
+        SYSINIT_PANIC();            \
+    }                               \
+} while (0)
+#define SYSINIT_PANIC()     return // assert(0)
+
+#include "syscfg/syscfg.h"
 //#include "sysinit/sysinit.h"
 //#include "sysflash/sysflash.h"
 //#include "bsp/bsp.h"
-//#include "hal/hal_flash.h"
+#include "hal/hal_flash.h"
 //#include "flash_map/flash_map.h"
-//#include "os/os_mempool.h"
-//#include "os/os_mutex.h"
-//#include "os/os_malloc.h"
+#include "os/os_mempool.h"
+#include "os/os_mutex.h"
+#include "os/os_malloc.h"
 //#include "stats/stats.h"
 #include "nffs_priv.h"
 #include "nffs/nffs.h"
@@ -60,7 +72,7 @@ struct nffs_inode_entry *nffs_lost_found_dir;
 
 static struct os_mutex nffs_mutex;
 
-struct log nffs_log;
+//struct log nffs_log;
 
 static int nffs_open(const char *path, uint8_t access_flags,
   struct fs_file **out_file);
@@ -105,28 +117,28 @@ static const struct fs_ops nffs_ops = {
     .f_name = "nffs"
 };
 
-STATS_SECT_DECL(nffs_stats) nffs_stats;
-STATS_NAME_START(nffs_stats)
-    STATS_NAME(nffs_stats, nffs_hashcnt_ins)
-    STATS_NAME(nffs_stats, nffs_hashcnt_rm)
-    STATS_NAME(nffs_stats, nffs_object_count)
-    STATS_NAME(nffs_stats, nffs_iocnt_read)
-    STATS_NAME(nffs_stats, nffs_iocnt_write)
-    STATS_NAME(nffs_stats, nffs_gccnt)
-    STATS_NAME(nffs_stats, nffs_readcnt_data)
-    STATS_NAME(nffs_stats, nffs_readcnt_block)
-    STATS_NAME(nffs_stats, nffs_readcnt_crc)
-    STATS_NAME(nffs_stats, nffs_readcnt_copy)
-    STATS_NAME(nffs_stats, nffs_readcnt_format)
-    STATS_NAME(nffs_stats, nffs_readcnt_gccollate)
-    STATS_NAME(nffs_stats, nffs_readcnt_inode)
-    STATS_NAME(nffs_stats, nffs_readcnt_inodeent)
-    STATS_NAME(nffs_stats, nffs_readcnt_rename)
-    STATS_NAME(nffs_stats, nffs_readcnt_update)
-    STATS_NAME(nffs_stats, nffs_readcnt_filename)
-    STATS_NAME(nffs_stats, nffs_readcnt_object)
-    STATS_NAME(nffs_stats, nffs_readcnt_detect)
-STATS_NAME_END(nffs_stats)
+//STATS_SECT_DECL(nffs_stats) nffs_stats;
+//STATS_NAME_START(nffs_stats)
+//    STATS_NAME(nffs_stats, nffs_hashcnt_ins)
+//    STATS_NAME(nffs_stats, nffs_hashcnt_rm)
+//    STATS_NAME(nffs_stats, nffs_object_count)
+//    STATS_NAME(nffs_stats, nffs_iocnt_read)
+//    STATS_NAME(nffs_stats, nffs_iocnt_write)
+//    STATS_NAME(nffs_stats, nffs_gccnt)
+//    STATS_NAME(nffs_stats, nffs_readcnt_data)
+//    STATS_NAME(nffs_stats, nffs_readcnt_block)36
+//    STATS_NAME(nffs_stats, nffs_readcnt_crc)
+//    STATS_NAME(nffs_stats, nffs_readcnt_copy)
+//    STATS_NAME(nffs_stats, nffs_readcnt_format)
+//    STATS_NAME(nffs_stats, nffs_readcnt_gccollate)
+//    STATS_NAME(nffs_stats, nffs_readcnt_inode)
+//    STATS_NAME(nffs_stats, nffs_readcnt_inodeent)
+//    STATS_NAME(nffs_stats, nffs_readcnt_rename)
+//    STATS_NAME(nffs_stats, nffs_readcnt_update)
+//    STATS_NAME(nffs_stats, nffs_readcnt_filename)
+//    STATS_NAME(nffs_stats, nffs_readcnt_object)
+//    STATS_NAME(nffs_stats, nffs_readcnt_detect)
+//STATS_NAME_END(nffs_stats)
 
 static void
 nffs_lock(void)
@@ -150,11 +162,11 @@ static int
 nffs_stats_init(void)
 {
     int rc = 0;
-    rc = stats_init_and_reg(
-                    STATS_HDR(nffs_stats),
-                    STATS_SIZE_INIT_PARMS(nffs_stats, STATS_SIZE_32),
-                    STATS_NAME_INIT_PARMS(nffs_stats),
-                    "nffs_stats");
+//    rc = stats_init_and_reg(
+//                    STATS_HDR(nffs_stats),
+//                    STATS_SIZE_INIT_PARMS(nffs_stats, STATS_SIZE_32),
+//                    STATS_NAME_INIT_PARMS(nffs_stats),
+//                    "nffs_stats");
     if (rc) {
         if (rc < 0) {
             /* multiple initializations are okay */

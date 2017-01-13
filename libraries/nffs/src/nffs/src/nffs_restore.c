@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "hal/hal_flash.h"
-#include "os/os_mempool.h"
+//#include "os/os_mempool.h"
 #include "os/os_malloc.h"
 #include "nffs/nffs.h"
 #include "nffs_priv.h"
@@ -1202,6 +1202,7 @@ nffs_restore_corrupt_scratch(void)
 static void
 nffs_log_contents(void)
 {
+#if 0
 #if MYNEWT_VAL(LOG_LEVEL) > LOG_LEVEL_DEBUG
     return;
 #endif
@@ -1270,6 +1271,7 @@ nffs_log_contents(void)
             }
         }
     }
+#endif
 }
 
 /**

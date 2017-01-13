@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     rtos.h
+    @file     syscfg.h
     @author   hathach
 
     @section LICENSE
@@ -33,22 +33,20 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef RTOS_H_
-#define RTOS_H_
+#ifndef SYSCFG_H_
+#define SYSCFG_H_
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+/**
+ * This macro exists to ensure code includes this header when needed.  If code
+ * checks the existence of a setting directly via ifdef without including this
+ * header, the setting macro will silently evaluate to 0.  In contrast, an
+ * attempt to use these macros without including this header will result in a
+ * compiler error.
+ */
+#define MYNEWT_VAL(x)                           MYNEWT_VAL_ ## x
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "timers.h"
-#include "queue.h"
-#include "semphr.h"
+#define MYNEWT_VAL_FS_CLI (0)
+#define MYNEWT_VAL_NFFS_FLASH_AREA  0
+#define MYNEWT_VAL_NFFS_DETECT_FAIL (NFFS_DETECT_FAIL_FORMAT)
 
-#define rtos_malloc(x)  pvPortMalloc(x)
-#define rtos_free(x)    vPortFree(x)
-
-#endif /* RTOS_H_ */
+#endif /* SYSCFG_H_ */
