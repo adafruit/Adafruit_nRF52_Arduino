@@ -135,6 +135,8 @@ class AdafruitBluefruit
 
     // TODO move to bonding place
     ble_gap_enc_key_t _enc_key;
+    ble_gap_id_key_t  _peer_id;
+
     ble_gap_addr_t    _peer_addr;
 
     // Transmission Buffer Count for HVX notification, max is seen at 7

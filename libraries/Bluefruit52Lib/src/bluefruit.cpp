@@ -36,6 +36,8 @@
 
 #include "bluefruit.h"
 
+#include <nffs_lib.h>
+
 #define BLE_VENDOR_UUID_MAX          10
 #define BLE_PRPH_MAX_CONN            1
 #define BLE_CENTRAL_MAX_CONN         0
@@ -48,6 +50,7 @@
 
 #define CFG_BLE_TX_POWER_LEVEL                     0
 #define CFG_DEFAULT_NAME    "Bluefruit"
+
 
 // Converts an integer of 1.25ms units to msecs
 #define MS100TO125(ms100) (((ms100)*4)/5)
@@ -69,7 +72,7 @@
 extern "C"
 {
   void SD_EVT_IRQHandler(void);
-  void hal_flash_event_cb(uint32_t event);
+  void hal_flash_event_cb(uint32_t event) ATTR_WEAK;
 }
 
 void adafruit_bluefruit_task(void* arg);
@@ -97,6 +100,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
 
   varclr(&_enc_key);
+  varclr(&_peer_id);
 }
 
 err_t AdafruitBluefruit::begin(void)
@@ -162,6 +166,9 @@ err_t AdafruitBluefruit::begin(void)
   _ble_event_sem = xSemaphoreCreateBinary();
   VERIFY(_ble_event_sem, NRF_ERROR_NO_MEM);
   NVIC_EnableIRQ(SD_EVT_IRQn);
+
+  // Also initialize nffs for bonding/config
+  nffs_pkg_init();
 
   return NRF_SUCCESS;
 }
@@ -418,14 +425,6 @@ bool AdafruitBluefruit::txbuf_get(uint32_t ms)
   return xSemaphoreTake(_txbuf_sem, ms2tick(ms));
 }
 
-enum {
-  SEC_PARAM_TIMEOUT         = 30 , /**< Timeout for Pairing Request or Security Request (in seconds). */
-  SEC_PARAM_BOND            = 1  , /**< Perform bonding. */
-  SEC_PARAM_OOB             = 0  , /**< Out Of Band data not available. */
-  SEC_PARAM_MIN_KEY_SIZE    = 7  , /**< Minimum encryption key size. */
-  SEC_PARAM_MAX_KEY_SIZE    = 16
-};
-
 void adafruit_bluefruit_task(void* arg)
 {
   (void) arg;
@@ -519,6 +518,7 @@ void AdafruitBluefruit::_poll(void)
             if (_led_conn)  digitalWrite(LED_CONN, LOW);
 
             _conn_hdl = BLE_GATT_HANDLE_INVALID;
+            varclr(&_peer_addr);
 
             vSemaphoreDelete(_txbuf_sem);
 
@@ -540,29 +540,34 @@ void AdafruitBluefruit::_poll(void)
             }
           break;
 
-    #if 0
           case BLE_GAP_EVT_SEC_INFO_REQUEST:
-            if (_enc_key.master_id.ediv == evt->evt.gap_evt.params.sec_info_request.master_id.ediv)
+          {
+            // If bonded previously, return information. Otherwise NULL
+            ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
+
+            if (_enc_key.master_id.ediv == sec_request->master_id.ediv)
             {
-              sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_enc_key.enc_info, NULL, NULL);
+              sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_enc_key.enc_info, &_peer_id.id_info, NULL);
             } else
             {
               sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
             }
+          }
           break;
 
           case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
           {
+            PRINT_LOCATION();
             ble_gap_sec_params_t sec_para =
             {
-                .bond         = SEC_PARAM_BOND            ,
+                .bond         = 1            ,
                 .mitm         = 0, //CFG_PIN_ENABLED ? nvm_data.core.passkey_enable : 0,
                 .lesc         = 0,
                 .keypress     = 0,
                 .io_caps      = BLE_GAP_IO_CAPS_NONE, // (CFG_PIN_ENABLED && nvm_data.core.passkey_enable) ? BLE_GAP_IO_CAPS_DISPLAY_ONLY : BLE_GAP_IO_CAPS_NONE ,
-                .oob          = SEC_PARAM_OOB             ,
-                .min_key_size = SEC_PARAM_MIN_KEY_SIZE    ,
-                .max_key_size = SEC_PARAM_MAX_KEY_SIZE
+                .oob          = 0,
+                .min_key_size = 7,
+                .max_key_size = 16
             };
 
             ble_gap_sec_keyset_t keyset =
@@ -574,7 +579,12 @@ void AdafruitBluefruit::_poll(void)
                     .p_pk       = NULL
                 },
 
-                .keys_peer = { NULL, NULL, NULL, NULL }
+                .keys_peer = {
+                    .p_enc_key  = NULL,
+                    .p_id_key   = &_peer_id,
+                    .p_sign_key = NULL,
+                    .p_pk       = NULL
+                }
             };
 
             VERIFY_STATUS(sd_ble_gap_sec_params_reply(evt->evt.gap_evt.conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &sec_para, &keyset),
@@ -582,7 +592,16 @@ void AdafruitBluefruit::_poll(void)
           }
           break;
 
+          case BLE_GAP_EVT_CONN_SEC_UPDATE:
+          {
+            ble_gap_conn_sec_t* conn_sec = (ble_gap_conn_sec_t*) &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
+            PRINT_LOCATION();
+          }
+          break;
+
           case BLE_GAP_EVT_AUTH_STATUS:
+            PRINT_LOCATION();
+
             // Bonding succeeded --> save encryption keys
             if (BLE_GAP_SEC_STATUS_SUCCESS == evt->evt.gap_evt.params.auth_status.auth_status)
             {
@@ -591,12 +610,10 @@ void AdafruitBluefruit::_poll(void)
           break;
 
           case BLE_GATTS_EVT_SYS_ATTR_MISSING:
+            PRINT_LOCATION();
             sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
           break;
-    #endif
 
-          case BLE_GAP_EVT_CONN_SEC_UPDATE:
-          break;
 
           default: break;
         }
