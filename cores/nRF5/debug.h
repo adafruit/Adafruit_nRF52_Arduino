@@ -37,6 +37,8 @@
 #ifndef _DEBUG_H
 #define _DEBUG_H
 
+#include <Arduino.h>
+
 int dbgHeapTotal(void);
 int dbgHeapUsed(void);
 

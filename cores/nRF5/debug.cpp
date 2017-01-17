@@ -35,6 +35,7 @@
 /**************************************************************************/
 
 #include <stdint.h>
+#include <stdarg.h>
 #include <malloc.h>
 #include "debug.h"
 
@@ -50,4 +51,22 @@ int dbgHeapTotal(void)
 int dbgHeapUsed(void)
 {
   return (mallinfo()).uordblks;
+}
+
+extern "C"
+{
+  int cprintf(const char * format, ...)
+  {
+    char buf[256];
+    int len;
+
+    va_list ap;
+    va_start(ap, format);
+
+    len = vsnprintf(buf, 256, format, ap);
+    Serial.write(buf, len);
+
+    va_end(ap);
+    return len;
+  }
 }

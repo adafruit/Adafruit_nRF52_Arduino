@@ -41,6 +41,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <malloc.h>
+
+#include "common_func.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -48,7 +51,12 @@
 #include "queue.h"
 #include "semphr.h"
 
-#define rtos_malloc(x)  pvPortMalloc(x)
-#define rtos_free(x)    vPortFree(x)
+#if 0
+#define rtos_malloc(_size)  ({ cprintf("[malloc] %s:%d : %d bytes\r\n", __PRETTY_FUNCTION__, __LINE__, _size); pvPortMalloc(_size); })
+#define rtos_free(ptr)      ({ cprintf("[free] %s:%d\r\n"    ,__PRETTY_FUNCTION__, __LINE__/*malloc_usable_size(ptr)*/); vPortFree(ptr); })
+#else
+#define rtos_malloc(_size)  pvPortMalloc(_size)
+#define rtos_free(ptr)      vPortFree(ptr)
 
+#endif
 #endif /* RTOS_H_ */

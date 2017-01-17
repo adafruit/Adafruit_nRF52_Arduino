@@ -30,6 +30,8 @@
 #include "crc/crc16.h"
 //#include "stats/stats.h"
 
+#include "common_func.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

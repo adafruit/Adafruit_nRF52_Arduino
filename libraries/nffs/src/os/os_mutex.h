@@ -63,7 +63,7 @@ static inline os_error_t os_mutex_init(struct os_mutex *mu)
 {
   mu->sem = xSemaphoreCreateMutex();
 
-  return (mu->sem == NULL) ? 0 : 1;
+  return (mu->sem != NULL) ? 0 : 1;
 }
 
 

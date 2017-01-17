@@ -89,16 +89,17 @@
   #define malloc_named( name, size )            malloc ( size )
 #endif
 
-#define PRINT_LOCATION()      Serial.printf("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)
-#define PRTNT_HEAP()          if (CFG_DEBUG == 3) Serial.printf("\n%s: %d: Heap free: %d\n", __PRETTY_FUNCTION__, __LINE__, util_heap_get_free_size())
-#define PRINT_INT(x)          Serial.printf("%s: %d: " #x " = %ld\n"  , __PRETTY_FUNCTION__, __LINE__, (uint32_t) (x) )
-#define PRINT_HEX(x)          Serial.printf("%s: %d: " #x " = %08lx\n", __PRETTY_FUNCTION__, __LINE__, (uint32_t) (x) )
-#define PRINT_STR(x)          Serial.printf("%s: %d: " #x " = %s\n"   , __PRETTY_FUNCTION__, __LINE__, (char*)(x) )
+int cprintf(const char * format, ...);
+#define PRINT_LOCATION()      cprintf("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)
+#define PRTNT_HEAP()          if (CFG_DEBUG == 3) cprintf("\n%s: %d: Heap free: %d\n", __PRETTY_FUNCTION__, __LINE__, util_heap_get_free_size())
+#define PRINT_INT(x)          cprintf("%s: %d: " #x " = %ld\n"  , __PRETTY_FUNCTION__, __LINE__, (uint32_t) (x) )
+#define PRINT_HEX(x)          cprintf("%s: %d: " #x " = %08lx\n", __PRETTY_FUNCTION__, __LINE__, (uint32_t) (x) )
+#define PRINT_STR(x)          cprintf("%s: %d: " #x " = %s\n"   , __PRETTY_FUNCTION__, __LINE__, (char*)(x) )
 #define PRINT_BUFFER(buf, n) \
   do {\
     uint8_t const* p8 = (uint8_t const*) (buf);\
     Serial.print(#buf ": ");\
-    for(uint32_t i=0; i<(n); i++) Serial.printf("%02x ", p8[i]);\
+    for(uint32_t i=0; i<(n); i++) cprintf("%02x ", p8[i]);\
     Serial.println();\
   }while(0)
 
@@ -163,6 +164,11 @@ static inline uint32_t align32 (uint32_t value)
 static inline uint32_t align16 (uint32_t value)
 {
   return (value & 0xFFFFFFF0UL);
+}
+
+static inline uint32_t align4 (uint32_t value)
+{
+  return (value & 0xFFFFFFFCUL);
 }
 
 static inline uint32_t align_n (uint32_t alignment, uint32_t value)

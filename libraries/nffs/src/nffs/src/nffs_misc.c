@@ -488,6 +488,7 @@ nffs_misc_desc_from_flash_area(int id, int *cnt, struct nffs_area_desc *nad)
     }
 
     hf = hal_bsp_flash_dev(fa->fa_device_id);
+    hf->hf_itf->hff_init();
     for (i = 0; i < hf->hf_sector_cnt; i++) {
         hf->hf_itf->hff_sector_info(i, &start, &size);
         if (start >= fa->fa_off && start < fa->fa_off + fa->fa_size) {

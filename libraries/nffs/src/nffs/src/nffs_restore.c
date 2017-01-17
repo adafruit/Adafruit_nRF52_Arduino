@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "hal/hal_flash.h"
-//#include "os/os_mempool.h"
+#include "os/os_mempool.h"
 #include "os/os_malloc.h"
 #include "nffs/nffs.h"
 #include "nffs_priv.h"

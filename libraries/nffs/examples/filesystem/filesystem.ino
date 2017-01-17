@@ -20,12 +20,45 @@
 #include <bluefruit.h>
 #include <nffs_lib.h>
 
+#define FILENAME    "/adafruit.txt"
+#define CONTENTS    "Bluefruit Feather52's NFFS file contents"
+
 // the setup function runs once when you press reset or power the board
 void setup() {
-  // initialize digital pin LED_BUILTIN as an output.
-  pinMode(LED_BUILTIN, OUTPUT);
+  Serial.begin(115200);
+  Serial.println("nffs example");
 
+  Bluefruit.begin();
   nffs_pkg_init();
+  
+  struct fs_file *file;
+
+  // file existed
+  if ( 0 == fs_open(FILENAME, FS_ACCESS_READ, &file))
+  {
+    Serial.println(FILENAME " file existed");
+    
+    uint32_t readlen;
+    char buffer[64] = { 0 };
+    fs_read(file, sizeof(buffer), buffer, &readlen);
+
+    buffer[readlen] = 0;
+    Serial.println(buffer);
+  }else
+  {
+    Serial.print("Open " FILENAME " file to write ... ");
+    const char *data = "thach dep trai";
+    
+    if( 0 == fs_open(FILENAME, FS_ACCESS_WRITE, &file) )
+    {
+      Serial.println("OK");
+      fs_write(file, CONTENTS, strlen(CONTENTS));
+      fs_close(file);
+    }else
+    {
+      Serial.println("Failed (hint: paht must start with '/') ");
+    }
+  }
 }
 
 // the loop function runs over and over again forever

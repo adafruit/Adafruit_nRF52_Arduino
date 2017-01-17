@@ -64,7 +64,7 @@
 // To change this value, an adjustment for SRAM is required in linker script
 #define BLE_GATTS_ATTR_TABLE_SIZE   0x1000
 
-#define BLUEFRUIT_TASK_STACKSIZE   (1024*5)
+#define BLUEFRUIT_TASK_STACKSIZE   (1024*1)
 
 extern "C"
 {
@@ -477,6 +477,7 @@ void AdafruitBluefruit::_poll(void)
         {
           case NRF_EVT_FLASH_OPERATION_SUCCESS:
           case NRF_EVT_FLASH_OPERATION_ERROR:
+//            PRINT_INT(soc_evt);
             hal_flash_event_cb(soc_evt);
           break;
 

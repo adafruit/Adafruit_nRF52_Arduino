@@ -67,7 +67,7 @@ extern "C"
 //--------------------------------------------------------------------+
 #if CFG_DEBUG >= 1
 //  #define VERIFY_MESS(format, ...) printf("[%08ld] %s: %d: verify failed\n", get_millis(), __func__, __LINE__)
-  #define VERIFY_MESS(_status)   Serial.printf("%s: %d: verify failed, status = 0x%04X\n", __PRETTY_FUNCTION__, __LINE__, _status);
+  #define VERIFY_MESS(_status)   cprintf("%s: %d: verify failed, status = 0x%04X\n", __PRETTY_FUNCTION__, __LINE__, _status);
 #else
   #define VERIFY_MESS(_status)
 #endif
@@ -91,13 +91,13 @@ extern "C"
  *------------------------------------------------------------------*/
 #define VERIFY_STS_1ARGS(sts)             \
     do {                              \
-      err_t _status = (err_t)(sts);   \
+      uint32_t _status = (uint32_t)(sts);   \
       VERIFY_DEFINE(_status, _status);\
     } while(0)
 
 #define VERIFY_STS_2ARGS(sts, _error)     \
     do {                              \
-      err_t _status = (err_t)(sts);   \
+      uint32_t _status = (uint32_t)(sts);   \
       VERIFY_DEFINE(_status, _error);\
     } while(0)
 

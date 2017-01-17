@@ -55,6 +55,7 @@ uint32_t setLoopStacksize(void);
 
 #include "delay.h"
 #include "binary.h"
+#include "debug.h"
 #include "common_inc.h"
 
 #ifdef __cplusplus
