@@ -47,8 +47,7 @@ void setup() {
   }else
   {
     Serial.print("Open " FILENAME " file to write ... ");
-    const char *data = "thach dep trai";
-    
+
     if( 0 == fs_open(FILENAME, FS_ACCESS_WRITE, &file) )
     {
       Serial.println("OK");

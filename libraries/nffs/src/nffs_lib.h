@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*!
-    @file     adafruit_placeholder.h
-    @author   ktown
+    @file     nffs_lib.h
+    @author   hathach
 
     @section LICENSE
 
@@ -38,7 +38,6 @@
 #define _NFFS_LIB_H_
 
 #include "nffs/nffs.h"
-#include "fs/fs.h"
 #include "fs/fsutil.h"
 
 #endif /* _NFFS_LIB_H_ */

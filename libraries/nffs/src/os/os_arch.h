@@ -54,9 +54,9 @@ typedef uint32_t os_stack_t;
     (OS_ALIGN((__nmemb), OS_STACK_ALIGNMENT))
 
 /* Enter a critical section, save processor state, and block interrupts */
-#define OS_ENTER_CRITICAL(__os_sr)    portENTER_CRITICAL()
+#define OS_ENTER_CRITICAL(__os_sr)    ({ (void) __os_sr; portENTER_CRITICAL(); })
 /* Exit a critical section, restore processor state and unblock interrupts */
-#define OS_EXIT_CRITICAL(__os_sr)     portEXIT_CRITICAL()
+#define OS_EXIT_CRITICAL(__os_sr)     ({ (void) __os_sr; portEXIT_CRITICAL(); })
 
 #if 0
 #define OS_ASSERT_CRITICAL() (assert(os_arch_in_critical()))
