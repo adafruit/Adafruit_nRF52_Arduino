@@ -755,9 +755,14 @@ nffs_init(void)
 void
 nffs_pkg_init(void)
 {
+    static bool already_init = false;
+
     struct nffs_area_desc descs[NFFS_AREA_MAX + 1];
     int cnt;
     int rc;
+
+    if (already_init) return;
+    already_init = true;
 
     /* Ensure this function only gets called by sysinit. */
     SYSINIT_ASSERT_ACTIVE();
