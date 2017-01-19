@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     at_cmd_hwpin.c
+    @file     nrfbintool.c
     @author   hathach
 
     @section LICENSE
