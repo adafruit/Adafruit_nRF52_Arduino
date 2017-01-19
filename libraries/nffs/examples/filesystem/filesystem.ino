@@ -1,21 +1,16 @@
-/*
-  Blink
-  Turns on an LED on for one second, then off for one second, repeatedly.
+/*********************************************************************
+ This is an example for our nRF52 based Bluefruit LE modules
 
-  Most Arduinos have an on-board LED you can control. On the UNO, MEGA and ZERO 
-  it is attached to digital pin 13, on MKR1000 on pin 6. LED_BUILTIN takes care 
-  of use the correct LED pin whatever is the board used.
-  If you want to know what pin the on-board LED is connected to on your Arduino model, check
-  the Technical Specs of your board  at https://www.arduino.cc/en/Main/Products
-  
-  This example code is in the public domain.
+ Pick one up today in the adafruit shop!
 
-  modified 8 May 2014
-  by Scott Fitzgerald
-  
-  modified 2 Sep 2016
-  by Arturo Guadalupi
-*/
+ Adafruit invests time and resources providing this open source code,
+ please support Adafruit and open-source hardware by purchasing
+ products from Adafruit!
+
+ MIT license, check LICENSE for more information
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
 
 #include <bluefruit.h>
 #include <nffs_lib.h>
@@ -55,7 +50,7 @@ void setup() {
       fs_close(file);
     }else
     {
-      Serial.println("Failed (hint: paht must start with '/') ");
+      Serial.println("Failed (hint: paht must start with '//') ");
     }
   }
 }

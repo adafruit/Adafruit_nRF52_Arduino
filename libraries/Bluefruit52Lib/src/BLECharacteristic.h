@@ -81,13 +81,18 @@ class BLECharacteristic
     const char* _descriptor;
     uint16_t _max_len;
 
+    struct ATTR_PACKED {
+      uint8_t id;
+      uint8_t type;
+    }_report_ref_desc;
+
     /* Characteristic attribute metadata */
     /* https://devzone.nordicsemi.com/documentation/nrf51/5.2.0/html/a00269.html */
     ble_gatts_attr_md_t _attr_meta;
 
     ble_gatts_char_handles_t _handles;
 
-    BLEService* _service;
+    BLEService* _service; // pointer to parent's service
 
     // Callback pointer
     read_authorize_cb_t  _rd_authorize_cb;
@@ -118,7 +123,9 @@ class BLECharacteristic
     // Configure
     void setProperties(uint8_t prop);
     void setPermission(BleSecurityMode read_perm, BleSecurityMode write_perm);
-    void setDescriptor(const char* descriptor);
+
+    void setStringDescriptor(const char* descriptor); // aka user descriptor
+    void setReportRefDescriptor(uint8_t id, uint8_t type);
 
     void setMaxLen(uint16_t max_len);
     void setFixedLen(uint16_t fixed_len);

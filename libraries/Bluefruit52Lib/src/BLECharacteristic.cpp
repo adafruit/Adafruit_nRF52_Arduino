@@ -42,6 +42,8 @@ void BLECharacteristic::init(void)
   _descriptor = NULL;
   _max_len = BLE_GATTS_VAR_ATTR_LEN_MAX;
 
+  varclr(&_report_ref_desc);
+
   _service = BLEService::lastService;
 
   _handles.value_handle     = BLE_GATT_HANDLE_INVALID;
@@ -132,9 +134,15 @@ void BLECharacteristic::setWriteAuthorizeCallbak(write_authorize_cb_t fp)
   _wr_authorize_cb = fp;
 }
 
-void BLECharacteristic::setDescriptor(const char* descriptor)
+void BLECharacteristic::setStringDescriptor(const char* descriptor)
 {
   _descriptor = descriptor;
+}
+
+void BLECharacteristic::setReportRefDescriptor(uint8_t id, uint8_t type)
+{
+  _report_ref_desc.id   = id;
+  _report_ref_desc.type = type;
 }
 
 ble_gatts_char_handles_t BLECharacteristic::handles(void)
@@ -150,8 +158,18 @@ err_t BLECharacteristic::start(void)
   // Permission is OPEN if passkey is disabled.
 //  if (!nvm_data.core.passkey_enable) BLE_GAP_CONN_SEC_MODE_SET_OPEN(&p_char_def->permission);
 
+  // Correct Read/Write permission according to properties
+  if ( !(_properties.read || _properties.notify || _properties.indicate ) )
+  {
+    _attr_meta.read_perm = BLE_SECMODE_NO_ACCESS;
+  }
+
+  if ( !(_properties.write || _properties.write_wo_resp ) )
+  {
+    _attr_meta.write_perm = BLE_SECMODE_NO_ACCESS;
+  }
+
   /* CCCD attribute metadata */
-  /* https://devzone.nordicsemi.com/documentation/nrf51/5.2.0/html/a00269.html */
   ble_gatts_attr_md_t cccd_md;
 
   if ( _properties.notify || _properties.indicate )
@@ -160,27 +178,22 @@ err_t BLECharacteristic::start(void)
     memclr( &cccd_md, sizeof(ble_gatts_attr_md_t) );
     cccd_md.vloc = BLE_GATTS_VLOC_STACK;
 
-    cccd_md.read_perm  = BLE_SECMODE_OPEN;
-
-    // TODO enable encryption when bonding is enabled
-//    cccd_md.write_perm = BLE_SECMODE_ENC_NO_MITM;
-    cccd_md.write_perm = BLE_SECMODE_OPEN;
+    cccd_md.read_perm  = _attr_meta.read_perm;
+    cccd_md.write_perm = _attr_meta.read_perm;
   }
 
   /* Characteristic metadata */
-  /* https://devzone.nordicsemi.com/documentation/nrf51/5.2.0/html/a00272.html */
   ble_gatts_char_md_t char_md;
   varclr(&char_md);
 
   char_md.char_props = _properties;
   char_md.p_cccd_md  = (_properties.notify || _properties.indicate) ? &cccd_md : NULL;
 
-  /* Characteristic extended properties (used for the user description) */
-  /* https://devzone.nordicsemi.com/documentation/nrf51/5.2.0/html/a00248.html */
+  /* Characteristic extended properties (for user description) */
   ble_gatts_attr_md_t desc_md =
   {
-      .read_perm  = { .sm = 1, .lv = 1 }, // open
-      .write_perm = { .sm = 0, .lv = 0 }, // no access
+      .read_perm  = _attr_meta.read_perm,
+      .write_perm = BLE_SECMODE_NO_ACCESS,
       .vlen       = 0,
       .vloc       = BLE_GATTS_VLOC_STACK,
   };
@@ -201,18 +214,7 @@ err_t BLECharacteristic::start(void)
 //     char_md.p_char_pf = &p_char_def->presentation;
 //   }
 
-  if ( !(_properties.read || _properties.notify || _properties.indicate ) )
-  {
-    _attr_meta.read_perm = BLE_SECMODE_NO_ACCESS;
-  }
-
-  if ( !(_properties.write || _properties.write_wo_resp ) )
-  {
-    _attr_meta.write_perm = BLE_SECMODE_NO_ACCESS;
-  }
-
   /* GATT attribute declaration */
-  /* https://devzone.nordicsemi.com/documentation/nrf51/5.2.0/html/a00270.html */
   ble_gatts_attr_t attr_char_value =
   {
     .p_uuid    = &uuid._uuid,
@@ -224,6 +226,35 @@ err_t BLECharacteristic::start(void)
   };
 
   VERIFY_STATUS( sd_ble_gatts_characteristic_add(BLE_GATT_HANDLE_INVALID, &char_md, &attr_char_value, &_handles) );
+
+  // Report Reference Descriptor if any (required by HID)
+  if ( _report_ref_desc.type )
+  {
+    // Reference Descriptor
+    ble_gatts_attr_md_t ref_md =
+    {
+        .read_perm  = _attr_meta.read_perm,
+        .write_perm = BLE_SECMODE_NO_ACCESS,
+        .vlen       = 0,
+        .vloc       = BLE_GATTS_VLOC_STACK
+    };
+
+    ble_uuid_t ref_uuid = { .uuid = UUID16_REPORT_REF_DESCR, .type = BLE_UUID_TYPE_BLE };
+    ble_gatts_attr_t ref_desc =
+    {
+        .p_uuid    = &ref_uuid,
+        .p_attr_md = &ref_md,
+        .init_len  = sizeof(_report_ref_desc),
+        .init_offs = 0,
+        .max_len   = sizeof(_report_ref_desc),
+        .p_value   = (uint8_t*) &_report_ref_desc
+    };
+
+    uint16_t ref_hdl;
+    VERIFY_STATUS ( sd_ble_gatts_descriptor_add(BLE_GATT_HANDLE_INVALID, &ref_desc, &ref_hdl) );
+
+    (void) ref_hdl; // not used
+  }
 
   // Only register to Bluefruit when having callback support
   // The Characteristic must not be temporary memory aka local variable

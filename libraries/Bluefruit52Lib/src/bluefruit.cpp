@@ -476,8 +476,7 @@ void AdafruitBluefruit::_poll(void)
         {
           case NRF_EVT_FLASH_OPERATION_SUCCESS:
           case NRF_EVT_FLASH_OPERATION_ERROR:
-//            PRINT_INT(soc_evt);
-            hal_flash_event_cb(soc_evt);
+            if (hal_flash_event_cb) hal_flash_event_cb(soc_evt);
           break;
 
           default: break;

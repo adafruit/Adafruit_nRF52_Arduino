@@ -85,10 +85,9 @@ err_t BLEUart::start(void)
 //  _txd.setMaxLen(BLE_MAX_DATA_PER_MTU);
 
   // TODO enable encryption when bonding is enabled
-//  _txd.setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
  _txd.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
 
-  _txd.setDescriptor("TXD");
+  _txd.setStringDescriptor("TXD");
   VERIFY_STATUS( _txd.start() );
 
   // Add RXD Characteristic
@@ -96,10 +95,9 @@ err_t BLEUart::start(void)
   _rxd.setWriteCallback(bleuart_rxd_cb);
 
   // TODO enable encryption when bonding is enabled
-//  _rxd.setPermission(SECMODE_NO_ACCESS, SECMODE_ENC_NO_MITM);
    _rxd.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
 
-  _rxd.setDescriptor("RXD");
+  _rxd.setStringDescriptor("RXD");
   VERIFY_STATUS(_rxd.start());
 
 
