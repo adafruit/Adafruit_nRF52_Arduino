@@ -31,7 +31,7 @@ void pinMode( uint32_t ulPin, uint32_t ulMode )
     return;
   }
 
-  ulPin = g_ADigitalPinMap[ulPin];
+//  ulPin = g_ADigitalPinMap[ulPin];
 
   // Set pin mode according to chapter '22.6.3 I/O Pin Configuration'
   switch ( ulMode )
@@ -84,7 +84,7 @@ void digitalWrite( uint32_t ulPin, uint32_t ulVal )
     return;
   }
 
-  ulPin = g_ADigitalPinMap[ulPin];
+//  ulPin = g_ADigitalPinMap[ulPin];
 
   switch ( ulVal )
   {
@@ -106,12 +106,12 @@ int digitalRead( uint32_t ulPin )
     return 0;
   }
 
-  ulPin = g_ADigitalPinMap[ulPin];
+  //  ulPin = g_ADigitalPinMap[ulPin];
 
-  return ((NRF_GPIO->IN >> ulPin) & 1UL) ? HIGH : LOW ;
+  // Return  bit in NRF_GPIO->OUT or NRF_GPIO->IN depending on configured direction
+  return bitRead(NRF_GPIO->PIN_CNF[ulPin], GPIO_PIN_CNF_DIR_Pos) ? bitRead(NRF_GPIO->OUT, ulPin) : bitRead(NRF_GPIO->IN, ulPin);
 }
 
-// TODO toggle not work !!!
 int digitalToggle( uint32_t pin )
 {
   int state = 1 - (((NRF_GPIO->OUT >> pin) & 1UL) ? HIGH : LOW);

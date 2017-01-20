@@ -25,51 +25,51 @@
 // Must match temp register in bootloader
 #define BOOTLOADER_VERSION_REGISTER     NRF_TIMER2->CC[0]
 
-const uint32_t g_ADigitalPinMap[] = {
-  // D0 - D7
-  0,  // xtal 1
-  1,  // xtal 2
-  2,  // a0
-  3,  // a1
-  4,  // a2
-  5,  // a3
-  6,  // TXD
-  7,  // GPIO #7
-
-  // D8 - D13
-  8,  // RXD  
-
-  9,  // NFC1
-  10, // NFC2
-
-  11, // GPIO11
-
-  12, // SCK
-  13, // MOSI
-  14, // MISO
-
-  15, // GPIO #15
-  16, // GPIO #16
-
-  // function set pins
-  17, // LED #1 (red)
-  18, // SWO
-  19, // LED #2 (blue)
-  20, // DFU
-  21, // Reset
-  22, // Factory Reset
-  23, // N/A
-  24, // N/A
-
-  25, // SDA
-  26, // SCL
-  27, // GPIO #27
-  28, // A4
-  29, // A5
-  30, // A6
-  31, // A7
-
-};
+//const uint32_t g_ADigitalPinMap[] = {
+//  // D0 - D7
+//  0,  // xtal 1
+//  1,  // xtal 2
+//  2,  // a0
+//  3,  // a1
+//  4,  // a2
+//  5,  // a3
+//  6,  // TXD
+//  7,  // GPIO #7
+//
+//  // D8 - D13
+//  8,  // RXD
+//
+//  9,  // NFC1
+//  10, // NFC2
+//
+//  11, // GPIO11
+//
+//  12, // SCK
+//  13, // MOSI
+//  14, // MISO
+//
+//  15, // GPIO #15
+//  16, // GPIO #16
+//
+//  // function set pins
+//  17, // LED #1 (red)
+//  18, // SWO
+//  19, // LED #2 (blue)
+//  20, // DFU
+//  21, // Reset
+//  22, // Factory Reset
+//  23, // N/A
+//  24, // N/A
+//
+//  25, // SDA
+//  26, // SCL
+//  27, // GPIO #27
+//  28, // A4
+//  29, // A5
+//  30, // A6
+//  31, // A7
+//
+//};
 
 uint32_t bootloaderVersion = 0;
 void initVariant()
