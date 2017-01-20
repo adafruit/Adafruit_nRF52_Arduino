@@ -74,16 +74,6 @@ uint32_t setLoopStacksize(void);
 // RTOS
 #include "rtos.h"
 
-enum
-{
-  TASK_PRIO_HIGHEST = 0,
-  TASK_PRIO_HIGH    = 1,
-  TASK_PRIO_NORMAL  = 2,
-  TASK_PRIO_LOW     = 3,
-  TASK_PRIO_LOWEST  = 4
-};
-
-
 // undefine stdlib's abs if encountered
 #ifdef abs
 #undef abs

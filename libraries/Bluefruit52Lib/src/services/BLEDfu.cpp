@@ -182,5 +182,5 @@ err_t BLEDfu::start(void)
   VERIFY_STATUS( chr_revision.start());
   chr_revision.write( (uint16_t) DFU_REV_APPMODE);
 
-  return NRF_SUCCESS;
+  return ERROR_NONE;
 }

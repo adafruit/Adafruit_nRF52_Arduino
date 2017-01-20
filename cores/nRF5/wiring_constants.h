@@ -56,6 +56,22 @@ enum BitOrder {
 //#define DEFAULT 1
 //#define EXTERNAL 0
 
+enum
+{
+  TASK_PRIO_HIGHEST = 0,
+  TASK_PRIO_HIGH    = 1,
+  TASK_PRIO_NORMAL  = 2,
+  TASK_PRIO_LOW     = 3,
+  TASK_PRIO_LOWEST  = 4
+};
+
+typedef uint32_t err_t;
+
+enum
+{
+  ERROR_NONE = 0
+};
+
 #ifdef __cplusplus
 } // extern "C"
 #endif // __cplusplus

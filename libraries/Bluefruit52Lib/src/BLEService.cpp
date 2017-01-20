@@ -82,6 +82,6 @@ err_t BLEService::addToGatt(void)
 
   lastService = this;
 
-  return NRF_SUCCESS;
+  return ERROR_NONE;
 }
 

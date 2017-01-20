@@ -414,7 +414,7 @@ err_t BLEHid::start(void)
   VERIFY_STATUS( _chr_control.start() );
   _chr_control.write( (uint8_t) 0 );
 
-  return NRF_SUCCESS;
+  return ERROR_NONE;
 }
 
 err_t BLEHid::sendReport(uint8_t id, void const* data, int len)

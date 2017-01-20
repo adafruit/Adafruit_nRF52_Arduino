@@ -41,6 +41,4 @@
 #include "ble_hci.h"
 #include "nrf_sdm.h"
 
-typedef uint32_t err_t;
-
 #endif /* BLUEFRUIT_COMMON_H_ */

@@ -170,7 +170,7 @@ err_t AdafruitBluefruit::begin(void)
   // Also initialize nffs for bonding/config
   nffs_pkg_init();
 
-  return NRF_SUCCESS;
+  return ERROR_NONE;
 }
 
 void AdafruitBluefruit::setName(const char* str)
@@ -382,7 +382,7 @@ err_t AdafruitBluefruit::startAdvertising(void)
 
   VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para) );
 
-  return NRF_SUCCESS;
+  return ERROR_NONE;
 }
 
 void AdafruitBluefruit::stopAdvertising(void)
@@ -412,7 +412,7 @@ err_t AdafruitBluefruit::_registerCharacteristic(BLECharacteristic* chars)
   if ( _chars_count == BLE_MAX_CHARS ) return NRF_ERROR_NO_MEM;
   _chars_list[ _chars_count++ ] = chars;
 
-  return NRF_SUCCESS;
+  return ERROR_NONE;
 }
 
 uint16_t AdafruitBluefruit::connHandle(void)
@@ -474,7 +474,7 @@ void AdafruitBluefruit::_poll(void)
       {
         out_of_soc = true;
       }
-      else if (NRF_SUCCESS == err)
+      else if (ERROR_NONE == err)
       {
         // handling SOC
         switch (soc_evt)
@@ -503,7 +503,7 @@ void AdafruitBluefruit::_poll(void)
       {
         out_of_ble = true;
       }
-      else if( NRF_SUCCESS == err)
+      else if( ERROR_NONE == err)
       {
         switch ( evt->header.evt_id  )
         {

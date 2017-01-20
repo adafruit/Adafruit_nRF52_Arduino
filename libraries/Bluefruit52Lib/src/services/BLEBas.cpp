@@ -51,7 +51,7 @@ err_t BLEBas::start(void)
   _battery.setFixedLen(1);
   VERIFY_STATUS( _battery.start() );
 
-  return NRF_SUCCESS;
+  return ERROR_NONE;
 }
 
 void BLEBas::update(uint8_t level)

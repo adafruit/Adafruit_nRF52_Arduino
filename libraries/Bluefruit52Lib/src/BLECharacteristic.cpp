@@ -266,7 +266,7 @@ err_t BLECharacteristic::start(void)
     (void) Bluefruit._registerCharacteristic(this);
   }
 
-  return NRF_SUCCESS;
+  return ERROR_NONE;
 }
 
 /**
@@ -394,7 +394,7 @@ err_t BLECharacteristic::notify(const uint8_t* data, int len, uint16_t offset)
 
   VERIFY_STATUS( sd_ble_gatts_hvx(Bluefruit.connHandle(), &hvx_params) );
 
-  return NRF_SUCCESS;
+  return ERROR_NONE;
 }
 
 err_t BLECharacteristic::notify(const uint8_t* data, int len)

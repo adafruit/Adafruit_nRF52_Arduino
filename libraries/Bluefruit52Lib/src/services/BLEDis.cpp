@@ -106,5 +106,5 @@ err_t BLEDis::start(void)
     }
   }
 
-  return NRF_SUCCESS;
+  return ERROR_NONE;
 }
