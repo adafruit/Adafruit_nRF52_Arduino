@@ -42,8 +42,6 @@ BLEService* BLEService::lastService = NULL;
 void BLEService::_init(void)
 {
   _handle = BLE_GATT_HANDLE_INVALID;
-
-  lastService = this;
 }
 
 BLEService::BLEService(void)
@@ -80,6 +78,10 @@ err_t BLEService::addToGatt(void)
   uuid.add();
 
   uint16_t handle;
-  return sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &uuid._uuid, &handle);
+  VERIFY_STATUS( sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &uuid._uuid, &handle) );
+
+  lastService = this;
+
+  return NRF_SUCCESS;
 }
 

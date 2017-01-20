@@ -44,7 +44,7 @@ void BLECharacteristic::init(void)
 
   varclr(&_report_ref_desc);
 
-  _service = BLEService::lastService;
+  _service = NULL;
 
   _handles.value_handle     = BLE_GATT_HANDLE_INVALID;
   _handles.user_desc_handle = BLE_GATT_HANDLE_INVALID;
@@ -153,6 +153,8 @@ ble_gatts_char_handles_t BLECharacteristic::handles(void)
 
 err_t BLECharacteristic::start(void)
 {
+  _service = BLEService::lastService;
+
   // Add UUID128 if needed
   uuid.add();
 
