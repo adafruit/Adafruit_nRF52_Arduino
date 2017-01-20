@@ -456,3 +456,24 @@ err_t BLEHid::keyRelease(void)
 
   return keyboardReport(&report);
 }
+
+err_t BLEHid::keySequence(const char* str, int ms)
+{
+  // Send each key in sequence
+  char ch;
+  while( (ch = *str++) != 0 )
+  {
+    char lookahead = *str;
+
+    keyPress(ch);
+    delay(ms);
+
+    /* Only need to empty report if the next character is NULL or the same with
+     * the current one, or no need to send */
+    if ( lookahead == ch || lookahead == 0 )
+    {
+      keyRelease();
+      delay(ms);
+    }
+  }
+}

@@ -96,6 +96,7 @@ class BLEHid : public BLEService
     err_t keyboardReport(hid_keyboard_report_t* report);
     err_t keyPress(char ch);
     err_t keyRelease(void);
+    err_t keySequence(const char* str, int ms=5);
 };
 
 //--------------------------------------------------------------------+
