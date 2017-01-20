@@ -52,7 +52,8 @@ void BLECharacteristic::init(void)
   _handles.cccd_handle      = BLE_GATT_HANDLE_INVALID;
 
   varclr(&_attr_meta);
-  _attr_meta.read_perm = _attr_meta.write_perm = (ble_gap_conn_sec_mode_t){ .sm = 1, .lv = 1 };
+  // default permission is OPEN
+  _attr_meta.read_perm = _attr_meta.write_perm = BLE_SECMODE_OPEN;
   _attr_meta.vlen = 1;
   _attr_meta.vloc = BLE_GATTS_VLOC_STACK;
 
@@ -178,7 +179,7 @@ err_t BLECharacteristic::start(void)
     memclr( &cccd_md, sizeof(ble_gatts_attr_md_t) );
     cccd_md.vloc = BLE_GATTS_VLOC_STACK;
 
-    cccd_md.read_perm  = _attr_meta.read_perm;
+    cccd_md.read_perm  = BLE_SECMODE_OPEN;
     cccd_md.write_perm = _attr_meta.read_perm;
   }
 

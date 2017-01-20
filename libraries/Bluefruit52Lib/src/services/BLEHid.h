@@ -48,6 +48,12 @@ class BLEHid : public BLEService
   protected:
     BLECharacteristic _chr_protocol;
     BLECharacteristic _chr_input;
+    BLECharacteristic _chr_control;
+
+    BLECharacteristic* _pchr_boot_keyboard;
+
+    bool _keyboard_en;
+    bool _mouse_en;
 
   public:
     BLEHid(void);
@@ -58,8 +64,6 @@ class BLEHid : public BLEService
 //--------------------------------------------------------------------+
 // MOUSE
 //--------------------------------------------------------------------+
-/** \addtogroup ClassDriver_HID_Mouse Mouse
- *  @{ */
 
 /// Standard HID Boot Protocol Mouse Report.
 typedef ATTR_PACKED_STRUCT(struct)
@@ -72,24 +76,19 @@ typedef ATTR_PACKED_STRUCT(struct)
 } hid_mouse_report_t;
 
 /// Standard Mouse Buttons Bitmap
-//typedef enum {
-//  MOUSE_BUTTON_LEFT      = BIT(0), ///< Left button
-//  MOUSE_BUTTON_RIGHT     = BIT(1), ///< Right button
-//  MOUSE_BUTTON_MIDDLE    = BIT(2), ///< Middle button,
-//  MOUSE_BUTTON_BACKWARD  = BIT(3), ///< Backward button,
-//  MOUSE_BUTTON_FORWARD   = BIT(4), ///< Forward button,
-//
-//  MOUSE_BUTTON_UNCHANGED = 0xff, ///< Not specified by HID but useful for holding mouse buttons
-//}hid_mouse_button_bm_t;
+typedef enum {
+  MOUSE_BUTTON_LEFT      = bit(0), ///< Left button
+  MOUSE_BUTTON_RIGHT     = bit(1), ///< Right button
+  MOUSE_BUTTON_MIDDLE    = bit(2), ///< Middle button,
+  MOUSE_BUTTON_BACKWARD  = bit(3), ///< Backward button,
+  MOUSE_BUTTON_FORWARD   = bit(4), ///< Forward button,
 
-/// @}
+  MOUSE_BUTTON_UNCHANGED = 0xff, ///< Not specified by HID but useful for holding mouse buttons
+}hid_mouse_button_bm_t;
 
 //--------------------------------------------------------------------+
 // Keyboard
 //--------------------------------------------------------------------+
-/** \addtogroup ClassDriver_HID_Keyboard Keyboard
- *  @{ */
-
 /// Standard HID Boot Protocol Keyboard Report.
 typedef ATTR_PACKED_STRUCT(struct)
 {
@@ -106,26 +105,24 @@ typedef ATTR_PACKED_STRUCT(struct)
 } hid_consumer_control_report_t;
 
 ///// Keyboard modifier codes bitmap
-//typedef enum {
-//  KEYBOARD_MODIFIER_LEFTCTRL   = BIT(0), ///< Left Control
-//  KEYBOARD_MODIFIER_LEFTSHIFT  = BIT(1), ///< Left Shift
-//  KEYBOARD_MODIFIER_LEFTALT    = BIT(2), ///< Left Alt
-//  KEYBOARD_MODIFIER_LEFTGUI    = BIT(3), ///< Left Window
-//  KEYBOARD_MODIFIER_RIGHTCTRL  = BIT(4), ///< Right Control
-//  KEYBOARD_MODIFIER_RIGHTSHIFT = BIT(5), ///< Right Shift
-//  KEYBOARD_MODIFIER_RIGHTALT   = BIT(6), ///< Right Alt
-//  KEYBOARD_MODIFIER_RIGHTGUI   = BIT(7)  ///< Right Window
-//}hid_keyboard_modifier_bm_t;
-//
-//typedef enum {
-//  KEYBOARD_LED_NUMLOCK    = BIT(0), ///< Num Lock LED
-//  KEYBOARD_LED_CAPSLOCK   = BIT(1), ///< Caps Lock LED
-//  KEYBOARD_LED_SCROLLLOCK = BIT(2), ///< Scroll Lock LED
-//  KEYBOARD_LED_COMPOSE    = BIT(3), ///< Composition Mode
-//  KEYBOARD_LED_KANA       = BIT(4) ///< Kana mode
-//}hid_keyboard_led_bm_t;
+typedef enum {
+  KEYBOARD_MODIFIER_LEFTCTRL   = bit(0), ///< Left Control
+  KEYBOARD_MODIFIER_LEFTSHIFT  = bit(1), ///< Left Shift
+  KEYBOARD_MODIFIER_LEFTALT    = bit(2), ///< Left Alt
+  KEYBOARD_MODIFIER_LEFTGUI    = bit(3), ///< Left Window
+  KEYBOARD_MODIFIER_RIGHTCTRL  = bit(4), ///< Right Control
+  KEYBOARD_MODIFIER_RIGHTSHIFT = bit(5), ///< Right Shift
+  KEYBOARD_MODIFIER_RIGHTALT   = bit(6), ///< Right Alt
+  KEYBOARD_MODIFIER_RIGHTGUI   = bit(7)  ///< Right Window
+}hid_keyboard_modifier_bm_t;
 
-/// @}
+typedef enum {
+  KEYBOARD_LED_NUMLOCK    = bit(0), ///< Num Lock LED
+  KEYBOARD_LED_CAPSLOCK   = bit(1), ///< Caps Lock LED
+  KEYBOARD_LED_SCROLLLOCK = bit(2), ///< Scroll Lock LED
+  KEYBOARD_LED_COMPOSE    = bit(3), ///< Composition Mode
+  KEYBOARD_LED_KANA       = bit(4) ///< Kana mode
+}hid_keyboard_led_bm_t;
 
 /// Gamepad report
 typedef ATTR_PACKED_STRUCT(struct)
