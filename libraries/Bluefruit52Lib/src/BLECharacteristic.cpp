@@ -376,7 +376,7 @@ err_t BLECharacteristic::notify(const uint8_t* data, int len, uint16_t offset)
 {
   if ( !_properties.notify ) return NRF_ERROR_INVALID_PARAM;
 
-  // Txbuf available or not we still update the chars'value
+  // Whether Txbuf available or not we still update the chars'value
   (void) Bluefruit.txbuf_get(100);
 
   uint16_t len16 = (uint16_t) len;

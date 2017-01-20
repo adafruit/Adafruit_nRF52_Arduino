@@ -73,9 +73,12 @@ class AdafruitBluefruit
     void    clearAdvData(void);
 
     bool addAdvData(uint8_t type, const void* data, uint8_t len);
+
     bool addAdvFlags(uint8_t flags);
     bool addAdvTxPower(void);
     bool addAdvName(void);
+    bool addAdvApperance(uint16_t appearance);
+
     bool addAdvUuid(uint16_t uuid16);
     bool addAdvUuid(uint8_t const  uuid128[]);
     bool addAdvService(BLEService& service);
