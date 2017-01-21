@@ -164,7 +164,7 @@ class DfuTransportSerial(DfuTransport):
         # nrf52 will erase the bank 0 up to Application size & Transfer App size from bank1 to bank0
         # There must a enough delay before finished to prevent Arduino IDE reopen Serial Monitor
 
-        logger.info("Activating new firmware")
+        logger.info("\nActivating new firmware")
         #logger.info("Wait after Init Packet %s second", self.get_activate_wait_time())
         time.sleep( self.get_activate_wait_time() )
 

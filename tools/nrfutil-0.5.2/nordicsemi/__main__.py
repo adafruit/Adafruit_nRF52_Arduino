@@ -244,8 +244,13 @@ global_bar = None
 
 def update_progress(progress=0, done=False, log_message=""):
     del done, log_message  # Unused parameters
-    if global_bar:
-        global_bar.update(max(1, progress))
+    global global_bar
+
+    if global_bar is None:
+        with click.progressbar(length=100) as bar:
+            global_bar = bar
+
+    global_bar.update(max(1, progress))
 
 
 @dfu.command(short_help="Program a device with bootloader that support serial DFU")
@@ -276,10 +281,7 @@ def serial(package, port, baudrate, flowcontrol):
                .format(package, port, "enabled" if flowcontrol else "disabled"))
 
     try:
-        with click.progressbar(length=100) as bar:
-            global global_bar
-            global_bar = bar
-            dfu.dfu_send_images()
+        dfu.dfu_send_images()
 
     except Exception as e:
         click.echo("")
