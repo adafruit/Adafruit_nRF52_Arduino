@@ -59,9 +59,10 @@ class DfuTransportSerial(DfuTransport):
     # ADADFRUIT: After Start packet is sent, nrf5x will start to erase flash page, each page takes 2.05 - 89.7 ms
     # nrfutil need to wait accordingly for the image size, but not less than this value (0.5) second
     SEND_START_DFU_MIN_WAIT_TIME = 0.5
-    FLASH_PAGE_ERASE_MAX_TIME = 0.09 # Worst time to erase a page
-    FLASH_PAGE_SIZE = 4096 # 4K for nrf52
+    FLASH_PAGE_ERASE_MAX_TIME = 0.09 # Worst time to erase a page 90 ms (89 ms)
+    FLASH_WRITE_WORD_WAIT_TIME = 0.000338 # Worst time to write one word 338 us
 
+    FLASH_PAGE_SIZE = 4096 # 4K for nrf52
     DFU_PACKET_MAX_SIZE = 512  # The DFU packet max size
 
     def __init__(self, com_port, baud_rate=DEFAULT_BAUD_RATE, flow_control=DEFAULT_FLOW_CONTROL, timeout=DEFAULT_SERIAL_PORT_TIMEOUT):
@@ -71,6 +72,7 @@ class DfuTransportSerial(DfuTransport):
         self.flow_control = 1 if flow_control else 0
         self.timeout = timeout
         self.serial_port = None
+        self.total_size = 167936 # default is max application size
         """:type: serial.Serial """
 
     def open(self):
@@ -133,6 +135,16 @@ class DfuTransportSerial(DfuTransport):
         self.send_packet(packet)
         time.sleep(DfuTransportSerial.SEND_INIT_PACKET_WAIT_TIME)
 
+    def get_erase_wait_time(self):
+        erase_wait_time = (((self.total_size)//self.FLASH_PAGE_SIZE)+1)*self.FLASH_PAGE_ERASE_MAX_TIME
+        erase_wait_time = max(erase_wait_time, self.SEND_START_DFU_MIN_WAIT_TIME)
+        return erase_wait_time
+
+    def get_activate_wait_time(self):
+        # Activate wait time including time to erase bank 0 and writing bank 0
+        write_wait_time = ((self.total_size // 4) + 1) * self.FLASH_WRITE_WORD_WAIT_TIME
+        return self.get_erase_wait_time() + write_wait_time
+
     def send_start_dfu(self, mode, softdevice_size=None, bootloader_size=None, app_size=None):
         super(DfuTransportSerial, self).send_start_dfu(mode, softdevice_size, bootloader_size, app_size)
 
@@ -143,14 +155,18 @@ class DfuTransportSerial(DfuTransport):
         packet = HciPacket(frame)
         self.send_packet(packet)
 
-        # time.sleep(DfuTransportSerial.SEND_START_DFU_WAIT_TIME)
-        wait_time = (((softdevice_size+bootloader_size+app_size)//DfuTransportSerial.FLASH_PAGE_SIZE)+1)*DfuTransportSerial.FLASH_PAGE_ERASE_MAX_TIME
-        wait_time = max(wait_time, DfuTransportSerial.SEND_START_DFU_MIN_WAIT_TIME)
-        #logger.info("Wait after Init Packet %s second", wait_time)
-        time.sleep(wait_time)
+        self.total_size = softdevice_size+bootloader_size+app_size
+        #logger.info("Wait after Init Packet %s second", self.get_erase_wait_time())
+        time.sleep( self.get_erase_wait_time() )
 
     def send_activate_firmware(self):
         super(DfuTransportSerial, self).send_activate_firmware()
+        # nrf52 will erase the bank 0 up to Application size & Transfer App size from bank1 to bank0
+        # There must a enough delay before finished to prevent Arduino IDE reopen Serial Monitor
+
+        logger.info("Activating new firmware")
+        #logger.info("Wait after Init Packet %s second", self.get_activate_wait_time())
+        time.sleep( self.get_activate_wait_time() )
 
     def send_firmware(self, firmware):
         super(DfuTransportSerial, self).send_firmware(firmware)
