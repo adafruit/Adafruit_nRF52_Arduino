@@ -212,7 +212,7 @@ class Dfu(object):
         self.dfu_transport.send_activate_firmware()
 
         end_time = time()
-        logger.info("DFU upgrade took {0}s".format(end_time - start_time))
+        logger.info("\nDFU upgrade took {0}s".format(end_time - start_time))
 
         self.dfu_transport.close()
 

@@ -244,13 +244,12 @@ global_bar = None
 
 def update_progress(progress=0, done=False, log_message=""):
     del done, log_message  # Unused parameters
-    global global_bar
-
-    if global_bar is None:
-        with click.progressbar(length=100) as bar:
-            global_bar = bar
-
-    global_bar.update(max(1, progress))
+    #global global_bar
+    #if global_bar is None:
+    #    with click.progressbar(length=100) as bar:
+    #        global_bar = bar
+    #global_bar.update(max(1, progress))
+    click.echo('#', nl=False)
 
 
 @dfu.command(short_help="Program a device with bootloader that support serial DFU")
