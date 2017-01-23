@@ -56,14 +56,24 @@ class DfuTransportSerial(DfuTransport):
     SEND_INIT_PACKET_WAIT_TIME = 0.5 # 1.0  # Time to wait before communicating with bootloader after init packet is sent
 
     # SEND_START_DFU_WAIT_TIME = 10.0  # Time to wait before communicating with bootloader after start DFU packet is sent
-    # ADADFRUIT: After Start packet is sent, nrf5x will start to erase flash page, each page takes 2.05 - 89.7 ms
+    # ADADFRUIT:
+    # - After Start packet is sent, nrf5x will start to erase flash page, each page takes 2.05 - 89.7 ms
     # nrfutil need to wait accordingly for the image size, but not less than this value (0.5) second
-    SEND_START_DFU_MIN_WAIT_TIME = 0.5
-    FLASH_PAGE_ERASE_MAX_TIME = 0.09 # Worst time to erase a page 90 ms (89 ms)
-    FLASH_WRITE_WORD_WAIT_TIME = 0.000338 # Worst time to write one word 338 us
+    # - Afterwards, command to activate new firmware --> nrf52 erase bank0 and copy image from bank1 to bank 0
+    # nrfutil need to wait otherwise and re-open serial could cause flash corruption
 
-    FLASH_PAGE_SIZE = 4096 # 4K for nrf52
-    DFU_PACKET_MAX_SIZE = 512  # The DFU packet max size
+    SEND_START_DFU_MIN_WAIT_TIME = 0.5
+
+    FLASH_PAGE_ERASE_MAX_TIME = 0.09      # Worst time to erase a page 90 ms (89 ms)
+    FLASH_PAGE_ERASE_MIN_TIME = 0.00205   # Best time to erase a page 2.05 ms
+
+    FLASH_WORD_WRITE_MAX_TIME = 0.000338  # Worst time to write one word 338 us
+    FLASH_WORD_WRITE_MIN_TIME = 0.0000675 # Best time to write one word 67.5 us
+
+    FLASH_OP_WAIT_RATIO = 0.5             # Ratio in % for flash operation (erase, write) comparing to the MAX(worst) scenario
+
+    FLASH_PAGE_SIZE = 4096                # 4K for nrf52
+    DFU_PACKET_MAX_SIZE = 512             # The DFU packet max size
 
     def __init__(self, com_port, baud_rate=DEFAULT_BAUD_RATE, flow_control=DEFAULT_FLOW_CONTROL, timeout=DEFAULT_SERIAL_PORT_TIMEOUT):
         super(DfuTransportSerial, self).__init__()
@@ -136,13 +146,16 @@ class DfuTransportSerial(DfuTransport):
         time.sleep(DfuTransportSerial.SEND_INIT_PACKET_WAIT_TIME)
 
     def get_erase_wait_time(self):
-        erase_wait_time = (((self.total_size)//self.FLASH_PAGE_SIZE)+1)*self.FLASH_PAGE_ERASE_MAX_TIME
+        avg_flash_erase = (self.FLASH_PAGE_ERASE_MAX_TIME - self.FLASH_PAGE_ERASE_MIN_TIME) * self.FLASH_OP_WAIT_RATIO + self.FLASH_PAGE_ERASE_MIN_TIME
+        erase_wait_time = (((self.total_size)//self.FLASH_PAGE_SIZE)+1)*avg_flash_erase
         erase_wait_time = max(erase_wait_time, self.SEND_START_DFU_MIN_WAIT_TIME)
         return erase_wait_time
 
     def get_activate_wait_time(self):
         # Activate wait time including time to erase bank 0 and writing bank 0
-        write_wait_time = ((self.total_size // 4) + 1) * self.FLASH_WRITE_WORD_WAIT_TIME
+        avg_flash_write = (self.FLASH_WORD_WRITE_MAX_TIME - self.FLASH_WORD_WRITE_MIN_TIME) * self.FLASH_OP_WAIT_RATIO + self.FLASH_WORD_WRITE_MIN_TIME
+        write_wait_time = ((self.total_size // 4) + 1) * avg_flash_write
+        write_wait_time = max(write_wait_time, self.SEND_START_DFU_MIN_WAIT_TIME)
         return self.get_erase_wait_time() + write_wait_time
 
     def send_start_dfu(self, mode, softdevice_size=None, bootloader_size=None, app_size=None):
@@ -165,7 +178,7 @@ class DfuTransportSerial(DfuTransport):
         # There must a enough delay before finished to prevent Arduino IDE reopen Serial Monitor
 
         logger.info("\nActivating new firmware")
-        #logger.info("Wait after Init Packet %s second", self.get_activate_wait_time())
+        #logger.info("Wait after activating %s second", self.get_activate_wait_time())
         time.sleep( self.get_activate_wait_time() )
 
     def send_firmware(self, firmware):
