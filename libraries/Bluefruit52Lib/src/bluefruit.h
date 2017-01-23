@@ -47,7 +47,9 @@
 #include "services/BLEUart.h"
 #include "services/BLEBas.h"
 #include "services/BLEBeacon.h"
-#include "services/BLEHid.h"
+#include "services/BLEHidGeneric.h"
+#include "services/BLEHidAdafruit.h"
+
 
 #define BLE_MAX_CHARS         50
 

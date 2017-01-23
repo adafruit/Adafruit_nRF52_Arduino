@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLEHid.cpp
+    @file     BLEHidGeneric.cpp
     @author   hathach
 
     @section LICENSE
@@ -36,6 +36,12 @@
 
 #include "bluefruit.h"
 
+enum {
+  REPORT_TYPE_INPUT = 1,
+  REPORT_TYPE_OUTPUT,
+  REPORT_TYPE_FEATURE
+};
+
 enum
 {
   REPORT_INDEX_KEYBOARD =0,
@@ -46,7 +52,7 @@ enum
 
 enum
 {
-  REPORT_ID_KEYBOARD = 1,
+  REPORT_ID_KEYBOARD = 0,
   REPORT_ID_CONSUMER_CONTROL,
   REPORT_ID_MOUSE,
   REPORT_ID_GAMEPAD
@@ -188,224 +194,130 @@ const hid_ascii_to_keycode_entry_t HID_ASCII_TO_KEYCODE[128] =
 };
 
 
-uint8_t const hid_report_descriptor[] =
+
+
+BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_feature)
+  : BLEService(UUID16_SVC_HUMAN_INTERFACE_DEVICE), _chr_control(UUID16_CHR_HID_CONTROL_POINT)
 {
-  //------------- Keyboard Report  -------------//
-  HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     ),
-  HID_USAGE      ( HID_USAGE_DESKTOP_KEYBOARD ),
-  HID_COLLECTION ( HID_COLLECTION_APPLICATION ),
-    HID_REPORT_ID ( REPORT_ID_KEYBOARD      ),
-    HID_USAGE_PAGE( HID_USAGE_PAGE_KEYBOARD ),
-      // 8 bits Modifier Keys (Shfit, Control, Alt)
-      HID_USAGE_MIN    ( 224                                    ),
-      HID_USAGE_MAX    ( 231                                    ),
-      HID_LOGICAL_MIN  ( 0                                      ),
-      HID_LOGICAL_MAX  ( 1                                      ),
+  _boot_keyboard = _boot_mouse = false;
+  _report_map = NULL;
+  _report_map_len = 0;
 
-      HID_REPORT_COUNT ( 8                                      ),
-      HID_REPORT_SIZE  ( 1                                      ),
-      HID_INPUT        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ),
+  _input_len = _output_len = _feature_len = NULL;
 
-      // 8 bit reserved
-      HID_REPORT_COUNT ( 1                                      ),
-      HID_REPORT_SIZE  ( 8                                      ),
-      HID_INPUT        ( HID_CONSTANT                           ),
+  _num_input   = num_input;
+  _num_output  = num_output;
+  _num_feature = num_feature;
 
-    // LED Indicator Kana | Compose | Scroll Lock | CapsLock | NumLock
-    HID_USAGE_PAGE  ( HID_USAGE_PAGE_LED                   ),
-      /* 5-bit Led report */
-      HID_USAGE_MIN    ( 1                                       ),
-      HID_USAGE_MAX    ( 5                                       ),
-      HID_REPORT_COUNT ( 5                                       ),
-      HID_REPORT_SIZE  ( 1                                       ),
-      HID_OUTPUT       ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE  ),
-      /* led padding */
-      HID_REPORT_COUNT ( 1                                       ),
-      HID_REPORT_SIZE  ( 3                                       ),
-      HID_OUTPUT       ( HID_CONSTANT                            ),
+  // HID Information
+  // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.hid_information.xml
+  // bcd 1.1, country = 0, flag = normal connect
+  _hid_info[0] = 0x01;
+  _hid_info[1] = 0x01;
+  _hid_info[2] = 0x00;
+  _hid_info[3] = bit(1);
 
-    // 6-byte Keycodes
-    HID_USAGE_PAGE (HID_USAGE_PAGE_KEYBOARD),
-      HID_USAGE_MIN    ( 0                                   ),
-      HID_USAGE_MAX    ( 101                                 ),
-      HID_LOGICAL_MIN  ( 0                                   ),
-      HID_LOGICAL_MAX  ( 101                                 ),
+  _chr_inputs = _chr_outputs = _chr_features = NULL;
+  _chr_boot_keyboard = _chr_boot_mouse = NULL;
 
-      HID_REPORT_COUNT ( 6                                   ),
-      HID_REPORT_SIZE  ( 8                                   ),
-      HID_INPUT        ( HID_DATA | HID_ARRAY | HID_ABSOLUTE ),
-  HID_COLLECTION_END,
-
-#if 0
-  //------------- Consumer Control Report -------------//
-  HID_USAGE_PAGE ( HID_USAGE_PAGE_CONSUMER    ),
-  HID_USAGE      ( HID_USAGE_CONSUMER_CONTROL ),
-  HID_COLLECTION ( HID_COLLECTION_APPLICATION ),
-    HID_REPORT_ID( REPORT_ID_CONSUMER_CONTROL ),
-    HID_LOGICAL_MIN  ( 0x00                                ),
-    HID_LOGICAL_MAX_N( 0x03FF, 2                           ),
-    HID_USAGE_MIN    ( 0x00                                ),
-    HID_USAGE_MAX_N  ( 0x03FF, 2                           ),
-    HID_REPORT_COUNT ( 1                                   ),
-    HID_REPORT_SIZE  ( 16                                  ),
-    HID_INPUT        ( HID_DATA | HID_ARRAY | HID_ABSOLUTE ),
-  HID_COLLECTION_END,
-
-  //------------- Mouse Report: buttons + dx + dy + scroll + pan -------------//
-  HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     ),
-  HID_USAGE      ( HID_USAGE_DESKTOP_MOUSE    ),
-  HID_COLLECTION ( HID_COLLECTION_APPLICATION ),
-    HID_REPORT_ID( REPORT_ID_MOUSE        ),
-    HID_USAGE      (HID_USAGE_DESKTOP_POINTER ),
-    HID_COLLECTION ( HID_COLLECTION_PHYSICAL  ),
-      HID_USAGE_PAGE  ( HID_USAGE_PAGE_BUTTON ),
-        HID_USAGE_MIN    ( 1                                      ),
-        HID_USAGE_MAX    ( 5                                      ),
-        HID_LOGICAL_MIN  ( 0                                      ),
-        HID_LOGICAL_MAX  ( 1                                      ),
-
-        HID_REPORT_COUNT ( 5                                      ), /* Forward, Backward, Middle, Right, Left */
-        HID_REPORT_SIZE  ( 1                                      ),
-        HID_INPUT        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ),
-
-        HID_REPORT_COUNT ( 1                                      ),
-        HID_REPORT_SIZE  ( 3                                      ),
-        HID_INPUT        ( HID_CONSTANT                           ), /* 5 bit padding followed 3 bit buttons */
-
-      HID_USAGE_PAGE  ( HID_USAGE_PAGE_DESKTOP ),
-        HID_USAGE        ( HID_USAGE_DESKTOP_X                    ),
-        HID_USAGE        ( HID_USAGE_DESKTOP_Y                    ),
-        HID_LOGICAL_MIN  ( 0x81                                   ), /* -127 */
-        HID_LOGICAL_MAX  ( 0x7f                                   ), /* 127  */
-
-        HID_REPORT_COUNT ( 2                                      ), /* X, Y position */
-        HID_REPORT_SIZE  ( 8                                      ),
-        HID_INPUT        ( HID_DATA | HID_VARIABLE | HID_RELATIVE ), /* relative values */
-
-        HID_USAGE       ( HID_USAGE_DESKTOP_WHEEL                ), /* mouse scroll */
-        HID_LOGICAL_MIN ( 0x81                                   ), /* -127 */
-        HID_LOGICAL_MAX ( 0x7f                                   ), /* 127  */
-        HID_REPORT_COUNT( 1                                      ),
-        HID_REPORT_SIZE ( 8                                      ), /* 8-bit value */
-        HID_INPUT       ( HID_DATA | HID_VARIABLE | HID_RELATIVE ), /* relative values */
-
-      HID_USAGE_PAGE  ( HID_USAGE_PAGE_CONSUMER ),
-        HID_USAGE_N     ( HID_USAGE_CONSUMER_AC_PAN, 2           ), /* Horizontal wheel scroll */
-        HID_LOGICAL_MIN ( 0x81                                   ), /* -127 */
-        HID_LOGICAL_MAX ( 0x7f                                   ), /* 127  */
-        HID_REPORT_COUNT( 1                                      ),
-        HID_REPORT_SIZE ( 8                                      ), /* 8-bit value */
-        HID_INPUT       ( HID_DATA | HID_VARIABLE | HID_RELATIVE ), /* relative values */
-    HID_COLLECTION_END,
-  HID_COLLECTION_END,
-
-  //------------- Gamepad Report -------------//
-  /* Byte 0: 4 pad | 2 Y-axis | 2 X-axis
-   * Byte 1: Button7-Button0
-   */
-  HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     ),
-  HID_USAGE      ( HID_USAGE_DESKTOP_GAMEPAD  ),
-  HID_COLLECTION ( HID_COLLECTION_APPLICATION ),
-    HID_REPORT_ID ( REPORT_ID_GAMEPAD      ),
-    HID_USAGE      (HID_USAGE_DESKTOP_POINTER ),
-    HID_COLLECTION ( HID_COLLECTION_PHYSICAL  ),
-      // X,Y joystick
-      HID_USAGE    ( HID_USAGE_DESKTOP_X                    ),
-      HID_USAGE    ( HID_USAGE_DESKTOP_Y                    ),
-      HID_LOGICAL_MIN ( 0xFF                                   ), /* -1 */
-      HID_LOGICAL_MAX ( 0x01                                   ), /* 1  */
-      HID_REPORT_COUNT( 2                                      ), /* X, Y position */
-      HID_REPORT_SIZE ( 2                                      ), /* 2-bit value */
-      HID_INPUT       ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ), /* input values */
-    HID_COLLECTION_END,
-
-    /* X,Y padding */
-    HID_REPORT_COUNT ( 4                                       ),
-    HID_REPORT_SIZE  ( 1                                       ),
-    HID_INPUT        ( HID_CONSTANT | HID_VARIABLE | HID_ABSOLUTE),
-
-    // Buttons
-    HID_USAGE_PAGE  ( HID_USAGE_PAGE_BUTTON ),
-      HID_USAGE_MIN    ( 1                                      ),
-      HID_USAGE_MAX    ( 8                                      ),
-      HID_LOGICAL_MIN  ( 0                                      ),
-      HID_LOGICAL_MAX  ( 1                                      ),
-      HID_REPORT_COUNT ( 8                                      ),
-      HID_REPORT_SIZE  ( 1                                      ),
-      HID_INPUT        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE),
-  HID_COLLECTION_END
-#endif
-};
-
-BLEHid::BLEHid(void)
-  : BLEService(UUID16_SVC_HUMAN_INTERFACE_DEVICE),
-    _chr_protocol(UUID16_CHR_PROTOCOL_MODE), _chr_input(),
-    _chr_control(UUID16_CHR_HID_CONTROL_POINT)
-{
-  _keyboard_en = true;
-  _mouse_en = false;
-
-  _pchr_boot_keyboard = NULL;
+  if ( _num_input   ) _chr_inputs   = new BLECharacteristic[num_input];
+  if ( _num_output  ) _chr_outputs  = new BLECharacteristic[num_output];
+  if ( _num_feature ) _chr_features = new BLECharacteristic[num_feature];
 }
 
-err_t BLEHid::start(void)
+void BLEHidGeneric::setBootProtocol(bool bootKeyboard, bool bootMouse)
 {
+  _boot_keyboard = bootKeyboard;
+  _boot_mouse = bootMouse;
+}
+
+void BLEHidGeneric::setHidInfo(uint16_t bcd, uint8_t country, uint8_t flags)
+{
+  memcpy(_hid_info, &bcd, 2);
+  _hid_info[2] = country;
+  _hid_info[3] = flags;
+}
+
+void BLEHidGeneric::setReportMap(const uint8_t* report_map, size_t len)
+{
+  _report_map     = report_map;
+  _report_map_len = len;
+}
+
+void BLEHidGeneric::setReportLen(uint16_t input_len[], uint16_t output_len[], uint16_t feature_len[])
+{
+  _input_len   = input_len;
+  _output_len  = output_len;
+  _feature_len = feature_len;
+}
+
+err_t BLEHidGeneric::start(void)
+{
+  VERIFY ( (_report_map != NULL) && _report_map_len, NRF_ERROR_INVALID_PARAM);
+
   VERIFY_STATUS( this->addToGatt() );
 
   // Protocol Mode
-  if ( _keyboard_en || _mouse_en )
+  if ( _boot_keyboard || _boot_mouse )
   {
-    _chr_protocol.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE_WO_RESP);
-    _chr_protocol.setFixedLen(1);
-    VERIFY_STATUS( _chr_protocol.start() );
-    _chr_protocol.write( (uint8_t) 1);
+    _chr_protocol = new BLECharacteristic(UUID16_CHR_PROTOCOL_MODE);
+    VERIFY(_chr_protocol, NRF_ERROR_NO_MEM);
+
+    _chr_protocol->setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE_WO_RESP);
+    _chr_protocol->setFixedLen(1);
+    VERIFY_STATUS( _chr_protocol->start() );
+    _chr_protocol->write( (uint8_t) 1);
   }
 
   // Input reports
+  for(uint8_t i=0; i<_num_input; i++)
   {
-    _chr_input.setUuid(UUID16_CHR_REPORT);
-    _chr_input.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
-    _chr_input.setFixedLen(sizeof(hid_keyboard_report_t));
-    _chr_input.setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-    _chr_input.setReportRefDescriptor(0x01, 0x01);
-    VERIFY_STATUS( _chr_input.start() );
+    _chr_inputs[i].setUuid(UUID16_CHR_REPORT);
+    _chr_inputs[i].setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
+    _chr_inputs[i].setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    _chr_inputs[i].setReportRefDescriptor(i, REPORT_TYPE_INPUT);
+
+    // Input report len is configured, else variable len up to 255
+    if ( _input_len ) _chr_inputs[i].setFixedLen( _input_len[i] );
+
+    VERIFY_STATUS( _chr_inputs[i].start() );
   }
 
   // Report Map (HID Report Descriptor)
   BLECharacteristic report_map(UUID16_CHR_REPORT_MAP);
   report_map.setProperties(CHR_PROPS_READ);
   report_map.setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-  report_map.setFixedLen(sizeof(hid_report_descriptor));
+  report_map.setFixedLen(_report_map_len);
   VERIFY_STATUS( report_map.start() );
-  report_map.write(hid_report_descriptor, sizeof(hid_report_descriptor));
+  report_map.write(_report_map, _report_map_len);
 
   // Boot Keyboard Input Report
-  if ( _keyboard_en )
+  if ( _boot_keyboard )
   {
-    _pchr_boot_keyboard = new BLECharacteristic(UUID16_CHR_BOOT_KEYBOARD_INPUT_REPORT);
-    _pchr_boot_keyboard->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
-    _pchr_boot_keyboard->setFixedLen(sizeof(hid_keyboard_report_t));
-    _pchr_boot_keyboard->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-    VERIFY_STATUS(_pchr_boot_keyboard->start());
+    _chr_boot_keyboard = new BLECharacteristic(UUID16_CHR_BOOT_KEYBOARD_INPUT_REPORT);
+    _chr_boot_keyboard->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
+    _chr_boot_keyboard->setFixedLen(sizeof(hid_keyboard_report_t));
+    _chr_boot_keyboard->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    VERIFY_STATUS(_chr_boot_keyboard->start());
   }
 
   // Boot Mouse Input Report
-  if ( _mouse_en )
+  if ( _boot_mouse )
   {
-
+    _chr_boot_mouse = new BLECharacteristic(UUID16_CHR_BOOT_MOUSE_INPUT_REPORT);
+    _chr_boot_mouse->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
+    _chr_boot_mouse->setFixedLen(sizeof(hid_mouse_report_t));
+    _chr_boot_mouse->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    VERIFY_STATUS(_chr_boot_mouse->start());
   }
 
-  // HID Information
-  // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.hid_information.xml
-  // bcd 1.1, country = 0, flag = normal connect
-  uint8_t hid_info_data[] = { 0x01, 0x01, 0x00, bit(1) };
-
+  // HID Info
   BLECharacteristic hid_info(UUID16_CHR_HID_INFORMATION);
   hid_info.setProperties(CHR_PROPS_READ);
   hid_info.setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-  hid_info.setFixedLen(sizeof(hid_info_data));
+  hid_info.setFixedLen(sizeof(_hid_info));
   VERIFY_STATUS( hid_info.start() );
-  hid_info.write(hid_info_data, sizeof(hid_info_data));
+  hid_info.write(_hid_info, sizeof(_hid_info));
 
   // HID Control Point
   _chr_control.setProperties(CHR_PROPS_WRITE_WO_RESP);
@@ -417,12 +329,12 @@ err_t BLEHid::start(void)
   return ERROR_NONE;
 }
 
-err_t BLEHid::sendReport(uint8_t id, void const* data, int len)
+err_t BLEHidGeneric::sendReport(uint8_t id, void const* data, int len)
 {
-  return _chr_input.notify( (uint8_t const*) data, len);
+  return _chr_inputs[id].notify( (uint8_t const*) data, len);
 }
 
-err_t BLEHid::keyboardReport(uint8_t modifier, uint8_t keycode[6])
+err_t BLEHidGeneric::keyboardReport(uint8_t modifier, uint8_t keycode[6])
 {
   hid_keyboard_report_t report =
   {
@@ -433,12 +345,12 @@ err_t BLEHid::keyboardReport(uint8_t modifier, uint8_t keycode[6])
   return keyboardReport(&report);
 }
 
-err_t BLEHid::keyboardReport(hid_keyboard_report_t* report)
+err_t BLEHidGeneric::keyboardReport(hid_keyboard_report_t* report)
 {
   return sendReport( REPORT_ID_KEYBOARD, report, sizeof(hid_keyboard_report_t));
 }
 
-err_t BLEHid::keyPress(char ch)
+err_t BLEHidGeneric::keyPress(char ch)
 {
   hid_keyboard_report_t report;
   varclr(&report);
@@ -449,7 +361,7 @@ err_t BLEHid::keyPress(char ch)
   return keyboardReport(&report);
 }
 
-err_t BLEHid::keyRelease(void)
+err_t BLEHidGeneric::keyRelease(void)
 {
   hid_keyboard_report_t report;
   varclr(&report);
@@ -457,7 +369,7 @@ err_t BLEHid::keyRelease(void)
   return keyboardReport(&report);
 }
 
-err_t BLEHid::keySequence(const char* str, int ms)
+err_t BLEHidGeneric::keySequence(const char* str, int ms)
 {
   // Send each key in sequence
   char ch;

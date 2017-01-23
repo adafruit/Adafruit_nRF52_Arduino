@@ -55,8 +55,16 @@
 #define rtos_malloc(_size)  ({ cprintf("[malloc] %s:%d : %d bytes\r\n", __PRETTY_FUNCTION__, __LINE__, _size); pvPortMalloc(_size); })
 #define rtos_free(ptr)      ({ cprintf("[free] %s:%d\r\n"    ,__PRETTY_FUNCTION__, __LINE__/*malloc_usable_size(ptr)*/); vPortFree(ptr); })
 #else
-#define rtos_malloc(_size)  pvPortMalloc(_size)
-#define rtos_free(ptr)      vPortFree(ptr)
+
+static inline void* rtos_malloc(size_t _size)
+{
+  return (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) ? malloc(_size) : pvPortMalloc(_size);
+}
+
+static inline void rtos_free( void *pv )
+{
+  return (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) ? free(pv) : vPortFree(pv);
+}
 
 #endif
 #endif /* RTOS_H_ */

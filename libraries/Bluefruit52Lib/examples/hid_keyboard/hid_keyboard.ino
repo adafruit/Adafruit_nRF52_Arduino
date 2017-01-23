@@ -15,7 +15,7 @@
 
 BLEDis bledis;
 BLEUart bleuart;
-BLEHid blehid;
+BLEHidAdafruit blehid;
 
 bool hasKeyPressed = false;
 
