@@ -101,7 +101,6 @@ class AdafruitBluefruit
     err_t startAdvertising(void);
     void  stopAdvertising(void);
 
-
     // Add service without using BLEService instance
     err_t addService(uint16_t uuid16);
     err_t addService(uint8_t const  uuid128[]);
@@ -113,6 +112,10 @@ class AdafruitBluefruit
 
     void disconnect(void);
     bool connected(void);
+
+    /*------------- Callback -------------*/
+    void setConnectCallback   ( void (*fp) (uint32_t hostID) );
+    void setDisconnectCallback( void (*fp) (uint32_t hostID, uint8_t reason) );
 
     // internal usage only
     err_t _registerCharacteristic(BLECharacteristic* chars);
@@ -147,6 +150,9 @@ class AdafruitBluefruit
 
     // Transmission Buffer Count for HVX notification, max is seen at 7
     SemaphoreHandle_t _txbuf_sem;
+
+    void (*_connect_cb) (uint32_t hostID);
+    void (*_discconnect_cb) (uint32_t hostID, uint8_t reason);
 
     bool _addToAdv(bool scan_resp, uint8_t type, const void* data, uint8_t len);
     void _poll(void);

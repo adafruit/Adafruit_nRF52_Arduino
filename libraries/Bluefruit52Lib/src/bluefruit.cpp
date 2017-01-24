@@ -98,9 +98,11 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _chars_count = 0;
   for(uint8_t i=0; i<BLE_MAX_CHARS; i++) _chars_list[i] = NULL;
 
-
   varclr(&_enc_key);
   varclr(&_peer_id);
+
+  _connect_cb = NULL;
+  _discconnect_cb = NULL;
 }
 
 err_t AdafruitBluefruit::begin(void)
@@ -195,6 +197,16 @@ void AdafruitBluefruit::disconnect(void)
   {
     sd_ble_gap_disconnect(_conn_hdl, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
   }
+}
+
+void AdafruitBluefruit::setConnectCallback   ( void (*fp) (uint32_t hostID) )
+{
+  _connect_cb = fp;
+}
+
+void AdafruitBluefruit::setDisconnectCallback( void (*fp) (uint32_t hostID, uint8_t reason))
+{
+  _discconnect_cb = fp;
 }
 
 /*------------------------------------------------------------------*/
@@ -510,12 +522,14 @@ void AdafruitBluefruit::_poll(void)
           case BLE_GAP_EVT_CONNECTED:
             if (_led_conn) digitalWrite(LED_CONN, HIGH);
 
-            _conn_hdl = evt->evt.gap_evt.conn_handle;
+            _conn_hdl  = evt->evt.gap_evt.conn_handle;
             _peer_addr = evt->evt.gap_evt.params.connected.peer_addr;
 
             uint8_t txbuf_max;
             (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
             _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
+
+            if ( _connect_cb ) _connect_cb(0);
           break;
 
           case BLE_GAP_EVT_DISCONNECTED:
@@ -525,6 +539,8 @@ void AdafruitBluefruit::_poll(void)
             varclr(&_peer_addr);
 
             vSemaphoreDelete(_txbuf_sem);
+
+            if ( _discconnect_cb ) _discconnect_cb(0, evt->evt.gap_evt.params.disconnected.reason);
 
             startAdvertising();
           break;
