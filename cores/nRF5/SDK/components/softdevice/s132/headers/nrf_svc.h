@@ -52,7 +52,7 @@ extern "C" {
 #define SVCALL(number, return_type, signature) return_type __svc(number) signature
 #elif defined (__GNUC__)
 #ifdef __cplusplus
-#define GCC_CAST_CPP (uint8_t)
+#define GCC_CAST_CPP (uint16_t)
 #else
 #define GCC_CAST_CPP    
 #endif
