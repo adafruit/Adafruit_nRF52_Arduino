@@ -47,11 +47,20 @@
 class BLEHidAdafruit : public BLEHidGeneric
 {
   protected:
+    uint8_t _kbd_leds;
 
   public:
     BLEHidAdafruit(void);
 
     virtual err_t start(void);
+
+    // Keyboard
+    err_t keyboardReport(hid_keyboard_report_t* report);
+    err_t keyboardReport(uint8_t modifier, uint8_t keycode[6]);
+
+    err_t keyPress(char ch);
+    err_t keyRelease(void);
+    err_t keySequence(const char* str, int interal=5);
 };
 
 #endif /* BLEHIDADAFRUIT_H_ */

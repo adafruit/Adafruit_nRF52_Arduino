@@ -38,14 +38,6 @@
 
 enum
 {
-  REPORT_INDEX_KEYBOARD =0,
-  REPORT_INDEX_CONSUMER_CONTROL,
-  REPORT_INDEX_MOUSE,
-  REPORT_INDEX_GAMEPAD,
-};
-
-enum
-{
   REPORT_ID_KEYBOARD = 0,
   REPORT_ID_CONSUMER_CONTROL,
   REPORT_ID_MOUSE,
@@ -194,7 +186,12 @@ uint8_t const hid_report_descriptor[] =
       HID_USAGE_MAX    ( 8                                      ),
       HID_LOGICAL_MIN  ( 0                                      ),
       HID_LOGICAL_MAX  ( 1                                      ),
-      HID_REPORT_COUNT ( 8                                      ),
+      HID_REPORT_COUNT ( 8                                      ),    // Keyboard
+      err_t keyboardReport(uint8_t modifier, uint8_t keycode[6]);
+      err_t keyboardReport(hid_keyboard_report_t* report);
+      err_t keyPress(char ch);
+      err_t keyRelease(void);
+      err_t keySequence(const char* str, int ms=5);
       HID_REPORT_SIZE  ( 1                                      ),
       HID_INPUT        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE),
   HID_COLLECTION_END
@@ -204,16 +201,75 @@ uint8_t const hid_report_descriptor[] =
 BLEHidAdafruit::BLEHidAdafruit(void)
   : BLEHidGeneric(1, 0, 0)
 {
-
+  _kbd_leds = 0;
 }
 
 err_t BLEHidAdafruit::start(void)
 {
-  uint16_t input_len[1] = { sizeof(hid_keyboard_report_t) };
+  uint16_t input_len[1]  = { sizeof(hid_keyboard_report_t) };
+  uint16_t output_len[1] = { sizeof(_kbd_leds) } ;
+
+//  setReportLen(input_len, output_len, NULL);
   setReportLen(input_len, NULL, NULL);
 
   setBootProtocol(true, false);
   setReportMap(hid_report_descriptor, sizeof(hid_report_descriptor));
 
   return BLEHidGeneric::start();
+}
+
+err_t BLEHidAdafruit::keyboardReport(hid_keyboard_report_t* report)
+{
+  return inputReport( REPORT_ID_KEYBOARD, report, sizeof(hid_keyboard_report_t));
+}
+
+err_t BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode[6])
+{
+  hid_keyboard_report_t report =
+  {
+      .modifier = modifier,
+  };
+  memcpy(report.keycode, keycode, 6);
+
+  return keyboardReport(&report);
+}
+
+err_t BLEHidAdafruit::keyPress(char ch)
+{
+  hid_keyboard_report_t report;
+  varclr(&report);
+
+  report.modifier = ( HID_ASCII_TO_KEYCODE[ch].shift ) ? KEYBOARD_MODIFIER_LEFTSHIFT : 0;
+  report.keycode[0] = HID_ASCII_TO_KEYCODE[ch].keycode;
+
+  return keyboardReport(&report);
+}
+
+err_t BLEHidAdafruit::keyRelease(void)
+{
+  hid_keyboard_report_t report;
+  varclr(&report);
+
+  return keyboardReport(&report);
+}
+
+err_t BLEHidAdafruit::keySequence(const char* str, int interal)
+{
+  // Send each key in sequence
+  char ch;
+  while( (ch = *str++) != 0 )
+  {
+    char lookahead = *str;
+
+    keyPress(ch);
+    delay(interal);
+
+    /* Only need to empty report if the next character is NULL or the same with
+     * the current one, or no need to send */
+    if ( lookahead == ch || lookahead == 0 )
+    {
+      keyRelease();
+      delay(interal);
+    }
+  }
 }

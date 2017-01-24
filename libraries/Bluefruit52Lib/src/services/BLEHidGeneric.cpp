@@ -42,22 +42,6 @@ enum {
   REPORT_TYPE_FEATURE
 };
 
-enum
-{
-  REPORT_INDEX_KEYBOARD =0,
-  REPORT_INDEX_CONSUMER_CONTROL,
-  REPORT_INDEX_MOUSE,
-  REPORT_INDEX_GAMEPAD,
-};
-
-enum
-{
-  REPORT_ID_KEYBOARD = 0,
-  REPORT_ID_CONSUMER_CONTROL,
-  REPORT_ID_MOUSE,
-  REPORT_ID_GAMEPAD
-};
-
 const hid_ascii_to_keycode_entry_t HID_ASCII_TO_KEYCODE[128] =
 {
     {0, 0                     }, // 0x00 Null
@@ -217,18 +201,35 @@ BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_
   _hid_info[2] = 0x00;
   _hid_info[3] = bit(1);
 
+  _chr_protocol = NULL;
   _chr_inputs = _chr_outputs = _chr_features = NULL;
   _chr_boot_keyboard = _chr_boot_mouse = NULL;
 
-  if ( _num_input   ) _chr_inputs   = new BLECharacteristic[num_input];
-  if ( _num_output  ) _chr_outputs  = new BLECharacteristic[num_output];
-  if ( _num_feature ) _chr_features = new BLECharacteristic[num_feature];
+  _output_cbs = NULL;
+
+  if ( _num_input   )
+  {
+    _chr_inputs   = new BLECharacteristic[_num_input];
+  }
+
+  if ( _num_output  )
+  {
+    _chr_outputs  = new BLECharacteristic[_num_output];
+    _output_cbs   = new output_report_cb_t[_num_output];
+
+    for (uint8_t i=0; i<_num_output; i++) _output_cbs[i] = NULL;
+  }
+
+  if ( _num_feature )
+  {
+    _chr_features = new BLECharacteristic[_num_feature];
+  }
 }
 
 void BLEHidGeneric::setBootProtocol(bool bootKeyboard, bool bootMouse)
 {
   _boot_keyboard = bootKeyboard;
-  _boot_mouse = bootMouse;
+  _boot_mouse    = bootMouse;
 }
 
 void BLEHidGeneric::setHidInfo(uint16_t bcd, uint8_t country, uint8_t flags)
@@ -249,6 +250,18 @@ void BLEHidGeneric::setReportLen(uint16_t input_len[], uint16_t output_len[], ui
   _input_len   = input_len;
   _output_len  = output_len;
   _feature_len = feature_len;
+}
+
+void BLEHidGeneric::setOutputReportCallback(uint8_t reportID, output_report_cb_t fp)
+{
+  _output_cbs[reportID] = fp;
+}
+
+void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
+{
+  BLEHidGeneric& hid = (BLEHidGeneric&) chr.parentService();
+
+  PRINT_BUFFER(request->data, request->len);
 }
 
 err_t BLEHidGeneric::start(void)
@@ -281,6 +294,21 @@ err_t BLEHidGeneric::start(void)
     if ( _input_len ) _chr_inputs[i].setFixedLen( _input_len[i] );
 
     VERIFY_STATUS( _chr_inputs[i].start() );
+  }
+
+  // Output reports
+  for(uint8_t i=0; i<_num_output; i++)
+  {
+    _chr_outputs[i].setUuid(UUID16_CHR_REPORT);
+    _chr_outputs[i].setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP);
+    _chr_outputs[i].setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    _chr_outputs[i].setReportRefDescriptor(i, REPORT_TYPE_OUTPUT);
+    _chr_outputs[i].setWriteCallback(blehidgeneric_output_cb);
+
+    // Input report len is configured, else variable len up to 255
+    if ( _output_len ) _chr_outputs[i].setFixedLen( _output_len[i] );
+
+    VERIFY_STATUS( _chr_outputs[i].start() );
   }
 
   // Report Map (HID Report Descriptor)
@@ -329,63 +357,10 @@ err_t BLEHidGeneric::start(void)
   return ERROR_NONE;
 }
 
-err_t BLEHidGeneric::sendReport(uint8_t id, void const* data, int len)
+err_t BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
 {
-  return _chr_inputs[id].notify( (uint8_t const*) data, len);
+  return _chr_inputs[reportID].notify( (uint8_t const*) data, len);
 }
 
-err_t BLEHidGeneric::keyboardReport(uint8_t modifier, uint8_t keycode[6])
-{
-  hid_keyboard_report_t report =
-  {
-      .modifier = modifier,
-  };
-  memcpy(report.keycode, keycode, 6);
 
-  return keyboardReport(&report);
-}
 
-err_t BLEHidGeneric::keyboardReport(hid_keyboard_report_t* report)
-{
-  return sendReport( REPORT_ID_KEYBOARD, report, sizeof(hid_keyboard_report_t));
-}
-
-err_t BLEHidGeneric::keyPress(char ch)
-{
-  hid_keyboard_report_t report;
-  varclr(&report);
-
-  report.modifier = ( HID_ASCII_TO_KEYCODE[ch].shift ) ? KEYBOARD_MODIFIER_LEFTSHIFT : 0;
-  report.keycode[0] = HID_ASCII_TO_KEYCODE[ch].keycode;
-
-  return keyboardReport(&report);
-}
-
-err_t BLEHidGeneric::keyRelease(void)
-{
-  hid_keyboard_report_t report;
-  varclr(&report);
-
-  return keyboardReport(&report);
-}
-
-err_t BLEHidGeneric::keySequence(const char* str, int ms)
-{
-  // Send each key in sequence
-  char ch;
-  while( (ch = *str++) != 0 )
-  {
-    char lookahead = *str;
-
-    keyPress(ch);
-    delay(ms);
-
-    /* Only need to empty report if the next character is NULL or the same with
-     * the current one, or no need to send */
-    if ( lookahead == ch || lookahead == 0 )
-    {
-      keyRelease();
-      delay(ms);
-    }
-  }
-}

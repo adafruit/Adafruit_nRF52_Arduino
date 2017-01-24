@@ -42,6 +42,12 @@
 #include "BLECharacteristic.h"
 #include "BLEService.h"
 
+typedef struct{
+  uint8_t shift;
+  uint8_t keycode;
+}hid_ascii_to_keycode_entry_t;
+extern const hid_ascii_to_keycode_entry_t HID_ASCII_TO_KEYCODE[128];
+
 /// Standard HID Boot Protocol Mouse Report.
 typedef ATTR_PACKED_STRUCT(struct)
 {
@@ -75,6 +81,23 @@ typedef ATTR_PACKED_STRUCT(struct)
 
 class BLEHidGeneric : public BLEService
 {
+  public:
+    typedef void (*output_report_cb_t) (uint8_t reportID, uint8_t* data, uint16_t len);
+
+    BLEHidGeneric(uint8_t num_input, uint8_t num_output = 0, uint8_t num_feature = 0);
+
+    void setBootProtocol(bool bootKeyboard, bool bootMouse);
+    void setHidInfo(uint16_t bcd, uint8_t country, uint8_t flags);
+
+    void setReportLen(uint16_t input_len[], uint16_t output_len[] = NULL, uint16_t feature_len[] = NULL);
+    void setReportMap(const uint8_t* report_map, size_t len);
+
+    void setOutputReportCallback(uint8_t reportID, output_report_cb_t fp);
+
+    virtual err_t start(void);
+
+    err_t inputReport(uint8_t reportID, void const* data, int len);
+
   protected:
     uint8_t _num_input;
     uint8_t _num_output;
@@ -87,6 +110,12 @@ class BLEHidGeneric : public BLEService
     const uint8_t* _report_map;
     size_t _report_map_len;
 
+    uint16_t* _input_len;
+    uint16_t* _output_len;
+    uint16_t* _feature_len;
+
+    output_report_cb_t* _output_cbs;
+
     BLECharacteristic* _chr_protocol;
 
     BLECharacteristic* _chr_inputs;
@@ -98,28 +127,7 @@ class BLEHidGeneric : public BLEService
 
     BLECharacteristic _chr_control;
 
-    uint16_t* _input_len;
-    uint16_t* _output_len;
-    uint16_t* _feature_len;
-
-  public:
-    BLEHidGeneric(uint8_t num_input, uint8_t num_output = 0, uint8_t num_feature = 0);
-
-    void setReportLen(uint16_t input_len[], uint16_t output_len[] = NULL, uint16_t feature_len[] = NULL);
-    void setBootProtocol(bool bootKeyboard, bool bootMouse);
-    void setHidInfo(uint16_t bcd, uint8_t country, uint8_t flags);
-    void setReportMap(const uint8_t* report_map, size_t len);
-
-    virtual err_t start(void);
-
-    err_t sendReport(uint8_t id, void const* data, int len);
-
-    // Keyboard
-    err_t keyboardReport(uint8_t modifier, uint8_t keycode[6]);
-    err_t keyboardReport(hid_keyboard_report_t* report);
-    err_t keyPress(char ch);
-    err_t keyRelease(void);
-    err_t keySequence(const char* str, int ms=5);
+    friend void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
 };
 
 //--------------------------------------------------------------------+
@@ -281,12 +289,6 @@ typedef enum {
 #define HID_KEY_SHIFT_RIGHT        0xE5
 #define HID_KEY_ALT_RIGHT          0xE6
 #define HID_KEY_GUI_RIGHT          0xE7
-
-typedef struct{
-  uint8_t shift;
-  uint8_t keycode;
-}hid_ascii_to_keycode_entry_t;
-extern const hid_ascii_to_keycode_entry_t HID_ASCII_TO_KEYCODE[128];
 
 //--------------------------------------------------------------------+
 // REPORT DESCRIPTOR
