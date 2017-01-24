@@ -77,6 +77,8 @@ class BLECharacteristic
     typedef void (*write_cb_t)           (BLECharacteristic& chr, ble_gatts_evt_write_t* request);
 
   protected:
+    bool _is_temp;
+
     ble_gatt_char_props_t _properties;
     const char* _descriptor;
     uint16_t _max_len;
@@ -116,11 +118,12 @@ class BLECharacteristic
       return *_service;
     }
 
-
     void setUuid(uint16_t uuid16);
     void setUuid(uint8_t const  uuid128[]);
 
     // Configure
+    void setTempMemory(void);
+
     void setProperties(uint8_t prop);
     void setPermission(BleSecurityMode read_perm, BleSecurityMode write_perm);
 

@@ -315,6 +315,7 @@ err_t BLEHidGeneric::start(void)
 
   // Report Map (HID Report Descriptor)
   BLECharacteristic report_map(UUID16_CHR_REPORT_MAP);
+  report_map.setTempMemory();
   report_map.setProperties(CHR_PROPS_READ);
   report_map.setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
   report_map.setFixedLen(_report_map_len);
@@ -350,6 +351,7 @@ err_t BLEHidGeneric::start(void)
 
   // HID Info
   BLECharacteristic hid_info(UUID16_CHR_HID_INFORMATION);
+  hid_info.setTempMemory();
   hid_info.setProperties(CHR_PROPS_READ);
   hid_info.setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
   hid_info.setFixedLen(sizeof(_hid_info));

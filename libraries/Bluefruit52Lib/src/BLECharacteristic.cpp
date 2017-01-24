@@ -38,6 +38,7 @@
 
 void BLECharacteristic::init(void)
 {
+  _is_temp = false;
   varclr(&_properties);
   _descriptor = NULL;
   _max_len = BLE_GATTS_VAR_ATTR_LEN_MAX;
@@ -88,6 +89,18 @@ void BLECharacteristic::setUuid(uint16_t uuid16)
 void BLECharacteristic::setUuid(uint8_t const  uuid128[])
 {
   uuid.set(uuid128);
+}
+
+/**
+ * Must be set when Charactertistic is declared locally (e.g insdie function)
+ * and is not last throughout programs. Useful for one-shot set-and-forget
+ * Characteristics such as read-only one. Where there is no need for interactions
+ * later on. This call will prevent the Characteristics to be hooked into
+ * managing chars list of AdafruitBluefruit
+ */
+void BLECharacteristic::setTempMemory(void)
+{
+  _is_temp = true;
 }
 
 void BLECharacteristic::setProperties(uint8_t prop)
@@ -259,9 +272,10 @@ err_t BLECharacteristic::start(void)
     (void) ref_hdl; // not used
   }
 
-  // Only register to Bluefruit when having callback support
-  // The Characteristic must not be temporary memory aka local variable
-  if (_rd_authorize_cb || _wr_authorize_cb || _wr_cb)
+  // Currently Only register to Bluefruit when having callback support
+  // And The Characteristic must not be temporary memory aka local variable
+  if ( !_is_temp &&
+       (_rd_authorize_cb || _wr_authorize_cb || _wr_cb || _properties.notify || _properties.indicate) )
   {
     (void) Bluefruit._registerCharacteristic(this);
   }

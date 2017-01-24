@@ -167,6 +167,7 @@ err_t BLEDfu::start(void)
 
   // No need to keep packet & revision characteristics
   BLECharacteristic chr_packet(UUID128_CHR_DFU_PACKET);
+  chr_packet.setTempMemory();
   chr_packet.setProperties(CHR_PROPS_WRITE_WO_RESP);
   chr_packet.setMaxLen(20);
   VERIFY_STATUS( chr_packet.start() );
@@ -177,6 +178,7 @@ err_t BLEDfu::start(void)
   VERIFY_STATUS( _chr_control.start() );
 
   BLECharacteristic chr_revision(UUID128_CHR_DFU_REVISON);
+  chr_packet.setTempMemory();
   chr_revision.setProperties(CHR_PROPS_READ);
   chr_revision.setFixedLen(2);
   VERIFY_STATUS( chr_revision.start());

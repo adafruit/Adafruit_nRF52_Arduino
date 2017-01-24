@@ -97,6 +97,7 @@ err_t BLEDis::start(void)
     if ( _strarr[i] != NULL )
     {
       BLECharacteristic chars(UUID16_CHR_MODEL_NUMBER_STRING+i);
+      chars.setTempMemory();
 
       chars.setProperties(CHR_PROPS_READ);
       chars.setFixedLen(strlen(_strarr[i]));
