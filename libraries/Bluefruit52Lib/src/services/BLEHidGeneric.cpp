@@ -203,7 +203,7 @@ BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_
 
   _chr_protocol = NULL;
   _chr_inputs = _chr_outputs = _chr_features = NULL;
-  _chr_boot_keyboard = _chr_boot_mouse = NULL;
+  _chr_boot_keyboard_input = _chr_boot_keyboard_output = _chr_boot_mouse_input = NULL;
 
   _output_cbs = NULL;
 
@@ -288,7 +288,7 @@ err_t BLEHidGeneric::start(void)
     _chr_inputs[i].setUuid(UUID16_CHR_REPORT);
     _chr_inputs[i].setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
     _chr_inputs[i].setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-    _chr_inputs[i].setReportRefDescriptor(i, REPORT_TYPE_INPUT);
+    _chr_inputs[i].setReportRefDescriptor(i+0, REPORT_TYPE_INPUT);
 
     // Input report len is configured, else variable len up to 255
     if ( _input_len ) _chr_inputs[i].setFixedLen( _input_len[i] );
@@ -302,13 +302,15 @@ err_t BLEHidGeneric::start(void)
     _chr_outputs[i].setUuid(UUID16_CHR_REPORT);
     _chr_outputs[i].setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP);
     _chr_outputs[i].setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-    _chr_outputs[i].setReportRefDescriptor(i, REPORT_TYPE_OUTPUT);
+    _chr_outputs[i].setReportRefDescriptor(i+0, REPORT_TYPE_OUTPUT);
     _chr_outputs[i].setWriteCallback(blehidgeneric_output_cb);
 
     // Input report len is configured, else variable len up to 255
     if ( _output_len ) _chr_outputs[i].setFixedLen( _output_len[i] );
 
     VERIFY_STATUS( _chr_outputs[i].start() );
+
+    _chr_outputs[i].write( (uint8_t) 0 );
   }
 
   // Report Map (HID Report Descriptor)
@@ -322,21 +324,28 @@ err_t BLEHidGeneric::start(void)
   // Boot Keyboard Input Report
   if ( _boot_keyboard )
   {
-    _chr_boot_keyboard = new BLECharacteristic(UUID16_CHR_BOOT_KEYBOARD_INPUT_REPORT);
-    _chr_boot_keyboard->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
-    _chr_boot_keyboard->setFixedLen(sizeof(hid_keyboard_report_t));
-    _chr_boot_keyboard->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-    VERIFY_STATUS(_chr_boot_keyboard->start());
+    _chr_boot_keyboard_input = new BLECharacteristic(UUID16_CHR_BOOT_KEYBOARD_INPUT_REPORT);
+    _chr_boot_keyboard_input->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
+    _chr_boot_keyboard_input->setFixedLen(8); // boot keyboard is 8 bytes
+    _chr_boot_keyboard_input->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    VERIFY_STATUS(_chr_boot_keyboard_input->start());
+
+    _chr_boot_keyboard_output = new BLECharacteristic(UUID16_CHR_BOOT_KEYBOARD_OUTPUT_REPORT);
+    _chr_boot_keyboard_output->setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP);
+    _chr_boot_keyboard_output->setFixedLen(1); // boot keyboard is 1 byte
+    _chr_boot_keyboard_output->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    VERIFY_STATUS(_chr_boot_keyboard_output->start());
+    _chr_boot_keyboard_output->write((uint8_t) 0);
   }
 
   // Boot Mouse Input Report
   if ( _boot_mouse )
   {
-    _chr_boot_mouse = new BLECharacteristic(UUID16_CHR_BOOT_MOUSE_INPUT_REPORT);
-    _chr_boot_mouse->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
-    _chr_boot_mouse->setFixedLen(sizeof(hid_mouse_report_t));
-    _chr_boot_mouse->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-    VERIFY_STATUS(_chr_boot_mouse->start());
+    _chr_boot_mouse_input = new BLECharacteristic(UUID16_CHR_BOOT_MOUSE_INPUT_REPORT);
+    _chr_boot_mouse_input->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
+    _chr_boot_mouse_input->setFixedLen(sizeof(hid_mouse_report_t));
+    _chr_boot_mouse_input->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    VERIFY_STATUS(_chr_boot_mouse_input->start());
   }
 
   // HID Info

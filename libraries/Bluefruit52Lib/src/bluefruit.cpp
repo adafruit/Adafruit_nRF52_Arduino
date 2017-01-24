@@ -49,7 +49,7 @@
 #define CFG_GAP_ADV_TIMEOUT_S                      30
 
 #define CFG_BLE_TX_POWER_LEVEL                     0
-#define CFG_DEFAULT_NAME    "Bluefruit"
+#define CFG_DEFAULT_NAME    "Bluefruit52"
 
 
 // Converts an integer of 1.25ms units to msecs

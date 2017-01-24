@@ -122,8 +122,9 @@ class BLEHidGeneric : public BLEService
     BLECharacteristic* _chr_outputs;
     BLECharacteristic* _chr_features;
 
-    BLECharacteristic* _chr_boot_keyboard;
-    BLECharacteristic* _chr_boot_mouse;
+    BLECharacteristic* _chr_boot_keyboard_input;
+    BLECharacteristic* _chr_boot_keyboard_output;
+    BLECharacteristic* _chr_boot_mouse_input;
 
     BLECharacteristic _chr_control;
 
