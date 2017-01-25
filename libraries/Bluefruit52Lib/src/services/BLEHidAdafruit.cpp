@@ -38,25 +38,11 @@
 
 enum
 {
-  REPORT_ID_KEYBOARD = 0,
+  REPORT_ID_KEYBOARD = 1,
   REPORT_ID_CONSUMER_CONTROL,
   REPORT_ID_MOUSE,
   REPORT_ID_GAMEPAD
 };
-
-    // LED Indicator Kana | Compose | Scroll Lock | CapsLock | NumLock
-//    HID_REPORT_ID ( REPORT_ID_KEYBOARD + 2    ),
-//    HID_USAGE_PAGE  ( HID_USAGE_PAGE_LED                   ),
-//      /* 5-bit Led report */
-//      HID_USAGE_MIN    ( 1                                       ),
-//      HID_USAGE_MAX    ( 5                                       ),
-//      HID_REPORT_COUNT ( 5                                       ),
-//      HID_REPORT_SIZE  ( 1                                       ),
-//      HID_OUTPUT       ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE  ),
-//      /* led padding */
-//      HID_REPORT_COUNT ( 1                                       ),
-//      HID_REPORT_SIZE  ( 3                                       ),
-//      HID_OUTPUT       ( HID_CONSTANT                            ),
 
 uint8_t const hid_report_descriptor[] =
 {
@@ -64,7 +50,7 @@ uint8_t const hid_report_descriptor[] =
   HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     ),
   HID_USAGE      ( HID_USAGE_DESKTOP_KEYBOARD ),
   HID_COLLECTION ( HID_COLLECTION_APPLICATION ),
-    HID_REPORT_ID ( REPORT_ID_KEYBOARD + 0    ),
+    HID_REPORT_ID ( REPORT_ID_KEYBOARD        ),
     HID_USAGE_PAGE( HID_USAGE_PAGE_KEYBOARD ),
       // 8 bits Modifier Keys (Shfit, Control, Alt)
       HID_USAGE_MIN    ( 224                                    ),
@@ -219,11 +205,10 @@ BLEHidAdafruit::BLEHidAdafruit(void)
 
 err_t BLEHidAdafruit::start(void)
 {
-  uint16_t input_len[]  = { sizeof(hid_keyboard_report_t),  2 };
+  uint16_t input_len [] = { sizeof(hid_keyboard_report_t),  sizeof(hid_consumer_control_report_t) };
   uint16_t output_len[] = { 1 };
 
   setReportLen(input_len, output_len, NULL);
-
   setBootProtocol(true, false);
   setReportMap(hid_report_descriptor, sizeof(hid_report_descriptor));
 
@@ -296,4 +281,20 @@ err_t BLEHidAdafruit::keySequence(const char* str, int interal)
       delay(interal);
     }
   }
+}
+
+err_t BLEHidAdafruit::consumerReport(uint16_t usage_code)
+{
+  return inputReport( REPORT_ID_CONSUMER_CONTROL, &usage_code, sizeof(usage_code));
+}
+
+err_t BLEHidAdafruit::consumerKeyPress(uint16_t usage_code)
+{
+  return consumerReport(usage_code);
+}
+
+err_t BLEHidAdafruit::consumerKeyRelease(void)
+{
+  uint16_t usage = 0;
+  return consumerReport(usage);
 }

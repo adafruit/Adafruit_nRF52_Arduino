@@ -66,6 +66,12 @@ typedef ATTR_PACKED_STRUCT(struct)
   uint8_t keycode[6]; /**< Key codes of the currently pressed keys. */
 } hid_keyboard_report_t;
 
+/// HID Consumer Control Report
+typedef ATTR_PACKED_STRUCT(struct)
+{
+  uint16_t usage_value; ///< Usage value of the pressed control
+} hid_consumer_control_report_t;
+
 /// Gamepad report
 typedef ATTR_PACKED_STRUCT(struct)
 {
@@ -149,11 +155,6 @@ typedef enum {
 //--------------------------------------------------------------------+
 // Keyboard
 //--------------------------------------------------------------------+
-/// HID Consumer Control Report
-typedef ATTR_PACKED_STRUCT(struct)
-{
-  uint16_t usage_value; ///< Usage value of the pressed control
-} hid_consumer_control_report_t;
 
 ///// Keyboard modifier codes bitmap
 typedef enum {

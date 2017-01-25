@@ -62,6 +62,11 @@ class BLEHidAdafruit : public BLEHidGeneric
     err_t keyPress(char ch);
     err_t keyRelease(void);
     err_t keySequence(const char* str, int interal=5);
+
+    // Consumer Media Keys
+    err_t consumerReport(uint16_t usage_code);
+    err_t consumerKeyPress(uint16_t usage_code);
+    err_t consumerKeyRelease(void);
 };
 
 #endif /* BLEHIDADAFRUIT_H_ */

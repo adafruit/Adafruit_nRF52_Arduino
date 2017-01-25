@@ -149,7 +149,7 @@ err_t BLEHidGeneric::start(void)
     _chr_inputs[i].setUuid(UUID16_CHR_REPORT);
     _chr_inputs[i].setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
     _chr_inputs[i].setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-    _chr_inputs[i].setReportRefDescriptor(i+0, REPORT_TYPE_INPUT);
+    _chr_inputs[i].setReportRefDescriptor(i+1, REPORT_TYPE_INPUT);
 
     // Input report len is configured, else variable len up to 255
     if ( _input_len ) _chr_inputs[i].setFixedLen( _input_len[i] );
@@ -163,7 +163,7 @@ err_t BLEHidGeneric::start(void)
     _chr_outputs[i].setUuid(UUID16_CHR_REPORT);
     _chr_outputs[i].setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP);
     _chr_outputs[i].setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-    _chr_outputs[i].setReportRefDescriptor(i+0, REPORT_TYPE_OUTPUT);
+    _chr_outputs[i].setReportRefDescriptor(i+1, REPORT_TYPE_OUTPUT);
 //    _chr_outputs[i].setWriteCallback(blehidgeneric_output_cb);
 
     // Input report len is configured, else variable len up to 255
@@ -231,7 +231,7 @@ err_t BLEHidGeneric::start(void)
 
 err_t BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
 {
-  return _chr_inputs[reportID].notify( (uint8_t const*) data, len);
+  return _chr_inputs[reportID-1].notify( (uint8_t const*) data, len);
 }
 
 /*------------------------------------------------------------------*/
