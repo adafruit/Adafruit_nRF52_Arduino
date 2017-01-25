@@ -43,10 +43,13 @@
 #define BLE_CENTRAL_MAX_CONN         0
 #define BLE_CENTRAL_MAX_SECURE_CONN  0
 
-#define CFG_GAP_CONNECTION_SUPERVISION_TIMEOUT_MS  3000
-#define CFG_GAP_CONNECTION_SLAVE_LATENCY           0
-#define CFG_GAP_ADV_INTERVAL_MS                    20
-#define CFG_GAP_ADV_TIMEOUT_S                      30
+#define GAP_CONN_SUPERVISION_TIMEOUT_MS  3000
+#define GAP_CONN_SLAVE_LATENCY           0
+#define GAP_CONN_MIN_INTERVAL_MS         20
+#define GAP_CONN_MAX_INTERVAL_MS         40
+
+#define GAP_ADV_INTERVAL_MS                    20
+#define GAP_ADV_TIMEOUT_S                      30
 
 #define CFG_BLE_TX_POWER_LEVEL                     0
 #define CFG_DEFAULT_NAME    "Bluefruit52"
@@ -94,6 +97,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _txbuf_sem = NULL;
 
   _conn_hdl = BLE_GATT_HANDLE_INVALID;
+  _bonded = false;
 
   _chars_count = 0;
   for(uint8_t i=0; i<BLE_MAX_CHARS; i++) _chars_list[i] = NULL;
@@ -143,13 +147,13 @@ err_t AdafruitBluefruit::begin(void)
   // Connection Parameters
   ble_gap_conn_params_t   gap_conn_params =
   {
-      .min_conn_interval = MS100TO125(20) , // in 1.25ms unit
-      .max_conn_interval = MS100TO125(40) , // in 1.25ms unit
-      .slave_latency     = CFG_GAP_CONNECTION_SLAVE_LATENCY,
-      .conn_sup_timeout  = CFG_GAP_CONNECTION_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
+      .min_conn_interval = MS100TO125(GAP_CONN_MIN_INTERVAL_MS) , // in 1.25ms unit
+      .max_conn_interval = MS100TO125(GAP_CONN_MAX_INTERVAL_MS) , // in 1.25ms unit
+      .slave_latency     = GAP_CONN_SLAVE_LATENCY,
+      .conn_sup_timeout  = GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
   };
 
-  (void) sd_ble_gap_ppcp_set(&gap_conn_params);
+  VERIFY_STATUS( sd_ble_gap_ppcp_set(&gap_conn_params) );
 
   // Default device name
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
@@ -174,6 +178,25 @@ err_t AdafruitBluefruit::begin(void)
 
   return ERROR_NONE;
 }
+
+err_t AdafruitBluefruit::setConnInterval(uint16_t min, uint16_t max)
+{
+  ble_gap_conn_params_t   gap_conn_params =
+  {
+      .min_conn_interval = min, // in 1.25ms unit
+      .max_conn_interval = max, // in 1.25ms unit
+      .slave_latency     = GAP_CONN_SLAVE_LATENCY,
+      .conn_sup_timeout  = GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
+  };
+
+  return sd_ble_gap_ppcp_set(&gap_conn_params);
+}
+
+err_t AdafruitBluefruit::setConnIntervalMS(uint16_t min_ms, uint16_t max_ms)
+{
+  return setConnInterval( MS100TO125(min_ms), MS100TO125(max_ms) );
+}
+
 
 void AdafruitBluefruit::setName(const char* str)
 {
@@ -388,8 +411,8 @@ err_t AdafruitBluefruit::startAdvertising(void)
       .p_peer_addr = NULL                            , // Undirected advertisement
       .fp          = BLE_GAP_ADV_FP_ANY              ,
       .p_whitelist = NULL                            ,
-      .interval    = MS1000TO625(CFG_GAP_ADV_INTERVAL_MS), // advertising interval (in units of 0.625 ms)
-      .timeout     = CFG_GAP_ADV_TIMEOUT_S
+      .interval    = MS1000TO625(GAP_ADV_INTERVAL_MS), // advertising interval (in units of 0.625 ms)
+      .timeout     = GAP_ADV_TIMEOUT_S
   };
 
   VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para) );
@@ -440,6 +463,14 @@ ble_gap_addr_t AdafruitBluefruit::peerAddr(void)
 bool AdafruitBluefruit::txbuf_get(uint32_t ms)
 {
   return xSemaphoreTake(_txbuf_sem, ms2tick(ms));
+}
+
+err_t AdafruitBluefruit::saveAllCCCD(void)
+{
+  uint16_t len=0;
+  sd_ble_gatts_sys_attr_get(_conn_hdl, NULL, &len, BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS);
+
+  PRINT_INT(len);
 }
 
 void adafruit_bluefruit_task(void* arg)
@@ -520,6 +551,8 @@ void AdafruitBluefruit::_poll(void)
         switch ( evt->header.evt_id  )
         {
           case BLE_GAP_EVT_CONNECTED:
+            PRINT_MESS("Connected");
+
             if (_led_conn) digitalWrite(LED_CONN, HIGH);
 
             _conn_hdl  = evt->evt.gap_evt.conn_handle;
@@ -530,9 +563,13 @@ void AdafruitBluefruit::_poll(void)
             _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
 
             if ( _connect_cb ) _connect_cb(0);
+
+            sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
           break;
 
           case BLE_GAP_EVT_DISCONNECTED:
+            PRINT_MESS("Disconnected");
+
             if (_led_conn)  digitalWrite(LED_CONN, LOW);
 
             _conn_hdl = BLE_GATT_HANDLE_INVALID;
@@ -560,16 +597,27 @@ void AdafruitBluefruit::_poll(void)
             }
           break;
 
+          case BLE_GAP_EVT_CONN_PARAM_UPDATE:
+          {
+            ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
+            PRINT_INT(param->min_conn_interval);
+            PRINT_INT(param->max_conn_interval);
+          }
+          break;
+
           case BLE_GAP_EVT_SEC_INFO_REQUEST:
           {
+            PRINT_MESS("BLE_GAP_EVT_SEC_INFO_REQUEST");
             // If bonded previously, return information. Otherwise NULL
             ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
 
             if (_enc_key.master_id.ediv == sec_request->master_id.ediv)
             {
+              PRINT_LOCATION();
               sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_enc_key.enc_info, &_peer_id.id_info, NULL);
             } else
             {
+              PRINT_LOCATION();
               sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
             }
           }
@@ -577,10 +625,14 @@ void AdafruitBluefruit::_poll(void)
 
           case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
           {
-            PRINT_LOCATION();
+            ble_gap_sec_params_t* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
+            PRINT_INT(peer->bond);
+            PRINT_INT(peer->mitm);
+            PRINT_INT(peer->lesc);
+
             ble_gap_sec_params_t sec_para =
             {
-                .bond         = 1            ,
+                .bond         = 1,
                 .mitm         = 0, //CFG_PIN_ENABLED ? nvm_data.core.passkey_enable : 0,
                 .lesc         = 0,
                 .keypress     = 0,
@@ -607,31 +659,57 @@ void AdafruitBluefruit::_poll(void)
                 }
             };
 
-            VERIFY_STATUS(sd_ble_gap_sec_params_reply(evt->evt.gap_evt.conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &sec_para, &keyset),
-                          RETURN_VOID);
+            VERIFY_STATUS(sd_ble_gap_sec_params_reply(evt->evt.gap_evt.conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &sec_para, &keyset), RETURN_VOID);
           }
           break;
+
+          case BLE_GAP_EVT_PASSKEY_DISPLAY:
+            PRINT_LOCATION();
+          break;
+
+          case BLE_GAP_EVT_LESC_DHKEY_REQUEST:
+            PRINT_LOCATION();
+          break;
+
 
           case BLE_GAP_EVT_CONN_SEC_UPDATE:
           {
             ble_gap_conn_sec_t* conn_sec = (ble_gap_conn_sec_t*) &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
-            PRINT_LOCATION();
+            (void) conn_sec;
+            PRINT_INT(conn_sec->sec_mode.sm);
+            PRINT_INT(conn_sec->sec_mode.lv);
           }
           break;
 
           case BLE_GAP_EVT_AUTH_STATUS:
-            PRINT_LOCATION();
-
             // Bonding succeeded --> save encryption keys
+            PRINT_HEX(evt->evt.gap_evt.params.auth_status.auth_status);
             if (BLE_GAP_SEC_STATUS_SUCCESS == evt->evt.gap_evt.params.auth_status.auth_status)
             {
-
+              _bonded = true;
             }
           break;
 
           case BLE_GATTS_EVT_SYS_ATTR_MISSING:
-            PRINT_LOCATION();
+            PRINT_MESS("BLE_GATTS_EVT_SYS_ATTR_MISSING");
             sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
+          break;
+
+          // Save CCCD when enabled/disabled if bonded
+          case BLE_GATTS_EVT_WRITE:
+            if ( _bonded )
+            {
+              ble_gatts_evt_write_t * write = &evt->evt.gatts_evt.params.write;
+
+              for(int i=0; i<_chars_count; i++)
+              {
+                if (_chars_list[i]->handles().cccd_handle == write->handle )
+                {
+                  saveAllCCCD();
+                  break;
+                }
+              }
+            }
           break;
 
 

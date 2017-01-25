@@ -26,6 +26,8 @@ void setup()
   Serial.println("Bluefruit52 HID Keyboard Example");
 
   Bluefruit.begin();
+  // HID Device can have min connection interval up to 9*1.25 = 11.25 ms
+  Bluefruit.setConnInterval(9, 16); // min = 11.25 ms, max = 20ms
   Bluefruit.setName("Bluefruit52");
 
   // Configure and Start Device Information Service

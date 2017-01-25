@@ -64,7 +64,7 @@ uint8_t const hid_report_descriptor[] =
   HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     ),
   HID_USAGE      ( HID_USAGE_DESKTOP_KEYBOARD ),
   HID_COLLECTION ( HID_COLLECTION_APPLICATION ),
-//    HID_REPORT_ID ( REPORT_ID_KEYBOARD + 0    ),
+    HID_REPORT_ID ( REPORT_ID_KEYBOARD + 0    ),
     HID_USAGE_PAGE( HID_USAGE_PAGE_KEYBOARD ),
       // 8 bits Modifier Keys (Shfit, Control, Alt)
       HID_USAGE_MIN    ( 224                                    ),
@@ -81,6 +81,17 @@ uint8_t const hid_report_descriptor[] =
       HID_REPORT_SIZE  ( 8                                      ),
       HID_INPUT        ( HID_CONSTANT                           ),
 
+    // 6-byte Keycodes
+    HID_USAGE_PAGE (HID_USAGE_PAGE_KEYBOARD),
+      HID_USAGE_MIN    ( 0                                   ),
+      HID_USAGE_MAX    ( 101                                 ),
+      HID_LOGICAL_MIN  ( 0                                   ),
+      HID_LOGICAL_MAX  ( 101                                 ),
+
+      HID_REPORT_COUNT ( 6                                   ),
+      HID_REPORT_SIZE  ( 8                                   ),
+      HID_INPUT        ( HID_DATA | HID_ARRAY | HID_ABSOLUTE ),
+
     // LED Indicator Kana | Compose | Scroll Lock | CapsLock | NumLock
     HID_USAGE_PAGE  ( HID_USAGE_PAGE_LED                   ),
       /* 5-bit Led report */
@@ -93,20 +104,8 @@ uint8_t const hid_report_descriptor[] =
       HID_REPORT_COUNT ( 1                                       ),
       HID_REPORT_SIZE  ( 3                                       ),
       HID_OUTPUT       ( HID_CONSTANT                            ),
-
-    // 6-byte Keycodes
-    HID_USAGE_PAGE (HID_USAGE_PAGE_KEYBOARD),
-      HID_USAGE_MIN    ( 0                                   ),
-      HID_USAGE_MAX    ( 101                                 ),
-      HID_LOGICAL_MIN  ( 0                                   ),
-      HID_LOGICAL_MAX  ( 101                                 ),
-
-      HID_REPORT_COUNT ( 6                                   ),
-      HID_REPORT_SIZE  ( 8                                   ),
-      HID_INPUT        ( HID_DATA | HID_ARRAY | HID_ABSOLUTE ),
   HID_COLLECTION_END,
 
-#if 0
   //------------- Consumer Control Report -------------//
   HID_USAGE_PAGE ( HID_USAGE_PAGE_CONSUMER    ),
   HID_USAGE      ( HID_USAGE_CONSUMER_CONTROL ),
@@ -121,6 +120,7 @@ uint8_t const hid_report_descriptor[] =
     HID_INPUT        ( HID_DATA | HID_ARRAY | HID_ABSOLUTE ),
   HID_COLLECTION_END,
 
+#if 0
   //------------- Mouse Report: buttons + dx + dy + scroll + pan -------------//
   HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     ),
   HID_USAGE      ( HID_USAGE_DESKTOP_MOUSE    ),
@@ -213,15 +213,14 @@ uint8_t const hid_report_descriptor[] =
 };
 
 BLEHidAdafruit::BLEHidAdafruit(void)
-  : BLEHidGeneric(1, 1, 0)
+  : BLEHidGeneric(2, 1, 0)
 {
-  _kbd_leds = 0;
 }
 
 err_t BLEHidAdafruit::start(void)
 {
-  uint16_t input_len[1]  = { sizeof(hid_keyboard_report_t) };
-  uint16_t output_len[1] = { sizeof(_kbd_leds) } ;
+  uint16_t input_len[]  = { sizeof(hid_keyboard_report_t),  2 };
+  uint16_t output_len[] = { 1 };
 
   setReportLen(input_len, output_len, NULL);
 
@@ -243,6 +242,18 @@ err_t BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode[6])
       .modifier = modifier,
   };
   memcpy(report.keycode, keycode, 6);
+
+  return keyboardReport(&report);
+}
+
+err_t BLEHidAdafruit::keyHIDCode(uint8_t modifier, uint8_t keycode0, uint8_t keycode1, uint8_t keycode2, uint8_t keycode3, uint8_t keycode4, uint8_t keycode5)
+{
+  hid_keyboard_report_t report =
+  {
+      .modifier = modifier,
+      .reserved = 0,
+      .keycode  = { keycode0, keycode1, keycode2, keycode3, keycode4, keycode5 }
+  };
 
   return keyboardReport(&report);
 }

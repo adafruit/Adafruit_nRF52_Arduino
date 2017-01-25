@@ -68,7 +68,7 @@ class AdafruitBluefruit
     void setName(const char* str);
 //    bool setTxPower(int8_t power);
 
-    // Advertising Packet
+    /*------------- Advertising  -------------*/
     uint8_t getAdvLen(void);
     uint8_t getAdvData(uint8_t* buffer);
     bool    setAdvData(const uint8_t* data, uint8_t count);
@@ -105,13 +105,17 @@ class AdafruitBluefruit
     err_t addService(uint16_t uuid16);
     err_t addService(uint8_t const  uuid128[]);
 
+    void disconnect(void);
+    bool connected(void);
+
+    err_t setConnInterval(uint16_t min, uint16_t max);
+    err_t setConnIntervalMS(uint16_t min_ms, uint16_t max_ms);
+
     uint16_t connHandle(void);
     ble_gap_addr_t peerAddr(void);
 
     bool txbuf_get(uint32_t ms);
-
-    void disconnect(void);
-    bool connected(void);
+    err_t saveAllCCCD(void);
 
     /*------------- Callback -------------*/
     void setConnectCallback   ( void (*fp) (uint32_t hostID) );
@@ -141,12 +145,16 @@ class AdafruitBluefruit
     uint8_t            _chars_count;
 
     uint16_t _conn_hdl;
+    bool     _bonded;
 
     // TODO move to bonding place
     ble_gap_enc_key_t _enc_key;
     ble_gap_id_key_t  _peer_id;
 
     ble_gap_addr_t    _peer_addr;
+
+    uint8_t*          _sys_attr;
+//    uint16_t
 
     // Transmission Buffer Count for HVX notification, max is seen at 7
     SemaphoreHandle_t _txbuf_sem;

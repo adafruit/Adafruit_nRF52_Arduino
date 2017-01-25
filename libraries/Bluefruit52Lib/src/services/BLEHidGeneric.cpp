@@ -42,6 +42,201 @@ enum {
   REPORT_TYPE_FEATURE
 };
 
+BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_feature)
+  : BLEService(UUID16_SVC_HUMAN_INTERFACE_DEVICE), _chr_control(UUID16_CHR_HID_CONTROL_POINT)
+{
+  _boot_keyboard = _boot_mouse = false;
+  _report_map = NULL;
+  _report_map_len = 0;
+
+  _input_len = _output_len = _feature_len = NULL;
+
+  _num_input   = num_input;
+  _num_output  = num_output;
+  _num_feature = num_feature;
+
+  // HID Information
+  // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.hid_information.xml
+  // bcd 1.1, country = 0, flag = normal connect
+  _hid_info[0] = 0x01;
+  _hid_info[1] = 0x01;
+  _hid_info[2] = 0x00;
+  _hid_info[3] = bit(1);
+
+  _chr_protocol = NULL;
+  _chr_inputs = _chr_outputs = _chr_features = NULL;
+  _chr_boot_keyboard_input = _chr_boot_keyboard_output = _chr_boot_mouse_input = NULL;
+
+  _output_cbs = NULL;
+
+  if ( _num_input   )
+  {
+    _chr_inputs   = new BLECharacteristic[_num_input];
+  }
+
+  if ( _num_output  )
+  {
+    _chr_outputs  = new BLECharacteristic[_num_output];
+    _output_cbs   = new output_report_cb_t[_num_output];
+
+    for (uint8_t i=0; i<_num_output; i++) _output_cbs[i] = NULL;
+  }
+
+  if ( _num_feature )
+  {
+    _chr_features = new BLECharacteristic[_num_feature];
+  }
+}
+
+void BLEHidGeneric::setBootProtocol(bool bootKeyboard, bool bootMouse)
+{
+  _boot_keyboard = bootKeyboard;
+  _boot_mouse    = bootMouse;
+}
+
+void BLEHidGeneric::setHidInfo(uint16_t bcd, uint8_t country, uint8_t flags)
+{
+  memcpy(_hid_info, &bcd, 2);
+  _hid_info[2] = country;
+  _hid_info[3] = flags;
+}
+
+void BLEHidGeneric::setReportMap(const uint8_t* report_map, size_t len)
+{
+  _report_map     = report_map;
+  _report_map_len = len;
+}
+
+void BLEHidGeneric::setReportLen(uint16_t input_len[], uint16_t output_len[], uint16_t feature_len[])
+{
+  _input_len   = input_len;
+  _output_len  = output_len;
+  _feature_len = feature_len;
+}
+
+void BLEHidGeneric::setOutputReportCallback(uint8_t reportID, output_report_cb_t fp)
+{
+  _output_cbs[reportID] = fp;
+}
+
+void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
+{
+  BLEHidGeneric& hid = (BLEHidGeneric&) chr.parentService();
+  PRINT_BUFFER(request->data, request->len);
+}
+
+err_t BLEHidGeneric::start(void)
+{
+  VERIFY ( (_report_map != NULL) && _report_map_len, NRF_ERROR_INVALID_PARAM);
+
+  VERIFY_STATUS( this->addToGatt() );
+
+  // Protocol Mode
+  if ( _boot_keyboard || _boot_mouse )
+  {
+    _chr_protocol = new BLECharacteristic(UUID16_CHR_PROTOCOL_MODE);
+    VERIFY(_chr_protocol, NRF_ERROR_NO_MEM);
+
+    _chr_protocol->setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE_WO_RESP);
+    _chr_protocol->setFixedLen(1);
+    VERIFY_STATUS( _chr_protocol->start() );
+    _chr_protocol->write( (uint8_t) 1);
+  }
+
+  // Input reports
+  for(uint8_t i=0; i<_num_input; i++)
+  {
+    _chr_inputs[i].setUuid(UUID16_CHR_REPORT);
+    _chr_inputs[i].setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
+    _chr_inputs[i].setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    _chr_inputs[i].setReportRefDescriptor(i+0, REPORT_TYPE_INPUT);
+
+    // Input report len is configured, else variable len up to 255
+    if ( _input_len ) _chr_inputs[i].setFixedLen( _input_len[i] );
+
+    VERIFY_STATUS( _chr_inputs[i].start() );
+  }
+
+  // Output reports
+  for(uint8_t i=0; i<_num_output; i++)
+  {
+    _chr_outputs[i].setUuid(UUID16_CHR_REPORT);
+    _chr_outputs[i].setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP);
+    _chr_outputs[i].setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    _chr_outputs[i].setReportRefDescriptor(i+0, REPORT_TYPE_OUTPUT);
+//    _chr_outputs[i].setWriteCallback(blehidgeneric_output_cb);
+
+    // Input report len is configured, else variable len up to 255
+    if ( _output_len ) _chr_outputs[i].setFixedLen( _output_len[i] );
+
+    VERIFY_STATUS( _chr_outputs[i].start() );
+
+    _chr_outputs[i].write( (uint8_t) 0 );
+  }
+
+  // Report Map (HID Report Descriptor)
+  BLECharacteristic report_map(UUID16_CHR_REPORT_MAP);
+  report_map.setTempMemory();
+  report_map.setProperties(CHR_PROPS_READ);
+  report_map.setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+  report_map.setFixedLen(_report_map_len);
+  VERIFY_STATUS( report_map.start() );
+  report_map.write(_report_map, _report_map_len);
+
+  // Boot Keyboard Input Report
+  if ( _boot_keyboard )
+  {
+    _chr_boot_keyboard_input = new BLECharacteristic(UUID16_CHR_BOOT_KEYBOARD_INPUT_REPORT);
+    _chr_boot_keyboard_input->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
+    _chr_boot_keyboard_input->setFixedLen(8); // boot keyboard is 8 bytes
+    _chr_boot_keyboard_input->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    VERIFY_STATUS(_chr_boot_keyboard_input->start());
+
+    _chr_boot_keyboard_output = new BLECharacteristic(UUID16_CHR_BOOT_KEYBOARD_OUTPUT_REPORT);
+    _chr_boot_keyboard_output->setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP);
+    _chr_boot_keyboard_output->setFixedLen(1); // boot keyboard is 1 byte
+    _chr_boot_keyboard_output->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    VERIFY_STATUS(_chr_boot_keyboard_output->start());
+    _chr_boot_keyboard_output->write((uint8_t) 0);
+  }
+
+  // Boot Mouse Input Report
+  if ( _boot_mouse )
+  {
+    _chr_boot_mouse_input = new BLECharacteristic(UUID16_CHR_BOOT_MOUSE_INPUT_REPORT);
+    _chr_boot_mouse_input->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
+    _chr_boot_mouse_input->setFixedLen(sizeof(hid_mouse_report_t));
+    _chr_boot_mouse_input->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    VERIFY_STATUS(_chr_boot_mouse_input->start());
+  }
+
+  // HID Info
+  BLECharacteristic hid_info(UUID16_CHR_HID_INFORMATION);
+  hid_info.setTempMemory();
+  hid_info.setProperties(CHR_PROPS_READ);
+  hid_info.setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+  hid_info.setFixedLen(sizeof(_hid_info));
+  VERIFY_STATUS( hid_info.start() );
+  hid_info.write(_hid_info, sizeof(_hid_info));
+
+  // HID Control Point
+  _chr_control.setProperties(CHR_PROPS_WRITE_WO_RESP);
+  _chr_control.setPermission(SECMODE_NO_ACCESS, SECMODE_ENC_NO_MITM);
+  _chr_control.setFixedLen(1);
+  VERIFY_STATUS( _chr_control.start() );
+  _chr_control.write( (uint8_t) 0 );
+
+  return ERROR_NONE;
+}
+
+err_t BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
+{
+  return _chr_inputs[reportID].notify( (uint8_t const*) data, len);
+}
+
+/*------------------------------------------------------------------*/
+/*
+ *------------------------------------------------------------------*/
 const hid_ascii_to_keycode_entry_t HID_ASCII_TO_KEYCODE[128] =
 {
     {0, 0                     }, // 0x00 Null
@@ -176,202 +371,4 @@ const hid_ascii_to_keycode_entry_t HID_ASCII_TO_KEYCODE[128] =
     {1, HID_KEY_GRAVE         }, // 0x7E ~
     {0, HID_KEY_DELETE        }  // 0x7F Delete
 };
-
-
-
-
-BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_feature)
-  : BLEService(UUID16_SVC_HUMAN_INTERFACE_DEVICE), _chr_control(UUID16_CHR_HID_CONTROL_POINT)
-{
-  _boot_keyboard = _boot_mouse = false;
-  _report_map = NULL;
-  _report_map_len = 0;
-
-  _input_len = _output_len = _feature_len = NULL;
-
-  _num_input   = num_input;
-  _num_output  = num_output;
-  _num_feature = num_feature;
-
-  // HID Information
-  // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.hid_information.xml
-  // bcd 1.1, country = 0, flag = normal connect
-  _hid_info[0] = 0x01;
-  _hid_info[1] = 0x01;
-  _hid_info[2] = 0x00;
-  _hid_info[3] = bit(1);
-
-  _chr_protocol = NULL;
-  _chr_inputs = _chr_outputs = _chr_features = NULL;
-  _chr_boot_keyboard_input = _chr_boot_keyboard_output = _chr_boot_mouse_input = NULL;
-
-  _output_cbs = NULL;
-
-  if ( _num_input   )
-  {
-    _chr_inputs   = new BLECharacteristic[_num_input];
-  }
-
-  if ( _num_output  )
-  {
-    _chr_outputs  = new BLECharacteristic[_num_output];
-    _output_cbs   = new output_report_cb_t[_num_output];
-
-    for (uint8_t i=0; i<_num_output; i++) _output_cbs[i] = NULL;
-  }
-
-  if ( _num_feature )
-  {
-    _chr_features = new BLECharacteristic[_num_feature];
-  }
-}
-
-void BLEHidGeneric::setBootProtocol(bool bootKeyboard, bool bootMouse)
-{
-  _boot_keyboard = bootKeyboard;
-  _boot_mouse    = bootMouse;
-}
-
-void BLEHidGeneric::setHidInfo(uint16_t bcd, uint8_t country, uint8_t flags)
-{
-  memcpy(_hid_info, &bcd, 2);
-  _hid_info[2] = country;
-  _hid_info[3] = flags;
-}
-
-void BLEHidGeneric::setReportMap(const uint8_t* report_map, size_t len)
-{
-  _report_map     = report_map;
-  _report_map_len = len;
-}
-
-void BLEHidGeneric::setReportLen(uint16_t input_len[], uint16_t output_len[], uint16_t feature_len[])
-{
-  _input_len   = input_len;
-  _output_len  = output_len;
-  _feature_len = feature_len;
-}
-
-void BLEHidGeneric::setOutputReportCallback(uint8_t reportID, output_report_cb_t fp)
-{
-  _output_cbs[reportID] = fp;
-}
-
-void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
-{
-  BLEHidGeneric& hid = (BLEHidGeneric&) chr.parentService();
-
-  PRINT_BUFFER(request->data, request->len);
-}
-
-err_t BLEHidGeneric::start(void)
-{
-  VERIFY ( (_report_map != NULL) && _report_map_len, NRF_ERROR_INVALID_PARAM);
-
-  VERIFY_STATUS( this->addToGatt() );
-
-  // Protocol Mode
-  if ( _boot_keyboard || _boot_mouse )
-  {
-    _chr_protocol = new BLECharacteristic(UUID16_CHR_PROTOCOL_MODE);
-    VERIFY(_chr_protocol, NRF_ERROR_NO_MEM);
-
-    _chr_protocol->setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE_WO_RESP);
-    _chr_protocol->setFixedLen(1);
-    VERIFY_STATUS( _chr_protocol->start() );
-    _chr_protocol->write( (uint8_t) 1);
-  }
-
-  // Input reports
-  for(uint8_t i=0; i<_num_input; i++)
-  {
-    _chr_inputs[i].setUuid(UUID16_CHR_REPORT);
-    _chr_inputs[i].setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
-    _chr_inputs[i].setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-    _chr_inputs[i].setReportRefDescriptor(i+0, REPORT_TYPE_INPUT);
-
-    // Input report len is configured, else variable len up to 255
-    if ( _input_len ) _chr_inputs[i].setFixedLen( _input_len[i] );
-
-    VERIFY_STATUS( _chr_inputs[i].start() );
-  }
-
-  // Output reports
-  for(uint8_t i=0; i<_num_output; i++)
-  {
-    _chr_outputs[i].setUuid(UUID16_CHR_REPORT);
-    _chr_outputs[i].setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP);
-    _chr_outputs[i].setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-    _chr_outputs[i].setReportRefDescriptor(i+0, REPORT_TYPE_OUTPUT);
-    _chr_outputs[i].setWriteCallback(blehidgeneric_output_cb);
-
-    // Input report len is configured, else variable len up to 255
-    if ( _output_len ) _chr_outputs[i].setFixedLen( _output_len[i] );
-
-    VERIFY_STATUS( _chr_outputs[i].start() );
-
-    _chr_outputs[i].write( (uint8_t) 0 );
-  }
-
-  // Report Map (HID Report Descriptor)
-  BLECharacteristic report_map(UUID16_CHR_REPORT_MAP);
-  report_map.setTempMemory();
-  report_map.setProperties(CHR_PROPS_READ);
-  report_map.setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-  report_map.setFixedLen(_report_map_len);
-  VERIFY_STATUS( report_map.start() );
-  report_map.write(_report_map, _report_map_len);
-
-  // Boot Keyboard Input Report
-  if ( _boot_keyboard )
-  {
-    _chr_boot_keyboard_input = new BLECharacteristic(UUID16_CHR_BOOT_KEYBOARD_INPUT_REPORT);
-    _chr_boot_keyboard_input->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
-    _chr_boot_keyboard_input->setFixedLen(8); // boot keyboard is 8 bytes
-    _chr_boot_keyboard_input->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-    VERIFY_STATUS(_chr_boot_keyboard_input->start());
-
-    _chr_boot_keyboard_output = new BLECharacteristic(UUID16_CHR_BOOT_KEYBOARD_OUTPUT_REPORT);
-    _chr_boot_keyboard_output->setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP);
-    _chr_boot_keyboard_output->setFixedLen(1); // boot keyboard is 1 byte
-    _chr_boot_keyboard_output->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-    VERIFY_STATUS(_chr_boot_keyboard_output->start());
-    _chr_boot_keyboard_output->write((uint8_t) 0);
-  }
-
-  // Boot Mouse Input Report
-  if ( _boot_mouse )
-  {
-    _chr_boot_mouse_input = new BLECharacteristic(UUID16_CHR_BOOT_MOUSE_INPUT_REPORT);
-    _chr_boot_mouse_input->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
-    _chr_boot_mouse_input->setFixedLen(sizeof(hid_mouse_report_t));
-    _chr_boot_mouse_input->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-    VERIFY_STATUS(_chr_boot_mouse_input->start());
-  }
-
-  // HID Info
-  BLECharacteristic hid_info(UUID16_CHR_HID_INFORMATION);
-  hid_info.setTempMemory();
-  hid_info.setProperties(CHR_PROPS_READ);
-  hid_info.setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-  hid_info.setFixedLen(sizeof(_hid_info));
-  VERIFY_STATUS( hid_info.start() );
-  hid_info.write(_hid_info, sizeof(_hid_info));
-
-  // HID Control Point
-  _chr_control.setProperties(CHR_PROPS_WRITE_WO_RESP);
-  _chr_control.setPermission(SECMODE_NO_ACCESS, SECMODE_ENC_NO_MITM);
-  _chr_control.setFixedLen(1);
-  VERIFY_STATUS( _chr_control.start() );
-  _chr_control.write( (uint8_t) 0 );
-
-  return ERROR_NONE;
-}
-
-err_t BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
-{
-  return _chr_inputs[reportID].notify( (uint8_t const*) data, len);
-}
-
-
 
