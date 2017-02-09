@@ -50,7 +50,7 @@ bootutil_help(int rc)
                                   BOOTUTIL_VER_MINOR,
                                   BOOTUTIL_VER_REVISION);
     printf("\n");
-#ifndef _WIN32
+#ifdef _WIN32
     printf("Usage: bootutil.exe -d <TTY.DEVICE> [-c <cmd>] [-ghrv]\n");
 #else
     printf("Usage: bootutil -d <TTY.DEVICE> [-c <cmd>] [-hrv]\n");
