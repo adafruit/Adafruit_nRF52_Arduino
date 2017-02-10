@@ -38,23 +38,24 @@
 
 #include <nffs_lib.h>
 
-#define BLE_VENDOR_UUID_MAX          10
-#define BLE_PRPH_MAX_CONN            1
-#define BLE_CENTRAL_MAX_CONN         0
-#define BLE_CENTRAL_MAX_SECURE_CONN  0
+#define BLE_VENDOR_UUID_MAX              10
+#define BLE_PRPH_MAX_CONN                1
+#define BLE_CENTRAL_MAX_CONN             0
+#define BLE_CENTRAL_MAX_SECURE_CONN      0
 
-#define SVC_CONTEXT_FLAG             (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
+#define SVC_CONTEXT_FLAG                 (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
 
 #define GAP_CONN_SUPERVISION_TIMEOUT_MS  3000
 #define GAP_CONN_SLAVE_LATENCY           0
 #define GAP_CONN_MIN_INTERVAL_MS         20
 #define GAP_CONN_MAX_INTERVAL_MS         40
 
-#define GAP_ADV_INTERVAL_MS                    20
-#define GAP_ADV_TIMEOUT_S                      30
+#define GAP_ADV_INTERVAL_MS              20
+#define GAP_ADV_TIMEOUT_S                30
 
-#define CFG_BLE_TX_POWER_LEVEL                     0
-#define CFG_DEFAULT_NAME    "Bluefruit52"
+#define CFG_BLE_TX_POWER_LEVEL           0
+#define CFG_DEFAULT_NAME                 "Bluefruit52"
+#define CFG_ADV_BLINKY_INTERVAL          500
 
 
 // Converts an integer of 1.25ms units to msecs
@@ -193,7 +194,7 @@ err_t AdafruitBluefruit::begin(void)
   NVIC_EnableIRQ(SD_EVT_IRQn);
 
   // Create Timer for led advertising blinky
-  _led_blink_th = xTimerCreate(NULL, ms2tick(500), true, NULL, bluefruit_blinky_cb);
+  _led_blink_th = xTimerCreate(NULL, ms2tick(CFG_ADV_BLINKY_INTERVAL), true, NULL, bluefruit_blinky_cb);
 
   // Also initialize nffs for bonding/config
   nffs_pkg_init();
