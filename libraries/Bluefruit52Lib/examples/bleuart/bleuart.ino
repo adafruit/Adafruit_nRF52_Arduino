@@ -18,6 +18,7 @@ BLEUart bleuart;
 BLEBas blebas;
 
 #define STATUS_LED  (17)
+#define BLINKY_MS   (2000)
 
 int blinkyms;
 
@@ -33,7 +34,7 @@ void setup()
 
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behaviour, but provided
-  // here in case you want to control this manually via PIN 19)
+  // here in case you want to control this manually via PIN 19
   Bluefruit.enableLedConn(true);
 
   Bluefruit.begin();
@@ -77,11 +78,11 @@ void setupAdv(void)
 void loop()
 {
   // Blinky!
-  if (blinkyms+500 < millis()) {
+  if (blinkyms+BLINKY_MS < millis()) {
     blinkyms = millis();
     digitalWrite(STATUS_LED, !digitalRead(STATUS_LED));
   }
-  
+
   // forward from Serial to BLEUART
   if (Serial.available())
   {
