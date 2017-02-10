@@ -78,9 +78,9 @@ void initVariant()
 
   // LED1 & LED2
   pinMode(PIN_LED1, OUTPUT);
-  digitalWrite(PIN_LED1, LOW);
+  ledOff(PIN_LED1);
 
   pinMode(PIN_LED2, OUTPUT);
-  digitalWrite(PIN_LED2, LOW);
+  ledOff(PIN_LED2);
 }
 
