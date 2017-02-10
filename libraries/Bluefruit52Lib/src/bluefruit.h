@@ -154,7 +154,7 @@ class AdafruitBluefruit
     ble_gap_addr_t    _peer_addr;
 
     uint8_t*          _sys_attr;
-//    uint16_t
+    uint16_t          _sys_attr_len;
 
     // Transmission Buffer Count for HVX notification, max is seen at 7
     SemaphoreHandle_t _txbuf_sem;

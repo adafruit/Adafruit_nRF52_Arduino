@@ -43,6 +43,8 @@
 #define BLE_CENTRAL_MAX_CONN         0
 #define BLE_CENTRAL_MAX_SECURE_CONN  0
 
+#define SVC_CONTEXT_FLAG             (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
+
 #define GAP_CONN_SUPERVISION_TIMEOUT_MS  3000
 #define GAP_CONN_SLAVE_LATENCY           0
 #define GAP_CONN_MIN_INTERVAL_MS         20
@@ -104,6 +106,8 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   varclr(&_enc_key);
   varclr(&_peer_id);
+  _sys_attr = NULL;
+  _sys_attr_len = 0;
 
   _connect_cb = NULL;
   _discconnect_cb = NULL;
@@ -468,9 +472,19 @@ bool AdafruitBluefruit::txbuf_get(uint32_t ms)
 err_t AdafruitBluefruit::saveAllCCCD(void)
 {
   uint16_t len=0;
-  sd_ble_gatts_sys_attr_get(_conn_hdl, NULL, &len, BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS);
+  sd_ble_gatts_sys_attr_get(_conn_hdl, NULL, &len, SVC_CONTEXT_FLAG);
+  //PRINT_INT(len);
 
-  PRINT_INT(len);
+  // Free and re-malloc if not enough
+  if ( _sys_attr_len < len )
+  {
+    if (_sys_attr) rtos_free(_sys_attr);
+
+    _sys_attr     = (uint8_t*) rtos_malloc( len );
+    _sys_attr_len = len;
+  }
+
+  return sd_ble_gatts_sys_attr_get(_conn_hdl, _sys_attr, &_sys_attr_len, SVC_CONTEXT_FLAG);
 }
 
 void adafruit_bluefruit_task(void* arg)
@@ -551,26 +565,28 @@ void AdafruitBluefruit::_poll(void)
         switch ( evt->header.evt_id  )
         {
           case BLE_GAP_EVT_CONNECTED:
-            PRINT_MESS("Connected");
+          {
+            // PRINT_MESS("Connected");
 
-            if (_led_conn) digitalWrite(LED_CONN, HIGH);
+            ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
+
+            if (_led_conn) ledOn(LED_CONN);
 
             _conn_hdl  = evt->evt.gap_evt.conn_handle;
-            _peer_addr = evt->evt.gap_evt.params.connected.peer_addr;
+            _peer_addr = para->peer_addr;
 
             uint8_t txbuf_max;
             (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
             _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
 
             if ( _connect_cb ) _connect_cb(0);
-
-            sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
+          }
           break;
 
           case BLE_GAP_EVT_DISCONNECTED:
-            PRINT_MESS("Disconnected");
+            // PRINT_MESS("Disconnected");
 
-            if (_led_conn)  digitalWrite(LED_CONN, LOW);
+            if (_led_conn)  ledOff(LED_CONN);
 
             _conn_hdl = BLE_GATT_HANDLE_INVALID;
             varclr(&_peer_addr);
@@ -599,15 +615,15 @@ void AdafruitBluefruit::_poll(void)
 
           case BLE_GAP_EVT_CONN_PARAM_UPDATE:
           {
-            ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
-            PRINT_INT(param->min_conn_interval);
-            PRINT_INT(param->max_conn_interval);
+//            ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
+//            PRINT_INT(param->min_conn_interval);
+//            PRINT_INT(param->max_conn_interval);
           }
           break;
 
           case BLE_GAP_EVT_SEC_INFO_REQUEST:
           {
-            PRINT_MESS("BLE_GAP_EVT_SEC_INFO_REQUEST");
+//            PRINT_MESS("BLE_GAP_EVT_SEC_INFO_REQUEST");
             // If bonded previously, return information. Otherwise NULL
             ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
 
@@ -625,10 +641,8 @@ void AdafruitBluefruit::_poll(void)
 
           case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
           {
-            ble_gap_sec_params_t* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
-            PRINT_INT(peer->bond);
-            PRINT_INT(peer->mitm);
-            PRINT_INT(peer->lesc);
+//            PRINT_MESS("BLE_GAP_EVT_SEC_PARAMS_REQUEST");
+//            ble_gap_sec_params_t* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
 
             ble_gap_sec_params_t sec_para =
             {
@@ -663,35 +677,33 @@ void AdafruitBluefruit::_poll(void)
           }
           break;
 
-          case BLE_GAP_EVT_PASSKEY_DISPLAY:
-            PRINT_LOCATION();
-          break;
-
-          case BLE_GAP_EVT_LESC_DHKEY_REQUEST:
-            PRINT_LOCATION();
-          break;
-
+          case BLE_GAP_EVT_PASSKEY_DISPLAY: break;
 
           case BLE_GAP_EVT_CONN_SEC_UPDATE:
           {
+            //PRINT_MESS("BLE_GAP_EVT_CONN_SEC_UPDATE");
             ble_gap_conn_sec_t* conn_sec = (ble_gap_conn_sec_t*) &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
             (void) conn_sec;
-            PRINT_INT(conn_sec->sec_mode.sm);
-            PRINT_INT(conn_sec->sec_mode.lv);
+
+            // Connection is secured, Apply Service Context
+            sd_ble_gatts_sys_attr_set(_conn_hdl, _sys_attr, _sys_attr_len, SVC_CONTEXT_FLAG);
           }
           break;
 
           case BLE_GAP_EVT_AUTH_STATUS:
+          {
+            ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
             // Bonding succeeded --> save encryption keys
-            PRINT_HEX(evt->evt.gap_evt.params.auth_status.auth_status);
-            if (BLE_GAP_SEC_STATUS_SUCCESS == evt->evt.gap_evt.params.auth_status.auth_status)
+            //PRINT_HEX(status->auth_status);
+            if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
             {
               _bonded = true;
             }
+          }
           break;
 
           case BLE_GATTS_EVT_SYS_ATTR_MISSING:
-            PRINT_MESS("BLE_GATTS_EVT_SYS_ATTR_MISSING");
+            //PRINT_MESS("BLE_GATTS_EVT_SYS_ATTR_MISSING");
             sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
           break;
 
