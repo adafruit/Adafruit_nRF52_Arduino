@@ -193,7 +193,7 @@ err_t AdafruitBluefruit::begin(void)
   NVIC_EnableIRQ(SD_EVT_IRQn);
 
   // Create Timer for led advertising blinky
-  _led_blink_th = xTimerCreate(NULL, ms2tick(250), true, NULL, bluefruit_blinky_cb);
+  _led_blink_th = xTimerCreate(NULL, ms2tick(500), true, NULL, bluefruit_blinky_cb);
 
   // Also initialize nffs for bonding/config
   nffs_pkg_init();
