@@ -335,25 +335,25 @@ err_t BLEHidAdafruit::mouseReport(uint8_t buttons, int8_t x, int8_t y, int8_t wh
 err_t BLEHidAdafruit::mouseButtonPress(uint8_t buttons)
 {
   _mse_buttons = buttons;
-  mouseReport(buttons, 0, 0, 0, 0);
+  return mouseReport(buttons, 0, 0, 0, 0);
 }
 
 err_t BLEHidAdafruit::mouseButtonRelease(void)
 {
-  mouseReport(0, 0, 0, 0, 0);
+  return mouseReport(0, 0, 0, 0, 0);
 }
 
 err_t BLEHidAdafruit::mouseMove(int8_t x, int8_t y)
 {
-  mouseReport(_mse_buttons, x, y, 0, 0);
+  return mouseReport(_mse_buttons, x, y, 0, 0);
 }
 
 err_t BLEHidAdafruit::mouseScroll(int8_t scroll)
 {
-  mouseReport(_mse_buttons, 0, 0, scroll, 0);
+  return mouseReport(_mse_buttons, 0, 0, scroll, 0);
 }
 
 err_t BLEHidAdafruit::mousePan(int8_t pan)
 {
-  mouseReport(_mse_buttons, 0, 0, 0, pan);
+  return mouseReport(_mse_buttons, 0, 0, 0, pan);
 }

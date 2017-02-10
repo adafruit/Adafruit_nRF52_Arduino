@@ -84,10 +84,25 @@ void adafruit_bluefruit_task(void* arg);
 
 AdafruitBluefruit Bluefruit;
 
+/*------------------------------------------------------------------*/
+/* IMPLEMENTATION
+ *------------------------------------------------------------------*/
+
+static void bluefruit_blinky_cb( TimerHandle_t xTimer )
+{
+  (void) xTimer;
+
+  ledToggle(LED_CONN);
+}
+
+/**
+ * Constructor
+ */
 AdafruitBluefruit::AdafruitBluefruit(void)
 {
   _ble_event_sem = NULL;
 
+  _led_blink_th = NULL;
   _led_conn = true;
 
   varclr(&_adv);
@@ -176,6 +191,9 @@ err_t AdafruitBluefruit::begin(void)
   _ble_event_sem = xSemaphoreCreateBinary();
   VERIFY(_ble_event_sem, NRF_ERROR_NO_MEM);
   NVIC_EnableIRQ(SD_EVT_IRQn);
+
+  // Create Timer for led advertising blinky
+  _led_blink_th = xTimerCreate(NULL, ms2tick(250), true, NULL, bluefruit_blinky_cb);
 
   // Also initialize nffs for bonding/config
   nffs_pkg_init();
@@ -421,12 +439,16 @@ err_t AdafruitBluefruit::startAdvertising(void)
 
   VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para) );
 
+  if (_led_conn) xTimerStart(_led_blink_th, 0); // start blinking
+
   return ERROR_NONE;
 }
 
 void AdafruitBluefruit::stopAdvertising(void)
 {
   sd_ble_gap_adv_stop();
+
+  xTimerStop(_led_blink_th, 0); // stop blinking
 }
 
 err_t AdafruitBluefruit::addService(uint16_t uuid16)
@@ -570,6 +592,7 @@ void AdafruitBluefruit::_poll(void)
 
             ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
 
+            xTimerStop(_led_blink_th, 0);
             if (_led_conn) ledOn(LED_CONN);
 
             _conn_hdl  = evt->evt.gap_evt.conn_handle;

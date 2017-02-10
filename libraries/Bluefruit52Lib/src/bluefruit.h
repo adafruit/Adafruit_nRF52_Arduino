@@ -129,6 +129,7 @@ class AdafruitBluefruit
     SemaphoreHandle_t _ble_event_sem;
     BLEDfu _dfu_svc;
 
+    TimerHandle_t _led_blink_th;
     bool _led_conn;
 
     // ADV Data
