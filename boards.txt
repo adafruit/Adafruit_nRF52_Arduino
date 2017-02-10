@@ -21,7 +21,7 @@ menu.chip=Chip
 menu.lfclk=Low Frequency Clock
 menu.board_variant=Board Variant
 
-feather52.name=Adafruit Bluefruit Feather52
+feather52.name=Adafruit Bluefruit nRF52 Feather
 
 feather52.vid.0=0x10C4
 feather52.pid.0=0xEA60
@@ -68,4 +68,3 @@ feather52.menu.lfclk.lfsynt.build.lfclk_flags=-DUSE_LFSYNT
 #feather52.menu.softdevice.s132.upload.maximum_size=409600
 #feather52.menu.softdevice.s132.build.extra_flags=-DNRF52 -DS132 -DNRF51_S132
 #feather52.menu.softdevice.s132.build.ldscript=armgcc_s132_nrf52832_xxaa.ld
-

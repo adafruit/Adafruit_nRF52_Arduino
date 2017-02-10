@@ -17,11 +17,21 @@ BLEDis bledis;
 BLEUart bleuart;
 BLEBas blebas;
 
-void setup() 
+#define STATUS_LED  (17)
+#define BLE_LED     (19)
+
+int blinkyms;
+
+void setup()
 {
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 BLEUART Example");
+
+  // Setup LED pins and reset blinky counter
+  pinMode(STATUS_LED, OUTPUT);
+  pinMode(BLE_LED, OUTPUT);
+  blinkyms = millis();
 
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
@@ -48,11 +58,11 @@ void setup()
 }
 
 void setupAdv(void)
-{  
+{
   //Bluefruit.addAdvTxPower();
   Bluefruit.addAdvFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.addAdvTxPower();
-  
+
   // Include bleuart 128-bit uuid
   Bluefruit.addAdvService(bleuart);
 
@@ -61,8 +71,15 @@ void setupAdv(void)
   Bluefruit.addScanName();
 }
 
-void loop() 
+void loop()
 {
+  // Blinky!
+  if (blinkyms+500 < millis()) {
+    blinkyms = millis();
+    digitalWrite(STATUS_LED, !digitalRead(STATUS_LED));
+    digitalWrite(BLE_LED, !digitalRead(STATUS_LED));
+  }
+  
   // forward from Serial to BLEUART
   if (Serial.available())
   {
@@ -82,4 +99,3 @@ void loop()
     Serial.write(ch);
   }
 }
-
