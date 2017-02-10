@@ -106,7 +106,6 @@ uint8_t const hid_report_descriptor[] =
     HID_INPUT        ( HID_DATA | HID_ARRAY | HID_ABSOLUTE ),
   HID_COLLECTION_END,
 
-#if 0
   //------------- Mouse Report: buttons + dx + dy + scroll + pan -------------//
   HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     ),
   HID_USAGE      ( HID_USAGE_DESKTOP_MOUSE    ),
@@ -155,6 +154,7 @@ uint8_t const hid_report_descriptor[] =
     HID_COLLECTION_END,
   HID_COLLECTION_END,
 
+#if 0
   //------------- Gamepad Report -------------//
   /* Byte 0: 4 pad | 2 Y-axis | 2 X-axis
    * Byte 1: Button7-Button0
@@ -199,22 +199,26 @@ uint8_t const hid_report_descriptor[] =
 };
 
 BLEHidAdafruit::BLEHidAdafruit(void)
-  : BLEHidGeneric(2, 1, 0)
+  : BLEHidGeneric(3, 1, 0)
 {
+  _mse_buttons = 0;
 }
 
 err_t BLEHidAdafruit::start(void)
 {
-  uint16_t input_len [] = { sizeof(hid_keyboard_report_t),  sizeof(hid_consumer_control_report_t) };
+  uint16_t input_len [] = { sizeof(hid_keyboard_report_t),  sizeof(hid_consumer_control_report_t), sizeof(hid_mouse_report_t) };
   uint16_t output_len[] = { 1 };
 
   setReportLen(input_len, output_len, NULL);
-  setBootProtocol(true, false);
+  enableBootProtocol(true, true);
   setReportMap(hid_report_descriptor, sizeof(hid_report_descriptor));
 
   return BLEHidGeneric::start();
 }
 
+/*------------------------------------------------------------------*/
+/* Keyboard
+ *------------------------------------------------------------------*/
 err_t BLEHidAdafruit::keyboardReport(hid_keyboard_report_t* report)
 {
   return inputReport( REPORT_ID_KEYBOARD, report, sizeof(hid_keyboard_report_t));
@@ -231,7 +235,7 @@ err_t BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode[6])
   return keyboardReport(&report);
 }
 
-err_t BLEHidAdafruit::keyHIDCode(uint8_t modifier, uint8_t keycode0, uint8_t keycode1, uint8_t keycode2, uint8_t keycode3, uint8_t keycode4, uint8_t keycode5)
+err_t BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode0, uint8_t keycode1, uint8_t keycode2, uint8_t keycode3, uint8_t keycode4, uint8_t keycode5)
 {
   hid_keyboard_report_t report =
   {
@@ -248,8 +252,8 @@ err_t BLEHidAdafruit::keyPress(char ch)
   hid_keyboard_report_t report;
   varclr(&report);
 
-  report.modifier = ( HID_ASCII_TO_KEYCODE[ch].shift ) ? KEYBOARD_MODIFIER_LEFTSHIFT : 0;
-  report.keycode[0] = HID_ASCII_TO_KEYCODE[ch].keycode;
+  report.modifier = ( HID_ASCII_TO_KEYCODE[(uint8_t)ch].shift ) ? KEYBOARD_MODIFIER_LEFTSHIFT : 0;
+  report.keycode[0] = HID_ASCII_TO_KEYCODE[(uint8_t)ch].keycode;
 
   return keyboardReport(&report);
 }
@@ -281,8 +285,13 @@ err_t BLEHidAdafruit::keySequence(const char* str, int interal)
       delay(interal);
     }
   }
+
+  return ERROR_NONE;
 }
 
+/*------------------------------------------------------------------*/
+/* Consumer Media Key
+ *------------------------------------------------------------------*/
 err_t BLEHidAdafruit::consumerReport(uint16_t usage_code)
 {
   return inputReport( REPORT_ID_CONSUMER_CONTROL, &usage_code, sizeof(usage_code));
@@ -297,4 +306,54 @@ err_t BLEHidAdafruit::consumerKeyRelease(void)
 {
   uint16_t usage = 0;
   return consumerReport(usage);
+}
+
+/*------------------------------------------------------------------*/
+/* Mouse
+ *------------------------------------------------------------------*/
+err_t BLEHidAdafruit::mouseReport(hid_mouse_report_t* report)
+{
+  return inputReport( REPORT_ID_MOUSE, report, sizeof(hid_mouse_report_t));
+}
+
+err_t BLEHidAdafruit::mouseReport(uint8_t buttons, int8_t x, int8_t y, int8_t wheel, int8_t pan)
+{
+  hid_mouse_report_t report =
+  {
+      .buttons = buttons,
+      .x       = x,
+      .y       = y,
+      .wheel   = wheel,
+      .pan     = pan
+  };
+
+  _mse_buttons = buttons;
+
+  return mouseReport(&report);
+}
+
+err_t BLEHidAdafruit::mouseButtonPress(uint8_t buttons)
+{
+  _mse_buttons = buttons;
+  mouseReport(buttons, 0, 0, 0, 0);
+}
+
+err_t BLEHidAdafruit::mouseButtonRelease(void)
+{
+  mouseReport(0, 0, 0, 0, 0);
+}
+
+err_t BLEHidAdafruit::mouseMove(int8_t x, int8_t y)
+{
+  mouseReport(_mse_buttons, x, y, 0, 0);
+}
+
+err_t BLEHidAdafruit::mouseScroll(int8_t scroll)
+{
+  mouseReport(_mse_buttons, 0, 0, scroll, 0);
+}
+
+err_t BLEHidAdafruit::mousePan(int8_t pan)
+{
+  mouseReport(_mse_buttons, 0, 0, 0, pan);
 }

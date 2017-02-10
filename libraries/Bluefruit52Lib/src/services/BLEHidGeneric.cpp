@@ -88,7 +88,7 @@ BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_
   }
 }
 
-void BLEHidGeneric::setBootProtocol(bool bootKeyboard, bool bootMouse)
+void BLEHidGeneric::enableBootProtocol(bool bootKeyboard, bool bootMouse)
 {
   _boot_keyboard = bootKeyboard;
   _boot_mouse    = bootMouse;
@@ -121,8 +121,10 @@ void BLEHidGeneric::setOutputReportCallback(uint8_t reportID, output_report_cb_t
 
 void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
 {
-  BLEHidGeneric& hid = (BLEHidGeneric&) chr.parentService();
-  PRINT_BUFFER(request->data, request->len);
+  (void) chr;
+  (void) request;
+//  BLEHidGeneric& hid = (BLEHidGeneric&) chr.parentService();
+//  PRINT_BUFFER(request->data, request->len);
 }
 
 err_t BLEHidGeneric::start(void)
@@ -183,7 +185,7 @@ err_t BLEHidGeneric::start(void)
   VERIFY_STATUS( report_map.start() );
   report_map.write(_report_map, _report_map_len);
 
-  // Boot Keyboard Input Report
+  // Boot Keyboard Input & Output Report
   if ( _boot_keyboard )
   {
     _chr_boot_keyboard_input = new BLECharacteristic(UUID16_CHR_BOOT_KEYBOARD_INPUT_REPORT);
@@ -231,6 +233,9 @@ err_t BLEHidGeneric::start(void)
 
 err_t BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
 {
+  // 0 will treated as report ID = 1
+  if ( reportID == 0 ) reportID++;
+
   return _chr_inputs[reportID-1].notify( (uint8_t const*) data, len);
 }
 

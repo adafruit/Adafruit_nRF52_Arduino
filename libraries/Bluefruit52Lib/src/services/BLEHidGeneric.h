@@ -92,7 +92,7 @@ class BLEHidGeneric : public BLEService
 
     BLEHidGeneric(uint8_t num_input, uint8_t num_output = 0, uint8_t num_feature = 0);
 
-    void setBootProtocol(bool bootKeyboard, bool bootMouse);
+    void enableBootProtocol(bool bootKeyboard, bool bootMouse);
     void setHidInfo(uint16_t bcd, uint8_t country, uint8_t flags);
 
     void setReportLen(uint16_t input_len[], uint16_t output_len[] = NULL, uint16_t feature_len[] = NULL);
@@ -148,8 +148,6 @@ typedef enum {
   MOUSE_BUTTON_MIDDLE    = bit(2), ///< Middle button,
   MOUSE_BUTTON_BACKWARD  = bit(3), ///< Backward button,
   MOUSE_BUTTON_FORWARD   = bit(4), ///< Forward button,
-
-  MOUSE_BUTTON_UNCHANGED = 0xff, ///< Not specified by HID but useful for holding mouse buttons
 }hid_mouse_button_bm_t;
 
 //--------------------------------------------------------------------+
