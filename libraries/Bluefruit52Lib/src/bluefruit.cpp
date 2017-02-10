@@ -226,7 +226,7 @@ void AdafruitBluefruit::setName(const char* str)
   strncpy(_name, str, 32);
 }
 
-void AdafruitBluefruit::enableLedConn(bool enabled)
+void AdafruitBluefruit::autoConnLed(bool enabled)
 {
   _led_conn = enabled;
 }

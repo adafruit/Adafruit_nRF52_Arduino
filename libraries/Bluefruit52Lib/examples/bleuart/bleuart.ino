@@ -35,7 +35,7 @@ void setup()
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behaviour, but provided
   // here in case you want to control this manually via PIN 19
-  Bluefruit.enableLedConn(true);
+  Bluefruit.autoConnLed(true);
 
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");

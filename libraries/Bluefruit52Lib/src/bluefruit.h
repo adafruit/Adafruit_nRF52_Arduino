@@ -63,7 +63,7 @@ class AdafruitBluefruit
 
     err_t begin(void);
     
-    void enableLedConn(bool enabled);
+    void autoConnLed(bool enabled);
 
     void setName(const char* str);
 //    bool setTxPower(int8_t power);
