@@ -26,8 +26,8 @@ void setup()
   Serial.println("Bluefruit52 HID Keyboard Example");
 
   Bluefruit.begin();
-  // HID Device can have min connection interval up to 9*1.25 = 11.25 ms
-  Bluefruit.setConnInterval(9, 16); // min = 11.25 ms, max = 20ms
+  // HID Device can have a min connection interval of 9*1.25 = 11.25 ms
+  Bluefruit.setConnInterval(9, 16); // min = 9*1.25=11.25 ms, max = 16*1.25=20ms
   Bluefruit.setName("Bluefruit52");
 
   // Configure and Start Device Information Service
@@ -40,10 +40,10 @@ void setup()
   // Configure and Start BLE Uart Service
   bleuart.start();
 
-  // BLE Hid
+  // BLE HID
   blehid.start();
 
-  // Set up Advertising Packet
+  // Setup Advertising Packet
   setupAdv();
 
   // Start Advertising
@@ -57,17 +57,17 @@ void setupAdv(void)
 
   Bluefruit.addAdvApperance(BLE_APPEARANCE_HID_KEYBOARD);
   
-  // Include ble hid service
+  // Include BLE HID service
   Bluefruit.addAdvService(blehid);
 
-  // There is enough room for Name in Advertising packet
+  // There is enough room for the dev name in the advertising packet
   Bluefruit.addAdvName();
 }
 
 void loop() 
 {
-  // Only send KeyRelease if previously pressed, to avoid sending
-  // multiple keyRelease report (that consume memories and bandwidth)
+  // Only send KeyRelease if previously pressed to avoid sending
+  // multiple keyRelease reports (that consume memory and bandwidth)
   if ( hasKeyPressed )
   {
     hasKeyPressed = false;
@@ -75,7 +75,7 @@ void loop()
 
     blehid.consumerKeyRelease();
 
-    // delay a bit after a report
+    // Delay a bit after a report
     delay(5);
   }
     
@@ -83,7 +83,7 @@ void loop()
   {
     char ch = (char) Serial.read();
 
-    // ehco
+    // echo
     Serial.write(ch); 
 
     blehid.keyPress(ch);
@@ -91,7 +91,7 @@ void loop()
 
     blehid.consumerKeyPress(HID_USAGE_CONSUMER_MUTE);
 
-    // delay a bit after a report
+    // Delay a bit after a report
     delay(5);
   }
 }
