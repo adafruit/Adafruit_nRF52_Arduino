@@ -24,13 +24,13 @@ void setup()
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 HID Mouse Example");
-  Serial.println("- Enter 'WASD' for move mouse (up, left, down, right)");
-  Serial.println("- Enter 'LRMBF'  for pressing mouse buttons (left, right, middle, backward, forward)");
-  Serial.println("- Enter 'X'    for releasing mouse buttons");
+  Serial.println("- Enter 'WASD'  to move mouse (up, left, down, right)");
+  Serial.println("- Enter 'LRMBF' to press mouse button(s) (left, right, middle, backward, forward)");
+  Serial.println("- Enter 'X'     to release mouse button(s)");
 
   Bluefruit.begin();
-  // HID Device can have min connection interval up to 9*1.25 = 11.25 ms
-  Bluefruit.setConnInterval(9, 16); // min = 11.25 ms, max = 20ms
+  // HID Device can have a min connection interval of 9*1.25 = 11.25 ms
+  Bluefruit.setConnInterval(9, 16); // min = 9*1.25=11.25 ms, max = 16*1.25=20ms
   Bluefruit.setName("Bluefruit52");
 
   // Configure and Start Device Information Service
@@ -43,7 +43,7 @@ void setup()
   // Configure and Start BLE Uart Service
   bleuart.start();
 
-  // BLE Hid
+  // BLE HID
   blehid.start();
 
   // Set up Advertising Packet
@@ -60,10 +60,10 @@ void setupAdv(void)
 
   Bluefruit.addAdvApperance(BLE_APPEARANCE_HID_MOUSE);
   
-  // Include ble hid service
+  // Include BLE HID service
   Bluefruit.addAdvService(blehid);
 
-  // There is enough room for Name in Advertising packet
+  // There is enough room for the name in the advertising packet
   Bluefruit.addAdvName();
 }
 
@@ -76,12 +76,12 @@ void loop()
     // convert to upper case
     ch = (char) toupper(ch);
     
-    // ehco
+    // echo
     Serial.println(ch);
   
     switch(ch)
     {
-      // WASD is mouse move
+      // WASD to move the mouse
       case 'W':
         blehid.mouseMove(0, -MOVE_STEP);
       break;
@@ -98,7 +98,7 @@ void loop()
         blehid.mouseMove(MOVE_STEP, 0);
       break;
 
-      // LRM is mouse button
+      // LRMBF for mouse button(s)
       case 'L':
         blehid.mouseButtonPress(MOUSE_BUTTON_LEFT);
       break;
@@ -116,7 +116,7 @@ void loop()
       break;
 
       case 'F':
-        // This key is not always supported by OS
+        // This key is not always supported by every OS
         blehid.mouseButtonPress(MOUSE_BUTTON_FORWARD);
       break;
 
