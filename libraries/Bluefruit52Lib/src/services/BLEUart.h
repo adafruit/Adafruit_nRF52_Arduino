@@ -46,16 +46,13 @@
 
 class BLEUart : public BLEService, public Stream
 {
-  protected:
-    BLECharacteristic _txd;
-    BLECharacteristic _rxd;
-
-    Adafruit_FIFO     _rxd_fifo;
-
   public:
+    typedef void (*rx_callback_t) (void);
     BLEUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
 
     virtual err_t start(void);
+
+    void setRxCallback( rx_callback_t fp);
 
     // Stream API
     virtual int       read       ( void );
@@ -65,6 +62,13 @@ class BLEUart : public BLEService, public Stream
     virtual int       available  ( void );
     virtual int       peek       ( void );
     virtual void      flush      ( void );
+
+  protected:
+    BLECharacteristic _txd;
+    BLECharacteristic _rxd;
+
+    Adafruit_FIFO     _rxd_fifo;
+    rx_callback_t     _rx_cb;
 
     friend void bleuart_rxd_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
 };

@@ -67,13 +67,21 @@ BLEUart::BLEUart(uint16_t fifo_depth)
   : BLEService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD),
     _rxd_fifo(fifo_depth, 1)
 {
-
+  _rx_cb = NULL;
 }
 
 void bleuart_rxd_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
 {
   BLEUart& uart_svc = (BLEUart&) chr.parentService();
   uart_svc._rxd_fifo.write(request->data, request->len);
+
+  // invoke user callback
+  if ( uart_svc._rx_cb ) uart_svc._rx_cb();
+}
+
+void BLEUart::setRxCallback( rx_callback_t fp)
+{
+  _rx_cb = fp;
 }
 
 err_t BLEUart::start(void)
