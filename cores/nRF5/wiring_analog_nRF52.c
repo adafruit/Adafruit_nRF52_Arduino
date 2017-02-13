@@ -28,6 +28,9 @@
 extern "C" {
 #endif
 
+static uint32_t saadcReference = SAADC_CH_CONFIG_REFSEL_Internal;
+static uint32_t saadcGain      = SAADC_CH_CONFIG_GAIN_Gain1_5;
+
 #define PWM_COUNT 3
 
 static NRF_PWM_Type* pwms[PWM_COUNT] = {
@@ -41,8 +44,6 @@ static uint32_t pwmChannelPins[PWM_COUNT] = {
   0xFFFFFFFF,
   0xFFFFFFFF
 };
-
-static uint32_t saadcReference = SAADC_CH_CONFIG_REFSEL_Internal;
 static uint16_t pwmChannelSequence[PWM_COUNT];
 
 static int readResolution = 10;
@@ -93,10 +94,12 @@ void analogReference( eAnalogReference ulMode )
     case AR_INTERNAL:
     default:
       saadcReference = SAADC_CH_CONFIG_REFSEL_Internal;
+      saadcGain      = SAADC_CH_CONFIG_GAIN_Gain1_5;
       break;
 
     case AR_VDD4:
       saadcReference = SAADC_CH_CONFIG_REFSEL_VDD1_4;
+      saadcGain      = SAADC_CH_CONFIG_GAIN_Gain1_4;
       break;
   }
 }
