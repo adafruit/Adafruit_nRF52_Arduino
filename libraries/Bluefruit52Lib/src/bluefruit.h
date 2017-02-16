@@ -61,7 +61,7 @@ class AdafruitBluefruit
     // Constructor
     AdafruitBluefruit(void);
 
-    err_t begin(void);
+    err_t begin(uint8_t prph_conn = 1, uint8_t central_conn = 0);
     
     void autoConnLed(bool enabled);
 
@@ -88,15 +88,15 @@ class AdafruitBluefruit
     bool setAdvBeacon(BLEBeacon& beacon);
 
     // Scan Response Data (less helper than Adv packet)
-    uint8_t getScanLen(void);
-    uint8_t getScanData(uint8_t* buffer);
-    bool    setScanData(const uint8_t* data, uint8_t count);
+    uint8_t getScanRespLen(void);
+    uint8_t getScanRespData(uint8_t* buffer);
+    bool    setScanRespData(const uint8_t* data, uint8_t count);
     void    clearScanData(void);
 
-    bool addScanData(uint8_t type, const void* data, uint8_t len);
-    bool addScanName(void);
-    bool addScanUuid(uint16_t uuid16);
-    bool addScanUuid(uint8_t const  uuid128[]);
+    bool addScanRespData(uint8_t type, const void* data, uint8_t len);
+    bool addScanRespName(void);
+    bool addScanRespUuid(uint16_t uuid16);
+    bool addScanRespUuid(uint8_t const  uuid128[]);
 
     err_t startAdvertising(void);
     void  stopAdvertising(void);
@@ -117,6 +117,11 @@ class AdafruitBluefruit
     bool txbuf_get(uint32_t ms);
     err_t saveAllCCCD(void);
 
+    /*------------------------------------------------------------------*/
+    /* Central
+     *------------------------------------------------------------------*/
+//    void
+
     /*------------- Callback -------------*/
     void setConnectCallback   ( void (*fp) (uint32_t hostID) );
     void setDisconnectCallback( void (*fp) (uint32_t hostID, uint8_t reason) );
@@ -126,6 +131,9 @@ class AdafruitBluefruit
     void  _sd_event_isr(void);
 
   private:
+    uint8_t _max_prph_conn;
+    uint8_t _max_central_conn;
+
     SemaphoreHandle_t _ble_event_sem;
     BLEDfu _dfu_svc;
 

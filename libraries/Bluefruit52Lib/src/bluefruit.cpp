@@ -101,36 +101,42 @@ static void bluefruit_blinky_cb( TimerHandle_t xTimer )
  */
 AdafruitBluefruit::AdafruitBluefruit(void)
 {
-  _ble_event_sem = NULL;
+  _max_prph_conn    = 1;
+  _max_central_conn = 0;
 
-  _led_blink_th = NULL;
-  _led_conn = true;
+  _ble_event_sem    = NULL;
+
+  _led_blink_th     = NULL;
+  _led_conn         = true;
 
   varclr(&_adv);
   varclr(&_scan_resp);
 
-  _tx_power = 0;
+  _tx_power  = 0;
 
   strcpy(_name, CFG_DEFAULT_NAME);
   _txbuf_sem = NULL;
 
-  _conn_hdl = BLE_GATT_HANDLE_INVALID;
-  _bonded = false;
+  _conn_hdl  = BLE_GATT_HANDLE_INVALID;
+  _bonded    = false;
 
   _chars_count = 0;
   for(uint8_t i=0; i<BLE_MAX_CHARS; i++) _chars_list[i] = NULL;
 
   varclr(&_enc_key);
   varclr(&_peer_id);
-  _sys_attr = NULL;
-  _sys_attr_len = 0;
+  _sys_attr       = NULL;
+  _sys_attr_len   = 0;
 
-  _connect_cb = NULL;
+  _connect_cb     = NULL;
   _discconnect_cb = NULL;
 }
 
-err_t AdafruitBluefruit::begin(void)
+err_t AdafruitBluefruit::begin(uint8_t prph_conn, uint8_t central_conn)
 {
+  _max_prph_conn    = prph_conn;
+  _max_central_conn = central_conn;
+
   // Configure Clock
   nrf_clock_lf_cfg_t clock_cfg =
   {
@@ -147,13 +153,13 @@ err_t AdafruitBluefruit::begin(void)
   {
       .common_enable_params = { .vs_uuid_count = BLE_VENDOR_UUID_MAX },
       .gap_enable_params = {
-          .periph_conn_count  = BLE_PRPH_MAX_CONN,
-          .central_conn_count = BLE_CENTRAL_MAX_CONN,
-          .central_sec_count  = BLE_CENTRAL_MAX_SECURE_CONN
+          .periph_conn_count  = _max_prph_conn,
+          .central_conn_count = _max_central_conn,
+          .central_sec_count  = _max_central_conn
       },
       .gatts_enable_params = {
           .service_changed = 1,
-          .attr_tab_size = BLE_GATTS_ATTR_TABLE_SIZE
+          .attr_tab_size   = BLE_GATTS_ATTR_TABLE_SIZE
       }
   };
 
@@ -367,22 +373,22 @@ void AdafruitBluefruit::clearAdvData(void)
 /*------------------------------------------------------------------*/
 /* Scan Response
  *------------------------------------------------------------------*/
-bool AdafruitBluefruit::addScanData(uint8_t type, const void* data, uint8_t len)
+bool AdafruitBluefruit::addScanRespData(uint8_t type, const void* data, uint8_t len)
 {
   return _addToAdv(true, type, data, len);
 }
 
-bool AdafruitBluefruit::addScanUuid(uint16_t uuid16)
+bool AdafruitBluefruit::addScanRespUuid(uint16_t uuid16)
 {
-  return addScanData(BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE, &uuid16, 2);
+  return addScanRespData(BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE, &uuid16, 2);
 }
 
-bool AdafruitBluefruit::addScanUuid(uint8_t const  uuid128[])
+bool AdafruitBluefruit::addScanRespUuid(uint8_t const  uuid128[])
 {
-  return addScanData(BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_MORE_AVAILABLE, uuid128, 16);
+  return addScanRespData(BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_MORE_AVAILABLE, uuid128, 16);
 }
 
-bool AdafruitBluefruit::addScanName(void)
+bool AdafruitBluefruit::addScanRespName(void)
 {
   uint8_t type = BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME;
   uint8_t len  = strlen(_name);
@@ -394,21 +400,21 @@ bool AdafruitBluefruit::addScanName(void)
     len  = BLE_GAP_ADV_MAX_SIZE - (_scan_resp.count+2);
   }
 
-  return addScanData(type, _name, len);
+  return addScanRespData(type, _name, len);
 }
 
-uint8_t AdafruitBluefruit::getScanLen(void)
+uint8_t AdafruitBluefruit::getScanRespLen(void)
 {
   return _scan_resp.count;
 }
 
-uint8_t AdafruitBluefruit::getScanData(uint8_t* buffer)
+uint8_t AdafruitBluefruit::getScanRespData(uint8_t* buffer)
 {
   memcpy(buffer, _scan_resp.data, _scan_resp.count);
   return _scan_resp.count;
 }
 
-bool AdafruitBluefruit::setScanData(uint8_t const* data, uint8_t count)
+bool AdafruitBluefruit::setScanRespData(uint8_t const* data, uint8_t count)
 {
   VERIFY (data && count <= BLE_GAP_ADV_MAX_SIZE);
 

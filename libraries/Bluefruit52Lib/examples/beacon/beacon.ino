@@ -44,7 +44,7 @@ void setupAdv(void)
 
   // There is no room for Name in Advertising packet
   // Use Scan response for Name
-  Bluefruit.addScanName();
+  Bluefruit.addScanRespName();
 }
 
 void loop() 
