@@ -58,34 +58,35 @@
 class AdafruitBluefruit
 {
   public:
-    // Constructor
-    AdafruitBluefruit(void);
+    AdafruitBluefruit(void); // Constructor
 
     err_t begin(uint8_t prph_conn = 1, uint8_t central_conn = 0);
     
     void autoConnLed(bool enabled);
-
+    void setConnLedInterval(uint32_t ms);
     void setName(const char* str);
 //    bool setTxPower(int8_t power);
 
-    /*------------- Advertising  -------------*/
+    /*------------------------------------------------------------------*/
+    /* Advertising & Scan Resp (active scan)
+     *------------------------------------------------------------------*/
     uint8_t getAdvLen(void);
     uint8_t getAdvData(uint8_t* buffer);
     bool    setAdvData(const uint8_t* data, uint8_t count);
     void    clearAdvData(void);
 
-    bool addAdvData(uint8_t type, const void* data, uint8_t len);
+    bool    addAdvData(uint8_t type, const void* data, uint8_t len);
 
-    bool addAdvFlags(uint8_t flags);
-    bool addAdvTxPower(void);
-    bool addAdvName(void);
-    bool addAdvApperance(uint16_t appearance);
+    bool    addAdvFlags(uint8_t flags);
+    bool    addAdvTxPower(void);
+    bool    addAdvName(void);
+    bool    addAdvApperance(uint16_t appearance);
 
-    bool addAdvUuid(uint16_t uuid16);
-    bool addAdvUuid(uint8_t const  uuid128[]);
-    bool addAdvService(BLEService& service);
+    bool    addAdvUuid(uint16_t uuid16);
+    bool    addAdvUuid(uint8_t const  uuid128[]);
+    bool    addAdvService(BLEService& service);
 
-    bool setAdvBeacon(BLEBeacon& beacon);
+    bool    setAdvBeacon(BLEBeacon& beacon);
 
     // Scan Response Data (less helper than Adv packet)
     uint8_t getScanRespLen(void);
@@ -93,14 +94,17 @@ class AdafruitBluefruit
     bool    setScanRespData(const uint8_t* data, uint8_t count);
     void    clearScanData(void);
 
-    bool addScanRespData(uint8_t type, const void* data, uint8_t len);
-    bool addScanRespName(void);
-    bool addScanRespUuid(uint16_t uuid16);
-    bool addScanRespUuid(uint8_t const  uuid128[]);
+    bool    addScanRespData(uint8_t type, const void* data, uint8_t len);
+    bool    addScanRespName(void);
+    bool    addScanRespUuid(uint16_t uuid16);
+    bool    addScanRespUuid(uint8_t const  uuid128[]);
 
     err_t startAdvertising(void);
     void  stopAdvertising(void);
 
+    /*------------------------------------------------------------------*/
+    /*
+     *------------------------------------------------------------------*/
     // Add service without using BLEService instance
     err_t addService(uint16_t uuid16);
     err_t addService(uint8_t const  uuid128[]);
@@ -120,9 +124,14 @@ class AdafruitBluefruit
     /*------------------------------------------------------------------*/
     /* Central
      *------------------------------------------------------------------*/
-//    void
+    typedef void (*scan_callback_t) (ble_gap_evt_adv_report_t*);
+    void setScanCallback(scan_callback_t fp);
+    err_t startScanning(void);
+    err_t stopScanning(void);
 
-    /*------------- Callback -------------*/
+    /*------------------------------------------------------------------*/
+    /* Callback
+     *------------------------------------------------------------------*/
     void setConnectCallback   ( void (*fp) (uint32_t hostID) );
     void setDisconnectCallback( void (*fp) (uint32_t hostID, uint8_t reason) );
 
@@ -168,6 +177,11 @@ class AdafruitBluefruit
     // Transmission Buffer Count for HVX notification, max is seen at 7
     SemaphoreHandle_t _txbuf_sem;
 
+    /*------------- Central -------------*/
+    ble_gap_scan_params_t _scan_param;
+    scan_callback_t _scan_cb;
+
+    /*------------- Callbacks -------------*/
     void (*_connect_cb) (uint32_t hostID);
     void (*_discconnect_cb) (uint32_t hostID, uint8_t reason);
 

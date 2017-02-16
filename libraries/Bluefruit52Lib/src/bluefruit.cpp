@@ -57,7 +57,6 @@
 #define CFG_DEFAULT_NAME                 "Bluefruit52"
 #define CFG_ADV_BLINKY_INTERVAL          500
 
-
 // Converts an integer of 1.25ms units to msecs
 #define MS100TO125(ms100) (((ms100)*4)/5)
 
@@ -127,6 +126,17 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   varclr(&_peer_id);
   _sys_attr       = NULL;
   _sys_attr_len   = 0;
+
+
+  _scan_cb = NULL;
+  _scan_param = (ble_gap_scan_params_t) {
+    .active      = 1,
+    .selective   = 0,
+    .p_whitelist = NULL,
+    .interval    = 0x00A0,
+    .window      = 0x0050,
+    .timeout     = 0, // no timeout
+  };
 
   _connect_cb     = NULL;
   _discconnect_cb = NULL;
@@ -235,6 +245,15 @@ void AdafruitBluefruit::setName(const char* str)
 void AdafruitBluefruit::autoConnLed(bool enabled)
 {
   _led_conn = enabled;
+}
+
+void AdafruitBluefruit::setConnLedInterval(uint32_t ms)
+{
+  BaseType_t active = xTimerIsTimerActive(_led_blink_th);
+  xTimerChangePeriod(_led_blink_th, ms2tick(ms), 0);
+
+  // Change period of inactive timer will also start it !!
+  if ( !active ) xTimerStop(_led_blink_th, 0);
 }
 
 bool AdafruitBluefruit::connected(void)
@@ -516,6 +535,30 @@ err_t AdafruitBluefruit::saveAllCCCD(void)
   return sd_ble_gatts_sys_attr_get(_conn_hdl, _sys_attr, &_sys_attr_len, SVC_CONTEXT_FLAG);
 }
 
+/*------------------------------------------------------------------*/
+/* Central API
+ *------------------------------------------------------------------*/
+void AdafruitBluefruit::setScanCallback(scan_callback_t fp)
+{
+  _scan_cb = fp;
+}
+
+err_t AdafruitBluefruit::startScanning(void)
+{
+  VERIFY_STATUS( sd_ble_gap_scan_start(&_scan_param) );
+  if (_led_conn) xTimerStart(_led_blink_th, 0); // start blinking
+  return ERROR_NONE;
+}
+
+err_t AdafruitBluefruit::stopScanning(void)
+{
+  xTimerStop(_led_blink_th, 0); // stop blinking
+  return sd_ble_gap_scan_stop();
+}
+
+/*------------------------------------------------------------------*/
+/* Thread & SoftDevice Event handler
+ *------------------------------------------------------------------*/
 void adafruit_bluefruit_task(void* arg)
 {
   (void) arg;
@@ -755,7 +798,17 @@ void AdafruitBluefruit::_poll(void)
           break;
 
 
-          default: break;
+          case BLE_GAP_EVT_ADV_REPORT:
+          {
+            ble_gap_evt_adv_report_t* adv_report = &evt->evt.gap_evt.params.adv_report;
+            if (_scan_cb) _scan_cb(adv_report);
+          }
+          break;
+
+
+          default:
+            //PRINT_HEX(evt->header.evt_id);
+          break;
         }
 
         // GATTs characteristics event handler

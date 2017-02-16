@@ -93,9 +93,17 @@ int cprintf(const char * format, ...);
 #define PRINT_LOCATION()      cprintf("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)
 #define PRINT_MESS(x)         cprintf("%s: %d: " x " \n"   , __PRETTY_FUNCTION__, __LINE__)
 #define PRTNT_HEAP()          if (CFG_DEBUG == 3) cprintf("\n%s: %d: Heap free: %d\n", __PRETTY_FUNCTION__, __LINE__, util_heap_get_free_size())
-#define PRINT_INT(x)          cprintf("%s: %d: " #x " = %ld\n"  , __PRETTY_FUNCTION__, __LINE__, (uint32_t) (x) )
-#define PRINT_HEX(x)          cprintf("%s: %d: " #x " = %08lx\n", __PRETTY_FUNCTION__, __LINE__, (uint32_t) (x) )
 #define PRINT_STR(x)          cprintf("%s: %d: " #x " = %s\n"   , __PRETTY_FUNCTION__, __LINE__, (char*)(x) )
+#define PRINT_INT(x)          cprintf("%s: %d: " #x " = %ld\n"  , __PRETTY_FUNCTION__, __LINE__, (uint32_t) (x) )
+
+#define PRINT_HEX(x) \
+  do {\
+    cprintf("%s: %d: " #x " = ", __PRETTY_FUNCTION__, __LINE__);\
+    char fmt[] = "%00X\n";\
+    fmt[2] += 2*sizeof(x); /* Hex with correct size */\
+    cprintf(fmt, (x) );\
+  }while(0)
+
 #define PRINT_BUFFER(buf, n) \
   do {\
     uint8_t const* p8 = (uint8_t const*) (buf);\
