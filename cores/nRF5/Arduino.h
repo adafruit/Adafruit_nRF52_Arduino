@@ -104,9 +104,9 @@ uint32_t setLoopStacksize(void);
 #define digitalPinToPort(P)        ( &(NRF_GPIO[P]) )
 #define digitalPinToBitMask(P)     ( 1 << g_ADigitalPinMap[P] )
 //#define analogInPinToBit(P)        ( )
-#define portOutputRegister(port)   ( &(port->OUTSET) )
-#define portInputRegister(port)    ( &(port->IN) )
-#define portModeRegister(port)     ( &(port->DIRSET) )
+#define portOutputRegister(port)   ( &(NRF_GPIO->OUT) )
+#define portInputRegister(port)    ( &(NRF_GPIO->IN) )
+#define portModeRegister(port)     ( &(NRF_GPIO->DIRSET) )
 #define digitalPinHasPWM(P)        ( true )
 
 /*
