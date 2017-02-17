@@ -47,4 +47,6 @@ static inline int dbgHeapFree(void)
   return dbgHeapTotal() - dbgHeapUsed();
 }
 
+void dbgMemInfo(void);
+
 #endif

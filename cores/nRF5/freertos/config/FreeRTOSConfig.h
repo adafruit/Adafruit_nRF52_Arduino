@@ -115,13 +115,13 @@
 /* Hook function related definitions. */
 #define configUSE_IDLE_HOOK                                                       0
 #define configUSE_TICK_HOOK                                                       0
-#define configCHECK_FOR_STACK_OVERFLOW                                            0
-#define configUSE_MALLOC_FAILED_HOOK                                              0
+#define configCHECK_FOR_STACK_OVERFLOW                                            1
+#define configUSE_MALLOC_FAILED_HOOK                                              1
 
 /* Run time and task stats gathering related definitions. */
 #define configGENERATE_RUN_TIME_STATS                                             0
-#define configUSE_TRACE_FACILITY                                                  0
-#define configUSE_STATS_FORMATTING_FUNCTIONS                                      0
+#define configUSE_TRACE_FACILITY                                                  1
+#define configUSE_STATS_FORMATTING_FUNCTIONS                                      1
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES                                                     0

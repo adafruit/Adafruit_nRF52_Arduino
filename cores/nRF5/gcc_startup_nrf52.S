@@ -29,12 +29,12 @@
     .syntax unified
     .arch armv7e-m
 
-    .section .stack
+/*    .section .stack
     .align 3
 #ifdef __STACK_SIZE
     .equ    Stack_Size, __STACK_SIZE
 #else
-    .equ    Stack_Size, 8192 /* Reduce could affect SD function */
+    .equ    Stack_Size, 8192
 #endif
     .globl __StackTop
     .globl __StackLimit
@@ -49,7 +49,7 @@ __StackTop:
 #ifdef __HEAP_SIZE
     .equ Heap_Size, __HEAP_SIZE
 #else
-    .equ    Heap_Size,  25600 /* TODO Should be all space left */
+    .equ    Heap_Size,  25600
 #endif
     .globl __HeapBase
     .globl __HeapLimit
@@ -60,7 +60,7 @@ __HeapBase:
     .size __HeapBase, . - __HeapBase
 __HeapLimit:
     .size __HeapLimit, . - __HeapLimit
-
+*/
     .section .isr_vector
     .align 2
     .globl __isr_vector

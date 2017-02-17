@@ -45,6 +45,14 @@ OUTPUT_FORMAT ("elf32-littlearm", "elf32-bigarm", "elf32-littlearm")
  */
 ENTRY(Reset_Handler)
 
+__StackSize = 1024*3;
+
+/* Set stack top to end of RAM, and stack limit move down by
+ * size of stack_dummy section */
+PROVIDE(__StackTop   = ORIGIN(RAM) + LENGTH(RAM));
+PROVIDE(__StackLimit = __StackTop - __StackSize);
+PROVIDE(__stack      = __StackTop);
+    
 SECTIONS
 {
     .text :
@@ -132,27 +140,16 @@ SECTIONS
         __bss_end__ = .;
     } > RAM
     
-    .heap (COPY):
+    /*.heap (COPY):*/
+    .heap :
     {
         __end__ = .;
         PROVIDE(end = .);
+        __HeapBase = .;
         *(.heap*)
+        . = ALIGN(__StackLimit);
         __HeapLimit = .;
     } > RAM
-
-    /* .stack_dummy section doesn't contains any symbols. It is only
-     * used for linker to calculate size of stack sections, and assign
-     * values to stack symbols later */
-    .stack_dummy (COPY):
-    {
-        *(.stack*)
-    } > RAM
-
-    /* Set stack top to end of RAM, and stack limit move down by
-     * size of stack_dummy section */
-    __StackTop = ORIGIN(RAM) + LENGTH(RAM);
-    __StackLimit = __StackTop - SIZEOF(.stack_dummy);
-    PROVIDE(__stack = __StackTop);
     
     /* Check if data + heap + stack exceeds RAM limit */
     ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")

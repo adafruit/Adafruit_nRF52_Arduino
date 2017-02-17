@@ -40,18 +40,17 @@
 #include "debug.h"
 
 // defined in linker script
-extern unsigned char __end__[];
+extern uint32_t __data_start__[];
+extern uint32_t __data_end__[];
+
+extern uint32_t __bss_start__[];
+extern uint32_t __bss_end__[];
+
+extern unsigned char __HeapBase[];
 extern unsigned char __HeapLimit[];
 
-int dbgHeapTotal(void)
-{
-  return ((uint32_t) __HeapLimit) - ((uint32_t) __end__);
-}
-
-int dbgHeapUsed(void)
-{
-  return (mallinfo()).uordblks;
-}
+extern uint32_t __StackTop[];
+extern uint32_t __StackLimit[];
 
 extern "C"
 {
@@ -69,4 +68,77 @@ extern "C"
     va_end(ap);
     return len;
   }
+
+  void vApplicationMallocFailedHook(void)
+  {
+    Serial.println("Failed to Malloc");
+  }
+
+  void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
+  {
+    Serial.printf("%s Stack Overflow !!!", pcTaskName);
+  }
+}
+
+int dbgHeapTotal(void)
+{
+  return ((uint32_t) __HeapLimit) - ((uint32_t) __HeapBase);
+}
+
+int dbgHeapUsed(void)
+{
+  return (mallinfo()).uordblks;
+}
+
+static void printMemRegion(const char* name, uint32_t top, uint32_t bottom, uint32_t used)
+{
+  const int width = 21;
+
+  Serial.printf(" _____________________  0x%08lX\n", top);
+  Serial.printf("|                     |\n");
+
+  int lpad = (width-strlen(name))/2;
+  int rpad = width - strlen(name) - lpad;
+  Serial.printf("|%*c%s%*c|\n", lpad, ' ', name, rpad, ' ');
+
+  if ( used )
+  {
+    Serial.printf("| %d / %d (%02lu%%) |\n", used, top-bottom, (used*100)/ (top-bottom));
+  }else
+  {
+    Serial.printf("|        %d         |\n",top-bottom);
+  }
+
+  Serial.printf("|_____________________| 0x%08lX\n", bottom);
+}
+
+void dbgMemInfo(void)
+{
+  Serial.println("       Memory Map");
+
+  // Pritn SRAM used for Stack executed by S132 and ISR
+  uint32_t stack_used  = ((uint32_t) __StackTop) -((uint32_t) __StackLimit);
+  printMemRegion("Stack", ((uint32_t) __StackTop), ((uint32_t) __StackLimit), 0);
+
+  // Print Heap usage overall (including memory malloced to tasks)
+  printMemRegion("Heap", ((uint32_t) __HeapLimit), ((uint32_t) __HeapBase), dbgHeapUsed());
+
+  // DATA + BSS
+  printMemRegion("Data & Bss", ((uint32_t) __bss_end__), ((uint32_t) __data_start__), 0);
+
+  // Print SRAM Used by SoftDevice
+  printMemRegion("S132", (uint32_t) __data_start__, 0x20000000, 0);
+
+  Serial.println();
+
+  // Print Task list
+  uint32_t tasknum = uxTaskGetNumberOfTasks();
+  char* buf = (char*) rtos_malloc(tasknum*40); // 40 bytes per task
+
+  vTaskList(buf);
+
+  Serial.println("Task    State   Prio    Stack   Num");
+  Serial.println("-----------------------------------");
+  Serial.println(buf);
+  rtos_free(buf);
 }

@@ -47,7 +47,7 @@ feather52.build.variant=feather52
 feather52.build.variant_system_lib=
 feather52.build.extra_flags=-DNRF52 -DS132 -DNRF51_S132
 feather52.build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
-feather52.build.ldscript=armgcc_s132_nrf52832_xxaa.ld
+feather52.build.ldscript=feather52_s132.ld
 
 feather52.build.nrfutil=nrfutil
 feather52.build.nrfutil.windows={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/win32/nrfutil.exe
