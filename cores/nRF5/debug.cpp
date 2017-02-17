@@ -90,24 +90,33 @@ int dbgHeapUsed(void)
   return (mallinfo()).uordblks;
 }
 
+static void printCenter(const char* str, int width)
+{
+  int lpad = (width-strlen(str))/2;
+  int rpad = width - strlen(str) - lpad;
+
+  Serial.printf("|%*c%s%*c|\n", lpad, ' ', str, rpad, ' ');
+}
+
 static void printMemRegion(const char* name, uint32_t top, uint32_t bottom, uint32_t used)
 {
-  const int width = 21;
+  const int WIDTH = 21;
 
   Serial.printf(" _____________________  0x%08lX\n", top);
   Serial.printf("|                     |\n");
 
-  int lpad = (width-strlen(name))/2;
-  int rpad = width - strlen(name) - lpad;
-  Serial.printf("|%*c%s%*c|\n", lpad, ' ', name, rpad, ' ');
+  printCenter(name, WIDTH);
 
+  char buffer[30];
   if ( used )
   {
-    Serial.printf("| %d / %d (%02lu%%) |\n", used, top-bottom, (used*100)/ (top-bottom));
+    sprintf(buffer, "%d / %d (%02lu%%)", used, top-bottom, (used*100)/ (top-bottom));
   }else
   {
-    Serial.printf("|        %d         |\n",top-bottom);
+    sprintf(buffer, "%d", top-bottom);
   }
+  printCenter(buffer, WIDTH);
+
 
   Serial.printf("|_____________________| 0x%08lX\n", bottom);
 }

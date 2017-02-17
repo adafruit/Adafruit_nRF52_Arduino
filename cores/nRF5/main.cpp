@@ -21,7 +21,7 @@
 void initVariant() __attribute__((weak));
 void initVariant() { }
 
-uint32_t _loopStacksize = 1024*2;
+uint32_t _loopStacksize = 512*3;
 
 uint32_t setLoopStacksize(void) __attribute__ ((weak));
 

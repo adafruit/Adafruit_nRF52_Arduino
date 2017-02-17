@@ -38,10 +38,13 @@
 
 #include <nffs_lib.h>
 
+// Note chaning these parameters will affect APP_RAM_BASE
+// --> need to update RAM in feather52_s132.ld linker
+#define BLE_GATTS_ATTR_TABLE_SIZE        0x0B00
 #define BLE_VENDOR_UUID_MAX              10
 #define BLE_PRPH_MAX_CONN                1
-#define BLE_CENTRAL_MAX_CONN             0
-#define BLE_CENTRAL_MAX_SECURE_CONN      0
+#define BLE_CENTRAL_MAX_CONN             4
+#define BLE_CENTRAL_MAX_SECURE_CONN      1 // currently 1 to save SRAM
 
 #define SVC_CONTEXT_FLAG                 (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
 
@@ -69,10 +72,7 @@
 // Converts an integer of 625ms units to msecs
 #define MS625TO1000(u625) ( ((u625)*5) / 8 )
 
-// To change this value, an adjustment for SRAM is required in linker script
-#define BLE_GATTS_ATTR_TABLE_SIZE   0x1000
-
-#define BLUEFRUIT_TASK_STACKSIZE   (1024*1)
+#define BLUEFRUIT_TASK_STACKSIZE   (512*3)
 
 extern "C"
 {
@@ -100,8 +100,8 @@ static void bluefruit_blinky_cb( TimerHandle_t xTimer )
  */
 AdafruitBluefruit::AdafruitBluefruit(void)
 {
-  _max_prph_conn    = 1;
-  _max_central_conn = 0;
+  _prph_enabled    = true;
+  _central_enabled = false;
 
   _ble_event_sem    = NULL;
 
@@ -142,10 +142,10 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _discconnect_cb = NULL;
 }
 
-err_t AdafruitBluefruit::begin(uint8_t prph_conn, uint8_t central_conn)
+err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 {
-  _max_prph_conn    = prph_conn;
-  _max_central_conn = central_conn;
+  _prph_enabled    = prph_enable;
+  _central_enabled = central_enable;
 
   // Configure Clock
   nrf_clock_lf_cfg_t clock_cfg =
@@ -163,9 +163,9 @@ err_t AdafruitBluefruit::begin(uint8_t prph_conn, uint8_t central_conn)
   {
       .common_enable_params = { .vs_uuid_count = BLE_VENDOR_UUID_MAX },
       .gap_enable_params = {
-          .periph_conn_count  = _max_prph_conn,
-          .central_conn_count = _max_central_conn,
-          .central_sec_count  = _max_central_conn
+          .periph_conn_count  = _prph_enabled    ? 1 : 0,
+          .central_conn_count = _central_enabled ? BLE_CENTRAL_MAX_CONN : 0,
+          .central_sec_count  = _central_enabled ? BLE_CENTRAL_MAX_SECURE_CONN : 0,
       },
       .gatts_enable_params = {
           .service_changed = 1,
@@ -173,8 +173,8 @@ err_t AdafruitBluefruit::begin(uint8_t prph_conn, uint8_t central_conn)
       }
   };
 
-  extern uint32_t __data_start__; // defined in linker
-  uint32_t app_ram_base = (uint32_t) &__data_start__;
+  extern uint32_t __data_start__[]; // defined in linker
+  uint32_t app_ram_base = (uint32_t) __data_start__;
 
   VERIFY_STATUS( sd_ble_enable(&params, &app_ram_base) );
 
@@ -203,7 +203,7 @@ err_t AdafruitBluefruit::begin(uint8_t prph_conn, uint8_t central_conn)
 
   // Create RTOS Task for BLE Event
   TaskHandle_t task_hdl;
-  xTaskCreate( adafruit_bluefruit_task, "ble handler", BLUEFRUIT_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &task_hdl);
+  xTaskCreate( adafruit_bluefruit_task, "BLE Evt", BLUEFRUIT_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &task_hdl);
 
   _ble_event_sem = xSemaphoreCreateBinary();
   VERIFY(_ble_event_sem, NRF_ERROR_NO_MEM);
@@ -213,7 +213,7 @@ err_t AdafruitBluefruit::begin(uint8_t prph_conn, uint8_t central_conn)
   _led_blink_th = xTimerCreate(NULL, ms2tick(CFG_ADV_BLINKY_INTERVAL), true, NULL, bluefruit_blinky_cb);
 
   // Also initialize nffs for bonding/config
-  nffs_pkg_init();
+//  nffs_pkg_init();
 
   return ERROR_NONE;
 }

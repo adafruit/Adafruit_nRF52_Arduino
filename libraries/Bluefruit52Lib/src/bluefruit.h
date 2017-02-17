@@ -60,7 +60,7 @@ class AdafruitBluefruit
   public:
     AdafruitBluefruit(void); // Constructor
 
-    err_t begin(uint8_t prph_conn = 1, uint8_t central_conn = 0);
+    err_t begin(bool prph_enable = true, bool central_enable = false);
     
     void autoConnLed(bool enabled);
     void setConnLedInterval(uint32_t ms);
@@ -140,8 +140,8 @@ class AdafruitBluefruit
     void  _sd_event_isr(void);
 
   private:
-    uint8_t _max_prph_conn;
-    uint8_t _max_central_conn;
+    bool _prph_enabled;
+    bool _central_enabled;
 
     SemaphoreHandle_t _ble_event_sem;
     BLEDfu _dfu_svc;
