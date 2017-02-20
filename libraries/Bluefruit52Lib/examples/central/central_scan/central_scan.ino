@@ -32,7 +32,15 @@ void setup()
 
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
-  PRINT_BUFFER(report->data, report->dlen);
+  Serial.print("Scan data: ");
+  Serial.printBuffer(report->data, report->dlen, '-');
+  Serial.println();
+
+  // Check if advertising contain BleUart service
+  if ( Bluefruit.central.checkUuidInScan(report, BLEUART_UUID_SERVICE) )
+  {
+    Serial.println("BLE UART service detected");
+  }
 }
 
 void loop() 

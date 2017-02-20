@@ -280,6 +280,7 @@ bool AdafruitBluefruit::_addToAdv(bool scan_resp, uint8_t type, const void* data
 
   VERIFY( (*count) + len + 2 <= BLE_GAP_ADV_MAX_SIZE );
 
+  // len (1+data), type, data
   *adv_data++ = (len+1);
   *adv_data++ = type;
   memcpy(adv_data, data, len);
@@ -366,7 +367,7 @@ uint8_t AdafruitBluefruit::getAdvData(uint8_t* buffer)
 
 bool AdafruitBluefruit::setAdvData(uint8_t const * data, uint8_t count)
 {
-  VERIFY( data && count <= BLE_GAP_ADV_MAX_SIZE);
+  VERIFY( data && (count <= BLE_GAP_ADV_MAX_SIZE) );
 
   memcpy(_adv.data, data, count);
   _adv.count = count;

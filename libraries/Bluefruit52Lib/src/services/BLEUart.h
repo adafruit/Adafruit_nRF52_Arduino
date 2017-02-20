@@ -44,6 +44,10 @@
 
 #define BLE_UART_DEFAULT_FIFO_DEPTH   256
 
+extern const uint8_t BLEUART_UUID_SERVICE[];
+extern const uint8_t BLEUART_UUID_CHR_RXD[];
+extern const uint8_t BLEUART_UUID_CHR_TXD[];
+
 class BLEUart : public BLEService, public Stream
 {
   public:

@@ -56,9 +56,17 @@ class BLECentral
     err_t startScanning(void);
     err_t stopScanning(void);
 
+    uint8_t* extractScanData(uint8_t const* scandata, uint8_t scanlen, uint8_t type, uint8_t* result_len);
+    uint8_t* extractScanData(const ble_gap_evt_adv_report_t* report, uint8_t type, uint8_t* result_len);
+
+    bool     checkUuidInScan(const ble_gap_evt_adv_report_t* report, uint16_t uuid16);
+    bool     checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t  uuid128[]);
+
   private:
     ble_gap_scan_params_t _scan_param;
     scan_callback_t _scan_cb;
+
+    bool    _checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t uuid[], uint8_t uuid_len);
 
     friend class AdafruitBluefruit;
 };

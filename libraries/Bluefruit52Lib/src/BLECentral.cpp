@@ -69,3 +69,78 @@ err_t BLECentral::stopScanning(void)
   Bluefruit._stopConnLed(); // stop blinking
   return sd_ble_gap_scan_stop();
 }
+
+uint8_t* BLECentral::extractScanData(uint8_t const* scandata, uint8_t scanlen, uint8_t type, uint8_t* result_len)
+{
+  *result_len = 0;
+
+  // len (1+data), type, data
+  while ( scanlen )
+  {
+    if ( scandata[1] == type )
+    {
+      *result_len = scandata[0]-1;
+      return (uint8_t*) (scandata + 2);
+    }
+    else
+    {
+      scanlen  -= (scandata[0] + 1);
+      scandata += (scandata[0] + 1);
+    }
+  }
+
+  return NULL;
+}
+
+uint8_t* BLECentral::extractScanData(const ble_gap_evt_adv_report_t* report, uint8_t type, uint8_t* result_len)
+{
+  return extractScanData(report->data, report->dlen, type, result_len);
+}
+
+bool BLECentral::_checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t uuid[], uint8_t uuid_len)
+{
+  uint8_t const* data_arr[2];
+  uint8_t type_arr[2];
+
+  // Check both UUID16 more available and complete list
+  if ( uuid_len == 2)
+  {
+    type_arr[0] = BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE;
+    type_arr[1] = BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_COMPLETE;
+  }else
+  {
+    type_arr[0] = BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_MORE_AVAILABLE;
+    type_arr[1] = BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_COMPLETE;
+  }
+
+  for (int i=0; i<2; i++)
+  {
+    uint8_t len = 0;
+    uint8_t const* data = extractScanData(report, type_arr[i] , &len);
+
+    while( len )
+    {
+      // found matched
+      if ( !memcmp(data, uuid, uuid_len) )
+      {
+        return true;
+      }else
+      {
+        data += uuid_len;
+        len  -= uuid_len;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool BLECentral::checkUuidInScan(const ble_gap_evt_adv_report_t* report, uint16_t uuid16)
+{
+  return _checkUuidInScan(report, (uint8_t*) &uuid16, 2);
+}
+
+bool BLECentral::checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t uuid128[])
+{
+  return _checkUuidInScan(report, uuid128, 16);
+}
