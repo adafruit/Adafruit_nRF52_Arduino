@@ -50,6 +50,9 @@ class BLECentral
   public:
     BLECentral(void); // Constructor
 
+    /*------------------------------------------------------------------*/
+    /* Scan & Parser
+     *------------------------------------------------------------------*/
     typedef void (*scan_callback_t) (ble_gap_evt_adv_report_t*);
 
     void setScanCallback(scan_callback_t fp);
@@ -59,14 +62,27 @@ class BLECentral
     uint8_t* extractScanData(uint8_t const* scandata, uint8_t scanlen, uint8_t type, uint8_t* result_len);
     uint8_t* extractScanData(const ble_gap_evt_adv_report_t* report, uint8_t type, uint8_t* result_len);
 
-    bool     checkUuidInScan(const ble_gap_evt_adv_report_t* report, uint16_t uuid16);
-    bool     checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t  uuid128[]);
+    bool     checkUuidInScan(const ble_gap_evt_adv_report_t* adv_report, uint16_t uuid16);
+    bool     checkUuidInScan(const ble_gap_evt_adv_report_t* adv_report, const uint8_t  uuid128[]);
+
+    /*------------------------------------------------------------------*/
+    /*
+     *------------------------------------------------------------------*/
+    err_t connect(const ble_gap_evt_adv_report_t* adv_report,
+                  uint16_t min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT,
+                  uint16_t max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT);
+
+    err_t connect(const ble_gap_addr_t *peer_addr,
+                  uint16_t min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT,
+                  uint16_t max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT);
 
   private:
     ble_gap_scan_params_t _scan_param;
     scan_callback_t _scan_cb;
 
-    bool    _checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t uuid[], uint8_t uuid_len);
+    bool  _checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t uuid[], uint8_t uuid_len);
+
+    void  _event_handler(ble_evt_t* event);
 
     friend class AdafruitBluefruit;
 };

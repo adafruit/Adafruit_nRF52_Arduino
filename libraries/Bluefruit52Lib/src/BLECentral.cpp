@@ -52,6 +52,9 @@ BLECentral::BLECentral(void)
   };
 }
 
+/*------------------------------------------------------------------*/
+/* Scan  and Parser
+ *------------------------------------------------------------------*/
 void BLECentral::setScanCallback(scan_callback_t fp)
 {
   _scan_cb = fp;
@@ -143,4 +146,44 @@ bool BLECentral::checkUuidInScan(const ble_gap_evt_adv_report_t* report, uint16_
 bool BLECentral::checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t uuid128[])
 {
   return _checkUuidInScan(report, uuid128, 16);
+}
+
+/*------------------------------------------------------------------*/
+/*
+ *------------------------------------------------------------------*/
+err_t BLECentral::connect(const ble_gap_addr_t* peer_addr, uint16_t min_conn_interval, uint16_t max_conn_interval)
+{
+  ble_gap_conn_params_t gap_conn_params =
+  {
+      .min_conn_interval = min_conn_interval, // in 1.25ms unit
+      .max_conn_interval = max_conn_interval, // in 1.25ms unit
+      .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
+      .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
+  };
+
+  return sd_ble_gap_connect(peer_addr, &_scan_param, &gap_conn_params);
+}
+
+err_t BLECentral::connect(const ble_gap_evt_adv_report_t* adv_report, uint16_t min_conn_interval, uint16_t max_conn_interval)
+{
+  return connect(&adv_report->peer_addr, min_conn_interval, max_conn_interval);
+}
+
+/**
+ * Event is forwarded from Bluefruit Poll() method
+ * @param event
+ */
+void BLECentral::_event_handler(ble_evt_t* evt)
+{
+  switch ( evt->header.evt_id  )
+  {
+    case BLE_GAP_EVT_ADV_REPORT:
+    {
+      ble_gap_evt_adv_report_t* adv_report = &evt->evt.gap_evt.params.adv_report;
+      if (_scan_cb) _scan_cb(adv_report);
+    }
+    break;
+
+    default: break;
+  }
 }

@@ -48,29 +48,12 @@
 
 #define SVC_CONTEXT_FLAG                 (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
 
-#define GAP_CONN_SUPERVISION_TIMEOUT_MS  3000
-#define GAP_CONN_SLAVE_LATENCY           0
-#define GAP_CONN_MIN_INTERVAL_MS         20
-#define GAP_CONN_MAX_INTERVAL_MS         40
-
 #define GAP_ADV_INTERVAL_MS              20
 #define GAP_ADV_TIMEOUT_S                30
 
 #define CFG_BLE_TX_POWER_LEVEL           0
 #define CFG_DEFAULT_NAME                 "Bluefruit52"
 #define CFG_ADV_BLINKY_INTERVAL          500
-
-// Converts an integer of 1.25ms units to msecs
-#define MS100TO125(ms100) (((ms100)*4)/5)
-
-// Converts an integer of 1.25ms units to msecs
-#define MS125TO100(ms125) (((ms125)*5)/4)
-
-// Converts msec to 0.625 unit
-#define MS1000TO625(ms1000) (((ms1000)*8)/5)
-
-// Converts an integer of 625ms units to msecs
-#define MS625TO1000(u625) ( ((u625)*5) / 8 )
 
 #define BLUEFRUIT_TASK_STACKSIZE   (512*3)
 
@@ -173,10 +156,10 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   // Connection Parameters
   ble_gap_conn_params_t   gap_conn_params =
   {
-      .min_conn_interval = MS100TO125(GAP_CONN_MIN_INTERVAL_MS) , // in 1.25ms unit
-      .max_conn_interval = MS100TO125(GAP_CONN_MAX_INTERVAL_MS) , // in 1.25ms unit
-      .slave_latency     = GAP_CONN_SLAVE_LATENCY,
-      .conn_sup_timeout  = GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
+      .min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT, // in 1.25ms unit
+      .max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT, // in 1.25ms unit
+      .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
+      .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
   };
 
   VERIFY_STATUS( sd_ble_gap_ppcp_set(&gap_conn_params) );
@@ -214,8 +197,8 @@ err_t AdafruitBluefruit::setConnInterval(uint16_t min, uint16_t max)
   {
       .min_conn_interval = min, // in 1.25ms unit
       .max_conn_interval = max, // in 1.25ms unit
-      .slave_latency     = GAP_CONN_SLAVE_LATENCY,
-      .conn_sup_timeout  = GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
+      .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
+      .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
   };
 
   return sd_ble_gap_ppcp_set(&gap_conn_params);
@@ -781,18 +764,13 @@ void AdafruitBluefruit::_poll(void)
           break;
 
 
-          case BLE_GAP_EVT_ADV_REPORT:
-          {
-            ble_gap_evt_adv_report_t* adv_report = &evt->evt.gap_evt.params.adv_report;
-            if (central._scan_cb) central._scan_cb(adv_report);
-          }
-          break;
-
-
           default:
             //PRINT_HEX(evt->header.evt_id);
           break;
         }
+
+        // Central Event Handler
+        if (_central_enabled) central._event_handler(evt);
 
         // GATTs characteristics event handler
         for(int i=0; i<_chars_count; i++)

@@ -100,8 +100,8 @@ class AdafruitBluefruit
     bool    addScanRespUuid(uint16_t uuid16);
     bool    addScanRespUuid(uint8_t const  uuid128[]);
 
-    err_t startAdvertising(void);
-    void  stopAdvertising(void);
+    err_t   startAdvertising(void);
+    void    stopAdvertising(void);
 
     /*------------------------------------------------------------------*/
     /*
@@ -113,7 +113,7 @@ class AdafruitBluefruit
     void disconnect(void);
     bool connected(void);
 
-    err_t setConnInterval(uint16_t min, uint16_t max);
+    err_t setConnInterval  (uint16_t min, uint16_t max);
     err_t setConnIntervalMS(uint16_t min_ms, uint16_t max_ms);
 
     uint16_t connHandle(void);
