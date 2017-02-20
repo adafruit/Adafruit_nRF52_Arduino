@@ -55,8 +55,8 @@ class BLECentral
      *------------------------------------------------------------------*/
     typedef void (*scan_callback_t) (ble_gap_evt_adv_report_t*);
 
-    void setScanCallback(scan_callback_t fp);
-    err_t startScanning(void);
+    void  setScanCallback(scan_callback_t fp);
+    err_t startScanning(uint16_t timeout = 0);
     err_t stopScanning(void);
 
     uint8_t* extractScanData(uint8_t const* scandata, uint8_t scanlen, uint8_t type, uint8_t* result_len);
@@ -76,9 +76,22 @@ class BLECentral
                   uint16_t min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT,
                   uint16_t max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT);
 
+    bool connected(void);
+
+    typedef void (*connect_callback_t) (void);
+    typedef void (*disconnect_callback_t) (uint8_t reason);
+
+    void setConnectCallback   ( connect_callback_t    fp);
+    void setDisconnectCallback( disconnect_callback_t fp);
+
   private:
+    uint16_t _conn_hdl;
+
     ble_gap_scan_params_t _scan_param;
-    scan_callback_t _scan_cb;
+    scan_callback_t       _scan_cb;
+
+    connect_callback_t    _connect_cb;
+    disconnect_callback_t _discconnect_cb;
 
     bool  _checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t uuid[], uint8_t uuid_len);
 

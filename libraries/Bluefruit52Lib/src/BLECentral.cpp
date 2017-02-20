@@ -41,6 +41,8 @@
  */
 BLECentral::BLECentral(void)
 {
+  _conn_hdl = 0;
+
   _scan_cb    = NULL;
   _scan_param = (ble_gap_scan_params_t) {
     .active      = 1,
@@ -50,6 +52,9 @@ BLECentral::BLECentral(void)
     .window      = 0x0050,
     .timeout     = 0, // no timeout
   };
+
+  _connect_cb     = NULL;
+  _discconnect_cb = NULL;
 }
 
 /*------------------------------------------------------------------*/
@@ -60,8 +65,9 @@ void BLECentral::setScanCallback(scan_callback_t fp)
   _scan_cb = fp;
 }
 
-err_t BLECentral::startScanning(void)
+err_t BLECentral::startScanning(uint16_t timeout)
 {
+  _scan_param.timeout = timeout;
   VERIFY_STATUS( sd_ble_gap_scan_start(&_scan_param) );
   Bluefruit._startConnLed(); // start blinking
   return ERROR_NONE;
@@ -169,6 +175,21 @@ err_t BLECentral::connect(const ble_gap_evt_adv_report_t* adv_report, uint16_t m
   return connect(&adv_report->peer_addr, min_conn_interval, max_conn_interval);
 }
 
+bool BLECentral::connected(void)
+{
+  return (_conn_hdl != BLE_GATT_HANDLE_INVALID);
+}
+
+void BLECentral::setConnectCallback( connect_callback_t fp)
+{
+  _connect_cb = fp;
+}
+
+void BLECentral::setDisconnectCallback( disconnect_callback_t fp)
+{
+  _discconnect_cb = fp;
+}
+
 /**
  * Event is forwarded from Bluefruit Poll() method
  * @param event
@@ -182,6 +203,43 @@ void BLECentral::_event_handler(ble_evt_t* evt)
       ble_gap_evt_adv_report_t* adv_report = &evt->evt.gap_evt.params.adv_report;
       if (_scan_cb) _scan_cb(adv_report);
     }
+    break;
+
+    case BLE_GAP_EVT_CONNECTED:
+    {
+      ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
+
+      if (para->role == BLE_GAP_ROLE_CENTRAL)
+      {
+        Bluefruit._stopConnLed();
+        if (Bluefruit._led_conn) ledOn(LED_CONN);
+
+        _conn_hdl = evt->evt.gap_evt.conn_handle;
+
+        if ( _connect_cb ) _connect_cb();
+      }
+    }
+    break;
+
+    case BLE_GAP_EVT_DISCONNECTED:
+      if ( _conn_hdl == evt->evt.gap_evt.conn_handle)
+      {
+        if (Bluefruit._led_conn)  ledOff(LED_CONN);
+
+        _conn_hdl = BLE_GATT_HANDLE_INVALID;
+
+        if ( _discconnect_cb ) _discconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
+
+        startScanning();
+      }
+    break;
+
+    case BLE_GAP_EVT_TIMEOUT:
+      if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_SCAN)
+      {
+        // Restart Scanning
+        startScanning();
+      }
     break;
 
     default: break;

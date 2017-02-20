@@ -130,8 +130,11 @@ class AdafruitBluefruit
     /*------------------------------------------------------------------*/
     /* Callback
      *------------------------------------------------------------------*/
-    void setConnectCallback   ( void (*fp) (uint32_t hostID) );
-    void setDisconnectCallback( void (*fp) (uint32_t hostID, uint8_t reason) );
+    typedef void (*connect_callback_t) (void);
+    typedef void (*disconnect_callback_t) (uint8_t reason);
+
+    void setConnectCallback   ( connect_callback_t    fp);
+    void setDisconnectCallback( disconnect_callback_t fp);
 
     // internal usage only
     err_t _registerCharacteristic(BLECharacteristic* chars);
@@ -176,8 +179,8 @@ class AdafruitBluefruit
     SemaphoreHandle_t _txbuf_sem;
 
     /*------------- Callbacks -------------*/
-    void (*_connect_cb) (uint32_t hostID);
-    void (*_discconnect_cb) (uint32_t hostID, uint8_t reason);
+    connect_callback_t    _connect_cb;
+    disconnect_callback_t _discconnect_cb;
 
     bool _addToAdv(bool scan_resp, uint8_t type, const void* data, uint8_t len);
     void _poll(void);

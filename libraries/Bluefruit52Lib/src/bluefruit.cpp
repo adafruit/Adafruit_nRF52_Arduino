@@ -136,9 +136,9 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   {
       .common_enable_params = { .vs_uuid_count = BLE_VENDOR_UUID_MAX },
       .gap_enable_params = {
-          .periph_conn_count  = _prph_enabled    ? 1 : 0,
-          .central_conn_count = _central_enabled ? BLE_CENTRAL_MAX_CONN : 0,
-          .central_sec_count  = _central_enabled ? BLE_CENTRAL_MAX_SECURE_CONN : 0,
+          .periph_conn_count  = (uint8_t) (_prph_enabled    ? 1 : 0),
+          .central_conn_count = (uint8_t) (_central_enabled ? BLE_CENTRAL_MAX_CONN : 0),
+          .central_sec_count  = (uint8_t) (_central_enabled ? BLE_CENTRAL_MAX_SECURE_CONN : 0),
       },
       .gatts_enable_params = {
           .service_changed = 1,
@@ -243,12 +243,12 @@ void AdafruitBluefruit::disconnect(void)
   }
 }
 
-void AdafruitBluefruit::setConnectCallback   ( void (*fp) (uint32_t hostID) )
+void AdafruitBluefruit::setConnectCallback   ( connect_callback_t fp )
 {
   _connect_cb = fp;
 }
 
-void AdafruitBluefruit::setDisconnectCallback( void (*fp) (uint32_t hostID, uint8_t reason))
+void AdafruitBluefruit::setDisconnectCallback( disconnect_callback_t fp )
 {
   _discconnect_cb = fp;
 }
@@ -605,36 +605,42 @@ void AdafruitBluefruit::_poll(void)
           case BLE_GAP_EVT_CONNECTED:
           {
             // PRINT_MESS("Connected");
-
             ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
 
-            _stopConnLed();
-            if (_led_conn) ledOn(LED_CONN);
+            if (para->role == BLE_GAP_ROLE_PERIPH)
+            {
+              _stopConnLed();
+              if (_led_conn) ledOn(LED_CONN);
 
-            _conn_hdl  = evt->evt.gap_evt.conn_handle;
-            _peer_addr = para->peer_addr;
+              _conn_hdl  = evt->evt.gap_evt.conn_handle;
+              _peer_addr = para->peer_addr;
 
-            uint8_t txbuf_max;
-            (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
-            _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
+              uint8_t txbuf_max;
+              (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
+              _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
 
-            if ( _connect_cb ) _connect_cb(0);
+              if ( _connect_cb ) _connect_cb();
+            }
           }
           break;
 
           case BLE_GAP_EVT_DISCONNECTED:
             // PRINT_MESS("Disconnected");
 
-            if (_led_conn)  ledOff(LED_CONN);
+            // Check if it is peripheral connection
+            if (_conn_hdl == evt->evt.gap_evt.conn_handle)
+            {
+              if (_led_conn)  ledOff(LED_CONN);
 
-            _conn_hdl = BLE_GATT_HANDLE_INVALID;
-            varclr(&_peer_addr);
+              _conn_hdl = BLE_GATT_HANDLE_INVALID;
+              varclr(&_peer_addr);
 
-            vSemaphoreDelete(_txbuf_sem);
+              vSemaphoreDelete(_txbuf_sem);
 
-            if ( _discconnect_cb ) _discconnect_cb(0, evt->evt.gap_evt.params.disconnected.reason);
+              if ( _discconnect_cb ) _discconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
 
-            startAdvertising();
+              startAdvertising();
+            }
           break;
 
           case BLE_GAP_EVT_TIMEOUT:
