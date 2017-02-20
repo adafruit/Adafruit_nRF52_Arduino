@@ -99,6 +99,7 @@ static void bluefruit_blinky_cb( TimerHandle_t xTimer )
  * Constructor
  */
 AdafruitBluefruit::AdafruitBluefruit(void)
+  : central()
 {
   _prph_enabled    = true;
   _central_enabled = false;
@@ -126,17 +127,6 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   varclr(&_peer_id);
   _sys_attr       = NULL;
   _sys_attr_len   = 0;
-
-
-  _scan_cb = NULL;
-  _scan_param = (ble_gap_scan_params_t) {
-    .active      = 1,
-    .selective   = 0,
-    .p_whitelist = NULL,
-    .interval    = 0x00A0,
-    .window      = 0x0050,
-    .timeout     = 0, // no timeout
-  };
 
   _connect_cb     = NULL;
   _discconnect_cb = NULL;
@@ -465,7 +455,7 @@ err_t AdafruitBluefruit::startAdvertising(void)
 
   VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para) );
 
-  if (_led_conn) xTimerStart(_led_blink_th, 0); // start blinking
+  _startConnLed(); // start blinking
 
   return ERROR_NONE;
 }
@@ -474,7 +464,7 @@ void AdafruitBluefruit::stopAdvertising(void)
 {
   sd_ble_gap_adv_stop();
 
-  xTimerStop(_led_blink_th, 0); // stop blinking
+  _stopConnLed(); // stop blinking
 }
 
 err_t AdafruitBluefruit::addService(uint16_t uuid16)
@@ -536,24 +526,16 @@ err_t AdafruitBluefruit::saveAllCCCD(void)
 }
 
 /*------------------------------------------------------------------*/
-/* Central API
+/* Private Methods
  *------------------------------------------------------------------*/
-void AdafruitBluefruit::setScanCallback(scan_callback_t fp)
+void AdafruitBluefruit::_startConnLed(void)
 {
-  _scan_cb = fp;
+  if (_led_conn) xTimerStart(_led_blink_th, 0);
 }
 
-err_t AdafruitBluefruit::startScanning(void)
+void AdafruitBluefruit::_stopConnLed(void)
 {
-  VERIFY_STATUS( sd_ble_gap_scan_start(&_scan_param) );
-  if (_led_conn) xTimerStart(_led_blink_th, 0); // start blinking
-  return ERROR_NONE;
-}
-
-err_t AdafruitBluefruit::stopScanning(void)
-{
-  xTimerStop(_led_blink_th, 0); // stop blinking
-  return sd_ble_gap_scan_stop();
+  xTimerStop(_led_blink_th, 0);
 }
 
 /*------------------------------------------------------------------*/
@@ -642,7 +624,7 @@ void AdafruitBluefruit::_poll(void)
 
             ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
 
-            xTimerStop(_led_blink_th, 0);
+            _stopConnLed();
             if (_led_conn) ledOn(LED_CONN);
 
             _conn_hdl  = evt->evt.gap_evt.conn_handle;
@@ -801,7 +783,7 @@ void AdafruitBluefruit::_poll(void)
           case BLE_GAP_EVT_ADV_REPORT:
           {
             ble_gap_evt_adv_report_t* adv_report = &evt->evt.gap_evt.params.adv_report;
-            if (_scan_cb) _scan_cb(adv_report);
+            if (central._scan_cb) central._scan_cb(adv_report);
           }
           break;
 

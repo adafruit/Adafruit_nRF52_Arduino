@@ -26,8 +26,8 @@ void setup()
 
   // Start Central Scan
   Bluefruit.setConnLedInterval(250);
-  Bluefruit.setScanCallback(scan_callback);
-  Bluefruit.startScanning();
+  Bluefruit.central.setScanCallback(scan_callback);
+  Bluefruit.central.startScanning();
 }
 
 void scan_callback(ble_gap_evt_adv_report_t* report)

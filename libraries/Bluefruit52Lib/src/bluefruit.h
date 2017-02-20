@@ -40,6 +40,7 @@
 #include "BLEUuid.h"
 #include "BLECharacteristic.h"
 #include "BLEService.h"
+#include "BLECentral.h"
 
 // Services
 #include "services/BLEDis.h"
@@ -124,10 +125,7 @@ class AdafruitBluefruit
     /*------------------------------------------------------------------*/
     /* Central
      *------------------------------------------------------------------*/
-    typedef void (*scan_callback_t) (ble_gap_evt_adv_report_t*);
-    void setScanCallback(scan_callback_t fp);
-    err_t startScanning(void);
-    err_t stopScanning(void);
+    BLECentral central;
 
     /*------------------------------------------------------------------*/
     /* Callback
@@ -177,18 +175,17 @@ class AdafruitBluefruit
     // Transmission Buffer Count for HVX notification, max is seen at 7
     SemaphoreHandle_t _txbuf_sem;
 
-    /*------------- Central -------------*/
-    ble_gap_scan_params_t _scan_param;
-    scan_callback_t _scan_cb;
-
     /*------------- Callbacks -------------*/
     void (*_connect_cb) (uint32_t hostID);
     void (*_discconnect_cb) (uint32_t hostID, uint8_t reason);
 
     bool _addToAdv(bool scan_resp, uint8_t type, const void* data, uint8_t len);
     void _poll(void);
+    void _startConnLed(void);
+    void _stopConnLed(void);
 
     friend void adafruit_bluefruit_task(void* arg);
+    friend class BLECentral;
 };
 
 extern AdafruitBluefruit Bluefruit;
