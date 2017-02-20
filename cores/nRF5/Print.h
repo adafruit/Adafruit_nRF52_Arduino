@@ -80,6 +80,12 @@ class Print
     size_t println(void);
 
     size_t printf(const char * format, ...);
+
+    size_t printBuffer(uint8_t const[], int, char=' ');
+    size_t printBuffer(char const buffer[], int size, char delim=' ')
+    {
+      return printBuffer((uint8_t const*) buffer, size, delim);
+    }
 };
 
 #endif

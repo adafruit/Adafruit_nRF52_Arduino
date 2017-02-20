@@ -286,3 +286,17 @@ size_t Print::printFloat(double number, uint8_t digits)
 #endif
 
 
+size_t Print::printBuffer(uint8_t const buffer[], int len, char delim)
+{
+  if (buffer == NULL || len == 0) return 0;
+
+  for(int i=0; i<len; i++)
+  {
+    if (i != 0) print(delim);
+    printf("%02X", buffer[i]);
+  }
+
+  return (len*3 - 1);
+}
+
+
