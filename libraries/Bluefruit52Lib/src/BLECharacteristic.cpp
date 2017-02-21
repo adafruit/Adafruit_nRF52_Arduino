@@ -38,10 +38,11 @@
 
 void BLECharacteristic::init(void)
 {
-  _is_temp = false;
+  _is_temp    = false;
+
   varclr(&_properties);
   _descriptor = NULL;
-  _max_len = BLE_GATTS_VAR_ATTR_LEN_MAX;
+  _max_len    = BLE_GATTS_VAR_ATTR_LEN_MAX;
 
   varclr(&_report_ref_desc);
 
@@ -60,7 +61,8 @@ void BLECharacteristic::init(void)
 
   _rd_authorize_cb = NULL;
   _wr_authorize_cb = NULL;
-  _wr_cb = NULL;
+  _wr_cb           = NULL;
+  _cccd_wr_cb      = NULL;
 }
 
 BLECharacteristic::BLECharacteristic(void)
@@ -134,6 +136,11 @@ void BLECharacteristic::setPermission(BleSecurityMode read_perm, BleSecurityMode
 void BLECharacteristic::setWriteCallback(write_cb_t fp)
 {
   _wr_cb = fp;
+}
+
+void BLECharacteristic::setCccdWriteCallback(write_cb_t fp)
+{
+  _cccd_wr_cb = fp;
 }
 
 void BLECharacteristic::setReadAuthorizeCallback(read_authorize_cb_t fp)
@@ -274,8 +281,10 @@ err_t BLECharacteristic::start(void)
 
   // Currently Only register to Bluefruit when having callback support
   // And The Characteristic must not be temporary memory aka local variable
+  // Or Properties is Notify and/or Indicate for saving CCCD for bonded connection
   if ( !_is_temp &&
-       (_rd_authorize_cb || _wr_authorize_cb || _wr_cb || _properties.notify || _properties.indicate) )
+       (_rd_authorize_cb || _wr_authorize_cb || _wr_cb || _cccd_wr_cb ||
+       _properties.notify || _properties.indicate) )
   {
     (void) Bluefruit._registerCharacteristic(this);
   }
@@ -318,9 +327,16 @@ void BLECharacteristic::eventHandler(ble_evt_t* event)
     {
       ble_gatts_evt_write_t* request = (ble_gatts_evt_write_t*) &event->evt.gatts_evt.params.write;
 
-      if ( _wr_cb && (uuid == request->uuid))
+      // Value write
+      if ( _wr_cb && (request->handle == _handles.value_handle))
       {
-        _wr_cb(*this, &event->evt.gatts_evt.params.write);
+        _wr_cb(*this, request);
+      }
+
+      // CCCD write
+      if ( _cccd_wr_cb && (request->handle == _handles.cccd_handle) )
+      {
+        _cccd_wr_cb(*this, request);
       }
     }
     break;

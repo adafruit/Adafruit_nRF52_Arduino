@@ -99,7 +99,9 @@ class BLECharacteristic
     // Callback pointer
     read_authorize_cb_t  _rd_authorize_cb;
     write_authorize_cb_t _wr_authorize_cb;
+
     write_cb_t           _wr_cb;
+    write_cb_t           _cccd_wr_cb;
 
     void init(void);
     void eventHandler(ble_evt_t* event);
@@ -135,6 +137,8 @@ class BLECharacteristic
 
     // Callback
     void setWriteCallback(write_cb_t fp);
+    void setCccdWriteCallback(write_cb_t fp);
+
     void setReadAuthorizeCallback(read_authorize_cb_t fp);
     void setWriteAuthorizeCallbak(write_authorize_cb_t fp);
 
