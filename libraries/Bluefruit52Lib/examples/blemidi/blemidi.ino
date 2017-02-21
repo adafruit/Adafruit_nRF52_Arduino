@@ -63,5 +63,6 @@ void setupAdv(void)
 
 void loop()
 {
-
+  digitalToggle(LED_BUILTIN);
+  delay(1000);
 }

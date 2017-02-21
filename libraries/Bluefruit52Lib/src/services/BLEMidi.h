@@ -55,7 +55,7 @@ class BLEMidi: public BLEService
   private:
     BLECharacteristic _io;
 
-    friend class blemidi_write_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
+    friend void blemidi_write_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
 };
 
 #endif /* BLEMIDI_H_ */

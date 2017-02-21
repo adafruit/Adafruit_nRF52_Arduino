@@ -80,7 +80,7 @@ void loop()
   // Blinky!
   if (blinkyms+BLINKY_MS < millis()) {
     blinkyms = millis();
-    digitalWrite(STATUS_LED, !digitalRead(STATUS_LED));
+    digitalToggle(STATUS_LED);
   }
 
   // forward from Serial to BLEUART
