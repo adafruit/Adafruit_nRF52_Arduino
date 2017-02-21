@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     debug.h
+    @file     utilities.c
     @author   hathach
 
     @section LICENSE
@@ -34,23 +34,20 @@
 */
 /**************************************************************************/
 
-#ifndef _DEBUG_H
-#define _DEBUG_H
+#include "utilities.h"
 
-#include <Arduino.h>
-
-#if CFG_DEBUG
-const char* dbg_ble_event_str(uint16_t evt_id);
-#endif
-
-int dbgHeapTotal(void);
-int dbgHeapUsed(void);
-
-static inline int dbgHeapFree(void)
+/******************************************************************************/
+/*!
+    @brief Find the corresponding data from the key
+    @param
+*/
+/******************************************************************************/
+void const * lookup_find(lookup_table_t const* p_table, uint32_t key)
 {
-  return dbgHeapTotal() - dbgHeapUsed();
+  for(uint16_t i=0; i<p_table->count; i++)
+  {
+    if (p_table->items[i].key == key) return p_table->items[i].data;
+  }
+
+  return NULL;
 }
-
-void dbgMemInfo(void);
-
-#endif

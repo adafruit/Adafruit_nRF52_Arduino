@@ -150,3 +150,86 @@ void dbgMemInfo(void)
   Serial.println(buf);
   rtos_free(buf);
 }
+
+
+/*------------------------------------------------------------------*/
+/*
+ *------------------------------------------------------------------*/
+
+#if CFG_DEBUG
+
+#include "ble.h"
+#include "ble_hci.h"
+
+// Common BLE Event base
+static const char* _base_evt_str[] =
+{
+    "BLE_EVT_TX_COMPLETE"                     ,
+    "BLE_EVT_USER_MEM_REQUEST"                ,
+    "BLE_EVT_USER_MEM_RELEASE"                ,
+};
+
+static const char* _gap_evt_str[] =
+{
+    "BLE_GAP_EVT_CONNECTED"                   ,
+    "BLE_GAP_EVT_DISCONNECTED"                ,
+    "BLE_GAP_EVT_CONN_PARAM_UPDATE"           ,
+    "BLE_GAP_EVT_SEC_PARAMS_REQUEST"          ,
+    "BLE_GAP_EVT_SEC_INFO_REQUEST"            ,
+    "BLE_GAP_EVT_PASSKEY_DISPLAY"             ,
+    "BLE_GAP_EVT_KEY_PRESSED"                 ,
+    "BLE_GAP_EVT_AUTH_KEY_REQUEST"            ,
+    "BLE_GAP_EVT_LESC_DHKEY_REQUEST"          ,
+    "BLE_GAP_EVT_AUTH_STATUS"                 ,
+    "BLE_GAP_EVT_CONN_SEC_UPDATE"             ,
+    "BLE_GAP_EVT_TIMEOUT"                     ,
+    "BLE_GAP_EVT_RSSI_CHANGED"                ,
+    "BLE_GAP_EVT_ADV_REPORT"                  ,
+    "BLE_GAP_EVT_SEC_REQUEST"                 ,
+    "BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST"   ,
+    "BLE_GAP_EVT_SCAN_REQ_REPORT"             ,
+};
+
+// GATTC Event
+static const char* _gattc_evt_str[] =
+{
+    "BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP"        ,
+    "BLE_GATTC_EVT_REL_DISC_RSP"              ,
+    "BLE_GATTC_EVT_CHAR_DISC_RSP"             ,
+    "BLE_GATTC_EVT_DESC_DISC_RSP"             ,
+    "BLE_GATTC_EVT_ATTR_INFO_DISC_RSP"        ,
+    "BLE_GATTC_EVT_CHAR_VAL_BY_UUID_READ_RSP" ,
+    "BLE_GATTC_EVT_READ_RSP"                  ,
+    "BLE_GATTC_EVT_CHAR_VALS_READ_RSP"        ,
+    "BLE_GATTC_EVT_WRITE_RSP"                 ,
+    "BLE_GATTC_EVT_HVX"                       ,
+    "BLE_GATTC_EVT_TIMEOUT"
+};
+
+// GATTS Event
+static const char* _gatts_evt_str[] =
+{
+    "BLE_GATTS_EVT_WRITE"                     ,
+    "BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST"      ,
+    "BLE_GATTS_EVT_SYS_ATTR_MISSING"          ,
+    "BLE_GATTS_EVT_HVC"                       ,
+    "BLE_GATTS_EVT_SC_CONFIRM"                ,
+    "BLE_GATTS_EVT_TIMEOUT"                   ,
+};
+
+const char* dbg_ble_event_str(uint16_t evt_id)
+{
+  if      ( is_within(BLE_EVT_BASE, evt_id, BLE_EVT_LAST) )
+    return _base_evt_str[evt_id-BLE_EVT_BASE];
+  else if ( is_within(BLE_GAP_EVT_BASE, evt_id, BLE_GAP_EVT_LAST) )
+    return _gap_evt_str[evt_id-BLE_GAP_EVT_BASE];
+  else if ( is_within(BLE_GATTC_EVT_BASE, evt_id, BLE_GATTC_EVT_LAST) )
+    return _gattc_evt_str[evt_id-BLE_GATTC_EVT_BASE];
+  else if ( is_within(BLE_GATTS_EVT_BASE, evt_id, BLE_GATTS_EVT_LAST) )
+    return _gatts_evt_str[evt_id-BLE_GATTS_EVT_BASE];
+  else
+    return NULL;
+}
+
+#endif
+

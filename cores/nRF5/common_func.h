@@ -83,15 +83,18 @@
 //--------------------------------------------------------------------+
 // DEBUG HELPER
 //--------------------------------------------------------------------+
-#if CFG_DEBUG == 3
+#if CFG_DEBUG == 2
   #define malloc_named( name, size )            ({ printf("[malloc] %s : %d\r\n", name, size); malloc(size); })
 #else
   #define malloc_named( name, size )            malloc ( size )
 #endif
 
 int cprintf(const char * format, ...);
+
+#if CFG_DEBUG
+
 #define PRINT_LOCATION()      cprintf("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)
-#define PRINT_MESS(x)         cprintf("%s: %d: " x " \n"   , __PRETTY_FUNCTION__, __LINE__)
+#define PRINT_MESS(x)         cprintf("%s: %d: %s \n"   , __PRETTY_FUNCTION__, __LINE__, (char*)(x))
 #define PRTNT_HEAP()          if (CFG_DEBUG == 3) cprintf("\n%s: %d: Heap free: %d\n", __PRETTY_FUNCTION__, __LINE__, util_heap_get_free_size())
 #define PRINT_STR(x)          cprintf("%s: %d: " #x " = %s\n"   , __PRETTY_FUNCTION__, __LINE__, (char*)(x) )
 #define PRINT_INT(x)          cprintf("%s: %d: " #x " = %ld\n"  , __PRETTY_FUNCTION__, __LINE__, (uint32_t) (x) )
@@ -111,6 +114,18 @@ int cprintf(const char * format, ...);
     for(uint32_t i=0; i<(n); i++) cprintf("%02x ", p8[i]);\
     Serial.println();\
   }while(0)
+
+#else
+
+#define PRINT_LOCATION()
+#define PRINT_MESS(x)
+#define PRTNT_HEAP()
+#define PRINT_STR(x)
+#define PRINT_INT(x)
+#define PRINT_HEX(x)
+#define PRINT_BUFFER(buf, n)
+
+#endif
 
 //--------------------------------------------------------------------+
 // INLINE FUNCTION

@@ -600,6 +600,13 @@ void AdafruitBluefruit::_poll(void)
       }
       else if( ERROR_NONE == err)
       {
+        #if CFG_DEBUG
+        Serial.print("[BLE]: ");
+        if ( dbg_ble_event_str(evt->header.evt_id) ) Serial.print(dbg_ble_event_str(evt->header.evt_id));
+        else Serial.printf("0x04X", evt->header.evt_id);
+        Serial.println();
+        #endif
+
         switch ( evt->header.evt_id  )
         {
           case BLE_GAP_EVT_CONNECTED:
@@ -770,9 +777,7 @@ void AdafruitBluefruit::_poll(void)
           break;
 
 
-          default:
-            //PRINT_HEX(evt->header.evt_id);
-          break;
+          default: break;
         }
 
         // Central Event Handler

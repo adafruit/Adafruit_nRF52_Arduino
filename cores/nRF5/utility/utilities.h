@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     debug.h
+    @file     utilities.h
     @author   hathach
 
     @section LICENSE
@@ -33,24 +33,25 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-
-#ifndef _DEBUG_H
-#define _DEBUG_H
+#ifndef UTILITIES_H_
+#define UTILITIES_H_
 
 #include <Arduino.h>
 
-#if CFG_DEBUG
-const char* dbg_ble_event_str(uint16_t evt_id);
-#endif
-
-int dbgHeapTotal(void);
-int dbgHeapUsed(void);
-
-static inline int dbgHeapFree(void)
+typedef struct
 {
-  return dbgHeapTotal() - dbgHeapUsed();
-}
+  uint32_t key;
+  void const * data;
+}lookup_entry_t;
 
-void dbgMemInfo(void);
+typedef struct
+{
+  uint16_t count;
+  uint16_t data_size;
 
-#endif
+  lookup_entry_t const* items;
+} lookup_table_t;
+
+void const *  lookup_find(lookup_table_t const* p_table, uint32_t key);
+
+#endif /* UTILITIES_H_ */
