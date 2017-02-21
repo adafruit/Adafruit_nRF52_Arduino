@@ -50,7 +50,7 @@
 #include "services/BLEBeacon.h"
 #include "services/BLEHidGeneric.h"
 #include "services/BLEHidAdafruit.h"
-
+#include "services/BLEMidi.h"
 
 #define BLE_MAX_CHARS         50
 
