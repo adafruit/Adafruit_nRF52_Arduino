@@ -1,0 +1,25 @@
+// This sketch will check if the NFC pins are configured for NFC mode,
+// and if so it will switch them to operate in GPIO mode. A system
+// reset is required before this change takes effect since the CONFIG
+// memory is only read on power up.
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Bluefruit52 NFC to GPIO Pin Config");
+      if ((NRF_UICR->NFCPINS & UICR_NFCPINS_PROTECT_Msk) == (UICR_NFCPINS_PROTECT_NFC << UICR_NFCPINS_PROTECT_Pos)){
+        Serial.println("Fix NFC pins");
+        NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen << NVMC_CONFIG_WEN_Pos;
+        while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
+        NRF_UICR->NFCPINS &= ~UICR_NFCPINS_PROTECT_Msk;
+        while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
+        NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Ren << NVMC_CONFIG_WEN_Pos;
+        while (NRF_NVMC->READY == NVMC_READY_READY_Busy);
+        Serial.println("Done");
+        delay(500);
+        NVIC_SystemReset();
+      }
+      
+}
+void loop() {
+  // put your main code here, to run repeatedly:
+}
