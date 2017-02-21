@@ -110,10 +110,10 @@ static void printMemRegion(const char* name, uint32_t top, uint32_t bottom, uint
   char buffer[30];
   if ( used )
   {
-    sprintf(buffer, "%d / %d (%02lu%%)", used, top-bottom, (used*100)/ (top-bottom));
+    sprintf(buffer, "%lu / %lu (%02lu%%)", used, top-bottom, (used*100)/ (top-bottom));
   }else
   {
-    sprintf(buffer, "%d", top-bottom);
+    sprintf(buffer, "%lu", top-bottom);
   }
   printCenter(buffer, WIDTH);
 
@@ -126,7 +126,6 @@ void dbgMemInfo(void)
   Serial.println("       Memory Map");
 
   // Pritn SRAM used for Stack executed by S132 and ISR
-  uint32_t stack_used  = ((uint32_t) __StackTop) -((uint32_t) __StackLimit);
   printMemRegion("Stack", ((uint32_t) __StackTop), ((uint32_t) __StackLimit), 0);
 
   // Print Heap usage overall (including memory malloced to tasks)
