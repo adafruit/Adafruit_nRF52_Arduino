@@ -63,6 +63,38 @@ void setupAdv(void)
 
 void loop()
 {
-  digitalToggle(LED_BUILTIN);
-  delay(1000);
+  if ( Bluefruit.connected() && blemidi.configured() )
+  {
+    static int current_note = 60;
+    
+    // send note on
+    blemidi.send(0x90, current_note, 0x64);
+    delay(500);
+
+    // send note off
+    blemidi.send(0x80, current_note, 0x64);
+    delay(500);
+
+    // increment note pitch
+    current_note++;
+
+    // only do one octave
+    if(current_note > 72)
+    {
+      current_note = 60;
+    }
+  }
+}
+
+void connect_callback(void)
+{
+  Serial.println("Connected");
+}
+
+void disconnect_callback(uint8_t reason)
+{
+  (void) reason;
+  
+  Serial.println("Disconnected");
+  Serial.println("Bluefruit will auto start advertising (default)");
 }

@@ -52,6 +52,68 @@ const uint8_t BLEMIDI_UUID_CHR_IO[] =
     0x12, 0x41, 0x68, 0x38, 0xD8, 0xE5, 0x72, 0x77
 };
 
+/*------------------------------------------------------------------*/
+/* MIDI Data Type
+ *------------------------------------------------------------------*/
+typedef union ATTR_PACKED
+{
+  struct {
+    uint8_t timestamp_hi : 6;
+    uint8_t              : 1;
+    uint8_t start_bit    : 1;
+  };
+
+  uint8_t byte;
+} midi_header_t;
+
+VERIFY_STATIC ( sizeof(midi_header_t) == 1 );
+
+typedef union ATTR_PACKED
+{
+  struct {
+    uint8_t timestamp_low : 7;
+    uint8_t start_bit : 1;
+  };
+
+  uint8_t byte;
+} midi_timestamp_t;
+
+VERIFY_STATIC ( sizeof(midi_timestamp_t) == 1 );
+
+typedef union ATTR_PACKED
+{
+  struct {
+    uint8_t channel : 4;
+    uint8_t type    : 4;
+  };
+
+  uint8_t byte;
+} midi_status_t;
+
+VERIFY_STATIC ( sizeof(midi_status_t) == 1 );
+
+typedef struct ATTR_PACKED
+{
+  midi_header_t header;
+  midi_timestamp_t timestamp;
+  uint8_t data[3];
+} midi_event_packet_t;
+
+VERIFY_STATIC ( sizeof(midi_event_packet_t) == 5 );
+
+typedef struct ATTR_PACKED
+{
+  midi_header_t header;
+  midi_timestamp_t timestamp;
+  midi_status_t status;
+  uint8_t data[16];
+} midi_n_event_packet_t;
+
+VERIFY_STATIC ( sizeof(midi_n_event_packet_t) == 19 );
+
+/*------------------------------------------------------------------*/
+/* IMPLEMENTATION
+ *------------------------------------------------------------------*/
 BLEMidi::BLEMidi(void)
   : BLEService(BLEMIDI_UUID_SERVICE), _io(BLEMIDI_UUID_CHR_IO)
 {
@@ -61,6 +123,41 @@ BLEMidi::BLEMidi(void)
 void blemidi_write_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
 {
 
+}
+
+bool BLEMidi::configured()
+{
+  return _io.notifyEnabled();
+}
+
+err_t BLEMidi::send(uint8_t data[])
+{
+  uint32_t tstamp = millis();
+
+  midi_event_packet_t event =
+  {
+      .header = {{
+          .timestamp_hi = (uint8_t) ((tstamp & 0x1F80UL) >> 7),
+          .start_bit    = 1
+      }},
+
+      .timestamp = {{
+          .timestamp_low = (uint8_t) (tstamp & 0x7FUL),
+          .start_bit     = 1
+      }}
+  };
+
+  memcpy(event.data, data, 3);
+
+  VERIFY_STATUS( _io.notify(data, 3) );
+
+  return ERROR_NONE;
+}
+
+err_t BLEMidi::send(uint8_t status, uint8_t byte1, uint8_t byte2)
+{
+  uint8_t data[] = { status, byte1, byte2 };
+  return send(data);
 }
 
 err_t BLEMidi::start(void)

@@ -20,7 +20,7 @@ BLEBas blebas;
 #define STATUS_LED  (17)
 #define BLINKY_MS   (2000)
 
-int blinkyms;
+uint32_t blinkyms;
 
 void setup()
 {
@@ -39,6 +39,8 @@ void setup()
 
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
+  Bluefruit.setConnectCallback(connect_callback);
+  Bluefruit.setDisconnectCallback(disconnect_callback);
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
@@ -101,4 +103,17 @@ void loop()
     ch = (uint8_t) bleuart.read();
     Serial.write(ch);
   }
+}
+
+void connect_callback(void)
+{
+  Serial.println("Connected");
+}
+
+void disconnect_callback(uint8_t reason)
+{
+  (void) reason;
+  
+  Serial.println("Disconnected");
+  Serial.println("Bluefruit will auto start advertising (default)");
 }

@@ -45,6 +45,17 @@
 extern const uint8_t BLEMIDI_UUID_SERVICE[];
 extern const uint8_t BLEMIDI_UUID_CHR_IO[];
 
+enum
+{
+  MIDI_TYPE_NOTE_OFF         = 0x8,
+  MIDI_TYPE_NOTE_ON          = 0x9,
+  MIDI_TYPE_AFTER_TOUCH      = 0xA,
+  MIDI_TYPE_CONTROL_CHANGE   = 0xB,
+  MIDI_TYPE_PROGRAM_CHANGE   = 0xC,
+  MIDI_TYPE_CHANNEL_PRESSURE = 0xD,
+  MIDI_TYPE_PITCH_WHEEL      = 0xE,
+};
+
 class BLEMidi: public BLEService
 {
   public:
@@ -52,10 +63,18 @@ class BLEMidi: public BLEService
 
     virtual err_t start(void);
 
+    bool  configured();
+
+
+    err_t send(uint8_t data[]);
+    err_t send(uint8_t status, uint8_t byte1, uint8_t byte2);
+
   private:
     BLECharacteristic _io;
 
     friend void blemidi_write_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
 };
+
+
 
 #endif /* BLEMIDI_H_ */
