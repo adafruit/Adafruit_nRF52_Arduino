@@ -108,7 +108,6 @@ uint8_t* BLECentral::extractScanData(const ble_gap_evt_adv_report_t* report, uin
 
 bool BLECentral::_checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t uuid[], uint8_t uuid_len)
 {
-  uint8_t const* data_arr[2];
   uint8_t type_arr[2];
 
   // Check both UUID16 more available and complete list
