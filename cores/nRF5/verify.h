@@ -47,8 +47,6 @@ extern "C"
 {
 #endif
 
-#define CFG_DEBUG     1
-
 #define RETURN_VOID
 
 //--------------------------------------------------------------------+
@@ -66,7 +64,7 @@ extern "C"
 // VERIFY Helper
 //--------------------------------------------------------------------+
 #if CFG_DEBUG >= 1
-//  #define VERIFY_MESS(format, ...) printf("[%08ld] %s: %d: verify failed\n", get_millis(), __func__, __LINE__)
+//  #define VERIFY_MESS(format, ...) cprintf("[%08ld] %s: %d: verify failed\n", get_millis(), __func__, __LINE__)
   #define VERIFY_MESS(_status)   cprintf("%s: %d: verify failed, status = 0x%04X\n", __PRETTY_FUNCTION__, __LINE__, _status);
 #else
   #define VERIFY_MESS(_status)

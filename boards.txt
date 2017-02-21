@@ -15,18 +15,13 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-menu.chip=Chip
-#menu.softdevice=Softdevice
-#menu.version=Version
-menu.lfclk=Low Frequency Clock
-menu.board_variant=Board Variant
+menu.debug=Debug Level
 
 feather52.name=Adafruit Bluefruit nRF52 Feather
 
 feather52.vid.0=0x10C4
 feather52.pid.0=0xEA60
 
-#feather52.upload.tool=sandeepmistry:openocd
 feather52.upload.tool=nrfutil
 feather52.upload.protocol=nrfutil
 feather52.upload.interface=serial
@@ -36,7 +31,6 @@ feather52.upload.use_1200bps_touch=false
 feather52.upload.wait_for_upload_port=false
 feather52.upload.native_usb=false
 
-#feather52.bootloader.tool=sandeepmistry:openocd
 feather52.bootloader.tool=nrfjprog
 
 feather52.build.mcu=cortex-m4
@@ -53,18 +47,11 @@ feather52.build.nrfutil=nrfutil
 feather52.build.nrfutil.windows={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/win32/nrfutil.exe
 feather52.build.nrfutil.macosx=/usr/local/bin/nrfutil
 
-feather52.menu.lfclk.lfxo=Crystal Oscillator
-feather52.menu.lfclk.lfxo.build.lfclk_flags=-DUSE_LFXO
-feather52.menu.lfclk.lfrc=RC Oscillator
-feather52.menu.lfclk.lfrc.build.lfclk_flags=-DUSE_LFRC
-feather52.menu.lfclk.lfsynt=Synthesized
-feather52.menu.lfclk.lfsynt.build.lfclk_flags=-DUSE_LFSYNT
+feather52.menu.debug.l0=Level 0 (Release)
+feather52.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 
-#feather52.menu.softdevice.none=None
-#feather52.menu.softdevice.none.softdevice=none
-#feather52.menu.softdevice.s132=S132
-#feather52.menu.softdevice.s132.softdevice=s132
-#feather52.menu.softdevice.s132.softdeviceversion=2.0.1
-#feather52.menu.softdevice.s132.upload.maximum_size=409600
-#feather52.menu.softdevice.s132.build.extra_flags=-DNRF52 -DS132 -DNRF51_S132
-#feather52.menu.softdevice.s132.build.ldscript=armgcc_s132_nrf52832_xxaa.ld
+feather52.menu.debug.l1=Level 1 (Error Mess)
+feather52.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+
+feather52.menu.debug.l2=Level 2 (TBD)
+feather52.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
