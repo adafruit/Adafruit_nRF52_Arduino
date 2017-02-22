@@ -287,11 +287,10 @@ def serial(package, port, baudrate, flowcontrol):
         click.echo("Failed to upgrade target. Error is: {0}".format(e.message))
         click.echo("")
         click.echo("Possible causes:")
-        click.echo("- bootloader, SoftDevice or application on target "
+        click.echo("- Bootloader, SoftDevice or Application on target "
                    "does not match the requirements in the DFU package.")
-        click.echo("- baud rate or flow control is not the same as in the target bootloader.")
-        click.echo("- target is not in DFU mode. If using the SDK examples, "
-                   "press Button 4 and RESET and release both to enter DFU mode.")
+        click.echo("- Baud rate must be 115200, Flow control must be off.")
+        click.echo("- Target is not in DFU mode. Ground DFU pin and RESET and release both to enter DFU mode.")
 
         return False
 
