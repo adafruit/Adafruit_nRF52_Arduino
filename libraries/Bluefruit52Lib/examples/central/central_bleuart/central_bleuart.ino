@@ -28,25 +28,25 @@ void setup()
   Bluefruit.setConnLedInterval(250);
 
   // Callbacks for Central
-  Bluefruit.central.setConnectCallback(connect_callback);
-  Bluefruit.central.setDisconnectCallback(disconnect_callback);
+  Bluefruit.Central.setConnectCallback(connect_callback);
+  Bluefruit.Central.setDisconnectCallback(disconnect_callback);
 
   // Start Central Scan
-  Bluefruit.central.setScanCallback(scan_callback);
-  Bluefruit.central.startScanning();
+  Bluefruit.Central.setScanCallback(scan_callback);
+  Bluefruit.Central.startScanning();
 }
 
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
   // Check if advertising contain BleUart service
-  if ( Bluefruit.central.checkUuidInScan(report, BLEUART_UUID_SERVICE) )
+  if ( Bluefruit.Central.checkUuidInScan(report, BLEUART_UUID_SERVICE) )
   {
     Serial.println("BLE UART service detected");
     Serial.println("Attempt to connect ... ");
 
     // Connect to device with bleuart service in advertising
     // Use Min & Max Connection Interval default value
-    Bluefruit.central.connect(report);
+    Bluefruit.Central.connect(report);
   }
 }
 

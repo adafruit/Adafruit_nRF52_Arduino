@@ -82,7 +82,7 @@ static void bluefruit_blinky_cb( TimerHandle_t xTimer )
  * Constructor
  */
 AdafruitBluefruit::AdafruitBluefruit(void)
-  : central()
+  : Central()
 {
   _prph_enabled    = true;
   _central_enabled = false;
@@ -792,7 +792,7 @@ void AdafruitBluefruit::_poll(void)
         }
 
         // Central Event Handler
-        if (_central_enabled) central._event_handler(evt);
+        if (_central_enabled) Central._event_handler(evt);
 
         // GATTs characteristics event handler
         for(int i=0; i<_chars_count; i++)

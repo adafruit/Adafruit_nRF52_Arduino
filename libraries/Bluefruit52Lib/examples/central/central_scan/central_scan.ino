@@ -26,8 +26,8 @@ void setup()
 
   // Start Central Scan
   Bluefruit.setConnLedInterval(250);
-  Bluefruit.central.setScanCallback(scan_callback);
-  Bluefruit.central.startScanning();
+  Bluefruit.Central.setScanCallback(scan_callback);
+  Bluefruit.Central.startScanning();
 }
 
 void scan_callback(ble_gap_evt_adv_report_t* report)
@@ -37,7 +37,7 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   Serial.println();
 
   // Check if advertising contain BleUart service
-  if ( Bluefruit.central.checkUuidInScan(report, BLEUART_UUID_SERVICE) )
+  if ( Bluefruit.Central.checkUuidInScan(report, BLEUART_UUID_SERVICE) )
   {
     Serial.println("BLE UART service detected");
   }
