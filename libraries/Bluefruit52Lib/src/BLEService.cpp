@@ -85,3 +85,8 @@ err_t BLEService::addToGatt(void)
   return ERROR_NONE;
 }
 
+err_t BLEService::start(void)
+{
+  return addToGatt();
+}
+

@@ -106,10 +106,6 @@ class AdafruitBluefruit
     /*------------------------------------------------------------------*/
     /*
      *------------------------------------------------------------------*/
-    // Add service without using BLEService instance
-    err_t addService(uint16_t uuid16);
-    err_t addService(uint8_t const  uuid128[]);
-
     void disconnect(void);
     bool connected(void);
 

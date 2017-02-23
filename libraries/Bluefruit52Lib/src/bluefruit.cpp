@@ -449,23 +449,6 @@ void AdafruitBluefruit::stopAdvertising(void)
   _stopConnLed(); // stop blinking
 }
 
-err_t AdafruitBluefruit::addService(uint16_t uuid16)
-{
-  BLEUuid uuid(uuid16);
-
-  uint16_t svc_handle;
-  return sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &uuid._uuid, &svc_handle);
-}
-
-err_t AdafruitBluefruit::addService(uint8_t const uuid128[])
-{
-  BLEUuid uuid;
-  uuid.set(uuid128);
-
-  uint16_t svc_handle;
-  return sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &uuid._uuid, &svc_handle);
-}
-
 err_t AdafruitBluefruit::_registerCharacteristic(BLECharacteristic* chars)
 {
   if ( _chars_count == BLE_MAX_CHARS ) return NRF_ERROR_NO_MEM;
