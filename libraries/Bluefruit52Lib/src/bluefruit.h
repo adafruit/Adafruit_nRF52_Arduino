@@ -176,8 +176,8 @@ public: // temporary
       ble_gap_id_key_t  peer_id;
 
       // System Attr (aka CCCDs)
-      uint8_t*          sys_attr;
       uint16_t          sys_attr_len;
+      uint8_t*          sys_attr;
     }_bond_data;
 private:
 

@@ -116,17 +116,34 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
         uint16_t          crc16;
       }peer_data_t;
 
-      // Peer data address is defined in bootloader linker @0x20007F80
+      /* Save Peer data
+       * Peer data address is defined in bootloader linker @0x20007F80
+       * - If bonded : save Security information
+       * - Otherwise : save Address for direct advertising
+       *
+       * TODO may force bonded only for security reason
+       */
       peer_data_t* peer_data = (peer_data_t*) (0x20007F80UL);
       varclr(peer_data);
 
       uint16_t sysattr_len = sizeof(peer_data->sys_attr);
       sd_ble_gatts_sys_attr_get(Bluefruit.connHandle(), peer_data->sys_attr, &sysattr_len, BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS);
 
-      // Received Start DFU command, init the reboot sequence into DFU OTA mode
+      if ( !Bluefruit.connBonded() )
+      {
+        peer_data->addr  = Bluefruit.peerAddr();
+      }else
+      {
+        peer_data->addr    = Bluefruit._bond_data.peer_id.id_addr_info;
+        peer_data->irk     = Bluefruit._bond_data.peer_id.id_info;
+
+        peer_data->enc_key = Bluefruit._bond_data.own_enc;
+      }
+      peer_data->crc16 = crc16((uint8_t*) peer_data, offsetof(peer_data_t, crc16));
+
+      // Initiate DFU Sequence and reboot into DFU OTA mode
       Bluefruit.disconnect();
       Bluefruit.stopAdvertising();
-
 
       // Set GPReset to DFU OTA
       enum { DFU_OTA_MAGIC = 0xB1 };
@@ -145,22 +162,6 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
       }
 
       VERIFY_STATUS( sd_softdevice_vector_table_base_set(NRF_UICR->NRFFW[0]), RETURN_VOID);
-
-      // Save Peer data
-      // - If bonded : save Security information
-      // - Otherwise : save Address for direct advertising
-//      if ( !Bluefruit.connBonded() )
-      {
-        peer_data->addr = Bluefruit.peerAddr();
-        peer_data->crc16 = crc16((uint8_t*) peer_data, offsetof(peer_data_t, crc16));
-//      }else
-//      {
-//        peer_data->addr = Bluefruit._bond_data.peer_id.id_addr_info;
-//        peer_data->irk  = Bluefruit._bond_data.peer_id.id_info;
-//
-//        peer_data->enc_key = Bluefruit._bond_data.own_enc;
-//        peer_data->
-      }
 
       __set_CONTROL(0); // switch to MSP, required if using FreeRTOS
       bootloader_util_app_start(NRF_UICR->NRFFW[0]);
