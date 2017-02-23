@@ -1,0 +1,188 @@
+/*********************************************************************
+ This is an example for our nRF52 based Bluefruit LE modules
+
+ Pick one up today in the adafruit shop!
+
+ Adafruit invests time and resources providing this open source code,
+ please support Adafruit and open-source hardware by purchasing
+ products from Adafruit!
+
+ MIT license, check LICENSE for more information
+ All text above, and the splash screen below must be included in
+ any redistribution
+*********************************************************************/
+#include <bluefruit.h>
+
+#define STATUS_LED  (17)
+#define BLINKY_MS   (2000)
+
+/* HRM Service Definitions
+ * Heart Rate Monitor Service:  0x180D  
+ * Heart Rate Measurement Char: 0x2A37 
+ * Body Sensor Location Char:   0x2A38  
+ */
+BLEService        hrms = BLEService(UUID16_SVC_HEART_RATE);
+BLECharacteristic hrmc = BLECharacteristic(UUID16_CHR_HEART_RATE_MEASUREMENT);
+BLECharacteristic bslc = BLECharacteristic(UUID16_CHR_BODY_SENSOR_LOCATION);
+
+BLEDis bledis;    // DIS (Device Information Service) helper class instance
+BLEBas blebas;    // BAS (Battery Service) helper class instance
+
+uint32_t blinkyms;
+
+// Advance function prototypes
+void setupAdv(void);
+void setupHRM(void);
+void connect_callback(void);
+void disconnect_callback(uint8_t reason);
+
+void setup()
+{
+  Serial.begin(115200);
+  Serial.println("Bluefruit52 HRM Example");
+  Serial.println("-----------------------");
+
+  // Setup LED pins and reset blinky counter
+  pinMode(STATUS_LED, OUTPUT);
+  blinkyms = millis();
+
+  // Initialise the Bluefruit module
+  Serial.println("Initialise the Bluefruit nRF52 module");
+  Bluefruit.begin();
+
+  // Set the advertised device name (keep it short!)
+  Serial.println("Setting Device Name to 'Feather52 HRM'");
+  Bluefruit.setName("Feather52 HRM");
+
+  // Set the connect/disconnect callback handlers
+  Bluefruit.setConnectCallback(connect_callback);
+  Bluefruit.setDisconnectCallback(disconnect_callback);
+
+  // Configure and Start the Device Information Service
+  Serial.println("Configuring the Device Information Service");
+  bledis.setManufacturer("Adafruit Industries");
+  bledis.setModel("nRF52 Feather");
+  bledis.setFirmwareRev("1.0.0");
+  bledis.start();
+
+  // Start the BLE Battery Service and set it to 100%
+  Serial.println("Configuring the Battery Service");
+  blebas.start();
+  blebas.update(100);
+
+  // Setup the Heart Rate Monitor service using
+  // BLEService and BLECharacteristic classes
+  Serial.println("Configuring the Heart Rate Monitor Service");
+  setupHRM();
+  
+  // Setup the advertising packet(s)
+  Serial.println("Setting up the advertising payload(s)");
+  setupAdv();
+
+  // Start Advertising
+  Serial.println("Ready Player One! (Advertising)");
+  Bluefruit.startAdvertising();
+}
+
+void setupAdv(void)
+{
+  Bluefruit.addAdvFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  Bluefruit.addAdvTxPower();
+
+  // Include HRM Service UUID
+  Bluefruit.addAdvService(hrms);
+
+  // There isn't enough room in the advertising packet for the
+  // name so we'll place it on the secondary Scan Response packet
+  Bluefruit.addScanRespName();
+}
+
+void setupHRM(void)
+{
+  // Configure the Heart Rate Monitor service
+  // See: https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.heart_rate.xml
+  // Supported Characteristics:
+  // Name                         UUID    Requirement Properties
+  // ---------------------------- ------  ----------- ----------
+  // Heart Rate Measurement       0x2137  Mandatory   Notify
+  // Body Sensor Location         0x2138  Optional    Read
+  // Heart Rate Control Point     0x2A39  Conditional Write       <-- Not used here
+  hrms.start();   
+  
+  // Note: You must start the service before calling any characteristics
+  // Calling .start() on a BLECharacteristic will cause it to be added to
+  // the last BLEService that was 'start()'ed!
+  
+  // Configure the Heart Rate Measurement characteristic
+  // See: https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.heart_rate_measurement.xml
+  // Permission = Notify
+  // Min Len    = 1
+  // Max Len    = 8
+  //    B0      = UINT8  - Flag (MANDATORY)
+  //      b5:7  = Reserved
+  //      b4    = RR-Internal (0 = Not present, 1 = Present)
+  //      b3    = Energy expended status (0 = Not present, 1 = Present)
+  //      b1:2  = Sensor contact status (0+1 = Not supported, 2 = Supported but contact not detected, 3 = Supported and detected)
+  //      b0    = Value format (0 = UINT8, 1 = UINT16)
+  //    B1      = UINT8  - 8-bit heart rate measurement value in BPM
+  //    B2:3    = UINT16 - 16-bit heart rate measurement value in BPM
+  //    B4:5    = UINT16 - Energy expended in joules
+  //    B6:7    = UINT16 - RR Internal (1/1024 second resolution)
+  hrmc.setProperties(CHR_PROPS_NOTIFY);
+  hrmc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  hrmc.setMaxLen(8);
+  hrmc.start();
+
+  // Set the characteristic to use 8-bit values, with the sensor connected and detected
+  uint8_t hrmdata[2] = { 0b00000110, 0x40 };
+  hrmc.write(hrmdata, 2);
+
+  // Configure the Body Sensor Location characteristic
+  // See: https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.body_sensor_location.xml
+  // Permission = Read
+  // Min Len    = 1
+  // Max Len    = 1
+  //    B0      = UINT8 - Body Sensor Location
+  //      0     = Other
+  //      1     = Chest
+  //      2     = Wrist
+  //      3     = Finger
+  //      4     = Hand
+  //      5     = Ear Lobe
+  //      6     = Foot
+  //      7:255 = Reserved
+  bslc.setProperties(CHR_PROPS_READ);
+  bslc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  bslc.setFixedLen(1);
+  bslc.start();
+
+  // Set the characteristic to 'Wrist' (2)
+  bslc.write(2);
+}
+
+uint8_t bps = 0;
+void loop()
+{
+  // Blinky!
+  if (blinkyms+BLINKY_MS < millis()) {
+    blinkyms = millis();
+    digitalToggle(STATUS_LED);
+
+    // Set the characteristic to use 8-bit values, with the sensor connected and detected
+    uint8_t hrmdata[2] = { 0b00000110, bps++ };
+    hrmc.write(hrmdata, sizeof(hrmdata));
+  }
+}
+
+void connect_callback(void)
+{
+  Serial.println("Connected");
+}
+
+void disconnect_callback(uint8_t reason)
+{
+  (void) reason;
+  
+  Serial.println("Disconnected");
+  Serial.println("Bluefruit will auto start advertising (default)");
+}
