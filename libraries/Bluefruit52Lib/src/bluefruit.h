@@ -167,8 +167,12 @@ class AdafruitBluefruit
     bool     _bonded;
 
     // TODO move to bonding place
-    ble_gap_enc_key_t _enc_key;
-    ble_gap_id_key_t  _peer_id;
+    struct {
+      ble_gap_enc_key_t own_enc;
+      ble_gap_enc_key_t peer_enc;
+      ble_gap_id_key_t  peer_id;
+    }_bond;
+
 
     ble_gap_addr_t    _peer_addr;
 
@@ -183,9 +187,11 @@ class AdafruitBluefruit
     disconnect_callback_t _discconnect_cb;
 
     bool _addToAdv(bool scan_resp, uint8_t type, const void* data, uint8_t len);
-    void _poll(void);
+
     void _startConnLed(void);
     void _stopConnLed(void);
+
+    void _poll(void);
 
     friend void adafruit_bluefruit_task(void* arg);
     friend class BLECentral;

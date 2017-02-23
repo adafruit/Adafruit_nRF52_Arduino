@@ -72,9 +72,7 @@ void loop()
   {
     hasKeyPressed = false;
     blehid.keyRelease();
-
-    blehid.consumerKeyRelease();
-
+    
     // Delay a bit after a report
     delay(5);
   }
@@ -88,9 +86,7 @@ void loop()
 
     blehid.keyPress(ch);
     hasKeyPressed = true;
-
-    blehid.consumerKeyPress(HID_USAGE_CONSUMER_MUTE);
-
+    
     // Delay a bit after a report
     delay(5);
   }

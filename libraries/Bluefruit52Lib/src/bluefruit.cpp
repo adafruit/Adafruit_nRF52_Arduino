@@ -106,8 +106,8 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _chars_count = 0;
   for(uint8_t i=0; i<BLE_MAX_CHARS; i++) _chars_list[i] = NULL;
 
-  varclr(&_enc_key);
-  varclr(&_peer_id);
+  varclr(&_bond);
+
   _sys_attr       = NULL;
   _sys_attr_len   = 0;
 
@@ -582,10 +582,8 @@ void AdafruitBluefruit::_poll(void)
           default: break;
         }
       }
-      else
-      {
-        // Error, do nothing nowx
-      }
+      // Error, do nothing now
+      else { }
 
       /*------------- BLE Event -------------*/
       uint32_t ev_buf[BLE_STACK_EVT_MSG_BUF_SIZE/4 + 4];
@@ -611,7 +609,6 @@ void AdafruitBluefruit::_poll(void)
         {
           case BLE_GAP_EVT_CONNECTED:
           {
-            // PRINT_MESS("Connected");
             ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
 
             if (para->role == BLE_GAP_ROLE_PERIPH)
@@ -632,14 +629,13 @@ void AdafruitBluefruit::_poll(void)
           break;
 
           case BLE_GAP_EVT_DISCONNECTED:
-            // PRINT_MESS("Disconnected");
-
             // Check if it is peripheral connection
             if (_conn_hdl == evt->evt.gap_evt.conn_handle)
             {
               if (_led_conn)  ledOff(LED_CONN);
 
               _conn_hdl = BLE_GATT_HANDLE_INVALID;
+              _bonded   = false;
               varclr(&_peer_addr);
 
               vSemaphoreDelete(_txbuf_sem);
@@ -667,33 +663,19 @@ void AdafruitBluefruit::_poll(void)
 
           case BLE_GAP_EVT_CONN_PARAM_UPDATE:
           {
+            // Central set the connection parameter
 //            ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
 //            PRINT_INT(param->min_conn_interval);
 //            PRINT_INT(param->max_conn_interval);
           }
           break;
 
-          case BLE_GAP_EVT_SEC_INFO_REQUEST:
-          {
-//            PRINT_MESS("BLE_GAP_EVT_SEC_INFO_REQUEST");
-            // If bonded previously, return information. Otherwise NULL
-            ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
-
-            if (_enc_key.master_id.ediv == sec_request->master_id.ediv)
-            {
-              PRINT_LOCATION();
-              sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_enc_key.enc_info, &_peer_id.id_info, NULL);
-            } else
-            {
-              PRINT_LOCATION();
-              sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
-            }
-          }
-          break;
-
           case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
           {
-//            PRINT_MESS("BLE_GAP_EVT_SEC_PARAMS_REQUEST");
+            /* Step 1: Pairing/Bonding
+             * - Central supplies its parameters
+             * - We replies with our security parameters
+             */
 //            ble_gap_sec_params_t* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
 
             ble_gap_sec_params_t sec_para =
@@ -705,21 +687,23 @@ void AdafruitBluefruit::_poll(void)
                 .io_caps      = BLE_GAP_IO_CAPS_NONE, // (CFG_PIN_ENABLED && nvm_data.core.passkey_enable) ? BLE_GAP_IO_CAPS_DISPLAY_ONLY : BLE_GAP_IO_CAPS_NONE ,
                 .oob          = 0,
                 .min_key_size = 7,
-                .max_key_size = 16
+                .max_key_size = 16,
+                .kdist_own    = { .enc = 1, .id = 1},
+                .kdist_peer   = { .enc = 1, .id = 1},
             };
 
             ble_gap_sec_keyset_t keyset =
             {
                 .keys_own = {
-                    .p_enc_key  = &_enc_key,
+                    .p_enc_key  = &_bond.own_enc,
                     .p_id_key   = NULL,
                     .p_sign_key = NULL,
                     .p_pk       = NULL
                 },
 
                 .keys_peer = {
-                    .p_enc_key  = NULL,
-                    .p_id_key   = &_peer_id,
+                    .p_enc_key  = &_bond.peer_enc,
+                    .p_id_key   = &_bond.peer_id,
                     .p_sign_key = NULL,
                     .p_pk       = NULL
                 }
@@ -729,13 +713,36 @@ void AdafruitBluefruit::_poll(void)
           }
           break;
 
+          case BLE_GAP_EVT_SEC_INFO_REQUEST:
+          {
+            // If bonded previously, Central will ask for stored keys.
+            // return security information. Otherwise NULL
+            ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
+
+            PRINT_HEX(sec_request->master_id.ediv);
+            if (_bond.own_enc.master_id.ediv == sec_request->master_id.ediv)
+            {
+              PRINT_LOCATION();
+              sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_bond.own_enc.enc_info, &_bond.peer_id.id_info, NULL);
+            } else
+            {
+              PRINT_LOCATION();
+              sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
+            }
+          }
+          break;
+
+
           case BLE_GAP_EVT_PASSKEY_DISPLAY: break;
 
           case BLE_GAP_EVT_CONN_SEC_UPDATE:
           {
-            //PRINT_MESS("BLE_GAP_EVT_CONN_SEC_UPDATE");
+            // Connection is secured
             ble_gap_conn_sec_t* conn_sec = (ble_gap_conn_sec_t*) &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
             (void) conn_sec;
+
+            // TODO check if this connection is bonded
+            _bonded = true;
 
             // Connection is secured, Apply Service Context
             sd_ble_gatts_sys_attr_set(_conn_hdl, _sys_attr, _sys_attr_len, SVC_CONTEXT_FLAG);
@@ -746,7 +753,7 @@ void AdafruitBluefruit::_poll(void)
           {
             ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
             // Bonding succeeded --> save encryption keys
-            //PRINT_HEX(status->auth_status);
+            PRINT_HEX(status->auth_status);
             if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
             {
               _bonded = true;
@@ -755,7 +762,6 @@ void AdafruitBluefruit::_poll(void)
           break;
 
           case BLE_GATTS_EVT_SYS_ATTR_MISSING:
-            //PRINT_MESS("BLE_GATTS_EVT_SYS_ATTR_MISSING");
             sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
           break;
 
