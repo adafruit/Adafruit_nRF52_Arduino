@@ -146,9 +146,21 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
 
       VERIFY_STATUS( sd_softdevice_vector_table_base_set(NRF_UICR->NRFFW[0]), RETURN_VOID);
 
-      // Save Peer data (currently only support non-bonded peer)
-      peer_data->addr = Bluefruit.peerAddr();
-      peer_data->crc16 = crc16((uint8_t*) peer_data, offsetof(peer_data_t, crc16));
+      // Save Peer data
+      // - If bonded : save Security information
+      // - Otherwise : save Address for direct advertising
+//      if ( !Bluefruit.connBonded() )
+      {
+        peer_data->addr = Bluefruit.peerAddr();
+        peer_data->crc16 = crc16((uint8_t*) peer_data, offsetof(peer_data_t, crc16));
+//      }else
+//      {
+//        peer_data->addr = Bluefruit._bond_data.peer_id.id_addr_info;
+//        peer_data->irk  = Bluefruit._bond_data.peer_id.id_info;
+//
+//        peer_data->enc_key = Bluefruit._bond_data.own_enc;
+//        peer_data->
+      }
 
       __set_CONTROL(0); // switch to MSP, required if using FreeRTOS
       bootloader_util_app_start(NRF_UICR->NRFFW[0]);
