@@ -117,6 +117,7 @@ class AdafruitBluefruit
     err_t setConnIntervalMS(uint16_t min_ms, uint16_t max_ms);
 
     uint16_t connHandle(void);
+    bool     connBonded(void);
     ble_gap_addr_t peerAddr(void);
 
     bool txbuf_get(uint32_t ms);
@@ -167,17 +168,21 @@ class AdafruitBluefruit
     bool     _bonded;
 
     // TODO move to bonding place
+public: // temporary
     struct {
+      // Keys
       ble_gap_enc_key_t own_enc;
       ble_gap_enc_key_t peer_enc;
       ble_gap_id_key_t  peer_id;
-    }_bond;
 
+      // System Attr (aka CCCDs)
+      uint8_t*          sys_attr;
+      uint16_t          sys_attr_len;
+    }_bond_data;
+private:
 
     ble_gap_addr_t    _peer_addr;
 
-    uint8_t*          _sys_attr;
-    uint16_t          _sys_attr_len;
 
     // Transmission Buffer Count for HVX notification, max is seen at 7
     SemaphoreHandle_t _txbuf_sem;

@@ -106,10 +106,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _chars_count = 0;
   for(uint8_t i=0; i<BLE_MAX_CHARS; i++) _chars_list[i] = NULL;
 
-  varclr(&_bond);
-
-  _sys_attr       = NULL;
-  _sys_attr_len   = 0;
+  varclr(&_bond_data);
 
   _connect_cb     = NULL;
   _discconnect_cb = NULL;
@@ -481,6 +478,11 @@ uint16_t AdafruitBluefruit::connHandle(void)
   return _conn_hdl;
 }
 
+bool AdafruitBluefruit::connBonded(void)
+{
+  return _bonded;
+}
+
 ble_gap_addr_t AdafruitBluefruit::peerAddr(void)
 {
   return _peer_addr;
@@ -495,18 +497,17 @@ err_t AdafruitBluefruit::saveAllCCCD(void)
 {
   uint16_t len=0;
   sd_ble_gatts_sys_attr_get(_conn_hdl, NULL, &len, SVC_CONTEXT_FLAG);
-  //PRINT_INT(len);
 
   // Free and re-malloc if not enough
-  if ( _sys_attr_len < len )
+  if ( _bond_data.sys_attr_len < len )
   {
-    if (_sys_attr) rtos_free(_sys_attr);
+    if (_bond_data.sys_attr) rtos_free(_bond_data.sys_attr);
 
-    _sys_attr     = (uint8_t*) rtos_malloc( len );
-    _sys_attr_len = len;
+    _bond_data.sys_attr     = (uint8_t*) rtos_malloc( len );
+    _bond_data.sys_attr_len = len;
   }
 
-  return sd_ble_gatts_sys_attr_get(_conn_hdl, _sys_attr, &_sys_attr_len, SVC_CONTEXT_FLAG);
+  return sd_ble_gatts_sys_attr_get(_conn_hdl, _bond_data.sys_attr, &_bond_data.sys_attr_len, SVC_CONTEXT_FLAG);
 }
 
 /*------------------------------------------------------------------*/
@@ -619,6 +620,8 @@ void AdafruitBluefruit::_poll(void)
               _conn_hdl  = evt->evt.gap_evt.conn_handle;
               _peer_addr = para->peer_addr;
 
+              PRINT_HEX(_conn_hdl);
+
               uint8_t txbuf_max;
               (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
               _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
@@ -695,15 +698,15 @@ void AdafruitBluefruit::_poll(void)
             ble_gap_sec_keyset_t keyset =
             {
                 .keys_own = {
-                    .p_enc_key  = &_bond.own_enc,
+                    .p_enc_key  = &_bond_data.own_enc,
                     .p_id_key   = NULL,
                     .p_sign_key = NULL,
                     .p_pk       = NULL
                 },
 
                 .keys_peer = {
-                    .p_enc_key  = &_bond.peer_enc,
-                    .p_id_key   = &_bond.peer_id,
+                    .p_enc_key  = &_bond_data.peer_enc,
+                    .p_id_key   = &_bond_data.peer_id,
                     .p_sign_key = NULL,
                     .p_pk       = NULL
                 }
@@ -720,10 +723,11 @@ void AdafruitBluefruit::_poll(void)
             ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
 
             PRINT_HEX(sec_request->master_id.ediv);
-            if (_bond.own_enc.master_id.ediv == sec_request->master_id.ediv)
+            // EDIV_INIT_VAL
+            if (_bond_data.own_enc.master_id.ediv == sec_request->master_id.ediv)
             {
               PRINT_LOCATION();
-              sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_bond.own_enc.enc_info, &_bond.peer_id.id_info, NULL);
+              sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_bond_data.own_enc.enc_info, &_bond_data.peer_id.id_info, NULL);
             } else
             {
               PRINT_LOCATION();
@@ -745,7 +749,7 @@ void AdafruitBluefruit::_poll(void)
             _bonded = true;
 
             // Connection is secured, Apply Service Context
-            sd_ble_gatts_sys_attr_set(_conn_hdl, _sys_attr, _sys_attr_len, SVC_CONTEXT_FLAG);
+            sd_ble_gatts_sys_attr_set(_conn_hdl, _bond_data.sys_attr, _bond_data.sys_attr_len, SVC_CONTEXT_FLAG);
           }
           break;
 
@@ -762,11 +766,12 @@ void AdafruitBluefruit::_poll(void)
           break;
 
           case BLE_GATTS_EVT_SYS_ATTR_MISSING:
-            sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
+            // TODO Look up bonded information and apply application context
+            // sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
           break;
 
-          // Save CCCD when enabled/disabled if bonded
           case BLE_GATTS_EVT_WRITE:
+            // Auto Save when CCCD is enabled/disabled if bonded
             if ( _bonded )
             {
               ble_gatts_evt_write_t * write = &evt->evt.gatts_evt.params.write;
