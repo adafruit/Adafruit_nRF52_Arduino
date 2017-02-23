@@ -3,6 +3,18 @@
 // reset is required before this change takes effect since the CONFIG
 // memory is only read on power up.
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!! IMPORTANT NOTE ... READ BEFORE RUNNING THIS SKETCH !!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+// UICR customer registers are meant to be stored with values
+// that are supposed to stay there during the life time of the softdevice.
+// You cannot erase them without erasing everything on chip, so setting the
+// NFC pins to GPIO mode is a ONE WAY OPERATION and you will need a debugger
+// like a Segger J-Link to set them back to NFC mode!
+
 void setup() {
   Serial.begin(115200);
   Serial.println("Bluefruit52 NFC to GPIO Pin Config");
@@ -18,7 +30,7 @@ void setup() {
         delay(500);
         NVIC_SystemReset();
       }
-      
+
 }
 void loop() {
   // put your main code here, to run repeatedly:
