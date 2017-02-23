@@ -17,9 +17,9 @@
 #define BLINKY_MS   (2000)
 
 /* HRM Service Definitions
- * Heart Rate Monitor Service:  0x180D  
- * Heart Rate Measurement Char: 0x2A37 
- * Body Sensor Location Char:   0x2A38  
+ * Heart Rate Monitor Service:  0x180D
+ * Heart Rate Measurement Char: 0x2A37
+ * Body Sensor Location Char:   0x2A38
  */
 BLEService        hrms = BLEService(UUID16_SVC_HEART_RATE);
 BLECharacteristic hrmc = BLECharacteristic(UUID16_CHR_HEART_RATE_MEASUREMENT);
@@ -74,7 +74,7 @@ void setup()
   // BLEService and BLECharacteristic classes
   Serial.println("Configuring the Heart Rate Monitor Service");
   setupHRM();
-  
+
   // Setup the advertising packet(s)
   Serial.println("Setting up the advertising payload(s)");
   setupAdv();
@@ -107,12 +107,12 @@ void setupHRM(void)
   // Heart Rate Measurement       0x2137  Mandatory   Notify
   // Body Sensor Location         0x2138  Optional    Read
   // Heart Rate Control Point     0x2A39  Conditional Write       <-- Not used here
-  hrms.start();   
-  
+  hrms.start();
+
   // Note: You must start the service before calling any characteristics
   // Calling .start() on a BLECharacteristic will cause it to be added to
   // the last BLEService that was 'start()'ed!
-  
+
   // Configure the Heart Rate Measurement characteristic
   // See: https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.heart_rate_measurement.xml
   // Permission = Notify
@@ -170,7 +170,13 @@ void loop()
 
     // Set the characteristic to use 8-bit values, with the sensor connected and detected
     uint8_t hrmdata[2] = { 0b00000110, bps++ };
-    hrmc.write(hrmdata, sizeof(hrmdata));
+    // Note: We use .notify instead of .write since this characteristic has
+    // notify as a property!
+    if (hrmc.notifyEnabled()) {
+      hrmc.notify(hrmdata, sizeof(hrmdata));
+    } else {
+      hrmc.write(hrmdata, sizeof(hrmdata));
+    }
   }
 }
 
@@ -182,7 +188,7 @@ void connect_callback(void)
 void disconnect_callback(uint8_t reason)
 {
   (void) reason;
-  
+
   Serial.println("Disconnected");
-  Serial.println("Bluefruit will auto start advertising (default)");
+  Serial.println("Advertising!");
 }
