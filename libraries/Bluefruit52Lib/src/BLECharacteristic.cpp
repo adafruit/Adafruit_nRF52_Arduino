@@ -281,10 +281,8 @@ err_t BLECharacteristic::start(void)
 
   // Currently Only register to Bluefruit when having callback support
   // And The Characteristic must not be temporary memory aka local variable
-  // Or Properties is Notify and/or Indicate for saving CCCD for bonded connection
   if ( !_is_temp &&
-       (_rd_authorize_cb || _wr_authorize_cb || _wr_cb || _cccd_wr_cb ||
-       _properties.notify || _properties.indicate) )
+       (_rd_authorize_cb || _wr_authorize_cb || _wr_cb || _cccd_wr_cb) )
   {
     (void) Bluefruit._registerCharacteristic(this);
   }

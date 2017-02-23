@@ -107,6 +107,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   for(uint8_t i=0; i<BLE_MAX_CHARS; i++) _chars_list[i] = NULL;
 
   varclr(&_bond_data);
+  _bond_data.own_enc.master_id.ediv = 0xFFFF; // invalid value for ediv
 
   _connect_cb     = NULL;
   _discconnect_cb = NULL;
@@ -620,8 +621,6 @@ void AdafruitBluefruit::_poll(void)
               _conn_hdl  = evt->evt.gap_evt.conn_handle;
               _peer_addr = para->peer_addr;
 
-              PRINT_HEX(_conn_hdl);
-
               uint8_t txbuf_max;
               (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
               _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
@@ -636,6 +635,12 @@ void AdafruitBluefruit::_poll(void)
             if (_conn_hdl == evt->evt.gap_evt.conn_handle)
             {
               if (_led_conn)  ledOff(LED_CONN);
+
+              // Save all configured cccd
+              if ( _bonded )
+              {
+                saveAllCCCD();
+              }
 
               _conn_hdl = BLE_GATT_HANDLE_INVALID;
               _bonded   = false;
@@ -722,15 +727,11 @@ void AdafruitBluefruit::_poll(void)
             // return security information. Otherwise NULL
             ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
 
-            PRINT_HEX(sec_request->master_id.ediv);
-            // EDIV_INIT_VAL
             if (_bond_data.own_enc.master_id.ediv == sec_request->master_id.ediv)
             {
-              PRINT_LOCATION();
               sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_bond_data.own_enc.enc_info, &_bond_data.peer_id.id_info, NULL);
             } else
             {
-              PRINT_LOCATION();
               sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
             }
           }
@@ -756,11 +757,14 @@ void AdafruitBluefruit::_poll(void)
           case BLE_GAP_EVT_AUTH_STATUS:
           {
             ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
+
             // Bonding succeeded --> save encryption keys
-            PRINT_HEX(status->auth_status);
             if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
             {
               _bonded = true;
+            }else
+            {
+              PRINT_HEX(status->auth_status);
             }
           }
           break;
@@ -769,24 +773,6 @@ void AdafruitBluefruit::_poll(void)
             // TODO Look up bonded information and apply application context
             // sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
           break;
-
-          case BLE_GATTS_EVT_WRITE:
-            // Auto Save when CCCD is enabled/disabled if bonded
-            if ( _bonded )
-            {
-              ble_gatts_evt_write_t * write = &evt->evt.gatts_evt.params.write;
-
-              for(int i=0; i<_chars_count; i++)
-              {
-                if (_chars_list[i]->handles().cccd_handle == write->handle )
-                {
-                  saveAllCCCD();
-                  break;
-                }
-              }
-            }
-          break;
-
 
           default: break;
         }
