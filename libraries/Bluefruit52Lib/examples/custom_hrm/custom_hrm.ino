@@ -130,11 +130,11 @@ void setupHRM(void)
   //    B6:7    = UINT16 - RR Internal (1/1024 second resolution)
   hrmc.setProperties(CHR_PROPS_NOTIFY);
   hrmc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  hrmc.setMaxLen(8);
+  hrmc.setMaxLen(2);
   hrmc.start();
 
   // Set the characteristic to use 8-bit values, with the sensor connected and detected
-  uint8_t hrmdata[2] = { 0b00000110, 0x40 };
+  uint8_t hrmdata[2] = { 0b00000000, 0x40 };
   hrmc.write(hrmdata, 2);
 
   // Configure the Body Sensor Location characteristic
