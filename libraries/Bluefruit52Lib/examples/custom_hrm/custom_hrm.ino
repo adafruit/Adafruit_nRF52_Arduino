@@ -200,11 +200,35 @@ void loop()
   if (blinkyms+BLINKY_MS < millis()) {
     blinkyms = millis();
     digitalToggle(STATUS_LED);
+  }
 
-    // Set the characteristic to use 8-bit values, with the sensor connected and detected
-    // Note: We use .notify instead of .write since this characteristic has
-    // notify as a property!
-    uint8_t hrmdata[2] = { 0b00000110, bps++ };
-    hrmc.notify(hrmdata, sizeof(hrmdata));
+  // Update the HRM value periodically
+  if (blinkyms+BLINKY_MS < millis()) {
+    // Make sure we are connected to a Central device!
+    if (Bluefruit.connected()) {
+      // Update the value of the notify characteristic
+      uint8_t hrmdata[2] = { 0b00000110, bps++ };           // Connected, increment BPS value
+      err_t resp = hrmc.notify(hrmdata, sizeof(hrmdata));   // Note: We use .notify instead of .write!
+
+      // Check the results of the attempt to update the notify characteristic
+      switch (resp) {
+        case ERROR_NONE:
+          // Value was written correctly!
+          Serial.print("Heart Rate Measurement updated to: ");
+          Serial.println(bps);
+          break;
+        case NRF_ERROR_INVALID_PARAM:
+          // Characteristic property not set to 'Notify'
+          Serial.println("Error: Characteristic 'Property' not set to Notify!");
+          break;
+        case NRF_ERROR_INVALID_STATE:
+          // Notify bit not set in the CCCD by the Central device
+          Serial.println("Warning: Notify not enabled in the CCCD!");
+          break;
+        default:
+          Serial.print("Error: Ox"); Serial.println(resp, HEX);
+          break;
+      }
+    }
   }
 }
