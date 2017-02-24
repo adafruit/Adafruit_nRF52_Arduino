@@ -29,12 +29,14 @@ BLEDis bledis;    // DIS (Device Information Service) helper class instance
 BLEBas blebas;    // BAS (Battery Service) helper class instance
 
 uint32_t blinkyms;
+uint8_t  bps = 0;
 
-// Advance function prototypes
+// Advanced function prototypes
 void setupAdv(void);
 void setupHRM(void);
 void connect_callback(void);
 void disconnect_callback(uint8_t reason);
+void cccd_callback(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
 
 void setup()
 {
@@ -192,7 +194,6 @@ void cccd_callback(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
     }
 }
 
-uint8_t bps = 0;
 void loop()
 {
   // Blinky!
