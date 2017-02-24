@@ -204,29 +204,28 @@ void loop()
 
   // Update the HRM value periodically
   if (blinkyms+BLINKY_MS < millis()) {
-    // Make sure we are connected to a Central device!
     if (Bluefruit.connected()) {
-      // Update the value of the notify characteristic
-      uint8_t hrmdata[2] = { 0b00000110, bps++ };           // Connected, increment BPS value
+      uint8_t hrmdata[2] = { 0b00000110, bps++ };           // Sensor connected, increment BPS value
       err_t resp = hrmc.notify(hrmdata, sizeof(hrmdata));   // Note: We use .notify instead of .write!
 
-      // Check the results of the attempt to update the notify characteristic
+      // This isn't strictly necessary, but you can check the result
+      // of the .notify() attempt to see if it was successful or not
       switch (resp) {
         case ERROR_NONE:
           // Value was written correctly!
-          Serial.print("Heart Rate Measurement updated to: ");
-          Serial.println(bps);
+          Serial.print("Heart Rate Measurement updated to: "); Serial.println(bps);
           break;
         case NRF_ERROR_INVALID_PARAM:
           // Characteristic property not set to 'Notify'
-          Serial.println("Error: Characteristic 'Property' not set to Notify!");
+          Serial.println("ERROR: Characteristic 'Property' not set to Notify!");
           break;
         case NRF_ERROR_INVALID_STATE:
-          // Notify bit not set in the CCCD by the Central device
-          Serial.println("Warning: Notify not enabled in the CCCD!");
+          // Notify bit not set in the CCCD or not connected
+          Serial.println("ERROR: Notify not set in the CCCD or not connected!");
           break;
         default:
-          Serial.print("Error: Ox"); Serial.println(resp, HEX);
+          // Unhandled error code
+          Serial.print("ERROR: Ox"); Serial.println(resp, HEX);
           break;
       }
     }
