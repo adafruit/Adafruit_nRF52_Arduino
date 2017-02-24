@@ -80,7 +80,8 @@ void setup()
   setupAdv();
 
   // Start Advertising
-  Serial.println("Ready Player One! (Advertising)");
+  Serial.println("Ready Player One!!!");
+  Serial.println("\nAdvertising");
   Bluefruit.startAdvertising();
 }
 
@@ -131,11 +132,10 @@ void setupHRM(void)
   hrmc.setProperties(CHR_PROPS_NOTIFY);
   hrmc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   hrmc.setMaxLen(2);
+  hrmc.setCccdWriteCallback(cccd_callback);
   hrmc.start();
-
-  // Set the characteristic to use 8-bit values, with the sensor connected and detected
-  uint8_t hrmdata[2] = { 0b00000110, 0x40 };
-  hrmc.write(hrmdata, 2);
+  uint8_t hrmdata[2] = { 0b00000110, 0x40 }; // Set the characteristic to use 8-bit values, with the sensor connected and detected
+  hrmc.notify(hrmdata, 2);                   // Use .notify instead of .write!
 
   // Configure the Body Sensor Location characteristic
   // See: https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.body_sensor_location.xml
@@ -155,29 +155,7 @@ void setupHRM(void)
   bslc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   bslc.setFixedLen(1);
   bslc.start();
-
-  // Set the characteristic to 'Wrist' (2)
-  bslc.write(2);
-}
-
-uint8_t bps = 0;
-void loop()
-{
-  // Blinky!
-  if (blinkyms+BLINKY_MS < millis()) {
-    blinkyms = millis();
-    digitalToggle(STATUS_LED);
-
-    // Set the characteristic to use 8-bit values, with the sensor connected and detected
-    uint8_t hrmdata[2] = { 0b00000110, bps++ };
-    // Note: We use .notify instead of .write since this characteristic has
-    // notify as a property!
-    if (hrmc.notifyEnabled()) {
-      hrmc.notify(hrmdata, sizeof(hrmdata));
-    } else {
-      hrmc.write(hrmdata, sizeof(hrmdata));
-    }
-  }
+  bslc.write(2);    // Set the characteristic to 'Wrist' (2)
 }
 
 void connect_callback(void)
@@ -191,4 +169,35 @@ void disconnect_callback(uint8_t reason)
 
   Serial.println("Disconnected");
   Serial.println("Advertising!");
+}
+
+void cccd_callback(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
+{
+    (void) request;
+
+    // Check the characteristic this CCCD record is associated with in case
+    // this callback is used for multiple CCCD callbacks.
+    if (chr.uuid == hrmc.uuid) {
+        if (chr.notifyEnabled()) {
+            Serial.println("Heart Rate Measurement CCCD: Notify enabled");
+        } else {
+            Serial.println("Heart Rate Measurement CCCD: Notify disabled");
+        }
+    }
+}
+
+uint8_t bps = 0;
+void loop()
+{
+  // Blinky!
+  if (blinkyms+BLINKY_MS < millis()) {
+    blinkyms = millis();
+    digitalToggle(STATUS_LED);
+
+    // Set the characteristic to use 8-bit values, with the sensor connected and detected
+    // Note: We use .notify instead of .write since this characteristic has
+    // notify as a property!
+    uint8_t hrmdata[2] = { 0b00000110, bps++ };
+    hrmc.notify(hrmdata, sizeof(hrmdata));
+  }
 }
