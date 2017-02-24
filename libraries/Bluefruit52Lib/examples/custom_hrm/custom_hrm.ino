@@ -110,9 +110,10 @@ void setupHRM(void)
   // Heart Rate Control Point     0x2A39  Conditional Write       <-- Not used here
   hrms.start();
 
-  // Note: You must start the service before calling any characteristics
-  // Calling .start() on a BLECharacteristic will cause it to be added to
-  // the last BLEService that was 'start()'ed!
+  // Note: You must call .start() on the BLEService before calling .start() on
+  // any characteristic(s) within that service definition.. Calling .start() on
+  // a BLECharacteristic will cause it to be added to the last BLEService that
+  // was 'start()'ed!
 
   // Configure the Heart Rate Measurement characteristic
   // See: https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.heart_rate_measurement.xml
@@ -175,13 +176,18 @@ void cccd_callback(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
 {
     (void) request;
 
-    // Check the characteristic this CCCD record is associated with in case
-    // this callback is used for multiple CCCD callbacks.
+    // Display the raw request packet
+    Serial.println("CCCD Updated");
+    Serial.print("\tPayload             :");
+    Serial.printBuffer(request->data, request->len);
+
+    // Check the characteristic this CCCD update is associated with in case
+    // this handler is used for multiple CCCD records.
     if (chr.uuid == hrmc.uuid) {
         if (chr.notifyEnabled()) {
-            Serial.println("Heart Rate Measurement CCCD: Notify enabled");
+            Serial.println("\tHeart Rate Measurement 'Notify' enabled");
         } else {
-            Serial.println("Heart Rate Measurement CCCD: Notify disabled");
+            Serial.println("\tHeart Rate Measurement 'Notify' disabled");
         }
     }
 }
