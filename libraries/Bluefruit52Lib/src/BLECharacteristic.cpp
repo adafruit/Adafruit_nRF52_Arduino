@@ -343,6 +343,10 @@ void BLECharacteristic::eventHandler(ble_evt_t* event)
   }
 }
 
+/*------------------------------------------------------------------*/
+/* WRITE
+ *------------------------------------------------------------------*/
+
 err_t BLECharacteristic::write(const uint8_t* data, int len)
 {
   return write(data, len, 0);
@@ -389,9 +393,13 @@ err_t BLECharacteristic::write(uint8_t  num)
   return write( (uint8_t*) &num, sizeof(num));
 }
 
+/*------------------------------------------------------------------*/
+/* NOTIFY
+ *------------------------------------------------------------------*/
 bool BLECharacteristic::notifyEnabled(void)
 {
   VERIFY( _properties.notify && Bluefruit.connected() );
+
   uint16_t cccd;
   ble_gatts_value_t value =
   {
@@ -407,24 +415,32 @@ bool BLECharacteristic::notifyEnabled(void)
 
 err_t BLECharacteristic::notify(const uint8_t* data, int len, uint16_t offset)
 {
-  if ( !_properties.notify ) return NRF_ERROR_INVALID_PARAM;
+  VERIFY( _properties.notify, NRF_ERROR_INVALID_PARAM);
 
-  // Whether Txbuf available or not we still update the chars'value
-  (void) Bluefruit.txbuf_get(100);
-
-  // could not exceed max len
-  uint16_t actual_len = min16(len, _max_len);
-
-  ble_gatts_hvx_params_t hvx_params =
+  // Must already connected for enabled to be tru
+  if ( notifyEnabled() )
   {
-      .handle = _handles.value_handle,
-      .type   = BLE_GATT_HVX_NOTIFICATION,
-      .offset = offset,
-      .p_len  = &actual_len,
-      .p_data =  (uint8_t*) data,
-  };
+    // Whether Txbuf available or not we still update the chars'value
+    (void) Bluefruit.txbuf_get(100);
 
-  VERIFY_STATUS( sd_ble_gatts_hvx(Bluefruit.connHandle(), &hvx_params) );
+    // could not exceed max len
+    uint16_t actual_len = min16(len, _max_len);
+
+    ble_gatts_hvx_params_t hvx_params =
+    {
+        .handle = _handles.value_handle,
+        .type   = BLE_GATT_HVX_NOTIFICATION,
+        .offset = offset,
+        .p_len  = &actual_len,
+        .p_data =  (uint8_t*) data,
+    };
+
+    VERIFY_STATUS( sd_ble_gatts_hvx(Bluefruit.connHandle(), &hvx_params) );
+  }
+  else
+  {
+    write(data, len);
+  }
 
   return ERROR_NONE;
 }

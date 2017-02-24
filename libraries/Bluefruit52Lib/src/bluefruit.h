@@ -106,8 +106,8 @@ class AdafruitBluefruit
     /*------------------------------------------------------------------*/
     /*
      *------------------------------------------------------------------*/
-    void disconnect(void);
     bool connected(void);
+    void disconnect(void);
 
     err_t setConnInterval  (uint16_t min, uint16_t max);
     err_t setConnIntervalMS(uint16_t min_ms, uint16_t max_ms);
@@ -117,10 +117,11 @@ class AdafruitBluefruit
     ble_gap_addr_t peerAddr(void);
 
     bool txbuf_get(uint32_t ms);
-    err_t saveAllCCCD(void);
+
+    bool setPIN(const char* pin);
 
     /*------------------------------------------------------------------*/
-    /* Central
+    /* Central API object
      *------------------------------------------------------------------*/
     BLECentral Central;
 
@@ -142,10 +143,11 @@ class AdafruitBluefruit
     bool _central_enabled;
 
     SemaphoreHandle_t _ble_event_sem;
-    BLEDfu _dfu_svc;
 
     TimerHandle_t _led_blink_th;
     bool _led_conn;
+
+    BLEDfu _dfu_svc;
 
     // ADV Data
     struct {
@@ -163,6 +165,9 @@ class AdafruitBluefruit
     uint16_t _conn_hdl;
     bool     _bonded;
 
+    uint8_t _auth_type;
+    char _pin[BLE_GAP_PASSKEY_LEN];
+
     // TODO move to bonding place
 public: // temporary
     struct {
@@ -179,7 +184,6 @@ private:
 
     ble_gap_addr_t    _peer_addr;
 
-
     // Transmission Buffer Count for HVX notification, max is seen at 7
     SemaphoreHandle_t _txbuf_sem;
 
@@ -192,6 +196,7 @@ private:
     void _startConnLed(void);
     void _stopConnLed(void);
 
+    err_t _saveBondedCCCD(void);
     void _poll(void);
 
     friend void adafruit_bluefruit_task(void* arg);

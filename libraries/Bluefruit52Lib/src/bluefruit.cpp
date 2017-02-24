@@ -103,6 +103,9 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _conn_hdl  = BLE_GATT_HANDLE_INVALID;
   _bonded    = false;
 
+  _auth_type = BLE_GAP_AUTH_KEY_TYPE_NONE;
+  varclr(_pin);
+
   _chars_count = 0;
   for(uint8_t i=0; i<BLE_MAX_CHARS; i++) _chars_list[i] = NULL;
 
@@ -477,7 +480,24 @@ bool AdafruitBluefruit::txbuf_get(uint32_t ms)
   return xSemaphoreTake(_txbuf_sem, ms2tick(ms));
 }
 
-err_t AdafruitBluefruit::saveAllCCCD(void)
+bool AdafruitBluefruit::setPIN(const char* pin)
+{
+  VERIFY ( strlen(pin) == BLE_GAP_PASSKEY_LEN );
+
+  _auth_type = BLE_GAP_AUTH_KEY_TYPE_PASSKEY;
+  memcpy(_pin, pin, BLE_GAP_PASSKEY_LEN);
+
+//  BLE_GAP_OPT_PASSKEY
+
+//  ble_opt_t opt
+//	uint8_t passkey[] = STATIC_PASSKEY;
+//	m_static_pin_option.gap.passkey.p_passkey = passkey;
+//err_code = sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &m_static_pin_option);
+
+  return true;
+}
+
+err_t AdafruitBluefruit::_saveBondedCCCD(void)
 {
   uint16_t len=0;
   sd_ble_gatts_sys_attr_get(_conn_hdl, NULL, &len, SVC_CONTEXT_FLAG);
@@ -622,7 +642,7 @@ void AdafruitBluefruit::_poll(void)
               // Save all configured cccd
               if ( _bonded )
               {
-                saveAllCCCD();
+                _saveBondedCCCD();
               }
 
               _conn_hdl = BLE_GATT_HANDLE_INVALID;
@@ -672,16 +692,23 @@ void AdafruitBluefruit::_poll(void)
             ble_gap_sec_params_t sec_para =
             {
                 .bond         = 1,
-                .mitm         = 0, //CFG_PIN_ENABLED ? nvm_data.core.passkey_enable : 0,
+                .mitm         = 0,
                 .lesc         = 0,
                 .keypress     = 0,
-                .io_caps      = BLE_GAP_IO_CAPS_NONE, // (CFG_PIN_ENABLED && nvm_data.core.passkey_enable) ? BLE_GAP_IO_CAPS_DISPLAY_ONLY : BLE_GAP_IO_CAPS_NONE ,
+                .io_caps      = BLE_GAP_IO_CAPS_NONE,
                 .oob          = 0,
                 .min_key_size = 7,
                 .max_key_size = 16,
                 .kdist_own    = { .enc = 1, .id = 1},
                 .kdist_peer   = { .enc = 1, .id = 1},
             };
+
+            // Change security parameter according to authentication type
+            if ( _auth_type == BLE_GAP_AUTH_KEY_TYPE_PASSKEY)
+            {
+              sec_para.mitm    = 1;
+              sec_para.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
+            }
 
             ble_gap_sec_keyset_t keyset =
             {
@@ -721,7 +748,16 @@ void AdafruitBluefruit::_poll(void)
           break;
 
 
-          case BLE_GAP_EVT_PASSKEY_DISPLAY: break;
+          case BLE_GAP_EVT_PASSKEY_DISPLAY:
+          {
+            ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
+
+            PRINT_INT(passkey_display->match_request);
+            PRINT_BUFFER(passkey_display->passkey, 6);
+
+            // sd_ble_gap_auth_key_reply
+          }
+          break;
 
           case BLE_GAP_EVT_CONN_SEC_UPDATE:
           {
