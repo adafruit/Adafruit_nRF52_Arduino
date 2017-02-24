@@ -134,8 +134,8 @@ void setupHRM(void)
   //    B6:7    = UINT16 - RR Internal (1/1024 second resolution)
   hrmc.setProperties(CHR_PROPS_NOTIFY);
   hrmc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  hrmc.setMaxLen(2);
-  hrmc.setCccdWriteCallback(cccd_callback);
+  hrmc.setFixedLen(2);
+  hrmc.setCccdWriteCallback(cccd_callback);  // Optionally capture CCCD updates
   hrmc.start();
   uint8_t hrmdata[2] = { 0b00000110, 0x40 }; // Set the characteristic to use 8-bit values, with the sensor connected and detected
   hrmc.notify(hrmdata, 2);                   // Use .notify instead of .write!
