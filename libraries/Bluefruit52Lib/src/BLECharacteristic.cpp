@@ -440,6 +440,7 @@ err_t BLECharacteristic::notify(const uint8_t* data, int len, uint16_t offset)
   else
   {
     write(data, len);
+    return NRF_ERROR_INVALID_STATE;
   }
 
   return ERROR_NONE;
