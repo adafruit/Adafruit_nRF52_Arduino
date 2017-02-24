@@ -134,7 +134,7 @@ void setupHRM(void)
   hrmc.start();
 
   // Set the characteristic to use 8-bit values, with the sensor connected and detected
-  uint8_t hrmdata[2] = { 0b00000000, 0x40 };
+  uint8_t hrmdata[2] = { 0b00000110, 0x40 };
   hrmc.write(hrmdata, 2);
 
   // Configure the Body Sensor Location characteristic
