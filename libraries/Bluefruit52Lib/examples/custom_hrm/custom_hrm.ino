@@ -200,10 +200,7 @@ void loop()
   if (blinkyms+BLINKY_MS < millis()) {
     blinkyms = millis();
     digitalToggle(STATUS_LED);
-  }
 
-  // Update the HRM value periodically
-  if (blinkyms+BLINKY_MS < millis()) {
     if (Bluefruit.connected()) {
       uint8_t hrmdata[2] = { 0b00000110, bps++ };           // Sensor connected, increment BPS value
       err_t resp = hrmc.notify(hrmdata, sizeof(hrmdata));   // Note: We use .notify instead of .write!
