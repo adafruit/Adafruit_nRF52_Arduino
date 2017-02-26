@@ -41,7 +41,7 @@
  */
 BLECentral::BLECentral(void)
 {
-  _conn_hdl = 0;
+  _conn_hdl = BLE_CONN_HANDLE_INVALID;
 
   _scan_cb    = NULL;
   _scan_param = (ble_gap_scan_params_t) {
