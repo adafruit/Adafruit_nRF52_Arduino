@@ -100,7 +100,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   strcpy(_name, CFG_DEFAULT_NAME);
   _txbuf_sem = NULL;
 
-  _conn_hdl  = BLE_GATT_HANDLE_INVALID;
+  _conn_hdl  = BLE_CONN_HANDLE_INVALID;
   _bonded    = false;
 
   _auth_type = BLE_GAP_AUTH_KEY_TYPE_NONE;
@@ -645,7 +645,7 @@ void AdafruitBluefruit::_poll(void)
                 _saveBondedCCCD();
               }
 
-              _conn_hdl = BLE_GATT_HANDLE_INVALID;
+              _conn_hdl = BLE_CONN_HANDLE_INVALID;
               _bonded   = false;
               varclr(&_peer_addr);
 

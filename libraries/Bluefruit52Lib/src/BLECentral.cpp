@@ -176,7 +176,7 @@ err_t BLECentral::connect(const ble_gap_evt_adv_report_t* adv_report, uint16_t m
 
 bool BLECentral::connected(void)
 {
-  return (_conn_hdl != BLE_GATT_HANDLE_INVALID);
+  return (_conn_hdl != BLE_CONN_HANDLE_INVALID);
 }
 
 void BLECentral::setConnectCallback( connect_callback_t fp)
@@ -225,7 +225,7 @@ void BLECentral::_event_handler(ble_evt_t* evt)
       {
         if (Bluefruit._led_conn)  ledOff(LED_CONN);
 
-        _conn_hdl = BLE_GATT_HANDLE_INVALID;
+        _conn_hdl = BLE_CONN_HANDLE_INVALID;
 
         if ( _discconnect_cb ) _discconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
 
