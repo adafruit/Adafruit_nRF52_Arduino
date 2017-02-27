@@ -19,7 +19,7 @@ float readVBAT(void) {
   raw = analogRead(VBAT_PIN);
 
   // Set the ADC back to the default settings
-  analogReference(AR_INTERNAL);
+  analogReference(AR_DEFAULT);
   analogReadResolution(10);
 
   // Convert the raw value to mv
