@@ -75,6 +75,7 @@ class BLECharacteristic
     typedef void (*read_authorize_cb_t)  (BLECharacteristic& chr, ble_gatts_evt_read_t * request);
     typedef void (*write_authorize_cb_t) (BLECharacteristic& chr, ble_gatts_evt_write_t* request);
     typedef void (*write_cb_t)           (BLECharacteristic& chr, ble_gatts_evt_write_t* request);
+    typedef void (*write_cccd_cb_t)      (BLECharacteristic& chr, uint16_t value);
 
   protected:
     bool _is_temp;
@@ -101,7 +102,7 @@ class BLECharacteristic
     write_authorize_cb_t _wr_authorize_cb;
 
     write_cb_t           _wr_cb;
-    write_cb_t           _cccd_wr_cb;
+    write_cccd_cb_t      _cccd_wr_cb;
 
     void init(void);
     void eventHandler(ble_evt_t* event);
@@ -137,7 +138,7 @@ class BLECharacteristic
 
     // Callback
     void setWriteCallback(write_cb_t fp);
-    void setCccdWriteCallback(write_cb_t fp);
+    void setCccdWriteCallback(write_cccd_cb_t fp);
 
     void setReadAuthorizeCallback(read_authorize_cb_t fp);
     void setWriteAuthorizeCallbak(write_authorize_cb_t fp);

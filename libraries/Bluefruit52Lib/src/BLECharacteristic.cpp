@@ -138,7 +138,7 @@ void BLECharacteristic::setWriteCallback(write_cb_t fp)
   _wr_cb = fp;
 }
 
-void BLECharacteristic::setCccdWriteCallback(write_cb_t fp)
+void BLECharacteristic::setCccdWriteCallback(write_cccd_cb_t fp)
 {
   _cccd_wr_cb = fp;
 }
@@ -334,7 +334,9 @@ void BLECharacteristic::eventHandler(ble_evt_t* event)
       // CCCD write
       if ( _cccd_wr_cb && (request->handle == _handles.cccd_handle) )
       {
-        _cccd_wr_cb(*this, request);
+        uint16_t value;
+        memcpy(&value, request->data, 2);
+        _cccd_wr_cb(*this, value);
       }
     }
     break;
