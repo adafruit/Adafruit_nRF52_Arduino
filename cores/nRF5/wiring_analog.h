@@ -32,8 +32,12 @@ extern "C" {
 typedef enum _eAnalogReference
 {
   AR_DEFAULT,
-  AR_INTERNAL,
-  AR_VDD4
+  AR_INTERNAL,          // 0.6V Ref * 6 = 0..3.6V
+  AR_INTERNAL_3_0,      // 0.6V Ref * 5 = 0..3.0V
+  AR_INTERNAL_2_4,      // 0.6V Ref * 4 = 0..2.4V
+  AR_INTERNAL_1_8,      // 0.6V Ref * 3 = 0..1.8V
+  AR_INTERNAL_1_2,      // 0.6V Ref * 2 = 0..1.6V
+  AR_VDD4               // VDD/4 REF * 4 = 0..VDD
 } eAnalogReference ;
 #else
 typedef enum _eAnalogReference
