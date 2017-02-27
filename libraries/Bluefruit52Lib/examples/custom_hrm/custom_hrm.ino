@@ -174,13 +174,12 @@ void disconnect_callback(uint8_t reason)
   Serial.println("Advertising!");
 }
 
-void cccd_callback(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
+void cccd_callback(BLECharacteristic& chr, uint16_t cccd_value)
 {
-    (void) request;
-
     // Display the raw request packet
     Serial.print("CCCD Updated: ");
-    Serial.printBuffer(request->data, request->len);
+    //Serial.printBuffer(request->data, request->len);
+    Serial.print(cccd_value);
     Serial.println("");
 
     // Check the characteristic this CCCD update is associated with in case
