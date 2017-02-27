@@ -104,7 +104,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _bonded    = false;
 
   _auth_type = BLE_GAP_AUTH_KEY_TYPE_NONE;
-  varclr(_pin);
+//  varclr(_pin);
 
   _chars_count = 0;
   for(uint8_t i=0; i<BLE_MAX_CHARS; i++) _chars_list[i] = NULL;
@@ -480,6 +480,7 @@ bool AdafruitBluefruit::txbuf_get(uint32_t ms)
   return xSemaphoreTake(_txbuf_sem, ms2tick(ms));
 }
 
+#if 0
 bool AdafruitBluefruit::setPIN(const char* pin)
 {
   VERIFY ( strlen(pin) == BLE_GAP_PASSKEY_LEN );
@@ -496,6 +497,7 @@ bool AdafruitBluefruit::setPIN(const char* pin)
 
   return true;
 }
+#endif
 
 err_t AdafruitBluefruit::_saveBondedCCCD(void)
 {
@@ -750,10 +752,10 @@ void AdafruitBluefruit::_poll(void)
 
           case BLE_GAP_EVT_PASSKEY_DISPLAY:
           {
-            ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
-
-            PRINT_INT(passkey_display->match_request);
-            PRINT_BUFFER(passkey_display->passkey, 6);
+//            ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
+//
+//            PRINT_INT(passkey_display->match_request);
+//            PRINT_BUFFER(passkey_display->passkey, 6);
 
             // sd_ble_gap_auth_key_reply
           }

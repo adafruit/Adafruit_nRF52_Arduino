@@ -118,7 +118,7 @@ class AdafruitBluefruit
 
     bool txbuf_get(uint32_t ms);
 
-    bool setPIN(const char* pin);
+//    bool setPIN(const char* pin);
 
     /*------------------------------------------------------------------*/
     /* Central API object
@@ -166,7 +166,7 @@ class AdafruitBluefruit
     bool     _bonded;
 
     uint8_t _auth_type;
-    char _pin[BLE_GAP_PASSKEY_LEN];
+//    char _pin[BLE_GAP_PASSKEY_LEN];
 
     // TODO move to bonding place
 public: // temporary
