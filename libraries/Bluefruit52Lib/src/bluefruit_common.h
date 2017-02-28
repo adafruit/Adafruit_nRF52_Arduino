@@ -41,7 +41,7 @@
 #include "ble_hci.h"
 #include "nrf_sdm.h"
 
-#define BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS  3000
+#define BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS  2000
 #define BLE_GAP_CONN_SLAVE_LATENCY           0
 
 #define BLE_GAP_CONN_MIN_INTERVAL_DFLT         MS100TO125(20)

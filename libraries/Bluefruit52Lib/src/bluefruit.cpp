@@ -103,6 +103,10 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _conn_hdl  = BLE_CONN_HANDLE_INVALID;
   _bonded    = false;
 
+   _ppcp_min_conn = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
+   _ppcp_max_conn = BLE_GAP_CONN_MAX_INTERVAL_DFLT;
+   _conn_interval = 0;
+
   _auth_type = BLE_GAP_AUTH_KEY_TYPE_NONE;
 //  varclr(_pin);
 
@@ -154,11 +158,11 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 
   /*------------- Configure GAP  -------------*/
 
-  // Connection Parameters
+  // Peripheral Preferred Connection Parameters
   ble_gap_conn_params_t   gap_conn_params =
   {
-      .min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT, // in 1.25ms unit
-      .max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT, // in 1.25ms unit
+      .min_conn_interval = _ppcp_min_conn, // in 1.25ms unit
+      .max_conn_interval = _ppcp_max_conn, // in 1.25ms unit
       .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
       .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
   };
@@ -194,10 +198,13 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 
 err_t AdafruitBluefruit::setConnInterval(uint16_t min, uint16_t max)
 {
+  _ppcp_min_conn = min;
+  _ppcp_max_conn = max;
+
   ble_gap_conn_params_t   gap_conn_params =
   {
-      .min_conn_interval = min, // in 1.25ms unit
-      .max_conn_interval = max, // in 1.25ms unit
+      .min_conn_interval = _ppcp_min_conn, // in 1.25ms unit
+      .max_conn_interval = _ppcp_max_conn, // in 1.25ms unit
       .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
       .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
   };
@@ -470,6 +477,11 @@ bool AdafruitBluefruit::connBonded(void)
   return _bonded;
 }
 
+uint16_t AdafruitBluefruit::connInterval(void)
+{
+  return _conn_interval;
+}
+
 ble_gap_addr_t AdafruitBluefruit::peerAddr(void)
 {
   return _peer_addr;
@@ -623,15 +635,34 @@ void AdafruitBluefruit::_poll(void)
               _stopConnLed();
               if (_led_conn) ledOn(LED_CONN);
 
-              _conn_hdl  = evt->evt.gap_evt.conn_handle;
-              _peer_addr = para->peer_addr;
+              _conn_hdl      = evt->evt.gap_evt.conn_handle;
+              _conn_interval = para->conn_params.min_conn_interval;
+              _peer_addr     = para->peer_addr;
 
+              // Connection interval set by Central is out of preferred range
+              // Try to negotiate with Central using our preferred values
+              if ( !is_within(_ppcp_min_conn, para->conn_params.min_conn_interval, _ppcp_max_conn) )
+              {
+                // Null, value is set by sd_ble_gap_ppcp_set will be used
+                VERIFY_STATUS( sd_ble_gap_conn_param_update(_conn_hdl, NULL), );
+              }
+
+              // Init transmission buffer for notification
               uint8_t txbuf_max;
               (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
               _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
 
               if ( _connect_cb ) _connect_cb();
             }
+          }
+          break;
+
+          case BLE_GAP_EVT_CONN_PARAM_UPDATE:
+          {
+            // Connection Parameter after negotiating with Central
+            // min conn = max conn = actual used interval
+            ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
+            _conn_interval = param->min_conn_interval;
           }
           break;
 
@@ -672,15 +703,6 @@ void AdafruitBluefruit::_poll(void)
             {
               xSemaphoreGive(_txbuf_sem);
             }
-          break;
-
-          case BLE_GAP_EVT_CONN_PARAM_UPDATE:
-          {
-            // Central set the connection parameter
-//            ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
-//            PRINT_INT(param->min_conn_interval);
-//            PRINT_INT(param->max_conn_interval);
-          }
           break;
 
           case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
@@ -792,7 +814,7 @@ void AdafruitBluefruit::_poll(void)
 
           case BLE_GATTS_EVT_SYS_ATTR_MISSING:
             // TODO Look up bonded information and apply application context
-            // sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
+            sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
           break;
 
           default: break;

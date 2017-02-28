@@ -114,6 +114,8 @@ class AdafruitBluefruit
 
     uint16_t connHandle(void);
     bool     connBonded(void);
+    uint16_t connInterval(void);
+
     ble_gap_addr_t peerAddr(void);
 
     bool txbuf_get(uint32_t ms);
@@ -164,6 +166,13 @@ class AdafruitBluefruit
 
     uint16_t _conn_hdl;
     bool     _bonded;
+
+    // Peripheral Preferred Connection Parameters (PPCP)
+    uint16_t _ppcp_min_conn;
+    uint16_t _ppcp_max_conn;
+
+    // Actual connection interval in use
+    uint16_t _conn_interval;
 
     uint8_t _auth_type;
 //    char _pin[BLE_GAP_PASSKEY_LEN];
