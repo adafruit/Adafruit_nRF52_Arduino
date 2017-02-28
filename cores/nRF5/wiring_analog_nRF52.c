@@ -90,6 +90,26 @@ static inline uint32_t mapResolution( uint32_t value, uint32_t from, uint32_t to
 void analogReference( eAnalogReference ulMode )
 {
   switch ( ulMode ) {
+    case AR_VDD4:
+      saadcReference = SAADC_CH_CONFIG_REFSEL_VDD1_4;
+      saadcGain      = SAADC_CH_CONFIG_GAIN_Gain4;
+      break;
+    case AR_INTERNAL_3_0:
+      saadcReference = SAADC_CH_CONFIG_REFSEL_Internal;
+      saadcGain      = SAADC_CH_CONFIG_GAIN_Gain1_5;
+      break;
+    case AR_INTERNAL_2_4:
+      saadcReference = SAADC_CH_CONFIG_REFSEL_Internal;
+      saadcGain      = SAADC_CH_CONFIG_GAIN_Gain1_4;
+      break;
+    case AR_INTERNAL_1_8:
+      saadcReference = SAADC_CH_CONFIG_REFSEL_Internal;
+      saadcGain      = SAADC_CH_CONFIG_GAIN_Gain1_3;
+      break;
+    case AR_INTERNAL_1_2:
+      saadcReference = SAADC_CH_CONFIG_REFSEL_Internal;
+      saadcGain      = SAADC_CH_CONFIG_GAIN_Gain1_2;
+      break;
     case AR_DEFAULT:
     case AR_INTERNAL:
     default:
@@ -97,10 +117,6 @@ void analogReference( eAnalogReference ulMode )
       saadcGain      = SAADC_CH_CONFIG_GAIN_Gain1_6;
       break;
 
-    case AR_VDD4:
-      saadcReference = SAADC_CH_CONFIG_REFSEL_VDD1_4;
-      saadcGain      = SAADC_CH_CONFIG_GAIN_Gain1_4;
-      break;
   }
 }
 
