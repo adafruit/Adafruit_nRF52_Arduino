@@ -49,7 +49,7 @@ const uint8_t BLEMIDI_UUID_SERVICE[] =
 const uint8_t BLEMIDI_UUID_CHR_IO[] =
 {
     0xF3, 0x6B, 0x10, 0x9D, 0x66, 0xF2, 0xA9, 0xA1,
-    0x12, 0x41, 0x68, 0x38, 0xD8, 0xE5, 0x72, 0x77
+    0x12, 0x41, 0x68, 0x38, 0xDB, 0xE5, 0x72, 0x77
 };
 
 /*------------------------------------------------------------------*/
@@ -122,12 +122,18 @@ BLEMidi::BLEMidi(void)
 
 void blemidi_write_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
 {
-
+  if ( chr.handles().cccd_handle == request->handle )
+  {
+    PRINT_LOCATION();
+  }else if ( chr.handles().value_handle == request->handle )
+  {
+    PRINT_LOCATION();
+  }
 }
 
 bool BLEMidi::configured()
 {
-  return _io.notifyEnabled();
+  return Bluefruit.connBonded() && _io.notifyEnabled();
 }
 
 err_t BLEMidi::send(uint8_t data[])
@@ -149,7 +155,7 @@ err_t BLEMidi::send(uint8_t data[])
 
   memcpy(event.data, data, 3);
 
-  VERIFY_STATUS( _io.notify(data, 3) );
+  VERIFY_STATUS( _io.notify(&event, sizeof(event)) );
 
   return ERROR_NONE;
 }
@@ -170,6 +176,9 @@ err_t BLEMidi::start(void)
   _io.setWriteCallback(blemidi_write_cb);
 
   VERIFY_STATUS( _io.start() );
+
+  // Attempt to change the connection interval to 11.25-15 ms when starting HID
+  Bluefruit.setConnInterval(9, 12);
 
   return ERROR_NONE;
 }

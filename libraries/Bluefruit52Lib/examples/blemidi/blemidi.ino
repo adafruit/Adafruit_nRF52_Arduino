@@ -36,9 +36,21 @@ void setup()
   bledis.setHardwareRev("Rev E");
   bledis.setFirmwareRev("0.1.0");
   bledis.start();
-
-  // Configure and Start BLE MIDI Service
+  
+  /* Start BLE MIDI
+   * Note: Apple requires BLE device must have min connection interval >= 20m
+   * ( The smaller the connection interval the faster we could send data).
+   * However for HID and MIDI device, Apple could accept min connection interval 
+   * up to 11.25 ms. Therefore BLEMidi::start() will try to set the min and max
+   * connection interval to 11.25  ms and 15 ms respectively for best performance.
+   */
   blemidi.start();
+
+  /* Set connection interval (min, max) to your perferred value.
+   * Note: It is already set by BLEMidi::start() to 11.25ms - 15ms
+   * min = 9*1.25=11.25 ms, max = 12*1.25= 15 ms 
+   */
+  /* Bluefruit.setConnInterval(9, 12); */  
 
   // Set up Advertising Packet
   setupAdv();
@@ -70,6 +82,8 @@ void loop()
     // send note on
     blemidi.send(0x90, current_note, 0x64);
     delay(500);
+
+    ledToggle(LED_BUILTIN);
 
     // send note off
     blemidi.send(0x80, current_note, 0x64);
