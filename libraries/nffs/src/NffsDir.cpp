@@ -38,7 +38,8 @@
 
 void NffsDir::_init(void)
 {
-  _dir = NULL;
+  _dir   = NULL;
+  errnum = FS_EOK;
 }
 
 NffsDir::NffsDir(void)

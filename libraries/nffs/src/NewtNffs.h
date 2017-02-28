@@ -46,9 +46,22 @@
 class NewtNffs
 {
 public:
+  int errnum;
+
   NewtNffs(void);
 
   void begin(void);
+
+  // Make a directory (and its parents if not existed) a.k.a mkdir -p
+  bool mkdir(const char* path);
+
+  // Remove a file or an empty directory
+  bool remove(const char* path);
+  bool rm    (const char* path) { return remove(path); }
+
+  // Remove a non-readonly file or an empty directory
+  bool rename(const char* from, const char* to);
+  bool mv    (const char* from, const char* to) { return rename(from, to); }
 };
 
 

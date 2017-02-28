@@ -40,10 +40,28 @@ NewtNffs Nffs;
 
 NewtNffs::NewtNffs(void)
 {
-
+  errnum = FS_EOK;
 }
 
 void NewtNffs::begin(void)
 {
   nffs_pkg_init();
+}
+
+bool NewtNffs::mkdir(const char* path)
+{
+  errnum = fs_mkdir(path);
+  return (errnum == FS_EOK);
+}
+
+bool NewtNffs::remove(const char* path)
+{
+  errnum = fs_unlink(path);
+  return (errnum == FS_EOK);
+}
+
+bool NewtNffs::rename(const char* from, const char* to)
+{
+  errnum = fs_rename(from, to);
+  return (errnum == FS_EOK);
 }

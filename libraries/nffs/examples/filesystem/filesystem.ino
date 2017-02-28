@@ -21,7 +21,8 @@
 NffsFile file;
 
 // the setup function runs once when you press reset or power the board
-void setup() {
+void setup() 
+{
   Serial.begin(115200);
   Serial.println("nffs example");
 

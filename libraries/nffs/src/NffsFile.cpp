@@ -39,7 +39,7 @@
 void NffsFile::_init(void)
 {
   _file = NULL;
-  errnum = 0;
+  errnum = FS_EOK;
 }
 
 NffsFile::NffsFile(void)
