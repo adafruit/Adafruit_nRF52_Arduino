@@ -53,7 +53,7 @@ void setup()
       file.close();
     }else
     {
-      Serial.println("Failed (hint: paht must start with '//') ");
+      Serial.println("Failed (hint: path must start with '//') ");
     }
   }
 }
