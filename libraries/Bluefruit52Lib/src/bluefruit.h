@@ -120,7 +120,7 @@ class AdafruitBluefruit
 
     bool txbuf_get(uint32_t ms);
 
-//    bool setPIN(const char* pin);
+    COMMENT_OUT ( bool setPIN(const char* pin); )
 
     /*------------------------------------------------------------------*/
     /* Central API object
@@ -174,8 +174,10 @@ class AdafruitBluefruit
     // Actual connection interval in use
     uint16_t _conn_interval;
 
+COMMENT_OUT(
     uint8_t _auth_type;
-//    char _pin[BLE_GAP_PASSKEY_LEN];
+    char _pin[BLE_GAP_PASSKEY_LEN];
+)
 
     // TODO move to bonding place
 public: // temporary
