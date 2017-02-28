@@ -52,6 +52,8 @@ public:
   NffsFile(const char* path, uint8_t flags = FS_ACCESS_READ);
 
   bool open(const char* path, uint8_t flags = FS_ACCESS_READ);
+  bool open(NffsDirEntry& dirent, uint8_t flags = FS_ACCESS_READ);
+
   bool close(void);
   bool existed(void);
 

@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     NewtNffs.h
+    @file     NffsDir.cpp
     @author   hathach
 
     @section LICENSE
@@ -33,25 +33,68 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef NEWTNFFS_H_
-#define NEWTNFFS_H_
 
-#include "nffs/nffs.h"
-#include "fs/fsutil.h"
+#include "NewtNffs.h"
 
-#include "NffsDirEntry.h"
-#include "NffsFile.h"
-#include "NffsDir.h"
-
-class NewtNffs
+void NffsDir::_init(void)
 {
-public:
-  NewtNffs(void);
+  _dir = NULL;
+}
 
-  void begin(void);
-};
+NffsDir::NffsDir(void)
+{
+  _init();
+}
+
+NffsDir::NffsDir(const char* path)
+{
+  _init();
+
+  open(path);
+}
 
 
-extern NewtNffs Nffs;
+bool NffsDir::open(const char* path)
+{
+  errnum = fs_opendir(path, &_dir);
 
-#endif /* NEWTNFFS_H_ */
+  return (errnum == FS_EOK);
+}
+
+bool NffsDir::open(NffsDirEntry& dirent)
+{
+  bool result = false;
+  char* name = (char*) rtos_malloc(NFFS_FILENAME_MAX_LEN+1);
+
+  VERIFY(name);
+
+  if ( dirent.getName(name, NFFS_FILENAME_MAX_LEN+1) > 0 )
+  {
+    result = open(name);
+  }
+
+  rtos_free(name);
+
+  return result;
+}
+
+bool NffsDir::close(void)
+{
+  errnum = fs_closedir(_dir);
+
+  return (errnum == FS_EOK);
+}
+
+bool NffsDir::existed(void)
+{
+  return (_dir != NULL);
+}
+
+NffsDirEntry NffsDir::read(void)
+{
+  struct fs_dirent* dirent;
+
+  errnum = fs_readdir(_dir, &dirent);
+
+  return NffsDirEntry(dirent);
+}

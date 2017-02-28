@@ -60,6 +60,23 @@ bool NffsFile::open(const char* path, uint8_t flags)
   return (errnum == FS_EOK);
 }
 
+bool NffsFile::open(NffsDirEntry& dirent, uint8_t flags)
+{
+  bool result = false;
+  char* name = (char*) rtos_malloc(NFFS_FILENAME_MAX_LEN+1);
+
+  VERIFY(name);
+
+  if ( dirent.getName(name, NFFS_FILENAME_MAX_LEN+1) > 0 )
+  {
+    result = open(name, flags);
+  }
+
+  rtos_free(name);
+
+  return result;
+}
+
 bool NffsFile::existed(void)
 {
   return _file != NULL;

@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     NewtNffs.h
+    @file     NffsDirEntry.cpp
     @author   hathach
 
     @section LICENSE
@@ -33,25 +33,40 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef NEWTNFFS_H_
-#define NEWTNFFS_H_
 
-#include "nffs/nffs.h"
-#include "fs/fsutil.h"
+#include "NewtNffs.h"
 
-#include "NffsDirEntry.h"
-#include "NffsFile.h"
-#include "NffsDir.h"
-
-class NewtNffs
+NffsDirEntry::NffsDirEntry(void)
 {
-public:
-  NewtNffs(void);
+  _dirent = NULL;
+}
 
-  void begin(void);
-};
+NffsDirEntry::NffsDirEntry(struct fs_dirent* entry)
+{
+  _dirent = entry;
+}
 
+NffsDirEntry& NffsDirEntry::operator+(const NffsDirEntry& rhs)
+{
+  _dirent = rhs._dirent;
 
-extern NewtNffs Nffs;
+  return (*this);
+}
 
-#endif /* NEWTNFFS_H_ */
+bool NffsDirEntry::existed(void)
+{
+  return _dirent != NULL;
+}
+
+bool NffsDirEntry::isDirectory(void)
+{
+  return fs_dirent_is_dir(_dirent);
+}
+
+size_t NffsDirEntry::getName(char* name, size_t bufsize)
+{
+  uint8_t len=0;
+  fs_dirent_name(_dirent, bufsize, name, &len);
+
+  return (size_t) len;
+}

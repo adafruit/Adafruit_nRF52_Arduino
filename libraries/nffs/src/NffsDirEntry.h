@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     NewtNffs.h
+    @file     NffsDirEntry.h
     @author   hathach
 
     @section LICENSE
@@ -33,25 +33,28 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef NEWTNFFS_H_
-#define NEWTNFFS_H_
+#ifndef NFFSDIRENTRY_H_
+#define NFFSDIRENTRY_H_
 
-#include "nffs/nffs.h"
-#include "fs/fsutil.h"
+#include <Arduino.h>
 
-#include "NffsDirEntry.h"
-#include "NffsFile.h"
-#include "NffsDir.h"
-
-class NewtNffs
+class NffsDirEntry
 {
-public:
-  NewtNffs(void);
+private:
+  struct fs_dirent* _dirent;
 
-  void begin(void);
+public:
+  NffsDirEntry(void);
+  NffsDirEntry(struct fs_dirent* entry);
+
+  NffsDirEntry& operator+(const NffsDirEntry& rhs);
+
+  bool existed(void);
+
+  size_t getName(char* name, size_t bufsize);
+  bool   isDirectory(void);
 };
 
 
-extern NewtNffs Nffs;
 
-#endif /* NEWTNFFS_H_ */
+#endif /* NFFSDIRENTRY_H_ */
