@@ -567,6 +567,35 @@ void AdafruitBluefruit::_sd_event_isr(void)
   portYIELD_FROM_ISR(yield_req);
 }
 
+/**
+ * Handle SOC event
+ * @return false if there is no more pending event
+ */
+bool AdafruitBluefruit::_handle_soc(void)
+{
+  uint32_t soc_evt;
+  uint32_t err = sd_evt_get(&soc_evt);
+
+  // no more pending event
+  if ( NRF_ERROR_NOT_FOUND == err ) return false;
+
+  if (ERROR_NONE == err)
+  {
+    // handling SOC Event
+    switch (soc_evt)
+    {
+      case NRF_EVT_FLASH_OPERATION_SUCCESS:
+      case NRF_EVT_FLASH_OPERATION_ERROR:
+        if (hal_flash_event_cb) hal_flash_event_cb(soc_evt);
+        break;
+
+      default: break;
+    }
+  }
+
+  return true;
+}
+
 void AdafruitBluefruit::_poll(void)
 {
   enum { BLE_STACK_EVT_MSG_BUF_SIZE = (sizeof(ble_evt_t) + (GATT_MTU_SIZE_DEFAULT)) };
@@ -578,39 +607,15 @@ void AdafruitBluefruit::_poll(void)
 
     while( !(out_of_soc && out_of_ble) )
     {
-      uint32_t err;
-
       /*------------- SOC Event -------------*/
-      uint32_t soc_evt;
-
-      err = sd_evt_get(&soc_evt);
-
-      if ( NRF_ERROR_NOT_FOUND == err )
-      {
-        out_of_soc = true;
-      }
-      else if (ERROR_NONE == err)
-      {
-        // handling SOC
-        switch (soc_evt)
-        {
-          case NRF_EVT_FLASH_OPERATION_SUCCESS:
-          case NRF_EVT_FLASH_OPERATION_ERROR:
-            if (hal_flash_event_cb) hal_flash_event_cb(soc_evt);
-          break;
-
-          default: break;
-        }
-      }
-      // Error, do nothing now
-      else { }
+      out_of_soc = !_handle_soc();
 
       /*------------- BLE Event -------------*/
       uint32_t ev_buf[BLE_STACK_EVT_MSG_BUF_SIZE/4 + 4];
       uint16_t ev_len = sizeof(ev_buf);
       ble_evt_t* evt = (ble_evt_t*) ev_buf;
 
-      err = sd_ble_evt_get((uint8_t*)ev_buf, &ev_len);
+      uint32_t err = sd_ble_evt_get((uint8_t*)ev_buf, &ev_len);
 
       if ( NRF_ERROR_NOT_FOUND == err )
       {

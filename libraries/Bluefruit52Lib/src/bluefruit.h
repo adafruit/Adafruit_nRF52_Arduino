@@ -209,6 +209,7 @@ private:
 
     err_t _saveBondedCCCD(void);
     void _poll(void);
+    bool _handle_soc(void);
 
     friend void adafruit_bluefruit_task(void* arg);
     friend class BLECentral;
