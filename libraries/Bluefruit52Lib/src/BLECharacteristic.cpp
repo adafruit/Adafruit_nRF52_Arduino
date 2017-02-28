@@ -349,7 +349,7 @@ void BLECharacteristic::eventHandler(ble_evt_t* event)
 /* WRITE
  *------------------------------------------------------------------*/
 
-err_t BLECharacteristic::write(const uint8_t* data, int len)
+err_t BLECharacteristic::write(const void* data, int len)
 {
   return write(data, len, 0);
 }
@@ -359,7 +359,7 @@ err_t BLECharacteristic::write(const char   * str)
   return write((const uint8_t*) str, strlen(str));
 }
 
-err_t BLECharacteristic::write(const uint8_t* data, int len, uint16_t offset)
+err_t BLECharacteristic::write(const void* data, int len, uint16_t offset)
 {
   // could not exceed max len
   uint16_t actual_len = min16(len, _max_len);
@@ -410,12 +410,21 @@ bool BLECharacteristic::notifyEnabled(void)
       .p_value = (uint8_t*) &cccd
   };
 
-  VERIFY_STATUS( sd_ble_gatts_value_get(Bluefruit.connHandle(), _handles.cccd_handle, &value), false );
+  err_t err = sd_ble_gatts_value_get(Bluefruit.connHandle(), _handles.cccd_handle, &value);
+
+  // CCCD is not set, count as not enabled
+  if ( BLE_ERROR_GATTS_SYS_ATTR_MISSING == err )
+  {
+    cccd = 0;
+  }else
+  {
+    VERIFY_STATUS(err);
+  }
 
   return (cccd & BLE_GATT_HVX_NOTIFICATION);
 }
 
-err_t BLECharacteristic::notify(const uint8_t* data, int len, uint16_t offset)
+err_t BLECharacteristic::notify(const void* data, int len, uint16_t offset)
 {
   VERIFY( _properties.notify, NRF_ERROR_INVALID_PARAM);
 
@@ -448,7 +457,7 @@ err_t BLECharacteristic::notify(const uint8_t* data, int len, uint16_t offset)
   return ERROR_NONE;
 }
 
-err_t BLECharacteristic::notify(const uint8_t* data, int len)
+err_t BLECharacteristic::notify(const void* data, int len)
 {
   return notify(data, len, 0);
 }
