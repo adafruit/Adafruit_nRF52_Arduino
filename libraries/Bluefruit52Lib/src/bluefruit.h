@@ -69,7 +69,7 @@ class AdafruitBluefruit
 //    bool setTxPower(int8_t power);
 
     /*------------------------------------------------------------------*/
-    /* Advertising & Scan Resp (active scan)
+    /* Advertising & Scan Response (active scan)
      *------------------------------------------------------------------*/
     uint8_t getAdvLen(void);
     uint8_t getAdvData(uint8_t* buffer);
@@ -159,7 +159,7 @@ class AdafruitBluefruit
 
     int8_t _tx_power;
 
-    char _name[32+1]; // 32 including null terminator
+    char _name[32+1];
 
     BLECharacteristic* _chars_list[BLE_MAX_CHARS];
     uint8_t            _chars_count;
@@ -191,8 +191,8 @@ public: // temporary
       uint16_t          sys_attr_len;
       uint8_t*          sys_attr;
     }_bond_data;
-private:
 
+private:
     ble_gap_addr_t    _peer_addr;
 
     // Transmission Buffer Count for HVX notification, max is seen at 7

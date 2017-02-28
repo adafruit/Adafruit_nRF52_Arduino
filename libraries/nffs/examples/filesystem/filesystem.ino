@@ -13,10 +13,12 @@
 *********************************************************************/
 
 #include <bluefruit.h>
-#include <nffs_lib.h>
+#include <NewtNffs.h>
 
 #define FILENAME    "/adafruit.txt"
 #define CONTENTS    "Bluefruit Feather52's NFFS file contents"
+
+NffsFile file;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -24,18 +26,18 @@ void setup() {
   Serial.println("nffs example");
 
   Bluefruit.begin();
-  nffs_pkg_init();
-  
-  struct fs_file *file;
+  Nffs.begin();
+
+  file.open(FILENAME, FS_ACCESS_READ);
 
   // file existed
-  if ( 0 == fs_open(FILENAME, FS_ACCESS_READ, &file))
+  if ( file.existed() )
   {
     Serial.println(FILENAME " file existed");
     
     uint32_t readlen;
     char buffer[64] = { 0 };
-    fs_read(file, sizeof(buffer), buffer, &readlen);
+    readlen = file.read(buffer, sizeof(buffer));
 
     buffer[readlen] = 0;
     Serial.println(buffer);
@@ -43,11 +45,11 @@ void setup() {
   {
     Serial.print("Open " FILENAME " file to write ... ");
 
-    if( 0 == fs_open(FILENAME, FS_ACCESS_WRITE, &file) )
+    if( file.open(FILENAME, FS_ACCESS_WRITE) )
     {
       Serial.println("OK");
-      fs_write(file, CONTENTS, strlen(CONTENTS));
-      fs_close(file);
+      file.write(CONTENTS, strlen(CONTENTS));
+      file.close();
     }else
     {
       Serial.println("Failed (hint: paht must start with '//') ");
@@ -56,9 +58,8 @@ void setup() {
 }
 
 // the loop function runs over and over again forever
-void loop() {
-  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(1000);                       // wait for a second
-  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-  delay(1000);                       // wait for a second
+void loop() 
+{
+  digitalToggle(LED_BUILTIN);
+  delay(1000);
 }

@@ -35,8 +35,7 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
-
-#include <nffs_lib.h>
+#include <NewtNffs.h>
 
 // Note chaning these parameters will affect APP_RAM_BASE
 // --> need to update RAM in feather52_s132.ld linker
@@ -55,7 +54,9 @@
 #define CFG_DEFAULT_NAME                 "Bluefruit52"
 #define CFG_ADV_BLINKY_INTERVAL          500
 
-#define BLUEFRUIT_TASK_STACKSIZE   (512*3)
+#define CFG_BLUEFRUIT_TASK_STACKSIZE   (512*3)
+
+#define CFG_BOND_PATH                    "/adafruit/bond"
 
 extern "C"
 {
@@ -183,7 +184,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 
   // Create RTOS Task for BLE Event
   TaskHandle_t task_hdl;
-  xTaskCreate( adafruit_bluefruit_task, "BLE Evt", BLUEFRUIT_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &task_hdl);
+  xTaskCreate( adafruit_bluefruit_task, "BLE Evt", CFG_BLUEFRUIT_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &task_hdl);
 
   _ble_event_sem = xSemaphoreCreateBinary();
   VERIFY(_ble_event_sem, NRF_ERROR_NO_MEM);
@@ -192,8 +193,10 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   // Create Timer for led advertising blinky
   _led_blink_th = xTimerCreate(NULL, ms2tick(CFG_ADV_BLINKY_INTERVAL), true, NULL, bluefruit_blinky_cb);
 
-  // Also initialize nffs for bonding/config
+  // Initialize nffs for bonding (it is safe to call nffs_pkg_init() multiple time)
 //  nffs_pkg_init();
+
+  //
 
   return ERROR_NONE;
 }
