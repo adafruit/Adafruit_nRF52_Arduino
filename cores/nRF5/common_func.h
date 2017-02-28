@@ -101,7 +101,7 @@ int cprintf(const char * format, ...);
 
 #define PRINT_HEX(x) \
   do {\
-    cprintf("%s: %d: " #x " = ", __PRETTY_FUNCTION__, __LINE__);\
+    cprintf("%s: %d: " #x " = 0x", __PRETTY_FUNCTION__, __LINE__);\
     char fmt[] = "%00X\n";\
     fmt[2] += 2*sizeof(x); /* Hex with correct size */\
     cprintf(fmt, (x) );\

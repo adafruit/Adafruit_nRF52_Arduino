@@ -26,8 +26,6 @@ void setup()
   Serial.println("Bluefruit52 HID Keyboard Example");
 
   Bluefruit.begin();
-  // HID Device can have a min connection interval of 9*1.25 = 11.25 ms
-  Bluefruit.setConnInterval(9, 16); // min = 9*1.25=11.25 ms, max = 16*1.25=20ms
   Bluefruit.setName("Bluefruit52");
 
   // Configure and Start Device Information Service
@@ -40,8 +38,20 @@ void setup()
   // Configure and Start BLE Uart Service
   bleuart.start();
 
-  // BLE HID
+  /* Start BLE HID
+   * Note: Apple requires BLE device must have min connection interval >= 20m
+   * ( The smaller the connection interval the faster we could send data).
+   * However for HID and MIDI device, Apple could accept min connection interval 
+   * up to 11.25 ms. Therefore BLEHidAdafruit::start() will try to set the min and max
+   * connection interval to 11.25  ms and 15 ms respectively for best performance.
+   */
   blehid.start();
+
+  /* Set connection interval (min, max) to your perferred value.
+   * Note: It is already set by BLEHidAdafruit::start() to 11.25ms - 15ms
+   * min = 9*1.25=11.25 ms, max = 12*1.25= 15 ms 
+   */
+  /* Bluefruit.setConnInterval(9, 12); */
 
   // Setup Advertising Packet
   setupAdv();

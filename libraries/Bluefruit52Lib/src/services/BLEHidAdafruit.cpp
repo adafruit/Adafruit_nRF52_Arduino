@@ -213,7 +213,12 @@ err_t BLEHidAdafruit::start(void)
   enableBootProtocol(true, true);
   setReportMap(hid_report_descriptor, sizeof(hid_report_descriptor));
 
-  return BLEHidGeneric::start();
+  VERIFY_STATUS( BLEHidGeneric::start() );
+
+  // Attemp to change the connection interval to 11.25-15 ms when starting HID
+  Bluefruit.setConnInterval(9, 12);
+
+  return ERROR_NONE;
 }
 
 /*------------------------------------------------------------------*/
