@@ -120,23 +120,36 @@ BLEMidi::BLEMidi(void)
 
 }
 
-void blemidi_write_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
-{
-  if ( chr.handles().cccd_handle == request->handle )
-  {
-    PRINT_LOCATION();
-  }else if ( chr.handles().value_handle == request->handle )
-  {
-    PRINT_LOCATION();
-  }
-}
-
 bool BLEMidi::configured()
 {
   return Bluefruit.connBonded() && _io.notifyEnabled();
 }
 
-err_t BLEMidi::send(uint8_t data[])
+void BLEMidi::setWriteCallback(BLECharacteristic::write_cb_t fp)
+{
+  _io.setWriteCallback(fp);
+}
+
+err_t BLEMidi::start(void)
+{
+  VERIFY_STATUS( this->addToGatt() );
+
+  // IO characteristic
+  _io.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP | CHR_PROPS_NOTIFY);
+  _io.setPermission(SECMODE_ENC_NO_MITM, SECMODE_ENC_NO_MITM);
+
+  VERIFY_STATUS( _io.start() );
+
+  // Attempt to change the connection interval to 11.25-15 ms when starting HID
+  Bluefruit.setConnInterval(9, 12);
+
+  return ERROR_NONE;
+}
+
+/*------------------------------------------------------------------*/
+/* Send Event
+ *------------------------------------------------------------------*/
+ err_t BLEMidi::send(uint8_t data[])
 {
   uint32_t tstamp = millis();
 
@@ -166,19 +179,3 @@ err_t BLEMidi::send(uint8_t status, uint8_t byte1, uint8_t byte2)
   return send(data);
 }
 
-err_t BLEMidi::start(void)
-{
-  VERIFY_STATUS( this->addToGatt() );
-
-  // IO characteristic
-  _io.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP | CHR_PROPS_NOTIFY);
-  _io.setPermission(SECMODE_ENC_NO_MITM, SECMODE_ENC_NO_MITM);
-  _io.setWriteCallback(blemidi_write_cb);
-
-  VERIFY_STATUS( _io.start() );
-
-  // Attempt to change the connection interval to 11.25-15 ms when starting HID
-  Bluefruit.setConnInterval(9, 12);
-
-  return ERROR_NONE;
-}

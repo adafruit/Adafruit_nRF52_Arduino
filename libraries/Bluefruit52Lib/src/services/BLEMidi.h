@@ -65,9 +65,10 @@ class BLEMidi: public BLEService
 
     bool  configured();
 
-
     err_t send(uint8_t data[]);
     err_t send(uint8_t status, uint8_t byte1, uint8_t byte2);
+
+    void setWriteCallback(BLECharacteristic::write_cb_t fp);
 
   private:
     BLECharacteristic _io;
