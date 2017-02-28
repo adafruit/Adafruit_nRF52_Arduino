@@ -119,6 +119,7 @@ void BLEHidGeneric::setOutputReportCallback(uint8_t reportID, output_report_cb_t
   _output_cbs[reportID] = fp;
 }
 
+COMMENT_OUT (
 void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
 {
   (void) chr;
@@ -126,6 +127,7 @@ void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* requ
 //  BLEHidGeneric& hid = (BLEHidGeneric&) chr.parentService();
 //  PRINT_BUFFER(request->data, request->len);
 }
+)
 
 err_t BLEHidGeneric::start(void)
 {
@@ -166,7 +168,10 @@ err_t BLEHidGeneric::start(void)
     _chr_outputs[i].setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP);
     _chr_outputs[i].setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
     _chr_outputs[i].setReportRefDescriptor(i+1, REPORT_TYPE_OUTPUT);
-//    _chr_outputs[i].setWriteCallback(blehidgeneric_output_cb);
+
+    COMMENT_OUT(
+    _chr_outputs[i].setWriteCallback(blehidgeneric_output_cb);
+    )
 
     // Input report len is configured, else variable len up to 255
     if ( _output_len ) _chr_outputs[i].setFixedLen( _output_len[i] );

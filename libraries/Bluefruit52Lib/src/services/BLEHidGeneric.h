@@ -134,7 +134,9 @@ class BLEHidGeneric : public BLEService
 
     BLECharacteristic _chr_control;
 
-    friend void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
+    COMMENT_OUT (
+        friend void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
+    )
 };
 
 //--------------------------------------------------------------------+

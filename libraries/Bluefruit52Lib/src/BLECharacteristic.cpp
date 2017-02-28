@@ -328,7 +328,7 @@ void BLECharacteristic::eventHandler(ble_evt_t* event)
       // Value write
       if ( _wr_cb && (request->handle == _handles.value_handle))
       {
-        _wr_cb(*this, request);
+        _wr_cb(*this, request->data, request->len, request->offset);
       }
 
       // CCCD write

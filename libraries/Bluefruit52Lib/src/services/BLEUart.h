@@ -74,7 +74,7 @@ class BLEUart : public BLEService, public Stream
     Adafruit_FIFO     _rxd_fifo;
     rx_callback_t     _rx_cb;
 
-    friend void bleuart_rxd_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
+    friend void bleuart_rxd_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
 };
 
 

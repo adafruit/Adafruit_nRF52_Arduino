@@ -41,6 +41,8 @@
  extern "C" {
 #endif
 
+#define COMMENT_OUT(x)
+
 #define memclr(buffer, size)  memset(buffer, 0, size)
 #define varclr(_var)          memclr(_var, sizeof(*(_var)))
 #define arrcount(_arr)       ( sizeof(_arr) / sizeof(_arr[0]) )

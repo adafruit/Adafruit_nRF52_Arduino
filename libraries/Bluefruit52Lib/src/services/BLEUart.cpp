@@ -70,10 +70,12 @@ BLEUart::BLEUart(uint16_t fifo_depth)
   _rx_cb = NULL;
 }
 
-void bleuart_rxd_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
+void bleuart_rxd_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
 {
+  (void) offset;
+
   BLEUart& uart_svc = (BLEUart&) chr.parentService();
-  uart_svc._rxd_fifo.write(request->data, request->len);
+  uart_svc._rxd_fifo.write(data, len);
 
   // invoke user callback
   if ( uart_svc._rx_cb ) uart_svc._rx_cb();

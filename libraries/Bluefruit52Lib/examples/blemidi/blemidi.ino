@@ -13,6 +13,14 @@
 *********************************************************************/
 #include <bluefruit.h>
 
+// To test:
+// - Run this sketch and open the Serial Monitor
+// - Open the iGrand Piano Free app
+// - Open the midimittr app on your phone and under Clients select "Bluefruit52"
+// - When you see the 'Connected' label switch to the Routing panel
+// - Set the Destination to 'iGrand Piano'
+// - Switch to the iGrand Piano Free app and you should see notes playing one by one
+
 BLEDis bledis;
 BLEMidi blemidi;
 
