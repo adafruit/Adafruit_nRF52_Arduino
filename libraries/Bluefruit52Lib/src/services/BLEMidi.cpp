@@ -117,7 +117,7 @@ VERIFY_STATIC ( sizeof(midi_n_event_packet_t) == 19 );
 BLEMidi::BLEMidi(void)
   : BLEService(BLEMIDI_UUID_SERVICE), _io(BLEMIDI_UUID_CHR_IO)
 {
-
+  _write_cb = NULL;
 }
 
 bool BLEMidi::configured()
@@ -125,9 +125,70 @@ bool BLEMidi::configured()
   return Bluefruit.connBonded() && _io.notifyEnabled();
 }
 
-void BLEMidi::setWriteCallback(BLECharacteristic::write_cb_t fp)
+void blemidi_write_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
 {
-  _io.setWriteCallback(fp);
+  (void) offset;
+
+  if ( len < 3 ) return;
+
+  BLEMidi& midi_svc = (BLEMidi&) chr.parentService();
+
+  if ( midi_svc._write_cb )
+  {
+    // First 3 bytes is always : Header + Timestamp + Status
+    midi_header_t header;
+    uint16_t tstamp = 0;
+    uint8_t  status = 0;
+
+    header.byte = *data++;
+    len--;
+
+    while (len)
+    {
+      /* event : 0x00 - 0x7F
+         status: 0x80 - 0xEF
+         sysex : 0xF0 - 0xFF
+       */
+
+      if ( bitRead(data[0], 7) )
+      {
+        // Start of new full event
+        midi_timestamp_t timestamp;
+
+        timestamp.byte = *data++;
+        len--;
+
+        tstamp = (header.timestamp_hi << 7) | timestamp.timestamp_low;
+
+        status = *data++;
+        len--;
+
+        // Status must have 7th-bit set, otherwise something is wrong !!!
+        if ( !bitRead(status, 7) ) return;
+
+        uint8_t tempbuf[3] = { status, data[0], data[1] };
+        midi_svc._write_cb( tstamp, tempbuf);
+
+        len  -= 2;
+        data += 2;
+      }
+      else
+      {
+        // Running event
+        uint8_t tempbuf[3] = { status, data[0], data[1] };
+        midi_svc._write_cb( tstamp, tempbuf);
+
+        len  -= 2;
+        data += 2;
+      }
+    }
+  }
+}
+
+void BLEMidi::setWriteCallback(midi_write_cb_t fp)
+{
+  _write_cb = fp;
+  _io.setWriteCallback(blemidi_write_cb);
 }
 
 err_t BLEMidi::start(void)

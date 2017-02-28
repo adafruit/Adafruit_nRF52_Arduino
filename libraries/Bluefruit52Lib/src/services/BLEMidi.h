@@ -59,6 +59,8 @@ enum
 class BLEMidi: public BLEService
 {
   public:
+    typedef void (*midi_write_cb_t) (uint32_t tstamp, uint8_t data[]);
+
     BLEMidi(void);
 
     virtual err_t start(void);
@@ -68,12 +70,14 @@ class BLEMidi: public BLEService
     err_t send(uint8_t data[]);
     err_t send(uint8_t status, uint8_t byte1, uint8_t byte2);
 
-    void setWriteCallback(BLECharacteristic::write_cb_t fp);
+    void setWriteCallback(midi_write_cb_t fp);
 
   private:
     BLECharacteristic _io;
 
-    friend void blemidi_write_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
+    midi_write_cb_t _write_cb;
+
+    friend void blemidi_write_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
 };
 
 

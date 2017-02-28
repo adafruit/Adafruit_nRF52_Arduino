@@ -52,6 +52,7 @@ void setup()
    * up to 11.25 ms. Therefore BLEMidi::start() will try to set the min and max
    * connection interval to 11.25  ms and 15 ms respectively for best performance.
    */
+  blemidi.setWriteCallback(midi_write_callback);
   blemidi.start();
 
   /* Set connection interval (min, max) to your perferred value.
@@ -79,6 +80,13 @@ void setupAdv(void)
   // There is no room for Name in Advertising packet
   // Use Scan response for Name
   Bluefruit.addScanRespName();
+}
+
+void midi_write_callback(uint32_t tstamp, uint8_t data[])
+{
+  Serial.printf("Time %d: ", tstamp);
+  Serial.printBuffer(data, 3);
+  Serial.println();
 }
 
 void loop()
