@@ -62,14 +62,19 @@ bool NffsDir::open(const char* path)
   return (errnum == FS_EOK);
 }
 
-bool NffsDir::open(NffsDirEntry& dirent)
+bool NffsDir::open(const char* parent_dir, NffsDirEntry& dirent)
 {
   bool result = false;
   char* name = (char*) rtos_malloc(NFFS_FILENAME_MAX_LEN+1);
 
   VERIFY(name);
 
-  if ( dirent.getName(name, NFFS_FILENAME_MAX_LEN+1) > 0 )
+  strcpy(name, parent_dir);
+  strcat(name, "/");
+
+  int len = strlen(name);
+
+  if ( dirent.getName(name+len, NFFS_FILENAME_MAX_LEN+1-len) > 0 )
   {
     result = open(name);
   }

@@ -54,7 +54,7 @@ public:
   NffsDir(const char* path);
 
   bool open(const char* path);
-  bool open(NffsDirEntry& dirent);
+  bool open(const char* parent_dir, NffsDirEntry& dirent);
 
   bool close(void);
   bool existed(void);
