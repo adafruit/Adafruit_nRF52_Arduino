@@ -22,18 +22,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define NFFS_AREA_MAX         8
-
-#define SYSINIT_ASSERT_ACTIVE()
-#define SYSINIT_PANIC_ASSERT(rc) do \
-{                                   \
-    if (!(rc)) {                    \
-        SYSINIT_PANIC();            \
-    }                               \
-} while (0)
-#define SYSINIT_PANIC()     return // assert(0)
-
-#include "syscfg/syscfg.h"
 //#include "sysinit/sysinit.h"
 //#include "sysflash/sysflash.h"
 //#include "bsp/bsp.h"
@@ -756,22 +744,16 @@ nffs_init(void)
     return 0;
 }
 
+#if 0
 void
 nffs_pkg_init(void)
 {
-    static bool already_init = false;
-
     struct nffs_area_desc descs[NFFS_AREA_MAX + 1];
     int cnt;
     int rc;
 
-    if (already_init) return;
-    already_init = true;
-
     /* Ensure this function only gets called by sysinit. */
     SYSINIT_ASSERT_ACTIVE();
-
-    hal_flash_init();
 
     /* Initialize nffs's internal state. */
     rc = nffs_init();
@@ -815,3 +797,4 @@ nffs_pkg_init(void)
         break;
     }
 }
+#endif

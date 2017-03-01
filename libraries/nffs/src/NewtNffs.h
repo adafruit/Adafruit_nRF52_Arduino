@@ -47,12 +47,15 @@
 
 class NewtNffs
 {
+private:
+  bool _initialized;
+
 public:
   int errnum;
 
   NewtNffs(void);
 
-  void begin(void);
+  bool begin(void);
 
   // Format the flash
   bool format(void);
