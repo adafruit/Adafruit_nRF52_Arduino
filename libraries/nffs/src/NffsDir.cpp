@@ -91,7 +91,7 @@ bool NffsDir::close(void)
   return (errnum == FS_EOK);
 }
 
-bool NffsDir::existed(void)
+bool NffsDir::exists(void)
 {
   return (_dir != NULL);
 }
@@ -109,5 +109,5 @@ bool NffsDir::read(NffsDirEntry* entry)
 {
   *entry = read();
 
-  return entry->existed();
+  return entry->exists();
 }

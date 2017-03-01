@@ -53,7 +53,7 @@ NffsDirEntry& NffsDirEntry::operator=(const NffsDirEntry& rhs)
   return (*this);
 }
 
-bool NffsDirEntry::existed(void)
+bool NffsDirEntry::exists(void)
 {
   return _dirent != NULL;
 }

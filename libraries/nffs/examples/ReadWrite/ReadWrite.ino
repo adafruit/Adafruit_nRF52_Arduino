@@ -30,7 +30,7 @@ void setup()
   file.open(FILENAME, FS_ACCESS_READ);
 
   // file existed
-  if ( file.existed() )
+  if ( file.exists() )
   {
     Serial.println(FILENAME " file existed");
     

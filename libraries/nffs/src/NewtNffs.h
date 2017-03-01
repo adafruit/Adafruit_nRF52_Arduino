@@ -54,6 +54,9 @@ public:
 
   void begin(void);
 
+  // Format the flash
+  bool format(void);
+
   // Make a directory, All intermediate directories must already exist
   bool mkdir(const char* path);
 

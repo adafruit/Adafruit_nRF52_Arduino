@@ -55,7 +55,7 @@ public:
   bool open(const char* parent_dir, NffsDirEntry& dirent, uint8_t flags = FS_ACCESS_READ);
 
   bool close(void);
-  bool existed(void);
+  bool exists(void);
 
   uint32_t size(void);
   uint32_t tell(void);

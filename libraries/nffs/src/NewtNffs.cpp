@@ -48,6 +48,11 @@ void NewtNffs::begin(void)
   nffs_pkg_init();
 }
 
+bool NewtNffs::format(void)
+{
+
+}
+
 bool NewtNffs::mkdir(const char* path)
 {
   errnum = fs_mkdir(path);

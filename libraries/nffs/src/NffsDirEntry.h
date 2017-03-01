@@ -49,7 +49,7 @@ public:
 
   NffsDirEntry& operator=(const NffsDirEntry& rhs);
 
-  bool existed(void);
+  bool exists(void);
 
   size_t getName(char* name, size_t bufsize);
   bool   isDirectory(void);

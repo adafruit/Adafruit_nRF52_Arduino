@@ -82,7 +82,7 @@ bool NffsFile::open(const char* parent_dir, NffsDirEntry& dirent, uint8_t flags)
   return result;
 }
 
-bool NffsFile::existed(void)
+bool NffsFile::exists(void)
 {
   return _file != NULL;
 }
