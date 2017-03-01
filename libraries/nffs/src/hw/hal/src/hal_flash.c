@@ -24,6 +24,7 @@
 //#include "mcu/nrf52_hal.h"
 
 #include <hal/hal_flash_int.h>
+#include "hal/hal_flash.h"
 #include "rtos.h"
 
 #include "common_func.h"
@@ -31,27 +32,23 @@
 
 #define NRF52K_FLASH_SECTOR_SZ	4096
 
-int hal_flash_read (uint8_t id, uint32_t address, void *dst, uint32_t num_bytes);
-int hal_flash_write (uint8_t id, uint32_t address, const void *src, uint32_t num_bytes);
-int hal_flash_erase_sector (uint8_t id, uint32_t sector_address);
-int hal_flash_sector_info (int idx, uint32_t *address, uint32_t *sz);
-int hal_flash_init (void);
+int hal_flash_sector_info(int idx, uint32_t *address, uint32_t *sz);
 
 static const struct hal_flash_funcs nrf52k_flash_funcs = {
 //    .hff_read         = hal_flash_read,
 //    .hff_write        = hal_flash_write,
 //    .hff_erase_sector = hal_flash_erase_sector,
     .hff_sector_info  = hal_flash_sector_info,
-    .hff_init         = hal_flash_init
+//    .hff_init         = hal_flash_init
 };
 
 
 const struct hal_flash nrf52k_flash_dev = {
-    .hf_itf = &nrf52k_flash_funcs,
-    .hf_base_addr = 0x00000000,
-    .hf_size = 512 * 1024,	/* XXX read from factory info? */
-    .hf_sector_cnt = 128,	/* XXX read from factory info? */
-    .hf_align = 1
+    .hf_itf        = &nrf52k_flash_funcs,
+    .hf_base_addr  = 0x00000000,
+    .hf_size       = 512 * 1024,	/* XXX read from factory info? */
+    .hf_sector_cnt = 128,	        /* XXX read from factory info? */
+    .hf_align      = 1
 };
 
 #define NRF52K_FLASH_READY() (NRF_NVMC->READY == NVMC_READY_READY_Ready)

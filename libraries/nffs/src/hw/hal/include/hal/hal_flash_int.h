@@ -34,7 +34,7 @@ struct hal_flash_funcs {
 //    int (*hff_write)(uint32_t address, const void *src, uint32_t num_bytes);
 //    int (*hff_erase_sector)(uint32_t sector_address);
     int (*hff_sector_info)(int idx, uint32_t *address, uint32_t *size);
-    int (*hff_init)(void);
+//    int (*hff_init)(void);
 };
 
 struct hal_flash {

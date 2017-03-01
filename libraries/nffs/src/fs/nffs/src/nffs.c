@@ -771,6 +771,8 @@ nffs_pkg_init(void)
     /* Ensure this function only gets called by sysinit. */
     SYSINIT_ASSERT_ACTIVE();
 
+    hal_flash_init();
+
     /* Initialize nffs's internal state. */
     rc = nffs_init();
     SYSINIT_PANIC_ASSERT(rc == 0);
