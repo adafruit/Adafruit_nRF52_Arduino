@@ -24,7 +24,19 @@ NffsFile file;
 void setup() 
 {
   Serial.begin(115200);
+
   Serial.println("Nffs Read Write File Example");
+  Serial.println();
+
+  // Wait for user input to run. Otherwise the code will 
+  // always run immediately after flash and create the FILENAME in advance
+  Serial.print("Enter to any keys to continue:");
+  while ( !Serial.available() )
+  {
+    delay(1);
+  }
+  Serial.println();
+  Serial.println();
 
   // Bluefruit module must be initialized for Nffs to work
   // Since Bluefruit's SOC event handling task is required for flash operation
@@ -38,7 +50,7 @@ void setup()
   // file existed
   if ( file.exists() )
   {
-    Serial.println(FILENAME " file existed");
+    Serial.println(FILENAME " file exists");
     
     uint32_t readlen;
     char buffer[64] = { 0 };
