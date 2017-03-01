@@ -47,7 +47,7 @@ public:
   NffsDirEntry(void);
   NffsDirEntry(struct fs_dirent* entry);
 
-  NffsDirEntry& operator+(const NffsDirEntry& rhs);
+  NffsDirEntry& operator=(const NffsDirEntry& rhs);
 
   bool existed(void);
 

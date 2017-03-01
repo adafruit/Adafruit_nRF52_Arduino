@@ -60,6 +60,7 @@ public:
   bool existed(void);
 
   NffsDirEntry read(void);
+  bool read(NffsDirEntry* entry);
 };
 
 

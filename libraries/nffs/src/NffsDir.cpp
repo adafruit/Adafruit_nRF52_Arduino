@@ -93,9 +93,16 @@ bool NffsDir::existed(void)
 
 NffsDirEntry NffsDir::read(void)
 {
-  struct fs_dirent* dirent;
+  struct fs_dirent* dirent = NULL ;
 
   errnum = fs_readdir(_dir, &dirent);
 
   return NffsDirEntry(dirent);
+}
+
+bool NffsDir::read(NffsDirEntry* entry)
+{
+  *entry = read();
+
+  return entry->existed();
 }

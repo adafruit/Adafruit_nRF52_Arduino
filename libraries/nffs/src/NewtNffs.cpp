@@ -54,6 +54,34 @@ bool NewtNffs::mkdir(const char* path)
   return (errnum == FS_EOK);
 }
 
+/**
+ * Make a directory (and its parents if not existed) a.k.a mkdir -p
+ * @param path Absolute path of directory, must start with '/'
+ * @return
+ */
+bool NewtNffs::mkdir_p(const char* path)
+{
+  char* parent = (char*) rtos_malloc(strlen(path)+1);
+  const char* slash = path+1; // skip root '/'
+
+  memclr(parent, strlen(path)+1);
+
+  while( NULL != (slash = strchr(slash, '/')) )
+  {
+    memcpy(parent, path, slash-path);
+
+    // make parent, ignore return value (OK or Already Existed)
+    fs_mkdir(parent);
+
+    slash++;
+  }
+  errnum = fs_mkdir(path);
+
+  rtos_free(parent);
+
+  return (errnum == FS_EOK);
+}
+
 bool NewtNffs::remove(const char* path)
 {
   errnum = fs_unlink(path);

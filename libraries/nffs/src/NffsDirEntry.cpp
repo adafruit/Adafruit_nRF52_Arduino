@@ -46,7 +46,7 @@ NffsDirEntry::NffsDirEntry(struct fs_dirent* entry)
   _dirent = entry;
 }
 
-NffsDirEntry& NffsDirEntry::operator+(const NffsDirEntry& rhs)
+NffsDirEntry& NffsDirEntry::operator=(const NffsDirEntry& rhs)
 {
   _dirent = rhs._dirent;
 

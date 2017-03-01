@@ -12,7 +12,6 @@
  any redistribution
 *********************************************************************/
 
-#include <bluefruit.h>
 #include <NewtNffs.h>
 
 #define FILENAME    "/adafruit.txt"
@@ -24,9 +23,8 @@ NffsFile file;
 void setup() 
 {
   Serial.begin(115200);
-  Serial.println("nffs example");
+  Serial.println("Nffs Read Write File Example");
 
-  Bluefruit.begin();
   Nffs.begin();
 
   file.open(FILENAME, FS_ACCESS_READ);

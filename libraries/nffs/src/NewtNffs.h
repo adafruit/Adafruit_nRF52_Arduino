@@ -36,6 +36,8 @@
 #ifndef NEWTNFFS_H_
 #define NEWTNFFS_H_
 
+#include <Arduino.h>
+
 #include "nffs/nffs.h"
 #include "fs/fsutil.h"
 
@@ -52,8 +54,11 @@ public:
 
   void begin(void);
 
-  // Make a directory (and its parents if not existed) a.k.a mkdir -p
+  // Make a directory, All intermediate directories must already exist
   bool mkdir(const char* path);
+
+  // Make a directory and its parents if not existed a.k.a "mkdir -p"
+  bool mkdir_p(const char* path);
 
   // Remove a file or an empty directory
   bool remove(const char* path);
