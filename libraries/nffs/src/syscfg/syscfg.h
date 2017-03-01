@@ -45,7 +45,7 @@
  */
 #define MYNEWT_VAL(x)                           MYNEWT_VAL_ ## x
 
-#define MYNEWT_VAL_FS_CLI (0)
+#define MYNEWT_VAL_FS_CLI           (0)
 #define MYNEWT_VAL_NFFS_FLASH_AREA  0
 #define MYNEWT_VAL_NFFS_DETECT_FAIL (NFFS_DETECT_FAIL_FORMAT)
 
