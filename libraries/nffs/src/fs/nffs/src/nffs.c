@@ -117,28 +117,30 @@ static const struct fs_ops nffs_ops = {
     .f_name = "nffs"
 };
 
-//STATS_SECT_DECL(nffs_stats) nffs_stats;
-//STATS_NAME_START(nffs_stats)
-//    STATS_NAME(nffs_stats, nffs_hashcnt_ins)
-//    STATS_NAME(nffs_stats, nffs_hashcnt_rm)
-//    STATS_NAME(nffs_stats, nffs_object_count)
-//    STATS_NAME(nffs_stats, nffs_iocnt_read)
-//    STATS_NAME(nffs_stats, nffs_iocnt_write)
-//    STATS_NAME(nffs_stats, nffs_gccnt)
-//    STATS_NAME(nffs_stats, nffs_readcnt_data)
-//    STATS_NAME(nffs_stats, nffs_readcnt_block)36
-//    STATS_NAME(nffs_stats, nffs_readcnt_crc)
-//    STATS_NAME(nffs_stats, nffs_readcnt_copy)
-//    STATS_NAME(nffs_stats, nffs_readcnt_format)
-//    STATS_NAME(nffs_stats, nffs_readcnt_gccollate)
-//    STATS_NAME(nffs_stats, nffs_readcnt_inode)
-//    STATS_NAME(nffs_stats, nffs_readcnt_inodeent)
-//    STATS_NAME(nffs_stats, nffs_readcnt_rename)
-//    STATS_NAME(nffs_stats, nffs_readcnt_update)
-//    STATS_NAME(nffs_stats, nffs_readcnt_filename)
-//    STATS_NAME(nffs_stats, nffs_readcnt_object)
-//    STATS_NAME(nffs_stats, nffs_readcnt_detect)
-//STATS_NAME_END(nffs_stats)
+#if 0
+STATS_SECT_DECL(nffs_stats) nffs_stats;
+STATS_NAME_START(nffs_stats)
+    STATS_NAME(nffs_stats, nffs_hashcnt_ins)
+    STATS_NAME(nffs_stats, nffs_hashcnt_rm)
+    STATS_NAME(nffs_stats, nffs_object_count)
+    STATS_NAME(nffs_stats, nffs_iocnt_read)
+    STATS_NAME(nffs_stats, nffs_iocnt_write)
+    STATS_NAME(nffs_stats, nffs_gccnt)
+    STATS_NAME(nffs_stats, nffs_readcnt_data)
+    STATS_NAME(nffs_stats, nffs_readcnt_block)
+    STATS_NAME(nffs_stats, nffs_readcnt_crc)
+    STATS_NAME(nffs_stats, nffs_readcnt_copy)
+    STATS_NAME(nffs_stats, nffs_readcnt_format)
+    STATS_NAME(nffs_stats, nffs_readcnt_gccollate)
+    STATS_NAME(nffs_stats, nffs_readcnt_inode)
+    STATS_NAME(nffs_stats, nffs_readcnt_inodeent)
+    STATS_NAME(nffs_stats, nffs_readcnt_rename)
+    STATS_NAME(nffs_stats, nffs_readcnt_update)
+    STATS_NAME(nffs_stats, nffs_readcnt_filename)
+    STATS_NAME(nffs_stats, nffs_readcnt_object)
+    STATS_NAME(nffs_stats, nffs_readcnt_detect)
+STATS_NAME_END(nffs_stats)
+#endif
 
 static void
 nffs_lock(void)
@@ -162,11 +164,13 @@ static int
 nffs_stats_init(void)
 {
     int rc = 0;
-//    rc = stats_init_and_reg(
-//                    STATS_HDR(nffs_stats),
-//                    STATS_SIZE_INIT_PARMS(nffs_stats, STATS_SIZE_32),
-//                    STATS_NAME_INIT_PARMS(nffs_stats),
-//                    "nffs_stats");
+#if 0
+    rc = stats_init_and_reg(
+                    STATS_HDR(nffs_stats),
+                    STATS_SIZE_INIT_PARMS(nffs_stats, STATS_SIZE_32),
+                    STATS_NAME_INIT_PARMS(nffs_stats),
+                    "nffs_stats");
+#endif
     if (rc) {
         if (rc < 0) {
             /* multiple initializations are okay */

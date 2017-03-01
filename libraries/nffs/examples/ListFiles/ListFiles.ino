@@ -12,7 +12,6 @@
  any redistribution
 *********************************************************************/
 
-#include <bluefruit.h>
 #include <NewtNffs.h>
 
 /* This example  print out NFFS content up to

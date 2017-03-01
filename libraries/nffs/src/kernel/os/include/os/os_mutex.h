@@ -22,21 +22,22 @@
 
 #include "os/os.h"
 //#include "os/queue.h"
-
 #include "rtos.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-//struct os_mutex
-//{
-//    SLIST_HEAD(, os_task) mu_head;  /* chain of waiting tasks */
-//    uint8_t     _pad;
-//    uint8_t     mu_prio;            /* owner's default priority*/
-//    uint16_t    mu_level;           /* call nesting level */
-//    struct os_task *mu_owner;       /* owners task */
-//};
+#if 0
+struct os_mutex
+{
+    SLIST_HEAD(, os_task) mu_head;  /* chain of waiting tasks */
+    uint8_t     _pad;
+    uint8_t     mu_prio;            /* owner's default priority*/
+    uint16_t    mu_level;           /* call nesting level */
+    struct os_task *mu_owner;       /* owners task */
+};
+#endif
 
 /* 
   XXX: NOTES

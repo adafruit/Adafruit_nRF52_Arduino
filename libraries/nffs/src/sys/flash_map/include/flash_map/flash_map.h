@@ -64,7 +64,7 @@ void flash_map_init(void);
 /*
  * Start using flash area.
  */
-static int flash_area_open(uint8_t id, const struct flash_area **);
+int flash_area_open(uint8_t id, const struct flash_area **);
 
 void flash_area_close(const struct flash_area *);
 
