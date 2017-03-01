@@ -27,10 +27,10 @@
 
 static const struct flash_area sysflash_map_dfl =
 {
-    .fa_id = 0,
+    .fa_id        = 0,
     .fa_device_id = 0,
-    .fa_off = 0x6D000,
-    .fa_size = 7*4096, /* 28 kB */
+    .fa_off       = 0x6D000,
+    .fa_size      = 7*4096, /* 28 kB */
 };
 
 static int
