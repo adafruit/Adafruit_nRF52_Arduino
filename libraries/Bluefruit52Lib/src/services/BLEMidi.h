@@ -65,7 +65,7 @@ class BLEMidi: public BLEService
 
     virtual err_t start(void);
 
-    bool  configured();
+    bool  notifyEnabled(void);
 
     err_t send(uint8_t data[]);
     err_t send(uint8_t status, uint8_t byte1, uint8_t byte2);

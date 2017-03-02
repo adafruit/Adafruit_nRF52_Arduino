@@ -120,7 +120,7 @@ BLEMidi::BLEMidi(void)
   _write_cb = NULL;
 }
 
-bool BLEMidi::configured()
+bool BLEMidi::notifyEnabled(void)
 {
   return Bluefruit.connBonded() && _io.notifyEnabled();
 }

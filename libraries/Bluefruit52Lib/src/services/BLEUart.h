@@ -56,6 +56,8 @@ class BLEUart : public BLEService, public Stream
 
     virtual err_t start(void);
 
+    bool notifyEnabled(void);
+
     void setRxCallback( rx_callback_t fp);
 
     // Stream API
@@ -66,6 +68,9 @@ class BLEUart : public BLEService, public Stream
     virtual int       available  ( void );
     virtual int       peek       ( void );
     virtual void      flush      ( void );
+
+    // pull in write(str) and write(buf, size) from Print
+    using Print::write;
 
   protected:
     BLECharacteristic _txd;

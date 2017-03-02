@@ -114,6 +114,11 @@ err_t BLEUart::start(void)
   return ERROR_NONE;
 }
 
+bool BLEUart::notifyEnabled(void)
+{
+  return _txd.notifyEnabled();
+}
+
 int BLEUart::read (void)
 {
   uint8_t ch;

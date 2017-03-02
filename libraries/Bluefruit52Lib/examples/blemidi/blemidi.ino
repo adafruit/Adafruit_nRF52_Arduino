@@ -42,7 +42,7 @@ void setup()
   bledis.setManufacturer("Adafruit Industries");
   bledis.setModel("Bluefruit Feather 52");
   bledis.setHardwareRev("Rev E");
-  bledis.setFirmwareRev("0.1.0");
+  bledis.setFirmwareRev(ARUDINO_BSP_VERSION);  // ARUDINO_BSP_VERSION is BSP Libraries version
   bledis.start();
   
   /* Start BLE MIDI
@@ -91,7 +91,7 @@ void midi_write_callback(uint32_t tstamp, uint8_t data[])
 
 void loop()
 {
-  if ( Bluefruit.connected() && blemidi.configured() )
+  if ( Bluefruit.connected() && blemidi.notifyEnabled() )
   {
     static int current_note = 60;
     
