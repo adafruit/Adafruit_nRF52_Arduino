@@ -78,6 +78,7 @@ public:
           }
 
 
+  // pull in write(str) and write(buf, size) from Print
   using Print::write;
 };
 

@@ -54,9 +54,9 @@
 #define CFG_DEFAULT_NAME                 "Bluefruit52"
 #define CFG_ADV_BLINKY_INTERVAL          500
 
-#define CFG_BLUEFRUIT_TASK_STACKSIZE   (512*3)
+#define CFG_BLUEFRUIT_TASK_STACKSIZE     (512*3)
 
-#define CFG_BOND_PATH                    "/adafruit/bond"
+#define CFG_BOND_NFFS_DIR                "/adafruit/bond"
 
 extern "C"
 {
@@ -71,7 +71,6 @@ AdafruitBluefruit Bluefruit;
 /*------------------------------------------------------------------*/
 /* IMPLEMENTATION
  *------------------------------------------------------------------*/
-
 static void bluefruit_blinky_cb( TimerHandle_t xTimer )
 {
   (void) xTimer;
@@ -177,7 +176,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   VERIFY_STATUS ( sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) _name, strlen(_name)) );
 
   VERIFY_STATUS( sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN) );
-  VERIFY_STATUS ( sd_ble_gap_tx_power_set( CFG_BLE_TX_POWER_LEVEL ) );
+  VERIFY_STATUS( sd_ble_gap_tx_power_set( CFG_BLE_TX_POWER_LEVEL ) );
 
   /*------------- DFU OTA as built-in service -------------*/
   _dfu_svc.start();
@@ -193,10 +192,17 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   // Create Timer for led advertising blinky
   _led_blink_th = xTimerCreate(NULL, ms2tick(CFG_ADV_BLINKY_INTERVAL), true, NULL, bluefruit_blinky_cb);
 
+#if 0
   // Initialize nffs for bonding (it is safe to call nffs_pkg_init() multiple time)
-//  nffs_pkg_init();
+  Nffs.begin();
 
-  //
+  Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
+  PRINT_INT(Nffs.errnum);
+
+  printTreeDir("/", 0);
+#else
+
+#endif
 
   return ERROR_NONE;
 }

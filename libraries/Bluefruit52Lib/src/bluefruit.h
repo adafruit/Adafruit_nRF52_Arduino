@@ -180,6 +180,7 @@ COMMENT_OUT(
 )
 
     // TODO move to bonding place
+
 public: // temporary
     struct {
       // Keys
