@@ -66,5 +66,10 @@ static inline void rtos_free( void *pv )
   return (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) ? free(pv) : vPortFree(pv);
 }
 
+static inline void* rtos_realloc(void* pv, size_t new_size)
+{
+  return (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) ? realloc(pv, new_size) : pvPortRealloc(pv, new_size);
+}
+
 #endif
 #endif /* RTOS_H_ */

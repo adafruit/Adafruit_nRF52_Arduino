@@ -33,8 +33,8 @@ extern "C" {
 #undef  free
 #define free    rtos_free
 
-//#undef  realloc
-//#define realloc  rtos_realloc
+#undef  realloc
+#define realloc  rtos_realloc
 
 #ifdef __cplusplus
 }
