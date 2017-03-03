@@ -107,8 +107,8 @@ void setupHRM(void)
   // Supported Characteristics:
   // Name                         UUID    Requirement Properties
   // ---------------------------- ------  ----------- ----------
-  // Heart Rate Measurement       0x2137  Mandatory   Notify
-  // Body Sensor Location         0x2138  Optional    Read
+  // Heart Rate Measurement       0x2A37  Mandatory   Notify
+  // Body Sensor Location         0x2A38  Optional    Read
   // Heart Rate Control Point     0x2A39  Conditional Write       <-- Not used here
   hrms.start();
 
