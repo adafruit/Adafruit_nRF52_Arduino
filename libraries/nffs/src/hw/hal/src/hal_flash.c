@@ -50,6 +50,11 @@ const struct hal_flash nrf52k_flash_dev = {
     .hf_align      = 1
 };
 
+uint8_t hal_flash_align(uint8_t flash_id)
+{
+  return nrf52k_flash_dev.hf_align;
+}
+
 static int hal_flash_check_addr(const struct hal_flash *hf, uint32_t addr)
 {
     if (addr < hf->hf_base_addr || addr > hf->hf_base_addr + hf->hf_size) {
@@ -68,6 +73,19 @@ int hal_flash_read(uint8_t id, uint32_t address, void *dst, uint32_t num_bytes)
     (void) id;
     memcpy(dst, (void *)address, num_bytes);
     return 0;
+}
+
+int hal_flash_write(uint8_t id, uint32_t address, const void *src, uint32_t num_bytes)
+{
+  (void) id;
+
+  return nrf52_flash_write(address, src, num_bytes);
+}
+
+int hal_flash_erase_sector(uint8_t id, uint32_t sector_address)
+{
+  (void) id;
+  nrf52_flash_erase_sector(sector_address);
 }
 
 int hal_flash_erase(uint8_t id, uint32_t address, uint32_t num_bytes)
@@ -111,29 +129,10 @@ int hal_flash_erase(uint8_t id, uint32_t address, uint32_t num_bytes)
     return 0;
 }
 
-int hal_flash_erase_sector(uint8_t id, uint32_t sector_address)
-{
-  (void) id;
-  nrf52_flash_erase_sector(sector_address);
-}
-
-int hal_flash_write(uint8_t id, uint32_t address, const void *src, uint32_t num_bytes)
-{
-  (void) id;
-
-  return nrf52_flash_write(address, src, num_bytes);
-}
-
-
 int hal_flash_sector_info(int idx, uint32_t *address, uint32_t *sz)
 {
   assert(idx < nrf52k_flash_dev.hf_sector_cnt);
   *address = idx * NRF52K_FLASH_SECTOR_SZ;
   *sz = NRF52K_FLASH_SECTOR_SZ;
   return 0;
-}
-
-uint8_t hal_flash_align(uint8_t flash_id)
-{
-  return nrf52k_flash_dev.hf_align;
 }
