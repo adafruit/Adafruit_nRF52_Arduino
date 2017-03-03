@@ -53,8 +53,12 @@
 #include "services/BLEMidi.h"
 
 #define BLE_MAX_CHARS         50
-
 #define BLE_MAX_DATA_PER_MTU  (GATT_MTU_SIZE_DEFAULT - 3)
+
+extern "C"
+{
+  void SD_EVT_IRQHandler(void);
+}
 
 class AdafruitBluefruit
 {
@@ -138,13 +142,13 @@ class AdafruitBluefruit
 
     // internal usage only
     err_t _registerCharacteristic(BLECharacteristic* chars);
-    void  _sd_event_isr(void);
 
   private:
     bool _prph_enabled;
     bool _central_enabled;
 
     SemaphoreHandle_t _ble_event_sem;
+    SemaphoreHandle_t _soc_event_sem;
 
     TimerHandle_t _led_blink_th;
     bool _led_conn;
@@ -209,10 +213,12 @@ private:
     void _stopConnLed(void);
 
     err_t _saveBondedCCCD(void);
-    void _poll(void);
-    bool _handle_soc(void);
 
-    friend void adafruit_bluefruit_task(void* arg);
+    void _poll(void);
+
+    friend void SD_EVT_IRQHandler(void);
+    friend void adafruit_ble_task(void* arg);
+    friend void adafruit_soc_task(void* arg);
     friend class BLECentral;
 };
 

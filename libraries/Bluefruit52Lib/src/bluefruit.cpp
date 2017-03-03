@@ -55,17 +55,17 @@
 #define CFG_ADV_BLINKY_INTERVAL          500
 
 #define CFG_BLE_TASK_STACKSIZE          (512*3)
-#define CFG_SOC_TASK_STACKSIZE          (16*3)
+#define CFG_SOC_TASK_STACKSIZE          ((configMINIMAL_STACK_SIZE*3) / 2 )
 
 #define CFG_BOND_NFFS_DIR                "/adafruit/bond"
 
 extern "C"
 {
-  void SD_EVT_IRQHandler(void);
   void hal_flash_event_cb(uint32_t event) ATTR_WEAK;
 }
 
-void adafruit_bluefruit_task(void* arg);
+void adafruit_ble_task(void* arg);
+void adafruit_soc_task(void* arg);
 
 AdafruitBluefruit Bluefruit;
 
@@ -89,6 +89,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _central_enabled = false;
 
   _ble_event_sem    = NULL;
+  _soc_event_sem    = NULL;
 
   _led_blink_th     = NULL;
   _led_conn         = true;
@@ -187,25 +188,28 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   VERIFY(_ble_event_sem, NRF_ERROR_NO_MEM);
 
   TaskHandle_t ble_task_hdl;
-  xTaskCreate( adafruit_bluefruit_task, "SD BLE", CFG_BLE_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &ble_task_hdl);
+  xTaskCreate( adafruit_ble_task, "SD BLE", CFG_BLE_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &ble_task_hdl);
 
   // Create RTOS Semaphore & Task for SOC Event
-//  TaskHandle_t soc_task_hdl;
-//  xTaskCreate( adafruit_bluefruit_task, "SD SOC", CFG_SOC_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &soc_task_hdl);
+  _soc_event_sem = xSemaphoreCreateBinary();
+  VERIFY(_soc_event_sem, NRF_ERROR_NO_MEM);
+
+  TaskHandle_t soc_task_hdl;
+  xTaskCreate( adafruit_soc_task, "SD SOC", CFG_SOC_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &soc_task_hdl);
 
   NVIC_EnableIRQ(SD_EVT_IRQn);
 
   // Create Timer for led advertising blinky
   _led_blink_th = xTimerCreate(NULL, ms2tick(CFG_ADV_BLINKY_INTERVAL), true, NULL, bluefruit_blinky_cb);
 
-#if 0
+#if 1
   // Initialize nffs for bonding (it is safe to call nffs_pkg_init() multiple time)
   Nffs.begin();
 
   Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
   PRINT_INT(Nffs.errnum);
 
-  printTreeDir("/", 0);
+  //printTreeDir("/", 0);
 #else
 
 #endif
@@ -560,7 +564,50 @@ void AdafruitBluefruit::_stopConnLed(void)
 /*------------------------------------------------------------------*/
 /* Thread & SoftDevice Event handler
  *------------------------------------------------------------------*/
-void adafruit_bluefruit_task(void* arg)
+void SD_EVT_IRQHandler(void)
+{
+  // Notify both BLE & SOC Task
+  xSemaphoreGiveFromISR(Bluefruit._ble_event_sem, NULL);
+  xSemaphoreGiveFromISR(Bluefruit._soc_event_sem, NULL);
+}
+
+/**
+ * Handle SOC event such as FLASH opertion
+ */
+void adafruit_soc_task(void* arg)
+{
+  (void) arg;
+
+  while (1)
+  {
+    if ( xSemaphoreTake(Bluefruit._soc_event_sem, portMAX_DELAY) )
+    {
+      uint32_t soc_evt;
+      uint32_t err = ERROR_NONE;
+
+      // until no more pending events
+      while ( NRF_ERROR_NOT_FOUND != err )
+      {
+        err = sd_evt_get(&soc_evt);
+
+        if (ERROR_NONE == err)
+        {
+          switch (soc_evt)
+          {
+            case NRF_EVT_FLASH_OPERATION_SUCCESS:
+            case NRF_EVT_FLASH_OPERATION_ERROR:
+              if (hal_flash_event_cb) hal_flash_event_cb(soc_evt);
+            break;
+
+            default: break;
+          }
+        }
+      }
+    }
+  }
+}
+
+void adafruit_ble_task(void* arg)
 {
   (void) arg;
 
@@ -570,73 +617,24 @@ void adafruit_bluefruit_task(void* arg)
   }
 }
 
-void SD_EVT_IRQHandler(void)
-{
-  Bluefruit._sd_event_isr();
-}
-
-void AdafruitBluefruit::_sd_event_isr(void)
-{
-  BaseType_t yield_req = pdFALSE;
-  xSemaphoreGiveFromISR(_ble_event_sem, &yield_req);
-  portYIELD_FROM_ISR(yield_req);
-}
-
-/**
- * Handle SOC event
- * @return false if there is no more pending event
- */
-bool AdafruitBluefruit::_handle_soc(void)
-{
-  uint32_t soc_evt;
-  uint32_t err = sd_evt_get(&soc_evt);
-
-  // no more pending event
-  if ( NRF_ERROR_NOT_FOUND == err ) return false;
-
-  if (ERROR_NONE == err)
-  {
-    // handling SOC Event
-    switch (soc_evt)
-    {
-      case NRF_EVT_FLASH_OPERATION_SUCCESS:
-      case NRF_EVT_FLASH_OPERATION_ERROR:
-        if (hal_flash_event_cb) hal_flash_event_cb(soc_evt);
-        break;
-
-      default: break;
-    }
-  }
-
-  return true;
-}
-
 void AdafruitBluefruit::_poll(void)
 {
   enum { BLE_STACK_EVT_MSG_BUF_SIZE = (sizeof(ble_evt_t) + (GATT_MTU_SIZE_DEFAULT)) };
 
+  /*------------- BLE Event -------------*/
   if ( xSemaphoreTake(_ble_event_sem, portMAX_DELAY) )
   {
-    bool out_of_soc = false;
-    bool out_of_ble = false;
+    uint32_t err = ERROR_NONE;
 
-    while( !(out_of_soc && out_of_ble) )
+    while( NRF_ERROR_NOT_FOUND != err )
     {
-      /*------------- SOC Event -------------*/
-      out_of_soc = !_handle_soc();
-
-      /*------------- BLE Event -------------*/
       uint32_t ev_buf[BLE_STACK_EVT_MSG_BUF_SIZE/4 + 4];
       uint16_t ev_len = sizeof(ev_buf);
-      ble_evt_t* evt = (ble_evt_t*) ev_buf;
+      ble_evt_t* evt  = (ble_evt_t*) ev_buf;
 
-      uint32_t err = sd_ble_evt_get((uint8_t*)ev_buf, &ev_len);
+      err = sd_ble_evt_get((uint8_t*)ev_buf, &ev_len);
 
-      if ( NRF_ERROR_NOT_FOUND == err )
-      {
-        out_of_ble = true;
-      }
-      else if( ERROR_NONE == err)
+      if( ERROR_NONE == err)
       {
         #if CFG_DEBUG
         Serial.print("[BLE]: ");
@@ -851,10 +849,6 @@ COMMENT_OUT(
         {
           _chars_list[i]->eventHandler(evt);
         }
-      }
-      else
-      {
-        // Error, do nothing now
       }
     }
   }
