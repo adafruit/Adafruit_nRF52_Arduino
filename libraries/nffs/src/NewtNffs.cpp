@@ -53,11 +53,10 @@ bool NewtNffs::begin(void)
 {
   // Follow code in nffs_pkg_init()
   if (_initialized) return true;
-
   _initialized = true;
 
   // Init flash
-  hal_flash_init();
+  nrf52_flash_init();
 
   /* Initialize nffs's internal state. */
   errnum = nffs_init();
@@ -78,8 +77,6 @@ bool NewtNffs::begin(void)
   // If not formatted, format it
   if (FS_ECORRUPT == errnum)
   {
-    PRINT_MESS("formatting nffs");
-
     errnum = nffs_format(descs);
     VERIFY_STATUS( errnum, false );
   }
