@@ -16,6 +16,8 @@
 #define ARDUINO_MAIN
 #include "Arduino.h"
 
+#define MEMINFO_INTERVAL    10000
+
 // Weak empty variant initialization function.
 // May be redefined by variant files.
 void initVariant() __attribute__((weak));
@@ -35,7 +37,15 @@ static void loop_task(void* arg)
   {
     loop();
 
-//    if (serialEventRun) serialEventRun();
+    #if CFG_DEBUG > 1 // Full Debug
+    static uint32_t meminfo_ms = 0;
+    if (meminfo_ms + MEMINFO_INTERVAL < millis())
+    {
+      meminfo_ms += millis();
+      Serial.printf("Memory Info (print every %d seconds)\n", MEMINFO_INTERVAL/1000);
+      dbgMemInfo();
+    }
+    #endif
 
     // To compatible with most code where loop is not rtos-aware
     vTaskDelay(1); //taskYIELD();
