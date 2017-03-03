@@ -112,9 +112,9 @@ int cprintf(const char * format, ...);
 #define PRINT_BUFFER(buf, n) \
   do {\
     uint8_t const* p8 = (uint8_t const*) (buf);\
-    Serial.print(#buf ": ");\
+    cprintf(#buf ": ");\
     for(uint32_t i=0; i<(n); i++) cprintf("%02x ", p8[i]);\
-    Serial.println();\
+    cprintf("\n");\
   }while(0)
 
 #else
