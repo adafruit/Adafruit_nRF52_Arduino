@@ -54,7 +54,8 @@
 #define CFG_DEFAULT_NAME                 "Bluefruit52"
 #define CFG_ADV_BLINKY_INTERVAL          500
 
-#define CFG_BLUEFRUIT_TASK_STACKSIZE     (512*3)
+#define CFG_BLE_TASK_STACKSIZE          (512*3)
+#define CFG_SOC_TASK_STACKSIZE          (16*3)
 
 #define CFG_BOND_NFFS_DIR                "/adafruit/bond"
 
@@ -181,12 +182,17 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   /*------------- DFU OTA as built-in service -------------*/
   _dfu_svc.start();
 
-  // Create RTOS Task for BLE Event
-  TaskHandle_t task_hdl;
-  xTaskCreate( adafruit_bluefruit_task, "BLE Evt", CFG_BLUEFRUIT_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &task_hdl);
-
+  // Create RTOS Semaphore & Task for BLE Event
   _ble_event_sem = xSemaphoreCreateBinary();
   VERIFY(_ble_event_sem, NRF_ERROR_NO_MEM);
+
+  TaskHandle_t ble_task_hdl;
+  xTaskCreate( adafruit_bluefruit_task, "SD BLE", CFG_BLE_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &ble_task_hdl);
+
+  // Create RTOS Semaphore & Task for SOC Event
+//  TaskHandle_t soc_task_hdl;
+//  xTaskCreate( adafruit_bluefruit_task, "SD SOC", CFG_SOC_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &soc_task_hdl);
+
   NVIC_EnableIRQ(SD_EVT_IRQn);
 
   // Create Timer for led advertising blinky

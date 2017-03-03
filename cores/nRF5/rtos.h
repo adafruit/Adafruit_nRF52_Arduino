@@ -51,6 +51,15 @@
 #include "queue.h"
 #include "semphr.h"
 
+enum
+{
+  TASK_PRIO_LOWEST  = 0,
+  TASK_PRIO_LOW     = 1,
+  TASK_PRIO_NORMAL  = 2,
+  TASK_PRIO_HIGH    = 3,
+  TASK_PRIO_HIGHEST = 4,
+};
+
 #if 0
 #define rtos_malloc(_size)  ({ cprintf("[malloc] %s:%d : %d bytes\r\n", __PRETTY_FUNCTION__, __LINE__, _size); pvPortMalloc(_size); })
 #define rtos_free(ptr)      ({ cprintf("[free] %s:%d\r\n"    ,__PRETTY_FUNCTION__, __LINE__/*malloc_usable_size(ptr)*/); vPortFree(ptr); })
