@@ -202,7 +202,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   // Create Timer for led advertising blinky
   _led_blink_th = xTimerCreate(NULL, ms2tick(CFG_ADV_BLINKY_INTERVAL), true, NULL, bluefruit_blinky_cb);
 
-#if 1
+#if 0
   // Initialize nffs for bonding (it is safe to call nffs_pkg_init() multiple time)
   Nffs.begin();
 
@@ -607,6 +607,9 @@ void adafruit_soc_task(void* arg)
   }
 }
 
+/*------------------------------------------------------------------*/
+/* BLE Event handler
+ *------------------------------------------------------------------*/
 void adafruit_ble_task(void* arg)
 {
   (void) arg;

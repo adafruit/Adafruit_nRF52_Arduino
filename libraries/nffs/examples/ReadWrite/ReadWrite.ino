@@ -69,7 +69,9 @@ void setup()
       file.close();
     }else
     {
-      Serial.println("Failed (hint: path must start with '//') ");
+      Serial.println("Failed (hint: path must start with '/') ");
+      Serial.print("errnum = ");
+      Serial.println(file.errnum);
     }
   }
 }

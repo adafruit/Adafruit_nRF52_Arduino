@@ -51,8 +51,6 @@ const struct hal_flash nrf52k_flash_dev = {
     .hf_align      = 1
 };
 
-#define NRF52K_FLASH_READY() (NRF_NVMC->READY == NVMC_READY_READY_Ready)
-
 static SemaphoreHandle_t _evt_sem = NULL;
 volatile static uint32_t _op_result;
 
@@ -99,9 +97,8 @@ static int write_and_wait(uint32_t addr, uint32_t const * const src, uint32_t si
   return (_op_result == NRF_EVT_FLASH_OPERATION_SUCCESS ) ? 0 : (-1);
 }
 
-int hal_flash_write(uint8_t id, uint32_t address, const void *src, uint32_t num_bytes)
+int nrf52_flash_write(uint32_t address, const void *src, uint32_t num_bytes)
 {
-  (void) id;
 
   /* SD Flash requires
    * 1. src data must be word aligned
@@ -221,10 +218,8 @@ int hal_flash_erase(uint8_t id, uint32_t address, uint32_t num_bytes)
     return 0;
 }
 
-int hal_flash_erase_sector(uint8_t id, uint32_t sector_address)
+int nrf52_flash_erase_sector(uint32_t sector_address)
 {
-  (void) id;
-
   uint32_t err;
 
 //  cprintf("Flash Erase at 0x08%lX \n", sector_address);
@@ -239,6 +234,21 @@ int hal_flash_erase_sector(uint8_t id, uint32_t sector_address)
   xSemaphoreTake(_evt_sem, portMAX_DELAY);
   return (_op_result == NRF_EVT_FLASH_OPERATION_SUCCESS ) ? 0 : (-1);
 }
+
+
+int hal_flash_erase_sector(uint8_t id, uint32_t sector_address)
+{
+  (void) id;
+  nrf52_flash_erase_sector(sector_address);
+}
+
+int hal_flash_write(uint8_t id, uint32_t address, const void *src, uint32_t num_bytes)
+{
+  (void) id;
+
+  return nrf52_flash_write(address, src, num_bytes);
+}
+
 
 int hal_flash_sector_info(int idx, uint32_t *address, uint32_t *sz)
 {
