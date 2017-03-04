@@ -62,16 +62,16 @@ void setup()
 
 void setupAdv(void)
 {  
-  Bluefruit.addAdvFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.addAdvTxPower();
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  Bluefruit.Advertising.addTxPower();
 
-  Bluefruit.addAdvApperance(BLE_APPEARANCE_HID_KEYBOARD);
+  Bluefruit.Advertising.addApperance(BLE_APPEARANCE_HID_KEYBOARD);
   
   // Include BLE HID service
-  Bluefruit.addAdvService(blehid);
+  Bluefruit.Advertising.addService(blehid);
 
   // There is enough room for the dev name in the advertising packet
-  Bluefruit.addAdvName();
+  Bluefruit.Advertising.addName();
 }
 
 void loop() 

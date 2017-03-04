@@ -32,13 +32,13 @@ void setup()
 
 void setupAdv(void)
 {  
-  //Bluefruit.addAdvTxPower();
-  Bluefruit.addAdvFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.addAdvTxPower();
+  //Bluefruit.Advertising.addTxPower();
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  Bluefruit.Advertising.addTxPower();
 
   // There is no room for Name in Advertising packet
   // Use Scan response for Name
-  Bluefruit.addScanRespName();
+  Bluefruit.ScanResponse.addName();
 }
 
 void loop() 

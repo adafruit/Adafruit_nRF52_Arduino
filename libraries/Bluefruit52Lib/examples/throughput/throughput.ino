@@ -64,15 +64,15 @@ void setup(void)
 
 void setupAdv(void)
 {
-  Bluefruit.addAdvFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.addAdvTxPower();
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  Bluefruit.Advertising.addTxPower();
 
   // Include bleuart 128-bit uuid
-  Bluefruit.addAdvService(bleuart);
+  Bluefruit.Advertising.addService(bleuart);
 
   // There is no room for Name in Advertising packet
   // Use Scan response for Name
-  Bluefruit.addScanRespName();
+  Bluefruit.ScanResponse.addName();
 }
 
 void connect_callback(void)

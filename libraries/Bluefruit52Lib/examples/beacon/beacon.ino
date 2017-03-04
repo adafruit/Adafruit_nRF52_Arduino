@@ -13,6 +13,10 @@
 *********************************************************************/
 #include <bluefruit.h>
 
+// https://www.bluetooth.com/specifications/assigned-numbers/company-identifiers
+// 0x004C is Apple
+#define MANUFACTURER_ID   0x004C 
+
 uint8_t beaconUuid[16] = 
 { 
   0x01, 0x12, 0x23, 0x34, 0x45, 0x56, 0x67, 0x78,
@@ -31,7 +35,7 @@ void setup()
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
 
-  beacon.setManufacturer(0x004C); // 0x004C is Apple
+  beacon.setManufacturer(MANUFACTURER_ID);
 
   // Set up Advertising Packet
   setupAdv();
