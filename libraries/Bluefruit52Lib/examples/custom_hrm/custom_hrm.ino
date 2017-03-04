@@ -84,20 +84,20 @@ void setup()
   // Start Advertising
   Serial.println("Ready Player One!!!");
   Serial.println("\nAdvertising");
-  Bluefruit.startAdvertising();
+  Bluefruit.Advertising.start();
 }
 
 void setupAdv(void)
 {
-  Bluefruit.addAdvFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.addAdvTxPower();
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  Bluefruit.Advertising.addTxPower();
 
   // Include HRM Service UUID
-  Bluefruit.addAdvService(hrms);
+  Bluefruit.Advertising.addService(hrms);
 
   // There isn't enough room in the advertising packet for the
   // name so we'll place it on the secondary Scan Response packet
-  Bluefruit.addScanRespName();
+  Bluefruit.ScanResponse.addName();
 }
 
 void setupHRM(void)

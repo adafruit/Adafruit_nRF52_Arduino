@@ -38,6 +38,7 @@
 #include "bluefruit_common.h"
 
 #include "BLEUuid.h"
+#include "BLEAdvertising.h"
 #include "BLECharacteristic.h"
 #include "BLEService.h"
 #include "BLECentral.h"
@@ -67,45 +68,22 @@ class AdafruitBluefruit
 
     err_t begin(bool prph_enable = true, bool central_enable = false);
     
-    void autoConnLed(bool enabled);
-    void setConnLedInterval(uint32_t ms);
-    void setName(const char* str);
-//    bool setTxPower(int8_t power);
+    void  autoConnLed(bool enabled);
+    void  setConnLedInterval(uint32_t ms);
+    void  startConnLed(void);
+    void  stopConnLed(void);
+
+    void  setName(const char* str);
+    char* getName(void);
+
+    bool   setTxPower(int8_t power);
+    int8_t getTxPower(void);
 
     /*------------------------------------------------------------------*/
     /* Advertising & Scan Response (active scan)
      *------------------------------------------------------------------*/
-    uint8_t getAdvLen(void);
-    uint8_t getAdvData(uint8_t* buffer);
-    bool    setAdvData(const uint8_t* data, uint8_t count);
-    void    clearAdvData(void);
-
-    bool    addAdvData(uint8_t type, const void* data, uint8_t len);
-
-    bool    addAdvFlags(uint8_t flags);
-    bool    addAdvTxPower(void);
-    bool    addAdvName(void);
-    bool    addAdvApperance(uint16_t appearance);
-
-    bool    addAdvUuid(uint16_t uuid16);
-    bool    addAdvUuid(uint8_t const  uuid128[]);
-    bool    addAdvService(BLEService& service);
-
-    bool    setAdvBeacon(BLEBeacon& beacon);
-
-    // Scan Response Data (less helper than Adv packet)
-    uint8_t getScanRespLen(void);
-    uint8_t getScanRespData(uint8_t* buffer);
-    bool    setScanRespData(const uint8_t* data, uint8_t count);
-    void    clearScanData(void);
-
-    bool    addScanRespData(uint8_t type, const void* data, uint8_t len);
-    bool    addScanRespName(void);
-    bool    addScanRespUuid(uint16_t uuid16);
-    bool    addScanRespUuid(uint8_t const  uuid128[]);
-
-    err_t   startAdvertising(void);
-    void    stopAdvertising(void);
+    BLEAdvertising Advertising;
+    BLEAdvertising ScanResponse;
 
     /*------------------------------------------------------------------*/
     /*
@@ -119,6 +97,7 @@ class AdafruitBluefruit
     uint16_t connHandle(void);
     bool     connBonded(void);
     uint16_t connInterval(void);
+
 
     ble_gap_addr_t peerAddr(void);
 
@@ -144,8 +123,19 @@ class AdafruitBluefruit
     err_t _registerCharacteristic(BLECharacteristic* chars);
 
   private:
+    /*------------- BLE para -------------*/
     bool _prph_enabled;
     bool _central_enabled;
+
+    // Peripheral Preferred Connection Parameters (PPCP)
+    uint16_t _ppcp_min_conn;
+    uint16_t _ppcp_max_conn;
+
+    // Actual connection interval in use
+    uint16_t _conn_interval;
+
+    int8_t _tx_power;
+    char _name[32+1];
 
     SemaphoreHandle_t _ble_event_sem;
     SemaphoreHandle_t _soc_event_sem;
@@ -155,28 +145,11 @@ class AdafruitBluefruit
 
     BLEDfu _dfu_svc;
 
-    // ADV Data
-    struct {
-      uint8_t data[BLE_GAP_ADV_MAX_SIZE];
-      uint8_t count;
-    } _adv, _scan_resp;
-
-    int8_t _tx_power;
-
-    char _name[32+1];
-
     BLECharacteristic* _chars_list[BLE_MAX_CHARS];
     uint8_t            _chars_count;
 
     uint16_t _conn_hdl;
     bool     _bonded;
-
-    // Peripheral Preferred Connection Parameters (PPCP)
-    uint16_t _ppcp_min_conn;
-    uint16_t _ppcp_max_conn;
-
-    // Actual connection interval in use
-    uint16_t _conn_interval;
 
 COMMENT_OUT(
     uint8_t _auth_type;
@@ -208,9 +181,6 @@ private:
     disconnect_callback_t _discconnect_cb;
 
     bool _addToAdv(bool scan_resp, uint8_t type, const void* data, uint8_t len);
-
-    void _startConnLed(void);
-    void _stopConnLed(void);
 
     err_t _saveBondedCCCD(void);
 

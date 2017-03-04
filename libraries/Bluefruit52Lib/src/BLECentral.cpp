@@ -69,13 +69,13 @@ err_t BLECentral::startScanning(uint16_t timeout)
 {
   _scan_param.timeout = timeout;
   VERIFY_STATUS( sd_ble_gap_scan_start(&_scan_param) );
-  Bluefruit._startConnLed(); // start blinking
+  Bluefruit.startConnLed(); // start blinking
   return ERROR_NONE;
 }
 
 err_t BLECentral::stopScanning(void)
 {
-  Bluefruit._stopConnLed(); // stop blinking
+  Bluefruit.stopConnLed(); // stop blinking
   return sd_ble_gap_scan_stop();
 }
 
@@ -210,7 +210,7 @@ void BLECentral::_event_handler(ble_evt_t* evt)
 
       if (para->role == BLE_GAP_ROLE_CENTRAL)
       {
-        Bluefruit._stopConnLed();
+        Bluefruit.stopConnLed();
         if (Bluefruit._led_conn) ledOn(LED_CONN);
 
         _conn_hdl = evt->evt.gap_evt.conn_handle;

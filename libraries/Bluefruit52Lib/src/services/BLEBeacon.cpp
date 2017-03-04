@@ -88,7 +88,12 @@ void BLEBeacon::setRssiAt1m(int8_t rssi)
 
 bool BLEBeacon::start(void)
 {
-  Bluefruit.clearAdvData();
+  return start(Bluefruit.Advertising);
+}
+
+bool BLEBeacon::start(BLEAdvertising& adv)
+{
+  adv.clearData();
 
   struct ATTR_PACKED
   {
@@ -116,6 +121,6 @@ bool BLEBeacon::start(void)
 
   memcpy(beacon_data.uuid128, _uuid128, 16);
 
-  Bluefruit.addAdvFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  return Bluefruit.addAdvData(BLE_GAP_AD_TYPE_MANUFACTURER_SPECIFIC_DATA, &beacon_data, sizeof(beacon_data));
+  adv.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  return adv.addData(BLE_GAP_AD_TYPE_MANUFACTURER_SPECIFIC_DATA, &beacon_data, sizeof(beacon_data));
 }

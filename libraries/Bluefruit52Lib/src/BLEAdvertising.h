@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLEBeacon.h
+    @file     BLEAdvertising.h
     @author   hathach
 
     @section LICENSE
@@ -33,41 +33,53 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLEBEACON_H_
-#define BLEBEACON_H_
+#ifndef BLEADVERTISING_H_
+#define BLEADVERTISING_H_
 
+#include <Arduino.h>
 #include "bluefruit_common.h"
 
+#include "BLEUuid.h"
 #include "BLECharacteristic.h"
 #include "BLEService.h"
 
-class BLEAdvertising; // foward declare
+#include "services/BLEBeacon.h"
 
-class BLEBeacon
+//enum
+//{
+//  BLE_ADV_MODE
+//};
+
+class BLEAdvertising
 {
-  private:
-    uint16_t _manufacturer_id;
-    uint8_t const* _uuid128;
-    uint16_t _major;
-    uint16_t _minor;
-    int8_t   _rssi_at_1m;
+private:
+  uint8_t _data[BLE_GAP_ADV_MAX_SIZE];
+  uint8_t _count;
 
-    void _init(void);
+public:
+  BLEAdvertising(void);
 
-  public:
-    BLEBeacon(void);
-    BLEBeacon(uint8_t const uuid128[16]);
-    BLEBeacon(uint8_t const uuid128[16], uint16_t major, uint16_t minor, int8_t rssi);
+  bool start(uint8_t mode = 0);
+  bool stop (void);
 
-    void setManufacturer(uint16_t manfacturer);
-    void setUuid(uint8_t const uuid128[16]);
-    void setMajorMinor(uint16_t major, uint16_t minor);
-    void setRssiAt1m(int8_t rssi);
+  bool addData(uint8_t type, const void* data, uint8_t len);
+  bool addFlags(uint8_t flags);
+  bool addTxPower(void);
+  bool addName(void);
+  bool addApperance(uint16_t appearance);
 
-    bool start(void);
-    bool start(BLEAdvertising& adv);
+  bool addUuid(uint16_t uuid16);
+  bool addUuid(uint8_t const  uuid128[]);
+  bool addService(BLEService& service);
+
+  bool setBeacon(BLEBeacon& beacon);
+
+  // Custom API
+  uint8_t count(void);
+  uint8_t getData(uint8_t* buffer);
+  bool    setData(const uint8_t* data, uint8_t count);
+  void    clearData(void);
+
 };
 
-
-
-#endif /* BLEBEACON_H_ */
+#endif /* BLEADVERTISING_H_ */

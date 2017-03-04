@@ -47,15 +47,12 @@
 
 #define SVC_CONTEXT_FLAG                 (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
 
-#define GAP_ADV_INTERVAL_MS              20
-#define GAP_ADV_TIMEOUT_S                30
-
 #define CFG_BLE_TX_POWER_LEVEL           0
 #define CFG_DEFAULT_NAME                 "Bluefruit52"
 #define CFG_ADV_BLINKY_INTERVAL          500
 
 #define CFG_BLE_TASK_STACKSIZE          (512*3)
-#define CFG_SOC_TASK_STACKSIZE          ((configMINIMAL_STACK_SIZE*3) / 2 )
+#define CFG_SOC_TASK_STACKSIZE          ((configMINIMAL_STACK_SIZE*10) / 2 )
 
 #define CFG_BOND_NFFS_DIR                "/adafruit/bond"
 
@@ -93,9 +90,6 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _led_blink_th     = NULL;
   _led_conn         = true;
-
-  varclr(&_adv);
-  varclr(&_scan_resp);
 
   _tx_power  = 0;
 
@@ -202,10 +196,10 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   // Create Timer for led advertising blinky
   _led_blink_th = xTimerCreate(NULL, ms2tick(CFG_ADV_BLINKY_INTERVAL), true, NULL, bluefruit_blinky_cb);
 
-#if 0
   // Initialize nffs for bonding (it is safe to call nffs_pkg_init() multiple time)
   Nffs.begin();
 
+#if 0
   Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
   PRINT_INT(Nffs.errnum);
 
@@ -244,6 +238,35 @@ void AdafruitBluefruit::setName(const char* str)
   strncpy(_name, str, 32);
 }
 
+char* AdafruitBluefruit::getName(void)
+{
+  return _name;
+}
+
+bool AdafruitBluefruit::setTxPower(int8_t power)
+{
+  // Check if TX Power is valid value
+  const int8_t accepted[] = { -40, -30, -20, -16, -12, -8, -4, 0, 4 };
+
+  uint32_t i;
+  for (i=0; i<sizeof(accepted); i++)
+  {
+    if (accepted[i] == power) break;
+  }
+  VERIFY(i < sizeof(accepted));
+
+  // Apply
+  VERIFY_STATUS( sd_ble_gap_tx_power_set(power), false);
+  _tx_power = power;
+
+  return true;
+}
+
+int8_t AdafruitBluefruit::getTxPower(void)
+{
+  return _tx_power;
+}
+
 void AdafruitBluefruit::autoConnLed(bool enabled)
 {
   _led_conn = enabled;
@@ -280,204 +303,6 @@ void AdafruitBluefruit::setConnectCallback   ( connect_callback_t fp )
 void AdafruitBluefruit::setDisconnectCallback( disconnect_callback_t fp )
 {
   _discconnect_cb = fp;
-}
-
-/*------------------------------------------------------------------*/
-/* Advertising
- *------------------------------------------------------------------*/
-bool AdafruitBluefruit::_addToAdv(bool scan_resp, uint8_t type, const void* data, uint8_t len)
-{
-  uint8_t* adv_data = (scan_resp ? &_scan_resp.data[_scan_resp.count] : &_adv.data[_adv.count]);
-  uint8_t* count    = (scan_resp ? &_scan_resp.count : &_adv.count);
-
-  VERIFY( (*count) + len + 2 <= BLE_GAP_ADV_MAX_SIZE );
-
-  // len (1+data), type, data
-  *adv_data++ = (len+1);
-  *adv_data++ = type;
-  memcpy(adv_data, data, len);
-
-  (*count) = (*count) + len + 2;
-
-  return true;
-}
-
-bool AdafruitBluefruit::addAdvData(uint8_t type, const void* data, uint8_t len)
-{
-  return _addToAdv(false, type, data, len);
-}
-
-bool AdafruitBluefruit::addAdvUuid(uint16_t uuid16)
-{
-  return addAdvData(BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE, &uuid16, 2);
-}
-
-bool AdafruitBluefruit::addAdvUuid(uint8_t const  uuid128[])
-{
-  return addAdvData(BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_MORE_AVAILABLE, uuid128, 16);
-}
-
-bool AdafruitBluefruit::addAdvService(BLEService& service)
-{
-  // UUID128
-  if ( service.uuid._uuid128 )
-  {
-    return addAdvUuid(service.uuid._uuid128);
-  }else
-  {
-    return addAdvUuid(service.uuid._uuid.uuid);
-  }
-}
-
-// Add Name to Adv packet, use setName() to set
-bool AdafruitBluefruit::addAdvName(void)
-{
-  uint8_t type = BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME;
-  uint8_t len  = strlen(_name);
-
-  // not enough for full name, chop it
-  if (_adv.count + len + 2 > BLE_GAP_ADV_MAX_SIZE)
-  {
-    type = BLE_GAP_AD_TYPE_SHORT_LOCAL_NAME;
-    len  = BLE_GAP_ADV_MAX_SIZE - (_adv.count+2);
-  }
-
-  return addAdvData(type, _name, len);
-}
-
-// tx power is set by setTxPower
-bool AdafruitBluefruit::addAdvTxPower(void)
-{
-  return addAdvData(BLE_GAP_AD_TYPE_TX_POWER_LEVEL, &_tx_power, 1);
-}
-
-bool AdafruitBluefruit::addAdvFlags(uint8_t flags)
-{
-  return addAdvData(BLE_GAP_AD_TYPE_FLAGS, &flags, 1);
-}
-
-bool AdafruitBluefruit::addAdvApperance(uint16_t appearance)
-{
-  return addAdvData(BLE_GAP_AD_TYPE_APPEARANCE, &appearance, 2);
-}
-
-bool AdafruitBluefruit::setAdvBeacon(BLEBeacon& beacon)
-{
-  return beacon.start();
-}
-
-uint8_t AdafruitBluefruit::getAdvLen(void)
-{
-  return _adv.count;
-}
-
-uint8_t AdafruitBluefruit::getAdvData(uint8_t* buffer)
-{
-  memcpy(buffer, _adv.data, _adv.count);
-  return _adv.count;
-}
-
-bool AdafruitBluefruit::setAdvData(uint8_t const * data, uint8_t count)
-{
-  VERIFY( data && (count <= BLE_GAP_ADV_MAX_SIZE) );
-
-  memcpy(_adv.data, data, count);
-  _adv.count = count;
-
-  return true;
-}
-
-void AdafruitBluefruit::clearAdvData(void)
-{
-  varclr(&_adv);
-}
-
-/*------------------------------------------------------------------*/
-/* Scan Response
- *------------------------------------------------------------------*/
-bool AdafruitBluefruit::addScanRespData(uint8_t type, const void* data, uint8_t len)
-{
-  return _addToAdv(true, type, data, len);
-}
-
-bool AdafruitBluefruit::addScanRespUuid(uint16_t uuid16)
-{
-  return addScanRespData(BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE, &uuid16, 2);
-}
-
-bool AdafruitBluefruit::addScanRespUuid(uint8_t const  uuid128[])
-{
-  return addScanRespData(BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_MORE_AVAILABLE, uuid128, 16);
-}
-
-bool AdafruitBluefruit::addScanRespName(void)
-{
-  uint8_t type = BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME;
-  uint8_t len  = strlen(_name);
-
-  // not enough for full name, chop it
-  if (_scan_resp.count + len + 2 > BLE_GAP_ADV_MAX_SIZE)
-  {
-    type = BLE_GAP_AD_TYPE_SHORT_LOCAL_NAME;
-    len  = BLE_GAP_ADV_MAX_SIZE - (_scan_resp.count+2);
-  }
-
-  return addScanRespData(type, _name, len);
-}
-
-uint8_t AdafruitBluefruit::getScanRespLen(void)
-{
-  return _scan_resp.count;
-}
-
-uint8_t AdafruitBluefruit::getScanRespData(uint8_t* buffer)
-{
-  memcpy(buffer, _scan_resp.data, _scan_resp.count);
-  return _scan_resp.count;
-}
-
-bool AdafruitBluefruit::setScanRespData(uint8_t const* data, uint8_t count)
-{
-  VERIFY (data && count <= BLE_GAP_ADV_MAX_SIZE);
-
-  memcpy(_scan_resp.data, data, count);
-  _scan_resp.count = count;
-
-  return true;
-}
-
-void AdafruitBluefruit::clearScanData(void)
-{
-  varclr(&_scan_resp);
-}
-
-err_t AdafruitBluefruit::startAdvertising(void)
-{
-  VERIFY_STATUS( sd_ble_gap_adv_data_set(_adv.data, _adv.count, _scan_resp.data, _scan_resp.count) );
-
-  // ADV Params
-  ble_gap_adv_params_t adv_para =
-  {
-      .type        = BLE_GAP_ADV_TYPE_ADV_IND,
-      .p_peer_addr = NULL                            , // Undirected advertisement
-      .fp          = BLE_GAP_ADV_FP_ANY              ,
-      .p_whitelist = NULL                            ,
-      .interval    = MS1000TO625(GAP_ADV_INTERVAL_MS), // advertising interval (in units of 0.625 ms)
-      .timeout     = GAP_ADV_TIMEOUT_S
-  };
-
-  VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para) );
-
-  _startConnLed(); // start blinking
-
-  return ERROR_NONE;
-}
-
-void AdafruitBluefruit::stopAdvertising(void)
-{
-  sd_ble_gap_adv_stop();
-
-  _stopConnLed(); // stop blinking
 }
 
 err_t AdafruitBluefruit::_registerCharacteristic(BLECharacteristic* chars)
@@ -551,12 +376,12 @@ err_t AdafruitBluefruit::_saveBondedCCCD(void)
 /*------------------------------------------------------------------*/
 /* Private Methods
  *------------------------------------------------------------------*/
-void AdafruitBluefruit::_startConnLed(void)
+void AdafruitBluefruit::startConnLed(void)
 {
   if (_led_conn) xTimerStart(_led_blink_th, 0);
 }
 
-void AdafruitBluefruit::_stopConnLed(void)
+void AdafruitBluefruit::stopConnLed(void)
 {
   xTimerStop(_led_blink_th, 0);
 }
@@ -567,8 +392,8 @@ void AdafruitBluefruit::_stopConnLed(void)
 void SD_EVT_IRQHandler(void)
 {
   // Notify both BLE & SOC Task
-  xSemaphoreGiveFromISR(Bluefruit._ble_event_sem, NULL);
   xSemaphoreGiveFromISR(Bluefruit._soc_event_sem, NULL);
+  xSemaphoreGiveFromISR(Bluefruit._ble_event_sem, NULL);
 }
 
 /**
@@ -596,6 +421,7 @@ void adafruit_soc_task(void* arg)
           {
             case NRF_EVT_FLASH_OPERATION_SUCCESS:
             case NRF_EVT_FLASH_OPERATION_ERROR:
+              PRINT_INT(soc_evt);
               if (hal_flash_event_cb) hal_flash_event_cb(soc_evt);
             break;
 
@@ -654,7 +480,7 @@ void AdafruitBluefruit::_poll(void)
 
             if (para->role == BLE_GAP_ROLE_PERIPH)
             {
-              _stopConnLed();
+              stopConnLed();
               if (_led_conn) ledOn(LED_CONN);
 
               _conn_hdl      = evt->evt.gap_evt.conn_handle;
@@ -708,7 +534,7 @@ void AdafruitBluefruit::_poll(void)
 
               if ( _discconnect_cb ) _discconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
 
-              startAdvertising();
+              Advertising.start();
             }
           break;
 
@@ -716,7 +542,7 @@ void AdafruitBluefruit::_poll(void)
             if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISING)
             {
               // Restart Advertising
-              startAdvertising();
+              Advertising.start();
             }
           break;
 

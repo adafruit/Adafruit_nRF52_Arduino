@@ -154,7 +154,7 @@ int nrf52_flash_write(uint32_t address, const void *src, uint32_t num_bytes)
       memcpy(tempbuf+num_bytes, (uint8_t*) (address+num_bytes), 4-leftover);
     }
 
-    int err = write_and_wait(address, tempbuf, (n4 / 4) + (leftover ? 1 : 0) );
+    int err = write_and_wait(address, (uint32_t*)tempbuf, (n4 / 4) + (leftover ? 1 : 0) );
 
     rtos_free(tempbuf);
 
