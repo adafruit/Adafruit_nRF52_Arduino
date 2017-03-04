@@ -41,7 +41,7 @@ void BLEBeacon::_init(void)
   _manufacturer_id = 0x004C; // default Apple --> iBeacon
   _uuid128 = NULL;
 
-  _major = _minor = 0;
+  _major_be = _minor_be = 0;
   _rssi_at_1m = -54;
 }
 
@@ -60,8 +60,8 @@ BLEBeacon::BLEBeacon(uint8_t const uuid128[16], uint16_t major, uint16_t minor, 
 {
   _init();
   _uuid128 = uuid128;
-  _major = major;
-  _minor = minor;
+  _major_be = __swap16(major);
+  _minor_be = __swap16(minor);
   _rssi_at_1m = rssi;
 }
 
@@ -77,8 +77,8 @@ void BLEBeacon::setUuid(uint8_t const uuid128[16])
 
 void BLEBeacon::setMajorMinor(uint16_t major, uint16_t minor)
 {
-  _major = major;
-  _minor = minor;
+  _major_be = major;
+  _minor_be = minor;
 }
 
 void BLEBeacon::setRssiAt1m(int8_t rssi)
@@ -112,8 +112,8 @@ bool BLEBeacon::start(BLEAdvertising& adv)
       .beacon_type = 0x02,
       .beacon_len  = sizeof(beacon_data) - 4, // len of uuid + major + minor + rssi
       .uuid128 = { 0 },
-      .major = _major,
-      .minor = _minor,
+      .major = _major_be,
+      .minor = _minor_be,
       .rssi_at_1m = _rssi_at_1m
   };
 

@@ -48,8 +48,8 @@ class BLEBeacon
   private:
     uint16_t _manufacturer_id;
     uint8_t const* _uuid128;
-    uint16_t _major;
-    uint16_t _minor;
+    uint16_t _major_be; // Big Endian
+    uint16_t _minor_be; // Big Endian
     int8_t   _rssi_at_1m;
 
     void _init(void);

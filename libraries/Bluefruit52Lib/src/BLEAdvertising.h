@@ -76,7 +76,7 @@ public:
 
   // Custom API
   uint8_t count(void);
-  uint8_t getData(uint8_t* buffer);
+  char*   getData(void);
   bool    setData(const uint8_t* data, uint8_t count);
   void    clearData(void);
 

@@ -171,10 +171,9 @@ uint8_t BLEAdvertising::count(void)
   return _count;
 }
 
-uint8_t BLEAdvertising::getData(uint8_t* buffer)
+char* BLEAdvertising::getData(void)
 {
-  memcpy(buffer, _data, _count);
-  return _count;
+  return (char*) _data;
 }
 
 bool BLEAdvertising::setData(uint8_t const * data, uint8_t count)
