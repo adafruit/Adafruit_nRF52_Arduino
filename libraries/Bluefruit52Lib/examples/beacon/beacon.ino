@@ -31,26 +31,28 @@ void setup()
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
 
+  beacon.setManufacturer(0x004C); // 0x004C is Apple
+
   // Set up Advertising Packet
   setupAdv();
 
   // Start Advertising
-  Bluefruit.startAdvertising();
+  Bluefruit.Advertising.start();
 }
 
 void setupAdv(void)
 {  
-  Bluefruit.setAdvBeacon(beacon);
+  Bluefruit.Advertising.setBeacon(beacon);
 
   // There is no room for Name in Advertising packet
   // Use Scan response for Name
-  Bluefruit.addScanRespName();
+  Bluefruit.ScanResponse.addName();
 }
 
 void loop() 
 {
   // Toggle both LEDs every 1 second
   digitalToggle(LED_BUILTIN);
-  rtos_delay(1000);
+  delay(1000);
 }
 

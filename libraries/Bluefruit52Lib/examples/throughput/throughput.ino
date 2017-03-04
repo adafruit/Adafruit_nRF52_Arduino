@@ -59,7 +59,7 @@ void setup(void)
   setupAdv();
 
   // Start Advertising
-  Bluefruit.startAdvertising();
+  Bluefruit.Advertising.start();
 }
 
 void setupAdv(void)
