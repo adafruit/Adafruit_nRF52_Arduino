@@ -428,29 +428,44 @@ err_t BLECharacteristic::notify(const void* data, int len, uint16_t offset)
 {
   VERIFY( _properties.notify, NRF_ERROR_INVALID_PARAM);
 
-  // Must already connected for enabled to be tru
+  // could not exceed max len
+  uint16_t actual_len = min16(len, _max_len);
+
   if ( notifyEnabled() )
   {
-    // Whether Txbuf available or not we still update the chars'value
-    (void) Bluefruit.txbuf_get(100);
+    // Break into multiple MTU-3 packet
+    // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
+    // SD132 v3.0 could negotiate MTU to higher number
+    const uint16_t MTU_MPS = 20;
 
-    // could not exceed max len
-    uint16_t actual_len = min16(len, _max_len);
+    const uint8_t* u8data = (const uint8_t*) data;
 
-    ble_gatts_hvx_params_t hvx_params =
+    while ( actual_len )
     {
-        .handle = _handles.value_handle,
-        .type   = BLE_GATT_HVX_NOTIFICATION,
-        .offset = offset,
-        .p_len  = &actual_len,
-        .p_data =  (uint8_t*) data,
-    };
+      if ( !Bluefruit.txbuf_get(100) )  return BLE_ERROR_NO_TX_PACKETS;
 
-    VERIFY_STATUS( sd_ble_gatts_hvx(Bluefruit.connHandle(), &hvx_params) );
+      uint16_t packet_len = min16(MTU_MPS, actual_len);
+
+      ble_gatts_hvx_params_t hvx_params =
+      {
+          .handle = _handles.value_handle,
+          .type   = BLE_GATT_HVX_NOTIFICATION,
+          .offset = offset,
+          .p_len  = &packet_len,
+          .p_data = (uint8_t*) u8data,
+      };
+
+      VERIFY_STATUS( sd_ble_gatts_hvx(Bluefruit.connHandle(), &hvx_params) );
+
+      actual_len -= packet_len;
+      u8data     += packet_len;
+
+      if ( offset ) offset += packet_len;
+    }
   }
   else
   {
-    write(data, len);
+    write(data, actual_len);
     return NRF_ERROR_INVALID_STATE;
   }
 
