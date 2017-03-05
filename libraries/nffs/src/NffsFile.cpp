@@ -53,6 +53,11 @@ NffsFile::NffsFile(const char* path, uint8_t flags)
   open(path, flags);
 }
 
+NffsFile::~NffsFile()
+{
+  if (_file) close();
+}
+
 bool NffsFile::open(const char* path, uint8_t flags)
 {
   errnum = fs_open(path, flags, &_file);
@@ -90,6 +95,7 @@ bool NffsFile::exists(void)
 bool NffsFile::close(void)
 {
   errnum = fs_close(_file);
+  _file = NULL;
 
   return (errnum == FS_EOK);
 }
@@ -107,9 +113,11 @@ uint32_t NffsFile::tell(void)
   return fs_getpos(_file);
 }
 
-bool NffsFile::seek(uint32_t offset)
+bool NffsFile::seek(int32_t offset)
 {
-  errnum = fs_seek(_file, offset);
+  uint32_t abs_offset = (offset >= 0) ? offset : (size() + 1 + offset);
+
+  errnum = fs_seek(_file, abs_offset);
 
   return (errnum == FS_EOK);
 }

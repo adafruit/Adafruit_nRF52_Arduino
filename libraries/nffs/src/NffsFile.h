@@ -49,6 +49,8 @@ public:
   int errnum;
 
   NffsFile(void);
+  virtual ~NffsFile();
+
   NffsFile(const char* path, uint8_t flags = FS_ACCESS_READ);
 
   bool open(const char* path, uint8_t flags = FS_ACCESS_READ);
@@ -59,7 +61,8 @@ public:
 
   uint32_t size(void);
   uint32_t tell(void);
-  bool     seek(uint32_t offset);
+  bool     seek(int32_t offset);
+
   bool     seekForward (uint32_t offset);
   bool     seekBackward(uint32_t offset);
 

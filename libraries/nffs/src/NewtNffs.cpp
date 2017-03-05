@@ -39,7 +39,7 @@
 #include "syscfg/syscfg.h"
 #include "hal/hal_flash.h"
 
-#define NFFS_AREA_MAX    7
+#define NFFS_AREA_MAX    8
 
 NewtNffs Nffs;
 
@@ -77,6 +77,7 @@ bool NewtNffs::begin(void)
   // If not formatted, format it
   if (FS_ECORRUPT == errnum)
   {
+    PRINT_MESS("No FS detected, format");
     errnum = nffs_format(descs);
     VERIFY_STATUS( errnum, false );
   }
@@ -143,3 +144,41 @@ bool NewtNffs::rename(const char* from, const char* to)
   errnum = fs_rename(from, to);
   return (errnum == FS_EOK);
 }
+
+uint32_t NewtNffs::readFile (const char* filename, void* buffer, uint32_t bufsize, int32_t offset)
+{
+  NffsFile f(filename);
+
+  VERIFY ( f.exists(), 0 );
+
+  if (offset != 0)
+  {
+    VERIFY ( f.seek(offset), 0 );
+  }
+
+  uint32_t count = f.read( (uint8_t*) buffer, bufsize);
+  errnum = f.errnum;
+
+  f.close();
+
+  return count;
+}
+
+bool NewtNffs::writeFile(const char* filename, const void* data, uint32_t count, int32_t offset)
+{
+  NffsFile f(filename, FS_ACCESS_WRITE);
+
+  // File must exists when offset not zero
+  if ( offset != 0 )
+  {
+    VERIFY ( f.seek(offset), 0 );
+  }
+
+  bool result = f.write( (const uint8_t*) data, count);
+  errnum = f.errnum;
+
+  f.close();
+
+  return result;
+}
+

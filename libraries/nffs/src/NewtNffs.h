@@ -73,6 +73,14 @@ public:
   // Remove a non-readonly file or an empty directory
   bool rename(const char* from, const char* to);
   bool mv    (const char* from, const char* to) { return rename(from, to); }
+
+  // utils
+  uint32_t readFile (const char* filename, void* buffer, uint32_t bufsize, int32_t offset=0);
+  bool     writeFile(const char* filename, const void* data, uint32_t count, int32_t offset=0);
+  bool     writeFile(const char* filename, const char* str , int32_t offset=0)
+  {
+    return writeFile(filename, str, strlen(str), offset);
+  }
 };
 
 
