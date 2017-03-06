@@ -75,6 +75,9 @@ public:
   bool mv    (const char* from, const char* to) { return rename(from, to); }
 
   // utils
+  bool     testFile  (const char* filename);
+  bool     testFolder(const char* path);
+
   uint32_t readFile (const char* filename, void* buffer, uint32_t bufsize, int32_t offset=0);
   bool     writeFile(const char* filename, const void* data, uint32_t count, int32_t offset=0);
   bool     writeFile(const char* filename, const char* str , int32_t offset=0)

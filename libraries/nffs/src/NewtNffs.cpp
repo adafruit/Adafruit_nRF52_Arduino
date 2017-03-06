@@ -147,7 +147,7 @@ bool NewtNffs::rename(const char* from, const char* to)
 
 uint32_t NewtNffs::readFile (const char* filename, void* buffer, uint32_t bufsize, int32_t offset)
 {
-  NffsFile f(filename);
+  NffsFile f(filename, FS_ACCESS_READ);
 
   VERIFY ( f.exists(), 0 );
 
@@ -174,7 +174,7 @@ bool NewtNffs::writeFile(const char* filename, const void* data, uint32_t count,
     VERIFY ( f.seek(offset), 0 );
   }
 
-  bool result = f.write( (const uint8_t*) data, count);
+  bool result = f.write( (const uint8_t*) data, count) ? true : false;
   errnum = f.errnum;
 
   f.close();
@@ -182,3 +182,20 @@ bool NewtNffs::writeFile(const char* filename, const void* data, uint32_t count,
   return result;
 }
 
+bool NewtNffs::testFile (const char* filename)
+{
+  NffsFile f(filename, FS_ACCESS_READ);
+  bool result = f.exists();
+  f.close();
+
+  return result;
+}
+
+bool NewtNffs::testFolder(const char* path)
+{
+  NffsDir f(path);
+  bool result = f.exists();
+  f.close();
+
+  return result;
+}
