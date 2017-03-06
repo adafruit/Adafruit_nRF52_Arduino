@@ -66,7 +66,7 @@ public:
   // Make a directory and its parents if not existed a.k.a "mkdir -p"
   bool mkdir_p(const char* path);
 
-  // Remove a file or an empty directory
+  // Remove a file or an directory (recursively)
   bool remove(const char* path);
   bool rm    (const char* path) { return remove(path); }
 
