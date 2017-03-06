@@ -17,20 +17,13 @@
 BLEUart bleuart;
 
 // Function prototypes for packetparser.cpp
-uint8_t readPacket(BLEUart *ble_uart, uint16_t timeout);
-float parsefloat(uint8_t *buffer);
-void printHex(const uint8_t * data, const uint32_t numBytes);
+uint8_t readPacket (BLEUart *ble_uart, uint16_t timeout);
+float   parsefloat (uint8_t *buffer);
+void    printHex   (const uint8_t * data, const uint32_t numBytes);
 
-// the packet buffer
+// Packet buffer
 extern uint8_t packetbuffer[];
 
-
-/**************************************************************************/
-/*!
-    @brief  Sets up the HW an the BLE module (this function is called
-            automatically on startup)
-*/
-/**************************************************************************/
 void setup(void)
 {
   Serial.begin(115200);
@@ -40,27 +33,26 @@ void setup(void)
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
 
-  // Configure and Start BLE Uart Service
+  // Configure and start the BLE Uart service
   bleuart.start();
 
   // Set up the advertising packet
   setupAdv();
 
-  // Start Advertising
+  // Start advertising
   Bluefruit.Advertising.start();
 }
 
 void setupAdv(void)
-{  
-  //Bluefruit.Advertising.addTxPower();
+{
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
   
-  // Include bleuart 128-bit uuid
+  // Include the BLE UART (AKA 'NUS') 128-bit UUID
   Bluefruit.Advertising.addService(bleuart);
 
-  // There is no room for Name in Advertising packet
-  // Use Scan response for Name
+  // There is no room for 'Name' in the Advertising packet
+  // Use the optional secondary Scan Response packet for 'Name' instead
   Bluefruit.ScanResponse.addName();
 }
 
@@ -71,11 +63,11 @@ void setupAdv(void)
 /**************************************************************************/
 void loop(void)
 {
-  /* Wait for new data to arrive */
+  // Wait for new data to arrive
   uint8_t len = readPacket(&bleuart, 500);
   if (len == 0) return;
 
-  /* Got a packet! */
+  // Got a packet!
   // printHex(packetbuffer, len);
 
   // Color
