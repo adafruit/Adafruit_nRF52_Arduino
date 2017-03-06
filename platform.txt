@@ -1,5 +1,6 @@
 # Copyright (c) 2014-2015 Arduino LLC.  All right reserved.
 # Copyright (c) 2016 Sandeep Mistry All right reserved.
+# Copyright (c) 2017 Adafruit Industries.  All rights reserved.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -16,7 +17,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 name=Adafruit Boards
-version=0.2.1
+version=0.4.5
 
 # Compile variables
 # -----------------
