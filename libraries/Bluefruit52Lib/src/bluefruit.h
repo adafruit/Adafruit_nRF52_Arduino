@@ -98,6 +98,7 @@ class AdafruitBluefruit
     bool     connBonded(void);
     uint16_t connInterval(void);
 
+    void clearBonds(void);
 
     ble_gap_addr_t peerAddr(void);
 

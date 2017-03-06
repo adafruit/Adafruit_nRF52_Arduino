@@ -661,6 +661,14 @@ COMMENT_OUT(
     }
   }
 }
+/*------------------------------------------------------------------*/
+/* Bonds
+ *------------------------------------------------------------------*/
+void AdafruitBluefruit::clearBonds(void)
+{
+  Nffs.remove(CFG_BOND_NFFS_DIR);
+  PRINT_INT(Nffs.errnum);
+}
 
 bool AdafruitBluefruit::_saveBondKeys(void)
 {
