@@ -666,8 +666,11 @@ COMMENT_OUT(
  *------------------------------------------------------------------*/
 void AdafruitBluefruit::clearBonds(void)
 {
+  // Detele bonds dir
   Nffs.remove(CFG_BOND_NFFS_DIR);
-  PRINT_INT(Nffs.errnum);
+
+  // Create an empty one
+  Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
 }
 
 bool AdafruitBluefruit::_saveBondKeys(void)
