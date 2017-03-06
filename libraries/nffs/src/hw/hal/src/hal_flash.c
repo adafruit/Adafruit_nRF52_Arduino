@@ -85,7 +85,7 @@ int hal_flash_write(uint8_t id, uint32_t address, const void *src, uint32_t num_
 int hal_flash_erase_sector(uint8_t id, uint32_t sector_address)
 {
   (void) id;
-  nrf52_flash_erase_sector(sector_address);
+  return nrf52_flash_erase_sector(sector_address);
 }
 
 int hal_flash_erase(uint8_t id, uint32_t address, uint32_t num_bytes)

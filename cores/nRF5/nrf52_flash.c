@@ -39,6 +39,31 @@
 
 #if CFG_DEBUG
 #define CFG_DEBUG_NFFS  0
+
+static void print_buf(const uint8_t* address, uint32_t count)
+{
+  for(uint32_t i=0; i<count; i++) cprintf("%02X ", address[i] );
+}
+
+static void print_write_before(uint32_t address, const void* data, uint32_t count)
+{
+  cprintf("Flash Write at 0x%06lX from 0x%06lX, %d bytes\n", address, (uint32_t) data, count);
+
+  cprintf("  Before: ");
+  print_buf((const uint8_t*)address, count);
+  cprintf("\n");
+
+  cprintf("  Data  : ");
+  print_buf((const uint8_t*)data, count);
+  cprintf("\n");
+}
+
+static void print_write_after(uint32_t address, uint32_t count)
+{
+  cprintf("  After : ");
+  print_buf((const uint8_t*)address, count);
+  cprintf("\n");
+}
 #endif
 
 static SemaphoreHandle_t _evt_sem = NULL;
@@ -61,7 +86,7 @@ int nrf52_flash_erase_sector(uint32_t sector_address)
   uint32_t err;
 
 #if CFG_DEBUG_NFFS
-  cprintf("Flash Erase at 0x%08lX \n", sector_address);
+  cprintf("Flash Erase at 0x%06lX \n", sector_address);
 #endif
 
   // delay and try again if busy
@@ -75,16 +100,18 @@ int nrf52_flash_erase_sector(uint32_t sector_address)
   return (_op_result == NRF_EVT_FLASH_OPERATION_SUCCESS ) ? 0 : (-1);
 }
 
-static int write_and_wait(uint32_t addr, uint32_t const * const src, uint32_t size)
+static int write_and_wait(uint32_t addr, uint32_t const * const data, uint32_t size)
 {
   uint32_t err;
 
 #if CFG_DEBUG_NFFS
-  cprintf("  - 0x%08lX with %d bytes\n", addr, 4*size);
+  cprintf("    %02d bytes at 0x%06lX: ", 4*size, addr);
+  print_buf((const uint8_t*) data, 4*size);
+  cprintf("\n");
 #endif
 
   // delay and try again if busy
-  while ( NRF_ERROR_BUSY == (err = sd_flash_write( (uint32_t*) addr, src, size)) )
+  while ( NRF_ERROR_BUSY == (err = sd_flash_write( (uint32_t*) addr, data, size)) )
   {
     delay(1);
   }
@@ -96,9 +123,10 @@ static int write_and_wait(uint32_t addr, uint32_t const * const src, uint32_t si
 
 int nrf52_flash_write(uint32_t address, const void *src, uint32_t num_bytes)
 {
-
 #if CFG_DEBUG_NFFS
-  cprintf("Flash Write at 0x%08lX with %d bytes from 0x%08lX\n", address, num_bytes, (uint32_t) src);
+  const uint32_t _num  = num_bytes;
+  const uint32_t _addr = address;
+  print_write_before(_addr, src, _num);
 #endif
 
   /* SD Flash requires
@@ -128,6 +156,10 @@ int nrf52_flash_write(uint32_t address, const void *src, uint32_t num_bytes)
     memcpy( &val, (uint8_t*) align4(address), 4);
     memcpy( ((uint8_t*)&val)+miss, src, cnt);
 
+#if CFG_DEBUG_NFFS
+    cprintf("    P1");
+#endif
+
     VERIFY_STATUS( write_and_wait( align4(address), &val, 1) );
 
     address   += cnt;
@@ -154,6 +186,10 @@ int nrf52_flash_write(uint32_t address, const void *src, uint32_t num_bytes)
       memcpy(tempbuf+num_bytes, (uint8_t*) (address+num_bytes), 4-leftover);
     }
 
+#if CFG_DEBUG_NFFS
+    cprintf("    P2");
+#endif
+
     int err = write_and_wait(address, (uint32_t*)tempbuf, (n4 / 4) + (leftover ? 1 : 0) );
 
     rtos_free(tempbuf);
@@ -163,7 +199,14 @@ int nrf52_flash_write(uint32_t address, const void *src, uint32_t num_bytes)
   {
     if ( n4 )
     {
+#if CFG_DEBUG_NFFS
+    cprintf("    P3");
+#endif
       VERIFY_STATUS( write_and_wait(address, src, n4 / 4) );
+
+      address   += n4;
+      src       += n4;
+      num_bytes -= n4;
     }
 
     /*------------- Trailing Bytes -------------*/
@@ -171,12 +214,20 @@ int nrf52_flash_write(uint32_t address, const void *src, uint32_t num_bytes)
     {
       uint32_t val;
 
-      memcpy(&val, (uint8_t*) (address+n4), 4);
-      memcpy(&val, src+n4, leftover);
+      memcpy(&val, (uint8_t*) address, 4);
+      memcpy(&val, src, leftover);
+
+#if CFG_DEBUG_NFFS
+    cprintf("    P4");
+#endif
 
       VERIFY_STATUS( write_and_wait(address, &val, 1) );
     }
   }
+
+#if CFG_DEBUG_NFFS
+  print_write_after(_addr, _num);
+#endif
 
   return 0;
 }
