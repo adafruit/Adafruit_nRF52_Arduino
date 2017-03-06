@@ -683,10 +683,14 @@ bool AdafruitBluefruit::_loadBondKeys(uint16_t ediv)
   char filename[BOND_FILENAME_LEN];
   sprintf(filename, BOND_FILENAME, ediv);
 
-  return Nffs.readFile(filename, &_bond_data, sizeof(_bond_data)) > 0;
+  bool result = Nffs.readFile(filename, &_bond_data, sizeof(_bond_data)) > 0;
+
+  if ( result ) {
+    LOG_LV1(BOND, "Load Keys from %s", filename);
+  }
+
+  return result;
 }
-
-
 
 
 void AdafruitBluefruit::_loadBondedCCCD(uint16_t ediv)
@@ -710,6 +714,8 @@ void AdafruitBluefruit::_loadBondedCCCD(uint16_t ediv)
         if (ERROR_NONE == sd_ble_gatts_sys_attr_set(_conn_hdl, sys_attr, len, SVC_CONTEXT_FLAG) )
         {
           loaded = true;
+
+          LOG_LV1(BOND, "Load CCCD from %s", filename);
         }
       }
 

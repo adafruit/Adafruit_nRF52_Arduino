@@ -63,8 +63,7 @@ void setup()
   // Configure and Start the Device Information Service
   Serial.println("Configuring the Device Information Service");
   bledis.setManufacturer("Adafruit Industries");
-  bledis.setModel("nRF52 Feather");
-  bledis.setFirmwareRev("1.0.0");
+  bledis.setModel("Bluefruit Feather52");
   bledis.start();
 
   // Start the BLE Battery Service and set it to 100%

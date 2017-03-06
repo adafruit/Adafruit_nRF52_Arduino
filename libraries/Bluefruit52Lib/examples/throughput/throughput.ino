@@ -47,9 +47,7 @@ void setup(void)
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
-  bledis.setModel("Bluefruit Feather 52");
-  bledis.setHardwareRev("Rev E");
-  bledis.setFirmwareRev(ARDUINO_BSP_VERSION); // ARDUINO_BSP_VERSION is BSP Libraries version
+  bledis.setModel("Bluefruit Feather52");
   bledis.start();
 
   // Configure and Start BLE Uart Service

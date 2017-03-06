@@ -59,12 +59,8 @@ class BLEDis : public BLEService
 
   public:
     BLEDis(void);
-    BLEDis(const char * model, const char * serial, const char * firmware_rev, 
-           const char * hardware_rev, const char * software_rev, const char * manufacturer);
 
     void setModel(const char* model);
-    void setSerial(const char* serial);
-    void setFirmwareRev(const char* fw_rev);
     void setHardwareRev(const char* hw_rev);
     void setSoftwareRev(const char* sw_rev);
     void setManufacturer(const char* manufacturer);
