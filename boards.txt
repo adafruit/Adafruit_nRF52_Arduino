@@ -19,8 +19,8 @@ menu.debug=Debug Mode
 
 feather52.name=Adafruit Bluefruit nRF52 Feather
 
-feather52.vid.0=0x10C4
-feather52.pid.0=0xEA60
+#feather52.vid.0=0x10C4
+#feather52.pid.0=0xEA60
 
 feather52.upload.tool=nrfutil
 feather52.upload.protocol=nrfutil
