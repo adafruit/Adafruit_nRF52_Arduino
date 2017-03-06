@@ -117,6 +117,26 @@ int cprintf(const char * format, ...);
     cprintf("\n");\
   }while(0)
 
+#if CFG_DEBUG
+#define LOG_LV1(...)    ADALOG(__VA_ARGS__)
+#else
+#define LOG_LV1(...)
+#endif
+
+#if CFG_DEBUG >= 2
+#define LOG_LV2(...)    ADALOG(__VA_ARGS__)
+#else
+#define LOG_LV2(...)
+#endif
+
+#define ADALOG(tag, ...) \
+  do { \
+    cprintf("[" #tag "] ");\
+    cprintf(__VA_ARGS__);\
+    cprintf("\n");\
+  }while(0)
+
+
 #else
 
 #define PRINT_LOCATION()
