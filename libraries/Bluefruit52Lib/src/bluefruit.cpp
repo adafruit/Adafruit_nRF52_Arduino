@@ -55,6 +55,8 @@
 #define CFG_SOC_TASK_STACKSIZE          ((configMINIMAL_STACK_SIZE*10) / 2 )
 
 #define CFG_BOND_NFFS_DIR                "/adafruit/bond"
+#define BOND_FILENAME                    CFG_BOND_NFFS_DIR "/%04x"
+#define BOND_FILENAME_LEN                (sizeof(CFG_BOND_NFFS_DIR) + 10)
 
 extern "C"
 {
@@ -198,15 +200,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 
   // Initialize nffs for bonding (it is safe to call nffs_pkg_init() multiple time)
   Nffs.begin();
-
-#if 0
-  Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
-  PRINT_INT(Nffs.errnum);
-
-  //printTreeDir("/", 0);
-#else
-
-#endif
+  (void) Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
 
   return ERROR_NONE;
 }
@@ -356,23 +350,6 @@ bool AdafruitBluefruit::setPIN(const char* pin)
 }
 )
 
-err_t AdafruitBluefruit::_saveBondedCCCD(void)
-{
-  uint16_t len=0;
-  sd_ble_gatts_sys_attr_get(_conn_hdl, NULL, &len, SVC_CONTEXT_FLAG);
-
-  // Free and re-malloc if not enough
-  if ( _bond_data.sys_attr_len < len )
-  {
-    if (_bond_data.sys_attr) rtos_free(_bond_data.sys_attr);
-
-    _bond_data.sys_attr     = (uint8_t*) rtos_malloc( len );
-    _bond_data.sys_attr_len = len;
-  }
-
-  return sd_ble_gatts_sys_attr_get(_conn_hdl, _bond_data.sys_attr, &_bond_data.sys_attr_len, SVC_CONTEXT_FLAG);
-}
-
 /*------------------------------------------------------------------*/
 /* Private Methods
  *------------------------------------------------------------------*/
@@ -421,7 +398,6 @@ void adafruit_soc_task(void* arg)
           {
             case NRF_EVT_FLASH_OPERATION_SUCCESS:
             case NRF_EVT_FLASH_OPERATION_ERROR:
-              // PRINT_INT(soc_evt);
               if (hal_flash_event_cb) hal_flash_event_cb(soc_evt);
             break;
 
@@ -442,11 +418,11 @@ void adafruit_ble_task(void* arg)
 
   while (1)
   {
-    Bluefruit._poll();
+    Bluefruit._ble_handler();
   }
 }
 
-void AdafruitBluefruit::_poll(void)
+void AdafruitBluefruit::_ble_handler(void)
 {
   enum { BLE_STACK_EVT_MSG_BUF_SIZE = (sizeof(ble_evt_t) + (GATT_MTU_SIZE_DEFAULT)) };
 
@@ -521,10 +497,7 @@ void AdafruitBluefruit::_poll(void)
               if (_led_conn)  ledOff(LED_CONN);
 
               // Save all configured cccd
-              if ( _bonded )
-              {
-                _saveBondedCCCD();
-              }
+              if (_bonded) _saveBondedCCCD();
 
               _conn_hdl = BLE_CONN_HANDLE_INVALID;
               _bonded   = false;
@@ -555,6 +528,9 @@ void AdafruitBluefruit::_poll(void)
 
           case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
           {
+            varclr(&_bond_data);
+            _bond_data.own_enc.master_id.ediv = 0xFFFF; // invalid value for ediv
+
             /* Step 1: Pairing/Bonding
              * - Central supplies its parameters
              * - We replies with our security parameters
@@ -611,7 +587,8 @@ COMMENT_OUT(
             // return security information. Otherwise NULL
             ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
 
-            if (_bond_data.own_enc.master_id.ediv == sec_request->master_id.ediv)
+            //if (_bond_data.own_enc.master_id.ediv == sec_request->master_id.ediv)
+            if ( _loadBondKeys(sec_request->master_id.ediv) )
             {
               sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_bond_data.own_enc.enc_info, &_bond_data.peer_id.id_info, NULL);
             } else
@@ -635,15 +612,17 @@ COMMENT_OUT(
 
           case BLE_GAP_EVT_CONN_SEC_UPDATE:
           {
-            // Connection is secured
-            ble_gap_conn_sec_t* conn_sec = (ble_gap_conn_sec_t*) &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
-            (void) conn_sec;
+            // Connection is secured aka Paired
 
-            // TODO check if this connection is bonded
+            COMMENT_OUT( ble_gap_conn_sec_t* conn_sec = (ble_gap_conn_sec_t*) &evt->evt.gap_evt.params.conn_sec_update.conn_sec; )
+
+            // Previously bonded --> secure by re-connection process
+            // --> Load & Set Sys Attr (Apply Service Context)
+            // Else Init Sys Attr
+            _loadBondedCCCD(_bond_data.own_enc.master_id.ediv);
+
+            // Consider Paired as Bonded
             _bonded = true;
-
-            // Connection is secured, Apply Service Context
-            sd_ble_gatts_sys_attr_set(_conn_hdl, _bond_data.sys_attr, _bond_data.sys_attr_len, SVC_CONTEXT_FLAG);
           }
           break;
 
@@ -654,6 +633,7 @@ COMMENT_OUT(
             // Bonding succeeded --> save encryption keys
             if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
             {
+              _saveBondKeys();
               _bonded = true;
             }else
             {
@@ -663,7 +643,6 @@ COMMENT_OUT(
           break;
 
           case BLE_GATTS_EVT_SYS_ATTR_MISSING:
-            // TODO Look up bonded information and apply application context
             sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
           break;
 
@@ -681,4 +660,81 @@ COMMENT_OUT(
       }
     }
   }
+}
+
+bool AdafruitBluefruit::_saveBondKeys(void)
+{
+  char filename[BOND_FILENAME_LEN];
+  sprintf(filename, BOND_FILENAME, _bond_data.own_enc.master_id.ediv);
+
+  return Nffs.writeFile(filename, &_bond_data, sizeof(_bond_data));
+}
+
+bool AdafruitBluefruit::_loadBondKeys(uint16_t ediv)
+{
+  char filename[BOND_FILENAME_LEN];
+  sprintf(filename, BOND_FILENAME, ediv);
+
+  return Nffs.readFile(filename, &_bond_data, sizeof(_bond_data)) > 0;
+}
+
+
+
+
+void AdafruitBluefruit::_loadBondedCCCD(uint16_t ediv)
+{
+  bool loaded = false;
+
+  char filename[BOND_FILENAME_LEN];
+  sprintf(filename, BOND_FILENAME "_cccd", ediv);
+
+  NffsFile file(filename, FS_ACCESS_READ);
+
+  if ( file.exists() )
+  {
+    uint16_t len = file.size();
+    uint8_t* sys_attr = (uint8_t*) rtos_malloc( len );
+
+    if (sys_attr)
+    {
+      if ( file.read(sys_attr, len ) )
+      {
+        if (ERROR_NONE == sd_ble_gatts_sys_attr_set(_conn_hdl, sys_attr, len, SVC_CONTEXT_FLAG) )
+        {
+          loaded = true;
+        }
+      }
+
+      rtos_free(sys_attr);
+    }
+  }
+
+  file.close();
+
+  if ( !loaded )
+  {
+    sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
+  }
+}
+
+void AdafruitBluefruit::_saveBondedCCCD(void)
+{
+  if ( _bond_data.own_enc.master_id.ediv == 0xFFFF ) return;
+
+  uint16_t len=0;
+  sd_ble_gatts_sys_attr_get(_conn_hdl, NULL, &len, SVC_CONTEXT_FLAG);
+
+  uint8_t* sys_attr = (uint8_t*) rtos_malloc( len );
+  VERIFY( sys_attr, );
+
+  if ( ERROR_NONE == sd_ble_gatts_sys_attr_get(_conn_hdl, sys_attr, &len, SVC_CONTEXT_FLAG) )
+  {
+    // save to file
+    char filename[BOND_FILENAME_LEN];
+    sprintf(filename, BOND_FILENAME "_cccd", _bond_data.own_enc.master_id.ediv);
+
+    Nffs.writeFile(filename, sys_attr, len);
+  }
+
+  rtos_free(sys_attr);
 }

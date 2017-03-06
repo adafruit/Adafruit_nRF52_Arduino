@@ -25,9 +25,6 @@
  */
 #define MAX_LEVEL   2
 
-// Current Working Directory Name
-char cwd[256] = { 0 };
-
 // the setup function runs once when you press reset or power the board
 void setup() 
 {
@@ -64,10 +61,10 @@ void loop()
     @note   Recursive call
 */
 /**************************************************************************/
-void printTreeDir(const char* path, uint8_t level)
+void printTreeDir(const char* cwd, uint8_t level)
 {
   // Open the input folder
-  NffsDir dir(path);
+  NffsDir dir(cwd);
 
   // Print root
   if (level == 0) Serial.println("root");
@@ -85,6 +82,12 @@ void printTreeDir(const char* path, uint8_t level)
 
     char eName[64];
     dirEntry.getName(eName, sizeof(eName));
+
+    char fullpath[256];
+    strcpy(fullpath, cwd);
+    strcat(fullpath, "/");
+    strcat(fullpath, eName);
+    
     Serial.print( eName );
 
     if ( dirEntry.isDirectory() )
@@ -95,9 +98,7 @@ void printTreeDir(const char* path, uint8_t level)
       // High number of MAX_LEVEL can cause memory overflow
       if ( level < MAX_LEVEL )
       {
-        strcat(cwd, "/");
-        strcat(cwd, eName);
-        printTreeDir( cwd, level+1 );
+        printTreeDir( fullpath, level+1 );
       }
     }else
     {
@@ -110,8 +111,7 @@ void printTreeDir(const char* path, uint8_t level)
       // Print at least one extra space in case current position > 50
       Serial.print(' ');
 
-      // Print size in bytes
-      NffsFile file(eName);
+      NffsFile file(fullpath);
 
       Serial.print( file.size() );
       Serial.println( " Bytes");
@@ -121,11 +121,4 @@ void printTreeDir(const char* path, uint8_t level)
   }
 
   dir.close();
-
-  // Change back to Parent if not root
-  if (level != 0)
-  {
-    char* slash = strrchr(cwd, '/');
-    *slash = 0;
-  }
 }

@@ -150,28 +150,24 @@ class AdafruitBluefruit
 
     uint16_t _conn_hdl;
     bool     _bonded;
+    // TODO move to bonding place
+
+public: // temporary
+    struct
+    {
+      // Keys
+      ble_gap_enc_key_t own_enc;
+      ble_gap_enc_key_t peer_enc;
+      ble_gap_id_key_t  peer_id;
+    } _bond_data;
+
+private:
+    ble_gap_addr_t    _peer_addr;
 
 COMMENT_OUT(
     uint8_t _auth_type;
     char _pin[BLE_GAP_PASSKEY_LEN];
 )
-
-    // TODO move to bonding place
-
-public: // temporary
-    struct {
-      // Keys
-      ble_gap_enc_key_t own_enc;
-      ble_gap_enc_key_t peer_enc;
-      ble_gap_id_key_t  peer_id;
-
-      // System Attr (aka CCCDs)
-      uint16_t          sys_attr_len;
-      uint8_t*          sys_attr;
-    }_bond_data;
-
-private:
-    ble_gap_addr_t    _peer_addr;
 
     // Transmission Buffer Count for HVX notification, max is seen at 7
     SemaphoreHandle_t _txbuf_sem;
@@ -182,9 +178,13 @@ private:
 
     bool _addToAdv(bool scan_resp, uint8_t type, const void* data, uint8_t len);
 
-    err_t _saveBondedCCCD(void);
+    bool _saveBondKeys(void);
+    bool _loadBondKeys(uint16_t ediv);
 
-    void _poll(void);
+    void _saveBondedCCCD(void);
+    void _loadBondedCCCD(uint16_t ediv);
+
+    void _ble_handler(void);
 
     friend void SD_EVT_IRQHandler(void);
     friend void adafruit_ble_task(void* arg);
