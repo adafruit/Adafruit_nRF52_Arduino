@@ -200,6 +200,14 @@ void dbgMemInfo(void)
 }
 #endif
 
+void dbgPrintVersion(void)
+{
+  Serial.println();
+  Serial.println("BSP Library: " ARDUINO_BSP_VERSION);
+  Serial.printf ("Bootloader : %d.%d.%d\n", U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion), U32_BYTE4(bootloaderVersion));
+  Serial.println("SoftDevice : S132 2.0.1");
+  Serial.println();
+}
 
 /*------------------------------------------------------------------*/
 /*

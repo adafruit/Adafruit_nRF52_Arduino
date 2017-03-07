@@ -33,6 +33,10 @@ static void loop_task(void* arg)
 
   setup();
 
+#if CFG_DEBUG
+  dbgPrintVersion();
+#endif
+
   while (1)
   {
     loop();

@@ -53,4 +53,6 @@ static inline int dbgHeapFree(void)
 
 void dbgMemInfo(void);
 
+void dbgPrintVersion(void);
+
 #endif
