@@ -94,6 +94,18 @@
 int cprintf(const char * format, ...);
 
 #if CFG_DEBUG
+#define LOG_LV1(...)    ADALOG(__VA_ARGS__)
+#else
+#define LOG_LV1(...)
+#endif
+
+#if CFG_DEBUG >= 2
+#define LOG_LV2(...)    ADALOG(__VA_ARGS__)
+#else
+#define LOG_LV2(...)
+#endif
+
+#if CFG_DEBUG
 
 #define PRINT_LOCATION()      cprintf("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)
 #define PRINT_MESS(x)         cprintf("%s: %d: %s \n"   , __PRETTY_FUNCTION__, __LINE__, (char*)(x))
@@ -117,18 +129,6 @@ int cprintf(const char * format, ...);
     cprintf("\n");\
   }while(0)
 
-#if CFG_DEBUG
-#define LOG_LV1(...)    ADALOG(__VA_ARGS__)
-#else
-#define LOG_LV1(...)
-#endif
-
-#if CFG_DEBUG >= 2
-#define LOG_LV2(...)    ADALOG(__VA_ARGS__)
-#else
-#define LOG_LV2(...)
-#endif
-
 #define ADALOG(tag, ...) \
   do { \
     cprintf("[" #tag "] ");\
@@ -146,6 +146,7 @@ int cprintf(const char * format, ...);
 #define PRINT_INT(x)
 #define PRINT_HEX(x)
 #define PRINT_BUFFER(buf, n)
+#define ADALOG(...)
 
 #endif
 
