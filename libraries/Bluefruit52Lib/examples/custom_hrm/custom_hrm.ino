@@ -111,10 +111,10 @@ void setupHRM(void)
   // Heart Rate Control Point     0x2A39  Conditional Write       <-- Not used here
   hrms.begin();
 
-  // Note: You must call .start() on the BLEService before calling .start() on
-  // any characteristic(s) within that service definition.. Calling .start() on
+  // Note: You must call .begin() on the BLEService before calling .begin() on
+  // any characteristic(s) within that service definition.. Calling .begin() on
   // a BLECharacteristic will cause it to be added to the last BLEService that
-  // was 'start()'ed!
+  // was 'begin()'ed!
 
   // Configure the Heart Rate Measurement characteristic
   // See: https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.heart_rate_measurement.xml
