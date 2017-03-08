@@ -93,21 +93,15 @@ void setupAdv(void)
 void midi_write_callback(void)
 {
   MIDI.read();
-  Serial.println("write callback");
 }
 
 void loop()
 {
   if ( Bluefruit.connected() && blemidi.notifyEnabled() )
   {
-    //if (MIDI.read())                    // If we have received a message
-    {
-        //ledOn(LED_BUILTIN);
-        MIDI.sendNoteOn(42, 127, 1);    // Send a Note (pitch 42, velo 127 on channel 1)
-        delay(1000);                // Wait for a second
-        MIDI.sendNoteOff(42, 0, 1);     // Stop the note
-        //ledOff(LED_BUILTIN);
-    }
+    MIDI.sendNoteOn(42, 127, 1);  // Send a Note (pitch 42, velo 127 on channel 1)
+    delay(1000);                  // Wait for a second
+    MIDI.sendNoteOff(42, 0, 1);   // Stop the note
   }
 }
 
