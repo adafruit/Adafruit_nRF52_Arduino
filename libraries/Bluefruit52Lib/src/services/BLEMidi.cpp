@@ -146,6 +146,9 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
   header.byte = *data++;
   len--;
 
+  // not support SysEx
+  if ( data[0] == 0xF0 ) return;
+
   while (len)
   {
     /* event : 0x00 - 0x7F

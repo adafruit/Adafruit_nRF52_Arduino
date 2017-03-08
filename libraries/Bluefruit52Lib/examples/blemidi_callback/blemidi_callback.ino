@@ -50,6 +50,14 @@ void setup()
   bledis.setModel("Bluefruit Feather52");
   bledis.start();
   
+
+
+  /* Setup callback when data is writtent to MIDI characteristics
+   * and call MIDI.read() to handle message immediately. Alternately 
+   * MIDI.read() can be placed in loop() (less real-time)
+   */
+  blemidi.setWriteCallback(midi_write_callback);
+
   /* Start BLE MIDI
    * Note: Apple requires BLE device must have min connection interval >= 20m
    * ( The smaller the connection interval the faster we could send data).
@@ -57,9 +65,15 @@ void setup()
    * up to 11.25 ms. Therefore BLEMidi::start() will try to set the min and max
    * connection interval to 11.25  ms and 15 ms respectively for best performance.
    */
-  blemidi.setWriteCallback(midi_write_callback);
   blemidi.start();
 
+  // Connect the handleNoteOn function to the library,
+  // so it is called upon reception of a NoteOn.
+  MIDI.setHandleNoteOn(handleNoteOn);  // Put only the name of the function
+
+  // Do the same for NoteOffs
+  MIDI.setHandleNoteOff(handleNoteOff);
+    
   // Initialize MIDI, listen to all channels
   MIDI.begin(MIDI_CHANNEL_OMNI);
 
@@ -84,19 +98,40 @@ void setupAdv(void)
   Bluefruit.ScanResponse.addName();
 }
 
+void loop()
+{
+  digitalToggle(LED_BUILTIN);
+  delay(1000); // Wait for a second
+}
+
 void midi_write_callback(void)
 {
   MIDI.read();
+
+  // There is no need to check if there are messages incoming
+  // if they are bound to a Callback function.
+  // The attached method will be called automatically
+  // when the corresponding message has been received.
 }
 
-void loop()
+// This function will be automatically called when a NoteOn is received.
+// It must be a void-returning function with the correct parameters,
+// see documentation here:
+// http://arduinomidilib.fortyseveneffects.com/a00022.html
+
+void handleNoteOn(byte channel, byte pitch, byte velocity)
 {
-  if ( Bluefruit.connected() && blemidi.notifyEnabled() )
-  {
-    MIDI.sendNoteOn(42, 127, 1);  // Send a Note (pitch 42, velo 127 on channel 1)
-    delay(1000);                  // Wait for a second
-    MIDI.sendNoteOff(42, 0, 1);   // Stop the note
-  }
+  // Do whatever you want when a note is pressed.
+
+  // Try to keep your callbacks short (no delays ect)
+  // otherwise it would slow down the loop() and have a bad impact
+  // on real-time performance.
+}
+
+void handleNoteOff(byte channel, byte pitch, byte velocity)
+{
+  // Do something when the note is released.
+  // Note that NoteOn messages with 0 velocity are interpreted as NoteOffs.
 }
 
 void connect_callback(void)
