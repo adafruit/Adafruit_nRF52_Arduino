@@ -172,7 +172,7 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
       uint8_t tempbuf[3] = { status, data[0], data[1] };
 
       _rxd_fifo.write(tempbuf, 3);
-      if ( _write_cb ) _write_cb( tstamp, tempbuf);
+      if ( _write_cb ) _write_cb();
 
       len  -= 2;
       data += 2;
@@ -183,7 +183,7 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
       uint8_t tempbuf[3] = { status, data[0], data[1] };
 
       _rxd_fifo.write(tempbuf, 3);
-      if ( _write_cb ) _write_cb( tstamp, tempbuf);
+      if ( _write_cb ) _write_cb();
 
       len  -= 2;
       data += 2;

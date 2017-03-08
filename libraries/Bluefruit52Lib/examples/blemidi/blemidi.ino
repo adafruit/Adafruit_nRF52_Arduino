@@ -90,11 +90,9 @@ void setupAdv(void)
   Bluefruit.ScanResponse.addName();
 }
 
-void midi_write_callback(uint32_t tstamp, uint8_t data[])
+void midi_write_callback(void)
 {
-  Serial.printf("Time %d: ", tstamp);
-  Serial.printBuffer(data, 3);
-  Serial.println();
+  MIDI.read();
 }
 
 void loop()

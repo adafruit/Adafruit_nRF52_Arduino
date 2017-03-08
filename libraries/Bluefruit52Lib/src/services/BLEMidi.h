@@ -63,7 +63,7 @@ enum
 class BLEMidi: public BLEService, public Stream
 {
   public:
-    typedef void (*midi_write_cb_t) (uint32_t tstamp, uint8_t data[]);
+    typedef void (*midi_write_cb_t) (void);
 
     BLEMidi(uint16_t fifo_depth = BLE_MIDI_DEFAULT_FIFO_DEPTH);
 
