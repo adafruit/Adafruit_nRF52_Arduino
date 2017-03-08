@@ -42,6 +42,10 @@
 #include "BLECharacteristic.h"
 #include "BLEService.h"
 
+#define MIDI_CREATE_BLE_INSTANCE(midiService)   MIDI_CREATE_INSTANCE(BLEMidi, midiService, MIDI)
+
+#define BLE_MIDI_DEFAULT_FIFO_DEPTH   64
+
 extern const uint8_t BLEMIDI_UUID_SERVICE[];
 extern const uint8_t BLEMIDI_UUID_CHR_IO[];
 
@@ -56,14 +60,17 @@ enum
   MIDI_TYPE_PITCH_WHEEL      = 0xE,
 };
 
-class BLEMidi: public BLEService
+class BLEMidi: public BLEService, public Stream
 {
   public:
     typedef void (*midi_write_cb_t) (uint32_t tstamp, uint8_t data[]);
 
-    BLEMidi(void);
+    BLEMidi(uint16_t fifo_depth = BLE_MIDI_DEFAULT_FIFO_DEPTH);
 
     virtual err_t start(void);
+
+    // MidiInterface
+    void begin(int baudrate) { (void) baudrate; }
 
     bool  notifyEnabled(void);
 
@@ -72,10 +79,22 @@ class BLEMidi: public BLEService
 
     void setWriteCallback(midi_write_cb_t fp);
 
+    // Stream API for MIDI Interface
+    virtual int       read       ( void );
+    virtual size_t    write      ( uint8_t b );
+    virtual int       available  ( void );
+    virtual int       peek       ( void );
+    virtual void      flush      ( void );
+
+    using Print::write; // pull in write(str) and write(buf, size) from Print
+
   private:
     BLECharacteristic _io;
 
-    midi_write_cb_t _write_cb;
+    Adafruit_FIFO     _rxd_fifo;
+    midi_write_cb_t   _write_cb;
+
+    void _write_handler(uint8_t* data, uint16_t len);
 
     friend void blemidi_write_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
 };

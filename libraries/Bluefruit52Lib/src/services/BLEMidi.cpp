@@ -114,8 +114,8 @@ VERIFY_STATIC ( sizeof(midi_n_event_packet_t) == 19 );
 /*------------------------------------------------------------------*/
 /* IMPLEMENTATION
  *------------------------------------------------------------------*/
-BLEMidi::BLEMidi(void)
-  : BLEService(BLEMIDI_UUID_SERVICE), _io(BLEMIDI_UUID_CHR_IO)
+BLEMidi::BLEMidi(uint16_t fifo_depth)
+  : BLEService(BLEMIDI_UUID_SERVICE), _io(BLEMIDI_UUID_CHR_IO), _rxd_fifo(fifo_depth, 1)
 {
   _write_cb = NULL;
 }
@@ -125,62 +125,68 @@ bool BLEMidi::notifyEnabled(void)
   return Bluefruit.connBonded() && _io.notifyEnabled();
 }
 
+
 void blemidi_write_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
 {
   (void) offset;
-
   if ( len < 3 ) return;
 
   BLEMidi& midi_svc = (BLEMidi&) chr.parentService();
 
-  if ( midi_svc._write_cb )
+  midi_svc._write_handler(data, len);
+}
+
+void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
+{
+  // First 3 bytes is always : Header + Timestamp + Status
+  midi_header_t header;
+  uint16_t tstamp = 0;
+  uint8_t  status = 0;
+
+  header.byte = *data++;
+  len--;
+
+  while (len)
   {
-    // First 3 bytes is always : Header + Timestamp + Status
-    midi_header_t header;
-    uint16_t tstamp = 0;
-    uint8_t  status = 0;
+    /* event : 0x00 - 0x7F
+       status: 0x80 - 0xEF
+       sysex : 0xF0 - 0xFF
+     */
 
-    header.byte = *data++;
-    len--;
-
-    while (len)
+    if ( bitRead(data[0], 7) )
     {
-      /* event : 0x00 - 0x7F
-         status: 0x80 - 0xEF
-         sysex : 0xF0 - 0xFF
-       */
+      // Start of new full event
+      midi_timestamp_t timestamp;
 
-      if ( bitRead(data[0], 7) )
-      {
-        // Start of new full event
-        midi_timestamp_t timestamp;
+      timestamp.byte = *data++;
+      len--;
 
-        timestamp.byte = *data++;
-        len--;
+      tstamp = (header.timestamp_hi << 7) | timestamp.timestamp_low;
 
-        tstamp = (header.timestamp_hi << 7) | timestamp.timestamp_low;
+      status = *data++;
+      len--;
 
-        status = *data++;
-        len--;
+      // Status must have 7th-bit set, otherwise something is wrong !!!
+      if ( !bitRead(status, 7) ) return;
 
-        // Status must have 7th-bit set, otherwise something is wrong !!!
-        if ( !bitRead(status, 7) ) return;
+      uint8_t tempbuf[3] = { status, data[0], data[1] };
 
-        uint8_t tempbuf[3] = { status, data[0], data[1] };
-        midi_svc._write_cb( tstamp, tempbuf);
+      _rxd_fifo.write(tempbuf, 3);
+      if ( _write_cb ) _write_cb( tstamp, tempbuf);
 
-        len  -= 2;
-        data += 2;
-      }
-      else
-      {
-        // Running event
-        uint8_t tempbuf[3] = { status, data[0], data[1] };
-        midi_svc._write_cb( tstamp, tempbuf);
+      len  -= 2;
+      data += 2;
+    }
+    else
+    {
+      // Running event
+      uint8_t tempbuf[3] = { status, data[0], data[1] };
 
-        len  -= 2;
-        data += 2;
-      }
+      _rxd_fifo.write(tempbuf, 3);
+      if ( _write_cb ) _write_cb( tstamp, tempbuf);
+
+      len  -= 2;
+      data += 2;
     }
   }
 }
@@ -205,6 +211,51 @@ err_t BLEMidi::start(void)
   Bluefruit.setConnInterval(9, 12);
 
   return ERROR_NONE;
+}
+
+/*------------------------------------------------------------------*/
+/* Stream API
+ *------------------------------------------------------------------*/
+int BLEMidi::read ( void )
+{
+  uint8_t ch;
+  return _rxd_fifo.read(&ch) ? (int) ch : EOF;
+}
+
+size_t BLEMidi::write ( uint8_t b )
+{
+  // MIDI Library will write event byte by byte. Locally buffered
+  // Until we gather all 3 bytes
+  static uint8_t count = 0;
+  static uint8_t buf[3] = { 0 };
+
+  // Not support SysEx now
+  buf[count++] = b;
+
+  if ( count == 3 )
+  {
+    count = 0;
+
+    send(buf);
+  }
+
+  return 1;
+}
+
+int BLEMidi::available ( void )
+{
+  return _rxd_fifo.count();
+}
+
+int BLEMidi::peek ( void )
+{
+  uint8_t ch;
+  return _rxd_fifo.peek(&ch) ? (int) ch : EOF;
+}
+
+void BLEMidi::flush ( void )
+{
+  _rxd_fifo.clear();
 }
 
 /*------------------------------------------------------------------*/

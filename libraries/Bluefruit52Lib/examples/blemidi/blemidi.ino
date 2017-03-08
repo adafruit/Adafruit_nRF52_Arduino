@@ -12,6 +12,7 @@
  any redistribution
 *********************************************************************/
 #include <bluefruit.h>
+#include <MIDI.h>
 
 // To test:
 // - Run this sketch and open the Serial Monitor
@@ -24,19 +25,25 @@
 BLEDis bledis;
 BLEMidi blemidi;
 
+// Create MIDI instance using ble service as physical layer
+MIDI_CREATE_BLE_INSTANCE(blemidi);
+
 void setup()
 {
   Serial.begin(115200);
-
   Serial.println("Bluefruit52 BLEMIDI Example");
+
+  Bluefruit.begin();
+  Bluefruit.setName("Bluefruit52");
 
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behaviour, but provided
   // here in case you want to control this manually via PIN 19
-  Bluefruit.autoConnLed(true);
+  Bluefruit.autoConnLed(true);  
 
-  Bluefruit.begin();
-  Bluefruit.setName("Bluefruit52");
+  Bluefruit.setConnectCallback(connect_callback);
+  Bluefruit.setDisconnectCallback(disconnect_callback);
+  
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
@@ -58,6 +65,9 @@ void setup()
    * min = 9*1.25=11.25 ms, max = 12*1.25= 15 ms 
    */
   /* Bluefruit.setConnInterval(9, 12); */  
+
+  // Initialize MIDI on channel 4
+  MIDI.begin(4);
 
   // Set up Advertising Packet
   setupAdv();
@@ -91,25 +101,13 @@ void loop()
 {
   if ( Bluefruit.connected() && blemidi.notifyEnabled() )
   {
-    static int current_note = 60;
-    
-    // send note on
-    blemidi.send(0x90, current_note, 0x64);
-    delay(500);
-
-    ledToggle(LED_BUILTIN);
-
-    // send note off
-    blemidi.send(0x80, current_note, 0x64);
-    delay(500);
-
-    // increment note pitch
-    current_note++;
-
-    // only do one octave
-    if(current_note > 72)
+    //if (MIDI.read())                    // If we have received a message
     {
-      current_note = 60;
+        //ledOn(LED_BUILTIN);
+        MIDI.sendNoteOn(42, 127, 1);    // Send a Note (pitch 42, velo 127 on channel 1)
+        delay(1000);                // Wait for a second
+        MIDI.sendNoteOff(42, 0, 1);     // Stop the note
+        //ledOff(LED_BUILTIN);
     }
   }
 }
