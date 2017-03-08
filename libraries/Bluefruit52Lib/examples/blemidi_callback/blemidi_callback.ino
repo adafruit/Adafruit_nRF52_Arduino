@@ -122,16 +122,16 @@ void midi_write_callback(void)
 void handleNoteOn(byte channel, byte pitch, byte velocity)
 {
   // Do whatever you want when a note is pressed.
-
-  // Try to keep your callbacks short (no delays ect)
-  // otherwise it would slow down the loop() and have a bad impact
-  // on real-time performance.
+  Serial.printf("Note on: channel = %d, pitch = %d, velocity - %d", channel, pitch, velocity);
+  Serial.println();
 }
 
 void handleNoteOff(byte channel, byte pitch, byte velocity)
 {
   // Do something when the note is released.
   // Note that NoteOn messages with 0 velocity are interpreted as NoteOffs.
+  Serial.printf("Note off: channel = %d, pitch = %d, velocity - %d", channel, pitch, velocity);
+  Serial.println();
 }
 
 void connect_callback(void)
