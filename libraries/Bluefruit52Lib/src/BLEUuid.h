@@ -63,7 +63,7 @@ class BLEUuid
 
     // Add UUID128 if any, in case of UUID16, no ations is required
     // Application should call it anyway to be safe and consistent
-    void add(void)
+    void begin(void)
     {
       /* Add base uuid and decode to get uuid16
        * This should cover the already added base uuid128 previously

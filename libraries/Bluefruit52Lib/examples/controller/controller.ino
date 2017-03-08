@@ -34,7 +34,7 @@ void setup(void)
   Bluefruit.setName("Bluefruit52");
 
   // Configure and start the BLE Uart service
-  bleuart.start();
+  bleuart.begin();
 
   // Set up the advertising packet
   setupAdv();

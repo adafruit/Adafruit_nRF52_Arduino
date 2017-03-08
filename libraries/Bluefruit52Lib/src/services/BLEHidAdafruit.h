@@ -52,7 +52,7 @@ class BLEHidAdafruit : public BLEHidGeneric
   public:
     BLEHidAdafruit(void);
 
-    virtual err_t start(void);
+    virtual err_t begin(void);
 
     // Keyboard
     err_t keyboardReport(hid_keyboard_report_t* report);

@@ -49,7 +49,7 @@ class BLEDfu : public BLEService
   public:
     BLEDfu(void);
 
-    virtual err_t start(void);
+    virtual err_t begin(void);
 };
 
 #endif /* BLEDFU_H_ */

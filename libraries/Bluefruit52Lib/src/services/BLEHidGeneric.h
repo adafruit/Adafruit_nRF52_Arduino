@@ -100,7 +100,7 @@ class BLEHidGeneric : public BLEService
 
     void setOutputReportCallback(uint8_t reportID, output_report_cb_t fp);
 
-    virtual err_t start(void);
+    virtual err_t begin(void);
 
     err_t inputReport(uint8_t reportID, void const* data, int len);
 

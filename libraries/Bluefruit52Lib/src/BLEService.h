@@ -59,7 +59,7 @@ class BLEService
     void setUuid(uint16_t uuid16);
     void setUuid(uint8_t const  uuid128[]);
 
-    virtual err_t start(void);
+    virtual err_t begin(void);
 };
 
 #endif /* BLESERVICE_H_ */

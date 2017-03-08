@@ -65,7 +65,7 @@ class BLEDis : public BLEService
     void setSoftwareRev(const char* sw_rev);
     void setManufacturer(const char* manufacturer);
 
-    virtual err_t start(void);
+    virtual err_t begin(void);
 };
 
 

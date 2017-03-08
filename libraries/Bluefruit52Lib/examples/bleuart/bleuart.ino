@@ -45,13 +45,13 @@ void setup()
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
   bledis.setModel("Bluefruit Feather52");
-  bledis.start();
+  bledis.begin();
 
   // Configure and Start BLE Uart Service
-  bleuart.start();
+  bleuart.begin();
 
   // Start BLE Battery Service
-  blebas.start();
+  blebas.begin();
   blebas.update(100);
 
   // Set up Advertising Packet

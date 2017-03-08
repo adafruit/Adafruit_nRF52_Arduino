@@ -204,7 +204,7 @@ BLEHidAdafruit::BLEHidAdafruit(void)
   _mse_buttons = 0;
 }
 
-err_t BLEHidAdafruit::start(void)
+err_t BLEHidAdafruit::begin(void)
 {
   uint16_t input_len [] = { sizeof(hid_keyboard_report_t),  sizeof(hid_consumer_control_report_t), sizeof(hid_mouse_report_t) };
   uint16_t output_len[] = { 1 };
@@ -213,7 +213,7 @@ err_t BLEHidAdafruit::start(void)
   enableBootProtocol(true, true);
   setReportMap(hid_report_descriptor, sizeof(hid_report_descriptor));
 
-  VERIFY_STATUS( BLEHidGeneric::start() );
+  VERIFY_STATUS( BLEHidGeneric::begin() );
 
   // Attemp to change the connection interval to 11.25-15 ms when starting HID
   Bluefruit.setConnInterval(9, 12);

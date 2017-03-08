@@ -54,7 +54,7 @@ class BLEUart : public BLEService, public Stream
     typedef void (*rx_callback_t) (void);
     BLEUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
 
-    virtual err_t start(void);
+    virtual err_t begin(void);
 
     bool notifyEnabled(void);
 

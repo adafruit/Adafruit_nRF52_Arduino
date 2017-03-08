@@ -64,11 +64,11 @@ void setup()
   Serial.println("Configuring the Device Information Service");
   bledis.setManufacturer("Adafruit Industries");
   bledis.setModel("Bluefruit Feather52");
-  bledis.start();
+  bledis.begin();
 
   // Start the BLE Battery Service and set it to 100%
   Serial.println("Configuring the Battery Service");
-  blebas.start();
+  blebas.begin();
   blebas.update(100);
 
   // Setup the Heart Rate Monitor service using
@@ -109,7 +109,7 @@ void setupHRM(void)
   // Heart Rate Measurement       0x2A37  Mandatory   Notify
   // Body Sensor Location         0x2A38  Optional    Read
   // Heart Rate Control Point     0x2A39  Conditional Write       <-- Not used here
-  hrms.start();
+  hrms.begin();
 
   // Note: You must call .start() on the BLEService before calling .start() on
   // any characteristic(s) within that service definition.. Calling .start() on
@@ -135,7 +135,7 @@ void setupHRM(void)
   hrmc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   hrmc.setFixedLen(2);
   hrmc.setCccdWriteCallback(cccd_callback);  // Optionally capture CCCD updates
-  hrmc.start();
+  hrmc.begin();
   uint8_t hrmdata[2] = { 0b00000110, 0x40 }; // Set the characteristic to use 8-bit values, with the sensor connected and detected
   hrmc.notify(hrmdata, 2);                   // Use .notify instead of .write!
 
@@ -156,7 +156,7 @@ void setupHRM(void)
   bslc.setProperties(CHR_PROPS_READ);
   bslc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   bslc.setFixedLen(1);
-  bslc.start();
+  bslc.begin();
   bslc.write(2);    // Set the characteristic to 'Wrist' (2)
 }
 

@@ -201,7 +201,7 @@ void BLEMidi::setWriteCallback(midi_write_cb_t fp)
   _io.setWriteCallback(blemidi_write_cb);
 }
 
-err_t BLEMidi::start(void)
+err_t BLEMidi::begin(void)
 {
   VERIFY_STATUS( this->addToGatt() );
 
@@ -209,7 +209,7 @@ err_t BLEMidi::start(void)
   _io.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP | CHR_PROPS_NOTIFY);
   _io.setPermission(SECMODE_ENC_NO_MITM, SECMODE_ENC_NO_MITM);
 
-  VERIFY_STATUS( _io.start() );
+  VERIFY_STATUS( _io.begin() );
 
   // Attempt to change the connection interval to 11.25-15 ms when starting HID
   Bluefruit.setConnInterval(9, 12);

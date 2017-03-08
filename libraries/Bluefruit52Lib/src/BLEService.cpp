@@ -75,7 +75,7 @@ void BLEService::setUuid(uint8_t const  uuid128[])
 err_t BLEService::addToGatt(void)
 {
   // Add UUID128 if needed
-  uuid.add();
+  uuid.begin();
 
   uint16_t handle;
   VERIFY_STATUS( sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &uuid._uuid, &handle) );
@@ -85,7 +85,7 @@ err_t BLEService::addToGatt(void)
   return ERROR_NONE;
 }
 
-err_t BLEService::start(void)
+err_t BLEService::begin(void)
 {
   return addToGatt();
 }

@@ -48,7 +48,7 @@ void setup()
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
   bledis.setModel("Bluefruit Feather52");
-  bledis.start();
+  bledis.begin();
   
 
 
@@ -65,7 +65,7 @@ void setup()
    * up to 11.25 ms. Therefore BLEMidi::start() will try to set the min and max
    * connection interval to 11.25  ms and 15 ms respectively for best performance.
    */
-  blemidi.start();
+  blemidi.begin();
 
   // Connect the handleNoteOn function to the library,
   // so it is called upon reception of a NoteOn.

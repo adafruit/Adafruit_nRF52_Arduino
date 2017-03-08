@@ -42,14 +42,14 @@ BLEBas::BLEBas(void) :
 
 }
 
-err_t BLEBas::start(void)
+err_t BLEBas::begin(void)
 {
   VERIFY_STATUS( this->addToGatt() );
 
   _battery.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY); // could support notify
   _battery.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   _battery.setFixedLen(1);
-  VERIFY_STATUS( _battery.start() );
+  VERIFY_STATUS( _battery.begin() );
 
   return ERROR_NONE;
 }

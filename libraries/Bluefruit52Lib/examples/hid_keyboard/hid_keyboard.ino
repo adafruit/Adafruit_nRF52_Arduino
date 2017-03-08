@@ -31,10 +31,10 @@ void setup()
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
   bledis.setModel("Bluefruit Feather52");
-  bledis.start();
+  bledis.begin();
 
   // Configure and Start BLE Uart Service
-  bleuart.start();
+  bleuart.begin();
 
   /* Start BLE HID
    * Note: Apple requires BLE device must have min connection interval >= 20m
@@ -43,7 +43,7 @@ void setup()
    * up to 11.25 ms. Therefore BLEHidAdafruit::start() will try to set the min and max
    * connection interval to 11.25  ms and 15 ms respectively for best performance.
    */
-  blehid.start();
+  blehid.begin();
 
   /* Set connection interval (min, max) to your perferred value.
    * Note: It is already set by BLEHidAdafruit::start() to 11.25ms - 15ms

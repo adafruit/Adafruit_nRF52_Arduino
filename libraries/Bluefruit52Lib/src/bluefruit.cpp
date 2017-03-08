@@ -177,7 +177,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   VERIFY_STATUS( sd_ble_gap_tx_power_set( CFG_BLE_TX_POWER_LEVEL ) );
 
   /*------------- DFU OTA as built-in service -------------*/
-  _dfu_svc.start();
+  _dfu_svc.begin();
 
   // Create RTOS Semaphore & Task for BLE Event
   _ble_event_sem = xSemaphoreCreateBinary();

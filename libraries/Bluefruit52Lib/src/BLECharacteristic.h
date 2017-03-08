@@ -143,7 +143,7 @@ class BLECharacteristic
     void setReadAuthorizeCallback(read_authorize_cb_t fp);
     void setWriteAuthorizeCallbak(write_authorize_cb_t fp);
 
-    err_t start(void);
+    err_t begin(void);
 
     ble_gatts_char_handles_t handles(void);
 

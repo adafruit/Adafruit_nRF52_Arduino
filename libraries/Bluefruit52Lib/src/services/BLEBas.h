@@ -49,7 +49,7 @@ class BLEBas : public BLEService
   public:
     BLEBas(void);
 
-    virtual err_t start(void);
+    virtual err_t begin(void);
 
     void update(uint8_t level);
     void notify(uint8_t level);

@@ -71,7 +71,7 @@ void BLEDis::setManufacturer(const char* manufacturer)
   _manufacturer = manufacturer;
 }
 
-err_t BLEDis::start(void)
+err_t BLEDis::begin(void)
 {
   VERIFY_STATUS( this->addToGatt() );
 
@@ -89,7 +89,7 @@ err_t BLEDis::start(void)
       chars.setProperties(CHR_PROPS_READ);
       chars.setFixedLen(strlen(_strarr[i]));
 
-      VERIFY_STATUS( chars.start() );
+      VERIFY_STATUS( chars.begin() );
       chars.write(_strarr[i]);
     }
   }

@@ -67,7 +67,7 @@ class BLEMidi: public BLEService, public Stream
 
     BLEMidi(uint16_t fifo_depth = BLE_MIDI_DEFAULT_FIFO_DEPTH);
 
-    virtual err_t start(void);
+    virtual err_t begin(void);
 
     // MidiInterface
     void begin(int baudrate) { (void) baudrate; }

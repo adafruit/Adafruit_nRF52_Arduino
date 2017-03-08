@@ -174,7 +174,7 @@ BLEDfu::BLEDfu(void) : BLEService(UUID128_SVC_DFU_OTA), _chr_control(UUID128_CHR
 
 }
 
-err_t BLEDfu::start(void)
+err_t BLEDfu::begin(void)
 {
   VERIFY_STATUS( this->addToGatt() );
 
@@ -183,18 +183,18 @@ err_t BLEDfu::start(void)
   chr_packet.setTempMemory();
   chr_packet.setProperties(CHR_PROPS_WRITE_WO_RESP);
   chr_packet.setMaxLen(20);
-  VERIFY_STATUS( chr_packet.start() );
+  VERIFY_STATUS( chr_packet.begin() );
 
   _chr_control.setProperties(CHR_PROPS_WRITE | CHR_PROPS_NOTIFY);
   _chr_control.setMaxLen(23);
   _chr_control.setWriteAuthorizeCallbak(bledfu_control_wr_authorize_cb);
-  VERIFY_STATUS( _chr_control.start() );
+  VERIFY_STATUS( _chr_control.begin() );
 
   BLECharacteristic chr_revision(UUID128_CHR_DFU_REVISON);
   chr_packet.setTempMemory();
   chr_revision.setProperties(CHR_PROPS_READ);
   chr_revision.setFixedLen(2);
-  VERIFY_STATUS( chr_revision.start());
+  VERIFY_STATUS( chr_revision.begin());
   chr_revision.write( (uint16_t) DFU_REV_APPMODE);
 
   return ERROR_NONE;

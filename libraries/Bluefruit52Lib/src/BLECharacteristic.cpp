@@ -171,12 +171,12 @@ ble_gatts_char_handles_t BLECharacteristic::handles(void)
   return _handles;
 }
 
-err_t BLECharacteristic::start(void)
+err_t BLECharacteristic::begin(void)
 {
   _service = BLEService::lastService;
 
   // Add UUID128 if needed
-  uuid.add();
+  uuid.begin();
 
   // Permission is OPEN if passkey is disabled.
 //  if (!nvm_data.core.passkey_enable) BLE_GAP_CONN_SEC_MODE_SET_OPEN(&p_char_def->permission);

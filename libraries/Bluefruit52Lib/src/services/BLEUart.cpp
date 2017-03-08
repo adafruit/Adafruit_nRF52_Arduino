@@ -86,7 +86,7 @@ void BLEUart::setRxCallback( rx_callback_t fp)
   _rx_cb = fp;
 }
 
-err_t BLEUart::start(void)
+err_t BLEUart::begin(void)
 {
   VERIFY_STATUS( this->addToGatt() );
 
@@ -98,7 +98,7 @@ err_t BLEUart::start(void)
  _txd.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
 
   _txd.setStringDescriptor("TXD");
-  VERIFY_STATUS( _txd.start() );
+  VERIFY_STATUS( _txd.begin() );
 
   // Add RXD Characteristic
   _rxd.setProperties(CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP);
@@ -108,7 +108,7 @@ err_t BLEUart::start(void)
    _rxd.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
 
   _rxd.setStringDescriptor("RXD");
-  VERIFY_STATUS(_rxd.start());
+  VERIFY_STATUS(_rxd.begin());
 
 
   return ERROR_NONE;

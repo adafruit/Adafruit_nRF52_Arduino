@@ -48,7 +48,7 @@ void setup()
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
   bledis.setModel("Bluefruit Feather52");
-  bledis.start();
+  bledis.begin();
   
   /* Start BLE MIDI
    * Note: Apple requires BLE device must have min connection interval >= 20m
@@ -58,7 +58,7 @@ void setup()
    * connection interval to 11.25  ms and 15 ms respectively for best performance.
    */
   blemidi.setWriteCallback(midi_write_callback);
-  blemidi.start();
+  blemidi.begin();
 
   // Initialize MIDI, listen to all channels
   MIDI.begin(MIDI_CHANNEL_OMNI);
