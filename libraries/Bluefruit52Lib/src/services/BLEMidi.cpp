@@ -162,6 +162,7 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
       len--;
 
       tstamp = (header.timestamp_hi << 7) | timestamp.timestamp_low;
+      (void) tstamp;
 
       status = *data++;
       len--;
@@ -229,14 +230,26 @@ size_t BLEMidi::write ( uint8_t b )
   static uint8_t count = 0;
   static uint8_t buf[3] = { 0 };
 
-  // Not support SysEx now
-  buf[count++] = b;
 
-  if ( count == 3 )
+  // Not SysEx message, keep accumulating data
+  if ( buf[0] != 0xf0 )
   {
-    count = 0;
+    buf[count++] = b;
 
-    send(buf);
+    if ( count == 3 )
+    {
+      count = 0;
+
+      send(buf);
+    }
+  }else
+  {
+    // skip until we reach 0xF7
+    if (b == 0xF7)
+    {
+      buf[0] = 0;
+      count  = 0;
+    }
   }
 
   return 1;
