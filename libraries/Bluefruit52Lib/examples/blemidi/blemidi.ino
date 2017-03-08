@@ -93,6 +93,7 @@ void setupAdv(void)
 void midi_write_callback(void)
 {
   MIDI.read();
+  Serial.println("write callback");
 }
 
 void loop()
