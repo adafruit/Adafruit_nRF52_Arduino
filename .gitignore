@@ -27,6 +27,7 @@
 /tools/nrfutil-0.5.2/dist/
 /tools/nrfutil-0.5.2/nrfutil.egg-info/
 /tools/.idea/
+/tools/midi_tests/node_modules
 
 .DS_Store
 *.swp
