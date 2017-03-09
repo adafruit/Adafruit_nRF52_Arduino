@@ -70,7 +70,7 @@ class BLEMidi: public BLEService, public Stream
     virtual err_t begin(void);
 
     // MidiInterface
-    void begin(int baudrate) { (void) baudrate; }
+    void begin(int baudrate);
 
     bool  notifyEnabled(void);
 

@@ -201,6 +201,12 @@ void BLEMidi::setWriteCallback(midi_write_cb_t fp)
   _io.setWriteCallback(blemidi_write_cb);
 }
 
+void BLEMidi::begin(int baudrate)
+{
+  (void) baudrate;
+  begin();
+}
+
 err_t BLEMidi::begin(void)
 {
   VERIFY_STATUS( this->addToGatt() );
