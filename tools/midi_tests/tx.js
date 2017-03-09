@@ -24,12 +24,12 @@ inquirer.prompt([
 
 function startTest() {
 
-  var on_bar = multi.newBar('midi on  [:bar] :current/:total', {
+  var on_bar = multi.newBar('note on  [:bar] :current/:total', {
     incomplete: ' ',
     total: 128
   });
 
-  var off_bar = multi.newBar('midi off [:bar] :current/:total', {
+  var off_bar = multi.newBar('note off [:bar] :current/:total', {
     incomplete: ' ',
     total: 128,
     callback: function() {
