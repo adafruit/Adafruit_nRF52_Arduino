@@ -1,0 +1,17 @@
+{
+  "name": "midi-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^2.0.0-rc.2",
+    "inquirer": "^3.0.5",
+    "midi": "^0.9.4",
+    "multi-progress": "^2.0.0"
+  }
+}
