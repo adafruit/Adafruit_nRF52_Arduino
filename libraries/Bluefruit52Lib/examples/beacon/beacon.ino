@@ -29,7 +29,7 @@ uint8_t beaconUuid[16] =
 
 // A valid Beacon packet consists of the following information:
 // UUID, Major, Minor, RSSI @ 1M
-BLEBeacon beacon(beaconUuid, 0x0001, 0x0000, -54);
+BLEBeacon beacon(beaconUuid, 0x0000, 0x0000, -54);
 
 void setup() 
 {

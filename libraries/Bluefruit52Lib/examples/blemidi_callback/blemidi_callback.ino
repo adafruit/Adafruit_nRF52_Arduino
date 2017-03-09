@@ -106,6 +106,7 @@ void loop()
 
 void midi_write_callback(void)
 {
+  Serial.println("MIDI I/O is written");
   MIDI.read();
 
   // There is no need to check if there are messages incoming
