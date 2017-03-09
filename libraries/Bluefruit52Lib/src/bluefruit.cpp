@@ -74,7 +74,6 @@ AdafruitBluefruit Bluefruit;
 static void bluefruit_blinky_cb( TimerHandle_t xTimer )
 {
   (void) xTimer;
-
   ledToggle(LED_CONN);
 }
 
@@ -128,10 +127,19 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   // Configure Clock
   nrf_clock_lf_cfg_t clock_cfg =
   {
+#if defined( USE_LFXO )
+      // LFXO
+      .source        = NRF_CLOCK_LF_SRC_XTAL,
+      .rc_ctiv       = 0,
+      .rc_temp_ctiv  = 0,
+      .xtal_accuracy = NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM
+#else
+      // LFRC
       .source        = NRF_CLOCK_LF_SRC_RC,
       .rc_ctiv       = 16,
       .rc_temp_ctiv  = 2,
       .xtal_accuracy = NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM
+#endif
   };
 
   VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, NULL) );
