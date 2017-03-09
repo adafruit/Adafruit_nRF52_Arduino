@@ -14,100 +14,128 @@
 #include <bluefruit.h>
 #include <MIDI.h>
 
-// To test:
-// - Run this sketch and open the Serial Monitor
-// - Open the iGrand Piano Free app
-// - Open the midimittr app on your phone and under Clients select "Bluefruit52"
-// - When you see the 'Connected' label switch to the Routing panel
-// - Set the Destination to 'iGrand Piano'
-// - Switch to the iGrand Piano Free app and you should see notes playing one by one
-
 BLEDis bledis;
 BLEMidi blemidi;
 
-// Create MIDI instance using ble service as physical layer
+// Create a new instance of the Arduino MIDI Library,
+// and attach BluefruitLE MIDI as the transport.
 MIDI_CREATE_BLE_INSTANCE(blemidi);
+
+// Variable that holds the current position in the sequence.
+int position = 0;
+
+// Store example melody as an array of note values
+byte note_sequence[] = {
+  74,78,81,86,90,93,98,102,57,61,66,69,73,78,81,85,88,92,97,100,97,92,88,85,81,78,
+  74,69,66,62,57,62,66,69,74,78,81,86,90,93,97,102,97,93,90,85,81,78,73,68,64,61,
+  56,61,64,68,74,78,81,86,90,93,98,102
+};
 
 void setup()
 {
+
   Serial.begin(115200);
-  Serial.println("Bluefruit52 BLEMIDI Example");
+  Serial.println("Adafruit Bluefruit52 MIDI over Bluetooth LE Example");
 
   Bluefruit.begin();
-  Bluefruit.setName("Bluefruit52");
+  Bluefruit.setName("Bluefruit52 MIDI");
 
-  // Setup the BLE LED to be enabled on CONNECT
-  // Note: This is actually the default behaviour, but provided
-  // here in case you want to control this manually via PIN 19
-  Bluefruit.autoConnLed(true);  
-
-  Bluefruit.setConnectCallback(connect_callback);
-  Bluefruit.setDisconnectCallback(disconnect_callback);
-  
+  // Setup the on board blue LED to be enabled on CONNECT
+  Bluefruit.autoConnLed(true);
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
   bledis.setModel("Bluefruit Feather52");
   bledis.begin();
-  
-  /* Start BLE MIDI
-   * Note: Apple requires BLE device must have min connection interval >= 20m
-   * ( The smaller the connection interval the faster we could send data).
-   * However for HID and MIDI device, Apple could accept min connection interval 
-   * up to 11.25 ms. Therefore BLEMidi::start() will try to set the min and max
-   * connection interval to 11.25  ms and 15 ms respectively for best performance.
-   */
-  blemidi.setWriteCallback(midi_write_callback);
-  blemidi.begin();
 
-  // Initialize MIDI, listen to all channels
+  // Set BLE write callback
+  blemidi.setWriteCallback(handleWrite);
+
+  // Initialize MIDI, and listen to all MIDI channels
   MIDI.begin(MIDI_CHANNEL_OMNI);
 
-  // Set up Advertising Packet
-  setupAdv();
+  // Attach the handleNoteOn function to the MIDI Library. It will
+  // be called whenever the Bluefruit receives MIDI Note On messages.
+  MIDI.setHandleNoteOn(handleNoteOn);
+
+  // Do the same for MIDI Note Off messages.
+  MIDI.setHandleNoteOff(handleNoteOff);
+
+  // Set General Discoverable Mode flag
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+
+  // Advertise TX Power
+  Bluefruit.Advertising.addTxPower();
+
+  // Advertise BLE MIDI Service
+  Bluefruit.Advertising.addService(blemidi);
+
+  // Advertise device name in the Scan Response
+  Bluefruit.ScanResponse.addName();
 
   // Start Advertising
   Bluefruit.Advertising.start();
+
 }
 
-void setupAdv(void)
+void handleNoteOn(byte channel, byte pitch, byte velocity)
 {
-  //Bluefruit.Advertising.addTxPower();
-  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.Advertising.addTxPower();
-
-  // Include bleuart 128-bit uuid
-  Bluefruit.Advertising.addService(blemidi);
-
-  // There is no room for Name in Advertising packet
-  // Use Scan response for Name
-  Bluefruit.ScanResponse.addName();
+  // Log when a note is pressed.
+  Serial.printf("Note on: channel = %d, pitch = %d, velocity - %d", channel, pitch, velocity);
+  Serial.println();
 }
 
-void midi_write_callback(void)
+void handleNoteOff(byte channel, byte pitch, byte velocity)
 {
+  // Log when a note is released.
+  Serial.printf("Note off: channel = %d, pitch = %d, velocity - %d", channel, pitch, velocity);
+  Serial.println();
+}
+
+void handleWrite() {
+  // Tell the MIDI instance that we have new data.
   MIDI.read();
 }
 
 void loop()
 {
-  if ( Bluefruit.connected() && blemidi.notifyEnabled() )
-  {
-    MIDI.sendNoteOn(42, 127, 1);  // Send a Note (pitch 42, velo 127 on channel 1)
-    delay(1000);                  // Wait for a second
-    MIDI.sendNoteOff(42, 0, 1);   // Stop the note
+
+  // Don't continue if we aren't connected.
+  if (! Bluefruit.connected()) {
+    return;
   }
-}
 
-void connect_callback(void)
-{
-  Serial.println("Connected");
-}
+  // Don't continue if the connected device isn't ready to receive messages.
+  if (! blemidi.notifyEnabled()) {
+    return;
+  }
 
-void disconnect_callback(uint8_t reason)
-{
-  (void) reason;
-  
-  Serial.println("Disconnected");
-  Serial.println("Bluefruit will auto start advertising (default)");
+  // Setup variables for the current and previous
+  // positions in the note sequence.
+  int current = position;
+  int previous  = position - 1;
+
+  // If we currently are at position 0, set the
+  // previous position to the last note in the sequence.
+  if (previous < 0) {
+    previous = sizeof(note_sequence) - 1;
+  }
+
+  // Send Note On for current position at full velocity (127) on channel 1.
+  MIDI.sendNoteOn(note_sequence[current], 127, 1);
+
+  // Send Note Off for previous note.
+  MIDI.sendNoteOff(note_sequence[previous], 0, 1);
+
+  // Increment position
+  position++;
+
+  // If we are at the end of the sequence, start over.
+  if (position >= sizeof(note_sequence)) {
+    position = 0;
+  }
+
+  // Wait before sending next note
+  delay(286);
+
 }
