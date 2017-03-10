@@ -34,7 +34,6 @@ void setup()
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
 
-  blemidi.setWriteCallback(handleWrite);
   MIDI.begin(MIDI_CHANNEL_OMNI);
   MIDI.setHandleNoteOn(handleNoteOn);
   MIDI.setHandleNoteOff(handleNoteOff);
@@ -67,9 +66,14 @@ void handleNoteOff(byte channel, byte pitch, byte velocity)
   Serial.println(off_count, DEC);
 }
 
-void handleWrite() {
-  // Tell the MIDI instance that we have new data.
+void loop() {
+
+  if(Serial.available()) {
+    Serial.read();
+    off_count = 0;
+    on_count = 0;
+    Serial.println("Test reset.");
+  }
+  
   MIDI.read();
 }
-
-void loop() {MIDI.read();}
