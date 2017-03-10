@@ -44,7 +44,7 @@
 
 #define MIDI_CREATE_BLE_INSTANCE(midiService)   MIDI_CREATE_INSTANCE(BLEMidi, midiService, MIDI)
 
-#define BLE_MIDI_DEFAULT_FIFO_DEPTH   128
+#define BLE_MIDI_DEFAULT_FIFO_DEPTH   256
 
 extern const uint8_t BLEMIDI_UUID_SERVICE[];
 extern const uint8_t BLEMIDI_UUID_CHR_IO[];
@@ -70,7 +70,7 @@ class BLEMidi: public BLEService, public Stream
     virtual err_t begin(void);
 
     // MidiInterface
-    void begin(int baudrate) { (void) baudrate; }
+    void begin(int baudrate);
 
     bool  notifyEnabled(void);
 
