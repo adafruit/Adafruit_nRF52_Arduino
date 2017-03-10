@@ -58,6 +58,11 @@
 #define BOND_FILENAME                    CFG_BOND_NFFS_DIR "/%04x"
 #define BOND_FILENAME_LEN                (sizeof(CFG_BOND_NFFS_DIR) + 10)
 
+AdafruitBluefruit Bluefruit;
+
+/*------------------------------------------------------------------*/
+/* PROTOTYPTES
+ *------------------------------------------------------------------*/
 extern "C"
 {
   void hal_flash_event_cb(uint32_t event) ATTR_WEAK;
@@ -66,10 +71,9 @@ extern "C"
 void adafruit_ble_task(void* arg);
 void adafruit_soc_task(void* arg);
 
-AdafruitBluefruit Bluefruit;
 
 /*------------------------------------------------------------------*/
-/* IMPLEMENTATION
+/* INTERNAL FUNCTION
  *------------------------------------------------------------------*/
 static void bluefruit_blinky_cb( TimerHandle_t xTimer )
 {
@@ -164,6 +168,19 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 
   VERIFY_STATUS( sd_ble_enable(&params, &app_ram_base) );
 
+#if 0
+  // Configure Radio inactive interrupt to use with hardtime-critical function
+  // such as Neopixel show()
+  s_radio_inactive_sem = xSemaphoreCreateBinary();
+  VERIFY(s_radio_inactive_sem, NRF_ERROR_NO_MEM);
+
+  NVIC_ClearPendingIRQ(RADIO_NOTIFICATION_IRQn);
+  NVIC_SetPriority(SD_EVT_IRQn, 7);
+//  NVIC_EnableIRQ(RADIO_NOTIFICATION_IRQn);
+
+  VERIFY_STATUS( sd_radio_notification_cfg_set(NRF_RADIO_NOTIFICATION_TYPE_INT_ON_INACTIVE, 0) );
+#endif
+
   /*------------- Configure GAP  -------------*/
 
   // Peripheral Preferred Connection Parameters
@@ -201,6 +218,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   TaskHandle_t soc_task_hdl;
   xTaskCreate( adafruit_soc_task, "SD SOC", CFG_SOC_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &soc_task_hdl);
 
+  NVIC_SetPriority(SD_EVT_IRQn, 6);
   NVIC_EnableIRQ(SD_EVT_IRQn);
 
   // Create Timer for led advertising blinky
@@ -374,6 +392,30 @@ void AdafruitBluefruit::stopConnLed(void)
 /*------------------------------------------------------------------*/
 /* Thread & SoftDevice Event handler
  *------------------------------------------------------------------*/
+#if 0
+void RADIO_NOTIFICATION_IRQHandler(void)
+{
+//  PRINT_LOCATION();
+  xSemaphoreGiveFromISR(s_radio_inactive_sem, NULL);
+}
+
+void waitForRadioInactive(void)
+{
+//  bool radio_inactive = xSemaphoreTake(s_radio_inactive_sem, 0);
+//  PRINT_INT(radio_inactive);
+
+//  NVIC_ClearPendingIRQ(RADIO_NOTIFICATION_IRQn);
+//  NVIC_EnableIRQ(RADIO_NOTIFICATION_IRQn);
+
+//  // wait forever
+//  delay(100);
+//  radio_inactive = xSemaphoreTake(s_radio_inactive_sem, 0);
+//
+//  PRINT_INT(radio_inactive);
+//  NVIC_DisableIRQ(RADIO_NOTIFICATION_IRQn);
+}
+#endif
+
 void SD_EVT_IRQHandler(void)
 {
   // Notify both BLE & SOC Task
