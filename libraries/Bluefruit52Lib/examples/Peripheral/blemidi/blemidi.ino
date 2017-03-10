@@ -31,6 +31,9 @@ byte note_sequence[] = {
   56,61,64,68,74,78,81,86,90,93,98,102
 };
 
+// Variable to hold the last time we sent a note
+unsigned long previousSend = 0;
+
 void setup()
 {
 
@@ -47,9 +50,6 @@ void setup()
   bledis.setManufacturer("Adafruit Industries");
   bledis.setModel("Bluefruit Feather52");
   bledis.begin();
-
-  // Set BLE write callback
-  blemidi.setWriteCallback(handleWrite);
 
   // Initialize MIDI, and listen to all MIDI channels
   MIDI.begin(MIDI_CHANNEL_OMNI);
@@ -92,11 +92,6 @@ void handleNoteOff(byte channel, byte pitch, byte velocity)
   Serial.println();
 }
 
-void handleWrite() {
-  // Tell the MIDI instance that we have new data.
-  MIDI.read();
-}
-
 void loop()
 {
 
@@ -107,6 +102,17 @@ void loop()
 
   // Don't continue if the connected device isn't ready to receive messages.
   if (! blemidi.notifyEnabled()) {
+    return;
+  }
+
+  // read any new MIDI messages
+  MIDI.read();
+
+  // Store the current time
+  unsigned long now = millis();
+
+  // Check if enough time has passed since last send
+  if (now - previousSend < 286) {
     return;
   }
 
@@ -135,7 +141,7 @@ void loop()
     position = 0;
   }
 
-  // Wait before sending next note
-  delay(286);
+  // Log the send time
+  previousSend = now;
 
 }
