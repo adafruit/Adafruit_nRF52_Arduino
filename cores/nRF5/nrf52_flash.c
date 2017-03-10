@@ -40,6 +40,7 @@
 #if CFG_DEBUG
 #define CFG_DEBUG_NFFS  0
 
+#if CFG_DEBUG_NFFS
 static void print_buf(const uint8_t* address, uint32_t count)
 {
   for(uint32_t i=0; i<count; i++) cprintf("%02X ", address[i] );
@@ -64,6 +65,8 @@ static void print_write_after(uint32_t address, uint32_t count)
   print_buf((const uint8_t*)address, count);
   cprintf("\n");
 }
+#endif
+
 #endif
 
 static SemaphoreHandle_t _evt_sem = NULL;

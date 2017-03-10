@@ -56,7 +56,7 @@ extern uint32_t micros( void ) ;
  *
  * \param dwMs the number of milliseconds to pause (uint32_t)
  */
-extern void delay( uint32_t dwMs ) ;
+extern void delay( uint32_t dwMs );
 
 /**
  * \brief Pauses the program for the amount of time (in microseconds) specified as parameter.
@@ -73,6 +73,34 @@ static __inline__ void delayMicroseconds( uint32_t usec )
 
   nrf_delay_us(usec);
 }
+
+void dwt_enable(void);
+void dwt_disable(void);
+
+
+/**
+ * Delay nano seconds, delay_ns() make use of DWT of debug core.
+ * dwt_enable() must be called previously.
+ * Note: nrf52 run at 64MHz
+ *    - 1000 ns ~ 64 cycles
+ *    -  500 ns ~ 32 cycles
+ *    -  250 ns ~ 16 cycles
+ *    -  125 ns ~  8 cycles
+ */
+// Enable pragma when this bug is fixed  https://bugs.launchpad.net/gcc-arm-embedded/+bug/1534360
+// #pragma GCC push_options
+// #pragma GCC optimize ("Ofast")
+
+#define DELAY_CYCLE_CORRECTION   8 // ~125 ns overhead for delay_ns()
+#define delay_ns(ns) \
+  do {\
+    register uint32_t _endtime = DWT->CYCCNT;\
+    _endtime += ((F_CPU/1000000)*ns)/1000 - DELAY_CYCLE_CORRECTION;\
+    while (DWT->CYCCNT < _endtime) {}\
+  } while(0)
+
+// #pragma GCC pop_options
+
 
 #ifdef __cplusplus
 }

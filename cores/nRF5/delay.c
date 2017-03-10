@@ -40,6 +40,20 @@ void delay( uint32_t ms )
   vTaskDelay(ms2tick(ms));
 }
 
+void dwt_enable(void)
+{
+  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk; /* Global Enable for DWT */
+  DWT->CYCCNT = 0;                                /* Reset the counter */
+  DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;            /* Enable cycle counter */
+}
+
+void dwt_disable(void)
+{
+  DWT->CTRL &= ~DWT_CTRL_CYCCNTENA_Msk;
+  CoreDebug->DEMCR &= ~CoreDebug_DEMCR_TRCENA_Msk;
+}
+
+
 #ifdef __cplusplus
 }
 #endif
