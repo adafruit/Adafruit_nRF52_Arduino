@@ -44,7 +44,7 @@
 
 #define MIDI_CREATE_BLE_INSTANCE(midiService)   MIDI_CREATE_INSTANCE(BLEMidi, midiService, MIDI)
 
-#define BLE_MIDI_DEFAULT_FIFO_DEPTH   128
+#define BLE_MIDI_DEFAULT_FIFO_DEPTH   256
 
 extern const uint8_t BLEMIDI_UUID_SERVICE[];
 extern const uint8_t BLEMIDI_UUID_CHR_IO[];
