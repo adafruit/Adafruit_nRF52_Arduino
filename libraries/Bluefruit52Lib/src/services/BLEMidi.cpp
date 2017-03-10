@@ -198,7 +198,6 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
 void BLEMidi::setWriteCallback(midi_write_cb_t fp)
 {
   _write_cb = fp;
-  _io.setWriteCallback(blemidi_write_cb);
 }
 
 void BLEMidi::begin(int baudrate)
@@ -209,6 +208,8 @@ void BLEMidi::begin(int baudrate)
 
 err_t BLEMidi::begin(void)
 {
+  _io.setWriteCallback(blemidi_write_cb);
+
   VERIFY_STATUS( this->addToGatt() );
 
   // IO characteristic
