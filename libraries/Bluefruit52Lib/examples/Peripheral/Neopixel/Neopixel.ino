@@ -1,10 +1,12 @@
 // Include Bluetooth
 
+// This sketch is intended to be used with the NeoPixel control
+// surface in Adafruit's Bluefruit LE Connect mobile application.
+
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #include <bluefruit.h>
 
-// Neopixel
 #define PIN            23   /* Pin used to drive the NeoPixels */
 
 #define MAXCOMPONENTS  4
@@ -24,26 +26,25 @@ void setup()
   Serial.println(F("Adafruit Bluefruit Neopixel Test"));
   Serial.println(F("------------------------------------"));
 
-  // Neopixels
+  // Config Neopixels
   pixels.begin();
 
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
 
-  // Configure and Start BLE Uart Service
+  // Configure and start BLE UART service
   bleuart.begin();
 
-  // Set up Advertising Packet
+  // Set up the advertising packet
   setupAdv();
 
-  // Start Advertising
+  // Start advertising
   Bluefruit.Advertising.start();
-  
 }
 
 void setupAdv(void)
 {  
-  //Bluefruit.Advertising.addTxPower();
+  // Bluefruit.Advertising.addTxPower();
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
   
@@ -114,7 +115,7 @@ void swapBuffers()
       base_addr+=components;
       pixelIndex++;
     }
-    pixelIndex += stride - width;   // move pixelIndex to the next row (take into account the stride)
+    pixelIndex += stride - width;   // Move pixelIndex to the next row (take into account the stride)
   }
   pixels.show();
 
