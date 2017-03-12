@@ -36,6 +36,14 @@
 
 #include "bluefruit.h"
 
+// GCC 5x new feature to detect optional include
+#ifdef __has_include
+#if __has_include("MIDI.h")
+  #include <MIDI.h>
+  #define MIDI_LIB_INCLUDED
+#endif
+#endif
+
 /* MIDI Service: 03B80E5A-EDE8-4B33-A751-6CE34EC4C700
  * MIDI I/O    : 7772E5DB-3868-4112-A1A9-F2669D106BF3
  */
@@ -80,18 +88,6 @@ typedef union ATTR_PACKED
 
 VERIFY_STATIC ( sizeof(midi_timestamp_t) == 1 );
 
-typedef union ATTR_PACKED
-{
-  struct {
-    uint8_t channel : 4;
-    uint8_t type    : 4;
-  };
-
-  uint8_t byte;
-} midi_status_t;
-
-VERIFY_STATIC ( sizeof(midi_status_t) == 1 );
-
 typedef struct ATTR_PACKED
 {
   midi_header_t header;
@@ -101,15 +97,7 @@ typedef struct ATTR_PACKED
 
 VERIFY_STATIC ( sizeof(midi_event_packet_t) == 5 );
 
-typedef struct ATTR_PACKED
-{
-  midi_header_t header;
-  midi_timestamp_t timestamp;
-  midi_status_t status;
-  uint8_t data[16];
-} midi_n_event_packet_t;
-
-VERIFY_STATIC ( sizeof(midi_n_event_packet_t) == 19 );
+void blemidi_write_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
 
 /*------------------------------------------------------------------*/
 /* IMPLEMENTATION
@@ -117,7 +105,8 @@ VERIFY_STATIC ( sizeof(midi_n_event_packet_t) == 19 );
 BLEMidi::BLEMidi(uint16_t fifo_depth)
   : BLEService(BLEMIDI_UUID_SERVICE), _io(BLEMIDI_UUID_CHR_IO), _rxd_fifo(fifo_depth, 1)
 {
-  _write_cb = NULL;
+  _write_cb    = NULL;
+  _midilib_obj = NULL;
 }
 
 bool BLEMidi::notifyEnabled(void)
@@ -125,14 +114,47 @@ bool BLEMidi::notifyEnabled(void)
   return Bluefruit.connBonded() && _io.notifyEnabled();
 }
 
+void BLEMidi::setWriteCallback(midi_write_cb_t fp)
+{
+  _write_cb = fp;
+}
 
+void BLEMidi::autoMIDIread(void* midi_obj)
+{
+  _midilib_obj = midi_obj;
+}
+void BLEMidi::begin(int baudrate)
+{
+  (void) baudrate;
+  begin();
+}
+
+err_t BLEMidi::begin(void)
+{
+  VERIFY_STATUS( this->addToGatt() );
+
+  // IO characteristic
+  _io.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP | CHR_PROPS_NOTIFY);
+  _io.setPermission(SECMODE_ENC_NO_MITM, SECMODE_ENC_NO_MITM);
+  _io.setWriteCallback(blemidi_write_cb);
+
+  VERIFY_STATUS( _io.begin() );
+
+  // Attempt to change the connection interval to 11.25-15 ms when starting HID
+  Bluefruit.setConnInterval(9, 12);
+
+  return ERROR_NONE;
+}
+
+/*------------------------------------------------------------------*/
+/* Callbacks
+ *------------------------------------------------------------------*/
 void blemidi_write_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
 {
   (void) offset;
   if ( len < 3 ) return;
 
   BLEMidi& midi_svc = (BLEMidi&) chr.parentService();
-
   midi_svc._write_handler(data, len);
 }
 
@@ -193,35 +215,14 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
       data += 2;
     }
   }
-}
 
-void BLEMidi::setWriteCallback(midi_write_cb_t fp)
-{
-  _write_cb = fp;
-}
-
-void BLEMidi::begin(int baudrate)
-{
-  (void) baudrate;
-  begin();
-}
-
-err_t BLEMidi::begin(void)
-{
-  _io.setWriteCallback(blemidi_write_cb);
-
-  VERIFY_STATUS( this->addToGatt() );
-
-  // IO characteristic
-  _io.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP | CHR_PROPS_NOTIFY);
-  _io.setPermission(SECMODE_ENC_NO_MITM, SECMODE_ENC_NO_MITM);
-
-  VERIFY_STATUS( _io.begin() );
-
-  // Attempt to change the connection interval to 11.25-15 ms when starting HID
-  Bluefruit.setConnInterval(9, 12);
-
-  return ERROR_NONE;
+#ifdef MIDI_LIB_INCLUDED
+  // read while possible if configured
+  if ( _midilib_obj )
+  {
+    while( ((midi::MidiInterface<BLEMidi>*)_midilib_obj)->read() ) { }
+  }
+#endif
 }
 
 /*------------------------------------------------------------------*/
@@ -282,7 +283,7 @@ void BLEMidi::flush ( void )
 }
 
 /*------------------------------------------------------------------*/
-/* Send Event
+/* Send Event (notify)
  *------------------------------------------------------------------*/
  err_t BLEMidi::send(uint8_t data[])
 {

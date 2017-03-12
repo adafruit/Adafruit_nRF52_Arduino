@@ -52,7 +52,9 @@ void setup()
   bledis.begin();
 
   // Initialize MIDI, and listen to all MIDI channels
+  // This will also call blemidi service's begin()
   MIDI.begin(MIDI_CHANNEL_OMNI);
+  blemidi.autoMIDIread(&MIDI);
 
   // Attach the handleNoteOn function to the MIDI Library. It will
   // be called whenever the Bluefruit receives MIDI Note On messages.
@@ -106,7 +108,7 @@ void loop()
   }
 
   // read any new MIDI messages
-  MIDI.read();
+  //MIDI.read();
 
   // Store the current time
   unsigned long now = millis();

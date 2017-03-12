@@ -49,17 +49,6 @@
 extern const uint8_t BLEMIDI_UUID_SERVICE[];
 extern const uint8_t BLEMIDI_UUID_CHR_IO[];
 
-enum
-{
-  MIDI_TYPE_NOTE_OFF         = 0x8,
-  MIDI_TYPE_NOTE_ON          = 0x9,
-  MIDI_TYPE_AFTER_TOUCH      = 0xA,
-  MIDI_TYPE_CONTROL_CHANGE   = 0xB,
-  MIDI_TYPE_PROGRAM_CHANGE   = 0xC,
-  MIDI_TYPE_CHANNEL_PRESSURE = 0xD,
-  MIDI_TYPE_PITCH_WHEEL      = 0xE,
-};
-
 class BLEMidi: public BLEService, public Stream
 {
   public:
@@ -68,16 +57,14 @@ class BLEMidi: public BLEService, public Stream
     BLEMidi(uint16_t fifo_depth = BLE_MIDI_DEFAULT_FIFO_DEPTH);
 
     virtual err_t begin(void);
-
-    // MidiInterface
-    void begin(int baudrate);
-
+    void begin(int baudrate); // MidiInterface
     bool  notifyEnabled(void);
 
     err_t send(uint8_t data[]);
     err_t send(uint8_t status, uint8_t byte1, uint8_t byte2);
 
     void setWriteCallback(midi_write_cb_t fp);
+    void autoMIDIread(void* midi_obj);
 
     // Stream API for MIDI Interface
     virtual int       read       ( void );
@@ -93,6 +80,8 @@ class BLEMidi: public BLEService, public Stream
 
     Adafruit_FIFO     _rxd_fifo;
     midi_write_cb_t   _write_cb;
+
+    void* _midilib_obj;
 
     void _write_handler(uint8_t* data, uint16_t len);
 
