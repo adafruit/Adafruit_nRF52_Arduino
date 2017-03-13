@@ -7,7 +7,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <bluefruit.h>
 
-#define PIN            23   /* Pin used to drive the NeoPixels */
+#define PIN            30   /* Pin used to drive the NeoPixels */
 
 #define MAXCOMPONENTS  4
 uint8_t *pixelBuffer = NULL;
