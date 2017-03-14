@@ -46,10 +46,10 @@ void setup()
 
   // Advertise device name in the Scan Response
   Bluefruit.ScanResponse.addName();
-  
+
   // Start Advertising
   Bluefruit.Advertising.start();
-  
+
 }
 
 void handleNoteOn(byte channel, byte pitch, byte velocity)
@@ -66,14 +66,7 @@ void handleNoteOff(byte channel, byte pitch, byte velocity)
   Serial.println(off_count, DEC);
 }
 
-void loop() {
-
-  if(Serial.available()) {
-    Serial.read();
-    off_count = 0;
-    on_count = 0;
-    Serial.println("Test reset.");
-  }
-  
+void loop()
+{
   MIDI.read();
 }
