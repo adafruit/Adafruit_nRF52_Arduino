@@ -44,6 +44,9 @@
 #endif
 #endif
 
+#define SYSEX_START   0xF0
+#define SYSEX_END     0xF7
+
 /* MIDI Service: 03B80E5A-EDE8-4B33-A751-6CE34EC4C700
  * MIDI I/O    : 7772E5DB-3868-4112-A1A9-F2669D106BF3
  */
@@ -107,6 +110,7 @@ BLEMidi::BLEMidi(uint16_t fifo_depth)
 {
   _write_cb    = NULL;
   _midilib_obj = NULL;
+  _receiving_sysex = false;
 }
 
 bool BLEMidi::notifyEnabled(void)
@@ -168,51 +172,80 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
   header.byte = *data++;
   len--;
 
-  // not support SysEx
-  if ( data[0] == 0xF0 ) return;
+  /* SysEx message
+   * Header | Timestamp | SysEx Start (0xF0) | SysEx Data ...... | timestamp | SysEx End (0xF7)
+   * For each MTU packet, SysEx Data is preceded by Header
+   */
 
-  while (len)
+  // Start packet of SysEx
+  if ( !_receiving_sysex && (data[1] == SYSEX_START) )
   {
-    /* event : 0x00 - 0x7F
-       status: 0x80 - 0xEF
-       sysex : 0xF0 - 0xFF
-     */
+    // skip timestamp
+    data++;
+    len--;
 
-    if ( bitRead(data[0], 7) )
+    _receiving_sysex = true;
+  }
+
+  // Receiving SysEx (including first packet above)
+  if (_receiving_sysex)
+  {
+    // If final packet --> skip timestamp
+    if ( (data[len-1] == SYSEX_END) && bitRead(data[len-2],7) )
     {
-      // Start of new full event
-      midi_timestamp_t timestamp;
+      _rxd_fifo.write(data, len-2);
+      _rxd_fifo.write(&data[len-1]); // SYSEX_END
 
-      timestamp.byte = *data++;
-      len--;
-
-      tstamp = (header.timestamp_hi << 7) | timestamp.timestamp_low;
-      (void) tstamp;
-
-      status = *data++;
-      len--;
-
-      // Status must have 7th-bit set, otherwise something is wrong !!!
-      if ( !bitRead(status, 7) ) return;
-
-      uint8_t tempbuf[3] = { status, data[0], data[1] };
-
-      _rxd_fifo.write(tempbuf, 3);
-      if ( _write_cb ) _write_cb();
-
-      len  -= 2;
-      data += 2;
+      _receiving_sysex = false; // done with SysEx
+    }else
+    {
+      _rxd_fifo.write(data, len);
     }
-    else
+  }else
+  {
+    while (len)
     {
-      // Running event
-      uint8_t tempbuf[3] = { status, data[0], data[1] };
+      /* event : 0x00 - 0x7F
+         status: 0x80 - 0xEF
+         sysex : 0xF0 - 0xFF
+       */
 
-      _rxd_fifo.write(tempbuf, 3);
-      if ( _write_cb ) _write_cb();
+      if ( bitRead(data[0], 7) )
+      {
+        // Start of new full event
+        midi_timestamp_t timestamp;
 
-      len  -= 2;
-      data += 2;
+        timestamp.byte = *data++;
+        len--;
+
+        tstamp = (header.timestamp_hi << 7) | timestamp.timestamp_low;
+        (void) tstamp;
+
+        status = *data++;
+        len--;
+
+        // Status must have 7th-bit set, otherwise something is wrong !!!
+        if ( !bitRead(status, 7) ) return;
+
+        uint8_t tempbuf[3] = { status, data[0], data[1] };
+
+        _rxd_fifo.write(tempbuf, 3);
+        if ( _write_cb ) _write_cb();
+
+        len  -= 2;
+        data += 2;
+      }
+      else
+      {
+        // Running event
+        uint8_t tempbuf[3] = { status, data[0], data[1] };
+
+        _rxd_fifo.write(tempbuf, 3);
+        if ( _write_cb ) _write_cb();
+
+        len  -= 2;
+        data += 2;
+      }
     }
   }
 
