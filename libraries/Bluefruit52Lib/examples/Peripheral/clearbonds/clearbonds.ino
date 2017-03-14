@@ -13,7 +13,7 @@
 *********************************************************************/
 
 #include <bluefruit.h>
-#include <ApacheNffs.h>
+#include <Nffs.h>
 
 void setup() 
 {

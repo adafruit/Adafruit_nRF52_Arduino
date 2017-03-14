@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     NewtNffs.h
+    @file     Nffs.h
     @author   hathach
 
     @section LICENSE
@@ -33,8 +33,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef APACHENFFS_H_
-#define APACHENFFS_H_
+#ifndef NFFS_H_
+#define NFFS_H_
 
 #include <Arduino.h>
 
@@ -89,4 +89,4 @@ public:
 
 extern ApacheNffs Nffs;
 
-#endif /* APACHENFFS_H_ */
+#endif /* NFFS_H_ */

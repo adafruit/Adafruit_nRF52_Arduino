@@ -33,8 +33,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-
-#include "ApacheNffs.h"
+#include "Nffs.h"
 
 #include "syscfg/syscfg.h"
 #include "hal/hal_flash.h"

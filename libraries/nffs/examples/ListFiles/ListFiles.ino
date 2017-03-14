@@ -13,7 +13,7 @@
 *********************************************************************/
 
 #include <bluefruit.h>
-#include <ApacheNffs.h>
+#include <Nffs.h>
 
 /* This example  print out NFFS content up to
  * MAX_LEVEL level of directories (including root)

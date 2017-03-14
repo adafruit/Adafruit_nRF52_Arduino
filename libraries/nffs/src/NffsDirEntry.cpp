@@ -34,7 +34,7 @@
 */
 /**************************************************************************/
 
-#include "ApacheNffs.h"
+#include "Nffs.h"
 
 NffsDirEntry::NffsDirEntry(void)
 {
