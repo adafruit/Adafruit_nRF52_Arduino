@@ -1,0 +1,66 @@
+#######################################
+# Syntax Coloring Map For Adafruit Feather WiFi
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+ApacheNffs	KEYWORD1
+NffsDir	KEYWORD1
+NffsDirEntry	KEYWORD1
+NffsFile	KEYWORD1
+
+#######################################
+# ApacheNffs Methods (KEYWORD2)
+#######################################
+
+format	KEYWORD2
+mkdir	KEYWORD2
+mkdir_p	KEYWORD2
+remove	KEYWORD2
+rm	KEYWORD2
+rename	KEYWORD2
+mv	KEYWORD2
+
+testFile	KEYWORD2
+testFolder	KEYWORD2
+readFile	KEYWORD2
+writeFile	KEYWORD2
+
+
+#######################################
+# NffsDir Methods (KEYWORD2)
+#######################################
+
+open	KEYWORD2
+close	KEYWORD2
+exists	KEYWORD2
+read	KEYWORD2
+
+#######################################
+# NffsDirEntry Methods (KEYWORD2)
+#######################################
+
+exists	KEYWORD2
+getName	KEYWORD2
+isDirectory	KEYWORD2
+
+#######################################
+# NffsFile Methods (KEYWORD2)
+#######################################
+
+size	KEYWORD2
+tell	KEYWORD2
+seek	KEYWORD2
+seekForward	KEYWORD2
+seekBackward	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+FS_ACCESS_READ	LITERAL1
+FS_ACCESS_WRITE	LITERAL1
+FS_ACCESS_APPEND	LITERAL1
+FS_ACCESS_TRUNCATE	LITERAL1
+
