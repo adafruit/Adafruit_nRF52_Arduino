@@ -203,13 +203,13 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
     }
   }else
   {
+    /* Normal Event data
+     * event : 0x00 - 0x7F
+     * status: 0x80 - 0xEF
+     */
+
     while (len)
     {
-      /* event : 0x00 - 0x7F
-         status: 0x80 - 0xEF
-         sysex : 0xF0 - 0xFF
-       */
-
       if ( bitRead(data[0], 7) )
       {
         // Start of new full event
