@@ -34,7 +34,7 @@
 */
 /**************************************************************************/
 
-#include "NewtNffs.h"
+#include "ApacheNffs.h"
 
 void NffsFile::_init(void)
 {

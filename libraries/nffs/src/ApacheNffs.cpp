@@ -34,22 +34,22 @@
 */
 /**************************************************************************/
 
-#include "NewtNffs.h"
+#include "ApacheNffs.h"
 
 #include "syscfg/syscfg.h"
 #include "hal/hal_flash.h"
 
 #define NFFS_AREA_MAX    8
 
-NewtNffs Nffs;
+ApacheNffs Nffs;
 
-NewtNffs::NewtNffs(void)
+ApacheNffs::ApacheNffs(void)
 {
   errnum       = FS_EOK;
   _initialized = false;
 }
 
-bool NewtNffs::begin(void)
+bool ApacheNffs::begin(void)
 {
   // Follow code in nffs_pkg_init()
   if (_initialized) return true;
@@ -85,7 +85,7 @@ bool NewtNffs::begin(void)
   return true;
 }
 
-bool NewtNffs::format(void)
+bool ApacheNffs::format(void)
 {
   struct nffs_area_desc descs[NFFS_AREA_MAX + 1];
   int cnt = NFFS_AREA_MAX;
@@ -99,7 +99,7 @@ bool NewtNffs::format(void)
   return true;
 }
 
-bool NewtNffs::mkdir(const char* path)
+bool ApacheNffs::mkdir(const char* path)
 {
   errnum = fs_mkdir(path);
   return (errnum == FS_EOK);
@@ -110,7 +110,7 @@ bool NewtNffs::mkdir(const char* path)
  * @param path Absolute path of directory, must start with '/'
  * @return
  */
-bool NewtNffs::mkdir_p(const char* path)
+bool ApacheNffs::mkdir_p(const char* path)
 {
   char* parent = (char*) rtos_malloc(strlen(path)+1);
   const char* slash = path+1; // skip root '/'
@@ -133,19 +133,19 @@ bool NewtNffs::mkdir_p(const char* path)
   return (errnum == FS_EOK);
 }
 
-bool NewtNffs::remove(const char* path)
+bool ApacheNffs::remove(const char* path)
 {
   errnum = fs_unlink(path);
   return (errnum == FS_EOK);
 }
 
-bool NewtNffs::rename(const char* from, const char* to)
+bool ApacheNffs::rename(const char* from, const char* to)
 {
   errnum = fs_rename(from, to);
   return (errnum == FS_EOK);
 }
 
-uint32_t NewtNffs::readFile (const char* filename, void* buffer, uint32_t bufsize, int32_t offset)
+uint32_t ApacheNffs::readFile (const char* filename, void* buffer, uint32_t bufsize, int32_t offset)
 {
   NffsFile f(filename, FS_ACCESS_READ);
 
@@ -164,7 +164,7 @@ uint32_t NewtNffs::readFile (const char* filename, void* buffer, uint32_t bufsiz
   return count;
 }
 
-bool NewtNffs::writeFile(const char* filename, const void* data, uint32_t count, int32_t offset)
+bool ApacheNffs::writeFile(const char* filename, const void* data, uint32_t count, int32_t offset)
 {
   NffsFile f(filename, FS_ACCESS_WRITE);
 
@@ -182,7 +182,7 @@ bool NewtNffs::writeFile(const char* filename, const void* data, uint32_t count,
   return result;
 }
 
-bool NewtNffs::testFile (const char* filename)
+bool ApacheNffs::testFile (const char* filename)
 {
   NffsFile f(filename, FS_ACCESS_READ);
   bool result = f.exists();
@@ -191,7 +191,7 @@ bool NewtNffs::testFile (const char* filename)
   return result;
 }
 
-bool NewtNffs::testFolder(const char* path)
+bool ApacheNffs::testFolder(const char* path)
 {
   NffsDir f(path);
   bool result = f.exists();

@@ -35,7 +35,7 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
-#include <NewtNffs.h>
+#include <ApacheNffs.h>
 
 // Note chaning these parameters will affect APP_RAM_BASE
 // --> need to update RAM in feather52_s132.ld linker

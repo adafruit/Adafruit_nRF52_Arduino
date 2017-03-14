@@ -13,7 +13,7 @@
 *********************************************************************/
 
 #include <bluefruit.h>
-#include <NewtNffs.h>
+#include <ApacheNffs.h>
 
 #define FILENAME    "/adafruit.txt"
 #define CONTENTS    "Bluefruit Feather52's NFFS file contents"

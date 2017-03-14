@@ -33,8 +33,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef NEWTNFFS_H_
-#define NEWTNFFS_H_
+#ifndef APACHENFFS_H_
+#define APACHENFFS_H_
 
 #include <Arduino.h>
 
@@ -45,7 +45,7 @@
 #include "NffsFile.h"
 #include "NffsDir.h"
 
-class NewtNffs
+class ApacheNffs
 {
 private:
   bool _initialized;
@@ -53,7 +53,7 @@ private:
 public:
   int errnum;
 
-  NewtNffs(void);
+  ApacheNffs(void);
 
   bool begin(void);
 
@@ -87,6 +87,6 @@ public:
 };
 
 
-extern NewtNffs Nffs;
+extern ApacheNffs Nffs;
 
-#endif /* NEWTNFFS_H_ */
+#endif /* APACHENFFS_H_ */
