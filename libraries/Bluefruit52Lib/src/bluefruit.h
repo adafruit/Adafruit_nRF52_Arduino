@@ -64,61 +64,56 @@ extern "C"
 class AdafruitBluefruit
 {
   public:
-    AdafruitBluefruit(void); // Constructor
+    // Constructor
+    AdafruitBluefruit(void);
 
     err_t begin(bool prph_enable = true, bool central_enable = false);
-    
-    void  autoConnLed(bool enabled);
-    void  setConnLedInterval(uint32_t ms);
-    void  startConnLed(void);
-    void  stopConnLed(void);
-
-    void  setName(const char* str);
-    char* getName(void);
-
-    bool   setTxPower(int8_t power);
-    int8_t getTxPower(void);
 
     /*------------------------------------------------------------------*/
-    /* Advertising & Scan Response (active scan)
+    /* Lower Level Classes (Bluefruit.Advertising.*, etc.)
      *------------------------------------------------------------------*/
     BLEAdvertising Advertising;
     BLEAdvertising ScanResponse;
+    BLECentral     Central;
 
     /*------------------------------------------------------------------*/
-    /*
+    /* General Purpose Functions
      *------------------------------------------------------------------*/
-    bool connected(void);
-    void disconnect(void);
+    void   autoConnLed         (bool enabled);
+    void   setConnLedInterval  (uint32_t ms);
+    void   startConnLed        (void);
+    void   stopConnLed         (void);
+    void   setName             (const char* str);
+    char*  getName             (void);
+    bool   setTxPower          (int8_t power);
+    int8_t getTxPower          (void);
 
-    err_t setConnInterval  (uint16_t min, uint16_t max);
-    err_t setConnIntervalMS(uint16_t min_ms, uint16_t max_ms);
-
-    uint16_t connHandle(void);
-    bool     connBonded(void);
-    uint16_t connInterval(void);
-
-    void clearBonds(void);
+    /*------------------------------------------------------------------*/
+    /* GAP, Connections and Bonding
+     *------------------------------------------------------------------*/
+    bool     connected         (void);
+    void     disconnect        (void);
+    err_t    setConnInterval   (uint16_t min, uint16_t max);
+    err_t    setConnIntervalMS (uint16_t min_ms, uint16_t max_ms);
+    uint16_t connHandle        (void);
+    bool     connBonded        (void);
+    uint16_t connInterval      (void);
+    void     clearBonds        (void);
 
     ble_gap_addr_t peerAddr(void);
 
     bool txbuf_get(uint32_t ms);
 
-    COMMENT_OUT ( bool setPIN(const char* pin); )
-
     /*------------------------------------------------------------------*/
-    /* Central API object
-     *------------------------------------------------------------------*/
-    BLECentral Central;
-
-    /*------------------------------------------------------------------*/
-    /* Callback
+    /* Callbacks
      *------------------------------------------------------------------*/
     typedef void (*connect_callback_t) (void);
     typedef void (*disconnect_callback_t) (uint8_t reason);
 
     void setConnectCallback   ( connect_callback_t    fp);
     void setDisconnectCallback( disconnect_callback_t fp);
+
+    COMMENT_OUT ( bool setPIN(const char* pin); )
 
     // internal usage only
     err_t _registerCharacteristic(BLECharacteristic* chars);
@@ -194,6 +189,3 @@ COMMENT_OUT(
 };
 
 extern AdafruitBluefruit Bluefruit;
-
-
-
