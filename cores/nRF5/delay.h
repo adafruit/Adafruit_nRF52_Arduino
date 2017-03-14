@@ -74,6 +74,9 @@ static __inline__ void delayMicroseconds( uint32_t usec )
   nrf_delay_us(usec);
 }
 
+/**
+ * Enable DWT, required for delay_ns()
+ */
 void dwt_enable(void);
 void dwt_disable(void);
 

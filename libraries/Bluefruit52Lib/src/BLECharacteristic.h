@@ -124,17 +124,15 @@ class BLECharacteristic
     void setUuid(uint16_t uuid16);
     void setUuid(uint8_t const  uuid128[]);
 
-    // Configure
     void setTempMemory(void);
 
+    // Configure
     void setProperties(uint8_t prop);
     void setPermission(BleSecurityMode read_perm, BleSecurityMode write_perm);
-
-    void setStringDescriptor(const char* descriptor); // aka user descriptor
-    void setReportRefDescriptor(uint8_t id, uint8_t type);
-
     void setMaxLen(uint16_t max_len);
     void setFixedLen(uint16_t fixed_len);
+    void setStringDescriptor(const char* descriptor); // aka user descriptor
+    void setReportRefDescriptor(uint8_t id, uint8_t type);
 
     // Callback
     void setWriteCallback(write_cb_t fp);

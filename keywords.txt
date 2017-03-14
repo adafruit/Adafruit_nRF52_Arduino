@@ -1,0 +1,74 @@
+#######################################
+# Syntax Coloring Map For Adafruit Feather WiFi
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+TimeoutTimer	KEYWORD1
+Adafruit_FIFO	KEYWORD1
+
+#######################################
+# Core Function (KEYWORD2)
+#######################################
+
+digitalToggle	KEYWORD2
+
+ledOn	KEYWORD2
+ledOff	KEYWORD2
+ledToggle	KEYWORD2
+
+printf	KEYWORD2
+printBuffer	KEYWORD2
+
+dwt_enable	KEYWORD2
+dwt_disable	KEYWORD2
+delay_ns	KEYWORD2
+
+# RTOS
+rtos_malloc	KEYWORD2
+rtos_free	KEYWORD2
+rtos_realloc	KEYWORD2
+
+nrf52_flash_init	KEYWORD2
+nrf52_flash_erase_sector	KEYWORD2
+nrf52_flash_write	KEYWORD2
+
+VERIFY_STATIC	KEYWORD2
+VERIFY_STATUS	KEYWORD2
+VERIFY	KEYWORD2
+
+dbgHeapTotal	KEYWORD2
+dbgHeapUsed	KEYWORD2
+dbgHeapFree	KEYWORD2
+dbgMemInfo	KEYWORD2
+dbgPrintVersion	KEYWORD2
+
+#######################################
+# Adafruit_FIFO Methods (KEYWORD2)
+#######################################
+
+clear	KEYWORD2
+peek	KEYWORD2
+peekAt	KEYWORD2
+empty	KEYWORD2
+full	KEYWORD2
+count	KEYWORD2
+remaining	KEYWORD2
+
+#######################################
+# TimeoutTimer Methods (KEYWORD2)
+#######################################
+
+set	KEYWORD2
+expired	KEYWORD2
+restart	KEYWORD2
+reset	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+INPUT_PULLDOWN	LITERAL1
+
+
