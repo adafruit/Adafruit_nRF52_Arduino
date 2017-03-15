@@ -32,7 +32,7 @@ byte note_sequence[] = {
 };
 
 // Variable to hold the last time we sent a note
-unsigned long previousSend = 0;
+//unsigned long previousSend = 0;
 
 void setup()
 {
@@ -54,7 +54,6 @@ void setup()
   // Initialize MIDI, and listen to all MIDI channels
   // This will also call blemidi service's begin()
   MIDI.begin(MIDI_CHANNEL_OMNI);
-  blemidi.autoMIDIread(&MIDI);
 
   // Attach the handleNoteOn function to the MIDI Library. It will
   // be called whenever the Bluefruit receives MIDI Note On messages.
@@ -78,6 +77,7 @@ void setup()
   // Start Advertising
   Bluefruit.Advertising.start();
 
+  Scheduler.startLoop(loop2);
 }
 
 void handleNoteOn(byte channel, byte pitch, byte velocity)
@@ -96,7 +96,6 @@ void handleNoteOff(byte channel, byte pitch, byte velocity)
 
 void loop()
 {
-
   // Don't continue if we aren't connected.
   if (! Bluefruit.connected()) {
     return;
@@ -107,16 +106,13 @@ void loop()
     return;
   }
 
-  // read any new MIDI messages
-  //MIDI.read();
-
   // Store the current time
-  unsigned long now = millis();
-
-  // Check if enough time has passed since last send
-  if (now - previousSend < 286) {
-    return;
-  }
+//  unsigned long now = millis();
+//
+//  // Check if enough time has passed since last send
+//  if (now - previousSend < 286) {
+//    return;
+//  }
 
   // Setup variables for the current and previous
   // positions in the note sequence.
@@ -143,7 +139,25 @@ void loop()
     position = 0;
   }
 
-  // Log the send time
-  previousSend = now;
+  delay(286);
 
+  // Log the send time
+  //previousSend = now;
 }
+
+void loop2()
+{
+  // Don't continue if we aren't connected.
+  if (! Bluefruit.connected()) {
+    return;
+  }
+
+  // Don't continue if the connected device isn't ready to receive messages.
+  if (! blemidi.notifyEnabled()) {
+    return;
+  }
+
+  // read any new MIDI messages
+  MIDI.read();
+}
+
