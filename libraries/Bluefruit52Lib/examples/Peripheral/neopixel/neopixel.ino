@@ -37,15 +37,19 @@ BLEUart bleuart;
 void setup()
 {
   Serial.begin(115200);
-  Serial.println(F("Adafruit Bluefruit Neopixel Test"));
-  Serial.println(F("------------------------------------"));
+  Serial.println("Adafruit Bluefruit Neopixel Test");
+  Serial.println("------------------------------------");
 
+  Serial.println();
+  Serial.println("Please connect using Bluefruit Connect LE application");
+  
   // Config Neopixels
   pixels.begin();
 
   // Init Bluefruit
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
+  Bluefruit.setConnectCallback(connect_callback);
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
@@ -76,6 +80,10 @@ void setupAdv(void)
   Bluefruit.ScanResponse.addName();
 }
 
+void connect_callback(void)
+{
+  Serial.println("Connected !! Please select 'Neopixles' tab, click 'Connect' and have fun");
+}
 
 void loop()
 {

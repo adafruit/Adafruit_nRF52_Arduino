@@ -12,9 +12,16 @@
  any redistribution
 *********************************************************************/
 
-// This sketch is intended to be used with the NeoPixel control
-// surface in Adafruit's Bluefruit LE Connect mobile application.
-
+/* How to run this sketch
+ *  - Connect Neopixel FeatherWing and Load sketch to Bluefruit52
+ *  - Connect using Bluefruit Connect LE app
+ *  - Send character using BLEUART
+ *  - Bluefruit will draw received character on Neopixel FeatherWing
+ *  
+ *  Note: due to the font is larger than 4x8 Neopixel Wing, you can
+ *  only see part of the characters (but you got the idea). 
+ *  Run the sketch with larger Neopixel Matrix for complete demo
+ */
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #include <Adafruit_GFX.h>
@@ -58,8 +65,11 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println(F("Adafruit Bluefruit NeoMatrix"));
-  Serial.println(F("------------------------------------"));
+  Serial.println(F("----------------------------"));
 
+  Serial.println();
+  Serial.println("Please connect using Bluefruit Connect LE application");
+  
   // Config Neopixels Matrix
   matrix.begin();
   matrix.setTextWrap(false);
@@ -69,6 +79,7 @@ void setup()
   // Init Bluefruit
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
+  Bluefruit.setConnectCallback(connect_callback);
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
@@ -98,6 +109,12 @@ void setupAdv(void)
   // Use Scan response for Name
   Bluefruit.ScanResponse.addName();
 }
+
+void connect_callback(void)
+{
+  Serial.println("Connected ! Please select 'Uart' tab and send any characters");
+}
+
 
 void loop()
 {
