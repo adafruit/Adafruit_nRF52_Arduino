@@ -31,9 +31,6 @@ byte note_sequence[] = {
   56,61,64,68,74,78,81,86,90,93,98,102
 };
 
-// Variable to hold the last time we sent a note
-//unsigned long previousSend = 0;
-
 void setup()
 {
 
@@ -77,7 +74,8 @@ void setup()
   // Start Advertising
   Bluefruit.Advertising.start();
 
-  Scheduler.startLoop(loop2);
+  // Start MIDI read loop
+  Scheduler.startLoop(midiRead);
 }
 
 void handleNoteOn(byte channel, byte pitch, byte velocity)
@@ -106,14 +104,6 @@ void loop()
     return;
   }
 
-  // Store the current time
-//  unsigned long now = millis();
-//
-//  // Check if enough time has passed since last send
-//  if (now - previousSend < 286) {
-//    return;
-//  }
-
   // Setup variables for the current and previous
   // positions in the note sequence.
   int current = position;
@@ -141,11 +131,9 @@ void loop()
 
   delay(286);
 
-  // Log the send time
-  //previousSend = now;
 }
 
-void loop2()
+void midiRead()
 {
   // Don't continue if we aren't connected.
   if (! Bluefruit.connected()) {
