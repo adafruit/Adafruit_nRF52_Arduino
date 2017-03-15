@@ -40,3 +40,45 @@ void yield(void)
 {
   taskYIELD();
 }
+
+SchedulerRTOS Scheduler;
+
+static void _redirect_task(void* arg)
+{
+  SchedulerRTOS::taskfunc_t taskfunc = (SchedulerRTOS::taskfunc_t) arg;
+
+  while(1)
+  {
+    taskfunc();
+
+    // yield() anyway just in case user forgot
+    taskYIELD();
+  }
+}
+
+SchedulerRTOS::SchedulerRTOS(void)
+{
+  _num = 1; // loop is already created by default
+}
+
+bool SchedulerRTOS::startLoop(taskfunc_t task, uint32_t stack_size)
+{
+  char name[8] = "loop0";
+  name[4] += _num;
+
+  if ( startLoop(task, name, stack_size) )
+  {
+    _num++;
+    return true;
+  }else
+  {
+    return false;
+  }
+}
+
+bool SchedulerRTOS::startLoop(taskfunc_t task, const char* name, uint32_t stack_size)
+{
+  TaskHandle_t  handle;
+  return pdPASS == xTaskCreate( _redirect_task, name, stack_size, (void*) task, TASK_PRIO_NORMAL, &handle);
+}
+

@@ -79,6 +79,27 @@ static inline void* rtos_realloc(void* pv, size_t new_size)
 {
   return (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) ? realloc(pv, new_size) : pvPortRealloc(pv, new_size);
 }
+#endif
+
+#ifdef __cplusplus // Visible only with cplusplus
+
+#define SCHEDULER_STACK_SIZE_DFLT   (512*2)
+
+class SchedulerRTOS
+{
+private:
+  uint8_t _num;
+
+public:
+  typedef void (*taskfunc_t)(void);
+
+  SchedulerRTOS(void);
+
+  bool startLoop(taskfunc_t task, uint32_t stack_size = SCHEDULER_STACK_SIZE_DFLT);
+  bool startLoop(taskfunc_t task, const char* name, uint32_t stack_size = SCHEDULER_STACK_SIZE_DFLT);
+};
+
+extern SchedulerRTOS Scheduler;
 
 #endif
 #endif /* RTOS_H_ */
