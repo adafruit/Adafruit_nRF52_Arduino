@@ -52,7 +52,7 @@ static void loop_task(void* arg)
     #endif
 
     // To compatible with most code where loop is not rtos-aware
-    vTaskDelay(1); //taskYIELD();
+    taskYIELD(); // vTaskDelay(1);
   }
 }
 

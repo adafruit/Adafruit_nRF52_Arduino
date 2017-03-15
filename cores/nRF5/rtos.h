@@ -53,10 +53,10 @@
 
 enum
 {
-  TASK_PRIO_LOWEST  = 0,
+  TASK_PRIO_LOWEST  = 0, // Idle task, should not be used
   TASK_PRIO_LOW     = 1,
-  TASK_PRIO_NORMAL  = 2,
-  TASK_PRIO_HIGH    = 3,
+  TASK_PRIO_NORMAL  = 2, // Loop, Timer Task
+  TASK_PRIO_HIGH    = 3, // Bluefruit Task
   TASK_PRIO_HIGHEST = 4,
 };
 
