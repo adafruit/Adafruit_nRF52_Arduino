@@ -36,6 +36,8 @@
 
 #include <Arduino.h>
 #include "utilities.h"
+#include <string.h>
+#include <stdio.h>
 
 #include "nrf_sdm.h"
 #include "nrf52/nrf_mbr.h"
