@@ -13,9 +13,10 @@
 *********************************************************************/
 #include <bluefruit.h>
 
-BLEDis bledis;
+// BLE Service
+BLEDis  bledis;
 BLEUart bleuart;
-BLEBas blebas;
+BLEBas  blebas;
 
 #define STATUS_LED  (17)
 #define BLINKY_MS   (2000)

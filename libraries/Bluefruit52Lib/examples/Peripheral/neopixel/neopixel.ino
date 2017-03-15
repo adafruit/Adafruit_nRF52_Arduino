@@ -30,6 +30,8 @@ uint8_t stride;
 
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel();
 
+// BLE Service
+BLEDis  bledis;
 BLEUart bleuart;
 
 void setup()
@@ -41,8 +43,14 @@ void setup()
   // Config Neopixels
   pixels.begin();
 
+  // Init Bluefruit
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
+
+  // Configure and Start Device Information Service
+  bledis.setManufacturer("Adafruit Industries");
+  bledis.setModel("Bluefruit Feather52");
+  bledis.begin();  
 
   // Configure and start BLE UART service
   bleuart.begin();
