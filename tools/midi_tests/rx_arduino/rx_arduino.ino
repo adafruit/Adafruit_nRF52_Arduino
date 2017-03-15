@@ -14,7 +14,7 @@
 #include <bluefruit.h>
 #include <MIDI.h>
 
-BLEMidi blemidi;
+BLEMidi blemidi = BLEMidi(256);
 
 // Create a new instance of the Arduino MIDI Library,
 // and attach BluefruitLE MIDI as the transport.
@@ -46,9 +46,11 @@ void setup()
 
   // Advertise device name in the Scan Response
   Bluefruit.ScanResponse.addName();
-
+  
   // Start Advertising
   Bluefruit.Advertising.start();
+  
+  Scheduler.startLoop(midiRead);
 
 }
 
@@ -57,6 +59,7 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
   on_count++;
   Serial.print("note on count: ");
   Serial.println(on_count, DEC);
+  
 }
 
 void handleNoteOff(byte channel, byte pitch, byte velocity)
@@ -66,7 +69,21 @@ void handleNoteOff(byte channel, byte pitch, byte velocity)
   Serial.println(off_count, DEC);
 }
 
-void loop()
+void loop() {
+}
+
+void midiRead()
 {
+  // Don't continue if we aren't connected.
+  if (! Bluefruit.connected()) {
+    return;
+  }
+
+  // Don't continue if the connected device isn't ready to receive messages.
+  if (! blemidi.notifyEnabled()) {
+    return;
+  }
+
+  // read any new MIDI messages
   MIDI.read();
 }
