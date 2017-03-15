@@ -36,7 +36,11 @@
 #ifndef UTILITIES_H_
 #define UTILITIES_H_
 
-#include <Arduino.h>
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct
 {
@@ -47,11 +51,16 @@ typedef struct
 typedef struct
 {
   uint16_t count;
-  uint16_t data_size;
-
   lookup_entry_t const* items;
 } lookup_table_t;
 
 void const *  lookup_find(lookup_table_t const* p_table, uint32_t key);
+
+const char* getFirmwareVersion(void);
+const char* getMcuUniqueID(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* UTILITIES_H_ */

@@ -35,17 +35,14 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
-
-static char bledis_serial_str[16+1];
-static char bledis_fw_str[16+1];
-
+#include "utility/utilities.h"
 
 BLEDis::BLEDis(void)
   : BLEService(UUID16_SVC_DEVICE_INFORMATION)
 {
   _model        = "Bluefruit Feather52";
-  _serial       = bledis_serial_str;
-  _firmware_rev = bledis_fw_str;
+  _serial       = NULL;
+  _firmware_rev = NULL;
   _hardware_rev = NULL;
   _software_rev = ARDUINO_BSP_VERSION;
   _manufacturer = "Adafruit Industries";
@@ -75,9 +72,8 @@ err_t BLEDis::begin(void)
 {
   VERIFY_STATUS( this->addToGatt() );
 
-  sprintf(bledis_serial_str, "%08lX%08lX", NRF_FICR->DEVICEID[1], NRF_FICR->DEVICEID[0]);
-  sprintf(bledis_fw_str, "%d.%d.%d,S132,2.0.1",
-          U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion), U32_BYTE4(bootloaderVersion));
+  _serial = getMcuUniqueID();
+  _firmware_rev = getFirmwareVersion();
 
   for(uint8_t i=0; i<arrcount(_strarr); i++)
   {
@@ -96,3 +92,4 @@ err_t BLEDis::begin(void)
 
   return ERROR_NONE;
 }
+
