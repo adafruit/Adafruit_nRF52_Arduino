@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-#define BOOTLOADER_DFU_START_SERIAL     0x4e
+#define BOOTLOADER_DFU_SERIAL_MAGIC     0x4e
 
 void init( void )
 {
@@ -44,7 +44,7 @@ void init( void )
 
 void enterSerialDFU(void)
 {
-  NRF_POWER->GPREGRET = BOOTLOADER_DFU_START_SERIAL;
+  NRF_POWER->GPREGRET = BOOTLOADER_DFU_SERIAL_MAGIC;
   NVIC_SystemReset();
 }
 
