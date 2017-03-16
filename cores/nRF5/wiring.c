@@ -25,7 +25,8 @@
 extern "C" {
 #endif
 
-#define BOOTLOADER_DFU_SERIAL_MAGIC     0x4e
+#define BOOTLOADER_DFU_SERIAL_MAGIC         0x4e
+#define BOOTLOADER_DFU_OTA_FULLRESET_MAGIC  0xA8
 
 void init( void )
 {
@@ -42,15 +43,16 @@ void init( void )
   NRF_CLOCK->TASKS_LFCLKSTART = 1UL;
 }
 
-void enterSerialDFU(void)
+void enterSerialDfu(void)
 {
   NRF_POWER->GPREGRET = BOOTLOADER_DFU_SERIAL_MAGIC;
   NVIC_SystemReset();
 }
 
-void enterOtaDFU(void)
+void enterOTADfu(void)
 {
-
+  NRF_POWER->GPREGRET = BOOTLOADER_DFU_OTA_FULLRESET_MAGIC;
+  NVIC_SystemReset();
 }
 
 

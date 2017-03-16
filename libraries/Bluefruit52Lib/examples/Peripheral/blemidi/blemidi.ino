@@ -33,7 +33,6 @@ byte note_sequence[] = {
 
 void setup()
 {
-
   Serial.begin(115200);
   Serial.println("Adafruit Bluefruit52 MIDI over Bluetooth LE Example");
 

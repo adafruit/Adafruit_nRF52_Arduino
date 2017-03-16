@@ -24,8 +24,8 @@ extern "C" {
 
 extern void init(void);
 
-extern void enterSerialDFU(void);
-extern void enterOtaDFU(void);
+extern void enterSerialDfu(void);
+extern void enterOTADfu(void);
 
 #ifdef __cplusplus
 }

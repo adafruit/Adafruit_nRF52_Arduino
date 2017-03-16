@@ -17,7 +17,7 @@
 
 void setup() 
 {
-  enterSerialDfu();
+  enterOTADfu();
 }
 
 
