@@ -168,19 +168,6 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 
   VERIFY_STATUS( sd_ble_enable(&params, &app_ram_base) );
 
-#if 0
-  // Configure Radio inactive interrupt to use with hardtime-critical function
-  // such as Neopixel show()
-  s_radio_inactive_sem = xSemaphoreCreateBinary();
-  VERIFY(s_radio_inactive_sem, NRF_ERROR_NO_MEM);
-
-  NVIC_ClearPendingIRQ(RADIO_NOTIFICATION_IRQn);
-  NVIC_SetPriority(SD_EVT_IRQn, 7);
-//  NVIC_EnableIRQ(RADIO_NOTIFICATION_IRQn);
-
-  VERIFY_STATUS( sd_radio_notification_cfg_set(NRF_RADIO_NOTIFICATION_TYPE_INT_ON_INACTIVE, 0) );
-#endif
-
   /*------------- Configure GAP  -------------*/
 
   // Peripheral Preferred Connection Parameters
@@ -392,30 +379,6 @@ void AdafruitBluefruit::stopConnLed(void)
 /*------------------------------------------------------------------*/
 /* Thread & SoftDevice Event handler
  *------------------------------------------------------------------*/
-#if 0
-void RADIO_NOTIFICATION_IRQHandler(void)
-{
-//  PRINT_LOCATION();
-  xSemaphoreGiveFromISR(s_radio_inactive_sem, NULL);
-}
-
-void waitForRadioInactive(void)
-{
-//  bool radio_inactive = xSemaphoreTake(s_radio_inactive_sem, 0);
-//  PRINT_INT(radio_inactive);
-
-//  NVIC_ClearPendingIRQ(RADIO_NOTIFICATION_IRQn);
-//  NVIC_EnableIRQ(RADIO_NOTIFICATION_IRQn);
-
-//  // wait forever
-//  delay(100);
-//  radio_inactive = xSemaphoreTake(s_radio_inactive_sem, 0);
-//
-//  PRINT_INT(radio_inactive);
-//  NVIC_DisableIRQ(RADIO_NOTIFICATION_IRQn);
-}
-#endif
-
 void SD_EVT_IRQHandler(void)
 {
   // Notify both BLE & SOC Task
@@ -492,10 +455,7 @@ void AdafruitBluefruit::_ble_handler(void)
       if( ERROR_NONE == err)
       {
         #if CFG_DEBUG
-        Serial.print("[BLE]: ");
-        if ( dbg_ble_event_str(evt->header.evt_id) ) Serial.print(dbg_ble_event_str(evt->header.evt_id));
-        else Serial.printf("0x04X", evt->header.evt_id);
-        Serial.println();
+        Serial.printf("[BLE]: %s\n", dbg_ble_event_str(evt->header.evt_id));
         #endif
 
         switch ( evt->header.evt_id  )

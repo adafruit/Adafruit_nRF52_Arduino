@@ -213,6 +213,8 @@ static const char* _gatts_evt_str[] =
 
 const char* dbg_ble_event_str(uint16_t evt_id)
 {
+  static char unknown_evt[7] = {0};
+
   if      ( is_within(BLE_EVT_BASE, evt_id, BLE_EVT_LAST) )
     return _base_evt_str[evt_id-BLE_EVT_BASE];
   else if ( is_within(BLE_GAP_EVT_BASE, evt_id, BLE_GAP_EVT_LAST) )
@@ -222,7 +224,10 @@ const char* dbg_ble_event_str(uint16_t evt_id)
   else if ( is_within(BLE_GATTS_EVT_BASE, evt_id, BLE_GATTS_EVT_LAST) )
     return _gatts_evt_str[evt_id-BLE_GATTS_EVT_BASE];
   else
-    return NULL;
+  {
+    sprintf(unknown_evt, "0x04X", evt_id);
+    return unknown_evt;
+  }
 }
 
 #endif

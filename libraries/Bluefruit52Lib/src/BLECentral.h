@@ -78,6 +78,11 @@ class BLECentral
 
     bool connected(void);
 
+    /*------------------------------------------------------------------*/
+    /* GATTC Discovery
+     *------------------------------------------------------------------*/
+
+
     typedef void (*connect_callback_t) (void);
     typedef void (*disconnect_callback_t) (uint8_t reason);
 
