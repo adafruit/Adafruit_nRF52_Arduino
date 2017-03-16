@@ -25,6 +25,8 @@
 extern "C" {
 #endif
 
+#define BOOTLOADER_DFU_START_SERIAL     0x4e
+
 void init( void )
 {
 #if defined( USE_LFXO )
@@ -39,6 +41,18 @@ void init( void )
 
   NRF_CLOCK->TASKS_LFCLKSTART = 1UL;
 }
+
+void enterSerialDFU(void)
+{
+  NRF_POWER->GPREGRET = BOOTLOADER_DFU_START_SERIAL;
+  NVIC_SystemReset();
+}
+
+void enterOtaDFU(void)
+{
+
+}
+
 
 #ifdef __cplusplus
 }
