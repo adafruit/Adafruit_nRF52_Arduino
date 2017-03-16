@@ -82,7 +82,6 @@ class BLEMidi: public BLEService, public Stream
     midi_write_cb_t   _write_cb;
 
     void* _midilib_obj;
-    bool  _receiving_sysex;
 
     void _write_handler(uint8_t* data, uint16_t len);
 

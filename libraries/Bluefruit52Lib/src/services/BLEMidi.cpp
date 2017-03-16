@@ -44,8 +44,6 @@
 #endif
 #endif
 
-#define SYSEX_START   0xF0
-#define SYSEX_END     0xF7
 
 /* MIDI Service: 03B80E5A-EDE8-4B33-A751-6CE34EC4C700
  * MIDI I/O    : 7772E5DB-3868-4112-A1A9-F2669D106BF3
@@ -110,7 +108,6 @@ BLEMidi::BLEMidi(uint16_t fifo_depth)
 {
   _write_cb    = NULL;
   _midilib_obj = NULL;
-  _receiving_sysex = false;
 }
 
 bool BLEMidi::notifyEnabled(void)
@@ -164,89 +161,32 @@ void blemidi_write_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint1
 
 void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
 {
-  // First 3 bytes is always : Header + Timestamp + Status
-  midi_header_t header;
-  uint16_t tstamp = 0;
-  uint8_t  status = 0;
-
-  header.byte = *data++;
+  // drop the BLE MIDI header byte
+  data++;
   len--;
 
-  /* SysEx message
-   * Header | Timestamp | SysEx Start (0xF0) | SysEx Data ...... | timestamp | SysEx End (0xF7)
-   * For each MTU packet, SysEx Data is preceded by Header
-   */
-
-  // Start packet of SysEx
-  if ( !_receiving_sysex && (data[1] == SYSEX_START) )
+  while (len)
   {
-    // skip timestamp
-    data++;
+
+    if ( bitRead(data[0], 7) && bitRead(data[1], 7) )
+    {
+      // timestamp low + MIDI status so we skip the timestamp
+      data++;
+      len--;
+    }
+    else if ( bitRead(data[0], 7) && ! bitRead(data[1], 7) )
+    {
+      // timestamp low on its own, skip timestamp
+      data++;
+      len--;
+    }
+
+    // write the status or MIDI data to the FIFO
+    _rxd_fifo.write(data++, 1);
     len--;
 
-    _receiving_sysex = true;
-  }
+    if ( _write_cb ) _write_cb();
 
-  // Receiving SysEx (including first packet above)
-  if (_receiving_sysex)
-  {
-    // If final packet --> skip timestamp
-    if ( (data[len-1] == SYSEX_END) && bitRead(data[len-2],7) )
-    {
-      _rxd_fifo.write(data, len-2);
-      _rxd_fifo.write(&data[len-1]); // SYSEX_END
-
-      _receiving_sysex = false; // done with SysEx
-    }else
-    {
-      _rxd_fifo.write(data, len);
-    }
-  }else
-  {
-    /* Normal Event data
-     * event : 0x00 - 0x7F
-     * status: 0x80 - 0xEF
-     */
-
-    while (len)
-    {
-      if ( bitRead(data[0], 7) )
-      {
-        // Start of new full event
-        midi_timestamp_t timestamp;
-
-        timestamp.byte = *data++;
-        len--;
-
-        tstamp = (header.timestamp_hi << 7) | timestamp.timestamp_low;
-        (void) tstamp;
-
-        status = *data++;
-        len--;
-
-        // Status must have 7th-bit set, otherwise something is wrong !!!
-        if ( !bitRead(status, 7) ) return;
-
-        uint8_t tempbuf[3] = { status, data[0], data[1] };
-
-        _rxd_fifo.write(tempbuf, 3);
-        if ( _write_cb ) _write_cb();
-
-        len  -= 2;
-        data += 2;
-      }
-      else
-      {
-        // Running event
-        uint8_t tempbuf[3] = { status, data[0], data[1] };
-
-        _rxd_fifo.write(tempbuf, 3);
-        if ( _write_cb ) _write_cb();
-
-        len  -= 2;
-        data += 2;
-      }
-    }
   }
 
 #ifdef MIDI_LIB_INCLUDED
@@ -256,6 +196,7 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
     while( ((midi::MidiInterface<BLEMidi>*)_midilib_obj)->read() ) { }
   }
 #endif
+
 }
 
 /*------------------------------------------------------------------*/
