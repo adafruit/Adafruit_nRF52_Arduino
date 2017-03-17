@@ -211,7 +211,7 @@ void BLECentral::_event_handler(ble_evt_t* evt)
       if (para->role == BLE_GAP_ROLE_CENTRAL)
       {
         Bluefruit.stopConnLed();
-        if (Bluefruit._led_conn) ledOn(LED_CONN);
+        if (Bluefruit._led_conn) ledOn(LED_BLUE);
 
         _conn_hdl = evt->evt.gap_evt.conn_handle;
 
@@ -223,7 +223,7 @@ void BLECentral::_event_handler(ble_evt_t* evt)
     case BLE_GAP_EVT_DISCONNECTED:
       if ( _conn_hdl == evt->evt.gap_evt.conn_handle)
       {
-        if (Bluefruit._led_conn)  ledOff(LED_CONN);
+        if (Bluefruit._led_conn)  ledOff(LED_BLUE);
 
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
 

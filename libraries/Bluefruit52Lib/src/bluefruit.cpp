@@ -78,7 +78,7 @@ void adafruit_soc_task(void* arg);
 static void bluefruit_blinky_cb( TimerHandle_t xTimer )
 {
   (void) xTimer;
-  ledToggle(LED_CONN);
+  ledToggle(LED_BLUE);
 }
 
 /**
@@ -472,7 +472,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       if (para->role == BLE_GAP_ROLE_PERIPH)
       {
         stopConnLed();
-        if (_led_conn) ledOn(LED_CONN);
+        if (_led_conn) ledOn(LED_BLUE);
 
         _conn_hdl      = evt->evt.gap_evt.conn_handle;
         _conn_interval = para->conn_params.min_conn_interval;
@@ -509,7 +509,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       // Check if it is peripheral connection
       if (_conn_hdl == evt->evt.gap_evt.conn_handle)
       {
-        if (_led_conn)  ledOff(LED_CONN);
+        if (_led_conn)  ledOff(LED_BLUE);
 
         // Save all configured cccd
         if (_bonded) _saveBondedCCCD();
@@ -519,6 +519,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         varclr(&_peer_addr);
 
         vSemaphoreDelete(_txbuf_sem);
+        _txbuf_sem = NULL;
 
         if ( _discconnect_cb ) _discconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
 
@@ -535,14 +536,18 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
     break;
 
     case BLE_EVT_TX_COMPLETE:
-      for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
+      if ( _txbuf_sem )
       {
-        xSemaphoreGive(_txbuf_sem);
+        for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
+        {
+          xSemaphoreGive(_txbuf_sem);
+        }
       }
     break;
 
     case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
     {
+      // Pairing in progress
       varclr(&_bond_data);
       _bond_data.own_enc.master_id.ediv = 0xFFFF; // invalid value for ediv
 
@@ -550,7 +555,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
        * - Central supplies its parameters
        * - We replies with our security parameters
        */
-//            ble_gap_sec_params_t* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
+//      ble_gap_sec_params_t* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
 
       ble_gap_sec_params_t sec_para =
       {
@@ -598,7 +603,7 @@ COMMENT_OUT(
 
     case BLE_GAP_EVT_SEC_INFO_REQUEST:
     {
-      // If bonded previously, Central will ask for stored keys.
+      // Reconnection. If bonded previously, Central will ask for stored keys.
       // return security information. Otherwise NULL
       ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
 
@@ -616,10 +621,10 @@ COMMENT_OUT(
 
     case BLE_GAP_EVT_PASSKEY_DISPLAY:
     {
-//            ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
+//      ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
 //
-//            PRINT_INT(passkey_display->match_request);
-//            PRINT_BUFFER(passkey_display->passkey, 6);
+//      PRINT_INT(passkey_display->match_request);
+//      PRINT_BUFFER(passkey_display->passkey, 6);
 
       // sd_ble_gap_auth_key_reply
     }
@@ -645,7 +650,7 @@ COMMENT_OUT(
     {
       ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
 
-      // Bonding succeeded --> save encryption keys
+      // Pairing/Bonding succeeded --> save encryption keys
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
         _saveBondKeys();
