@@ -348,12 +348,6 @@ void BLECharacteristic::eventHandler(ble_evt_t* event)
 /*------------------------------------------------------------------*/
 /* WRITE
  *------------------------------------------------------------------*/
-
-err_t BLECharacteristic::write(const void* data, int len)
-{
-  return write(data, len, 0);
-}
-
 err_t BLECharacteristic::write(const char   * str)
 {
   return write((const uint8_t*) str, strlen(str));
@@ -393,6 +387,46 @@ err_t BLECharacteristic::write(uint16_t num)
 err_t BLECharacteristic::write(uint8_t  num)
 {
   return write( (uint8_t*) &num, sizeof(num));
+}
+
+/*------------------------------------------------------------------*/
+/* READ
+ *------------------------------------------------------------------*/
+/**
+ * Read Characteristic's value
+ * @param buffer  memory to hold value
+ * @param len     size of memory
+ * @param offset  offset of value (dfeault is 0)
+ * @return  number of read bytes
+ */
+uint16_t BLECharacteristic::read(void* buffer, int bufsize, uint16_t offset)
+{
+  ble_gatts_value_t value =
+  {
+      .len     = (uint16_t) bufsize,
+      .offset  = offset,
+      .p_value = (uint8_t*) buffer
+  };
+
+  // conn handle only needed for system attribute
+  VERIFY_STATUS(sd_ble_gatts_value_get(BLE_CONN_HANDLE_INVALID, _handles.value_handle, &value), 0);
+
+  return value.len;
+}
+
+uint16_t BLECharacteristic::read(uint32_t* num)
+{
+  return read(num, 4);
+}
+
+uint16_t BLECharacteristic::read(uint16_t* num)
+{
+  return read(num, 2);
+}
+
+uint16_t BLECharacteristic::read(uint8_t*  num)
+{
+  return read(num, 1);
 }
 
 /*------------------------------------------------------------------*/
