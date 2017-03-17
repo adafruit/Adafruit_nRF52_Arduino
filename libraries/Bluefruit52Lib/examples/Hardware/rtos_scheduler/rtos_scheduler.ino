@@ -17,23 +17,15 @@
 /*
  * Sketch demonstate mutli-task using Scheduler. Demo create loop2() that
  * run in 'parallel' with loop().
- * - loop() toggle LED1 every 1 second
- * - loop2() toggle LED2 every half of second
+ * - loop() toggle LED_RED every 1 second
+ * - loop2() toggle LED_BLUE every half of second
  */
-
-int led1 = 17;
-int led2 = 19;
 
 void setup() 
 {
-  // initialize digital pin as an output.
-  pinMode(led1, OUTPUT);
-  pinMode(led2, OUTPUT);
-
-  digitalWrite(led1, LOW);
-  digitalWrite(led2, LOW);
-
-  // Create loop2() using Scheduler
+  // LED_RED & LED_BLUE pin already initialized as an output.
+  
+  // Create loop2() using Scheduler to run in 'parallel' with loop()
   Scheduler.startLoop(loop2);
 }
 
@@ -42,8 +34,8 @@ void setup()
  */
 void loop() 
 {
-  digitalToggle(led1); // Toggle LED 
-  delay(1000);         // wait for a second
+  digitalToggle(LED_RED); // Toggle LED 
+  delay(1000);            // wait for a second
 }
 
 /**
@@ -51,7 +43,7 @@ void loop()
  */
 void loop2()
 {
-  digitalToggle(led2); // Toggle LED 
-  delay(500);          // wait for a half second  
+  digitalToggle(LED_BLUE); // Toggle LED 
+  delay(500);              // wait for a half second  
 }
 

@@ -49,7 +49,7 @@ void setup()
 // the loop function runs over and over again forever
 void loop() 
 {
-  digitalToggle(LED_BUILTIN);
+  digitalToggle(LED_RED);
   delay(1000);
 }
 

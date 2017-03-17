@@ -25,6 +25,6 @@ void setup()
 void loop() 
 {
   dbgMemInfo();
-  digitalToggle(LED_BUILTIN);
+  digitalToggle(LED_RED);
   delay(5000);                       // wait for a second
 }

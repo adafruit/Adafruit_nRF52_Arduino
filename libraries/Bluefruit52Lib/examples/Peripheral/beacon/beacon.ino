@@ -66,7 +66,7 @@ void setupAdv(void)
 void loop() 
 {
   // Toggle both LEDs every second
-  digitalToggle(LED_BUILTIN);
+  digitalToggle(LED_RED);
   delay(1000);
 }
 

@@ -57,7 +57,7 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
 void loop() 
 {
   // Toggle both LEDs every 1 second
-  digitalToggle(LED_BUILTIN);
+  digitalToggle(LED_RED);
 
   delay(1000);
 }

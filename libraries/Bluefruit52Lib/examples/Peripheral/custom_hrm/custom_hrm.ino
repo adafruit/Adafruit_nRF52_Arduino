@@ -13,7 +13,7 @@
 *********************************************************************/
 #include <bluefruit.h>
 
-#define STATUS_LED  (17)
+#define STATUS_LED  (LED_RED)
 #define BLINKY_MS   (2000)
 
 /* HRM Service Definitions
