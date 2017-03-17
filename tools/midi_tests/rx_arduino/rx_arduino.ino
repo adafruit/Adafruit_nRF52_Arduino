@@ -32,7 +32,7 @@ void setup()
   Bluefruit.autoConnLed(true);
 
   Bluefruit.begin();
-  Bluefruit.setName("Bluefruit52");
+  Bluefruit.setName("Bluefruit52 MIDI");
 
   MIDI.begin(MIDI_CHANNEL_OMNI);
   MIDI.setHandleNoteOn(handleNoteOn);

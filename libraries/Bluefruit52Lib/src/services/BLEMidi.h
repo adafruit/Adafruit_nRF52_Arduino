@@ -63,6 +63,8 @@ class BLEMidi: public BLEService, public Stream
     err_t send(uint8_t data[], uint8_t len);
     err_t sendSplit(uint8_t data[], uint8_t len);
 
+    // message type helpers
+    bool isStatusByte(uint8_t b);
     bool oneByteMessage(uint8_t status);
     bool twoByteMessage(uint8_t status);
     bool threeByteMessage(uint8_t status);

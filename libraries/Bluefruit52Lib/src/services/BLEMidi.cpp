@@ -176,15 +176,17 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
   while (len)
   {
 
-    if ( bitRead(data[0], 7) && bitRead(data[1], 7) )
+    // timestamp low byte followed by a MIDI status,
+    // so we drop the timestamp low byte
+    if ( isStatusByte(data[0]) && isStatusByte(data[1]) )
     {
-      // timestamp low + MIDI status so we skip the timestamp
       data++;
       len--;
     }
-    else if ( bitRead(data[0], 7) && ! bitRead(data[1], 7) )
+    // timestamp low byte on it's own (running status),
+    // so we drop the timestamp low byte
+    else if ( isStatusByte(data[0]) && ! isStatusByte(data[1]) )
     {
-      // timestamp low on its own, skip timestamp
       data++;
       len--;
     }
@@ -194,7 +196,6 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
     len--;
 
     if ( _write_cb ) _write_cb();
-
   }
 
 #ifdef MIDI_LIB_INCLUDED
@@ -234,7 +235,7 @@ size_t BLEMidi::write ( uint8_t b )
   {
     // send and clear the last of the existing buffer.
     // it should contain the final bytes in the sysex payload.
-    if (bitRead(buf[0], 7))
+    if (isStatusByte(buf[0]))
       send(buf, count);
     else
       sendSplit(buf, count);
@@ -259,12 +260,12 @@ size_t BLEMidi::write ( uint8_t b )
     count = 0;
   }
 
-  // if we have a full buffer at this point, we
-  // need to send a full or split sysex message
-  // and reset the buffer.
+  // do we have a full buffer at this point?
   if(count == BLE_MIDI_TX_BUFFER_SIZE)
   {
-    if (bitRead(buf[0], 7))
+    // send a full or split message depending
+    // on the type of the first byte in the buffer
+    if (isStatusByte(buf[0]))
       send(buf, count);
     else
       sendSplit(buf, count);
@@ -275,7 +276,6 @@ size_t BLEMidi::write ( uint8_t b )
   }
 
   return 1;
-
 }
 
 int BLEMidi::available ( void )
@@ -297,6 +297,15 @@ void BLEMidi::flush ( void )
 /*------------------------------------------------------------------*/
 /* Message Type Helpers
  *------------------------------------------------------------------*/
+bool BLEMidi::isStatusByte( uint8_t b )
+{
+  // if the bit 7 is set, then it's a MIDI status message
+  if (bitRead(b, 7))
+    return true;
+  else
+    return false;
+}
+
 bool BLEMidi::oneByteMessage( uint8_t status )
 {
   // system messages
