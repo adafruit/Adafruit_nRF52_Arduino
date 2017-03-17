@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*!
     @file     BLEMidi.cpp
-    @author   hathach
+    @author   hathach & toddtreece
 
     @section LICENSE
 
@@ -93,10 +93,18 @@ typedef struct ATTR_PACKED
 {
   midi_header_t header;
   midi_timestamp_t timestamp;
-  uint8_t data[3];
+  uint8_t data[20];
 } midi_event_packet_t;
 
-VERIFY_STATIC ( sizeof(midi_event_packet_t) == 5 );
+VERIFY_STATIC ( sizeof(midi_event_packet_t) == 22 );
+
+typedef struct ATTR_PACKED
+{
+  midi_header_t header;
+  uint8_t data[20];
+} midi_split_packet_t;
+
+VERIFY_STATIC ( sizeof(midi_split_packet_t) == 21 );
 
 void blemidi_write_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
 
@@ -208,36 +216,97 @@ int BLEMidi::read ( void )
   return _rxd_fifo.read(&ch) ? (int) ch : EOF;
 }
 
+bool BLEMidi::oneByteMessage( uint8_t status )
+{
+  // system messages
+  if (status >= 0xF4 && status <= 0xFF) return true;
+
+  // system common
+  if (status == 0xF1) return true;
+
+  return false;
+}
+
+bool BLEMidi::twoByteMessage( uint8_t status )
+{
+  // program change, aftertouch
+  if (status >= 0xC0 && status <= 0xDF) return true;
+
+  // song select
+  if (status == 0xF3) return true;
+
+  return false;
+}
+
+bool BLEMidi::threeByteMessage( uint8_t status )
+{
+  // note off, note on, aftertouch, control change
+  if (status >= 0x80 && status <= 0xBF) return true;
+
+  // pitch wheel change
+  if (status >= 0xE0 && status <= 0xEF) return true;
+
+  // song position pointer
+  if (status == 0xF2) return true;
+
+  return false;
+}
+
 size_t BLEMidi::write ( uint8_t b )
 {
-  // MIDI Library will write event byte by byte. Locally buffered
-  // Until we gather all 3 bytes
+  // MIDI Library will write event byte by byte.
+  // We need to buffer the data until we have a full event,
+  // or until we reach the BLE payload limit.
   static uint8_t count = 0;
-  static uint8_t buf[3] = { 0 };
+  static uint8_t buf[16] = { 0 };
 
+  buf[count++] = b;
 
-  // Not SysEx message, keep accumulating data
-  if ( buf[0] != 0xf0 )
+  // if we are at the end of a sysex message
+  // or at the end of the buffer
+  if ((b == 0xF7) || (count == 16))
   {
-    buf[count++] = b;
 
-    if ( count == 3 )
-    {
-      count = 0;
+    // send full event if the first byte is a status byte
+    if (bitRead(buf[0], 7)) {
+      send(buf, count);
+    } else {
+      sendSplit(buf, count);
+    }
 
-      send(buf);
-    }
-  }else
-  {
-    // skip until we reach 0xF7
-    if (b == 0xF7)
-    {
-      buf[0] = 0;
-      count  = 0;
-    }
+    // reset buffer
+    buf[0] = 0;
+    count = 0;
+
+    return 1;
+
   }
 
+  // don't send if this is a full or split sysex
+  if (buf[0] == 0xF0 || ! bitRead(buf[0], 7))
+    return 1;
+
+  // don't send if we don't have 1 byte
+  if (oneByteMessage(buf[0]) && count != 1)
+    return 1;
+
+  // don't send if we don't have 2 bytes
+  if (twoByteMessage(buf[0]) && count != 2)
+    return 1;
+
+  // don't send if we don't have 3 bytes
+  if (threeByteMessage(buf[0]) && count != 3)
+    return 1;
+
+  // send full event
+  send(buf, count);
+
+  // reset buffer
+  buf[0] = 0;
+  count = 0;
+
   return 1;
+
 }
 
 int BLEMidi::available ( void )
@@ -259,7 +328,7 @@ void BLEMidi::flush ( void )
 /*------------------------------------------------------------------*/
 /* Send Event (notify)
  *------------------------------------------------------------------*/
- err_t BLEMidi::send(uint8_t data[])
+err_t BLEMidi::send(uint8_t data[], uint8_t len)
 {
   uint32_t tstamp = millis();
 
@@ -276,16 +345,31 @@ void BLEMidi::flush ( void )
       }}
   };
 
-  memcpy(event.data, data, 3);
+  memcpy(event.data, data, len);
 
-  VERIFY_STATUS( _io.notify(&event, sizeof(event)) );
+  // send data length + 1 byte for header + 1 byte for timestamp
+  VERIFY_STATUS( _io.notify(&event, len + 2) );
 
   return ERROR_NONE;
 }
 
-err_t BLEMidi::send(uint8_t status, uint8_t byte1, uint8_t byte2)
+err_t BLEMidi::sendSplit(uint8_t data[], uint8_t len)
 {
-  uint8_t data[] = { status, byte1, byte2 };
-  return send(data);
-}
+  uint32_t tstamp = millis();
 
+  midi_split_packet_t event =
+  {
+      .header = {{
+          .timestamp_hi = (uint8_t) ((tstamp & 0x1F80UL) >> 7),
+          .start_bit    = 1
+      }}
+  };
+
+  memcpy(event.data, data, len);
+
+  // send data length + 1 byte for header
+  // don't include the second timestamp byte
+  VERIFY_STATUS( _io.notify(&event, len + 1) );
+
+  return ERROR_NONE;
+}

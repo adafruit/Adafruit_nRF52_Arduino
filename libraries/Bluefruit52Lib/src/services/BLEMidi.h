@@ -1,14 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLEMidi.h
-    @author   hathach
+    @author   hathach & toddtreece
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
-    All rights reserved.
+    Copyright (c) 2017, Adafruit Industries (adafruit.com) All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:
@@ -60,8 +59,12 @@ class BLEMidi: public BLEService, public Stream
     void begin(int baudrate); // MidiInterface
     bool  notifyEnabled(void);
 
-    err_t send(uint8_t data[]);
-    err_t send(uint8_t status, uint8_t byte1, uint8_t byte2);
+    err_t send(uint8_t data[], uint8_t len);
+    err_t sendSplit(uint8_t data[], uint8_t len);
+
+    bool oneByteMessage(uint8_t status);
+    bool twoByteMessage(uint8_t status);
+    bool threeByteMessage(uint8_t status);
 
     void setWriteCallback(midi_write_cb_t fp);
     void autoMIDIread(void* midi_obj);
