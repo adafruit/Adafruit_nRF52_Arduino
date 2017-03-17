@@ -93,18 +93,18 @@ typedef struct ATTR_PACKED
 {
   midi_header_t header;
   midi_timestamp_t timestamp;
-  uint8_t data[20];
+  uint8_t data[BLE_MIDI_TX_BUFFER_SIZE];
 } midi_event_packet_t;
 
-VERIFY_STATIC ( sizeof(midi_event_packet_t) == 22 );
+VERIFY_STATIC ( sizeof(midi_event_packet_t) == (BLE_MIDI_TX_BUFFER_SIZE + 2) );
 
 typedef struct ATTR_PACKED
 {
   midi_header_t header;
-  uint8_t data[20];
+  uint8_t data[BLE_MIDI_TX_BUFFER_SIZE];
 } midi_split_packet_t;
 
-VERIFY_STATIC ( sizeof(midi_split_packet_t) == 21 );
+VERIFY_STATIC ( sizeof(midi_split_packet_t) == (BLE_MIDI_TX_BUFFER_SIZE + 1) );
 
 void blemidi_write_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
 
@@ -216,6 +216,87 @@ int BLEMidi::read ( void )
   return _rxd_fifo.read(&ch) ? (int) ch : EOF;
 }
 
+
+size_t BLEMidi::write ( uint8_t b )
+{
+  // MIDI Library will write event byte by byte.
+  // We need to buffer the data until we have a full event,
+  // or until we reach the TX buffer limit.
+  static uint8_t count = 0;
+  static uint8_t buf[BLE_MIDI_TX_BUFFER_SIZE] = { 0 };
+
+  // the current byte is a sysex end status message,
+  // and we still have an existing buffer. send the
+  // existing buffer and clear it so we can send
+  // the sysex end status message with the appropriate
+  // BLE header and timestamp bytes.
+  if(b == 0xF7 && count > 0)
+  {
+    // send and clear the last of the existing buffer.
+    // it should contain the final bytes in the sysex payload.
+    if (bitRead(buf[0], 7))
+      send(buf, count);
+    else
+      sendSplit(buf, count);
+
+    // reset buffer
+    buf[0] = 0;
+    count = 0;
+  }
+
+  // add the current byte to the buffer
+  buf[count++] = b;
+
+  // send matching 1, 2, or 3 byte messages
+  // and clear the buffer
+  if ( (oneByteMessage(buf[0]) && count == 1) ||
+       (twoByteMessage(buf[0]) && count == 2) ||
+       (threeByteMessage(buf[0]) && count == 3) )
+  {
+    send(buf, count);
+    // reset buffer
+    buf[0] = 0;
+    count = 0;
+  }
+
+  // if we have a full buffer at this point, we
+  // need to send a full or split sysex message
+  // and reset the buffer.
+  if(count == BLE_MIDI_TX_BUFFER_SIZE)
+  {
+    if (bitRead(buf[0], 7))
+      send(buf, count);
+    else
+      sendSplit(buf, count);
+
+    // reset buffer
+    buf[0] = 0;
+    count = 0;
+  }
+
+  return 1;
+
+}
+
+int BLEMidi::available ( void )
+{
+  return _rxd_fifo.count();
+}
+
+int BLEMidi::peek ( void )
+{
+  uint8_t ch;
+  return _rxd_fifo.peek(&ch) ? (int) ch : EOF;
+}
+
+void BLEMidi::flush ( void )
+{
+  _rxd_fifo.clear();
+}
+
+/*------------------------------------------------------------------*/
+/* Message Type Helpers
+ *------------------------------------------------------------------*/
 bool BLEMidi::oneByteMessage( uint8_t status )
 {
   // system messages
@@ -223,6 +304,9 @@ bool BLEMidi::oneByteMessage( uint8_t status )
 
   // system common
   if (status == 0xF1) return true;
+
+  // sysex end
+  if (status == 0xF7) return true;
 
   return false;
 }
@@ -250,79 +334,6 @@ bool BLEMidi::threeByteMessage( uint8_t status )
   if (status == 0xF2) return true;
 
   return false;
-}
-
-size_t BLEMidi::write ( uint8_t b )
-{
-  // MIDI Library will write event byte by byte.
-  // We need to buffer the data until we have a full event,
-  // or until we reach the BLE payload limit.
-  static uint8_t count = 0;
-  static uint8_t buf[16] = { 0 };
-
-  buf[count++] = b;
-
-  // if we are at the end of a sysex message
-  // or at the end of the buffer
-  if ((b == 0xF7) || (count == 16))
-  {
-
-    // send full event if the first byte is a status byte
-    if (bitRead(buf[0], 7)) {
-      send(buf, count);
-    } else {
-      sendSplit(buf, count);
-    }
-
-    // reset buffer
-    buf[0] = 0;
-    count = 0;
-
-    return 1;
-
-  }
-
-  // don't send if this is a full or split sysex
-  if (buf[0] == 0xF0 || ! bitRead(buf[0], 7))
-    return 1;
-
-  // don't send if we don't have 1 byte
-  if (oneByteMessage(buf[0]) && count != 1)
-    return 1;
-
-  // don't send if we don't have 2 bytes
-  if (twoByteMessage(buf[0]) && count != 2)
-    return 1;
-
-  // don't send if we don't have 3 bytes
-  if (threeByteMessage(buf[0]) && count != 3)
-    return 1;
-
-  // send full event
-  send(buf, count);
-
-  // reset buffer
-  buf[0] = 0;
-  count = 0;
-
-  return 1;
-
-}
-
-int BLEMidi::available ( void )
-{
-  return _rxd_fifo.count();
-}
-
-int BLEMidi::peek ( void )
-{
-  uint8_t ch;
-  return _rxd_fifo.peek(&ch) ? (int) ch : EOF;
-}
-
-void BLEMidi::flush ( void )
-{
-  _rxd_fifo.clear();
 }
 
 /*------------------------------------------------------------------*/
