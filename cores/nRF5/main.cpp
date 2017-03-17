@@ -34,6 +34,8 @@ static void loop_task(void* arg)
   setup();
 
 #if CFG_DEBUG
+  // If Serial is not begin(), call it to avoid hard fault
+  if (!Serial) Serial.begin(115200);
   dbgPrintVersion();
 #endif
 

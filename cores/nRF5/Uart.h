@@ -43,7 +43,7 @@ class Uart : public HardwareSerial
 
     void IrqHandler();
 
-    operator bool() { return true; }
+    operator bool() { return _begun; }
 
   private:
     NRF_UART_Type *nrfUart;
@@ -56,6 +56,8 @@ class Uart : public HardwareSerial
     uint8_t uc_pinCTS;
     uint8_t uc_pinRTS;
     uint8_t uc_hwFlow;
+
+    bool _begun;
 };
 
 #ifdef __cplusplus

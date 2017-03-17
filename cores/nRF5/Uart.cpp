@@ -28,6 +28,8 @@ Uart::Uart(NRF_UART_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pi
   uc_pinRX = g_ADigitalPinMap[_pinRX];
   uc_pinTX = g_ADigitalPinMap[_pinTX];
   uc_hwFlow = 0;
+
+  _begun = false;
 }
 
 Uart::Uart(NRF_UART_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pinTX, uint8_t _pinCTS, uint8_t _pinRTS)
@@ -39,6 +41,8 @@ Uart::Uart(NRF_UART_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pi
   uc_pinCTS = g_ADigitalPinMap[_pinCTS];
   uc_pinRTS = g_ADigitalPinMap[_pinRTS];
   uc_hwFlow = 1;
+
+  _begun = false;
 }
 
 void Uart::begin(unsigned long baudrate)
@@ -147,6 +151,8 @@ void Uart::begin(unsigned long baudrate, uint16_t /*config*/)
   NVIC_ClearPendingIRQ(IRQn);
   NVIC_SetPriority(IRQn, 3);
   NVIC_EnableIRQ(IRQn);
+
+  _begun = true;
 }
 
 void Uart::end()
