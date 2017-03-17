@@ -52,7 +52,7 @@
 #define CFG_ADV_BLINKY_INTERVAL          500
 
 #define CFG_BLE_TASK_STACKSIZE          (512*3)
-#define CFG_SOC_TASK_STACKSIZE          ((configMINIMAL_STACK_SIZE*10) / 2 )
+#define CFG_SOC_TASK_STACKSIZE          (configMINIMAL_STACK_SIZE*5) // 300
 
 #define CFG_BOND_NFFS_DIR                "/adafruit/bond"
 #define BOND_FILENAME                    CFG_BOND_NFFS_DIR "/%04x"
@@ -429,246 +429,248 @@ void adafruit_ble_task(void* arg)
 {
   (void) arg;
 
+  enum { BLE_STACK_EVT_MSG_BUF_SIZE = (sizeof(ble_evt_t) + (GATT_MTU_SIZE_DEFAULT)) };
+
   while (1)
   {
-    Bluefruit._ble_handler();
+    if ( xSemaphoreTake(Bluefruit._ble_event_sem, portMAX_DELAY) )
+    {
+      uint32_t err = ERROR_NONE;
+
+      // Until no pending events
+      while( NRF_ERROR_NOT_FOUND != err )
+      {
+        uint32_t ev_buf[BLE_STACK_EVT_MSG_BUF_SIZE/4 + 4];
+        uint16_t ev_len = sizeof(ev_buf);
+
+        // Get BLE Event
+        err = sd_ble_evt_get((uint8_t*)ev_buf, &ev_len);
+
+        // Handle valid event, ignore error
+        if( ERROR_NONE == err)
+        {
+          Bluefruit._ble_handler( (ble_evt_t*) ev_buf );
+        }
+      }
+    }
   }
 }
 
-void AdafruitBluefruit::_ble_handler(void)
+void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 {
-  enum { BLE_STACK_EVT_MSG_BUF_SIZE = (sizeof(ble_evt_t) + (GATT_MTU_SIZE_DEFAULT)) };
+  #if CFG_DEBUG
+  Serial.printf("[BLE]: %s\n", dbg_ble_event_str(evt->header.evt_id));
+  #endif
 
-  /*------------- BLE Event -------------*/
-  if ( xSemaphoreTake(_ble_event_sem, portMAX_DELAY) )
+  /*------------- BLE Peripheral Events -------------*/
+  switch ( evt->header.evt_id  )
   {
-    uint32_t err = ERROR_NONE;
-
-    while( NRF_ERROR_NOT_FOUND != err )
+    case BLE_GAP_EVT_CONNECTED:
     {
-      uint32_t ev_buf[BLE_STACK_EVT_MSG_BUF_SIZE/4 + 4];
-      uint16_t ev_len = sizeof(ev_buf);
-      ble_evt_t* evt  = (ble_evt_t*) ev_buf;
+      ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
 
-      err = sd_ble_evt_get((uint8_t*)ev_buf, &ev_len);
-
-      if( ERROR_NONE == err)
+      if (para->role == BLE_GAP_ROLE_PERIPH)
       {
-        #if CFG_DEBUG
-        Serial.printf("[BLE]: %s\n", dbg_ble_event_str(evt->header.evt_id));
-        #endif
+        stopConnLed();
+        if (_led_conn) ledOn(LED_CONN);
 
-        switch ( evt->header.evt_id  )
+        _conn_hdl      = evt->evt.gap_evt.conn_handle;
+        _conn_interval = para->conn_params.min_conn_interval;
+        _peer_addr     = para->peer_addr;
+
+        // Connection interval set by Central is out of preferred range
+        // Try to negotiate with Central using our preferred values
+        if ( !is_within(_ppcp_min_conn, para->conn_params.min_conn_interval, _ppcp_max_conn) )
         {
-          case BLE_GAP_EVT_CONNECTED:
-          {
-            ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
+          // Null, value is set by sd_ble_gap_ppcp_set will be used
+          VERIFY_STATUS( sd_ble_gap_conn_param_update(_conn_hdl, NULL), );
+        }
 
-            if (para->role == BLE_GAP_ROLE_PERIPH)
-            {
-              stopConnLed();
-              if (_led_conn) ledOn(LED_CONN);
+        // Init transmission buffer for notification
+        uint8_t txbuf_max;
+        (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
+        _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
 
-              _conn_hdl      = evt->evt.gap_evt.conn_handle;
-              _conn_interval = para->conn_params.min_conn_interval;
-              _peer_addr     = para->peer_addr;
+        if ( _connect_cb ) _connect_cb();
+      }
+    }
+    break;
 
-              // Connection interval set by Central is out of preferred range
-              // Try to negotiate with Central using our preferred values
-              if ( !is_within(_ppcp_min_conn, para->conn_params.min_conn_interval, _ppcp_max_conn) )
-              {
-                // Null, value is set by sd_ble_gap_ppcp_set will be used
-                VERIFY_STATUS( sd_ble_gap_conn_param_update(_conn_hdl, NULL), );
-              }
+    case BLE_GAP_EVT_CONN_PARAM_UPDATE:
+    {
+      // Connection Parameter after negotiating with Central
+      // min conn = max conn = actual used interval
+      ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
+      _conn_interval = param->min_conn_interval;
+    }
+    break;
 
-              // Init transmission buffer for notification
-              uint8_t txbuf_max;
-              (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
-              _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
+    case BLE_GAP_EVT_DISCONNECTED:
+      // Check if it is peripheral connection
+      if (_conn_hdl == evt->evt.gap_evt.conn_handle)
+      {
+        if (_led_conn)  ledOff(LED_CONN);
 
-              if ( _connect_cb ) _connect_cb();
-            }
-          }
-          break;
+        // Save all configured cccd
+        if (_bonded) _saveBondedCCCD();
 
-          case BLE_GAP_EVT_CONN_PARAM_UPDATE:
-          {
-            // Connection Parameter after negotiating with Central
-            // min conn = max conn = actual used interval
-            ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
-            _conn_interval = param->min_conn_interval;
-          }
-          break;
+        _conn_hdl = BLE_CONN_HANDLE_INVALID;
+        _bonded   = false;
+        varclr(&_peer_addr);
 
-          case BLE_GAP_EVT_DISCONNECTED:
-            // Check if it is peripheral connection
-            if (_conn_hdl == evt->evt.gap_evt.conn_handle)
-            {
-              if (_led_conn)  ledOff(LED_CONN);
+        vSemaphoreDelete(_txbuf_sem);
 
-              // Save all configured cccd
-              if (_bonded) _saveBondedCCCD();
+        if ( _discconnect_cb ) _discconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
 
-              _conn_hdl = BLE_CONN_HANDLE_INVALID;
-              _bonded   = false;
-              varclr(&_peer_addr);
+        Advertising.start();
+      }
+    break;
 
-              vSemaphoreDelete(_txbuf_sem);
+    case BLE_GAP_EVT_TIMEOUT:
+      if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISING)
+      {
+        // Restart Advertising
+        Advertising.start();
+      }
+    break;
 
-              if ( _discconnect_cb ) _discconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
+    case BLE_EVT_TX_COMPLETE:
+      for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
+      {
+        xSemaphoreGive(_txbuf_sem);
+      }
+    break;
 
-              Advertising.start();
-            }
-          break;
+    case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
+    {
+      varclr(&_bond_data);
+      _bond_data.own_enc.master_id.ediv = 0xFFFF; // invalid value for ediv
 
-          case BLE_GAP_EVT_TIMEOUT:
-            if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISING)
-            {
-              // Restart Advertising
-              Advertising.start();
-            }
-          break;
-
-          case BLE_EVT_TX_COMPLETE:
-            for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
-            {
-              xSemaphoreGive(_txbuf_sem);
-            }
-          break;
-
-          case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-          {
-            varclr(&_bond_data);
-            _bond_data.own_enc.master_id.ediv = 0xFFFF; // invalid value for ediv
-
-            /* Step 1: Pairing/Bonding
-             * - Central supplies its parameters
-             * - We replies with our security parameters
-             */
+      /* Step 1: Pairing/Bonding
+       * - Central supplies its parameters
+       * - We replies with our security parameters
+       */
 //            ble_gap_sec_params_t* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
 
-            ble_gap_sec_params_t sec_para =
-            {
-                .bond         = 1,
-                .mitm         = 0,
-                .lesc         = 0,
-                .keypress     = 0,
-                .io_caps      = BLE_GAP_IO_CAPS_NONE,
-                .oob          = 0,
-                .min_key_size = 7,
-                .max_key_size = 16,
-                .kdist_own    = { .enc = 1, .id = 1},
-                .kdist_peer   = { .enc = 1, .id = 1},
-            };
+      ble_gap_sec_params_t sec_para =
+      {
+          .bond         = 1,
+          .mitm         = 0,
+          .lesc         = 0,
+          .keypress     = 0,
+          .io_caps      = BLE_GAP_IO_CAPS_NONE,
+          .oob          = 0,
+          .min_key_size = 7,
+          .max_key_size = 16,
+          .kdist_own    = { .enc = 1, .id = 1},
+          .kdist_peer   = { .enc = 1, .id = 1},
+      };
 
 COMMENT_OUT(
-            // Change security parameter according to authentication type
-            if ( _auth_type == BLE_GAP_AUTH_KEY_TYPE_PASSKEY)
-            {
-              sec_para.mitm    = 1;
-              sec_para.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
-            }
+      // Change security parameter according to authentication type
+      if ( _auth_type == BLE_GAP_AUTH_KEY_TYPE_PASSKEY)
+      {
+        sec_para.mitm    = 1;
+        sec_para.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
+      }
 )
 
-            ble_gap_sec_keyset_t keyset =
-            {
-                .keys_own = {
-                    .p_enc_key  = &_bond_data.own_enc,
-                    .p_id_key   = NULL,
-                    .p_sign_key = NULL,
-                    .p_pk       = NULL
-                },
+      ble_gap_sec_keyset_t keyset =
+      {
+          .keys_own = {
+              .p_enc_key  = &_bond_data.own_enc,
+              .p_id_key   = NULL,
+              .p_sign_key = NULL,
+              .p_pk       = NULL
+          },
 
-                .keys_peer = {
-                    .p_enc_key  = &_bond_data.peer_enc,
-                    .p_id_key   = &_bond_data.peer_id,
-                    .p_sign_key = NULL,
-                    .p_pk       = NULL
-                }
-            };
-
-            VERIFY_STATUS(sd_ble_gap_sec_params_reply(evt->evt.gap_evt.conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &sec_para, &keyset), RETURN_VOID);
+          .keys_peer = {
+              .p_enc_key  = &_bond_data.peer_enc,
+              .p_id_key   = &_bond_data.peer_id,
+              .p_sign_key = NULL,
+              .p_pk       = NULL
           }
-          break;
+      };
 
-          case BLE_GAP_EVT_SEC_INFO_REQUEST:
-          {
-            // If bonded previously, Central will ask for stored keys.
-            // return security information. Otherwise NULL
-            ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
+      VERIFY_STATUS(sd_ble_gap_sec_params_reply(evt->evt.gap_evt.conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &sec_para, &keyset), RETURN_VOID);
+    }
+    break;
 
-            //if (_bond_data.own_enc.master_id.ediv == sec_request->master_id.ediv)
-            if ( _loadBondKeys(sec_request->master_id.ediv) )
-            {
-              sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_bond_data.own_enc.enc_info, &_bond_data.peer_id.id_info, NULL);
-            } else
-            {
-              sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
-            }
-          }
-          break;
+    case BLE_GAP_EVT_SEC_INFO_REQUEST:
+    {
+      // If bonded previously, Central will ask for stored keys.
+      // return security information. Otherwise NULL
+      ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
+
+      //if (_bond_data.own_enc.master_id.ediv == sec_request->master_id.ediv)
+      if ( _loadBondKeys(sec_request->master_id.ediv) )
+      {
+        sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_bond_data.own_enc.enc_info, &_bond_data.peer_id.id_info, NULL);
+      } else
+      {
+        sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
+      }
+    }
+    break;
 
 
-          case BLE_GAP_EVT_PASSKEY_DISPLAY:
-          {
+    case BLE_GAP_EVT_PASSKEY_DISPLAY:
+    {
 //            ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
 //
 //            PRINT_INT(passkey_display->match_request);
 //            PRINT_BUFFER(passkey_display->passkey, 6);
 
-            // sd_ble_gap_auth_key_reply
-          }
-          break;
+      // sd_ble_gap_auth_key_reply
+    }
+    break;
 
-          case BLE_GAP_EVT_CONN_SEC_UPDATE:
-          {
-            // Connection is secured aka Paired
+    case BLE_GAP_EVT_CONN_SEC_UPDATE:
+    {
+      // Connection is secured aka Paired
 
-            COMMENT_OUT( ble_gap_conn_sec_t* conn_sec = (ble_gap_conn_sec_t*) &evt->evt.gap_evt.params.conn_sec_update.conn_sec; )
+      COMMENT_OUT( ble_gap_conn_sec_t* conn_sec = (ble_gap_conn_sec_t*) &evt->evt.gap_evt.params.conn_sec_update.conn_sec; )
 
-            // Previously bonded --> secure by re-connection process
-            // --> Load & Set Sys Attr (Apply Service Context)
-            // Else Init Sys Attr
-            _loadBondedCCCD(_bond_data.own_enc.master_id.ediv);
+      // Previously bonded --> secure by re-connection process
+      // --> Load & Set Sys Attr (Apply Service Context)
+      // Else Init Sys Attr
+      _loadBondedCCCD(_bond_data.own_enc.master_id.ediv);
 
-            // Consider Paired as Bonded
-            _bonded = true;
-          }
-          break;
+      // Consider Paired as Bonded
+      _bonded = true;
+    }
+    break;
 
-          case BLE_GAP_EVT_AUTH_STATUS:
-          {
-            ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
+    case BLE_GAP_EVT_AUTH_STATUS:
+    {
+      ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
 
-            // Bonding succeeded --> save encryption keys
-            if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
-            {
-              _saveBondKeys();
-              _bonded = true;
-            }else
-            {
-              PRINT_HEX(status->auth_status);
-            }
-          }
-          break;
-
-          case BLE_GATTS_EVT_SYS_ATTR_MISSING:
-            sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
-          break;
-
-          default: break;
-        }
-
-        // Central Event Handler
-        if (_central_enabled) Central._event_handler(evt);
-
-        // GATTs characteristics event handler
-        for(int i=0; i<_chars_count; i++)
-        {
-          _chars_list[i]->eventHandler(evt);
-        }
+      // Bonding succeeded --> save encryption keys
+      if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
+      {
+        _saveBondKeys();
+        _bonded = true;
+      }else
+      {
+        PRINT_HEX(status->auth_status);
       }
     }
+    break;
+
+    case BLE_GATTS_EVT_SYS_ATTR_MISSING:
+      sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
+    break;
+
+    default: break;
+  }
+
+  // Central Event Handler
+  if (_central_enabled) Central._event_handler(evt);
+
+  // GATTs characteristics event handler
+  for(int i=0; i<_chars_count; i++)
+  {
+    _chars_list[i]->eventHandler(evt);
   }
 }
 /*------------------------------------------------------------------*/

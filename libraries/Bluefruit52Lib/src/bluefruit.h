@@ -180,7 +180,7 @@ COMMENT_OUT(
     void _saveBondedCCCD(void);
     void _loadBondedCCCD(uint16_t ediv);
 
-    void _ble_handler(void);
+    void _ble_handler(ble_evt_t* evt);
 
     friend void SD_EVT_IRQHandler(void);
     friend void adafruit_ble_task(void* arg);
