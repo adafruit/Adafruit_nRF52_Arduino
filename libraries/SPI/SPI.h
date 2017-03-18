@@ -137,9 +137,9 @@ void SPIClass::transfer(void *buf, size_t count)
 extern SPIClass SPI;
 #endif
 
-// For compatibility with sketches designed for AVR @ 16 MHz
+// For compatibility with sketches designed for AVR @ 64 MHz
 // New programs should use SPI.beginTransaction to set the SPI clock
-#if F_CPU == 16000000
+#if F_CPU == 64000000 // feather52 run @ 64Mhz
   #define SPI_CLOCK_DIV2   2
   #define SPI_CLOCK_DIV4   4
   #define SPI_CLOCK_DIV8   8
@@ -147,6 +147,8 @@ extern SPIClass SPI;
   #define SPI_CLOCK_DIV32  32
   #define SPI_CLOCK_DIV64  64
   #define SPI_CLOCK_DIV128 128
+  #define SPI_CLOCK_DIV256 256
+  #define SPI_CLOCK_DIV512 512
 #endif
 
 #endif

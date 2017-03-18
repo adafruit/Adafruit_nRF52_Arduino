@@ -188,17 +188,18 @@ void SPIClass::setClockDivider(uint8_t div)
 {
   uint32_t clockFreq;
 
-  if (div >= SPI_CLOCK_DIV128) {
+  // Adafruit Note: nrf52 run at 64MHz
+  if (div >= SPI_CLOCK_DIV512) {
     clockFreq = SPI_FREQUENCY_FREQUENCY_K125;
-  } else if (div >= SPI_CLOCK_DIV64) {
+  } else if (div >= SPI_CLOCK_DIV256) {
     clockFreq = SPI_FREQUENCY_FREQUENCY_K250;
-  } else if (div >= SPI_CLOCK_DIV32) {
+  } else if (div >= SPI_CLOCK_DIV128) {
     clockFreq = SPI_FREQUENCY_FREQUENCY_K500;
-  } else if (div >= SPI_CLOCK_DIV16) {
+  } else if (div >= SPI_CLOCK_DIV64) {
     clockFreq = SPI_FREQUENCY_FREQUENCY_M1;
-  } else if (div >= SPI_CLOCK_DIV8) {
+  } else if (div >= SPI_CLOCK_DIV32) {
     clockFreq = SPI_FREQUENCY_FREQUENCY_M2;
-  } else if (div >= SPI_CLOCK_DIV4) {
+  } else if (div >= SPI_CLOCK_DIV16) {
     clockFreq = SPI_FREQUENCY_FREQUENCY_M4;
   } else {
     clockFreq = SPI_FREQUENCY_FREQUENCY_M8;
