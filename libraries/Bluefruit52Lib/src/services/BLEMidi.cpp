@@ -194,9 +194,10 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
     // write the status or MIDI data to the FIFO
     _rxd_fifo.write(data++, 1);
     len--;
-
-    if ( _write_cb ) _write_cb();
   }
+
+  // Call write callback if configured
+  if ( _write_cb ) _write_cb();
 
 #ifdef MIDI_LIB_INCLUDED
   // read while possible if configured
