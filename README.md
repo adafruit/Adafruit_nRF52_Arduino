@@ -2,7 +2,7 @@
 
 ## BSP Installation
 
-There are two methods that you can use to install this BSP. We highly recommend the first option unless you with to participate in active development of this codebase via Github.
+There are two methods that you can use to install this BSP. We highly recommend the first option unless you wish to participate in active development of this codebase via Github.
 
 ### Recommended: Adafruit nRF52 BSP via the Arduino Board Manager
 
