@@ -1,4 +1,4 @@
-# Arduino Core for Nordic Semiconductor nRF5 based boards
+# Arduino Core for Adafruit nRF52 Feather Boards
 
 ## BSP Installation
 
