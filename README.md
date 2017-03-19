@@ -1,29 +1,29 @@
 # Arduino Core for Nordic Semiconductor nRF5 based boards
 
 ## BSP Installation
-  
-### Arduino nRF5x BSP via Board Manager
 
-**NOTE:** For now, you need to install this BSP to gain access to the compiler. In the
-future, only the Adafruit nRF52 BSP will be required.
+There are two methods that you can use to install this BSP. We highly recommend the first option unless you with to participate in active development of this codebase via Github.
+
+### Recommended: Adafruit nRF52 BSP via the Arduino Board Manager
 
  1. [Download and install the Arduino IDE](https://www.arduino.cc/en/Main/Software) (At least v1.6.12)
  2. Start the Arduino IDE
  3. Go into Preferences
- 4. Add ```https://sandeepmistry.github.io/arduino-nRF5/package_nRF5_boards_index.json``` as an "Additional Board Manager URL"
- 5. Open the Boards Manager from the Tools -> Board menu and install "Nordic Semiconductor nRF5 Boards"
- 6. Select your nRF5 board from the Tools -> Board menu
+ 4. Add https://www.adafruit.com/package_adafruit_index.json as an 'Additional Board Manager URL'
+ 5. Restart the Arduino IDE
+ 6. Open the Boards Manager from the Tools -> Board menu and install 'Adafruit nRF52 by Adafruit'
+ 7. Once the BSP is installed, select 'Adafruit Bluefruit nRF52 Feather' from the Tools -> Board menu, which will update your system config to use the right compiler and settings for the nRF52.
 
-### Adafruit nRF52 BSP via git (for core development)
+### Optional (Core Development): Adafruit nRF52 BSP via git
 
- 1. Follow steps from Board Manager section above
- 2. ```cd <SKETCHBOOK>```, where ```<SKETCHBOOK>``` is your Arduino Sketch folder:
+ 1. ```cd <SKETCHBOOK>```, where ```<SKETCHBOOK>``` is your Arduino Sketch folder:
   * OS X: ```~/Documents/Arduino```
   * Linux: ```~/Arduino```
   * Windows: ```~/Documents/Arduino```
  3. Create a folder named ```hardware/Adafruit```, if it does not exist, and change directories to it
  4. Clone this repo: `git clone git@github.com:adafruit/Adafruit_nRF52_Arduino.git`
  5. Restart the Arduino IDE
+ 6. Once the BSP is installed, select 'Adafruit Bluefruit nRF52 Feather' from the Tools -> Board menu, which will update your system config to use the right compiler and settings for the nRF52.
 
 ### Third Party Tools
 
@@ -67,14 +67,6 @@ on your system and available in the system path:
 
 Download and install the [JLink Software and Documentation Pack](https://www.segger.com/downloads/jlink)
 from Segger, which will also install a set of command line tools.
-
-#### pynrfjprog
-
-In order to burn the bootloader with a J-Link, you will need `pynrfjprog` from Nordic:
-
-```
-$ sudo pip install pynrfjprog
-```
 
 ### Burning the Bootloader
 
@@ -139,10 +131,9 @@ but enter the `MSDEnable` command.
 
 ## Credits
 
-This core is based on the [Arduino SAMD Core](https://github.com/arduino/ArduinoCore-samd)
-and licensed under the same [GPL License](LICENSE)
+This core is based on [Arduino-nRF5](https://github.com/sandeepmistry/arduino-nRF5) by Sandeep Mistry,
+which in turn is based on the [Arduino SAMD Core](https://github.com/arduino/ArduinoCore-samd).
 
 The following tools are used:
 
  * [GCC ARM Embedded](https://launchpad.net/gcc-arm-embedded) as the compiler
- * A [forked](https://github.com/sandeepmistry/openocd-code-nrf5) version of [OpenOCD](http://openocd.org) to flash sketches
