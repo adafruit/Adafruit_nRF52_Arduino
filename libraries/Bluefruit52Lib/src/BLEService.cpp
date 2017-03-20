@@ -50,26 +50,15 @@ BLEService::BLEService(void)
   _init();
 }
 
-BLEService::BLEService(uint16_t uuid16)
-  : uuid(uuid16)
+BLEService::BLEService(BLEUuid bleuuid)
+  : uuid(bleuuid)
 {
   _init();
 }
 
-BLEService::BLEService(uint8_t const  uuid128[])
-  : uuid(uuid128)
+void BLEService::setUuid(BLEUuid bleuuid)
 {
-  _init();
-}
-
-void BLEService::setUuid(uint16_t uuid16)
-{
-  uuid.set(uuid16);
-}
-
-void BLEService::setUuid(uint8_t const  uuid128[])
-{
-  uuid.set(uuid128);
+  uuid = bleuuid;
 }
 
 err_t BLEService::addToGatt(void)

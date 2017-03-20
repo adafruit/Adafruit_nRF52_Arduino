@@ -40,7 +40,7 @@
 BLEDis::BLEDis(void)
   : BLEService(UUID16_SVC_DEVICE_INFORMATION)
 {
-  _model        = "Bluefruit Feather52";
+  _model        = "Bluefruit Feather 52";
   _serial       = NULL;
   _firmware_rev = NULL;
   _hardware_rev = NULL;

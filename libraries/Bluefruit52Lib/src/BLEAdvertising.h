@@ -68,8 +68,7 @@ public:
   bool addName(void);
   bool addApperance(uint16_t appearance);
 
-  bool addUuid(uint16_t uuid16);
-  bool addUuid(uint8_t const  uuid128[]);
+  bool addUuid(BLEUuid bleuuid);
   bool addService(BLEService& service);
 
   bool setBeacon(BLEBeacon& beacon);

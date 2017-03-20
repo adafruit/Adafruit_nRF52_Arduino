@@ -71,26 +71,15 @@ BLECharacteristic::BLECharacteristic(void)
   init();
 }
 
-BLECharacteristic::BLECharacteristic(uint16_t uuid16)
-  : uuid(uuid16)
-{
-  init();
-}    
-
-BLECharacteristic::BLECharacteristic(uint8_t const  uuid128[])
-  : uuid(uuid128)
+BLECharacteristic::BLECharacteristic(BLEUuid bleuuid)
+  : uuid(bleuuid)
 {
   init();
 }
 
-void BLECharacteristic::setUuid(uint16_t uuid16)
+void BLECharacteristic::setUuid(BLEUuid bleuuid)
 {
-  uuid.set(uuid16);
-}
-
-void BLECharacteristic::setUuid(uint8_t const  uuid128[])
-{
-  uuid.set(uuid128);
+  uuid = bleuuid;
 }
 
 /**

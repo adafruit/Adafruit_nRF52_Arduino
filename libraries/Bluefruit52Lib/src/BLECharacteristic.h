@@ -113,17 +113,14 @@ class BLECharacteristic
     typedef void (*chars_cb_t) (void);
 
     BLECharacteristic(void);
-    BLECharacteristic(uint16_t uuid16);
-    BLECharacteristic(uint8_t const  uuid128[]);
+    BLECharacteristic(BLEUuid bleuuid);
 
     BLEService& parentService()
     {
       return *_service;
     }
 
-    void setUuid(uint16_t uuid16);
-    void setUuid(uint8_t const  uuid128[]);
-
+    void setUuid(BLEUuid bleuuid);
     void setTempMemory(void);
 
     // Configure

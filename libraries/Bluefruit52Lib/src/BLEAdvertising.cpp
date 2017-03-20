@@ -101,26 +101,27 @@ bool BLEAdvertising::addData(uint8_t type, const void* data, uint8_t len)
   return true;
 }
 
-bool BLEAdvertising::addUuid(uint16_t uuid16)
+bool BLEAdvertising::addUuid(BLEUuid bleuuid)
 {
-  return addData(BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE, &uuid16, 2);
-}
+  switch ( bleuuid.size() )
+  {
+    case 2:
+      return addData(BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE, &bleuuid._uuid.uuid, 2);
+    break;
 
-bool BLEAdvertising::addUuid(uint8_t const  uuid128[])
-{
-  return addData(BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_MORE_AVAILABLE, uuid128, 16);
+    case 16:
+      return addData(BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_MORE_AVAILABLE, bleuuid._uuid128, 16);
+    break;
+
+    default: break;
+  }
+
+  return false;
 }
 
 bool BLEAdvertising::addService(BLEService& service)
 {
-  // UUID128
-  if ( service.uuid._uuid128 )
-  {
-    return addUuid(service.uuid._uuid128);
-  }else
-  {
-    return addUuid(service.uuid._uuid.uuid);
-  }
+  return addUuid(service.uuid);
 }
 
 // Add Name to Adv packet, use setName() to set

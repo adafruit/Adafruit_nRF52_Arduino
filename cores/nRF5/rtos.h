@@ -51,6 +51,7 @@
 #include "queue.h"
 #include "semphr.h"
 
+#define DELAY_FOREVER   portMAX_DELAY
 enum
 {
   TASK_PRIO_LOWEST  = 0, // Idle task, should not be used
@@ -59,6 +60,8 @@ enum
   TASK_PRIO_HIGH    = 3, // Bluefruit Task
   TASK_PRIO_HIGHEST = 4,
 };
+
+#define malloc_type(type)     rtos_malloc( sizeof(type) )
 
 #if 0
 #define rtos_malloc(_size)  ({ cprintf("[malloc] %s:%d : %d bytes\r\n", __PRETTY_FUNCTION__, __LINE__, _size); pvPortMalloc(_size); })

@@ -48,16 +48,14 @@ class BLEService
     void  _init(void);
   
   public:
-    BLEUuid uuid;
-
     static BLEService* lastService;
 
-    BLEService(void);
-    BLEService(uint16_t uuid16);
-    BLEService(uint8_t const  uuid128[]);
+    BLEUuid uuid;
 
-    void setUuid(uint16_t uuid16);
-    void setUuid(uint8_t const  uuid128[]);
+    BLEService(void);
+    BLEService(BLEUuid bleuuid);
+
+    void setUuid(BLEUuid bleuuid);
 
     virtual err_t begin(void);
 };

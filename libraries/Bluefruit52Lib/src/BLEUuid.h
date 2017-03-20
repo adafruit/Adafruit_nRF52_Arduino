@@ -45,7 +45,7 @@ class BLEUuid
     uint8_t const* _uuid128;
     
     // Constructors
-    BLEUuid(void                      ) { _uuid.type = BLE_UUID_TYPE_UNKNOWN; _uuid.uuid = 0; }
+    BLEUuid(void                      ) { _uuid.type = BLE_UUID_TYPE_UNKNOWN; _uuid.uuid = 0; _uuid128 = NULL; }
     BLEUuid(uint16_t uuid16           ) { set(uuid16); }
     BLEUuid(uint8_t const uuid128[16] ) { set(uuid128); }
 
@@ -53,6 +53,7 @@ class BLEUuid
     {
       _uuid.type = BLE_UUID_TYPE_BLE;
       _uuid.uuid = uuid16;
+      _uuid128   = NULL;
     }
 
     void set(uint8_t const uuid128[16])
@@ -61,7 +62,17 @@ class BLEUuid
       _uuid128 = uuid128;
     }
 
-    // Add UUID128 if any, in case of UUID16, no ations is required
+    uint8_t size (void)
+    {
+      // uuid 16
+      if (_uuid.type == BLE_UUID_TYPE_BLE ) return 2;
+      if (_uuid128 != NULL ) return 16;
+
+      // unknown
+      return 0;
+    }
+
+    // Add UUID128 if any, in case of UUID16, no actions is required
     // Application should call it anyway to be safe and consistent
     void begin(void)
     {
@@ -93,6 +104,19 @@ class BLEUuid
     bool operator!=(const ble_uuid_t uuid) const
     {
       return !(*this == uuid);
+    }
+
+    // Overload copy operator to allow initialization from other type
+    BLEUuid& operator=(const uint16_t uuid)
+    {
+      set(uuid);
+      return *this;
+    }
+
+    BLEUuid& operator=(uint8_t const uuid128[16])
+    {
+      set(uuid128);
+      return *this;
     }
 };
 
