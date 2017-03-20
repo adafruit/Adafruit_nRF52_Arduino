@@ -1,5 +1,5 @@
 #######################################
-# Syntax Coloring Map For Adafruit Feather WiFi
+# Syntax Coloring Map For Adafruit Bluefruit nRF52 Feather
 #######################################
 
 #######################################
