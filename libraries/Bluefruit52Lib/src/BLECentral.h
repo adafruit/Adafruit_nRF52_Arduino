@@ -82,8 +82,8 @@ class BLECentral
     /*------------------------------------------------------------------*/
     /* GATTC Discovery
      *------------------------------------------------------------------*/
-    bool discoverService(BLEUuid uuid, ble_gattc_handle_range_t* handle_range, uint16_t start_handle = 1);
-    bool discoverCharacteristic(ble_gattc_handle_range_t handle_range);
+    bool discoverService(BLEUuid uuid, uint16_t start_handle = 1);
+//    bool discoverCharacteristic();
 
     /*------------------------------------------------------------------*/
     /* CALLBACKS
@@ -98,10 +98,13 @@ class BLECentral
     uint16_t _conn_hdl;
 
     SemaphoreHandle_t _evt_sem;
-    void*             _evt_data;
+    void*             _evt_buf;
+    uint16_t          _evt_bufsize;
 
     ble_gap_scan_params_t _scan_param;
     scan_callback_t       _scan_cb;
+
+    ble_gattc_handle_range_t _hdl_range;
 
     connect_callback_t    _connect_cb;
     disconnect_callback_t _discconnect_cb;

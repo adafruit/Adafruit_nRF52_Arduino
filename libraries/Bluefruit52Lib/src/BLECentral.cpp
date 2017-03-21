@@ -43,13 +43,14 @@
  */
 BLECentral::BLECentral(void)
 {
-  _conn_hdl = BLE_CONN_HANDLE_INVALID;
+  _conn_hdl    = BLE_CONN_HANDLE_INVALID;
 
-  _evt_sem = NULL;
-  _evt_data = NULL;
+  _evt_sem     = NULL;
+  _evt_buf     = NULL;
+  _evt_bufsize = 0;
 
-  _scan_cb    = NULL;
-  _scan_param = (ble_gap_scan_params_t) {
+  _scan_cb     = NULL;
+  _scan_param  = (ble_gap_scan_params_t) {
     .active      = 1,
     .selective   = 0,
     .p_whitelist = NULL,
@@ -57,6 +58,9 @@ BLECentral::BLECentral(void)
     .window      = 0x0050,
     .timeout     = 0, // no timeout
   };
+
+  _hdl_range.start_handle = 1;
+  _hdl_range.end_handle   = 0xffff;
 
   _connect_cb     = NULL;
   _discconnect_cb = NULL;
@@ -201,39 +205,42 @@ void BLECentral::setDisconnectCallback( disconnect_callback_t fp)
 /*------------------------------------------------------------------*/
 /* DISCOVERY
  *------------------------------------------------------------------*/
-bool BLECentral::discoverService(BLEUuid uuid, ble_gattc_handle_range_t* handle_range, uint16_t start_handle)
+bool BLECentral::discoverService(BLEUuid uuid, uint16_t start_handle)
 {
   uuid.begin(); // add uuid128 if needed
 
+  ble_gattc_evt_prim_srvc_disc_rsp_t discover_svc;
+
+  _evt_buf = &discover_svc;
+  _evt_bufsize = sizeof(discover_svc);
+
   VERIFY_STATUS( sd_ble_gattc_primary_services_discover(_conn_hdl, start_handle, &uuid._uuid), false );
 
-  // wait for discovery event
-  if ( !xSemaphoreTake(_evt_sem, BLE_CENTRAL_TIMEOUT) || !_evt_data ) return false;
+  // wait for discovery event: timeout or has no data
+  if ( !xSemaphoreTake(_evt_sem, BLE_CENTRAL_TIMEOUT) || (_evt_bufsize == 0) ) return false;
 
-  bool result = false;
-
-  ble_gattc_evt_prim_srvc_disc_rsp_t* discover_svc = (ble_gattc_evt_prim_srvc_disc_rsp_t*) _evt_data;
-
-  if ( (discover_svc->count == 1) && (uuid == discover_svc->services[0].uuid) )
+  // Check the discovered UUID with input one
+  if ( (discover_svc.count == 1) && (uuid == discover_svc.services[0].uuid) )
   {
-    (*handle_range) = discover_svc->services[0].handle_range;
-    result = true;
+    _hdl_range = discover_svc.services[0].handle_range;
+    PRINT_INT(_hdl_range.start_handle);
+    PRINT_INT(_hdl_range.end_handle);
+    return true;
   }
 
-  free(_evt_data);
-
-  return result;
+  return false;
 }
 
-bool BLECentral::discoverCharacteristic(ble_gattc_handle_range_t handle_range)
+COMMENT_OUT(
+bool BLECentral::discoverCharacteristic()
 {
 //  uuid.begin(); // add uuid128 if needed
 
-  VERIFY_STATUS( sd_ble_gattc_characteristics_discover(_conn_hdl, &handle_range), false );
+  VERIFY_STATUS( sd_ble_gattc_characteristics_discover(_conn_hdl, &_hdl_range), false );
 
   return true;
 }
-
+)
 
 /**
  * Event is forwarded from Bluefruit Poll() method
@@ -293,22 +300,45 @@ void BLECentral::_event_handler(ble_evt_t* evt)
 
       if ( _conn_hdl == gattc->conn_handle )
       {
-         if ( _evt_data ) rtos_free(_evt_data);
-         _evt_data = NULL;
-
-        if (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS)
+        if ( _evt_buf )
         {
-          ble_gattc_evt_prim_srvc_disc_rsp_t* svc_rsp = &gattc->params.prim_srvc_disc_rsp;
+          if (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS)
+          {
+            ble_gattc_evt_prim_srvc_disc_rsp_t* svc_rsp = &gattc->params.prim_srvc_disc_rsp;
 
-          // len of the discovered services
-          uint16_t len = sizeof(ble_gattc_evt_prim_srvc_disc_rsp_t) + (svc_rsp->count-1)*sizeof(ble_gattc_service_t);
+            // len of the discovered services
+            uint16_t len = sizeof(ble_gattc_evt_prim_srvc_disc_rsp_t) + (svc_rsp->count-1)*sizeof(ble_gattc_service_t);
+            _evt_bufsize = min16(_evt_bufsize, len);
 
-          _evt_data = rtos_malloc( len );
-
-          memcpy(_evt_data, svc_rsp, len);
+            memcpy(_evt_buf, svc_rsp, _evt_bufsize);
+          }else
+          {
+            _evt_bufsize = 0;
+          }
         }
 
         xSemaphoreGive(_evt_sem);
+      }
+    }
+    break;
+
+    case BLE_GATTC_EVT_CHAR_DISC_RSP:
+    {
+      ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
+
+      if ( _conn_hdl == gattc->conn_handle )
+      {
+        if (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS)
+        {
+          ble_gattc_evt_char_disc_rsp_t* chr_rsp = &gattc->params.char_disc_rsp;
+
+          PRINT_INT(chr_rsp->count);
+          for(uint8_t i=0; i<chr_rsp->count; i++)
+          {
+            PRINT_HEX(chr_rsp->chars[i].uuid.type);
+            PRINT_HEX(chr_rsp->chars[i].uuid.uuid);
+          }
+        }
       }
     }
     break;
