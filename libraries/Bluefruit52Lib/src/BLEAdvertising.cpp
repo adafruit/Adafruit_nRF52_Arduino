@@ -154,7 +154,7 @@ bool BLEAdvertising::addFlags(uint8_t flags)
   return addData(BLE_GAP_AD_TYPE_FLAGS, &flags, 1);
 }
 
-bool BLEAdvertising::addApperance(uint16_t appearance)
+bool BLEAdvertising::addAppearance(uint16_t appearance)
 {
   return addData(BLE_GAP_AD_TYPE_APPEARANCE, &appearance, 2);
 }

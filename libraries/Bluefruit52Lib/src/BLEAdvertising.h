@@ -66,7 +66,7 @@ public:
   bool addFlags(uint8_t flags);
   bool addTxPower(void);
   bool addName(void);
-  bool addApperance(uint16_t appearance);
+  bool addAppearance(uint16_t appearance);
 
   bool addUuid(BLEUuid bleuuid);
   bool addService(BLEService& service);

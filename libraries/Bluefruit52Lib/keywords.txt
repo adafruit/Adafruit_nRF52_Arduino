@@ -107,7 +107,7 @@ addData	KEYWORD2
 addFlags	KEYWORD2
 addTxPower	KEYWORD2
 addName	KEYWORD2
-addApperance	KEYWORD2
+addAppearance	KEYWORD2
 addUuid	KEYWORD2
 addService	KEYWORD2
 setBeacon	KEYWORD2

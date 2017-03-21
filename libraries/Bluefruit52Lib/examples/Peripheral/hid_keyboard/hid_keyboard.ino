@@ -63,7 +63,7 @@ void setupAdv(void)
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
 
-  Bluefruit.Advertising.addApperance(BLE_APPEARANCE_HID_KEYBOARD);
+  Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
   
   // Include BLE HID service
   Bluefruit.Advertising.addService(blehid);
