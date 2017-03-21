@@ -191,6 +191,8 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   /*------------- DFU OTA as built-in service -------------*/
   _dfu_svc.begin();
 
+  if (_central_enabled)  Central.begin(); // Init Central
+
   // Create RTOS Semaphore & Task for BLE Event
   _ble_event_sem = xSemaphoreCreateBinary();
   VERIFY(_ble_event_sem, NRF_ERROR_NO_MEM);
@@ -648,6 +650,7 @@ COMMENT_OUT(
 
     case BLE_GAP_EVT_AUTH_STATUS:
     {
+      // Bonding process completed
       ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
 
       // Pairing/Bonding succeeded --> save encryption keys

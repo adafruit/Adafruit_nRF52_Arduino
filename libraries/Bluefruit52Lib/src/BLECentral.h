@@ -50,6 +50,8 @@ class BLECentral
   public:
     BLECentral(void); // Constructor
 
+    void begin(void);
+
     /*------------------------------------------------------------------*/
     /* Scan & Parser
      *------------------------------------------------------------------*/
@@ -62,8 +64,7 @@ class BLECentral
     uint8_t* extractScanData(uint8_t const* scandata, uint8_t scanlen, uint8_t type, uint8_t* result_len);
     uint8_t* extractScanData(const ble_gap_evt_adv_report_t* report, uint8_t type, uint8_t* result_len);
 
-    bool     checkUuidInScan(const ble_gap_evt_adv_report_t* adv_report, uint16_t uuid16);
-    bool     checkUuidInScan(const ble_gap_evt_adv_report_t* adv_report, const uint8_t  uuid128[]);
+    bool     checkUuidInScan(const ble_gap_evt_adv_report_t* adv_report, BLEUuid ble_uuid);
 
     /*------------------------------------------------------------------*/
     /*
@@ -81,8 +82,12 @@ class BLECentral
     /*------------------------------------------------------------------*/
     /* GATTC Discovery
      *------------------------------------------------------------------*/
+    bool discoverService(BLEUuid uuid, ble_gattc_handle_range_t* handle_range, uint16_t start_handle = 1);
+    bool discoverCharacteristic(ble_gattc_handle_range_t handle_range);
 
-
+    /*------------------------------------------------------------------*/
+    /* CALLBACKS
+     *------------------------------------------------------------------*/
     typedef void (*connect_callback_t) (void);
     typedef void (*disconnect_callback_t) (uint8_t reason);
 
@@ -91,6 +96,9 @@ class BLECentral
 
   private:
     uint16_t _conn_hdl;
+
+    SemaphoreHandle_t _evt_sem;
+    void*             _evt_data;
 
     ble_gap_scan_params_t _scan_param;
     scan_callback_t       _scan_cb;

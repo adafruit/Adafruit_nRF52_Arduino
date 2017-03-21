@@ -36,12 +36,17 @@
 
 #include "bluefruit.h"
 
+#define BLE_CENTRAL_TIMEOUT   10000
+
 /**
  * Constructor
  */
 BLECentral::BLECentral(void)
 {
   _conn_hdl = BLE_CONN_HANDLE_INVALID;
+
+  _evt_sem = NULL;
+  _evt_data = NULL;
 
   _scan_cb    = NULL;
   _scan_param = (ble_gap_scan_params_t) {
@@ -55,6 +60,11 @@ BLECentral::BLECentral(void)
 
   _connect_cb     = NULL;
   _discconnect_cb = NULL;
+}
+
+void BLECentral::begin(void)
+{
+  _evt_sem = xSemaphoreCreateBinary();
 }
 
 /*------------------------------------------------------------------*/
@@ -106,19 +116,28 @@ uint8_t* BLECentral::extractScanData(const ble_gap_evt_adv_report_t* report, uin
   return extractScanData(report->data, report->dlen, type, result_len);
 }
 
-bool BLECentral::_checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t uuid[], uint8_t uuid_len)
+bool BLECentral::checkUuidInScan(const ble_gap_evt_adv_report_t* report, BLEUuid ble_uuid)
 {
+  const uint8_t* uuid;
+  uint8_t uuid_len = ble_uuid.size();
+
   uint8_t type_arr[2];
+
+  PRINT_INT(uuid_len);
 
   // Check both UUID16 more available and complete list
   if ( uuid_len == 2)
   {
     type_arr[0] = BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE;
     type_arr[1] = BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_COMPLETE;
+
+    uuid = (uint8_t*) &ble_uuid._uuid.uuid;
   }else
   {
     type_arr[0] = BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_MORE_AVAILABLE;
     type_arr[1] = BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_COMPLETE;
+
+    uuid = ble_uuid._uuid128;
   }
 
   for (int i=0; i<2; i++)
@@ -141,16 +160,6 @@ bool BLECentral::_checkUuidInScan(const ble_gap_evt_adv_report_t* report, const 
   }
 
   return false;
-}
-
-bool BLECentral::checkUuidInScan(const ble_gap_evt_adv_report_t* report, uint16_t uuid16)
-{
-  return _checkUuidInScan(report, (uint8_t*) &uuid16, 2);
-}
-
-bool BLECentral::checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t uuid128[])
-{
-  return _checkUuidInScan(report, uuid128, 16);
 }
 
 /*------------------------------------------------------------------*/
@@ -188,6 +197,43 @@ void BLECentral::setDisconnectCallback( disconnect_callback_t fp)
 {
   _discconnect_cb = fp;
 }
+
+/*------------------------------------------------------------------*/
+/* DISCOVERY
+ *------------------------------------------------------------------*/
+bool BLECentral::discoverService(BLEUuid uuid, ble_gattc_handle_range_t* handle_range, uint16_t start_handle)
+{
+  uuid.begin(); // add uuid128 if needed
+
+  VERIFY_STATUS( sd_ble_gattc_primary_services_discover(_conn_hdl, start_handle, &uuid._uuid), false );
+
+  // wait for discovery event
+  if ( !xSemaphoreTake(_evt_sem, BLE_CENTRAL_TIMEOUT) || !_evt_data ) return false;
+
+  bool result = false;
+
+  ble_gattc_evt_prim_srvc_disc_rsp_t* discover_svc = (ble_gattc_evt_prim_srvc_disc_rsp_t*) _evt_data;
+
+  if ( (discover_svc->count == 1) && (uuid == discover_svc->services[0].uuid) )
+  {
+    (*handle_range) = discover_svc->services[0].handle_range;
+    result = true;
+  }
+
+  free(_evt_data);
+
+  return result;
+}
+
+bool BLECentral::discoverCharacteristic(ble_gattc_handle_range_t handle_range)
+{
+//  uuid.begin(); // add uuid128 if needed
+
+  VERIFY_STATUS( sd_ble_gattc_characteristics_discover(_conn_hdl, &handle_range), false );
+
+  return true;
+}
+
 
 /**
  * Event is forwarded from Bluefruit Poll() method
@@ -239,6 +285,32 @@ void BLECentral::_event_handler(ble_evt_t* evt)
         // Restart Scanning
         startScanning();
       }
+    break;
+
+    case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
+    {
+      ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
+
+      if ( _conn_hdl == gattc->conn_handle )
+      {
+         if ( _evt_data ) rtos_free(_evt_data);
+         _evt_data = NULL;
+
+        if (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS)
+        {
+          ble_gattc_evt_prim_srvc_disc_rsp_t* svc_rsp = &gattc->params.prim_srvc_disc_rsp;
+
+          // len of the discovered services
+          uint16_t len = sizeof(ble_gattc_evt_prim_srvc_disc_rsp_t) + (svc_rsp->count-1)*sizeof(ble_gattc_service_t);
+
+          _evt_data = rtos_malloc( len );
+
+          memcpy(_evt_data, svc_rsp, len);
+        }
+
+        xSemaphoreGive(_evt_sem);
+      }
+    }
     break;
 
     default: break;
