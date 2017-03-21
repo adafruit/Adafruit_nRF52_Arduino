@@ -24,9 +24,15 @@ void setup()
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 HID Mouse Example");
-  Serial.println("- Enter 'WASD'  to move mouse (up, left, down, right)");
-  Serial.println("- Enter 'LRMBF' to press mouse button(s) (left, right, middle, backward, forward)");
-  Serial.println("- Enter 'X'     to release mouse button(s)");
+  Serial.println("-----------------------------");
+  Serial.println("Go to your phone's Bluetooth settings to pair your device");
+  Serial.println("then open an application that accepts mouse input");
+  Serial.println();
+
+  Serial.println("Enter following characters");
+  Serial.println("- 'WASD'  to move mouse (up, left, down, right)");
+  Serial.println("- 'LRMBF' to press mouse button(s) (left, right, middle, backward, forward)");
+  Serial.println("- 'X'     to release mouse button(s)");
 
   Bluefruit.begin();
   // HID Device can have a min connection interval of 9*1.25 = 11.25 ms

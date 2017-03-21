@@ -56,6 +56,14 @@ void setup()
 
   // Start Advertising
   Bluefruit.Advertising.start();
+
+  Serial.println();
+  Serial.println("Go to your phone's Bluetooth settings to pair your device");
+  Serial.println("then open an application that accepts keyboard input");
+
+  Serial.println();
+  Serial.println("Enter the character(s) to send:");
+  Serial.println();  
 }
 
 void setupAdv(void)

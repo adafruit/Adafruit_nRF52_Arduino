@@ -48,6 +48,8 @@ void setup()
 
   // Start advertising
   Bluefruit.Advertising.start();
+
+  Serial.println("Broadcasting beacon, open your beacon app to test");
 }
 
 void setupAdv(void)

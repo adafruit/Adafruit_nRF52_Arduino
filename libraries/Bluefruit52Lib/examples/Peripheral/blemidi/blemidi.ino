@@ -11,6 +11,12 @@
  All text above, and the splash screen below must be included in
  any redistribution
 *********************************************************************/
+
+/* For BLE MIDI Setup
+ * https://learn.adafruit.com/wireless-untztrument-using-ble-midi/overview
+ */
+
+
 #include <bluefruit.h>
 #include <MIDI.h>
 

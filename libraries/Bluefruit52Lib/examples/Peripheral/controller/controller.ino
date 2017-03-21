@@ -41,6 +41,10 @@ void setup(void)
 
   // Start advertising
   Bluefruit.Advertising.start();
+
+  Serial.println(F("Please use Adafruit Bluefruit LE app to connect in Controller mode"));
+  Serial.println(F("Then activate/use the sensors, color picker, game controller, etc!"));
+  Serial.println();  
 }
 
 void setupAdv(void)

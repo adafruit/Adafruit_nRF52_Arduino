@@ -38,7 +38,7 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println("Adafruit Bluefruit Neopixel Test");
-  Serial.println("------------------------------------");
+  Serial.println("--------------------------------");
 
   Serial.println();
   Serial.println("Please connect using Bluefruit Connect LE application");

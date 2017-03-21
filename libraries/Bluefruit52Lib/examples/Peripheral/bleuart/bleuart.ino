@@ -60,6 +60,9 @@ void setup()
 
   // Start Advertising
   Bluefruit.Advertising.start();
+
+  Serial.println("Please use Adafruit Bluefruit LE app to connect in UART mode");
+  Serial.println("Then Enter characters to send");
 }
 
 void setupAdv(void)
