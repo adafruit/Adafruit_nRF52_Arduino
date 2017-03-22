@@ -39,6 +39,7 @@
 #include "bluefruit_common.h"
 #include "BLEUuid.h"
 
+// Forward declaration
 class AdafruitBluefruit;
 class BLEService;
 
@@ -115,7 +116,7 @@ class BLECharacteristic
     BLECharacteristic(void);
     BLECharacteristic(BLEUuid bleuuid);
 
-    BLEService& parentService() { return *_service; }
+    BLEService& parentService(void);
 
     void setTempMemory(void);
 

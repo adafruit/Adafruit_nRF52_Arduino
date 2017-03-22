@@ -36,6 +36,9 @@
 
 #include "bluefruit.h"
 
+// Last service that is discovered
+BLECentralService* BLECentralService::lastService = NULL;
+
 void BLECentralService::_init(void)
 {
 }
@@ -63,5 +66,9 @@ err_t BLECentralService::begin(void)
 
 bool BLECentralService::discover(uint16_t start_handle)
 {
-  return Bluefruit.Central.discoverService(uuid, start_handle);
+  VERIFY( Bluefruit.Central.discoverService(uuid, start_handle) );
+
+  lastService = this;
+
+  return true;
 }

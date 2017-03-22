@@ -82,6 +82,11 @@ void BLECharacteristic::setUuid(BLEUuid bleuuid)
   uuid = bleuuid;
 }
 
+BLEService& BLECharacteristic::parentService (void)
+{
+  return *_service;
+}
+
 /**
  * Must be set when Charactertistic is declared locally (e.g insdie function)
  * and is not last throughout programs. Useful for one-shot set-and-forget

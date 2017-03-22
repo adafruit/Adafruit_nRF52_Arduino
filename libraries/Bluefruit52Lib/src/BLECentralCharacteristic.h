@@ -40,6 +40,9 @@
 #include "BLEUuid.h"
 #include "BLECharacteristic.h"
 
+// forward declaration
+class BLECentralService;
+
 class BLECentralCharacteristic
 {
   public:
@@ -52,6 +55,7 @@ class BLECentralCharacteristic
     void begin(void);
 
     uint16_t valueHandle();
+    BLECentralService& parentService(void);
 
     /*------------- Read -------------*/
     uint16_t read(void* buffer, int bufsize, uint16_t offset = 0);
@@ -72,6 +76,7 @@ class BLECentralCharacteristic
     ble_gattc_char_t _chr;
     uint16_t         _cccd_handle;
 
+    BLECentralService* _service;
     notify_cb_t      _notify_cb;
 
     void _init(void);

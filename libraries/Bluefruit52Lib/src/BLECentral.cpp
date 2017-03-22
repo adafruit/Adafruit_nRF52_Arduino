@@ -248,11 +248,6 @@ bool BLECentral::discoverService(BLEUuid uuid, uint16_t start_handle)
   return false;
 }
 
-bool BLECentral::discoverService(BLECentralService& svc, uint16_t start_handle)
-{
-  return svc.discover(start_handle);
-}
-
 bool BLECentral::discoverCharacteristic(BLECentralCharacteristic& chr)
 {
   ble_gattc_evt_char_disc_rsp_t disc_chr;

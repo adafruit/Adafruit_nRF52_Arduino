@@ -64,6 +64,11 @@ uint16_t BLECentralCharacteristic::valueHandle()
   return _chr.handle_value;
 }
 
+BLECentralService& BLECentralCharacteristic::parentService (void)
+{
+  return *_service;
+}
+
 bool BLECentralCharacteristic::discoverDescriptor(void)
 {
   struct {
@@ -89,6 +94,8 @@ bool BLECentralCharacteristic::discoverDescriptor(void)
 
 void BLECentralCharacteristic::begin(void)
 {
+  _service = BLECentralService::lastService;
+
   // Currently Only register to Bluefruit if callback is installed
   if ( _notify_cb )
   {

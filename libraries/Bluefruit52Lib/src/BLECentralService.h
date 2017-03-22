@@ -45,6 +45,8 @@ class BLECentralService
     void  _init(void);
 
   public:
+    static BLECentralService* lastService;
+
     BLEUuid uuid;
 
     BLECentralService(void);
