@@ -80,7 +80,8 @@ class BLECentral
                   uint16_t min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT,
                   uint16_t max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT);
 
-    bool connected(void);
+    bool     connected  (void);
+    uint16_t connHandle (void);
 
     /*------------------------------------------------------------------*/
     /* GATTC Discovery

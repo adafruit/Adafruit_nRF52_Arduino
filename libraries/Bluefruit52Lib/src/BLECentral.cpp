@@ -192,6 +192,11 @@ bool BLECentral::connected(void)
   return (_conn_hdl != BLE_CONN_HANDLE_INVALID);
 }
 
+uint16_t BLECentral::connHandle (void)
+{
+  return _conn_hdl;
+}
+
 void BLECentral::setConnectCallback( connect_callback_t fp)
 {
   _connect_cb = fp;
@@ -288,7 +293,7 @@ uint16_t BLECentral::_discoverDescriptor(ble_gattc_evt_desc_disc_rsp_t* disc_des
 
     // increase handle range for next discovery
     // should be +1 more, but that will cause missing on the next Characteristic !!!!!
-    // Reason is descriptor also include BLE_UUID_CHARACTERISTIC 0x2803 in the result
+    // Reason is descriptor also include BLE_UUID_CHARACTERISTIC 0x2803 (Char declaration) in the result
     _disc_hdl_range.start_handle = disc_desc->descs[result-1].handle;
   }
 
