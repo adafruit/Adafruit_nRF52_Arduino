@@ -110,7 +110,6 @@ err_t BLEUart::begin(void)
   _rxd.setStringDescriptor("RXD");
   VERIFY_STATUS(_rxd.begin());
 
-
   return ERROR_NONE;
 }
 

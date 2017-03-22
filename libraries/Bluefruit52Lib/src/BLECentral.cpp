@@ -59,11 +59,11 @@ BLECentral::BLECentral(void)
     .timeout     = 0, // no timeout
   };
 
-  _hdl_range.start_handle = 1;
-  _hdl_range.end_handle   = 0xffff;
+  _disc_hdl_range.start_handle = 1;
+  _disc_hdl_range.end_handle   = 0xffff;
 
   _connect_cb     = NULL;
-  _discconnect_cb = NULL;
+  _disconnect_cb = NULL;
 }
 
 void BLECentral::begin(void)
@@ -127,10 +127,8 @@ bool BLECentral::checkUuidInScan(const ble_gap_evt_adv_report_t* report, BLEUuid
 
   uint8_t type_arr[2];
 
-  PRINT_INT(uuid_len);
-
   // Check both UUID16 more available and complete list
-  if ( uuid_len == 2)
+  if ( uuid_len == 16)
   {
     type_arr[0] = BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE;
     type_arr[1] = BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_COMPLETE;
@@ -143,6 +141,8 @@ bool BLECentral::checkUuidInScan(const ble_gap_evt_adv_report_t* report, BLEUuid
 
     uuid = ble_uuid._uuid128;
   }
+
+  uuid_len /= 8; // convert uuid_len to number of bytes
 
   for (int i=0; i<2; i++)
   {
@@ -199,20 +199,20 @@ void BLECentral::setConnectCallback( connect_callback_t fp)
 
 void BLECentral::setDisconnectCallback( disconnect_callback_t fp)
 {
-  _discconnect_cb = fp;
+  _disconnect_cb = fp;
 }
 
 /*------------------------------------------------------------------*/
 /* DISCOVERY
  *------------------------------------------------------------------*/
-bool BLECentral::discoverService(BLEUuid uuid, uint16_t start_handle)
+bool BLECentral::discoverService(BLEUuid uuid, ble_gattc_handle_range_t* hdl_range, uint16_t start_handle)
 {
   uuid.begin(); // add uuid128 if needed
 
-  ble_gattc_evt_prim_srvc_disc_rsp_t discover_svc;
+  ble_gattc_evt_prim_srvc_disc_rsp_t disc_svc;
 
-  _evt_buf = &discover_svc;
-  _evt_bufsize = sizeof(discover_svc);
+  _evt_buf     = &disc_svc;
+  _evt_bufsize = sizeof(disc_svc);
 
   VERIFY_STATUS( sd_ble_gattc_primary_services_discover(_conn_hdl, start_handle, &uuid._uuid), false );
 
@@ -220,27 +220,49 @@ bool BLECentral::discoverService(BLEUuid uuid, uint16_t start_handle)
   if ( !xSemaphoreTake(_evt_sem, BLE_CENTRAL_TIMEOUT) || (_evt_bufsize == 0) ) return false;
 
   // Check the discovered UUID with input one
-  if ( (discover_svc.count == 1) && (uuid == discover_svc.services[0].uuid) )
+  if ( (disc_svc.count == 1) && (uuid == disc_svc.services[0].uuid) )
   {
-    _hdl_range = discover_svc.services[0].handle_range;
-    PRINT_INT(_hdl_range.start_handle);
-    PRINT_INT(_hdl_range.end_handle);
+    _disc_hdl_range = disc_svc.services[0].handle_range;
+    (*hdl_range) = disc_svc.services[0].handle_range;;
+
+    PRINT_INT(_disc_hdl_range.start_handle);
+    PRINT_INT(_disc_hdl_range.end_handle);
     return true;
   }
 
   return false;
 }
 
-COMMENT_OUT(
-bool BLECentral::discoverCharacteristic()
+bool BLECentral::discoverService(BLECentralService& svc, uint16_t start_handle)
 {
-//  uuid.begin(); // add uuid128 if needed
+  return svc.discover(start_handle);
+}
 
-  VERIFY_STATUS( sd_ble_gattc_characteristics_discover(_conn_hdl, &_hdl_range), false );
+bool BLECentral::discoverCharacteristic(BLECentralCharacteristic& chr)
+{
+  ble_gattc_evt_char_disc_rsp_t disc_chr;
+
+  _evt_buf     = &disc_chr;
+  _evt_bufsize = sizeof(disc_chr);
+
+  PRINT_INT(_disc_hdl_range.start_handle);
+  PRINT_INT(_disc_hdl_range.end_handle);
+
+  VERIFY_STATUS( sd_ble_gattc_characteristics_discover(_conn_hdl, &_disc_hdl_range), false );
+
+  // wait for discovery event: timeout or has no data
+  if ( !xSemaphoreTake(_evt_sem, BLE_CENTRAL_TIMEOUT) || (_evt_bufsize == 0) ) return false;
+
+  if ( disc_chr.count > 0 )
+  {
+    chr = BLECentralCharacteristic(&disc_chr.chars[0]);
+
+    // increase handle range for next characteristic
+    _disc_hdl_range.start_handle = disc_chr.chars[0].handle_value + 1;
+  }
 
   return true;
 }
-)
 
 /**
  * Event is forwarded from Bluefruit Poll() method
@@ -280,7 +302,7 @@ void BLECentral::_event_handler(ble_evt_t* evt)
 
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
 
-        if ( _discconnect_cb ) _discconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
+        if ( _disconnect_cb ) _disconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
 
         startScanning();
       }
@@ -306,6 +328,8 @@ void BLECentral::_event_handler(ble_evt_t* evt)
           {
             ble_gattc_evt_prim_srvc_disc_rsp_t* svc_rsp = &gattc->params.prim_srvc_disc_rsp;
 
+            PRINT_INT(svc_rsp->count);
+
             // len of the discovered services
             uint16_t len = sizeof(ble_gattc_evt_prim_srvc_disc_rsp_t) + (svc_rsp->count-1)*sizeof(ble_gattc_service_t);
             _evt_bufsize = min16(_evt_bufsize, len);
@@ -313,7 +337,7 @@ void BLECentral::_event_handler(ble_evt_t* evt)
             memcpy(_evt_buf, svc_rsp, _evt_bufsize);
           }else
           {
-            _evt_bufsize = 0;
+            _evt_bufsize = 0; // no data
           }
         }
 
@@ -325,21 +349,24 @@ void BLECentral::_event_handler(ble_evt_t* evt)
     case BLE_GATTC_EVT_CHAR_DISC_RSP:
     {
       ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
+      ble_gattc_evt_char_disc_rsp_t* chr_rsp = &gattc->params.char_disc_rsp;
 
       if ( _conn_hdl == gattc->conn_handle )
       {
-        if (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS)
+        PRINT_INT(chr_rsp->count);
+        if ( (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS) && (chr_rsp->count > 0) )
         {
-          ble_gattc_evt_char_disc_rsp_t* chr_rsp = &gattc->params.char_disc_rsp;
+          // TODO support only 1 discovered char now
+          _evt_bufsize = min16(_evt_bufsize, sizeof(ble_gattc_evt_char_disc_rsp_t));
 
-          PRINT_INT(chr_rsp->count);
-          for(uint8_t i=0; i<chr_rsp->count; i++)
-          {
-            PRINT_HEX(chr_rsp->chars[i].uuid.type);
-            PRINT_HEX(chr_rsp->chars[i].uuid.uuid);
-          }
+          memcpy(_evt_buf, chr_rsp, _evt_bufsize);
+        }else
+        {
+          _evt_bufsize = 0; // no data
         }
       }
+
+      xSemaphoreGive(_evt_sem);
     }
     break;
 

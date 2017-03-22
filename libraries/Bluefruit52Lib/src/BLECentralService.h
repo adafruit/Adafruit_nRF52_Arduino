@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLECentralCharacteristic.h
+    @file     BLECentralService.h
     @author   hathach
 
     @section LICENSE
@@ -33,26 +33,30 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLECENTRALCHARACTERISTIC_H_
-#define BLECENTRALCHARACTERISTIC_H_
+#ifndef BLECENTRALSERVICE_H_
+#define BLECENTRALSERVICE_H_
 
 #include "bluefruit_common.h"
 #include "BLEUuid.h"
-#include "BLECharacteristic.h"
 
-class BLECentralCharacteristic
+class BLECentralService
 {
+  protected:
+    ble_gattc_handle_range_t _hdl_range;
+
+    void  _init(void);
+
   public:
     BLEUuid uuid;
 
-    BLECentralCharacteristic(void);
-    BLECentralCharacteristic(ble_gattc_char_t* gattc_char);
+    BLECentralService(void);
+    BLECentralService(BLEUuid bleuuid);
 
+    virtual err_t begin(void);
 
-
-  private:
-    ble_gattc_char_t _chr;
-
+    virtual bool discover(uint16_t start_handle = 1);
 };
 
-#endif /* BLECENTRALCHARACTERISTIC_H_ */
+
+
+#endif /* BLECENTRALSERVICE_H_ */

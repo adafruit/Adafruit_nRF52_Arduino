@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLECentralCharacteristic.h
+    @file     BLECentralUart.cpp
     @author   hathach
 
     @section LICENSE
@@ -33,26 +33,27 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLECENTRALCHARACTERISTIC_H_
-#define BLECENTRALCHARACTERISTIC_H_
 
-#include "bluefruit_common.h"
-#include "BLEUuid.h"
-#include "BLECharacteristic.h"
+#include "bluefruit.h"
 
-class BLECentralCharacteristic
+BLECentralUart::BLECentralUart(uint16_t fifo_depth)
+  : BLECentralService(BLEUART_UUID_SERVICE), _txd(), _rxd(), _rxd_fifo(fifo_depth, 1)
 {
-  public:
-    BLEUuid uuid;
 
-    BLECentralCharacteristic(void);
-    BLECentralCharacteristic(ble_gattc_char_t* gattc_char);
+}
 
+err_t BLECentralUart::begin(void)
+{
+  // Add UUID128 if needed
+  uuid.begin();
 
+  return ERROR_NONE;
+}
 
-  private:
-    ble_gattc_char_t _chr;
+bool BLECentralUart::discover(uint16_t start_handle)
+{
+  // Call BLECentralService discover
+  VERIFY( BLECentralService::discover(start_handle) );
 
-};
-
-#endif /* BLECENTRALCHARACTERISTIC_H_ */
+  return true;
+}

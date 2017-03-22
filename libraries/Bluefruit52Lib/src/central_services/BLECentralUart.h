@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLECentralCharacteristic.h
+    @file     BLECentralUart.h
     @author   hathach
 
     @section LICENSE
@@ -33,26 +33,30 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLECENTRALCHARACTERISTIC_H_
-#define BLECENTRALCHARACTERISTIC_H_
+#ifndef BLECENTRALUART_H_
+#define BLECENTRALUART_H_
 
 #include "bluefruit_common.h"
-#include "BLEUuid.h"
-#include "BLECharacteristic.h"
+#include "utility/adafruit_fifo.h"
 
-class BLECentralCharacteristic
+#include "BLECentralCharacteristic.h"
+#include "BLECentralService.h"
+
+#include "services/BLEUart.h"
+
+class BLECentralUart : public BLECentralService
 {
   public:
-    BLEUuid uuid;
+    BLECentralUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
 
-    BLECentralCharacteristic(void);
-    BLECentralCharacteristic(ble_gattc_char_t* gattc_char);
-
-
+    virtual err_t begin(void);
+    virtual bool  discover(uint16_t start_handle = 1);
 
   private:
-    ble_gattc_char_t _chr;
+    BLECentralCharacteristic _txd;
+    BLECentralCharacteristic _rxd;
 
+    Adafruit_FIFO     _rxd_fifo;
 };
 
-#endif /* BLECENTRALCHARACTERISTIC_H_ */
+#endif /* BLECENTRALUART_H_ */

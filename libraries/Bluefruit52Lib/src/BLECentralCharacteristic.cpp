@@ -36,3 +36,14 @@
 
 #include "bluefruit.h"
 
+BLECentralCharacteristic::BLECentralCharacteristic(void)
+  : uuid()
+{
+  varclr(&_chr);
+}
+
+BLECentralCharacteristic::BLECentralCharacteristic(ble_gattc_char_t* gattc_char)
+  : uuid(gattc_char->uuid)
+{
+  _chr = (*gattc_char);
+}

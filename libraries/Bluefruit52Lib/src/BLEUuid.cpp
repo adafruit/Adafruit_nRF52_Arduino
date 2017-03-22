@@ -40,18 +40,40 @@ void BLEUuid::set(uint16_t uuid16)
 {
   _uuid.type = BLE_UUID_TYPE_BLE;
   _uuid.uuid = uuid16;
+
   _uuid128   = NULL;
 }
 
 void BLEUuid::set(uint8_t const uuid128[16])
 {
-  _uuid.type = BLE_UUID_TYPE_UNKNOWN; _uuid.uuid = 0;
-  _uuid128 = uuid128;
+  _uuid.type = BLE_UUID_TYPE_UNKNOWN;
+  _uuid.uuid = 0;
+
+  _uuid128   = uuid128;
 }
 
-void BLEUuid::get(uint16_t& uuid16 )
+bool BLEUuid::get(uint16_t* uuid16 ) const
 {
+  *uuid16 = _uuid.uuid;
 
+  return true;
+}
+
+bool BLEUuid::get(uint8_t uuid128[16])
+{
+  if (_uuid.type < BLE_UUID_TYPE_VENDOR_BEGIN ) return false;
+
+  if ( _uuid128 )
+  {
+    memcpy(uuid128, _uuid128, 16);
+  }else
+  {
+    uint8_t len = 16;
+    VERIFY_STATUS( sd_ble_uuid_encode(&_uuid, &len, uuid128), false);
+    VERIFY(len == 16);
+  }
+
+  return true;
 }
 
 /**

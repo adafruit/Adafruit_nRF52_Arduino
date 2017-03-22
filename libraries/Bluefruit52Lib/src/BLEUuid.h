@@ -46,13 +46,15 @@ class BLEUuid
     
     // Constructors
     BLEUuid(void                      ) { _uuid.type = BLE_UUID_TYPE_UNKNOWN; _uuid.uuid = 0; _uuid128 = NULL; }
-    BLEUuid(uint16_t uuid16           ) { set(uuid16); }
-    BLEUuid(uint8_t const uuid128[16] ) { set(uuid128); }
+    BLEUuid(uint16_t uuid16           ) { set(uuid16 );                  }
+    BLEUuid(uint8_t const uuid128[16] ) { set(uuid128);                  }
+    BLEUuid(ble_uuid_t uuid           ) { _uuid = uuid; _uuid128 = NULL; }
 
     void set(uint16_t uuid16);
     void set(uint8_t const uuid128[16]);
 
-    void get(uint16_t& uuid16);
+    bool get(uint16_t* uuid16) const;
+    bool get(uint8_t uuid128[16]);
 
     size_t size (void) const;
 

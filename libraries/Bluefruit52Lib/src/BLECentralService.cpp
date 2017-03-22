@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLECentralCharacteristic.h
+    @file     BLECentralService.cpp
     @author   hathach
 
     @section LICENSE
@@ -33,26 +33,37 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLECENTRALCHARACTERISTIC_H_
-#define BLECENTRALCHARACTERISTIC_H_
 
-#include "bluefruit_common.h"
-#include "BLEUuid.h"
-#include "BLECharacteristic.h"
+#include "bluefruit.h"
 
-class BLECentralCharacteristic
+void BLECentralService::_init(void)
 {
-  public:
-    BLEUuid uuid;
+  _hdl_range.start_handle = 1;
+  _hdl_range.end_handle   = 0xffff;
+}
 
-    BLECentralCharacteristic(void);
-    BLECentralCharacteristic(ble_gattc_char_t* gattc_char);
+BLECentralService::BLECentralService(void)
+  : uuid()
+{
+  _init();
+}
+
+BLECentralService::BLECentralService(BLEUuid bleuuid)
+  : uuid(bleuuid)
+{
+  _init();
+}
 
 
+err_t BLECentralService::begin(void)
+{
+  // Add UUID128 if needed
+  uuid.begin();
 
-  private:
-    ble_gattc_char_t _chr;
+  return ERROR_NONE;
+}
 
-};
-
-#endif /* BLECENTRALCHARACTERISTIC_H_ */
+bool BLECentralService::discover(uint16_t start_handle)
+{
+  return Bluefruit.Central.discoverService(uuid, &_hdl_range, start_handle);
+}

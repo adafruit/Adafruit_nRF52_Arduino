@@ -41,8 +41,10 @@
 
 #include "BLEUuid.h"
 #include "BLECharacteristic.h"
-#include "BLECentralCharacteristic.h"
 #include "BLEService.h"
+
+#include "BLECentralCharacteristic.h"
+#include "BLECentralService.h"
 
 class AdafruitBluefruit;
 
@@ -83,8 +85,9 @@ class BLECentral
     /*------------------------------------------------------------------*/
     /* GATTC Discovery
      *------------------------------------------------------------------*/
-    bool discoverService(BLEUuid uuid, uint16_t start_handle = 1);
-//    bool discoverCharacteristic();
+    bool discoverService(BLEUuid uuid, ble_gattc_handle_range_t* hdl_range, uint16_t start_handle = 1);
+    bool discoverService(BLECentralService& svc, uint16_t start_handle = 1);
+    bool discoverCharacteristic(BLECentralCharacteristic& chr);
 
     /*------------------------------------------------------------------*/
     /* CALLBACKS
@@ -105,10 +108,10 @@ class BLECentral
     ble_gap_scan_params_t _scan_param;
     scan_callback_t       _scan_cb;
 
-    ble_gattc_handle_range_t _hdl_range;
+    ble_gattc_handle_range_t _disc_hdl_range;
 
     connect_callback_t    _connect_cb;
-    disconnect_callback_t _discconnect_cb;
+    disconnect_callback_t _disconnect_cb;
 
     bool  _checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t uuid[], uint8_t uuid_len);
 
