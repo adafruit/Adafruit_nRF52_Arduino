@@ -269,7 +269,7 @@ err_t BLECharacteristic::begin(void)
   }
 
   // Currently Only register to Bluefruit when having callback support
-  // And The Characteristic must not be temporary memory aka local variable
+  // And The Characteristic must not be temporary memory i.e local variable
   if ( !_is_temp &&
        (_rd_authorize_cb || _wr_authorize_cb || _wr_cb || _cccd_wr_cb) )
   {

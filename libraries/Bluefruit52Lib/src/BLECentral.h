@@ -41,6 +41,7 @@
 
 #include "BLEUuid.h"
 #include "BLECharacteristic.h"
+#include "BLECentralCharacteristic.h"
 #include "BLEService.h"
 
 class AdafruitBluefruit;

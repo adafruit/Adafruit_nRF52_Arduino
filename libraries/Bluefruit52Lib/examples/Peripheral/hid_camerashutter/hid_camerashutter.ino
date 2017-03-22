@@ -11,27 +11,35 @@
  All text above, and the splash screen below must be included in
  any redistribution
 *********************************************************************/
+
+/*
+ * Sketch use HID Consumer Key API to send Volume Down key when
+ * PIN_SHUTTER is grounded. Which cause mobile to capture photo
+ * when you are in Camera App
+ */
 #include <bluefruit.h>
 
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
-bool hasKeyPressed = false;
+#define PIN_SHUTTER   27
 
 void setup() 
 {
+  pinMode(PIN_SHUTTER, INPUT_PULLUP);
+  
   Serial.begin(115200);
 
-  Serial.println("Bluefruit52 HID Keyboard Example");
-  Serial.println("--------------------------------");
+  Serial.println("Bluefruit52 HID Camera Shutter Example");
+  Serial.println("--------------------------------------");
 
   Serial.println();
   Serial.println("Go to your phone's Bluetooth settings to pair your device");
-  Serial.println("then open an application that accepts keyboard input");
+  Serial.println("then open an Camera application");
 
   Serial.println();
-  Serial.println("Enter the character(s) to send:");
-  Serial.println();  
+  Serial.printf("Wire your Pin %d to GND to capture picture\n", PIN_SHUTTER);
+  Serial.println();
 
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
@@ -79,29 +87,31 @@ void setupAdv(void)
 
 void loop() 
 {
-  // Only send KeyRelease if previously pressed to avoid sending
-  // multiple keyRelease reports (that consume memory and bandwidth)
-  if ( hasKeyPressed )
+  // Connected and Bonded/Paired
+  if ( Bluefruit.connected() && Bluefruit.connBonded() )
   {
-    hasKeyPressed = false;
-    blehid.keyRelease();
-    
-    // Delay a bit after a report
-    delay(5);
-  }
-    
-  if (Serial.available())
-  {
-    char ch = (char) Serial.read();
+    // Pin is wired to GND
+    if ( digitalRead(PIN_SHUTTER) == 0 )
+    {
+      // Turn on LED Red when start sending
+      digitalWrite(LED_RED, 1);
+      
+      // Send Volumn Down key press
+      // Check BLEHidGerneric.h for list of defined consumer usage code
+      blehid.consumerKeyPress(HID_USAGE_CONSUMER_VOLUME_DECREMENT);
 
-    // echo
-    Serial.write(ch); 
+      // Delay a bit between repots
+      delay(10);
+      
+      // Send key release
+      blehid.consumerKeyRelease();
 
-    blehid.keyPress(ch);
-    hasKeyPressed = true;
-    
-    // Delay a bit after a report
-    delay(5);
+      // Turn off LED Red
+      digitalWrite(LED_RED, 0);
+
+      // Delay to avoid constant capturing
+      delay(500);
+    }
   }
 }
 

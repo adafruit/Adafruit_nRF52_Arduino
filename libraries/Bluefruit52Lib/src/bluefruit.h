@@ -41,7 +41,9 @@
 #include "BLEAdvertising.h"
 #include "BLECharacteristic.h"
 #include "BLEService.h"
+
 #include "BLECentral.h"
+#include "BLECentralCharacteristic.h"
 
 // Services
 #include "services/BLEDis.h"
@@ -146,9 +148,8 @@ class AdafruitBluefruit
 
     uint16_t _conn_hdl;
     bool     _bonded;
-    // TODO move to bonding place
 
-public: // temporary
+public: // TODO temporary for bledfu to load bonding data
     struct
     {
       // Keys

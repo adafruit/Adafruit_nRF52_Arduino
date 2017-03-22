@@ -14,7 +14,6 @@
 #include <bluefruit.h>
 
 BLEDis bledis;
-BLEUart bleuart;
 BLEHidAdafruit blehid;
 
 #define MOVE_STEP    10
@@ -41,11 +40,8 @@ void setup()
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
-  bledis.setModel("Bluefruit Feather52");
+  bledis.setModel("Bluefruit Feather 52");
   bledis.begin();
-
-  // Configure and Start BLE Uart Service
-  bleuart.begin();
 
   // BLE HID
   blehid.begin();

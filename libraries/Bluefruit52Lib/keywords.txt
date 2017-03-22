@@ -189,6 +189,16 @@ notifyEnabled	KEYWORD2
 #######################################
 # Constants (LITERAL1)
 #######################################
+LED_RED	LITERAL1
+LED_BLUE	LITERAL1
+
+LED_BUILTIN	LITERAL1
+LED_CONN	LITERAL1
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
 CHR_PROPS_BROADCAST	LITERAL1
 CHR_PROPS_READ	LITERAL1
 CHR_PROPS_WRITE_WO_RESP	LITERAL1

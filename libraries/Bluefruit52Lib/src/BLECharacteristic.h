@@ -115,15 +115,12 @@ class BLECharacteristic
     BLECharacteristic(void);
     BLECharacteristic(BLEUuid bleuuid);
 
-    BLEService& parentService()
-    {
-      return *_service;
-    }
+    BLEService& parentService() { return *_service; }
 
-    void setUuid(BLEUuid bleuuid);
     void setTempMemory(void);
 
-    // Configure
+    /*------------- Configure -------------*/
+    void setUuid(BLEUuid bleuuid);
     void setProperties(uint8_t prop);
     void setPermission(BleSecurityMode read_perm, BleSecurityMode write_perm);
     void setMaxLen(uint16_t max_len);
@@ -131,10 +128,9 @@ class BLECharacteristic
     void setStringDescriptor(const char* descriptor); // aka user descriptor
     void setReportRefDescriptor(uint8_t id, uint8_t type);
 
-    // Callback
+    /*------------- Callback -------------*/
     void setWriteCallback(write_cb_t fp);
     void setCccdWriteCallback(write_cccd_cb_t fp);
-
     void setReadAuthorizeCallback(read_authorize_cb_t fp);
     void setWriteAuthorizeCallbak(write_authorize_cb_t fp);
 
@@ -142,7 +138,7 @@ class BLECharacteristic
 
     ble_gatts_char_handles_t handles(void);
 
-    // Write
+    /*------------- Write -------------*/
     err_t write(const void* data, int len, uint16_t offset = 0);
     err_t write(const char   * str);
 
@@ -151,24 +147,21 @@ class BLECharacteristic
     err_t write(uint16_t num);
     err_t write(uint8_t  num);
 
-    // Read
+    /*------------- Read -------------*/
     uint16_t read(void* buffer, int bufsize, uint16_t offset = 0);
     uint16_t read(uint32_t* num);
     uint16_t read(uint16_t* num);
     uint16_t read(uint8_t*  num);
 
-    // Notify
+    /*------------- Notify -------------*/
     bool  notifyEnabled(void);
-
     err_t notify(const void* data, int len, uint16_t offset);
     err_t notify(const void* data, int len);
     err_t notify(const char   * str);
-
     err_t notify(int      num);
     err_t notify(uint32_t num);
     err_t notify(uint16_t num);
     err_t notify(uint8_t  num);
-
 
 
     friend class AdafruitBluefruit;
