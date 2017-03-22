@@ -38,18 +38,25 @@
 
 #define MAX_DESCIRPTORS   8
 
+void BLECentralCharacteristic::_init(void)
+{
+  _cccd_handle = 0;
+
+  _notify_cb = NULL;
+}
+
 BLECentralCharacteristic::BLECentralCharacteristic(void)
   : uuid()
 {
   varclr(&_chr);
-  _cccd_handle = 0;
+  _init();
 }
 
 BLECentralCharacteristic::BLECentralCharacteristic(ble_gattc_char_t* gattc_char)
   : uuid(gattc_char->uuid)
 {
   _chr = (*gattc_char);
-  _cccd_handle = 0;
+  _init();
 }
 
 uint16_t BLECentralCharacteristic::valueHandle()
@@ -78,4 +85,66 @@ bool BLECentralCharacteristic::discoverDescriptor(void)
   }
 
   return true;
+}
+
+void BLECentralCharacteristic::begin(void)
+{
+  // Currently Only register to Bluefruit if callback is installed
+  if ( _notify_cb )
+  {
+    (void) Bluefruit.Central._registerCharacteristic(this);
+  }
+}
+
+uint16_t BLECentralCharacteristic::read(void* buffer, int bufsize, uint16_t offset)
+{
+  VERIFY_STATUS( sd_ble_gattc_read(Bluefruit.Central.connHandle(), _chr.handle_value, offset), 0 );
+
+  return ERROR_NONE;
+}
+
+void BLECentralCharacteristic::setNotifyCallback(notify_cb_t fp)
+{
+  _notify_cb = fp;
+}
+
+bool BLECentralCharacteristic::enableNotify(void)
+{
+  uint16_t value = 0x0001;
+  ble_gattc_write_params_t param =
+  {
+      .write_op = BLE_GATT_OP_WRITE_CMD,
+      .flags    = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_WRITE,
+      .handle   = _cccd_handle,
+      .offset   = 0,
+      .len      = 2,
+      .p_value  = (uint8_t*) &value
+  };
+
+  // TODO consume a TX buffer
+  VERIFY_STATUS( sd_ble_gattc_write(Bluefruit.Central.connHandle(), &param), false );
+
+  return true;
+}
+
+void BLECentralCharacteristic::_eventHandler(ble_evt_t* event)
+{
+  switch(event->header.evt_id)
+  {
+    case BLE_GATTC_EVT_HVX:
+    {
+      ble_gattc_evt_hvx_t* hvx = &event->evt.gattc_evt.params.hvx;
+
+      if ( hvx->type == BLE_GATT_HVX_NOTIFICATION )
+      {
+        if (_notify_cb) _notify_cb(*this, hvx->data, hvx->len);
+      }else
+      {
+
+      }
+    }
+    break;
+
+    default: break;
+  }
 }

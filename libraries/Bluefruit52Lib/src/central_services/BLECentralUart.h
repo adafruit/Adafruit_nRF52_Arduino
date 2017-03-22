@@ -52,6 +52,8 @@ class BLECentralUart : public BLECentralService
     virtual err_t begin(void);
     virtual bool  discover(uint16_t start_handle = 1);
 
+    bool enableNotify(void);
+
   private:
     BLECentralCharacteristic _txd;
     BLECentralCharacteristic _rxd;

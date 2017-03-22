@@ -50,6 +50,11 @@ err_t BLECentralUart::begin(void)
   return ERROR_NONE;
 }
 
+void bleuart_central_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len)
+{
+
+}
+
 bool BLECentralUart::discover(uint16_t start_handle)
 {
   // Call BLECentralService discover
@@ -73,6 +78,18 @@ bool BLECentralUart::discover(uint16_t start_handle)
     }
   }
 
-  // true if both RXD & TXD are found
-  return ( _rxd.valueHandle() && _txd.valueHandle() );
+  // Check if both RXD & TXD are found
+  VERIFY ( _rxd.valueHandle() && _txd.valueHandle() );
+
+  _txd.setNotifyCallback(bleuart_central_notify_cb);
+
+  _rxd.begin();
+  _txd.begin();
+
+  return true;
+}
+
+bool BLECentralUart::enableNotify(void)
+{
+  return _txd.enableNotify();
 }

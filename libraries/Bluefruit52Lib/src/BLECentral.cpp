@@ -36,7 +36,7 @@
 
 #include "bluefruit.h"
 
-#define BLE_CENTRAL_TIMEOUT   10000
+#define BLE_CENTRAL_TIMEOUT     10000
 
 /**
  * Constructor
@@ -48,6 +48,9 @@ BLECentral::BLECentral(void)
   _evt_sem     = NULL;
   _evt_buf     = NULL;
   _evt_bufsize = 0;
+
+  _chars_count = 0;
+  for(uint8_t i=0; i<BLE_CENTRAL_MAX_CHARS; i++) _chars_list[i] = NULL;
 
   _scan_cb     = NULL;
   _scan_param  = (ble_gap_scan_params_t) {
@@ -69,6 +72,14 @@ BLECentral::BLECentral(void)
 void BLECentral::begin(void)
 {
   _evt_sem = xSemaphoreCreateBinary();
+}
+
+bool BLECentral::_registerCharacteristic(BLECentralCharacteristic* chr)
+{
+  if ( _chars_count == BLE_CENTRAL_MAX_CHARS ) return false;
+  _chars_list[ _chars_count++ ] = chr;
+
+  return true;
 }
 
 /*------------------------------------------------------------------*/
@@ -352,6 +363,9 @@ void BLECentral::_event_handler(ble_evt_t* evt)
       }
     break;
 
+    /*------------------------------------------------------------------*/
+    /* DISCOVERY
+     *------------------------------------------------------------------*/
     case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
     {
       ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
@@ -428,5 +442,15 @@ void BLECentral::_event_handler(ble_evt_t* evt)
     break;
 
     default: break;
+  }
+
+  // GATT characteristics event handler
+  uint16_t conn_handle = evt->evt.common_evt.conn_handle;
+  if ( conn_handle == _conn_hdl)
+  {
+    for(int i=0; i<_chars_count; i++)
+    {
+      _chars_list[i]->_eventHandler(evt);
+    }
   }
 }

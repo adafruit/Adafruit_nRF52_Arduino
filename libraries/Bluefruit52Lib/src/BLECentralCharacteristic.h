@@ -48,13 +48,36 @@ class BLECentralCharacteristic
     BLECentralCharacteristic(void);
     BLECentralCharacteristic(ble_gattc_char_t* gattc_char);
 
+    bool discoverDescriptor(void);
+    void begin(void);
+
     uint16_t valueHandle();
 
-    bool discoverDescriptor(void);
+    /*------------- Read -------------*/
+    uint16_t read(void* buffer, int bufsize, uint16_t offset = 0);
+
+    /*------------- Write -------------*/
+
+    /*------------- Notify -------------*/
+    bool enableNotify(void);
+
+
+    /*------------- Callbacks -------------*/
+    typedef void (*notify_cb_t  ) (BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
+    typedef void (*indicate_cb_t) (BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
+
+    void setNotifyCallback(notify_cb_t fp);
 
   private:
     ble_gattc_char_t _chr;
     uint16_t         _cccd_handle;
+
+    notify_cb_t      _notify_cb;
+
+    void _init(void);
+    void _eventHandler(ble_evt_t* event);
+
+    friend class BLECentral;
 };
 
 #endif /* BLECENTRALCHARACTERISTIC_H_ */

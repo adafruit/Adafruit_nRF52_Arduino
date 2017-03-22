@@ -46,6 +46,9 @@
 #include "BLECentralCharacteristic.h"
 #include "BLECentralService.h"
 
+#define BLE_CENTRAL_MAX_CHARS   20
+
+
 class AdafruitBluefruit;
 
 class BLECentral
@@ -91,8 +94,6 @@ class BLECentral
 
     bool discoverCharacteristic(BLECentralCharacteristic& chr);
 
-    // Called by discoverCharacteristic(), user should not call this directly
-    uint16_t _discoverDescriptor(ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t max_count);
 
     /*------------------------------------------------------------------*/
     /* CALLBACKS
@@ -103,12 +104,25 @@ class BLECentral
     void setConnectCallback   ( connect_callback_t    fp);
     void setDisconnectCallback( disconnect_callback_t fp);
 
+
+
+    /*------------------------------------------------------------------*/
+    /* INTERNAL USAGE ONLY
+     *------------------------------------------------------------------*/
+    // Called by discoverCharacteristic(), user should not call this directly
+    uint16_t _discoverDescriptor(ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t max_count);
+    bool     _registerCharacteristic(BLECentralCharacteristic* chr);
+
   private:
     uint16_t _conn_hdl;
 
     SemaphoreHandle_t _evt_sem;
     void*             _evt_buf;
     uint16_t          _evt_bufsize;
+
+    BLECentralCharacteristic* _chars_list[BLE_CENTRAL_MAX_CHARS];
+    uint8_t                   _chars_count;
+
 
     ble_gap_scan_params_t _scan_param;
     scan_callback_t       _scan_cb;
