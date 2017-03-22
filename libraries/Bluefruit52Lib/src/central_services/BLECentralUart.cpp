@@ -37,7 +37,7 @@
 #include "bluefruit.h"
 
 BLECentralUart::BLECentralUart(uint16_t fifo_depth)
-  : BLECentralService(BLEUART_UUID_SERVICE), _txd(), _rxd(), _rxd_fifo(fifo_depth, 1)
+  : BLECentralService(BLEUART_UUID_SERVICE), _txd(), _rxd(), _fifo(fifo_depth, 1)
 {
 
 }
@@ -52,7 +52,10 @@ err_t BLECentralUart::begin(void)
 
 void bleuart_central_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len)
 {
+  BLECentralUart& uart_svc = (BLECentralUart&) chr.parentService();
+  uart_svc._fifo.write(data, len);
 
+  // invoke callback
 }
 
 bool BLECentralUart::discover(uint16_t start_handle)
@@ -92,4 +95,44 @@ bool BLECentralUart::discover(uint16_t start_handle)
 bool BLECentralUart::enableNotify(void)
 {
   return _txd.enableNotify();
+}
+
+/*------------------------------------------------------------------*/
+/* STREAM API
+ *------------------------------------------------------------------*/
+int BLECentralUart::read (void)
+{
+  uint8_t ch;
+  return read(&ch, 1) ? (int) ch : EOF;
+}
+
+int BLECentralUart::read (uint8_t * buf, size_t size)
+{
+  return _fifo.read(buf, size);
+}
+
+size_t BLECentralUart::write (uint8_t b)
+{
+  return write(&b, 1);
+}
+
+size_t BLECentralUart::write (const uint8_t *content, size_t len)
+{
+  // do nothing
+}
+
+int BLECentralUart::available (void)
+{
+  return _fifo.count();
+}
+
+int BLECentralUart::peek (void)
+{
+  uint8_t ch;
+  return _fifo.peek(&ch) ? (int) ch : EOF;
+}
+
+void BLECentralUart::flush (void)
+{
+  _fifo.clear();
 }

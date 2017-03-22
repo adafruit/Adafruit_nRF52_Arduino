@@ -44,7 +44,7 @@
 
 #include "services/BLEUart.h"
 
-class BLECentralUart : public BLECentralService
+class BLECentralUart : public BLECentralService, public Stream
 {
   public:
     BLECentralUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
@@ -54,11 +54,26 @@ class BLECentralUart : public BLECentralService
 
     bool enableNotify(void);
 
+    // Stream API
+    virtual int       read       ( void );
+    virtual int       read       ( uint8_t * buf, size_t size );
+    virtual size_t    write      ( uint8_t b );
+    virtual size_t    write      ( const uint8_t *content, size_t len );
+    virtual int       available  ( void );
+    virtual int       peek       ( void );
+    virtual void      flush      ( void );
+
+    // pull in write(str) and write(buf, size) from Print
+    using Print::write;
+
+
   private:
     BLECentralCharacteristic _txd;
     BLECentralCharacteristic _rxd;
 
-    Adafruit_FIFO     _rxd_fifo;
+    Adafruit_FIFO     _fifo;
+
+    friend void bleuart_central_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
 };
 
 #endif /* BLECENTRALUART_H_ */

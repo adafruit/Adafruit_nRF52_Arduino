@@ -40,7 +40,7 @@
 #include "BLEUuid.h"
 #include "BLECharacteristic.h"
 
-// forward declaration
+// Forward declaration
 class BLECentralService;
 
 class BLECentralCharacteristic
