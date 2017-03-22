@@ -105,7 +105,7 @@ class BLECharacteristic
     write_cccd_cb_t      _cccd_wr_cb;
 
     void _init(void);
-    void eventHandler(ble_evt_t* event);
+    void _eventHandler(ble_evt_t* event);
   
   public:
     BLEUuid uuid;

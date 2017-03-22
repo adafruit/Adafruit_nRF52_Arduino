@@ -268,7 +268,7 @@ err_t BLECharacteristic::begin(void)
     (void) ref_hdl; // not used
   }
 
-  // Currently Only register to Bluefruit when having callback support
+  // Currently Only register to Bluefruit if callback is installed
   // And The Characteristic must not be temporary memory i.e local variable
   if ( !_is_temp &&
        (_rd_authorize_cb || _wr_authorize_cb || _wr_cb || _cccd_wr_cb) )
@@ -283,7 +283,7 @@ err_t BLECharacteristic::begin(void)
  * Call by Bluefruit event poll()
  * @param event
  */
-void BLECharacteristic::eventHandler(ble_evt_t* event)
+void BLECharacteristic::_eventHandler(ble_evt_t* event)
 {
   switch(event->header.evt_id)
   {

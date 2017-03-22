@@ -678,7 +678,7 @@ COMMENT_OUT(
   // GATTs characteristics event handler
   for(int i=0; i<_chars_count; i++)
   {
-    _chars_list[i]->eventHandler(evt);
+    _chars_list[i]->_eventHandler(evt);
   }
 }
 /*------------------------------------------------------------------*/
