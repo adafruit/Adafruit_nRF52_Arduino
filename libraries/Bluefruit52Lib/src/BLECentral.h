@@ -90,7 +90,8 @@ class BLECentral
 
     bool discoverCharacteristic(BLECentralCharacteristic& chr);
 
-    uint16_t discoverDescriptor(ble_gattc_desc_t desc_arr[], uint16_t max_count);
+    // Called by discoverCharacteristic(), user should not call this directly
+    uint16_t _discoverDescriptor(ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t max_count);
 
     /*------------------------------------------------------------------*/
     /* CALLBACKS

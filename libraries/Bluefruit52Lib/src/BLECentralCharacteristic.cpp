@@ -59,17 +59,21 @@ uint16_t BLECentralCharacteristic::valueHandle()
 
 bool BLECentralCharacteristic::discoverDescriptor(void)
 {
-  ble_gattc_desc_t desc_arr[MAX_DESCIRPTORS];
-  uint16_t count = Bluefruit.Central.discoverDescriptor(desc_arr, arrcount(desc_arr));
+  struct {
+    uint16_t count;
+    ble_gattc_desc_t descs[MAX_DESCIRPTORS];
+  }disc_rsp;
+
+  uint16_t count = Bluefruit.Central._discoverDescriptor((ble_gattc_evt_desc_disc_rsp_t*) &disc_rsp, MAX_DESCIRPTORS);
 
   // only care CCCD for now
   for(uint16_t i=0; i<count; i++)
   {
-    if ( desc_arr[i].uuid.type == BLE_UUID_TYPE_BLE &&
-         desc_arr[i].uuid.uuid == BLE_UUID_DESCRIPTOR_CLIENT_CHAR_CONFIG )
+    if ( disc_rsp.descs[i].uuid.type == BLE_UUID_TYPE_BLE &&
+         disc_rsp.descs[i].uuid.uuid == BLE_UUID_DESCRIPTOR_CLIENT_CHAR_CONFIG )
     {
-      LOG_LV1(BLECentralUart, "Found CCDD: handle = %d", desc_arr[i].handle);
-      _cccd_handle = desc_arr[i].handle;
+      LOG_LV1(BLECentralUart, "Found CCDD: handle = %d", disc_rsp.descs[i].handle);
+      _cccd_handle = disc_rsp.descs[i].handle;
     }
   }
 
