@@ -16,7 +16,7 @@
 #define ARDUINO_MAIN
 #include "Arduino.h"
 
-#define MEMINFO_INTERVAL    30000
+#define MEMINFO_INTERVAL    60000
 
 // Weak empty variant initialization function.
 // May be redefined by variant files.
