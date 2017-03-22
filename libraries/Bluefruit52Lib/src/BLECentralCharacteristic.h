@@ -49,11 +49,12 @@ class BLECentralCharacteristic
     BLECentralCharacteristic(ble_gattc_char_t* gattc_char);
 
     uint16_t valueHandle();
-//    uint16_t cccdHandle();
+
+    bool discoverDescriptor(void);
 
   private:
     ble_gattc_char_t _chr;
-
+    uint16_t         _cccd_handle;
 };
 
 #endif /* BLECENTRALCHARACTERISTIC_H_ */
