@@ -64,12 +64,16 @@ bool BLECentralUart::discover(uint16_t start_handle)
 
     if (uuid16 == 0x0002)
     {
+      LOG_LV1(BLECentralUart, "Found RXD");
       _rxd = chr_temp;
     }else if (uuid16 == 0x0003)
     {
+      LOG_LV1(BLECentralUart, "Found TXD");
       _txd = chr_temp;
 
-      // TXD has CCCD
+      // TXD has CCCD, discovery it
+      ble_gattc_desc_t desc_arr[8];
+      Bluefruit.Central.discoverDescriptor(desc_arr, arrcount(desc_arr));
     }
   }
 
