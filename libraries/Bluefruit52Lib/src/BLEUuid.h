@@ -54,7 +54,7 @@ class BLEUuid
 
     void get(uint16_t& uuid16);
 
-    uint8_t size (void) const;
+    size_t size (void) const;
 
     // Add UUID128 if needed, in case of UUID16, no actions is required
     void begin(void);

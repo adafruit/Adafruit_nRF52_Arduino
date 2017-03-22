@@ -54,11 +54,15 @@ void BLEUuid::get(uint16_t& uuid16 )
 
 }
 
-uint8_t BLEUuid::size (void) const
+/**
+ * Get size of uuid in BIT
+ * @return 16, 32 or 128
+ */
+size_t BLEUuid::size (void) const
 {
   // uuid 16
-  if (_uuid.type == BLE_UUID_TYPE_BLE ) return 2;
-  if (_uuid128 != NULL ) return 16;
+  if (_uuid.type == BLE_UUID_TYPE_BLE ) return 16;
+  if (_uuid128 != NULL || _uuid.type >= BLE_UUID_TYPE_VENDOR_BEGIN) return 128;
 
   // unknown
   return 0;

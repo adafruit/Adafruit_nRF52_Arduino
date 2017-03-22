@@ -105,11 +105,11 @@ bool BLEAdvertising::addUuid(BLEUuid bleuuid)
 {
   switch ( bleuuid.size() )
   {
-    case 2:
+    case 16:
       return addData(BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE, &bleuuid._uuid.uuid, 2);
     break;
 
-    case 16:
+    case 128:
       return addData(BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_MORE_AVAILABLE, bleuuid._uuid128, 16);
     break;
 
