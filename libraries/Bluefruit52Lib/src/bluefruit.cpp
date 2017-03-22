@@ -460,9 +460,7 @@ void adafruit_ble_task(void* arg)
 
 void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 {
-  #if CFG_DEBUG
-  Serial.printf("[BLE]: %s\n", dbg_ble_event_str(evt->header.evt_id));
-  #endif
+  LOG_LV1(BLE, dbg_ble_event_str(evt->header.evt_id));
 
   /*------------- BLE Peripheral Events -------------*/
   switch ( evt->header.evt_id  )
@@ -635,7 +633,6 @@ COMMENT_OUT(
     case BLE_GAP_EVT_CONN_SEC_UPDATE:
     {
       // Connection is secured aka Paired
-
       COMMENT_OUT( ble_gap_conn_sec_t* conn_sec = (ble_gap_conn_sec_t*) &evt->evt.gap_evt.params.conn_sec_update.conn_sec; )
 
       // Previously bonded --> secure by re-connection process

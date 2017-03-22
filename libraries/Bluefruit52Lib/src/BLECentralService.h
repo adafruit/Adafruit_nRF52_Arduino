@@ -42,8 +42,6 @@
 class BLECentralService
 {
   protected:
-    ble_gattc_handle_range_t _hdl_range;
-
     void  _init(void);
 
   public:

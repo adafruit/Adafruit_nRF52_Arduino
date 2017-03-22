@@ -55,5 +55,24 @@ bool BLECentralUart::discover(uint16_t start_handle)
   // Call BLECentralService discover
   VERIFY( BLECentralService::discover(start_handle) );
 
-  return true;
+  // Discover TXD, RXD characteristics
+  BLECentralCharacteristic chr_temp;
+  while ( Bluefruit.Central.discoverCharacteristic(chr_temp) )
+  {
+    uint16_t uuid16;
+    chr_temp.uuid.get(&uuid16);
+
+    if (uuid16 == 0x0002)
+    {
+      _rxd = chr_temp;
+    }else if (uuid16 == 0x0003)
+    {
+      _txd = chr_temp;
+
+      // TXD has CCCD
+    }
+  }
+
+  // true if both RXD & TXD are found
+  return ( _rxd.valueHandle() && _txd.valueHandle() );
 }

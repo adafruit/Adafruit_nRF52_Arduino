@@ -38,8 +38,6 @@
 
 void BLECentralService::_init(void)
 {
-  _hdl_range.start_handle = 1;
-  _hdl_range.end_handle   = 0xffff;
 }
 
 BLECentralService::BLECentralService(void)
@@ -65,5 +63,5 @@ err_t BLECentralService::begin(void)
 
 bool BLECentralService::discover(uint16_t start_handle)
 {
-  return Bluefruit.Central.discoverService(uuid, &_hdl_range, start_handle);
+  return Bluefruit.Central.discoverService(uuid, start_handle);
 }

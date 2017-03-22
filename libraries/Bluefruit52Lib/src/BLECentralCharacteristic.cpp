@@ -47,3 +47,8 @@ BLECentralCharacteristic::BLECentralCharacteristic(ble_gattc_char_t* gattc_char)
 {
   _chr = (*gattc_char);
 }
+
+uint16_t BLECentralCharacteristic::valueHandle()
+{
+  return _chr.handle_value;
+}

@@ -205,7 +205,7 @@ void BLECentral::setDisconnectCallback( disconnect_callback_t fp)
 /*------------------------------------------------------------------*/
 /* DISCOVERY
  *------------------------------------------------------------------*/
-bool BLECentral::discoverService(BLEUuid uuid, ble_gattc_handle_range_t* hdl_range, uint16_t start_handle)
+bool BLECentral::discoverService(BLEUuid uuid, uint16_t start_handle)
 {
   uuid.begin(); // add uuid128 if needed
 
@@ -223,10 +223,7 @@ bool BLECentral::discoverService(BLEUuid uuid, ble_gattc_handle_range_t* hdl_ran
   if ( (disc_svc.count == 1) && (uuid == disc_svc.services[0].uuid) )
   {
     _disc_hdl_range = disc_svc.services[0].handle_range;
-    (*hdl_range) = disc_svc.services[0].handle_range;;
-
-    PRINT_INT(_disc_hdl_range.start_handle);
-    PRINT_INT(_disc_hdl_range.end_handle);
+    LOG_LV1(Discover, "Handle start = %d, end = %d", _disc_hdl_range.start_handle, _disc_hdl_range.end_handle);
     return true;
   }
 
@@ -245,8 +242,7 @@ bool BLECentral::discoverCharacteristic(BLECentralCharacteristic& chr)
   _evt_buf     = &disc_chr;
   _evt_bufsize = sizeof(disc_chr);
 
-  PRINT_INT(_disc_hdl_range.start_handle);
-  PRINT_INT(_disc_hdl_range.end_handle);
+  LOG_LV1(Discover, "Handle start = %d, end = %d", _disc_hdl_range.start_handle, _disc_hdl_range.end_handle);
 
   VERIFY_STATUS( sd_ble_gattc_characteristics_discover(_conn_hdl, &_disc_hdl_range), false );
 
@@ -328,12 +324,15 @@ void BLECentral::_event_handler(ble_evt_t* evt)
           {
             ble_gattc_evt_prim_srvc_disc_rsp_t* svc_rsp = &gattc->params.prim_srvc_disc_rsp;
 
-            PRINT_INT(svc_rsp->count);
+            LOG_LV1(Discover, "Service Count: %d", svc_rsp->count);
 
-            // len of the discovered services
-            uint16_t len = sizeof(ble_gattc_evt_prim_srvc_disc_rsp_t) + (svc_rsp->count-1)*sizeof(ble_gattc_service_t);
-            _evt_bufsize = min16(_evt_bufsize, len);
+            COMMENT_OUT (
+              uint16_t len = sizeof(ble_gattc_evt_prim_srvc_disc_rsp_t) + (svc_rsp->count-1)*sizeof(ble_gattc_service_t);
+              _evt_bufsize = min16(_evt_bufsize, len);
+            )
 
+            // Only support 1 service
+            _evt_bufsize = min16(_evt_bufsize, sizeof(ble_gattc_evt_prim_srvc_disc_rsp_t));
             memcpy(_evt_buf, svc_rsp, _evt_bufsize);
           }else
           {
@@ -353,7 +352,7 @@ void BLECentral::_event_handler(ble_evt_t* evt)
 
       if ( _conn_hdl == gattc->conn_handle )
       {
-        PRINT_INT(chr_rsp->count);
+        LOG_LV1(Discover, "Characteristic Count: %d", chr_rsp->count);
         if ( (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS) && (chr_rsp->count > 0) )
         {
           // TODO support only 1 discovered char now
