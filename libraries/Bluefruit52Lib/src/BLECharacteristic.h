@@ -104,7 +104,7 @@ class BLECharacteristic
     write_cb_t           _wr_cb;
     write_cccd_cb_t      _cccd_wr_cb;
 
-    void init(void);
+    void _init(void);
     void eventHandler(ble_evt_t* event);
   
   public:
@@ -128,7 +128,7 @@ class BLECharacteristic
     void setStringDescriptor(const char* descriptor); // aka user descriptor
     void setReportRefDescriptor(uint8_t id, uint8_t type);
 
-    /*------------- Callback -------------*/
+    /*------------- Callbacks -------------*/
     void setWriteCallback(write_cb_t fp);
     void setCccdWriteCallback(write_cccd_cb_t fp);
     void setReadAuthorizeCallback(read_authorize_cb_t fp);

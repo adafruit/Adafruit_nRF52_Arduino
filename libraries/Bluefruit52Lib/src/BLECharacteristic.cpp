@@ -36,7 +36,7 @@
 
 #include "bluefruit.h"
 
-void BLECharacteristic::init(void)
+void BLECharacteristic::_init(void)
 {
   _is_temp    = false;
 
@@ -68,13 +68,13 @@ void BLECharacteristic::init(void)
 BLECharacteristic::BLECharacteristic(void)
   : uuid()
 {
-  init();
+  _init();
 }
 
 BLECharacteristic::BLECharacteristic(BLEUuid bleuuid)
   : uuid(bleuuid)
 {
-  init();
+  _init();
 }
 
 void BLECharacteristic::setUuid(BLEUuid bleuuid)

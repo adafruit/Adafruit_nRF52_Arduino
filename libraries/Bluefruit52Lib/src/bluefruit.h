@@ -121,7 +121,7 @@ class AdafruitBluefruit
     COMMENT_OUT ( bool setPIN(const char* pin); )
 
     // internal usage only
-    err_t _registerCharacteristic(BLECharacteristic* chars);
+    bool _registerCharacteristic(BLECharacteristic* chars);
 
   private:
     /*------------- BLE para -------------*/

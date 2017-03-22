@@ -314,12 +314,12 @@ void AdafruitBluefruit::setDisconnectCallback( disconnect_callback_t fp )
   _discconnect_cb = fp;
 }
 
-err_t AdafruitBluefruit::_registerCharacteristic(BLECharacteristic* chars)
+bool AdafruitBluefruit::_registerCharacteristic(BLECharacteristic* chars)
 {
-  if ( _chars_count == BLE_MAX_CHARS ) return NRF_ERROR_NO_MEM;
+  if ( _chars_count == BLE_MAX_CHARS ) return false;
   _chars_list[ _chars_count++ ] = chars;
 
-  return ERROR_NONE;
+  return true;
 }
 
 uint16_t AdafruitBluefruit::connHandle(void)
@@ -536,11 +536,14 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
     break;
 
     case BLE_EVT_TX_COMPLETE:
-      if ( _txbuf_sem )
+      if ( evt->evt.common_evt.conn_handle == _conn_hdl )
       {
-        for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
+        if ( _txbuf_sem )
         {
-          xSemaphoreGive(_txbuf_sem);
+          for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
+          {
+            xSemaphoreGive(_txbuf_sem);
+          }
         }
       }
     break;
