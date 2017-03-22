@@ -49,75 +49,25 @@ class BLEUuid
     BLEUuid(uint16_t uuid16           ) { set(uuid16); }
     BLEUuid(uint8_t const uuid128[16] ) { set(uuid128); }
 
-    void set(uint16_t uuid16)
-    {
-      _uuid.type = BLE_UUID_TYPE_BLE;
-      _uuid.uuid = uuid16;
-      _uuid128   = NULL;
-    }
+    void set(uint16_t uuid16);
+    void set(uint8_t const uuid128[16]);
 
-    void set(uint8_t const uuid128[16])
-    {
-      _uuid.type = BLE_UUID_TYPE_UNKNOWN; _uuid.uuid = 0;
-      _uuid128 = uuid128;
-    }
+    void get(uint16_t& uuid16);
 
-    uint8_t size (void)
-    {
-      // uuid 16
-      if (_uuid.type == BLE_UUID_TYPE_BLE ) return 2;
-      if (_uuid128 != NULL ) return 16;
+    uint8_t size (void) const;
 
-      // unknown
-      return 0;
-    }
+    // Add UUID128 if needed, in case of UUID16, no actions is required
+    void begin(void);
 
-    // Add UUID128 if any, in case of UUID16, no actions is required
-    // Application should call it anyway to be safe and consistent
-    void begin(void)
-    {
-      /* Add base uuid and decode to get uuid16
-       * This should cover the already added base uuid128 previously
-       */
-      if (_uuid.type == BLE_UUID_TYPE_UNKNOWN && _uuid128 != NULL )
-      {
-        (void) sd_ble_uuid_vs_add( (ble_uuid128_t const*) _uuid128, &_uuid.type );
-        (void) sd_ble_uuid_decode(16, _uuid128, &_uuid);
-      }
-    }
-
-    bool operator==(const BLEUuid&   uuid) const
-    {
-      return (this->_uuid.type == uuid._uuid.type) && (this->_uuid.uuid == uuid._uuid.uuid);
-    }
-
-    bool operator!=(const BLEUuid&   uuid) const
-    {
-      return !(*this == uuid);
-    }
-
-    bool operator==(const ble_uuid_t uuid) const
-    {
-      return (this->_uuid.type == uuid.type) && (this->_uuid.uuid == uuid.uuid);
-    }
-
-    bool operator!=(const ble_uuid_t uuid) const
-    {
-      return !(*this == uuid);
-    }
+    bool operator==(const BLEUuid&   uuid) const;
+    bool operator!=(const BLEUuid&   uuid) const;
+    bool operator==(const ble_uuid_t uuid) const;
+    bool operator!=(const ble_uuid_t uuid) const;
 
     // Overload copy operator to allow initialization from other type
-    BLEUuid& operator=(const uint16_t uuid)
-    {
-      set(uuid);
-      return *this;
-    }
-
-    BLEUuid& operator=(uint8_t const uuid128[16])
-    {
-      set(uuid128);
-      return *this;
-    }
+    BLEUuid& operator=(const uint16_t uuid);
+    BLEUuid& operator=(uint8_t const uuid128[16]);
+    BLEUuid& operator=(ble_uuid_t uuid);
 };
 
 // Service UUID
