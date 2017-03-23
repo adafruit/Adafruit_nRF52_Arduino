@@ -243,7 +243,7 @@ void analogWrite( uint32_t ulPin, uint32_t ulValue )
   for (int i = 0; i < PWM_COUNT; i++) {
     if (pwmChannelPins[i] == 0xFFFFFFFF || pwmChannelPins[i] == ulPin) {
       pwmChannelPins[i] = ulPin;
-      pwmChannelSequence[i] = ulValue;
+      pwmChannelSequence[i] = bit(15) | ulValue;
 
       NRF_PWM_Type* pwm = pwms[i];
 

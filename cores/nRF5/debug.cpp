@@ -225,7 +225,7 @@ const char* dbg_ble_event_str(uint16_t evt_id)
     return _gatts_evt_str[evt_id-BLE_GATTS_EVT_BASE];
   else
   {
-    sprintf(unknown_evt, "0x04X", evt_id);
+    sprintf(unknown_evt, "0x%04X", evt_id);
     return unknown_evt;
   }
 }
