@@ -22,8 +22,12 @@
 #include <stdint.h>
 
 #ifdef __cplusplus
+
+#include "HardwarePWM.h"
 extern "C" {
+
 #endif
+
 
 /*
  * \brief SAMD products have only one reference for ADC

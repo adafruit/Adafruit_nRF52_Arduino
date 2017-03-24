@@ -22,9 +22,6 @@
 #include "wiring_digital.h"
 #include <nrf.h>
 
-// Must match temp register in bootloader
-#define BOOTLOADER_VERSION_REGISTER     NRF_TIMER2->CC[0]
-
 const uint32_t g_ADigitalPinMap[] = {
   // D0 - D7
   0,  // xtal 1
@@ -71,7 +68,10 @@ const uint32_t g_ADigitalPinMap[] = {
 
 };
 
+// Must match temp register in bootloader
+#define BOOTLOADER_VERSION_REGISTER     NRF_TIMER2->CC[0]
 uint32_t bootloaderVersion = 0;
+
 void initVariant()
 {
   bootloaderVersion = BOOTLOADER_VERSION_REGISTER;

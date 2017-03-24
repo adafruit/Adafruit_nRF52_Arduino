@@ -122,6 +122,11 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
  */
 extern uint32_t bootloaderVersion;
 
+static inline bool isPinValid(uint32_t pin)
+{
+  return (pin < PINS_COUNT) && (pin != PIN_SERIAL_RX) && (pin != PIN_SERIAL_TX);
+}
+
 #ifdef __cplusplus
 }
 #endif
