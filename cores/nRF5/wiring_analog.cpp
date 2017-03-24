@@ -73,6 +73,7 @@ void analogWrite( uint32_t pin, uint32_t value )
       if ( !PWMx[i]->begun() ) PWMx[i]->begin();
 
       PWMx[i]->writePin(pin, value);
+      return;
     }
   }
 }
