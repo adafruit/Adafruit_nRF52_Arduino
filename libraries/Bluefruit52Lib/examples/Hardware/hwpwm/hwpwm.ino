@@ -15,13 +15,15 @@
 /*
  * This sketch use all 12 channels of 3 Hardware PWM.
  * Also change the resolution to max 15-bit.
- * Each PWM module (4 pin) also run with different frequency
+ * Each PWM Hardware group (4 pin) also run with different frequency
  * - PWM0 : clock/1  ~ 16Mhz
  * - PWM1 : clock/4  ~ 4Mhz
  * - PMW2 : clock/16 ~ 1Mhz
  * 
- * As the result LED BLUE will blink while fading unline LED RED which looks 
- * more solid
+ * Since LED RED and BLUE are on different Hardware PWM, 
+ * LED BLUE will blink (due to lower freq) while fading while LED RED
+ * looks more solid. Furthermore LED RED group write value (PWM1) is inverted 
+ * compared to LED BLUE (PWM2) --> They fade in opposite direction. 
  */
 
 #include <Arduino.h>
@@ -62,10 +64,6 @@ void setup()
   PWM2.begin();
   PWM2.setResolution(15);
   PWM2.setClockDiv(PWM_PRESCALER_PRESCALER_DIV_16); // default : freq = 1Mhz
-
-  PWM0.printInfo();
-  PWM1.printInfo();
-  PWM2.printInfo();
 }
 
 /**************************************************************************/
@@ -76,25 +74,38 @@ void setup()
 void loop()
 {
   const int maxValue = bit(15) - 1;
-
-  // fade in from min to max in increments of 5 points:
+  bool inverted;
+  
+  // fade in from min to max
+  // inverted PWM0 (false), PWM1 (true), PWM2 (false)
   for (int fadeValue = 0 ; fadeValue <= maxValue; fadeValue += 512) 
   {
+    inverted = false;
+    
     for (int i=0; i<12; i++)
     {
-      PWMx[i/4]->writePin( pins[i], fadeValue);
+      // Inverted for each PWM group
+      if (i%4)  inverted = !inverted; 
+      
+      PWMx[i/4]->writePin( pins[i], fadeValue, inverted);
     }
     
     // wait for 30 milliseconds to see the dimming effect
     delay(30);
   }
 
-  // fade out from max to min in increments of 5 points:
+  // fade out from max to min
+  // inverted PWM0 (false), PWM1 (true), PWM2 (false)
   for (int fadeValue = maxValue ; fadeValue >= 0; fadeValue -= 512) 
   {
+    inverted = false;
+     
     for (int i=0; i<12; i++)
     {
-      PWMx[i/4]->writePin( pins[i], fadeValue);
+      // Inverted for each PWM group
+      if (i%4)  inverted = !inverted; 
+      
+      PWMx[i/4]->writePin( pins[i], fadeValue, inverted);
     }
     
     // wait for 30 milliseconds to see the dimming effect
