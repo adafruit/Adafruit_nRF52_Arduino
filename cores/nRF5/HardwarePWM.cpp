@@ -110,9 +110,20 @@ void HardwarePWM::setClockDiv(uint8_t div)
   _pwm->PRESCALER = div;
 }
 
+/**
+ * Add pin to this group.
+ * @param pin Pin to add
+ * @return true if add succeeded, or pin is already added
+ */
 bool HardwarePWM::addPin(uint8_t pin)
 {
   VERIFY( isPinValid(pin) && (_count < MAX_CHANNELS) );
+
+  // Check if pin is already configured
+  for(uint8_t i=0; i<_count; i++)
+  {
+    if (_pwm->PSEL.OUT[i] == pin) return true;
+  }
 
   pinMode(pin, OUTPUT);
   digitalWrite(pin, LOW);

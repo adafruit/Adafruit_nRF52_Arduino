@@ -22,10 +22,7 @@
 #include <stdint.h>
 
 #ifdef __cplusplus
-
-#include "HardwarePWM.h"
 extern "C" {
-
 #endif
 
 
@@ -93,7 +90,7 @@ extern void analogReadResolution(int res);
  *
  * \param res
  */
-extern void analogWriteResolution(int res);
+extern void analogWriteResolution(uint8_t res);
 
 extern void analogOutputInit( void ) ;
 

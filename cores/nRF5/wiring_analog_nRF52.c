@@ -31,6 +31,7 @@ extern "C" {
 static uint32_t saadcReference = SAADC_CH_CONFIG_REFSEL_Internal;
 static uint32_t saadcGain      = SAADC_CH_CONFIG_GAIN_Gain1_6;
 
+#if 0
 #define PWM_COUNT 3
 
 static NRF_PWM_Type* pwms[PWM_COUNT] = {
@@ -45,19 +46,22 @@ static uint32_t pwmChannelPins[PWM_COUNT] = {
   0xFFFFFFFF
 };
 static uint16_t pwmChannelSequence[PWM_COUNT];
+#endif
 
 static int readResolution = 10;
-static int writeResolution = 8;
+//static int writeResolution = 8;
 
 void analogReadResolution( int res )
 {
   readResolution = res;
 }
 
+#if 0
 void analogWriteResolution( int res )
 {
   writeResolution = res;
 }
+#endif
 
 static inline uint32_t mapResolution( uint32_t value, uint32_t from, uint32_t to )
 {
@@ -228,6 +232,7 @@ uint32_t analogRead( uint32_t ulPin )
   return mapResolution(value, resolution, readResolution);
 }
 
+#if 0
 // Right now, PWM output only works on the pins with
 // hardware support.  These are defined in the appropriate
 // pins_*.c file.  For the rest of the pins, we default
@@ -267,6 +272,7 @@ void analogWrite( uint32_t ulPin, uint32_t ulValue )
     }
   }
 }
+#endif
 
 #ifdef __cplusplus
 }
