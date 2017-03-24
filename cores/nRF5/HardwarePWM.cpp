@@ -71,6 +71,7 @@ HardwarePWM::HardwarePWM(NRF_PWM_Type* pwm)
   for(int i=0; i<MAX_CHANNELS; i++) _pwm->PSEL.OUT[i] = 0xFFFFFFFF;
 }
 
+#if 0
 void HardwarePWM::printInfo(void)
 {
   PRINT_HEX( (uint32_t) _pwm);
@@ -97,6 +98,7 @@ void HardwarePWM::printInfo(void)
   }
   Serial.println();
 }
+#endif 
 
 void HardwarePWM::setResolution(uint8_t bitnum)
 {

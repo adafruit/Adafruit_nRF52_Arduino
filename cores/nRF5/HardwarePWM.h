@@ -83,7 +83,7 @@ class HardwarePWM
     bool writePin    (uint8_t pin, uint16_t value, bool inverted = false);
     bool writeChannel(uint8_t ch , uint16_t value, bool inverted = false);
 
-    void printInfo(void);
+//    void printInfo(void);
 };
 
 extern HardwarePWM PWM0;
