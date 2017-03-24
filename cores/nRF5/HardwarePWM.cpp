@@ -80,6 +80,7 @@ void HardwarePWM::printInfo(void)
   PRINT_INT(_pwm->PRESCALER);
   PRINT_INT(_pwm->DECODER);
   PRINT_INT(_pwm->LOOP);
+  PRINT_INT(_pwm->EVENTS_STOPPED);
   Serial.println();
 
   PRINT_HEX(_pwm->SEQ[0].PTR);
@@ -102,6 +103,12 @@ void HardwarePWM::setResolution(uint8_t bitnum)
   _pwm->COUNTERTOP = bit(bitnum) - 1;
 }
 
+void HardwarePWM::setClockDiv(uint8_t div)
+{
+  div = min8(div, PWM_PRESCALER_PRESCALER_DIV_128);
+  _pwm->PRESCALER = div;
+}
+
 bool HardwarePWM::addPin(uint8_t pin)
 {
   VERIFY( isPinValid(pin) && (_count < MAX_CHANNELS) );
@@ -109,12 +116,13 @@ bool HardwarePWM::addPin(uint8_t pin)
   pinMode(pin, OUTPUT);
   digitalWrite(pin, LOW);
 
-  if ( enabled() )
+  // Must disable before changing PSEL
+  if ( begun() )
   {
-    // disable before changing PSEL
-    disable();
+    stop();
     _pwm->PSEL.OUT[_count++] = pin;
-    enable();
+    begin();
+    _start();
   }else
   {
     _pwm->PSEL.OUT[_count++] = pin;
@@ -123,13 +131,20 @@ bool HardwarePWM::addPin(uint8_t pin)
   return true;
 }
 
-void HardwarePWM::start(void)
+bool HardwarePWM::begun (void)
 {
-  // update sequence count
-  _pwm->SEQ[0].CNT = MAX_CHANNELS;
+  return _pwm->ENABLE;
+}
 
-  // Unmark stopped
-//  _pwm->EVENTS_STOPPED = 0;
+void HardwarePWM::begin(void)
+{
+  _pwm->ENABLE = 1;
+}
+
+void HardwarePWM::_start(void)
+{
+  // update sequence count (depending on mode)
+  //  _pwm->SEQ[0].CNT = MAX_CHANNELS;
 
   // start sequence
   _pwm->TASKS_SEQSTART[0] = 1;
@@ -137,13 +152,13 @@ void HardwarePWM::start(void)
 
 void HardwarePWM::stop(void)
 {
-  // Already stopped
-//  if (_pwm->EVENTS_STOPPED) return ;
-
+#if 0
   _pwm->EVENTS_STOPPED = 0;
   _pwm->TASKS_STOP = 1;
-
   while( !_pwm->EVENTS_STOPPED ) yield();
+#endif
+
+  _pwm->ENABLE = 0;
 }
 
 bool HardwarePWM::writeChannel(uint8_t ch, uint16_t value, bool inverted )
@@ -151,6 +166,12 @@ bool HardwarePWM::writeChannel(uint8_t ch, uint16_t value, bool inverted )
   VERIFY( ch < _count );
 
   _seq0[ch] = value | (inverted ? 0 : bit(15));
+
+  // Start PWM if not already
+  if ( !begun() ) begin();
+
+  _start();
+
   return true;
 }
 

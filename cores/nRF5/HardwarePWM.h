@@ -45,25 +45,20 @@ class HardwarePWM
     enum { MAX_CHANNELS = 4 }; // Max channel per group
     NRF_PWM_Type* _pwm;
 
-    uint8_t _count;
+    uint8_t  _count;
     uint16_t _seq0[MAX_CHANNELS];
+
+    void _start(void);
 
   public:
     HardwarePWM(NRF_PWM_Type* pwm);
 
     // Enable & Disable module
-    void enable (void) ATTR_ALWAYS_INLINE { _pwm->ENABLE = 1; }
-    void disable(void) ATTR_ALWAYS_INLINE { _pwm->ENABLE = 0; }
-
-    bool enabled(void) ATTR_ALWAYS_INLINE { return _pwm->ENABLE; }
+    void disable(void);
 
     // Configure
     void setResolution(uint8_t bitnum);
-//    void set
-
-    // Generate PWM
-    void start(void);
-    void stop (void);
+    void setClockDiv(uint8_t div); // value is PWM_PRESCALER_PRESCALER_DIV_x, DIV1 is 16Mhz
 
     bool addPin     (uint8_t pin);
     int  pin2channel(uint8_t pin) ATTR_ALWAYS_INLINE
@@ -79,6 +74,11 @@ class HardwarePWM
     {
       return pin2channel(pin) >= 0;
     }
+
+    // Generate PWM
+    void begin (void);
+    bool begun (void);
+    void stop  (void);
 
     bool writePin    (uint8_t pin, uint16_t value, bool inverted = false);
     bool writeChannel(uint8_t ch , uint16_t value, bool inverted = false);
