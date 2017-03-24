@@ -36,6 +36,9 @@
 #ifndef COMMON_INC_H_
 #define COMMON_INC_H_
 
+#include <stdint.h>
+#include <stdbool.h>
+
 #include "compiler_macro.h"
 #include "verify.h"
 #include "common_func.h"

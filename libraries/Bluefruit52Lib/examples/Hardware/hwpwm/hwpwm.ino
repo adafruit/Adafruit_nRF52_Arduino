@@ -78,7 +78,7 @@ void loop()
   
   // fade in from min to max
   // inverted PWM0 (false), PWM1 (true), PWM2 (false)
-  for (int fadeValue = 0 ; fadeValue <= maxValue; fadeValue += 512) 
+  for (int fadeValue = 0 ; fadeValue <= maxValue; fadeValue += 1024) 
   {
     inverted = false;
     
@@ -96,7 +96,7 @@ void loop()
 
   // fade out from max to min
   // inverted PWM0 (false), PWM1 (true), PWM2 (false)
-  for (int fadeValue = maxValue ; fadeValue >= 0; fadeValue -= 512) 
+  for (int fadeValue = maxValue ; fadeValue >= 0; fadeValue -= 1024) 
   {
     inverted = false;
      

@@ -34,6 +34,7 @@
 */
 /**************************************************************************/
 
+#include "Arduino.h"
 #include "HardwarePWM.h"
 
 HardwarePWM PWM0(NRF_PWM0);

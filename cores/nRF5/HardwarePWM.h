@@ -36,7 +36,7 @@
 #ifndef HARDWAREPWM_H_
 #define HARDWAREPWM_H_
 
-#include "Arduino.h"
+#include "common_inc.h"
 #include "nrf.h"
 
 class HardwarePWM

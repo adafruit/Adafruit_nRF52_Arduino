@@ -51,6 +51,7 @@ uint32_t setLoopStacksize(void);
   #include "WMath.h"
   #include "HardwareSerial.h"
   #include "pulse.h"
+  #include "HardwarePWM.h"
 #endif
 
 #include "delay.h"
