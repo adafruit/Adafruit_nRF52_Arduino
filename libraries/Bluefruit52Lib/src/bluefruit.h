@@ -170,7 +170,7 @@ COMMENT_OUT(
 )
 
     // Transmission Buffer Count for HVX notification, max is seen at 7
-    SemaphoreHandle_t _txbuf_sem;
+    SemaphoreHandle_t _txpacket_sem;
 
     /*------------- Callbacks -------------*/
     connect_callback_t    _connect_cb;

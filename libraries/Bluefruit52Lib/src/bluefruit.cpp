@@ -99,7 +99,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _tx_power  = 0;
 
   strcpy(_name, CFG_DEFAULT_NAME);
-  _txbuf_sem = NULL;
+  _txpacket_sem = NULL;
 
   _conn_hdl  = BLE_CONN_HANDLE_INVALID;
   _bonded    = false;
@@ -344,7 +344,7 @@ ble_gap_addr_t AdafruitBluefruit::peerAddr(void)
 
 bool AdafruitBluefruit::getTxPacket(uint32_t ms)
 {
-  return xSemaphoreTake(_txbuf_sem, ms2tick(ms));
+  return xSemaphoreTake(_txpacket_sem, ms2tick(ms));
 }
 
 COMMENT_OUT (
@@ -501,7 +501,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
           // Init transmission buffer for notification
           uint8_t txbuf_max;
           (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
-          _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
+          _txpacket_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
 
           if ( _connect_cb ) _connect_cb();
         }
@@ -527,8 +527,8 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         _bonded   = false;
         varclr(&_peer_addr);
 
-        vSemaphoreDelete(_txbuf_sem);
-        _txbuf_sem = NULL;
+        vSemaphoreDelete(_txpacket_sem);
+        _txpacket_sem = NULL;
 
         if ( _discconnect_cb ) _discconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
 
@@ -545,11 +545,11 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       break;
 
       case BLE_EVT_TX_COMPLETE:
-        if ( _txbuf_sem )
+        if ( _txpacket_sem )
         {
           for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
           {
-            xSemaphoreGive(_txbuf_sem);
+            xSemaphoreGive(_txpacket_sem);
           }
         }
       break;
