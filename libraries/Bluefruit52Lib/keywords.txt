@@ -45,7 +45,7 @@ connInterval	KEYWORD2
 clearBonds	KEYWORD2
 
 peerAddr	KEYWORD2
-txbuf_get	KEYWORD2
+getTxPacket	KEYWORD2
 
 setConnectCallback	KEYWORD2
 setDisconnectCallback	KEYWORD2

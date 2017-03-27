@@ -107,7 +107,7 @@ class AdafruitBluefruit
 
     ble_gap_addr_t peerAddr(void);
 
-    bool txbuf_get(uint32_t ms);
+    bool getTxPacket(uint32_t ms);
 
     /*------------------------------------------------------------------*/
     /* Callbacks
