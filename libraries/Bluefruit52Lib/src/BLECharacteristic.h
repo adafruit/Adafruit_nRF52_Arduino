@@ -156,7 +156,6 @@ class BLECharacteristic
 
     /*------------- Notify -------------*/
     bool  notifyEnabled(void);
-    err_t notify(const void* data, int len, uint16_t offset);
     err_t notify(const void* data, int len);
     err_t notify(const char   * str);
     err_t notify(int      num);

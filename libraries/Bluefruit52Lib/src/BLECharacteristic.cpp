@@ -452,7 +452,7 @@ bool BLECharacteristic::notifyEnabled(void)
   return (cccd & BLE_GATT_HVX_NOTIFICATION);
 }
 
-err_t BLECharacteristic::notify(const void* data, int len, uint16_t offset)
+err_t BLECharacteristic::notify(const void* data, int len)
 {
   VERIFY( _properties.notify, NRF_ERROR_INVALID_PARAM);
 
@@ -478,7 +478,7 @@ err_t BLECharacteristic::notify(const void* data, int len, uint16_t offset)
       {
           .handle = _handles.value_handle,
           .type   = BLE_GATT_HVX_NOTIFICATION,
-          .offset = offset,
+          .offset = 0,
           .p_len  = &packet_len,
           .p_data = (uint8_t*) u8data,
       };
@@ -487,8 +487,6 @@ err_t BLECharacteristic::notify(const void* data, int len, uint16_t offset)
 
       actual_len -= packet_len;
       u8data     += packet_len;
-
-      if ( offset ) offset += packet_len;
     }
   }
   else
@@ -498,11 +496,6 @@ err_t BLECharacteristic::notify(const void* data, int len, uint16_t offset)
   }
 
   return ERROR_NONE;
-}
-
-err_t BLECharacteristic::notify(const void* data, int len)
-{
-  return notify(data, len, 0);
 }
 
 err_t BLECharacteristic::notify(const char * str)

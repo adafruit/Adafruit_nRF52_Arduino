@@ -344,6 +344,7 @@ ble_gap_addr_t AdafruitBluefruit::peerAddr(void)
 
 bool AdafruitBluefruit::getTxPacket(uint32_t ms)
 {
+  VERIFY(_txpacket_sem != NULL);
   return xSemaphoreTake(_txpacket_sem, ms2tick(ms));
 }
 
