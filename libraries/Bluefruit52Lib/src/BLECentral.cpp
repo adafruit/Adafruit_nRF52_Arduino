@@ -312,34 +312,47 @@ uint16_t BLECentral::_discoverDescriptor(ble_gattc_evt_desc_disc_rsp_t* disc_des
  */
 void BLECentral::_event_handler(ble_evt_t* evt)
 {
-  switch ( evt->header.evt_id  )
+  // conn handle has fixed offset regardless of event type
+  const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
+
+  /* Only handle Central events with matched connection handle
+   * or a few special one
+   * - Connected event
+   * - Advertising Report
+   * - Advertising timeout (could be connected and advertising at the same time)
+   */
+  if ( evt_conn_hdl       == _conn_hdl              ||
+       evt->header.evt_id == BLE_GAP_EVT_CONNECTED  ||
+       evt->header.evt_id == BLE_GAP_EVT_ADV_REPORT ||
+       evt->header.evt_id == BLE_GAP_EVT_TIMEOUT )
   {
-    case BLE_GAP_EVT_ADV_REPORT:
+    switch ( evt->header.evt_id  )
     {
-      ble_gap_evt_adv_report_t* adv_report = &evt->evt.gap_evt.params.adv_report;
-      if (_scan_cb) _scan_cb(adv_report);
-    }
-    break;
-
-    case BLE_GAP_EVT_CONNECTED:
-    {
-      ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
-
-      if (para->role == BLE_GAP_ROLE_CENTRAL)
+      case BLE_GAP_EVT_ADV_REPORT:
       {
-        Bluefruit.stopConnLed();
-        if (Bluefruit._led_conn) ledOn(LED_BLUE);
-
-        _conn_hdl = evt->evt.gap_evt.conn_handle;
-
-        if ( _connect_cb ) _connect_cb();
+        ble_gap_evt_adv_report_t* adv_report = &evt->evt.gap_evt.params.adv_report;
+        if (_scan_cb) _scan_cb(adv_report);
       }
-    }
-    break;
+      break;
 
-    case BLE_GAP_EVT_DISCONNECTED:
-      if ( _conn_hdl == evt->evt.gap_evt.conn_handle)
+      case BLE_GAP_EVT_CONNECTED:
       {
+        ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
+
+        if (para->role == BLE_GAP_ROLE_CENTRAL)
+        {
+          Bluefruit.stopConnLed();
+          if (Bluefruit._led_conn) ledOn(LED_BLUE);
+
+          // TODO multiple connections
+          _conn_hdl = evt->evt.gap_evt.conn_handle;
+
+          if ( _connect_cb ) _connect_cb();
+        }
+      }
+      break;
+
+      case BLE_GAP_EVT_DISCONNECTED:
         if (Bluefruit._led_conn)  ledOff(LED_BLUE);
 
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
@@ -347,101 +360,101 @@ void BLECentral::_event_handler(ble_evt_t* evt)
         if ( _disconnect_cb ) _disconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
 
         startScanning();
-      }
-    break;
+      break;
 
-    case BLE_GAP_EVT_TIMEOUT:
-      if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_SCAN)
-      {
-        // Restart Scanning
-        startScanning();
-      }
-    break;
-
-    /*------------------------------------------------------------------*/
-    /* DISCOVERY
-     *------------------------------------------------------------------*/
-    case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
-    {
-      ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
-      ble_gattc_evt_prim_srvc_disc_rsp_t* svc_rsp = &gattc->params.prim_srvc_disc_rsp;
-
-      if ( _conn_hdl == gattc->conn_handle )
-      {
-        LOG_LV1(Discover, "[SVC] Service Count: %d", svc_rsp->count);
-
-        if (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS && svc_rsp->count && _evt_buf)
+      case BLE_GAP_EVT_TIMEOUT:
+        if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_SCAN)
         {
-          // Only support 1 service
+          // TODO Advance Scanning
+          // Restart Scanning
+          startScanning();
+        }
+      break;
 
-          _evt_bufsize = min16(_evt_bufsize, sizeof(ble_gattc_evt_prim_srvc_disc_rsp_t));
-          memcpy(_evt_buf, svc_rsp, _evt_bufsize);
-        }else
+      /*------------------------------------------------------------------*/
+      /* DISCOVERY
+       *------------------------------------------------------------------*/
+      case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
+      {
+        ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
+        ble_gattc_evt_prim_srvc_disc_rsp_t* svc_rsp = &gattc->params.prim_srvc_disc_rsp;
+
+        if ( _conn_hdl == gattc->conn_handle )
         {
-          _evt_bufsize = 0; // no data
+          LOG_LV1(Discover, "[SVC] Service Count: %d", svc_rsp->count);
+
+          if (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS && svc_rsp->count && _evt_buf)
+          {
+            // Only support 1 service
+
+            _evt_bufsize = min16(_evt_bufsize, sizeof(ble_gattc_evt_prim_srvc_disc_rsp_t));
+            memcpy(_evt_buf, svc_rsp, _evt_bufsize);
+          }else
+          {
+            _evt_bufsize = 0; // no data
+          }
+
+          xSemaphoreGive(_evt_sem);
+        }
+      }
+      break;
+
+      case BLE_GATTC_EVT_CHAR_DISC_RSP:
+      {
+        ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
+        ble_gattc_evt_char_disc_rsp_t* chr_rsp = &gattc->params.char_disc_rsp;
+
+        if ( _conn_hdl == gattc->conn_handle )
+        {
+          LOG_LV1(Discover, "[CHR] Characteristic Count: %d", chr_rsp->count);
+          if ( (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS) && chr_rsp->count && _evt_buf )
+          {
+            // TODO support only 1 discovered char now
+            _evt_bufsize = min16(_evt_bufsize, sizeof(ble_gattc_evt_char_disc_rsp_t));
+
+            memcpy(_evt_buf, chr_rsp, _evt_bufsize);
+          }else
+          {
+            _evt_bufsize = 0; // no data
+          }
         }
 
         xSemaphoreGive(_evt_sem);
       }
-    }
-    break;
+      break;
 
-    case BLE_GATTC_EVT_CHAR_DISC_RSP:
-    {
-      ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
-      ble_gattc_evt_char_disc_rsp_t* chr_rsp = &gattc->params.char_disc_rsp;
-
-      if ( _conn_hdl == gattc->conn_handle )
+      case BLE_GATTC_EVT_DESC_DISC_RSP:
       {
-        LOG_LV1(Discover, "[CHR] Characteristic Count: %d", chr_rsp->count);
-        if ( (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS) && chr_rsp->count && _evt_buf )
-        {
-          // TODO support only 1 discovered char now
-          _evt_bufsize = min16(_evt_bufsize, sizeof(ble_gattc_evt_char_disc_rsp_t));
+        ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
+        ble_gattc_evt_desc_disc_rsp_t* desc_rsp = &gattc->params.desc_disc_rsp;
 
-          memcpy(_evt_buf, chr_rsp, _evt_bufsize);
-        }else
+        if ( _conn_hdl == gattc->conn_handle )
         {
-          _evt_bufsize = 0; // no data
+          LOG_LV1(Discover, "[DESC] Descriptor Count: %d", desc_rsp->count);
+
+          if ( (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS) && desc_rsp->count && _evt_buf )
+          {
+            // Copy up to bufsize
+            uint16_t len = sizeof(ble_gattc_evt_desc_disc_rsp_t) + (desc_rsp->count-1)*sizeof(ble_gattc_desc_t);
+            _evt_bufsize = min16(_evt_bufsize, len);
+
+            memcpy(_evt_buf, desc_rsp, _evt_bufsize);
+          }else
+          {
+            _evt_bufsize = 0; // no data
+          }
         }
+
+        xSemaphoreGive(_evt_sem);
       }
+      break;
 
-      xSemaphoreGive(_evt_sem);
+      default: break;
     }
-    break;
-
-    case BLE_GATTC_EVT_DESC_DISC_RSP:
-    {
-      ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
-      ble_gattc_evt_desc_disc_rsp_t* desc_rsp = &gattc->params.desc_disc_rsp;
-
-      if ( _conn_hdl == gattc->conn_handle )
-      {
-        LOG_LV1(Discover, "[DESC] Descriptor Count: %d", desc_rsp->count);
-
-        if ( (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS) && desc_rsp->count && _evt_buf )
-        {
-          // Copy up to bufsize
-          uint16_t len = sizeof(ble_gattc_evt_desc_disc_rsp_t) + (desc_rsp->count-1)*sizeof(ble_gattc_desc_t);
-          _evt_bufsize = min16(_evt_bufsize, len);
-
-          memcpy(_evt_buf, desc_rsp, _evt_bufsize);
-        }else
-        {
-          _evt_bufsize = 0; // no data
-        }
-      }
-
-      xSemaphoreGive(_evt_sem);
-    }
-    break;
-
-    default: break;
   }
 
-  // GATT characteristics event handler
-  uint16_t conn_handle = evt->evt.common_evt.conn_handle;
-  if ( conn_handle == _conn_hdl)
+  // GATT characteristics event handler only if Connection Handle matches
+  if ( evt_conn_hdl == _conn_hdl)
   {
     for(int i=0; i<_chars_count; i++)
     {

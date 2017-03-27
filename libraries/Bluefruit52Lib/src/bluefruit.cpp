@@ -462,53 +462,62 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 {
   LOG_LV1(BLE, dbg_ble_event_str(evt->header.evt_id));
 
+  // conn handle has fixed offset regardless of event type
+  const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
+
   /*------------- BLE Peripheral Events -------------*/
-  switch ( evt->header.evt_id  )
+  /* Only handle Peripheral events with matched connection handle
+   * or a few special one
+   * - Connected event
+   * - Advertising timeout (could be connected and advertising at the same time)
+   */
+  if ( evt_conn_hdl       == _conn_hdl             ||
+       evt->header.evt_id == BLE_GAP_EVT_CONNECTED ||
+       evt->header.evt_id == BLE_GAP_EVT_TIMEOUT )
   {
-    case BLE_GAP_EVT_CONNECTED:
+    switch ( evt->header.evt_id  )
     {
-      ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
-
-      if (para->role == BLE_GAP_ROLE_PERIPH)
+      case BLE_GAP_EVT_CONNECTED:
       {
-        stopConnLed();
-        if (_led_conn) ledOn(LED_BLUE);
+        ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
 
-        _conn_hdl      = evt->evt.gap_evt.conn_handle;
-        _conn_interval = para->conn_params.min_conn_interval;
-        _peer_addr     = para->peer_addr;
-
-        // Connection interval set by Central is out of preferred range
-        // Try to negotiate with Central using our preferred values
-        if ( !is_within(_ppcp_min_conn, para->conn_params.min_conn_interval, _ppcp_max_conn) )
+        if (para->role == BLE_GAP_ROLE_PERIPH)
         {
-          // Null, value is set by sd_ble_gap_ppcp_set will be used
-          VERIFY_STATUS( sd_ble_gap_conn_param_update(_conn_hdl, NULL), );
+          stopConnLed();
+          if (_led_conn) ledOn(LED_BLUE);
+
+          _conn_hdl      = evt->evt.gap_evt.conn_handle;
+          _conn_interval = para->conn_params.min_conn_interval;
+          _peer_addr     = para->peer_addr;
+
+          // Connection interval set by Central is out of preferred range
+          // Try to negotiate with Central using our preferred values
+          if ( !is_within(_ppcp_min_conn, para->conn_params.min_conn_interval, _ppcp_max_conn) )
+          {
+            // Null, value is set by sd_ble_gap_ppcp_set will be used
+            VERIFY_STATUS( sd_ble_gap_conn_param_update(_conn_hdl, NULL), );
+          }
+
+          // Init transmission buffer for notification
+          uint8_t txbuf_max;
+          (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
+          _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
+
+          if ( _connect_cb ) _connect_cb();
         }
-
-        // Init transmission buffer for notification
-        uint8_t txbuf_max;
-        (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
-        _txbuf_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
-
-        if ( _connect_cb ) _connect_cb();
       }
-    }
-    break;
+      break;
 
-    case BLE_GAP_EVT_CONN_PARAM_UPDATE:
-    {
-      // Connection Parameter after negotiating with Central
-      // min conn = max conn = actual used interval
-      ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
-      _conn_interval = param->min_conn_interval;
-    }
-    break;
-
-    case BLE_GAP_EVT_DISCONNECTED:
-      // Check if it is peripheral connection
-      if (_conn_hdl == evt->evt.gap_evt.conn_handle)
+      case BLE_GAP_EVT_CONN_PARAM_UPDATE:
       {
+        // Connection Parameter after negotiating with Central
+        // min conn = max conn = actual used interval
+        ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
+        _conn_interval = param->min_conn_interval;
+      }
+      break;
+
+      case BLE_GAP_EVT_DISCONNECTED:
         if (_led_conn)  ledOff(LED_BLUE);
 
         // Save all configured cccd
@@ -524,20 +533,18 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         if ( _discconnect_cb ) _discconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
 
         Advertising.start();
-      }
-    break;
+      break;
 
-    case BLE_GAP_EVT_TIMEOUT:
-      if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISING)
-      {
-        // Restart Advertising
-        Advertising.start();
-      }
-    break;
+      case BLE_GAP_EVT_TIMEOUT:
+        if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISING)
+        {
+          // TODO advanced advertising
+          // Restart Advertising
+          Advertising.start();
+        }
+      break;
 
-    case BLE_EVT_TX_COMPLETE:
-      if ( evt->evt.common_evt.conn_handle == _conn_hdl )
-      {
+      case BLE_EVT_TX_COMPLETE:
         if ( _txbuf_sem )
         {
           for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
@@ -545,131 +552,131 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
             xSemaphoreGive(_txbuf_sem);
           }
         }
+      break;
+
+      case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
+      {
+        // Pairing in progress
+        varclr(&_bond_data);
+        _bond_data.own_enc.master_id.ediv = 0xFFFF; // invalid value for ediv
+
+        /* Step 1: Pairing/Bonding
+         * - Central supplies its parameters
+         * - We replies with our security parameters
+         */
+        //      ble_gap_sec_params_t* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
+
+        ble_gap_sec_params_t sec_para =
+        {
+            .bond         = 1,
+            .mitm         = 0,
+            .lesc         = 0,
+            .keypress     = 0,
+            .io_caps      = BLE_GAP_IO_CAPS_NONE,
+            .oob          = 0,
+            .min_key_size = 7,
+            .max_key_size = 16,
+            .kdist_own    = { .enc = 1, .id = 1},
+            .kdist_peer   = { .enc = 1, .id = 1},
+        };
+
+        COMMENT_OUT(
+            // Change security parameter according to authentication type
+            if ( _auth_type == BLE_GAP_AUTH_KEY_TYPE_PASSKEY)
+            {
+              sec_para.mitm    = 1;
+              sec_para.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
+            }
+        )
+
+        ble_gap_sec_keyset_t keyset =
+        {
+            .keys_own = {
+                .p_enc_key  = &_bond_data.own_enc,
+                .p_id_key   = NULL,
+                .p_sign_key = NULL,
+                .p_pk       = NULL
+            },
+
+            .keys_peer = {
+                .p_enc_key  = &_bond_data.peer_enc,
+                .p_id_key   = &_bond_data.peer_id,
+                .p_sign_key = NULL,
+                .p_pk       = NULL
+            }
+        };
+
+        VERIFY_STATUS(sd_ble_gap_sec_params_reply(evt->evt.gap_evt.conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &sec_para, &keyset), RETURN_VOID);
       }
-    break;
+      break;
 
-    case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-    {
-      // Pairing in progress
-      varclr(&_bond_data);
-      _bond_data.own_enc.master_id.ediv = 0xFFFF; // invalid value for ediv
-
-      /* Step 1: Pairing/Bonding
-       * - Central supplies its parameters
-       * - We replies with our security parameters
-       */
-//      ble_gap_sec_params_t* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
-
-      ble_gap_sec_params_t sec_para =
+      case BLE_GAP_EVT_SEC_INFO_REQUEST:
       {
-          .bond         = 1,
-          .mitm         = 0,
-          .lesc         = 0,
-          .keypress     = 0,
-          .io_caps      = BLE_GAP_IO_CAPS_NONE,
-          .oob          = 0,
-          .min_key_size = 7,
-          .max_key_size = 16,
-          .kdist_own    = { .enc = 1, .id = 1},
-          .kdist_peer   = { .enc = 1, .id = 1},
-      };
+        // Reconnection. If bonded previously, Central will ask for stored keys.
+        // return security information. Otherwise NULL
+        ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
 
-COMMENT_OUT(
-      // Change security parameter according to authentication type
-      if ( _auth_type == BLE_GAP_AUTH_KEY_TYPE_PASSKEY)
-      {
-        sec_para.mitm    = 1;
-        sec_para.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
+        //if (_bond_data.own_enc.master_id.ediv == sec_request->master_id.ediv)
+        if ( _loadBondKeys(sec_request->master_id.ediv) )
+        {
+          sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_bond_data.own_enc.enc_info, &_bond_data.peer_id.id_info, NULL);
+        } else
+        {
+          sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
+        }
       }
-)
+      break;
 
-      ble_gap_sec_keyset_t keyset =
+
+      case BLE_GAP_EVT_PASSKEY_DISPLAY:
       {
-          .keys_own = {
-              .p_enc_key  = &_bond_data.own_enc,
-              .p_id_key   = NULL,
-              .p_sign_key = NULL,
-              .p_pk       = NULL
-          },
+        //      ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
+        //
+        //      PRINT_INT(passkey_display->match_request);
+        //      PRINT_BUFFER(passkey_display->passkey, 6);
 
-          .keys_peer = {
-              .p_enc_key  = &_bond_data.peer_enc,
-              .p_id_key   = &_bond_data.peer_id,
-              .p_sign_key = NULL,
-              .p_pk       = NULL
-          }
-      };
-
-      VERIFY_STATUS(sd_ble_gap_sec_params_reply(evt->evt.gap_evt.conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &sec_para, &keyset), RETURN_VOID);
-    }
-    break;
-
-    case BLE_GAP_EVT_SEC_INFO_REQUEST:
-    {
-      // Reconnection. If bonded previously, Central will ask for stored keys.
-      // return security information. Otherwise NULL
-      ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
-
-      //if (_bond_data.own_enc.master_id.ediv == sec_request->master_id.ediv)
-      if ( _loadBondKeys(sec_request->master_id.ediv) )
-      {
-        sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_bond_data.own_enc.enc_info, &_bond_data.peer_id.id_info, NULL);
-      } else
-      {
-        sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
+        // sd_ble_gap_auth_key_reply
       }
-    }
-    break;
+      break;
 
-
-    case BLE_GAP_EVT_PASSKEY_DISPLAY:
-    {
-//      ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
-//
-//      PRINT_INT(passkey_display->match_request);
-//      PRINT_BUFFER(passkey_display->passkey, 6);
-
-      // sd_ble_gap_auth_key_reply
-    }
-    break;
-
-    case BLE_GAP_EVT_CONN_SEC_UPDATE:
-    {
-      // Connection is secured aka Paired
-      COMMENT_OUT( ble_gap_conn_sec_t* conn_sec = (ble_gap_conn_sec_t*) &evt->evt.gap_evt.params.conn_sec_update.conn_sec; )
-
-      // Previously bonded --> secure by re-connection process
-      // --> Load & Set Sys Attr (Apply Service Context)
-      // Else Init Sys Attr
-      _loadBondedCCCD(_bond_data.own_enc.master_id.ediv);
-
-      // Consider Paired as Bonded
-      _bonded = true;
-    }
-    break;
-
-    case BLE_GAP_EVT_AUTH_STATUS:
-    {
-      // Bonding process completed
-      ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
-
-      // Pairing/Bonding succeeded --> save encryption keys
-      if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
+      case BLE_GAP_EVT_CONN_SEC_UPDATE:
       {
-        _saveBondKeys();
+        // Connection is secured aka Paired
+        COMMENT_OUT( ble_gap_conn_sec_t* conn_sec = (ble_gap_conn_sec_t*) &evt->evt.gap_evt.params.conn_sec_update.conn_sec; )
+
+          // Previously bonded --> secure by re-connection process
+          // --> Load & Set Sys Attr (Apply Service Context)
+          // Else Init Sys Attr
+          _loadBondedCCCD(_bond_data.own_enc.master_id.ediv);
+
+        // Consider Paired as Bonded
         _bonded = true;
-      }else
-      {
-        PRINT_HEX(status->auth_status);
       }
+      break;
+
+      case BLE_GAP_EVT_AUTH_STATUS:
+      {
+        // Bonding process completed
+        ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
+
+        // Pairing/Bonding succeeded --> save encryption keys
+        if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
+        {
+          _saveBondKeys();
+          _bonded = true;
+        }else
+        {
+          PRINT_HEX(status->auth_status);
+        }
+      }
+      break;
+
+      case BLE_GATTS_EVT_SYS_ATTR_MISSING:
+        sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
+      break;
+
+      default: break;
     }
-    break;
-
-    case BLE_GATTS_EVT_SYS_ATTR_MISSING:
-      sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
-    break;
-
-    default: break;
   }
 
   // Central Event Handler
