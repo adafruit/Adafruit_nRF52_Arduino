@@ -342,12 +342,12 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
 /*------------------------------------------------------------------*/
 /* WRITE
  *------------------------------------------------------------------*/
-err_t BLECharacteristic::write(const char   * str)
+uint16_t BLECharacteristic::write(const char   * str)
 {
   return write((const uint8_t*) str, strlen(str));
 }
 
-err_t BLECharacteristic::write(const void* data, int len, uint16_t offset)
+uint16_t BLECharacteristic::write(const void* data, int len, uint16_t offset)
 {
   // could not exceed max len
   uint16_t actual_len = min16(len, _max_len);
@@ -360,25 +360,27 @@ err_t BLECharacteristic::write(const void* data, int len, uint16_t offset)
   };
 
   // conn handle only needed for system attribute
-  return sd_ble_gatts_value_set(BLE_CONN_HANDLE_INVALID, _handles.value_handle, &value);
+  VERIFY_STATUS( sd_ble_gatts_value_set(BLE_CONN_HANDLE_INVALID, _handles.value_handle, &value), 0 );
+
+  return value.len;
 }
 
-err_t BLECharacteristic::write(int num)
+uint16_t BLECharacteristic::write(int num)
 {
   return write( (uint8_t*) &num, sizeof(num));
 }
 
-err_t BLECharacteristic::write(uint32_t num)
+uint16_t BLECharacteristic::write(uint32_t num)
 {
   return write( (uint8_t*) &num, sizeof(num));
 }
 
-err_t BLECharacteristic::write(uint16_t num)
+uint16_t BLECharacteristic::write(uint16_t num)
 {
   return write( (uint8_t*) &num, sizeof(num));
 }
 
-err_t BLECharacteristic::write(uint8_t  num)
+uint16_t BLECharacteristic::write(uint8_t  num)
 {
   return write( (uint8_t*) &num, sizeof(num));
 }
@@ -478,7 +480,7 @@ err_t BLECharacteristic::notify(const void* data, int len)
       {
           .handle = _handles.value_handle,
           .type   = BLE_GATT_HVX_NOTIFICATION,
-          .offset = 0,
+          .offset = 0, // TODO more work with offset
           .p_len  = &packet_len,
           .p_data = (uint8_t*) u8data,
       };
