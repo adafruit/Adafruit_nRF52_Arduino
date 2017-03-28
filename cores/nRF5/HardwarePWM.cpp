@@ -50,25 +50,7 @@ HardwarePWM::HardwarePWM(NRF_PWM_Type* pwm)
   _count = 0;
   arrclr(_seq0);
 
-  // Initialize Registers
-  _pwm->ENABLE          = 0;
-  _pwm->MODE            = PWM_MODE_UPDOWN_Up;
-  _pwm->COUNTERTOP      = bit(8) - 1; // default is 8 bit like STD Arduino
-  _pwm->PRESCALER       = PWM_PRESCALER_PRESCALER_DIV_1; // 16MHz
-  _pwm->DECODER         = PWM_DECODER_LOAD_Individual;
-  _pwm->LOOP            = 0;
-
-  _pwm->SEQ[0].PTR      = (uint32_t) _seq0;
-  _pwm->SEQ[0].CNT      = MAX_CHANNELS; // default mode is Individual --> count must be 4
-  _pwm->SEQ[0].REFRESH  = 0;
-  _pwm->SEQ[0].ENDDELAY = 0;
-
-  _pwm->SEQ[1].PTR      = 0;
-  _pwm->SEQ[1].CNT      = 0;
-  _pwm->SEQ[1].REFRESH  = 0;
-  _pwm->SEQ[1].ENDDELAY = 0;
-
-  for(int i=0; i<MAX_CHANNELS; i++) _pwm->PSEL.OUT[i] = 0xFFFFFFFF;
+  _resolution = 8;
 }
 
 #if 0
@@ -102,8 +84,8 @@ void HardwarePWM::printInfo(void)
 
 void HardwarePWM::setResolution(uint8_t bitnum)
 {
-  bitnum = min8(bitnum, 15); // max is 15 bit
-  _pwm->COUNTERTOP = bit(bitnum) - 1;
+  _resolution = min8(bitnum, 15); // max is 15 bit
+  _pwm->COUNTERTOP = bit(_resolution) - 1;
 }
 
 void HardwarePWM::setClockDiv(uint8_t div)
@@ -152,6 +134,23 @@ bool HardwarePWM::begun (void)
 
 void HardwarePWM::begin(void)
 {
+  // Initialize Registers
+  _pwm->MODE            = PWM_MODE_UPDOWN_Up;
+  _pwm->COUNTERTOP      = bit(_resolution) - 1; // default is 8 bit, can be configured before begin()
+  _pwm->PRESCALER       = PWM_PRESCALER_PRESCALER_DIV_1; // 16MHz
+  _pwm->DECODER         = PWM_DECODER_LOAD_Individual;
+  _pwm->LOOP            = 0;
+
+  _pwm->SEQ[0].PTR      = (uint32_t) _seq0;
+  _pwm->SEQ[0].CNT      = MAX_CHANNELS; // default mode is Individual --> count must be 4
+  _pwm->SEQ[0].REFRESH  = 0;
+  _pwm->SEQ[0].ENDDELAY = 0;
+
+  _pwm->SEQ[1].PTR      = 0;
+  _pwm->SEQ[1].CNT      = 0;
+  _pwm->SEQ[1].REFRESH  = 0;
+  _pwm->SEQ[1].ENDDELAY = 0;
+
   _pwm->ENABLE = 1;
 }
 

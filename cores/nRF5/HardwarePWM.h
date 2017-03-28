@@ -48,6 +48,8 @@ class HardwarePWM
     uint8_t  _count;
     uint16_t _seq0[MAX_CHANNELS];
 
+    uint8_t  _resolution;
+
     void _start(void);
 
   public:
