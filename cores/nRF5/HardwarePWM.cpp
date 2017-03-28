@@ -115,9 +115,9 @@ bool HardwarePWM::addPin(uint8_t pin)
   // Must disable before changing PSEL
   if ( begun() )
   {
-    stop();
+    _pwm->ENABLE = 0;
     _pwm->PSEL.OUT[_count++] = pin;
-    begin();
+    _pwm->ENABLE = 1;
     _start();
   }else
   {
