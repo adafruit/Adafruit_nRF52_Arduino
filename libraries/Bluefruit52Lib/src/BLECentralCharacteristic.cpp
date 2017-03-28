@@ -36,13 +36,15 @@
 
 #include "bluefruit.h"
 
-#define MAX_DESCIRPTORS   8
+#define MAX_DESCIRPTORS         8
+#define CENTRAL_CHR_TIMEOUT     100
 
 void BLECentralCharacteristic::_init(void)
 {
   _cccd_handle = 0;
 
   _notify_cb = NULL;
+  _sem       = NULL;
 }
 
 BLECentralCharacteristic::BLECentralCharacteristic(void)
@@ -96,18 +98,99 @@ void BLECentralCharacteristic::begin(void)
 {
   _service = BLECentralService::lastService;
 
-  // Currently Only register to Bluefruit if callback is installed
-  if ( _notify_cb )
-  {
-    (void) Bluefruit.Central._registerCharacteristic(this);
-  }
+  // Register to Bluefruit (required for callback and write response)
+  (void) Bluefruit.Central._registerCharacteristic(this);
 }
 
-uint16_t BLECentralCharacteristic::read(void* buffer, int bufsize, uint16_t offset)
+/*------------------------------------------------------------------*/
+/* READ
+ *------------------------------------------------------------------*/
+uint16_t BLECentralCharacteristic::read(void* buffer, int bufsize)
 {
-  VERIFY_STATUS( sd_ble_gattc_read(Bluefruit.Central.connHandle(), _chr.handle_value, offset), 0 );
+//  VERIFY_STATUS( sd_ble_gattc_read(Bluefruit.Central.connHandle(), _chr.handle_value, offset), 0 );
 
-  return ERROR_NONE;
+//  return ERROR_NONE;
+}
+
+/*------------------------------------------------------------------*/
+/* WRITE
+ *------------------------------------------------------------------*/
+uint16_t BLECentralCharacteristic::write_resp(const void* data, int len)
+{
+  // Break into multiple MTU-3 packet
+  // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
+  // SD132 v3.0 could negotiate MTU to higher number
+  const uint16_t MTU_MPS = 20;
+
+  const uint8_t* u8data = (const uint8_t*) data;
+
+  // Write Response requires to wait for BLE_GATTC_EVT_WRITE_RSP event
+  _sem = xSemaphoreCreateBinary();
+
+  int remaining = len;
+  while( remaining )
+  {
+    // Write Req need to wait for response
+    uint16_t packet_len = min16(MTU_MPS, remaining);
+
+    ble_gattc_write_params_t param =
+    {
+        .write_op = BLE_GATT_OP_WRITE_REQ,
+        .flags    = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_WRITE,
+        .handle   = _chr.handle_value,
+        .offset   = 0, // For WRITE_CMD and WRITE_REQ, offset must be 0.
+        .len      = packet_len,
+        .p_value  = (uint8_t* ) u8data
+    };
+
+    if ( ERROR_NONE != sd_ble_gattc_write(Bluefruit.Central.connHandle(), &param) ) break;
+
+    if ( !xSemaphoreTake(_sem, CENTRAL_CHR_TIMEOUT) ) break;
+
+    remaining -= packet_len;
+    u8data    += packet_len;
+  }
+
+  vSemaphoreDelete(_sem);
+  _sem = NULL;
+
+  return len - remaining;
+}
+
+uint16_t BLECentralCharacteristic::write(const void* data, int len)
+{
+  // Break into multiple MTU-3 packet
+  // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
+  // SD132 v3.0 could negotiate MTU to higher number
+  const uint16_t MTU_MPS = 20;
+
+  const uint8_t* u8data = (const uint8_t*) data;
+
+  int remaining = len;
+  while( remaining )
+  {
+    // Write CMD consume a TX buffer
+    if ( !Bluefruit.Central.getTxPacket(100) )  return BLE_ERROR_NO_TX_PACKETS;
+
+    uint16_t packet_len = min16(MTU_MPS, remaining);
+
+    ble_gattc_write_params_t param =
+    {
+        .write_op = BLE_GATT_OP_WRITE_CMD,
+        .flags    = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_WRITE,
+        .handle   = _chr.handle_value,
+        .offset   = 0, // For WRITE_CMD and WRITE_REQ, offset must be 0.
+        .len      = packet_len,
+        .p_value  = (uint8_t* ) u8data
+    };
+
+    VERIFY_STATUS( sd_ble_gattc_write(Bluefruit.Central.connHandle(), &param), len - remaining );
+
+    remaining -= packet_len;
+    u8data    += packet_len;
+  }
+
+  return len;
 }
 
 void BLECentralCharacteristic::setNotifyCallback(notify_cb_t fp)
@@ -128,19 +211,21 @@ bool BLECentralCharacteristic::enableNotify(void)
       .p_value  = (uint8_t*) &value
   };
 
-  // TODO consume a TX buffer
+  // Write consume a TX buffer
+  if ( !Bluefruit.Central.getTxPacket(100) )  return BLE_ERROR_NO_TX_PACKETS;
+
   VERIFY_STATUS( sd_ble_gattc_write(Bluefruit.Central.connHandle(), &param), false );
 
   return true;
 }
 
-void BLECentralCharacteristic::_eventHandler(ble_evt_t* event)
+void BLECentralCharacteristic::_eventHandler(ble_evt_t* evt)
 {
-  switch(event->header.evt_id)
+  switch(evt->header.evt_id)
   {
     case BLE_GATTC_EVT_HVX:
     {
-      ble_gattc_evt_hvx_t* hvx = &event->evt.gattc_evt.params.hvx;
+      ble_gattc_evt_hvx_t* hvx = &evt->evt.gattc_evt.params.hvx;
 
       if ( hvx->type == BLE_GATT_HVX_NOTIFICATION )
       {
@@ -152,6 +237,19 @@ void BLECentralCharacteristic::_eventHandler(ble_evt_t* event)
     }
     break;
 
+    case BLE_GATTC_EVT_WRITE_RSP:
+    {
+      ble_gattc_evt_write_rsp_t* wr_rsp = (ble_gattc_evt_write_rsp_t*) &evt->evt.gattc_evt.params.write_rsp;
+
+      if (wr_rsp->write_op == BLE_GATT_OP_WRITE_REQ &&_sem)
+      {
+        // TODO check evt->evt.gattc_evt.gatt_status
+        xSemaphoreGive(_sem);
+      }
+    }
+    break;
+
     default: break;
   }
 }
+

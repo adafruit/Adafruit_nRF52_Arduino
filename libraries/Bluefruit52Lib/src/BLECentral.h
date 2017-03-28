@@ -63,28 +63,29 @@ class BLECentral
      *------------------------------------------------------------------*/
     typedef void (*scan_callback_t) (ble_gap_evt_adv_report_t*);
 
-    void  setScanCallback(scan_callback_t fp);
-    err_t startScanning(uint16_t timeout = 0);
-    err_t stopScanning(void);
+    void     setScanCallback(scan_callback_t fp);
+    err_t    startScanning(uint16_t timeout = 0);
+    err_t    stopScanning(void);
 
     uint8_t* extractScanData(uint8_t const* scandata, uint8_t scanlen, uint8_t type, uint8_t* result_len);
     uint8_t* extractScanData(const ble_gap_evt_adv_report_t* report, uint8_t type, uint8_t* result_len);
-
     bool     checkUuidInScan(const ble_gap_evt_adv_report_t* adv_report, BLEUuid ble_uuid);
 
     /*------------------------------------------------------------------*/
     /*
      *------------------------------------------------------------------*/
-    err_t connect(const ble_gap_evt_adv_report_t* adv_report,
-                  uint16_t min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT,
-                  uint16_t max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT);
+    err_t    connect(const ble_gap_evt_adv_report_t* adv_report,
+                     uint16_t min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT,
+                     uint16_t max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT);
 
-    err_t connect(const ble_gap_addr_t *peer_addr,
-                  uint16_t min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT,
-                  uint16_t max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT);
+    err_t    connect(const ble_gap_addr_t *peer_addr,
+                     uint16_t min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT,
+                     uint16_t max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT);
 
     bool     connected  (void);
     uint16_t connHandle (void);
+
+    bool getTxPacket(uint32_t ms);
 
     /*------------------------------------------------------------------*/
     /* GATTC Discovery
@@ -118,9 +119,11 @@ class BLECentral
     void*             _evt_buf;
     uint16_t          _evt_bufsize;
 
+    // Transmission Buffer Count for HVX notification, max is seen at 7
+    SemaphoreHandle_t _txpacket_sem;
+
     BLECentralCharacteristic* _chars_list[BLE_CENTRAL_MAX_CHARS];
     uint8_t                   _chars_count;
-
 
     ble_gap_scan_params_t _scan_param;
     scan_callback_t       _scan_cb;

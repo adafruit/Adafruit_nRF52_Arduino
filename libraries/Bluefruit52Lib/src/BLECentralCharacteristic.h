@@ -58,9 +58,11 @@ class BLECentralCharacteristic
     BLECentralService& parentService(void);
 
     /*------------- Read -------------*/
-    uint16_t read(void* buffer, int bufsize, uint16_t offset = 0);
+    uint16_t read(void* buffer, int bufsize);
 
     /*------------- Write -------------*/
+    uint16_t write     (const void* data, int len);
+    uint16_t write_resp(const void* data, int len);
 
     /*------------- Notify -------------*/
     bool enableNotify(void);
@@ -79,8 +81,10 @@ class BLECentralCharacteristic
     BLECentralService* _service;
     notify_cb_t      _notify_cb;
 
-    void _init(void);
-    void _eventHandler(ble_evt_t* event);
+    SemaphoreHandle_t  _sem;
+
+    void     _init         (void);
+    void     _eventHandler (ble_evt_t* event);
 
     friend class BLECentral;
 };
