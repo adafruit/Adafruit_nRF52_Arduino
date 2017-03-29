@@ -28,6 +28,7 @@ void setup()
 
   // Init BLE Central Uart Serivce
   bleCentralUart.begin();
+  bleCentralUart.setRxCallback(uart_rx_callback);
 
   // Increase BLink rate to different from PrPh advertising mode 
   Bluefruit.setConnLedInterval(250);
@@ -68,32 +69,42 @@ void disconnect_callback(uint8_t reason)
   Serial.println("Bluefruit will auto start scanning (default)");
 }
 
+void uart_rx_callback(void)
+{
+  Serial.print("[RX]: ");
+  
+  while ( bleCentralUart.available() )
+  {
+    Serial.print( (char) bleCentralUart.read() );
+  }
+
+  Serial.println();
+}
+
 void loop() 
 {
   if ( Bluefruit.Central.connected() )
   {
-    Serial.print("Discovering BLE Uart Service ... ");
-
-    if ( bleCentralUart.discover() )
+    if ( !bleCentralUart.discovered() )
     {
-      Serial.println("Found it");
+      Serial.print("Discovering BLE Uart Service ... ");
 
-      Serial.println("Enable TXD's notify");
-      bleCentralUart.enableNotify();
-
-      Serial.println("Ready to receive from peripheral");
-      while ( 1 )
+      if ( bleCentralUart.discover() )
       {
-        if ( bleCentralUart.available() )
-        {
-          Serial.print( (char) bleCentralUart.read() );
-        }
-        delay(1);
+        Serial.println("Found it");
+  
+        Serial.println("Enable TXD's notify");
+        bleCentralUart.enableNotify();
+  
+        Serial.println("Ready to receive from peripheral");
+      }else
+      {
+        Serial.println("Found NONE");
       }
     }else
     {
-      Serial.println("Found NONE");
-    }    
+      // do nothing
+    }
   }
 }
 
