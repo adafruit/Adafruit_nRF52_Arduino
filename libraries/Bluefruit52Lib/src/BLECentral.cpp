@@ -70,7 +70,8 @@ BLECentral::BLECentral(void)
 
 void BLECentral::begin(void)
 {
-
+  // Central will very likely use Discovery
+  Bluefruit.Discovery.begin();
 }
 
 bool BLECentral::_registerService(BLECentralService* svc)

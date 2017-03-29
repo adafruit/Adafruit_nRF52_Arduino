@@ -50,7 +50,15 @@ BLEDiscovery::BLEDiscovery(void)
 
 void BLEDiscovery::begin(void)
 {
-  _evt_sem = xSemaphoreCreateBinary();
+  if (_evt_sem == NULL)
+  {
+    _evt_sem = xSemaphoreCreateBinary();
+  }
+}
+
+bool BLEDiscovery::begun(void)
+{
+  return (_evt_sem != NULL);
 }
 
 bool BLEDiscovery::discoverService(uint16_t conn_handle, BLECentralService& svc, uint16_t start_handle)
@@ -223,6 +231,8 @@ void BLEDiscovery::_event_handler(ble_evt_t* evt)
       xSemaphoreGive(_evt_sem);
     }
     break;
+
+    default: break;
   }
 }
 

@@ -683,6 +683,9 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   // Central Event Handler
   if (_central_enabled) Central._event_handler(evt);
 
+  // Discovery Event Handler
+  if ( Discovery.begun() ) Discovery._event_handler(evt);
+
   // GATTs characteristics event handler
   for(int i=0; i<_chars_count; i++)
   {

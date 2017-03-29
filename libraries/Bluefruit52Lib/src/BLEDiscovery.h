@@ -57,13 +57,14 @@ class BLEDiscovery
   public:
     BLEDiscovery(void);
 
-    void begin(void);
+    void     begin(void);
+    bool     begun(void);
+
     bool     discoverService(uint16_t conn_handle, BLECentralService& svc, uint16_t start_handle = 1);
     uint8_t  discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic* chr[], uint8_t count);
     uint16_t _discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t max_count);
 
     friend class AdafruitBluefruit;
-    friend class BLECentral;
 };
 
 #endif /* BLEDISCOVERY_H_ */

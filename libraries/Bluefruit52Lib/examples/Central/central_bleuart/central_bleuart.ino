@@ -113,7 +113,12 @@ void loop()
       // Get Serial input and send to Peripheral
       if ( Serial.available() )
       {
-        bleCentralUart.write( (char) Serial.read() );
+        delay(2); // delay a bit for all characters to arrive
+        
+        char str[20+1] = { 0 };
+        Serial.readBytes(str, 20);
+        
+        bleCentralUart.print( str );
       }
     }
   }
