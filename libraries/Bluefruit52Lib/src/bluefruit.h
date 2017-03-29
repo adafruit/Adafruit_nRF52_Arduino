@@ -55,6 +55,7 @@
 #include "services/BLEHidGeneric.h"
 #include "services/BLEHidAdafruit.h"
 #include "services/BLEMidi.h"
+#include "services/BLEAncs.h"
 
 #include "central_services/BLECentralUart.h"
 

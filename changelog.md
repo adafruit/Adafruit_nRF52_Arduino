@@ -1,6 +1,6 @@
 ## 0.5.5 (WIP)
 
-- Start to add central support
+- Initial Central API()
 - Add HardwarePWM class to support up to 12 channels
 
 ## 0.5.1
