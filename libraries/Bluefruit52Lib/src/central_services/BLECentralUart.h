@@ -47,12 +47,16 @@
 class BLECentralUart : public BLECentralService, public Stream
 {
   public:
+    typedef void (*rx_callback_t) (void);
+
     BLECentralUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
 
     virtual err_t begin(void);
     virtual bool  discover(uint16_t start_handle = 1);
+    virtual void  disconnect(void);
 
     bool enableNotify(void);
+    void setRxCallback( rx_callback_t fp);
 
     // Stream API
     virtual int       read       ( void );
@@ -72,6 +76,7 @@ class BLECentralUart : public BLECentralService, public Stream
     BLECentralCharacteristic _rxd;
 
     Adafruit_FIFO     _fifo;
+    rx_callback_t     _rx_cb;
 
     friend void bleuart_central_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
 };

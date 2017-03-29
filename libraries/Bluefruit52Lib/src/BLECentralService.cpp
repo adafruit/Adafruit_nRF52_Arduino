@@ -41,6 +41,7 @@ BLECentralService* BLECentralService::lastService = NULL;
 
 void BLECentralService::_init(void)
 {
+  _discovered = false;
 }
 
 BLECentralService::BLECentralService(void)
@@ -61,14 +62,24 @@ err_t BLECentralService::begin(void)
   // Add UUID128 if needed
   uuid.begin();
 
+  lastService = this;
+
   return ERROR_NONE;
 }
 
 bool BLECentralService::discover(uint16_t start_handle)
 {
   VERIFY( Bluefruit.Central.discoverService(uuid, start_handle) );
-
-  lastService = this;
-
+  _discovered = true;
   return true;
+}
+
+bool BLECentralService::discovered(void)
+{
+  return _discovered;
+}
+
+void BLECentralService::disconnect(void)
+{
+  // do nothing, inherited service may want to clean up its own
 }

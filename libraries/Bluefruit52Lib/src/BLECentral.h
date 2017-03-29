@@ -90,8 +90,8 @@ class BLECentral
     /*------------------------------------------------------------------*/
     /* GATTC Discovery
      *------------------------------------------------------------------*/
-    bool discoverService(BLEUuid uuid, uint16_t start_handle = 1);
-    bool discoverCharacteristic(BLECentralCharacteristic& chr);
+    bool    discoverService(BLEUuid uuid, uint16_t start_handle = 1);
+    uint8_t discoverCharacteristic(BLECentralCharacteristic* chr[], uint8_t count);
 
 
     /*------------------------------------------------------------------*/

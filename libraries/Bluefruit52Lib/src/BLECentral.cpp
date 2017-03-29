@@ -247,7 +247,7 @@ bool BLECentral::discoverService(BLEUuid uuid, uint16_t start_handle)
   if ( (disc_svc.count == 1) && (uuid == disc_svc.services[0].uuid) )
   {
     _disc_hdl_range = disc_svc.services[0].handle_range;
-    LOG_LV1(Discover, "[SVC] Handle start = %d, end = %d", _disc_hdl_range.start_handle, _disc_hdl_range.end_handle);
+    LOG_LV1(Discover, "[SVC] Found 0x%04X, Handle start = %d, end = %d", uuid._uuid.uuid, _disc_hdl_range.start_handle, _disc_hdl_range.end_handle);
 
     _disc_hdl_range.start_handle++; // increase for next discovery
     return true;
@@ -256,32 +256,48 @@ bool BLECentral::discoverService(BLEUuid uuid, uint16_t start_handle)
   return false;
 }
 
-bool BLECentral::discoverCharacteristic(BLECentralCharacteristic& chr)
+uint8_t BLECentral::discoverCharacteristic(BLECentralCharacteristic* chr[], uint8_t count)
 {
-  ble_gattc_evt_char_disc_rsp_t disc_chr;
+  uint8_t found = 0;
 
-  _evt_buf     = &disc_chr;
-  _evt_bufsize = sizeof(disc_chr);
-
-  LOG_LV1(Discover, "[CHR] Handle start = %d, end = %d", _disc_hdl_range.start_handle, _disc_hdl_range.end_handle);
-
-  VERIFY_STATUS( sd_ble_gattc_characteristics_discover(_conn_hdl, &_disc_hdl_range), false );
-
-  // wait for discovery event: timeout or has no data
-  if ( !xSemaphoreTake(_evt_sem, BLE_CENTRAL_TIMEOUT) || (_evt_bufsize == 0) ) return false;
-
-  if ( disc_chr.count > 0 )
+  while( found < count )
   {
-    chr = BLECentralCharacteristic(&disc_chr.chars[0]);
+    ble_gattc_evt_char_disc_rsp_t disc_chr;
+
+    _evt_buf     = &disc_chr;
+    _evt_bufsize = sizeof(disc_chr);
+
+    LOG_LV1(Discover, "[CHR] Handle start = %d, end = %d", _disc_hdl_range.start_handle, _disc_hdl_range.end_handle);
+
+    VERIFY_STATUS( sd_ble_gattc_characteristics_discover(_conn_hdl, &_disc_hdl_range), found );
+
+    // wait for discovery event: timeout or has no data
+    // Assume only 1 characteristic discovered each
+    if ( !xSemaphoreTake(_evt_sem, BLE_CENTRAL_TIMEOUT) || (_evt_bufsize == 0) || (disc_chr.count == 0) ) break;
 
     // increase handle range for next discovery
     _disc_hdl_range.start_handle = disc_chr.chars[0].handle_value + 1;
 
-    // Discovery All descriptors as well
-    chr.discoverDescriptor();
+    // Look for matched uuid
+    for (uint8_t i=0; i<count; i++)
+    {
+      if ( chr[i]->uuid == disc_chr.chars[0].uuid )
+      {
+        LOG_LV1(Discover, "[CHR] Found 0x%04X, handle = %d", disc_chr.chars[0].uuid.uuid,  disc_chr.chars[0].handle_value);
+
+        chr[i]->_chr = disc_chr.chars[0];
+
+        // Discovery All descriptors as well
+        chr[i]->discoverDescriptor();
+
+        found++;
+
+        break;
+      }
+    }
   }
 
-  return true;
+  return found;
 }
 
 uint16_t BLECentral::_discoverDescriptor(ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t max_count)

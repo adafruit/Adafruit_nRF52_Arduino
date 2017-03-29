@@ -42,6 +42,8 @@
 class BLECentralService
 {
   protected:
+    bool  _discovered;
+
     void  _init(void);
 
   public:
@@ -55,6 +57,8 @@ class BLECentralService
     virtual err_t begin(void);
 
     virtual bool discover(uint16_t start_handle = 1);
+            bool discovered(void);
+    virtual void disconnect(void);
 };
 
 

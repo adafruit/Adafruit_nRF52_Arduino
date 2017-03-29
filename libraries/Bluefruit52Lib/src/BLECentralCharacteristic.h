@@ -49,7 +49,7 @@ class BLECentralCharacteristic
     BLEUuid uuid;
 
     BLECentralCharacteristic(void);
-    BLECentralCharacteristic(ble_gattc_char_t* gattc_char);
+    BLECentralCharacteristic(BLEUuid bleuuid);
 
     bool discoverDescriptor(void);
     void begin(void);
@@ -75,11 +75,11 @@ class BLECentralCharacteristic
     void setNotifyCallback(notify_cb_t fp);
 
   private:
-    ble_gattc_char_t _chr;
-    uint16_t         _cccd_handle;
+    ble_gattc_char_t   _chr;
+    uint16_t           _cccd_handle;
 
     BLECentralService* _service;
-    notify_cb_t      _notify_cb;
+    notify_cb_t        _notify_cb;
 
     SemaphoreHandle_t  _sem;
 

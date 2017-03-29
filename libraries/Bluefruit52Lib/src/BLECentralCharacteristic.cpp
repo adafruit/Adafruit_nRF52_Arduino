@@ -41,6 +41,7 @@
 
 void BLECentralCharacteristic::_init(void)
 {
+  varclr(&_chr);
   _cccd_handle = 0;
 
   _notify_cb = NULL;
@@ -50,14 +51,12 @@ void BLECentralCharacteristic::_init(void)
 BLECentralCharacteristic::BLECentralCharacteristic(void)
   : uuid()
 {
-  varclr(&_chr);
   _init();
 }
 
-BLECentralCharacteristic::BLECentralCharacteristic(ble_gattc_char_t* gattc_char)
-  : uuid(gattc_char->uuid)
+BLECentralCharacteristic::BLECentralCharacteristic(BLEUuid bleuuid)
+  : uuid(bleuuid)
 {
-  _chr = (*gattc_char);
   _init();
 }
 
@@ -96,6 +95,9 @@ bool BLECentralCharacteristic::discoverDescriptor(void)
 
 void BLECentralCharacteristic::begin(void)
 {
+  // Add UUID128 if needed
+  uuid.begin();
+
   _service = BLECentralService::lastService;
 
   // Register to Bluefruit (required for callback and write response)

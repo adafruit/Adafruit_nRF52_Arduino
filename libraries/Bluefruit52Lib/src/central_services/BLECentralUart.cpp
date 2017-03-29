@@ -36,18 +36,57 @@
 
 #include "bluefruit.h"
 
-BLECentralUart::BLECentralUart(uint16_t fifo_depth)
-  : BLECentralService(BLEUART_UUID_SERVICE), _txd(), _rxd(), _fifo(fifo_depth, 1)
-{
+void bleuart_central_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
 
+BLECentralUart::BLECentralUart(uint16_t fifo_depth)
+  : BLECentralService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD),
+    _fifo(fifo_depth, 1)
+{
+  _rx_cb = NULL;
 }
 
 err_t BLECentralUart::begin(void)
 {
-  // Add UUID128 if needed
-  uuid.begin();
+  // Invoke basde class begin()
+  BLECentralService::begin();
+
+  _rxd.begin();
+  _txd.begin();
+
+  // set up notify callback
+  _txd.setNotifyCallback(bleuart_central_notify_cb);
 
   return ERROR_NONE;
+}
+
+bool BLECentralUart::enableNotify(void)
+{
+  return _txd.enableNotify();
+}
+
+void BLECentralUart::setRxCallback( rx_callback_t fp)
+{
+  _rx_cb = fp;
+}
+
+bool BLECentralUart::discover(uint16_t start_handle)
+{
+  // Call BLECentralService discover
+  VERIFY( BLECentralService::discover(start_handle) );
+  _discovered = false;
+
+  // Discover TXD, RXD characteristics
+  BLECentralCharacteristic* chr_arr[] = { &_rxd, &_txd };
+  VERIFY( 2 == Bluefruit.Central.discoverCharacteristic(chr_arr, 2) );
+
+  _discovered = true;
+
+  return true;
+}
+
+void BLECentralUart::disconnect(void)
+{
+
 }
 
 void bleuart_central_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len)
@@ -56,45 +95,7 @@ void bleuart_central_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uin
   uart_svc._fifo.write(data, len);
 
   // invoke callback
-}
-
-bool BLECentralUart::discover(uint16_t start_handle)
-{
-  // Call BLECentralService discover
-  VERIFY( BLECentralService::discover(start_handle) );
-
-  // Discover TXD, RXD characteristics
-  BLECentralCharacteristic chr_temp;
-  while ( Bluefruit.Central.discoverCharacteristic(chr_temp) )
-  {
-    uint16_t uuid16;
-    chr_temp.uuid.get(&uuid16);
-
-    if (uuid16 == 0x0002)
-    {
-      _rxd = chr_temp;
-      LOG_LV1(BLECentralUart, "Found RXD: handle = %d", _rxd.valueHandle());
-    }else if (uuid16 == 0x0003)
-    {
-      _txd = chr_temp;
-      LOG_LV1(BLECentralUart, "Found TXD: handle = %d", _txd.valueHandle());
-    }
-  }
-
-  // Check if both RXD & TXD are found
-  VERIFY ( _rxd.valueHandle() && _txd.valueHandle() );
-
-  _txd.setNotifyCallback(bleuart_central_notify_cb);
-
-  _rxd.begin();
-  _txd.begin();
-
-  return true;
-}
-
-bool BLECentralUart::enableNotify(void)
-{
-  return _txd.enableNotify();
+  if ( uart_svc._rx_cb ) uart_svc._rx_cb();
 }
 
 /*------------------------------------------------------------------*/
@@ -119,6 +120,7 @@ size_t BLECentralUart::write (uint8_t b)
 size_t BLECentralUart::write (const uint8_t *content, size_t len)
 {
   // do nothing
+  return _rxd.write(content, len);
 }
 
 int BLECentralUart::available (void)
