@@ -54,7 +54,7 @@ class BLECentralService
     BLECentralService(void);
     BLECentralService(BLEUuid bleuuid);
 
-    virtual err_t begin(void);
+    virtual bool begin(void);
 
     virtual bool discover  (void);
             bool discovered(void);

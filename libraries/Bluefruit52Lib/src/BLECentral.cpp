@@ -51,6 +51,9 @@ BLECentral::BLECentral(void)
 
   _txpacket_sem = NULL;
 
+  _svc_count = 0;
+  for(uint8_t i=0; i<BLE_CENTRAL_MAX_SERVICE; i++) _svc_list[i] = NULL;
+
   _chars_count = 0;
   for(uint8_t i=0; i<BLE_CENTRAL_MAX_CHARS; i++) _chars_list[i] = NULL;
 
@@ -76,9 +79,17 @@ void BLECentral::begin(void)
   _evt_sem = xSemaphoreCreateBinary();
 }
 
+bool BLECentral::_registerService(BLECentralService* svc)
+{
+  VERIFY( _svc_count < BLE_CENTRAL_MAX_SERVICE );
+  _svc_list[ _svc_count++ ] = svc;
+
+  return true;
+}
+
 bool BLECentral::_registerCharacteristic(BLECentralCharacteristic* chr)
 {
-  if ( _chars_count == BLE_CENTRAL_MAX_CHARS ) return false;
+  VERIFY( _chars_count < BLE_CENTRAL_MAX_CHARS );
   _chars_list[ _chars_count++ ] = chr;
 
   return true;

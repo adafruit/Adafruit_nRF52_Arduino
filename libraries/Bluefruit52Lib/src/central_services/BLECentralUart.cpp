@@ -45,7 +45,7 @@ BLECentralUart::BLECentralUart(uint16_t fifo_depth)
   _rx_cb = NULL;
 }
 
-err_t BLECentralUart::begin(void)
+bool BLECentralUart::begin(void)
 {
   // Invoke basde class begin()
   BLECentralService::begin();
@@ -56,7 +56,7 @@ err_t BLECentralUart::begin(void)
   // set up notify callback
   _txd.setNotifyCallback(bleuart_central_notify_cb);
 
-  return ERROR_NONE;
+  return true;
 }
 
 bool BLECentralUart::enableNotify(void)
@@ -86,7 +86,9 @@ bool BLECentralUart::discover(void)
 
 void BLECentralUart::disconnect(void)
 {
+  BLECentralService::disconnect();
 
+  flush();
 }
 
 void bleuart_central_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len)

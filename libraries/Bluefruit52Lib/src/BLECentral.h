@@ -46,7 +46,8 @@
 #include "BLECentralCharacteristic.h"
 #include "BLECentralService.h"
 
-#define BLE_CENTRAL_MAX_CHARS   20
+#define BLE_CENTRAL_MAX_SERVICE   10
+#define BLE_CENTRAL_MAX_CHARS     30
 
 
 class AdafruitBluefruit;
@@ -107,9 +108,11 @@ class BLECentral
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
+     * Although declare as public, it is meant to be invoked by internal
+     * code. User should not call these directly
      *------------------------------------------------------------------*/
-    // Called by discoverCharacteristic(), user should not call this directly
     uint16_t _discoverDescriptor(ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t max_count);
+    bool     _registerService(BLECentralService* svc);
     bool     _registerCharacteristic(BLECentralCharacteristic* chr);
 
   private:
@@ -121,6 +124,9 @@ class BLECentral
 
     // Transmission Buffer Count for HVX notification, max is seen at 7
     SemaphoreHandle_t _txpacket_sem;
+
+    BLECentralService*        _svc_list[BLE_CENTRAL_MAX_SERVICE];
+    uint8_t                   _svc_count;
 
     BLECentralCharacteristic* _chars_list[BLE_CENTRAL_MAX_CHARS];
     uint8_t                   _chars_count;
