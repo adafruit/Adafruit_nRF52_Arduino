@@ -52,7 +52,7 @@ class BLECentralUart : public BLECentralService, public Stream
     BLECentralUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
 
     virtual err_t begin(void);
-    virtual bool  discover(uint16_t start_handle = 1);
+    virtual bool  discover(void);
     virtual void  disconnect(void);
 
     bool enableNotify(void);

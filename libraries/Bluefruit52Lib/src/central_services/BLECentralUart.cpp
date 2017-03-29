@@ -69,10 +69,10 @@ void BLECentralUart::setRxCallback( rx_callback_t fp)
   _rx_cb = fp;
 }
 
-bool BLECentralUart::discover(uint16_t start_handle)
+bool BLECentralUart::discover(void)
 {
   // Call BLECentralService discover
-  VERIFY( BLECentralService::discover(start_handle) );
+  VERIFY( BLECentralService::discover() );
   _discovered = false;
 
   // Discover TXD, RXD characteristics

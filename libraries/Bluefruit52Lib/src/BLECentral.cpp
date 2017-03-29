@@ -229,27 +229,25 @@ void BLECentral::setDisconnectCallback( disconnect_callback_t fp)
 /*------------------------------------------------------------------*/
 /* DISCOVERY
  *------------------------------------------------------------------*/
-bool BLECentral::discoverService(BLEUuid uuid, uint16_t start_handle)
+bool BLECentral::discoverService(BLECentralService& svc, uint16_t start_handle)
 {
-  uuid.begin(); // add uuid128 if needed
-
   ble_gattc_evt_prim_srvc_disc_rsp_t disc_svc;
 
   _evt_buf     = &disc_svc;
   _evt_bufsize = sizeof(disc_svc);
 
-  VERIFY_STATUS( sd_ble_gattc_primary_services_discover(_conn_hdl, start_handle, &uuid._uuid), false );
+  VERIFY_STATUS( sd_ble_gattc_primary_services_discover(_conn_hdl, start_handle, &svc.uuid._uuid), false );
 
   // wait for discovery event: timeout or has no data
   if ( !xSemaphoreTake(_evt_sem, BLE_CENTRAL_TIMEOUT) || (_evt_bufsize == 0) ) return false;
 
   // Check the discovered UUID with input one
-  if ( (disc_svc.count == 1) && (uuid == disc_svc.services[0].uuid) )
+  if ( (disc_svc.count == 1) && (svc.uuid == disc_svc.services[0].uuid) )
   {
     _disc_hdl_range = disc_svc.services[0].handle_range;
-    LOG_LV1(Discover, "[SVC] Found 0x%04X, Handle start = %d, end = %d", uuid._uuid.uuid, _disc_hdl_range.start_handle, _disc_hdl_range.end_handle);
+    LOG_LV1(Discover, "[SVC] Found 0x%04X, Handle start = %d, end = %d", disc_svc.services[0].uuid.uuid, _disc_hdl_range.start_handle, _disc_hdl_range.end_handle);
 
-    _disc_hdl_range.start_handle++; // increase for next discovery
+    _disc_hdl_range.start_handle++; // increase for characteristic discovery
     return true;
   }
 

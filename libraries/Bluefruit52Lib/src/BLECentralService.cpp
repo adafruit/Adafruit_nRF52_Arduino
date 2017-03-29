@@ -67,9 +67,9 @@ err_t BLECentralService::begin(void)
   return ERROR_NONE;
 }
 
-bool BLECentralService::discover(uint16_t start_handle)
+bool BLECentralService::discover(void)
 {
-  VERIFY( Bluefruit.Central.discoverService(uuid, start_handle) );
+  VERIFY( Bluefruit.Central.discoverService(*this) );
   _discovered = true;
   return true;
 }
