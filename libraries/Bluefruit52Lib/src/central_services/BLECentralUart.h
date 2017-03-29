@@ -53,7 +53,6 @@ class BLECentralUart : public BLECentralService, public Stream
 
     virtual bool  begin(void);
     virtual bool  discover(void);
-    virtual void  disconnect(void);
 
     bool enableNotify(void);
     void setRxCallback( rx_callback_t fp);
@@ -70,6 +69,8 @@ class BLECentralUart : public BLECentralService, public Stream
     // pull in write(str) and write(buf, size) from Print
     using Print::write;
 
+  protected:
+    virtual void  disconnect(void);
 
   private:
     BLECentralCharacteristic _txd;

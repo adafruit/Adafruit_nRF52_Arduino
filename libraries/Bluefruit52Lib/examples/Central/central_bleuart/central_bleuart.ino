@@ -12,6 +12,10 @@
  any redistribution
 *********************************************************************/
 
+/*
+ * This sketch demonstrate the central API(). A additional bluefruit
+ * that has bleuart as peripheral is required for the demo.
+ */
 #include <bluefruit.h>
 
 BLECentralUart bleCentralUart;
@@ -21,7 +25,8 @@ void setup()
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 Central BLEUART Example");
-
+  Serial.println("-----------------------------------");
+  
   // up to 1 peripheral conn and 1 central conn
   Bluefruit.begin(true, true);
   Bluefruit.setName("Bluefruit52");
@@ -85,6 +90,7 @@ void loop()
 {
   if ( Bluefruit.Central.connected() )
   {
+    // Not discovered yet
     if ( !bleCentralUart.discovered() )
     {
       Serial.print("Discovering BLE Uart Service ... ");
@@ -103,7 +109,12 @@ void loop()
       }
     }else
     {
-      // do nothing
+      // Discovered means in working state
+      // Get Serial input and send to Peripheral
+      if ( Serial.available() )
+      {
+        bleCentralUart.write( (char) Serial.read() );
+      }
     }
   }
 }

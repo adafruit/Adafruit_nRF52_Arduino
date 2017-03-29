@@ -399,6 +399,9 @@ void BLECentral::_event_handler(ble_evt_t* evt)
         vSemaphoreDelete(_txpacket_sem);
         _txpacket_sem = NULL;
 
+        // disconnect all registered services
+        for(uint8_t i=0; i<_svc_count; i++) _svc_list[i]->disconnect();
+
         if ( _disconnect_cb ) _disconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
 
         startScanning();

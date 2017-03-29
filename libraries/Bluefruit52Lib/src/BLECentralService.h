@@ -45,6 +45,7 @@ class BLECentralService
     bool  _discovered;
 
     void  _init(void);
+    virtual void disconnect(void);
 
   public:
     static BLECentralService* lastService;
@@ -58,7 +59,6 @@ class BLECentralService
 
     virtual bool discover  (void);
             bool discovered(void);
-    virtual void disconnect(void);
 
     friend class BLECentral;
 };
