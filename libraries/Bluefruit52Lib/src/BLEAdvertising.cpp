@@ -124,6 +124,25 @@ bool BLEAdvertising::addService(BLEService& service)
   return addUuid(service.uuid);
 }
 
+bool BLEAdvertising::addService(BLECentralService& service)
+{
+  // Central service is added to Solicitation UUID
+  switch ( service.uuid.size() )
+  {
+    case 16:
+      return addData(BLE_GAP_AD_TYPE_SOLICITED_SERVICE_UUIDS_16BIT, &service.uuid._uuid.uuid, 2);
+    break;
+
+    case 128:
+      return addData(BLE_GAP_AD_TYPE_SOLICITED_SERVICE_UUIDS_128BIT, service.uuid._uuid128, 16);
+    break;
+
+    default: break;
+  }
+
+  return false;
+}
+
 // Add Name to Adv packet, use setName() to set
 bool BLEAdvertising::addName(void)
 {
