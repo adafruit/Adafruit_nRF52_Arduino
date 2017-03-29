@@ -68,9 +68,9 @@ bool BLECentralService::begin(void)
   return true;
 }
 
-bool BLECentralService::discover(void)
+bool BLECentralService::discover(uint16_t conn_handle)
 {
-  VERIFY( Bluefruit.Central.discoverService(*this) );
+  VERIFY( Bluefruit.Discovery.discoverService(conn_handle, *this) );
   _discovered = true;
   return true;
 }

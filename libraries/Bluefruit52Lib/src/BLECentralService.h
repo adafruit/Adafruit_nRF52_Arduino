@@ -57,7 +57,7 @@ class BLECentralService
 
     virtual bool begin(void);
 
-    virtual bool discover  (void);
+    virtual bool discover  (uint16_t conn_handle);
             bool discovered(void);
 
     friend class BLECentral;

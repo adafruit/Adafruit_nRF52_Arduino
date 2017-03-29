@@ -91,8 +91,7 @@ class BLECentral
     /*------------------------------------------------------------------*/
     /* GATTC Discovery
      *------------------------------------------------------------------*/
-    bool    discoverService(BLECentralService& svc, uint16_t start_handle = 1);
-    uint8_t discoverCharacteristic(BLECentralCharacteristic* chr[], uint8_t count);
+
 
 
     /*------------------------------------------------------------------*/
@@ -104,23 +103,16 @@ class BLECentral
     void setConnectCallback   ( connect_callback_t    fp);
     void setDisconnectCallback( disconnect_callback_t fp);
 
-
-
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal
      * code. User should not call these directly
      *------------------------------------------------------------------*/
-    uint16_t _discoverDescriptor(ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t max_count);
     bool     _registerService(BLECentralService* svc);
     bool     _registerCharacteristic(BLECentralCharacteristic* chr);
 
   private:
     uint16_t _conn_hdl;
-
-    SemaphoreHandle_t _evt_sem;
-    void*             _evt_buf;
-    uint16_t          _evt_bufsize;
 
     // Transmission Buffer Count for HVX notification, max is seen at 7
     SemaphoreHandle_t _txpacket_sem;
@@ -134,14 +126,12 @@ class BLECentral
     ble_gap_scan_params_t _scan_param;
     scan_callback_t       _scan_cb;
 
-    ble_gattc_handle_range_t _disc_hdl_range;
-
     connect_callback_t    _connect_cb;
     disconnect_callback_t _disconnect_cb;
 
     bool  _checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t uuid[], uint8_t uuid_len);
 
-    void  _event_handler(ble_evt_t* event);
+    void  _event_handler(ble_evt_t* evt);
 
     friend class AdafruitBluefruit;
 };

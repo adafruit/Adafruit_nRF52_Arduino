@@ -45,6 +45,7 @@
 #include "BLECentral.h"
 #include "BLECentralCharacteristic.h"
 #include "BLECentralService.h"
+#include "BLEDiscovery.h"
 
 // Services
 #include "services/BLEDis.h"
@@ -81,6 +82,7 @@ class AdafruitBluefruit
     BLEAdvertising Advertising;
     BLEAdvertising ScanResponse;
     BLECentral     Central;
+    BLEDiscovery   Discovery;
 
     /*------------------------------------------------------------------*/
     /* General Purpose Functions

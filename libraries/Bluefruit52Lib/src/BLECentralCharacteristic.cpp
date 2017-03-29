@@ -60,6 +60,11 @@ BLECentralCharacteristic::BLECentralCharacteristic(BLEUuid bleuuid)
   _init();
 }
 
+void BLECentralCharacteristic::assign(ble_gattc_char_t* gattc_chr)
+{
+  _chr = *gattc_chr;
+}
+
 uint16_t BLECentralCharacteristic::valueHandle()
 {
   return _chr.handle_value;
@@ -70,14 +75,14 @@ BLECentralService& BLECentralCharacteristic::parentService (void)
   return *_service;
 }
 
-bool BLECentralCharacteristic::discoverDescriptor(void)
+bool BLECentralCharacteristic::discoverDescriptor(uint16_t conn_handle)
 {
   struct {
     uint16_t count;
     ble_gattc_desc_t descs[MAX_DESCIRPTORS];
   }disc_rsp;
 
-  uint16_t count = Bluefruit.Central._discoverDescriptor((ble_gattc_evt_desc_disc_rsp_t*) &disc_rsp, MAX_DESCIRPTORS);
+  uint16_t count = Bluefruit.Discovery._discoverDescriptor(conn_handle, (ble_gattc_evt_desc_disc_rsp_t*) &disc_rsp, MAX_DESCIRPTORS);
 
   // only care CCCD for now
   for(uint16_t i=0; i<count; i++)

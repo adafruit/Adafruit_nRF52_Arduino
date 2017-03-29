@@ -95,7 +95,7 @@ void loop()
     {
       Serial.print("Discovering BLE Uart Service ... ");
 
-      if ( bleCentralUart.discover() )
+      if ( bleCentralUart.discover( Bluefruit.Central.connHandle() ) )
       {
         Serial.println("Found it");
   

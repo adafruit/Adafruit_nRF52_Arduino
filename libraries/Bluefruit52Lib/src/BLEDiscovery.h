@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLECentralCharacteristic.h
+    @file     BLEDiscovery.h
     @author   hathach
 
     @section LICENSE
@@ -33,62 +33,37 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLECENTRALCHARACTERISTIC_H_
-#define BLECENTRALCHARACTERISTIC_H_
+#ifndef BLEDISCOVERY_H_
+#define BLEDISCOVERY_H_
 
+#include <Arduino.h>
 #include "bluefruit_common.h"
+
 #include "BLEUuid.h"
-#include "BLECharacteristic.h"
+#include "BLECentralCharacteristic.h"
+#include "BLECentralService.h"
 
-// Forward declaration
-class BLECentralService;
-
-class BLECentralCharacteristic
+class BLEDiscovery
 {
-  public:
-    BLEUuid uuid;
-
-    BLECentralCharacteristic(void);
-    BLECentralCharacteristic(BLEUuid bleuuid);
-
-    bool discoverDescriptor(uint16_t conn_handle);
-    void begin(void);
-
-    uint16_t valueHandle();
-    BLECentralService& parentService(void);
-
-    /*------------- Read -------------*/
-    uint16_t read(void* buffer, int bufsize);
-
-    /*------------- Write -------------*/
-    uint16_t write     (const void* data, int len);
-    uint16_t write_resp(const void* data, int len);
-
-    /*------------- Notify -------------*/
-    bool enableNotify(void);
-
-
-    /*------------- Callbacks -------------*/
-    typedef void (*notify_cb_t  ) (BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
-    typedef void (*indicate_cb_t) (BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
-
-    void setNotifyCallback(notify_cb_t fp);
-
-    void assign(ble_gattc_char_t* gattc_chr);
-
   private:
-    ble_gattc_char_t   _chr;
-    uint16_t           _cccd_handle;
+    ble_gattc_handle_range_t _disc_hdl_range;
+    void*             _evt_buf;
+    uint16_t          _evt_bufsize;
 
-    BLECentralService* _service;
-    notify_cb_t        _notify_cb;
+    SemaphoreHandle_t _evt_sem;
 
-    SemaphoreHandle_t  _sem;
+    void  _event_handler(ble_evt_t* evt);
 
-    void     _init         (void);
-    void     _eventHandler (ble_evt_t* event);
+  public:
+    BLEDiscovery(void);
 
+    void begin(void);
+    bool     discoverService(uint16_t conn_handle, BLECentralService& svc, uint16_t start_handle = 1);
+    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic* chr[], uint8_t count);
+    uint16_t _discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t max_count);
+
+    friend class AdafruitBluefruit;
     friend class BLECentral;
 };
 
-#endif /* BLECENTRALCHARACTERISTIC_H_ */
+#endif /* BLEDISCOVERY_H_ */

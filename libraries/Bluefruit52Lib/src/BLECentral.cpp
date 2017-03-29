@@ -45,10 +45,6 @@ BLECentral::BLECentral(void)
 {
   _conn_hdl    = BLE_CONN_HANDLE_INVALID;
 
-  _evt_sem     = NULL;
-  _evt_buf     = NULL;
-  _evt_bufsize = 0;
-
   _txpacket_sem = NULL;
 
   _svc_count = 0;
@@ -67,8 +63,6 @@ BLECentral::BLECentral(void)
     .timeout     = 0, // no timeout
   };
 
-  _disc_hdl_range.start_handle = 1;
-  _disc_hdl_range.end_handle   = 0xffff;
 
   _connect_cb     = NULL;
   _disconnect_cb = NULL;
@@ -76,7 +70,7 @@ BLECentral::BLECentral(void)
 
 void BLECentral::begin(void)
 {
-  _evt_sem = xSemaphoreCreateBinary();
+
 }
 
 bool BLECentral::_registerService(BLECentralService* svc)
@@ -237,107 +231,6 @@ void BLECentral::setDisconnectCallback( disconnect_callback_t fp)
   _disconnect_cb = fp;
 }
 
-/*------------------------------------------------------------------*/
-/* DISCOVERY
- *------------------------------------------------------------------*/
-bool BLECentral::discoverService(BLECentralService& svc, uint16_t start_handle)
-{
-  ble_gattc_evt_prim_srvc_disc_rsp_t disc_svc;
-
-  _evt_buf     = &disc_svc;
-  _evt_bufsize = sizeof(disc_svc);
-
-  VERIFY_STATUS( sd_ble_gattc_primary_services_discover(_conn_hdl, start_handle, &svc.uuid._uuid), false );
-
-  // wait for discovery event: timeout or has no data
-  if ( !xSemaphoreTake(_evt_sem, BLE_CENTRAL_TIMEOUT) || (_evt_bufsize == 0) ) return false;
-
-  // Check the discovered UUID with input one
-  if ( (disc_svc.count == 1) && (svc.uuid == disc_svc.services[0].uuid) )
-  {
-    _disc_hdl_range = disc_svc.services[0].handle_range;
-    LOG_LV1(Discover, "[SVC] Found 0x%04X, Handle start = %d, end = %d", disc_svc.services[0].uuid.uuid, _disc_hdl_range.start_handle, _disc_hdl_range.end_handle);
-
-    _disc_hdl_range.start_handle++; // increase for characteristic discovery
-    return true;
-  }
-
-  return false;
-}
-
-uint8_t BLECentral::discoverCharacteristic(BLECentralCharacteristic* chr[], uint8_t count)
-{
-  uint8_t found = 0;
-
-  while( found < count )
-  {
-    ble_gattc_evt_char_disc_rsp_t disc_chr;
-
-    _evt_buf     = &disc_chr;
-    _evt_bufsize = sizeof(disc_chr);
-
-    LOG_LV1(Discover, "[CHR] Handle start = %d, end = %d", _disc_hdl_range.start_handle, _disc_hdl_range.end_handle);
-
-    VERIFY_STATUS( sd_ble_gattc_characteristics_discover(_conn_hdl, &_disc_hdl_range), found );
-
-    // wait for discovery event: timeout or has no data
-    // Assume only 1 characteristic discovered each
-    if ( !xSemaphoreTake(_evt_sem, BLE_CENTRAL_TIMEOUT) || (_evt_bufsize == 0) || (disc_chr.count == 0) ) break;
-
-    // increase handle range for next discovery
-    _disc_hdl_range.start_handle = disc_chr.chars[0].handle_value + 1;
-
-    // Look for matched uuid
-    for (uint8_t i=0; i<count; i++)
-    {
-      if ( chr[i]->uuid == disc_chr.chars[0].uuid )
-      {
-        LOG_LV1(Discover, "[CHR] Found 0x%04X, handle = %d", disc_chr.chars[0].uuid.uuid,  disc_chr.chars[0].handle_value);
-
-        chr[i]->_chr = disc_chr.chars[0];
-
-        // Discovery All descriptors as well
-        chr[i]->discoverDescriptor();
-
-        found++;
-
-        break;
-      }
-    }
-  }
-
-  return found;
-}
-
-uint16_t BLECentral::_discoverDescriptor(ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t max_count)
-{
-  _evt_buf     = disc_desc;
-  _evt_bufsize = sizeof(ble_gattc_evt_desc_disc_rsp_t) + (max_count-1)*sizeof(ble_gattc_desc_t);
-
-  LOG_LV1(Discover, "[DESC] Handle start = %d, end = %d", _disc_hdl_range.start_handle, _disc_hdl_range.end_handle);
-
-  uint16_t result = 0;
-  VERIFY_STATUS( sd_ble_gattc_descriptors_discover(_conn_hdl, &_disc_hdl_range), 0 );
-
-  // wait for discovery event: timeout or has no data
-  if ( !xSemaphoreTake(_evt_sem, BLE_CENTRAL_TIMEOUT) || (_evt_bufsize == 0) ) return 0;
-
-  result = min16(disc_desc->count, max_count);
-  if (result)
-  {
-    for(uint16_t i=0; i<result; i++)
-    {
-      LOG_LV1(Discover, "[DESC] Descriptor %d: uuid = 0x%04X, handle = %d", i, disc_desc->descs[i].uuid.uuid, disc_desc->descs[i].handle);
-    }
-
-    // increase handle range for next discovery
-    // should be +1 more, but that will cause missing on the next Characteristic !!!!!
-    // Reason is descriptor also include BLE_UUID_CHARACTERISTIC 0x2803 (Char declaration) in the result
-    _disc_hdl_range.start_handle = disc_desc->descs[result-1].handle;
-  }
-
-  return result;
-}
 
 /**
  * Event is forwarded from Bluefruit Poll() method
@@ -424,84 +317,6 @@ void BLECentral::_event_handler(ble_evt_t* evt)
           // Restart Scanning
           startScanning();
         }
-      break;
-
-      /*------------------------------------------------------------------*/
-      /* DISCOVERY
-       *------------------------------------------------------------------*/
-      case BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP:
-      {
-        ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
-        ble_gattc_evt_prim_srvc_disc_rsp_t* svc_rsp = &gattc->params.prim_srvc_disc_rsp;
-
-        if ( _conn_hdl == gattc->conn_handle )
-        {
-          LOG_LV1(Discover, "[SVC] Service Count: %d", svc_rsp->count);
-
-          if (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS && svc_rsp->count && _evt_buf)
-          {
-            // Only support 1 service
-
-            _evt_bufsize = min16(_evt_bufsize, sizeof(ble_gattc_evt_prim_srvc_disc_rsp_t));
-            memcpy(_evt_buf, svc_rsp, _evt_bufsize);
-          }else
-          {
-            _evt_bufsize = 0; // no data
-          }
-
-          xSemaphoreGive(_evt_sem);
-        }
-      }
-      break;
-
-      case BLE_GATTC_EVT_CHAR_DISC_RSP:
-      {
-        ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
-        ble_gattc_evt_char_disc_rsp_t* chr_rsp = &gattc->params.char_disc_rsp;
-
-        if ( _conn_hdl == gattc->conn_handle )
-        {
-          LOG_LV1(Discover, "[CHR] Characteristic Count: %d", chr_rsp->count);
-          if ( (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS) && chr_rsp->count && _evt_buf )
-          {
-            // TODO support only 1 discovered char now
-            _evt_bufsize = min16(_evt_bufsize, sizeof(ble_gattc_evt_char_disc_rsp_t));
-
-            memcpy(_evt_buf, chr_rsp, _evt_bufsize);
-          }else
-          {
-            _evt_bufsize = 0; // no data
-          }
-        }
-
-        xSemaphoreGive(_evt_sem);
-      }
-      break;
-
-      case BLE_GATTC_EVT_DESC_DISC_RSP:
-      {
-        ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
-        ble_gattc_evt_desc_disc_rsp_t* desc_rsp = &gattc->params.desc_disc_rsp;
-
-        if ( _conn_hdl == gattc->conn_handle )
-        {
-          LOG_LV1(Discover, "[DESC] Descriptor Count: %d", desc_rsp->count);
-
-          if ( (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS) && desc_rsp->count && _evt_buf )
-          {
-            // Copy up to bufsize
-            uint16_t len = sizeof(ble_gattc_evt_desc_disc_rsp_t) + (desc_rsp->count-1)*sizeof(ble_gattc_desc_t);
-            _evt_bufsize = min16(_evt_bufsize, len);
-
-            memcpy(_evt_buf, desc_rsp, _evt_bufsize);
-          }else
-          {
-            _evt_bufsize = 0; // no data
-          }
-        }
-
-        xSemaphoreGive(_evt_sem);
-      }
       break;
 
       default: break;

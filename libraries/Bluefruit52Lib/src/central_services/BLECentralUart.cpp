@@ -69,15 +69,15 @@ void BLECentralUart::setRxCallback( rx_callback_t fp)
   _rx_cb = fp;
 }
 
-bool BLECentralUart::discover(void)
+bool BLECentralUart::discover(uint16_t conn_handle)
 {
   // Call BLECentralService discover
-  VERIFY( BLECentralService::discover() );
+  VERIFY( BLECentralService::discover(conn_handle) );
   _discovered = false;
 
   // Discover TXD, RXD characteristics
   BLECentralCharacteristic* chr_arr[] = { &_rxd, &_txd };
-  VERIFY( 2 == Bluefruit.Central.discoverCharacteristic(chr_arr, 2) );
+  VERIFY( 2 == Bluefruit.Discovery.discoverCharacteristic(conn_handle, chr_arr, 2) );
 
   _discovered = true;
 
