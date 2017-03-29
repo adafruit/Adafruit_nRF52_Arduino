@@ -46,7 +46,7 @@
 class BLEDiscovery
 {
   private:
-    ble_gattc_handle_range_t _disc_hdl_range;
+    ble_gattc_handle_range_t _hdl_range;
     void*             _evt_buf;
     uint16_t          _evt_bufsize;
 
@@ -60,8 +60,14 @@ class BLEDiscovery
     void     begin(void);
     bool     begun(void);
 
-    bool     discoverService(uint16_t conn_handle, BLECentralService& svc, uint16_t start_handle = 1);
     uint8_t  discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic* chr[], uint8_t count);
+
+    /*------------------------------------------------------------------*/
+    /* INTERNAL USAGE ONLY
+     * Although declare as public, it is meant to be invoked by internal
+     * code. User should not call these directly
+     *------------------------------------------------------------------*/
+    bool     _discoverService(uint16_t conn_handle, BLECentralService& svc, uint16_t start_handle = 1);
     uint16_t _discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t max_count);
 
     friend class AdafruitBluefruit;
