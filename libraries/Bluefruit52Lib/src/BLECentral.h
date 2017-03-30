@@ -46,9 +46,6 @@
 #include "BLECentralCharacteristic.h"
 #include "BLECentralService.h"
 
-#define BLE_CENTRAL_MAX_SERVICE   10
-#define BLE_CENTRAL_MAX_CHARS     30
-
 
 class AdafruitBluefruit;
 
@@ -97,25 +94,11 @@ class BLECentral
     void setConnectCallback   ( connect_callback_t    fp);
     void setDisconnectCallback( disconnect_callback_t fp);
 
-    /*------------------------------------------------------------------*/
-    /* INTERNAL USAGE ONLY
-     * Although declare as public, it is meant to be invoked by internal
-     * code. User should not call these directly
-     *------------------------------------------------------------------*/
-    bool     _registerService(BLECentralService* svc);
-    bool     _registerCharacteristic(BLECentralCharacteristic* chr);
-
   private:
     uint16_t _conn_hdl;
 
     // Transmission Buffer Count for HVX notification, max is seen at 7
     SemaphoreHandle_t _txpacket_sem;
-
-    BLECentralService*        _svc_list[BLE_CENTRAL_MAX_SERVICE];
-    uint8_t                   _svc_count;
-
-    BLECentralCharacteristic* _chars_list[BLE_CENTRAL_MAX_CHARS];
-    uint8_t                   _chars_count;
 
     ble_gap_scan_params_t _scan_param;
     scan_callback_t       _scan_cb;

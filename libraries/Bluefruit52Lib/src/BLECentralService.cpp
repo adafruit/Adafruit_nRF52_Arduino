@@ -63,7 +63,7 @@ bool BLECentralService::begin(void)
   uuid.begin();
 
   lastService = this;
-  (void) Bluefruit.Central._registerService(this);
+  (void) Bluefruit.Gatt._addService(this);
 
   return true;
 }

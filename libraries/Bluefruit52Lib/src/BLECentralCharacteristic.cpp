@@ -106,7 +106,7 @@ void BLECentralCharacteristic::begin(void)
   _service = BLECentralService::lastService;
 
   // Register to Bluefruit (required for callback and write response)
-  (void) Bluefruit.Central._registerCharacteristic(this);
+  (void) Bluefruit.Gatt._addCharacteristic(this);
 }
 
 /*------------------------------------------------------------------*/

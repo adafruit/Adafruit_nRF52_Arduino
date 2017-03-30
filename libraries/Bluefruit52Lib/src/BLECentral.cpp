@@ -47,12 +47,6 @@ BLECentral::BLECentral(void)
 
   _txpacket_sem = NULL;
 
-  _svc_count = 0;
-  for(uint8_t i=0; i<BLE_CENTRAL_MAX_SERVICE; i++) _svc_list[i] = NULL;
-
-  _chars_count = 0;
-  for(uint8_t i=0; i<BLE_CENTRAL_MAX_CHARS; i++) _chars_list[i] = NULL;
-
   _scan_cb     = NULL;
   _scan_param  = (ble_gap_scan_params_t) {
     .active      = 1,
@@ -72,22 +66,6 @@ void BLECentral::begin(void)
 {
   // Central will very likely use Discovery
   Bluefruit.Discovery.begin();
-}
-
-bool BLECentral::_registerService(BLECentralService* svc)
-{
-  VERIFY( _svc_count < BLE_CENTRAL_MAX_SERVICE );
-  _svc_list[ _svc_count++ ] = svc;
-
-  return true;
-}
-
-bool BLECentral::_registerCharacteristic(BLECentralCharacteristic* chr)
-{
-  VERIFY( _chars_count < BLE_CENTRAL_MAX_CHARS );
-  _chars_list[ _chars_count++ ] = chr;
-
-  return true;
 }
 
 bool BLECentral::getTxPacket(uint32_t ms)
@@ -293,9 +271,6 @@ void BLECentral::_event_handler(ble_evt_t* evt)
         vSemaphoreDelete(_txpacket_sem);
         _txpacket_sem = NULL;
 
-        // disconnect all registered services
-        for(uint8_t i=0; i<_svc_count; i++) _svc_list[i]->disconnect();
-
         if ( _disconnect_cb ) _disconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
 
         startScanning();
@@ -321,30 +296,6 @@ void BLECentral::_event_handler(ble_evt_t* evt)
       break;
 
       default: break;
-    }
-  }
-
-  // GATT characteristics event handler only if Connection Handle matches
-  if ( evt_conn_hdl == _conn_hdl)
-  {
-    for(int i=0; i<_chars_count; i++)
-    {
-      bool matched = false;
-
-      switch(evt->header.evt_id)
-      {
-        case BLE_GATTC_EVT_HVX:
-        case BLE_GATTC_EVT_WRITE_RSP:
-        case BLE_GATTC_EVT_READ_RSP:
-          // write & read response's handle has same offset.
-          matched = (_chars_list[i]->_chr.handle_value == evt->evt.gattc_evt.params.write_rsp.handle);
-        break;
-
-        default: break;
-      }
-
-      // invoke charactersistic handler if matched
-      if ( matched ) _chars_list[i]->_eventHandler(evt);
     }
   }
 }

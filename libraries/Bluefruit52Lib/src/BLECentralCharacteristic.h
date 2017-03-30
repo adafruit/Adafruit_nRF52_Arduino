@@ -88,7 +88,7 @@ class BLECentralCharacteristic
     void     _init         (void);
     void     _eventHandler (ble_evt_t* event);
 
-    friend class BLECentral;
+    friend class BLEGatt;
 };
 
 #endif /* BLECENTRALCHARACTERISTIC_H_ */

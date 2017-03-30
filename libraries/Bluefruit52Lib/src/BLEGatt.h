@@ -47,18 +47,42 @@
 #include "BLECentralService.h"
 
 #define BLE_GATT_MAX_SERVER_CHARS         40
+#define BLE_CENTRAL_MAX_SERVICE   10
+#define BLE_CENTRAL_MAX_CHARS     30
+
 
 class BLEGatt
 {
   public:
     BLEGatt(void);
 
-    bool _addCharacteristic(BLECharacteristic* chars);
+    /*------------------------------------------------------------------*/
+    /* INTERNAL USAGE ONLY
+     * Although declare as public, it is meant to be invoked by internal
+     * code. User should not call these directly
+     *------------------------------------------------------------------*/
+    // Server
+    bool _addCharacteristic(BLECharacteristic* chr);
+
+    // Client
+    bool _addCharacteristic(BLECentralCharacteristic* chr);
+    bool _addService(BLECentralService* svc);
+
     void _eventHandler(ble_evt_t* evt);
 
   private:
-    BLECharacteristic* _chars_list[BLE_GATT_MAX_SERVER_CHARS];
-    uint8_t            _chars_count;
+    struct {
+      uint8_t            _chars_count;
+      BLECharacteristic* _chars_list[BLE_GATT_MAX_SERVER_CHARS];
+    } server;
+
+    struct {
+      uint8_t                   _svc_count;
+      BLECentralService*        _svc_list[BLE_CENTRAL_MAX_SERVICE];
+
+      uint8_t                   _chars_count;
+      BLECentralCharacteristic* _chars_list[BLE_CENTRAL_MAX_CHARS];
+    }client;
 };
 
 #endif /* BLEGATT_H_ */
