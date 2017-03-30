@@ -101,11 +101,15 @@ class AdafruitBluefruit
      *------------------------------------------------------------------*/
     bool     connected         (void);
     void     disconnect        (void);
+
     err_t    setConnInterval   (uint16_t min, uint16_t max);
     err_t    setConnIntervalMS (uint16_t min_ms, uint16_t max_ms);
+
     uint16_t connHandle        (void);
     bool     connBonded        (void);
     uint16_t connInterval      (void);
+
+    bool     requestBonding    (void);
     void     clearBonds        (void);
 
     ble_gap_addr_t peerAddr(void);
@@ -165,6 +169,8 @@ public: // TODO temporary for bledfu to load bonding data
     } _bond_data;
 
 private:
+    ble_gap_sec_params_t _sec_param;
+
     ble_gap_addr_t    _peer_addr;
 
 COMMENT_OUT(

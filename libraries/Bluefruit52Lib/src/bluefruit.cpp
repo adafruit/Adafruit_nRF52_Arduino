@@ -122,6 +122,20 @@ COMMENT_OUT(
   varclr(&_bond_data);
   _bond_data.own_enc.master_id.ediv = 0xFFFF; // invalid value for ediv
 
+  _sec_param = (ble_gap_sec_params_t)
+              {
+                .bond         = 1,
+                .mitm         = 0,
+                .lesc         = 0,
+                .keypress     = 0,
+                .io_caps      = BLE_GAP_IO_CAPS_NONE,
+                .oob          = 0,
+                .min_key_size = 7,
+                .max_key_size = 16,
+                .kdist_own    = { .enc = 1, .id = 1},
+                .kdist_peer   = { .enc = 1, .id = 1},
+              };
+
   _connect_cb     = NULL;
   _discconnect_cb = NULL;
 }
@@ -571,21 +585,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
          * - We replies with our security parameters
          */
         //      ble_gap_sec_params_t* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
-
-        ble_gap_sec_params_t sec_para =
-        {
-            .bond         = 1,
-            .mitm         = 0,
-            .lesc         = 0,
-            .keypress     = 0,
-            .io_caps      = BLE_GAP_IO_CAPS_NONE,
-            .oob          = 0,
-            .min_key_size = 7,
-            .max_key_size = 16,
-            .kdist_own    = { .enc = 1, .id = 1},
-            .kdist_peer   = { .enc = 1, .id = 1},
-        };
-
         COMMENT_OUT(
             // Change security parameter according to authentication type
             if ( _auth_type == BLE_GAP_AUTH_KEY_TYPE_PASSKEY)
@@ -612,7 +611,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
             }
         };
 
-        VERIFY_STATUS(sd_ble_gap_sec_params_reply(evt->evt.gap_evt.conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &sec_para, &keyset), RETURN_VOID);
+        VERIFY_STATUS(sd_ble_gap_sec_params_reply(evt->evt.gap_evt.conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &_sec_param, &keyset), RETURN_VOID);
       }
       break;
 
@@ -700,6 +699,12 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 /*------------------------------------------------------------------*/
 /* Bonds
  *------------------------------------------------------------------*/
+bool AdafruitBluefruit::requestBonding(void)
+{
+  VERIFY_STATUS( sd_ble_gap_authenticate(_conn_hdl, &_sec_param ), false);
+  return true;
+}
+
 void AdafruitBluefruit::clearBonds(void)
 {
   // Detele bonds dir

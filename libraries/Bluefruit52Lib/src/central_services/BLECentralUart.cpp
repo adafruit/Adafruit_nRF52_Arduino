@@ -47,7 +47,7 @@ BLECentralUart::BLECentralUart(uint16_t fifo_depth)
 
 bool BLECentralUart::begin(void)
 {
-  // Invoke basde class begin()
+  // Invoke base class begin()
   BLECentralService::begin();
 
   _rxd.begin();
