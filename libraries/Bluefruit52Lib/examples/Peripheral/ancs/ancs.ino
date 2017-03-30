@@ -58,8 +58,11 @@ void loop()
   // Discover service if not yet
   if ( !bleancs.discovered() )
   {
+    Serial.print("Discovering ANCS ... ");
     if ( bleancs.discover( Bluefruit.connHandle() ) )
     {
+      Serial.println("Found it");
+      Serial.println("Enable Notification Source's CCCD");
       
     }
   }

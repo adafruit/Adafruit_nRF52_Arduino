@@ -54,6 +54,9 @@ class BLEAncs : public BLECentralService
     virtual bool  begin(void);
     virtual bool  discover(uint16_t conn_handle);
 
+    bool enableNotification(void);
+    bool disableNotification(void);
+
   protected:
     virtual void  disconnect(void);
 

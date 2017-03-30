@@ -54,8 +54,10 @@ class BLECentralUart : public BLECentralService, public Stream
     virtual bool  begin(void);
     virtual bool  discover(uint16_t conn_handle);
 
-    bool enableNotify(void);
     void setRxCallback( rx_callback_t fp);
+
+    bool enableTXD(void);
+    bool disableTXD(void);
 
     // Stream API
     virtual int       read       ( void );

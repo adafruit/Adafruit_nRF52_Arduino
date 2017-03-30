@@ -36,6 +36,9 @@
 
 #include "bluefruit.h"
 
+void bleancs_notification_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
+void bleancs_data_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
+
 /* ANCS Service        : 7905F431-B5CE-4E99-A40F-4B1E122D00D0
  * Notification Source : 9FBF120D-6301-42D9-8C58-25E699A21DBD
  * Control Point       : 69D1D8F3-45E1-49A8-9821-9BBDFDAAD9D9
@@ -85,6 +88,26 @@ bool BLEAncs::begin(void)
   _notification.begin();
   _data.begin();
 
+  _notification.setNotifyCallback(bleancs_notification_notify_cb);
+  _data.setNotifyCallback(bleancs_data_notify_cb);
+
+  return true;
+}
+
+bool BLEAncs::enableNotification(void)
+{
+  // enable both Nofication & Data Source
+  _notification.enableNotify();
+  _data.enableNotify();
+
+  return true;
+}
+
+bool BLEAncs::disableNotification(void)
+{
+  _notification.disableNotify();
+  _data.disableNotify();
+
   return true;
 }
 
@@ -100,10 +123,32 @@ bool BLEAncs::discover(uint16_t conn_handle)
   VERIFY( 3 == Bluefruit.Discovery.discoverCharacteristic(conn_handle, chr_arr, 3) );
 
   _discovered = true;
+
+  // ANCS requires bonding to work, it makes sense to request security here as well
+  Bluefruit.requestBonding();
+
   return true;
 }
 
 void BLEAncs::disconnect(void)
 {
+  BLECentralService::disconnect();
+}
 
+
+/*------------------------------------------------------------------*/
+/* Callback
+ *------------------------------------------------------------------*/
+void bleancs_notification_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len)
+{
+  BLEAncs& svc = (BLEAncs&) chr.parentService();
+
+  PRINT_BUFFER(data, len);
+}
+
+void bleancs_data_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len)
+{
+  BLEAncs& svc = (BLEAncs&) chr.parentService();
+
+  PRINT_BUFFER(data, len);
 }

@@ -90,7 +90,7 @@ bool BLECentralCharacteristic::discoverDescriptor(uint16_t conn_handle)
     if ( disc_rsp.descs[i].uuid.type == BLE_UUID_TYPE_BLE &&
          disc_rsp.descs[i].uuid.uuid == BLE_UUID_DESCRIPTOR_CLIENT_CHAR_CONFIG )
     {
-      LOG_LV1(BLECentralUart, "Found CCDD: handle = %d", disc_rsp.descs[i].handle);
+      LOG_LV1(Discovery, "Found CCDD: handle = %d", disc_rsp.descs[i].handle);
       _cccd_handle = disc_rsp.descs[i].handle;
     }
   }
@@ -205,9 +205,8 @@ void BLECentralCharacteristic::setNotifyCallback(notify_cb_t fp)
   _notify_cb = fp;
 }
 
-bool BLECentralCharacteristic::enableNotify(void)
+bool BLECentralCharacteristic::writeCCCD(uint16_t value)
 {
-  uint16_t value = 0x0001;
   ble_gattc_write_params_t param =
   {
       .write_op = BLE_GATT_OP_WRITE_CMD,
@@ -224,6 +223,28 @@ bool BLECentralCharacteristic::enableNotify(void)
   VERIFY_STATUS( sd_ble_gattc_write(Bluefruit.Central.connHandle(), &param), false );
 
   return true;
+}
+
+bool BLECentralCharacteristic::enableNotify(void)
+{
+  VERIFY( _chr.char_props.notify );
+  return writeCCCD(0x0001);
+}
+
+bool BLECentralCharacteristic::disableNotify(void)
+{
+  return writeCCCD(0x0000);
+}
+
+bool BLECentralCharacteristic::enableIndicate  (void)
+{
+  VERIFY( _chr.char_props.indicate );
+  return writeCCCD(0x0002);
+}
+
+bool BLECentralCharacteristic::disableIndicate (void)
+{
+  return writeCCCD(0x0000);
 }
 
 void BLECentralCharacteristic::_eventHandler(ble_evt_t* evt)

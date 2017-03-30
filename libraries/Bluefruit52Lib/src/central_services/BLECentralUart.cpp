@@ -59,9 +59,14 @@ bool BLECentralUart::begin(void)
   return true;
 }
 
-bool BLECentralUart::enableNotify(void)
+bool BLECentralUart::enableTXD(void)
 {
   return _txd.enableNotify();
+}
+
+bool BLECentralUart::disableTXD(void)
+{
+  return _txd.disableNotify();
 }
 
 void BLECentralUart::setRxCallback( rx_callback_t fp)

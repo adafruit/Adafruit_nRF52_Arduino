@@ -65,7 +65,13 @@ class BLECentralCharacteristic
     uint16_t write_resp(const void* data, int len);
 
     /*------------- Notify -------------*/
-    bool enableNotify(void);
+    bool writeCCCD       (uint16_t value);
+
+    bool enableNotify    (void);
+    bool disableNotify   (void);
+
+    bool enableIndicate  (void);
+    bool disableIndicate (void);
 
 
     /*------------- Callbacks -------------*/

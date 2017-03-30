@@ -100,7 +100,7 @@ void loop()
         Serial.println("Found it");
   
         Serial.println("Enable TXD's notify");
-        bleCentralUart.enableNotify();
+        bleCentralUart.enableTXD();
   
         Serial.println("Ready to receive from peripheral");
       }else
