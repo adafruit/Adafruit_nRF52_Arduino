@@ -45,8 +45,6 @@ BLECentral::BLECentral(void)
 {
   _conn_hdl    = BLE_CONN_HANDLE_INVALID;
 
-  _txpacket_sem = NULL;
-
   _scan_cb     = NULL;
   _scan_param  = (ble_gap_scan_params_t) {
     .active      = 1,
@@ -66,12 +64,6 @@ void BLECentral::begin(void)
 {
   // Central will very likely use Discovery
   Bluefruit.Discovery.begin();
-}
-
-bool BLECentral::getTxPacket(uint32_t ms)
-{
-  VERIFY(_txpacket_sem != NULL);
-  return xSemaphoreTake(_txpacket_sem, ms2tick(ms));
 }
 
 /*------------------------------------------------------------------*/
@@ -252,11 +244,6 @@ void BLECentral::_event_handler(ble_evt_t* evt)
           // TODO multiple connections
           _conn_hdl = evt->evt.gap_evt.conn_handle;
 
-          // Init transmission buffer for notification. TODO multiple connections
-          uint8_t txbuf_max;
-          (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
-          _txpacket_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
-
           if ( _connect_cb ) _connect_cb();
         }
       }
@@ -267,23 +254,9 @@ void BLECentral::_event_handler(ble_evt_t* evt)
 
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
 
-        // TODO multiple connections
-        vSemaphoreDelete(_txpacket_sem);
-        _txpacket_sem = NULL;
-
         if ( _disconnect_cb ) _disconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
 
         startScanning();
-      break;
-
-      case BLE_EVT_TX_COMPLETE:
-        if ( _txpacket_sem )
-        {
-          for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
-          {
-            xSemaphoreGive(_txpacket_sem);
-          }
-        }
       break;
 
       case BLE_GAP_EVT_TIMEOUT:

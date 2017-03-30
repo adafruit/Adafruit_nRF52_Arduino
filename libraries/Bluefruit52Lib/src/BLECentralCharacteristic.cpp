@@ -171,13 +171,15 @@ uint16_t BLECentralCharacteristic::write(const void* data, int len)
   // SD132 v3.0 could negotiate MTU to higher number
   const uint16_t MTU_MPS = 20;
 
+  const uint16_t conn_handle = _service->connHandle();
+
   const uint8_t* u8data = (const uint8_t*) data;
 
   int remaining = len;
   while( remaining )
   {
     // Write CMD consume a TX buffer
-    if ( !Bluefruit.Central.getTxPacket(100) )  return BLE_ERROR_NO_TX_PACKETS;
+    if ( !Bluefruit.Gap.getTxPacket(conn_handle) )  return BLE_ERROR_NO_TX_PACKETS;
 
     uint16_t packet_len = min16(MTU_MPS, remaining);
 
@@ -191,7 +193,7 @@ uint16_t BLECentralCharacteristic::write(const void* data, int len)
         .p_value  = (uint8_t* ) u8data
     };
 
-    VERIFY_STATUS( sd_ble_gattc_write(Bluefruit.Central.connHandle(), &param), len - remaining );
+    VERIFY_STATUS( sd_ble_gattc_write(conn_handle, &param), len - remaining );
 
     remaining -= packet_len;
     u8data    += packet_len;
@@ -207,6 +209,8 @@ void BLECentralCharacteristic::setNotifyCallback(notify_cb_t fp)
 
 bool BLECentralCharacteristic::writeCCCD(uint16_t value)
 {
+  const uint16_t conn_handle = _service->connHandle();
+
   ble_gattc_write_params_t param =
   {
       .write_op = BLE_GATT_OP_WRITE_CMD,
@@ -218,9 +222,9 @@ bool BLECentralCharacteristic::writeCCCD(uint16_t value)
   };
 
   // Write consume a TX buffer
-  if ( !Bluefruit.Central.getTxPacket(100) )  return BLE_ERROR_NO_TX_PACKETS;
+  if ( !Bluefruit.Gap.getTxPacket(conn_handle) )  return BLE_ERROR_NO_TX_PACKETS;
 
-  VERIFY_STATUS( sd_ble_gattc_write(Bluefruit.Central.connHandle(), &param), false );
+  VERIFY_STATUS( sd_ble_gattc_write(conn_handle, &param), false );
 
   return true;
 }

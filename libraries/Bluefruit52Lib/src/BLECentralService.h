@@ -42,7 +42,8 @@
 class BLECentralService
 {
   protected:
-    bool  _discovered;
+    bool     _discovered;
+    uint16_t _conn_hdl;
 
     void  _init(void);
     virtual void disconnect(void);
@@ -55,10 +56,12 @@ class BLECentralService
     BLECentralService(void);
     BLECentralService(BLEUuid bleuuid);
 
-    virtual bool begin(void);
+    virtual bool     begin(void);
 
-    virtual bool discover  (uint16_t conn_handle);
-            bool discovered(void);
+    virtual bool     discover  (uint16_t conn_handle);
+            bool     discovered(void);
+
+            uint16_t connHandle(void);
 
     friend class BLEGatt;
 };

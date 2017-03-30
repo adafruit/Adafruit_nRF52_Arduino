@@ -83,8 +83,6 @@ class BLECentral
     bool     connected  (void);
     uint16_t connHandle (void);
 
-    bool getTxPacket(uint32_t ms);
-
     /*------------------------------------------------------------------*/
     /* CALLBACKS
      *------------------------------------------------------------------*/
@@ -96,9 +94,6 @@ class BLECentral
 
   private:
     uint16_t _conn_hdl;
-
-    // Transmission Buffer Count for HVX notification, max is seen at 7
-    SemaphoreHandle_t _txpacket_sem;
 
     ble_gap_scan_params_t _scan_param;
     scan_callback_t       _scan_cb;
