@@ -472,7 +472,7 @@ err_t BLECharacteristic::notify(const void* data, int len)
 
     while ( actual_len )
     {
-      if ( !Bluefruit.getTxPacket(100) )  return BLE_ERROR_NO_TX_PACKETS;
+      if ( !Bluefruit.Gap.getTxPacket() )  return BLE_ERROR_NO_TX_PACKETS;
 
       uint16_t packet_len = min16(MTU_MPS, actual_len);
 

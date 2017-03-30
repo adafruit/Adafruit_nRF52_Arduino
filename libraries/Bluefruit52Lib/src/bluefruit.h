@@ -37,6 +37,14 @@
 #include <Arduino.h>
 #include "bluefruit_common.h"
 
+// Note chaning these parameters will affect APP_RAM_BASE
+// --> need to update RAM in feather52_s132.ld linker
+#define BLE_GATTS_ATTR_TABLE_SIZE        0x0B00
+#define BLE_VENDOR_UUID_MAX              10
+#define BLE_PRPH_MAX_CONN                1
+#define BLE_CENTRAL_MAX_CONN             4
+#define BLE_CENTRAL_MAX_SECURE_CONN      1 // should be enough
+
 #include "BLEUuid.h"
 #include "BLEAdvertising.h"
 #include "BLECharacteristic.h"
@@ -46,6 +54,7 @@
 #include "BLECentralCharacteristic.h"
 #include "BLECentralService.h"
 #include "BLEDiscovery.h"
+#include "BLEGap.h"
 #include "BLEGatt.h"
 
 // Services
@@ -60,6 +69,7 @@
 #include "services/BLEAncs.h"
 
 #include "central_services/BLECentralUart.h"
+
 
 #define BLE_MAX_DATA_PER_MTU  (GATT_MTU_SIZE_DEFAULT - 3)
 
@@ -84,6 +94,7 @@ class AdafruitBluefruit
     BLECentral     Central;
     BLEDiscovery   Discovery;
 
+    BLEGap         Gap;
     BLEGatt        Gatt;
 
     /*------------------------------------------------------------------*/
@@ -129,9 +140,6 @@ class AdafruitBluefruit
 
     COMMENT_OUT ( bool setPIN(const char* pin); )
 
-    // internal usage only
-    bool _registerCharacteristic(BLECharacteristic* chars);
-
   private:
     /*------------- BLE para -------------*/
     bool _prph_enabled;
@@ -155,9 +163,6 @@ class AdafruitBluefruit
 
     BLEDfu _dfu_svc;
 
-    BLECharacteristic* _chars_list[BLE_GATT_MAX_SERVER_CHARS];
-    uint8_t            _chars_count;
-
     uint16_t _conn_hdl;
     bool     _bonded;
 
@@ -179,9 +184,6 @@ COMMENT_OUT(
     uint8_t _auth_type;
     char _pin[BLE_GAP_PASSKEY_LEN];
 )
-
-    // Transmission Buffer Count for HVX notification, max is seen at 7
-    SemaphoreHandle_t _txpacket_sem;
 
     /*------------- Callbacks -------------*/
     connect_callback_t    _connect_cb;

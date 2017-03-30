@@ -37,14 +37,6 @@
 #include "bluefruit.h"
 #include <Nffs.h>
 
-// Note chaning these parameters will affect APP_RAM_BASE
-// --> need to update RAM in feather52_s132.ld linker
-#define BLE_GATTS_ATTR_TABLE_SIZE        0x0B00
-#define BLE_VENDOR_UUID_MAX              10
-#define BLE_PRPH_MAX_CONN                1
-#define BLE_CENTRAL_MAX_CONN             4
-#define BLE_CENTRAL_MAX_SECURE_CONN      1 // currently 1 to save SRAM
-
 #define SVC_CONTEXT_FLAG                 (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
 
 #define CFG_BLE_TX_POWER_LEVEL           0
@@ -102,7 +94,6 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _tx_power  = 0;
 
   strcpy(_name, CFG_DEFAULT_NAME);
-  _txpacket_sem = NULL;
 
   _conn_hdl  = BLE_CONN_HANDLE_INVALID;
   _bonded    = false;
@@ -348,12 +339,6 @@ ble_gap_addr_t AdafruitBluefruit::peerAddr(void)
   return _peer_addr;
 }
 
-bool AdafruitBluefruit::getTxPacket(uint32_t ms)
-{
-  VERIFY(_txpacket_sem != NULL);
-  return xSemaphoreTake(_txpacket_sem, ms2tick(ms));
-}
-
 COMMENT_OUT (
 bool AdafruitBluefruit::setPIN(const char* pin)
 {
@@ -474,6 +459,9 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   // conn handle has fixed offset regardless of event type
   const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
 
+  // GAP handler
+  Gap._eventHandler(evt);
+
   /*------------- BLE Peripheral Events -------------*/
   /* Only handle Peripheral events with matched connection handle
    * or a few special one
@@ -507,11 +495,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
             VERIFY_STATUS( sd_ble_gap_conn_param_update(_conn_hdl, NULL), );
           }
 
-          // Init transmission buffer for notification
-          uint8_t txbuf_max;
-          (void) sd_ble_tx_packet_count_get(_conn_hdl, &txbuf_max);
-          _txpacket_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
-
           if ( _connect_cb ) _connect_cb();
         }
       }
@@ -536,9 +519,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         _bonded   = false;
         varclr(&_peer_addr);
 
-        vSemaphoreDelete(_txpacket_sem);
-        _txpacket_sem = NULL;
-
         if ( _discconnect_cb ) _discconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
 
         Advertising.start();
@@ -550,16 +530,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
           // TODO advanced advertising
           // Restart Advertising
           Advertising.start();
-        }
-      break;
-
-      case BLE_EVT_TX_COMPLETE:
-        if ( _txpacket_sem )
-        {
-          for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
-          {
-            xSemaphoreGive(_txpacket_sem);
-          }
         }
       break;
 
@@ -687,6 +657,9 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
  *------------------------------------------------------------------*/
 bool AdafruitBluefruit::requestPairing(void)
 {
+  // skip if already bonded
+  if (_bonded) return true;
+
   VERIFY_STATUS( sd_ble_gap_authenticate(_conn_hdl, &_sec_param ), false);
   uint32_t start = millis();
 
