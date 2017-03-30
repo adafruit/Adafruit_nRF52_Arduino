@@ -46,6 +46,7 @@
 #include "BLECentralCharacteristic.h"
 #include "BLECentralService.h"
 #include "BLEDiscovery.h"
+#include "BLEGatt.h"
 
 // Services
 #include "services/BLEDis.h"
@@ -60,7 +61,6 @@
 
 #include "central_services/BLECentralUart.h"
 
-#define BLE_MAX_CHARS         50
 #define BLE_MAX_DATA_PER_MTU  (GATT_MTU_SIZE_DEFAULT - 3)
 
 extern "C"
@@ -83,6 +83,8 @@ class AdafruitBluefruit
     BLEAdvertising ScanResponse;
     BLECentral     Central;
     BLEDiscovery   Discovery;
+
+    BLEGatt        Gatt;
 
     /*------------------------------------------------------------------*/
     /* General Purpose Functions

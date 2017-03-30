@@ -116,9 +116,6 @@ COMMENT_OUT(
   varclr(_pin);
 )
 
-  _chars_count = 0;
-  for(uint8_t i=0; i<BLE_MAX_CHARS; i++) _chars_list[i] = NULL;
-
   varclr(&_bond_data);
   _bond_data.own_enc.master_id.ediv = 0xFFFF; // invalid value for ediv
 
@@ -329,14 +326,6 @@ void AdafruitBluefruit::setConnectCallback   ( connect_callback_t fp )
 void AdafruitBluefruit::setDisconnectCallback( disconnect_callback_t fp )
 {
   _discconnect_cb = fp;
-}
-
-bool AdafruitBluefruit::_registerCharacteristic(BLECharacteristic* chars)
-{
-  if ( _chars_count == BLE_MAX_CHARS ) return false;
-  _chars_list[ _chars_count++ ] = chars;
-
-  return true;
 }
 
 uint16_t AdafruitBluefruit::connHandle(void)
@@ -691,10 +680,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   if ( Discovery.begun() ) Discovery._event_handler(evt);
 
   // GATTs characteristics event handler
-  for(int i=0; i<_chars_count; i++)
-  {
-    _chars_list[i]->_eventHandler(evt);
-  }
+  Gatt._eventHandler(evt);
 }
 /*------------------------------------------------------------------*/
 /* Bonds

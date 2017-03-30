@@ -163,8 +163,7 @@ class BLECharacteristic
     err_t notify(uint16_t num);
     err_t notify(uint8_t  num);
 
-
-    friend class AdafruitBluefruit;
+    friend class BLEGatt;
 };
 
 

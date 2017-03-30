@@ -278,7 +278,7 @@ err_t BLECharacteristic::begin(void)
   if ( !_is_temp &&
        (_rd_authorize_cb || _wr_authorize_cb || _wr_cb || _cccd_wr_cb) )
   {
-    (void) Bluefruit._registerCharacteristic(this);
+    (void) Bluefruit.Gatt._registerCharacteristic(this);
   }
 
   return ERROR_NONE;
