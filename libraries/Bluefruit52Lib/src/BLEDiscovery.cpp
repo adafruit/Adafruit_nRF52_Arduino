@@ -97,7 +97,7 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLECentralCha
     _evt_buf     = &disc_chr;
     _evt_bufsize = sizeof(disc_chr);
 
-    LOG_LV1(Discover, "[CHR] Handle start = %d, end = %d", _hdl_range.start_handle, _hdl_range.end_handle);
+//    LOG_LV1(Discover, "[CHR] Handle start = %d, end = %d", _hdl_range.start_handle, _hdl_range.end_handle);
 
     VERIFY_STATUS( sd_ble_gattc_characteristics_discover(conn_handle, &_hdl_range), found );
 
@@ -136,7 +136,7 @@ uint16_t BLEDiscovery::_discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_d
   _evt_buf     = disc_desc;
   _evt_bufsize = sizeof(ble_gattc_evt_desc_disc_rsp_t) + (max_count-1)*sizeof(ble_gattc_desc_t);
 
-  LOG_LV1(Discover, "[DESC] Handle start = %d, end = %d", _hdl_range.start_handle, _hdl_range.end_handle);
+//  LOG_LV1(Discover, "[DESC] Handle start = %d, end = %d", _hdl_range.start_handle, _hdl_range.end_handle);
 
   uint16_t result = 0;
   VERIFY_STATUS( sd_ble_gattc_descriptors_discover(conn_handle, &_hdl_range), 0 );

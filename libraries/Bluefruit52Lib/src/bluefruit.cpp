@@ -52,7 +52,8 @@
 #define CFG_ADV_BLINKY_INTERVAL          500
 
 #define CFG_BLE_TASK_STACKSIZE          (512*3)
-#define CFG_SOC_TASK_STACKSIZE          (configMINIMAL_STACK_SIZE*5) // 300
+#define CFG_WORKER_TASK_STACKSIZE       (512*1)
+#define CFG_SOC_TASK_STACKSIZE          (200)
 
 #define CFG_BOND_NFFS_DIR                "/adafruit/bond"
 #define BOND_FILENAME                    CFG_BOND_NFFS_DIR "/%04x"
@@ -70,6 +71,8 @@ extern "C"
 
 void adafruit_ble_task(void* arg);
 void adafruit_soc_task(void* arg);
+
+COMMENT_OUT( void adafruit_worker_task(void* arg); )
 
 
 /*------------------------------------------------------------------*/
@@ -424,6 +427,8 @@ void adafruit_soc_task(void* arg)
     }
   }
 }
+
+COMMENT_OUT(void adafruit_worker_task(void* arg) { } )
 
 /*------------------------------------------------------------------*/
 /* BLE Event handler

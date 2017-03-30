@@ -48,16 +48,16 @@ const uint8_t BLEANCS_UUID_SERVICE[] =
     0x99, 0x4E, 0xCE, 0xB5, 0x31, 0xF4, 0x05, 0x79
 };
 
-const uint8_t BLEANCS_UUID_CHR_NOTIFICATION[]
-{
-    0xBD, 0x1D, 0xA2, 0x99, 0xE6, 0x25, 0x58, 0x8C,
-    0xD9, 0x42, 0x01, 0x63, 0x0D, 0x12, 0xBF, 0x9F
-};
-
 const uint8_t BLEANCS_UUID_CHR_CONTROL[] =
 {
     0xD9, 0xD9, 0xAA, 0xFD, 0xBD, 0x9B, 0x21, 0x98,
     0xA8, 0x49, 0xE1, 0x45, 0xF3, 0xD8, 0xD1, 0x69
+};
+
+const uint8_t BLEANCS_UUID_CHR_NOTIFICATION[]
+{
+    0xBD, 0x1D, 0xA2, 0x99, 0xE6, 0x25, 0x58, 0x8C,
+    0xD9, 0x42, 0x01, 0x63, 0x0D, 0x12, 0xBF, 0x9F
 };
 
 const uint8_t BLEANCS_UUID_CHR_DATA[] =
@@ -67,20 +67,40 @@ const uint8_t BLEANCS_UUID_CHR_DATA[] =
 };
 
 BLEAncs::BLEAncs(void)
-  : BLECentralService(BLEANCS_UUID_SERVICE), _notification(BLEANCS_UUID_CHR_NOTIFICATION),
-    _control(BLEANCS_UUID_CHR_CONTROL), _data(BLEANCS_UUID_CHR_DATA)
+  : BLECentralService(BLEANCS_UUID_SERVICE), _control(BLEANCS_UUID_CHR_CONTROL),
+    _notification(BLEANCS_UUID_CHR_NOTIFICATION), _data(BLEANCS_UUID_CHR_DATA)
 {
 
 }
 
 bool BLEAncs::begin(void)
 {
+  // Invoke base class begin()
+  BLECentralService::begin();
 
+  // Initialize Discovery module if needed
+  if ( !Bluefruit.Discovery.begun() ) Bluefruit.Discovery.begin();
+
+  _control.begin();
+  _notification.begin();
+  _data.begin();
+
+  return true;
 }
 
-bool BLEAncs::discover(void)
+bool BLEAncs::discover(uint16_t conn_handle)
 {
+  // Call BLECentralService discover
+  VERIFY( BLECentralService::discover(conn_handle) );
+  _discovered = false;
 
+  // Discover characteristics
+  BLECentralCharacteristic* chr_arr[] = { &_control, &_notification, &_data };
+
+  VERIFY( 3 == Bluefruit.Discovery.discoverCharacteristic(conn_handle, chr_arr, 3) );
+
+  _discovered = true;
+  return true;
 }
 
 void BLEAncs::disconnect(void)

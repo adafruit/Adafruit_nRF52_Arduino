@@ -42,8 +42,8 @@
 //#include "BLECentralService.h"
 
 extern const uint8_t BLEANCS_UUID_SERVICE[];
-extern const uint8_t BLEANCS_UUID_CHR_NOTIFICATION[];
 extern const uint8_t BLEANCS_UUID_CHR_CONTROL[];
+extern const uint8_t BLEANCS_UUID_CHR_NOTIFICATION[];
 extern const uint8_t BLEANCS_UUID_CHR_DATA[];
 
 class BLEAncs : public BLECentralService
@@ -52,14 +52,14 @@ class BLEAncs : public BLECentralService
     BLEAncs(void);
 
     virtual bool  begin(void);
-    virtual bool  discover(void);
+    virtual bool  discover(uint16_t conn_handle);
 
   protected:
     virtual void  disconnect(void);
 
   private:
-    BLECentralCharacteristic _notification;
     BLECentralCharacteristic _control;
+    BLECentralCharacteristic _notification;
     BLECentralCharacteristic _data;
 };
 

@@ -49,8 +49,17 @@ void setup()
 // the loop function runs over and over again forever
 void loop() 
 {
-  digitalToggle(LED_RED);
-  delay(1000);
+  if ( Serial.available() )
+  {
+    delay(10); // delay for all input arrived
+    while( Serial.available() ) Serial.read();
+
+    printTreeDir("/", 0);
+    
+    // Print prompt
+    Serial.println();
+    Serial.println("Enter anything to print directory tree (again):");
+  }
 }
 
 /**************************************************************************/
