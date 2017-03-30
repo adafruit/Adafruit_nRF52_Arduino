@@ -46,9 +46,10 @@
 #include "BLECentralCharacteristic.h"
 #include "BLECentralService.h"
 
-#define BLE_GATT_MAX_SERVER_CHARS         40
-#define BLE_CENTRAL_MAX_SERVICE   10
-#define BLE_CENTRAL_MAX_CHARS     30
+#define BLE_GATT_MAX_SERVER_CHARS        40
+
+#define BLE_GATT_MAX_CLIENT_SERVICE      10
+#define BLE_GATT_MAX_CLIENT_CHARS        30
 
 
 class BLEGatt
@@ -78,10 +79,10 @@ class BLEGatt
 
     struct {
       uint8_t                   _svc_count;
-      BLECentralService*        _svc_list[BLE_CENTRAL_MAX_SERVICE];
+      BLECentralService*        _svc_list[BLE_GATT_MAX_CLIENT_SERVICE];
 
       uint8_t                   _chars_count;
-      BLECentralCharacteristic* _chars_list[BLE_CENTRAL_MAX_CHARS];
+      BLECentralCharacteristic* _chars_list[BLE_GATT_MAX_CLIENT_CHARS];
     }client;
 };
 

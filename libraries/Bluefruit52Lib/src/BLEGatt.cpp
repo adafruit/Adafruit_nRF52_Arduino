@@ -91,7 +91,7 @@ bool BLEGatt::_addCharacteristic(BLECharacteristic* chr)
 
 bool BLEGatt::_addCharacteristic(BLECentralCharacteristic* chr)
 {
-  VERIFY( client._chars_count < BLE_CENTRAL_MAX_CHARS );
+  VERIFY( client._chars_count < BLE_GATT_MAX_CLIENT_CHARS );
   client._chars_list[ client._chars_count++ ] = chr;
 
   return true;
@@ -99,7 +99,7 @@ bool BLEGatt::_addCharacteristic(BLECentralCharacteristic* chr)
 
 bool BLEGatt::_addService(BLECentralService* svc)
 {
-  VERIFY( client._svc_count < BLE_CENTRAL_MAX_SERVICE );
+  VERIFY( client._svc_count < BLE_GATT_MAX_CLIENT_SERVICE );
   client._svc_list[ client._svc_count++ ] = svc;
 
   return true;
