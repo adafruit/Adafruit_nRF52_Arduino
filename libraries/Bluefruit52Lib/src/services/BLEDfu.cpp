@@ -129,7 +129,7 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
       uint16_t sysattr_len = sizeof(peer_data->sys_attr);
       sd_ble_gatts_sys_attr_get(Bluefruit.connHandle(), peer_data->sys_attr, &sysattr_len, BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS);
 
-      if ( !Bluefruit.connBonded() )
+      if ( !Bluefruit.connPaired() )
       {
         peer_data->addr  = Bluefruit.peerAddr();
       }else

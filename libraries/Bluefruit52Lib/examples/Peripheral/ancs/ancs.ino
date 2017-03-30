@@ -22,6 +22,8 @@ void setup()
   Serial.println("Bluefruit52 BLE ANCS Example");
   Serial.println("----------------------------");
 
+  Serial.println("Go to iOS's Bluetooth settings to connect to Bluefruit");
+
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
   Bluefruit.setConnectCallback(connect_callback);
@@ -62,8 +64,14 @@ void loop()
     if ( bleancs.discover( Bluefruit.connHandle() ) )
     {
       Serial.println("Found it");
-      Serial.println("Enable Notification Source's CCCD");
-      
+
+      // ANCS requires pairing to work, it makes sense to request security here as well
+      Serial.println("Attempt to bond/pair with iOS, please press PAIR on your phone");
+      if ( Bluefruit.requestPairing() )
+      {
+        Serial.println("Enable Notification Source's CCCD");      
+        bleancs.enableNotification();    
+      }
     }
   }
 }

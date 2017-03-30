@@ -120,7 +120,7 @@ BLEMidi::BLEMidi(uint16_t fifo_depth)
 
 bool BLEMidi::notifyEnabled(void)
 {
-  return Bluefruit.connBonded() && _io.notifyEnabled();
+  return Bluefruit.connPaired() && _io.notifyEnabled();
 }
 
 void BLEMidi::setWriteCallback(midi_write_cb_t fp)

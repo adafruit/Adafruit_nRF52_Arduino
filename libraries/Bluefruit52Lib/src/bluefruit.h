@@ -108,10 +108,10 @@ class AdafruitBluefruit
     err_t    setConnIntervalMS (uint16_t min_ms, uint16_t max_ms);
 
     uint16_t connHandle        (void);
-    bool     connBonded        (void);
+    bool     connPaired        (void);
     uint16_t connInterval      (void);
 
-    bool     requestBonding    (void);
+    bool     requestPairing    (void);
     void     clearBonds        (void);
 
     ble_gap_addr_t peerAddr(void);

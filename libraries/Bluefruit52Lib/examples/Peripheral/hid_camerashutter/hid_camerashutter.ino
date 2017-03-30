@@ -88,7 +88,7 @@ void setupAdv(void)
 void loop() 
 {
   // Connected and Bonded/Paired
-  if ( Bluefruit.connected() && Bluefruit.connBonded() )
+  if ( Bluefruit.connected() && Bluefruit.connPaired() )
   {
     // Pin is wired to GND
     if ( digitalRead(PIN_SHUTTER) == 0 )

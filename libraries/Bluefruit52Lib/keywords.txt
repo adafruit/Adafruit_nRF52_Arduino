@@ -40,7 +40,7 @@ disconnect	KEYWORD2
 setConnInterval	KEYWORD2
 setConnIntervalMS	KEYWORD2
 connHandle	KEYWORD2
-connBonded	KEYWORD2
+connPaired	KEYWORD2
 connInterval	KEYWORD2
 clearBonds	KEYWORD2
 

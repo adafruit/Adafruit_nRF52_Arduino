@@ -124,9 +124,6 @@ bool BLEAncs::discover(uint16_t conn_handle)
 
   _discovered = true;
 
-  // ANCS requires bonding to work, it makes sense to request security here as well
-  Bluefruit.requestBonding();
-
   return true;
 }
 

@@ -333,7 +333,7 @@ uint16_t AdafruitBluefruit::connHandle(void)
   return _conn_hdl;
 }
 
-bool AdafruitBluefruit::connBonded(void)
+bool AdafruitBluefruit::connPaired(void)
 {
   return _bonded;
 }
@@ -685,10 +685,18 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 /*------------------------------------------------------------------*/
 /* Bonds
  *------------------------------------------------------------------*/
-bool AdafruitBluefruit::requestBonding(void)
+bool AdafruitBluefruit::requestPairing(void)
 {
   VERIFY_STATUS( sd_ble_gap_authenticate(_conn_hdl, &_sec_param ), false);
-  return true;
+  uint32_t start = millis();
+
+  // timeout in 30 seconds
+  while ( !_bonded && (start + 30000 > millis()) )
+  {
+    yield();
+  }
+
+  return _bonded;
 }
 
 void AdafruitBluefruit::clearBonds(void)
