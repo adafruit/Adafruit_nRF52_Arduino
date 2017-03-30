@@ -155,7 +155,7 @@ class AdafruitBluefruit
 
     BLEDfu _dfu_svc;
 
-    BLECharacteristic* _chars_list[BLE_MAX_CHARS];
+    BLECharacteristic* _chars_list[BLE_GATT_MAX_SERVER_CHARS];
     uint8_t            _chars_count;
 
     uint16_t _conn_hdl;

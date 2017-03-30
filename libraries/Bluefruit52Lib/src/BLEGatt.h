@@ -46,18 +46,18 @@
 #include "BLECentralCharacteristic.h"
 #include "BLECentralService.h"
 
-#define BLE_MAX_CHARS         40
+#define BLE_GATT_MAX_SERVER_CHARS         40
 
 class BLEGatt
 {
   public:
     BLEGatt(void);
 
-    bool _registerCharacteristic(BLECharacteristic* chars);
+    bool _addCharacteristic(BLECharacteristic* chars);
     void _eventHandler(ble_evt_t* evt);
 
   private:
-    BLECharacteristic* _chars_list[BLE_MAX_CHARS];
+    BLECharacteristic* _chars_list[BLE_GATT_MAX_SERVER_CHARS];
     uint8_t            _chars_count;
 };
 

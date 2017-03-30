@@ -40,7 +40,7 @@
 BLEGatt::BLEGatt(void)
 {
   _chars_count = 0;
-  for(uint8_t i=0; i<BLE_MAX_CHARS; i++) _chars_list[i] = NULL;
+  for(uint8_t i=0; i<BLE_GATT_MAX_SERVER_CHARS; i++) _chars_list[i] = NULL;
 
 
 }
@@ -53,9 +53,9 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
 
 }
 
-bool BLEGatt::_registerCharacteristic(BLECharacteristic* chars)
+bool BLEGatt::_addCharacteristic(BLECharacteristic* chars)
 {
-  if ( _chars_count == BLE_MAX_CHARS ) return false;
+  if ( _chars_count == BLE_GATT_MAX_SERVER_CHARS ) return false;
   _chars_list[ _chars_count++ ] = chars;
 
   return true;
