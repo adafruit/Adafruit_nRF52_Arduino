@@ -16,6 +16,8 @@
 // BLE Service
 BLEAncs  bleancs;
 
+char buffer[128];
+
 void setup()
 {
   Serial.begin(115200);
@@ -71,7 +73,10 @@ void loop()
       if ( Bluefruit.requestPairing() )
       {
         Serial.println("Enable Notification Source's CCCD");      
-        bleancs.enableNotification();    
+        bleancs.enableNotification();
+
+        Serial.println("| Notification | Category (count)     | Title               | Message               | App ID | App Name |");
+        Serial.println("-------------------------------------------------------------------------------------------------------------");
       }
     }
   }
@@ -79,6 +84,8 @@ void loop()
 
 void ancs_notification_callback(ancsNotification_t* notif)
 {
+  int n;
+  
   // Check BLEAncs.h for ancsNotification_t
   const char* event_str[] = { "Added", "Modified", "Removed" };
   const char* cat_str  [] = 
@@ -88,8 +95,18 @@ void ancs_notification_callback(ancsNotification_t* notif)
     "Health and Fitness", "Business and Finance", "Location"   , "Entertainment"
   };
 
-  Serial.printf("[Notification %s] ", event_str[notif->eventID]);
-  Serial.printf("%s (%d) ", cat_str[notif->categoryID], notif->categoryCount);
+  Serial.printf("| %-13s | ", event_str[notif->eventID]);
+  
+  // Print Category with padding
+  n = Serial.printf("%s (%d)", cat_str[notif->categoryID], notif->categoryCount);
+  for (int i=n; i<20; i++) Serial.print(' ');
+  Serial.print(" | ");
+
+  // Get notification title
+//  memset(buffer, 0, sizeof(buffer));
+//  n = bleancs.getAttribute(notif->uid, ANCS_NOTIF_ATTR_TITLE, buffer, sizeof(buffer));
+//  PRINT_INT(n);
+//  Serial.print(buffer);
 
   Serial.println();
 }

@@ -44,7 +44,7 @@
 #define CFG_ADV_BLINKY_INTERVAL          500
 
 #define CFG_BLE_TASK_STACKSIZE          (512*3)
-#define CFG_WORKER_TASK_STACKSIZE       (512*1)
+#define CFG_CALLBACK_TASK_STACKSIZE     (512*1)
 #define CFG_SOC_TASK_STACKSIZE          (200)
 
 #define CFG_BOND_NFFS_DIR                "/adafruit/bond"
@@ -63,8 +63,7 @@ extern "C"
 
 void adafruit_ble_task(void* arg);
 void adafruit_soc_task(void* arg);
-
-COMMENT_OUT( void adafruit_worker_task(void* arg); )
+void adafruit_callback_task(void* arg);
 
 
 /*------------------------------------------------------------------*/
@@ -211,6 +210,9 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 
   TaskHandle_t soc_task_hdl;
   xTaskCreate( adafruit_soc_task, "SD SOC", CFG_SOC_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &soc_task_hdl);
+
+//  TaskHandle_t callback_task_hdl;
+//  xTaskCreate( adafruit_callback_task, "Worker", CFG_CALLBACK_TASK_STACKSIZE, NULL, TASK_PRIO_NORMAL, &callback_task_hdl);
 
   NVIC_SetPriority(SD_EVT_IRQn, 6);
   NVIC_EnableIRQ(SD_EVT_IRQn);
@@ -416,7 +418,15 @@ void adafruit_soc_task(void* arg)
   }
 }
 
-COMMENT_OUT(void adafruit_worker_task(void* arg) { } )
+void adafruit_callback_task(void* arg)
+{
+  (void) arg;
+
+  while(1)
+  {
+
+  }
+}
 
 /*------------------------------------------------------------------*/
 /* BLE Event handler

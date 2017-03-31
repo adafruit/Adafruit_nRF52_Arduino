@@ -164,7 +164,7 @@ typedef struct ATTR_PACKED
 
 }get_app_attr_t;
 
-bool BLEAncs::getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_t bufsize)
+uint16_t BLEAncs::getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_t bufsize)
 {
   // command ID | uid | attr (+ len)
   get_notif_attr_t command =
@@ -188,17 +188,22 @@ bool BLEAncs::getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_t bu
   VERIFY( cmdlen == _control.write_resp(&command, cmdlen) );
 
   // wait for data arrived (in handleData() )
-  if ( !xSemaphoreTake(_sem, BLE_GENERIC_TIMEOUT) ) return false;
+  if ( !xSemaphoreTake(_sem, ms2tick(BLE_GENERIC_TIMEOUT*10)) ) return 0;
+
+  // calculate actual byte copied
+  bufsize -= _evt_bufsize;
 
   _evt_buf     = NULL;
   _evt_bufsize = 0;
 
-  return true;
+  return bufsize;
 }
 
 void BLEAncs::_handleNotification(uint8_t* data, uint16_t len)
 {
   if ( len != 8  ) return;
+
+  PRINT_BUFFER(data, len);
 
   if ( _notif_cb ) _notif_cb((ancsNotification_t*) data);
 }
@@ -206,6 +211,8 @@ void BLEAncs::_handleNotification(uint8_t* data, uint16_t len)
 void BLEAncs::_handleData(uint8_t* data, uint16_t len)
 {
   static uint16_t attr_len = 0;
+
+  PRINT_BUFFER(data, len);
 
   // Parse Attribute Length
   if ( attr_len == 0 )
@@ -223,6 +230,8 @@ void BLEAncs::_handleData(uint8_t* data, uint16_t len)
     }
   }
 
+  PRINT_INT(attr_len);
+
   if ( _evt_bufsize && _evt_buf )
   {
     uint16_t cplen = min16(len, _evt_bufsize);
@@ -231,9 +240,14 @@ void BLEAncs::_handleData(uint8_t* data, uint16_t len)
 
     _evt_buf     += cplen;
     _evt_bufsize -= cplen;
+
+    PRINT_INT(cplen);
   }
 
   attr_len -= len;
+
+  PRINT_INT(attr_len);
+  PRINT_INT(_evt_bufsize);
 
   // all data arrived, signal semaphore
   if (attr_len == 0) xSemaphoreGive(_sem);
