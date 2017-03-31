@@ -41,11 +41,13 @@
 #include "ble_hci.h"
 #include "nrf_sdm.h"
 
-#define BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS  2000
-#define BLE_GAP_CONN_SLAVE_LATENCY           0
+#define BLE_GENERIC_TIMEOUT                     100
 
-#define BLE_GAP_CONN_MIN_INTERVAL_DFLT         MS100TO125(20)
-#define BLE_GAP_CONN_MAX_INTERVAL_DFLT         MS100TO125(40)
+#define BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS     2000
+#define BLE_GAP_CONN_SLAVE_LATENCY              0
+
+#define BLE_GAP_CONN_MIN_INTERVAL_DFLT          MS100TO125(20)
+#define BLE_GAP_CONN_MAX_INTERVAL_DFLT          MS100TO125(40)
 
 // Converts an integer of 1.25ms units to msecs
 #define MS100TO125(ms100) (((ms100)*4)/5)

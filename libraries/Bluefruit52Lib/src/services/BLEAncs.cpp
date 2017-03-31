@@ -73,7 +73,11 @@ BLEAncs::BLEAncs(void)
   : BLECentralService(BLEANCS_UUID_SERVICE), _control(BLEANCS_UUID_CHR_CONTROL),
     _notification(BLEANCS_UUID_CHR_NOTIFICATION), _data(BLEANCS_UUID_CHR_DATA)
 {
-  _notif_cb = NULL;
+  _notif_cb    = NULL;
+  _sem         = NULL;
+
+  _evt_buf     = NULL;
+  _evt_bufsize = 0;
 }
 
 bool BLEAncs::begin(void)
@@ -84,6 +88,8 @@ bool BLEAncs::begin(void)
   // Initialize Discovery module if needed
   if ( !Bluefruit.Discovery.begun() ) Bluefruit.Discovery.begin();
 
+  _sem = xSemaphoreCreateBinary();
+
   _control.begin();
   _notification.begin();
   _data.begin();
@@ -91,27 +97,6 @@ bool BLEAncs::begin(void)
   _notification.setNotifyCallback(bleancs_notification_cb);
   _data.setNotifyCallback(bleancs_data_cb);
 
-  return true;
-}
-
-void BLEAncs::setNotificationCallback(notification_callback_t fp)
-{
-  _notif_cb = fp;
-}
-
-bool BLEAncs::enableNotification(void)
-{
-  // enable both Nofication & Data Source
-  _notification.enableNotify();
-  _data.enableNotify();
-
-  return true;
-}
-
-bool BLEAncs::disableNotification(void)
-{
-  _notification.disableNotify();
-  _data.disableNotify();
 
   return true;
 }
@@ -137,6 +122,80 @@ void BLEAncs::disconnect(void)
   BLECentralService::disconnect();
 }
 
+void BLEAncs::setNotificationCallback(notification_callback_t fp)
+{
+  _notif_cb = fp;
+}
+
+bool BLEAncs::enableNotification(void)
+{
+  // enable both Notification & Data Source
+  _data.enableNotify();
+  _notification.enableNotify();
+
+  return true;
+}
+
+bool BLEAncs::disableNotification(void)
+{
+  _notification.disableNotify();
+  _data.disableNotify();
+
+  return true;
+}
+
+/*------------------------------------------------------------------*/
+/* NOTIFICATION
+ *------------------------------------------------------------------*/
+typedef struct ATTR_PACKED
+{
+  // Cortex M4 can access unaligned memory
+  uint8_t  cmd;
+  uint32_t uid;
+  uint8_t  attr;
+  uint16_t len; // optional when sending command
+}get_notif_attr_t;
+
+VERIFY_STATIC( sizeof(get_notif_attr_t) == 8);
+
+typedef struct ATTR_PACKED
+{
+  uint8_t  cmd;
+
+}get_app_attr_t;
+
+bool BLEAncs::getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_t bufsize)
+{
+  // command ID | uid | attr (+ len)
+  get_notif_attr_t command =
+  {
+      .cmd  = ANCS_CMD_GET_NOTIFICATION_ATTR,
+      .uid  = uid,
+      .attr = attr,
+      .len = bufsize
+  };
+  uint8_t cmdlen = 6;
+
+  // Title, Subtitle, Message must require 2-byte length
+  if (attr == ANCS_NOTIF_ATTR_TITLE || attr == ANCS_NOTIF_ATTR_SUBTITLE || attr == ANCS_NOTIF_ATTR_MESSAGE)
+  {
+    cmdlen = 8;
+  }
+
+  _evt_buf     = buffer;
+  _evt_bufsize = bufsize;
+
+  VERIFY( cmdlen == _control.write_resp(&command, cmdlen) );
+
+  // wait for data arrived (in handleData() )
+  if ( !xSemaphoreTake(_sem, BLE_GENERIC_TIMEOUT) ) return false;
+
+  _evt_buf     = NULL;
+  _evt_bufsize = 0;
+
+  return true;
+}
+
 void BLEAncs::_handleNotification(uint8_t* data, uint16_t len)
 {
   if ( len != 8  ) return;
@@ -146,7 +205,38 @@ void BLEAncs::_handleNotification(uint8_t* data, uint16_t len)
 
 void BLEAncs::_handleData(uint8_t* data, uint16_t len)
 {
-  PRINT_BUFFER(data, len);
+  static uint16_t attr_len = 0;
+
+  // Parse Attribute Length
+  if ( attr_len == 0 )
+  {
+    if ( data[0] == ANCS_CMD_GET_NOTIFICATION_ATTR)
+    {
+      attr_len = ((get_notif_attr_t*) data)->len;
+
+      data += sizeof(get_notif_attr_t);
+      len  -= sizeof(get_notif_attr_t);
+    }
+    else if ( data[0] == ANCS_CMD_GET_APP_ATTR)
+    {
+
+    }
+  }
+
+  if ( _evt_bufsize && _evt_buf )
+  {
+    uint16_t cplen = min16(len, _evt_bufsize);
+
+    memcpy(_evt_buf, data, cplen);
+
+    _evt_buf     += cplen;
+    _evt_bufsize -= cplen;
+  }
+
+  attr_len -= len;
+
+  // all data arrived, signal semaphore
+  if (attr_len == 0) xSemaphoreGive(_sem);
 }
 
 

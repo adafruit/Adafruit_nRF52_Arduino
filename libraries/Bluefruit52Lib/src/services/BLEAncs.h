@@ -82,14 +82,14 @@ enum
 // Notification Attribute ID
 enum
 {
-  ANCS_NOT_ATTR_APP_IDENTIFIER,
-  ANCS_NOT_ATTR_TITLE,
-  ANCS_NOT_ATTR_SUBTITLE,
-  ANCS_NOT_ATTR_MESSAGE,
-  ANCS_NOT_ATTR_MESSAGE_SIZE,
-  ANCS_NOT_ATTR_DATE,
-  ANCS_NOT_ATTR_POSITIVE_ACTION_LABEL,
-  ANCS_NOT_ATTR_NEGATIVE_ACTION_LABEL
+  ANCS_NOTIF_ATTR_APP_IDENTIFIER        ,
+  ANCS_NOTIF_ATTR_TITLE                 , // followed bye 2-byte length
+  ANCS_NOTIF_ATTR_SUBTITLE              , // followed bye 2-byte length
+  ANCS_NOTIF_ATTR_MESSAGE               , // followed bye 2-byte length
+  ANCS_NOTIF_ATTR_MESSAGE_SIZE          ,
+  ANCS_NOTIF_ATTR_DATE                  , // UTC#35 yyyyMMdd'T'HHmmSS
+  ANCS_NOTIF_ATTR_POSITIVE_ACTION_LABEL ,
+  ANCS_NOTIF_ATTR_NEGATIVE_ACTION_LABEL
 };
 
 // Action ID
@@ -139,6 +139,8 @@ class BLEAncs : public BLECentralService
     bool enableNotification(void);
     bool disableNotification(void);
 
+    bool getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_t bufsize);
+
   protected:
     virtual void  disconnect(void);
 
@@ -148,6 +150,11 @@ class BLEAncs : public BLECentralService
     BLECentralCharacteristic _data;
 
     notification_callback_t  _notif_cb;
+
+    SemaphoreHandle_t        _sem;
+
+    void*                    _evt_buf;
+    uint16_t                 _evt_bufsize;
 
     void _handleNotification(uint8_t* data, uint16_t len);
     void _handleData(uint8_t* data, uint16_t len);
