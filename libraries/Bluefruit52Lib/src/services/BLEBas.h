@@ -51,7 +51,7 @@ class BLEBas : public BLEService
 
     virtual err_t begin(void);
 
-    void update(uint8_t level);
+    void write (uint8_t level);
     void notify(uint8_t level);
 };
 

@@ -53,7 +53,7 @@ void setup()
 
   // Start BLE Battery Service
   blebas.begin();
-  blebas.update(100);
+  blebas.write(100);
 
   // Set up Advertising Packet
   setupAdv();

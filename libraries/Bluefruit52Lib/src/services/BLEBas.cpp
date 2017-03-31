@@ -54,7 +54,7 @@ err_t BLEBas::begin(void)
   return ERROR_NONE;
 }
 
-void BLEBas::update(uint8_t level)
+void BLEBas::write(uint8_t level)
 {
   _battery.write(level);
 }
