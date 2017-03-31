@@ -38,13 +38,92 @@
 
 #include "bluefruit_common.h"
 
-//#include "BLECentralCharacteristic.h"
-//#include "BLECentralService.h"
+#include "BLECentralCharacteristic.h"
+#include "BLECentralService.h"
 
 extern const uint8_t BLEANCS_UUID_SERVICE[];
 extern const uint8_t BLEANCS_UUID_CHR_CONTROL[];
 extern const uint8_t BLEANCS_UUID_CHR_NOTIFICATION[];
 extern const uint8_t BLEANCS_UUID_CHR_DATA[];
+
+// Category ID
+enum
+{
+  ANCS_CAT_OTHER                 ,
+  ANCS_CAT_INCOMING_CALL         ,
+  ANCS_CAT_MISSED_CALL           ,
+  ANCS_CAT_VOICE_MAIL            ,
+  ANCS_CAT_SOCIAL                ,
+  ANCS_CAT_SCHEDULE              ,
+  ANCS_CAT_EMAIL                 ,
+  ANCS_CAT_NEWS                  ,
+  ANCS_CAT_HEALTH_AND_FITNESS    ,
+  ANCS_CAT_BUSSINESS_AND_FINANCE ,
+  ANCS_CAT_LOCATION              ,
+  ANCS_CAT_ENTERTAINMENT
+};
+
+// Event ID
+enum
+{
+  ANCS_EVT_NOTIFICATION_ADDED    ,
+  ANCS_EVT_NOTIFICATION_MODIFIED ,
+  ANCS_EVT_NOTIFICATION_REMOVED
+};
+
+// Command ID
+enum
+{
+  ANCS_CMD_GET_NOTIFICATION_ATTR ,
+  ANCS_CMD_GET_APP_ATTR          ,
+  ANCS_CMD_PERFORM_NOTIFICATION_ACTION
+};
+
+// Notification Attribute ID
+enum
+{
+  ANCS_NOT_ATTR_APP_IDENTIFIER,
+  ANCS_NOT_ATTR_TITLE,
+  ANCS_NOT_ATTR_SUBTITLE,
+  ANCS_NOT_ATTR_MESSAGE,
+  ANCS_NOT_ATTR_MESSAGE_SIZE,
+  ANCS_NOT_ATTR_DATE,
+  ANCS_NOT_ATTR_POSITIVE_ACTION_LABEL,
+  ANCS_NOT_ATTR_NEGATIVE_ACTION_LABEL
+};
+
+// Action ID
+enum
+{
+  ANCS_ACTION_POSITIVE,
+  ANCS_ACTION_NEGATIVE
+};
+
+// Application Attribute ID
+enum
+{
+  ANCS_APP_ATTR_DISPLAY_NAME
+};
+
+typedef struct
+{
+  uint8_t  eventID;
+
+  struct ATTR_PACKED
+  {
+    uint8_t silent         : 1;
+    uint8_t important      : 1;
+    uint8_t preExisting    : 1;
+    uint8_t positiveAction : 1;
+    uint8_t NegativeAction : 1;
+  }eventFlags;
+
+  uint8_t  categoryID;
+  uint8_t  categoryCount;
+  uint32_t NotificationUID;
+} ancsNotification_t;
+
+VERIFY_STATIC( sizeof(ancsNotification_t) == 8);
 
 class BLEAncs : public BLECentralService
 {
