@@ -36,8 +36,6 @@
 
 #include "bluefruit.h"
 
-#define BLE_CENTRAL_TIMEOUT     3000
-
 /**
  * Constructor
  */

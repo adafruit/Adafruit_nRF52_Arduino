@@ -43,6 +43,8 @@
 #include "BLECentralCharacteristic.h"
 #include "BLECentralService.h"
 
+#define BLE_DISCOVERY_TIMEOUT     1000
+
 class BLEDiscovery
 {
   private:

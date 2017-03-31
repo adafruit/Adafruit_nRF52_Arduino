@@ -50,7 +50,7 @@ bool BLEGap::getTxPacket(uint16_t conn_handle)
 {
   VERIFY( (conn_handle < BLE_GAP_MAX_CONN) && (_txpacket_sem[conn_handle] != NULL) );
 
-  return xSemaphoreTake(_txpacket_sem[conn_handle], ms2tick(BLE_GAP_TIMEOUT));
+  return xSemaphoreTake(_txpacket_sem[conn_handle], ms2tick(BLE_GENERIC_TIMEOUT));
 }
 
 void BLEGap::_eventHandler(ble_evt_t* evt)

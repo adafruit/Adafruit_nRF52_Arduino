@@ -36,8 +36,6 @@
 
 #include "bluefruit.h"
 
-#define BLE_CENTRAL_TIMEOUT     3000
-
 BLEDiscovery::BLEDiscovery(void)
 {
   _hdl_range.start_handle = 1;
@@ -71,7 +69,7 @@ bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLECentralService& svc
   VERIFY_STATUS( sd_ble_gattc_primary_services_discover(conn_handle, start_handle, &svc.uuid._uuid), false );
 
   // wait for discovery event: timeout or has no data
-  if ( !xSemaphoreTake(_sem, BLE_CENTRAL_TIMEOUT) || (_evt_bufsize == 0) ) return false;
+  if ( !xSemaphoreTake(_sem, ms2tick(BLE_DISCOVERY_TIMEOUT)) || (_evt_bufsize == 0) ) return false;
 
   // Check the discovered UUID with input one
   if ( (disc_svc.count == 1) && (svc.uuid == disc_svc.services[0].uuid) )
@@ -103,7 +101,7 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLECentralCha
 
     // wait for discovery event: timeout or has no data
     // Assume only 1 characteristic discovered each
-    if ( !xSemaphoreTake(_sem, BLE_CENTRAL_TIMEOUT) || (_evt_bufsize == 0) || (disc_chr.count == 0) ) break;
+    if ( !xSemaphoreTake(_sem, ms2tick(BLE_DISCOVERY_TIMEOUT)) || (_evt_bufsize == 0) || (disc_chr.count == 0) ) break;
 
     // increase handle range for next discovery
     _hdl_range.start_handle = disc_chr.chars[0].handle_value + 1;
@@ -142,7 +140,7 @@ uint16_t BLEDiscovery::_discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_d
   VERIFY_STATUS( sd_ble_gattc_descriptors_discover(conn_handle, &_hdl_range), 0 );
 
   // wait for discovery event: timeout or has no data
-  if ( !xSemaphoreTake(_sem, BLE_CENTRAL_TIMEOUT) || (_evt_bufsize == 0) ) return 0;
+  if ( !xSemaphoreTake(_sem, ms2tick(BLE_DISCOVERY_TIMEOUT)) || (_evt_bufsize == 0) ) return 0;
 
   result = min16(disc_desc->count, max_count);
   if (result)

@@ -37,7 +37,6 @@
 #include "bluefruit.h"
 
 #define MAX_DESCIRPTORS         8
-#define CENTRAL_CHR_TIMEOUT     100
 
 void BLECentralCharacteristic::_init(void)
 {
@@ -154,7 +153,7 @@ uint16_t BLECentralCharacteristic::write_resp(const void* data, int len)
 
     if ( ERROR_NONE != sd_ble_gattc_write(conn_handle, &param) ) break;
 
-    if ( !xSemaphoreTake(_sem, CENTRAL_CHR_TIMEOUT) ) break;
+    if ( !xSemaphoreTake(_sem, ms2tick(BLE_GENERIC_TIMEOUT) ) ) break;
 
     remaining -= packet_len;
     u8data    += packet_len;

@@ -41,7 +41,6 @@
 #include "BLEUuid.h"
 
 #define BLE_GAP_MAX_CONN  (BLE_CENTRAL_MAX_CONN+BLE_PRPH_MAX_CONN)
-#define BLE_GAP_TIMEOUT   100
 
 class BLEGap
 {

@@ -139,7 +139,7 @@ class BLEAncs : public BLECentralService
     bool enableNotification(void);
     bool disableNotification(void);
 
-    bool getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_t bufsize);
+    uint16_t getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_t bufsize);
 
   protected:
     virtual void  disconnect(void);
