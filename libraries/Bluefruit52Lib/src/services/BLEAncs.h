@@ -120,7 +120,7 @@ typedef struct
 
   uint8_t  categoryID;
   uint8_t  categoryCount;
-  uint32_t NotificationUID;
+  uint32_t uid;
 } ancsNotification_t;
 
 VERIFY_STATIC( sizeof(ancsNotification_t) == 8);

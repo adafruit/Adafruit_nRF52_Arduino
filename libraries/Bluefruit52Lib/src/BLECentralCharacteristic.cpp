@@ -129,6 +129,8 @@ uint16_t BLECentralCharacteristic::write_resp(const void* data, int len)
   // SD132 v3.0 could negotiate MTU to higher number
   const uint16_t MTU_MPS = 20;
 
+  const uint16_t conn_handle = _service->connHandle();
+
   const uint8_t* u8data = (const uint8_t*) data;
 
   // Write Response requires to wait for BLE_GATTC_EVT_WRITE_RSP event
@@ -150,7 +152,7 @@ uint16_t BLECentralCharacteristic::write_resp(const void* data, int len)
         .p_value  = (uint8_t* ) u8data
     };
 
-    if ( ERROR_NONE != sd_ble_gattc_write(Bluefruit.Central.connHandle(), &param) ) break;
+    if ( ERROR_NONE != sd_ble_gattc_write(conn_handle, &param) ) break;
 
     if ( !xSemaphoreTake(_sem, CENTRAL_CHR_TIMEOUT) ) break;
 
