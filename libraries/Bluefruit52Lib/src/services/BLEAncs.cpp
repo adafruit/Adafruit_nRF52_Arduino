@@ -36,8 +36,8 @@
 
 #include "bluefruit.h"
 
-void bleancs_notification_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
-void bleancs_data_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
+void bleancs_notification_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
+void bleancs_data_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
 
 /* ANCS Service        : 7905F431-B5CE-4E99-A40F-4B1E122D00D0
  * Notification Source : 9FBF120D-6301-42D9-8C58-25E699A21DBD
@@ -73,7 +73,7 @@ BLEAncs::BLEAncs(void)
   : BLECentralService(BLEANCS_UUID_SERVICE), _control(BLEANCS_UUID_CHR_CONTROL),
     _notification(BLEANCS_UUID_CHR_NOTIFICATION), _data(BLEANCS_UUID_CHR_DATA)
 {
-
+  _notif_cb = NULL;
 }
 
 bool BLEAncs::begin(void)
@@ -88,10 +88,15 @@ bool BLEAncs::begin(void)
   _notification.begin();
   _data.begin();
 
-  _notification.setNotifyCallback(bleancs_notification_notify_cb);
-  _data.setNotifyCallback(bleancs_data_notify_cb);
+  _notification.setNotifyCallback(bleancs_notification_cb);
+  _data.setNotifyCallback(bleancs_data_cb);
 
   return true;
+}
+
+void BLEAncs::setNotificationCallback(notification_callback_t fp)
+{
+  _notif_cb = fp;
 }
 
 bool BLEAncs::enableNotification(void)
@@ -132,20 +137,30 @@ void BLEAncs::disconnect(void)
   BLECentralService::disconnect();
 }
 
+void BLEAncs::_handleNotification(uint8_t* data, uint16_t len)
+{
+  if ( len != 8  ) return;
+
+  if ( _notif_cb ) _notif_cb((ancsNotification_t*) data);
+}
+
+void BLEAncs::_handleData(uint8_t* data, uint16_t len)
+{
+  PRINT_BUFFER(data, len);
+}
+
 
 /*------------------------------------------------------------------*/
 /* Callback
  *------------------------------------------------------------------*/
-void bleancs_notification_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len)
+void bleancs_notification_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len)
 {
   BLEAncs& svc = (BLEAncs&) chr.parentService();
-
-  PRINT_BUFFER(data, len);
+  svc._handleNotification(data, len);
 }
 
-void bleancs_data_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len)
+void bleancs_data_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len)
 {
   BLEAncs& svc = (BLEAncs&) chr.parentService();
-
-  PRINT_BUFFER(data, len);
+  svc._handleData(data, len);
 }

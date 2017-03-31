@@ -31,6 +31,7 @@ void setup()
 
   // Configure and Start Service
   bleancs.begin();
+  bleancs.setNotificationCallback(ancs_notification_callback);
   
   // Set up Advertising Packet
   setupAdv();
@@ -74,6 +75,23 @@ void loop()
       }
     }
   }
+}
+
+void ancs_notification_callback(ancsNotification_t* notif)
+{
+  // Check BLEAncs.h for ancsNotification_t
+  const char* event_str[] = { "Added", "Modified", "Removed" };
+  const char* cat_str  [] = 
+  { 
+    "Other"             , "Incoming Call"       , "Missed Call", "Voice Mail"   , 
+    "Social"            , "Schedule"            , "Email"      , "News"         , 
+    "Health and Fitness", "Business and Finance", "Location"   , "Entertainment"
+  };
+
+  Serial.printf("[Notification %s] ", event_str[notif->eventID]);
+  Serial.printf("%s (%d) ", cat_str[notif->categoryID], notif->categoryCount);
+
+  Serial.println();
 }
 
 void connect_callback(void)
