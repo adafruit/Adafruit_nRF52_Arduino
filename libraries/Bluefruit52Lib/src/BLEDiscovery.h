@@ -50,7 +50,7 @@ class BLEDiscovery
     void*             _evt_buf;
     uint16_t          _evt_bufsize;
 
-    SemaphoreHandle_t _evt_sem;
+    SemaphoreHandle_t _sem;
 
     void  _event_handler(ble_evt_t* evt);
 
