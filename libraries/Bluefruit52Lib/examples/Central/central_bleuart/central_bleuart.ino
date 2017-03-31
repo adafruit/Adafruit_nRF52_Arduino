@@ -61,8 +61,9 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   }
 }
 
-void connect_callback(void)
+void connect_callback(uint16_t conn_handle)
 {
+  (void) conn_handle;
   Serial.println("Connected");
 }
 

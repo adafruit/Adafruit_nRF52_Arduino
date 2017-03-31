@@ -86,7 +86,7 @@ class BLECentral
     /*------------------------------------------------------------------*/
     /* CALLBACKS
      *------------------------------------------------------------------*/
-    typedef void (*connect_callback_t) (void);
+    typedef void (*connect_callback_t) (uint16_t conn_handle);
     typedef void (*disconnect_callback_t) (uint8_t reason);
 
     void setConnectCallback   ( connect_callback_t    fp);
