@@ -35,6 +35,7 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
+#include "AdaCallback.h"
 
 /**
  * Constructor
@@ -242,7 +243,10 @@ void BLECentral::_event_handler(ble_evt_t* evt)
           // TODO multiple connections
           _conn_hdl = evt->evt.gap_evt.conn_handle;
 
-          if ( _connect_cb ) _connect_cb(evt->evt.gap_evt.conn_handle);
+          if ( _connect_cb )
+          {
+            ada_callback(NULL, _connect_cb,  evt->evt.gap_evt.conn_handle);
+          }
         }
       }
       break;

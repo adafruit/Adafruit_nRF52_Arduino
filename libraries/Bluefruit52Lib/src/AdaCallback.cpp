@@ -34,26 +34,51 @@
 */
 /**************************************************************************/
 
-#include <Arduino.h>
-#include "bluefruit.h"
+#include "AdaCallback.h"
 
-enum
+static QueueHandle_t _cb_queue = NULL;
+
+void adafruit_callback_task(void* arg)
 {
+  (void) arg;
 
-};
+  while(1)
+  {
+    ada_callback_t* cb_data;
+    if ( xQueueReceive(_cb_queue, (void*) &cb_data, portMAX_DELAY) )
+    {
+      switch(cb_data->callback_type)
+      {
+        case AdafruitBluefruit_connect_callback_t:
+        break;
 
+        case BLECentral_connect_callback_t:
+        {
+          BLECentral::connect_callback_t func = (BLECentral::connect_callback_t) cb_data->callback_func;
+          func(cb_data->arguments[0]);
+        }
+        break;
 
-typedef struct
+        default: VERIFY_MESS(NRF_ERROR_INVALID_PARAM);
+      }
+
+      // free up resource
+      if (cb_data->malloced_data) rtos_free(cb_data->malloced_data);
+      rtos_free(cb_data);
+    }
+  }
+}
+
+void ada_callback_queue(ada_callback_t* cb_data)
 {
-  uint8_t callback_type;
-  uint8_t arg_count;
-  int8_t  malloced_idx;
+  xQueueSend(_cb_queue, (void*) &cb_data, BLE_GENERIC_TIMEOUT);
+}
 
-  void*   arguments[];
-}ada_callback_t;
+void ada_callback_init(void)
+{
+  // queue to hold "Pointer to callback data"
+  _cb_queue = xQueueCreate(CFG_CALLBACK_QUEUE_LENGTH, sizeof(ada_callback_t*));
 
-//#define ada_callback(_type, )
-
-//void ada_callback()
-
-
+  TaskHandle_t callback_task_hdl;
+  xTaskCreate( adafruit_callback_task, "Callback", CFG_CALLBACK_TASK_STACKSIZE, NULL, TASK_PRIO_NORMAL, &callback_task_hdl);
+}

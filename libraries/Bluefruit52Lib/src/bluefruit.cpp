@@ -35,6 +35,7 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
+#include "AdaCallback.h"
 #include <Nffs.h>
 
 #define SVC_CONTEXT_FLAG                 (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
@@ -44,7 +45,6 @@
 #define CFG_ADV_BLINKY_INTERVAL          500
 
 #define CFG_BLE_TASK_STACKSIZE          (512*3)
-#define CFG_CALLBACK_TASK_STACKSIZE     (512*1)
 #define CFG_SOC_TASK_STACKSIZE          (200)
 
 #define CFG_BOND_NFFS_DIR                "/adafruit/bond"
@@ -63,8 +63,6 @@ extern "C"
 
 void adafruit_ble_task(void* arg);
 void adafruit_soc_task(void* arg);
-void adafruit_callback_task(void* arg);
-
 
 /*------------------------------------------------------------------*/
 /* INTERNAL FUNCTION
@@ -211,8 +209,8 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   TaskHandle_t soc_task_hdl;
   xTaskCreate( adafruit_soc_task, "SD SOC", CFG_SOC_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &soc_task_hdl);
 
-//  TaskHandle_t callback_task_hdl;
-//  xTaskCreate( adafruit_callback_task, "Worker", CFG_CALLBACK_TASK_STACKSIZE, NULL, TASK_PRIO_NORMAL, &callback_task_hdl);
+  ada_callback_init();
+
 
   NVIC_SetPriority(SD_EVT_IRQn, 6);
   NVIC_EnableIRQ(SD_EVT_IRQn);
@@ -415,16 +413,6 @@ void adafruit_soc_task(void* arg)
         }
       }
     }
-  }
-}
-
-void adafruit_callback_task(void* arg)
-{
-  (void) arg;
-
-  while(1)
-  {
-
   }
 }
 

@@ -65,6 +65,21 @@ void connect_callback(uint16_t conn_handle)
 {
   (void) conn_handle;
   Serial.println("Connected");
+
+  Serial.print("Discovering BLE Uart Service ... ");
+
+  if ( bleCentralUart.discover( Bluefruit.Central.connHandle() ) )
+  {
+    Serial.println("Found it");
+
+    Serial.println("Enable TXD's notify");
+    bleCentralUart.enableTXD();
+
+    Serial.println("Ready to receive from peripheral");
+  }else
+  {
+    Serial.println("Found NONE");
+  }  
 }
 
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
@@ -93,23 +108,7 @@ void loop()
   if ( Bluefruit.Central.connected() )
   {
     // Not discovered yet
-    if ( !bleCentralUart.discovered() )
-    {
-      Serial.print("Discovering BLE Uart Service ... ");
-
-      if ( bleCentralUart.discover( Bluefruit.Central.connHandle() ) )
-      {
-        Serial.println("Found it");
-  
-        Serial.println("Enable TXD's notify");
-        bleCentralUart.enableTXD();
-  
-        Serial.println("Ready to receive from peripheral");
-      }else
-      {
-        Serial.println("Found NONE");
-      }
-    }else
+    if ( bleCentralUart.discovered() )
     {
       // Discovered means in working state
       // Get Serial input and send to Peripheral
