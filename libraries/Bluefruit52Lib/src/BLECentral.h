@@ -52,15 +52,16 @@ class AdafruitBluefruit;
 class BLECentral
 {
   public:
-    BLECentral(void); // Constructor
+    typedef void (*connect_callback_t    ) (uint16_t conn_handle);
+    typedef void (*disconnect_callback_t ) (uint16_t conn_handle, uint8_t reason);
+    typedef void (*scan_callback_t       ) (ble_gap_evt_adv_report_t*);
 
+    BLECentral(void); // Constructor
     void begin(void);
 
     /*------------------------------------------------------------------*/
     /* Scan & Parser
      *------------------------------------------------------------------*/
-    typedef void (*scan_callback_t) (ble_gap_evt_adv_report_t*);
-
     void     setScanCallback(scan_callback_t fp);
     err_t    startScanning(uint16_t timeout = 0);
     err_t    stopScanning(void);
@@ -86,9 +87,6 @@ class BLECentral
     /*------------------------------------------------------------------*/
     /* CALLBACKS
      *------------------------------------------------------------------*/
-    typedef void (*connect_callback_t) (uint16_t conn_handle);
-    typedef void (*disconnect_callback_t) (uint16_t conn_handle, uint8_t reason);
-
     void setConnectCallback   ( connect_callback_t    fp);
     void setDisconnectCallback( disconnect_callback_t fp);
 

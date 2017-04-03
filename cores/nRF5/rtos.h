@@ -68,6 +68,8 @@ enum
 #define rtos_free(ptr)      ({ cprintf("[free] %s:%d\r\n"    ,__PRETTY_FUNCTION__, __LINE__/*malloc_usable_size(ptr)*/); vPortFree(ptr); })
 #else
 
+#define rtos_malloc_type(_type)   (_type*) rtos_malloc(sizeof(_type))
+
 static inline void* rtos_malloc(size_t _size)
 {
   return (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) ? malloc(_size) : pvPortMalloc(_size);

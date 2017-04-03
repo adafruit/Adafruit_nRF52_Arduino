@@ -33,6 +33,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
+#ifndef BLUEFRUIT_H_
+#define BLUEFRUIT_H_
 
 #include <Arduino.h>
 #include "bluefruit_common.h"
@@ -70,6 +72,8 @@
 
 #include "central_services/BLECentralUart.h"
 
+#include "AdaCallback.h"
+
 
 #define BLE_MAX_DATA_PER_MTU  (GATT_MTU_SIZE_DEFAULT - 3)
 
@@ -81,6 +85,9 @@ extern "C"
 class AdafruitBluefruit
 {
   public:
+    typedef void (*connect_callback_t   ) (void);
+    typedef void (*disconnect_callback_t) (uint8_t reason);
+
     // Constructor
     AdafruitBluefruit(void);
 
@@ -132,9 +139,6 @@ class AdafruitBluefruit
     /*------------------------------------------------------------------*/
     /* Callbacks
      *------------------------------------------------------------------*/
-    typedef void (*connect_callback_t) (void);
-    typedef void (*disconnect_callback_t) (uint8_t reason);
-
     void setConnectCallback   ( connect_callback_t    fp);
     void setDisconnectCallback( disconnect_callback_t fp);
 
@@ -206,3 +210,5 @@ COMMENT_OUT(
 };
 
 extern AdafruitBluefruit Bluefruit;
+
+#endif
