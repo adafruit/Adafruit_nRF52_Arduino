@@ -252,7 +252,7 @@ void BLECentral::_event_handler(ble_evt_t* evt)
 
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
 
-        if ( _disconnect_cb ) _disconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
+        if ( _disconnect_cb ) _disconnect_cb(evt_conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
 
         startScanning();
       break;
