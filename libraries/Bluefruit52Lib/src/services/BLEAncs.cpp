@@ -95,6 +95,10 @@ bool BLEAncs::begin(void)
   _data.begin();
 
   _notification.setNotifyCallback(bleancs_notification_cb);
+
+  // Data Attribute is likely requested in notification callback
+  // let's call data's callback in the ble task
+  _data.useAdaCallback(false);
   _data.setNotifyCallback(bleancs_data_cb);
 
   return true;
@@ -176,7 +180,7 @@ uint16_t BLEAncs::getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_
   uint8_t cmdlen = 6;
 
   // Title, Subtitle, Message must require 2-byte length
-  if (attr == ANCS_NOTIF_ATTR_TITLE || attr == ANCS_NOTIF_ATTR_SUBTITLE || attr == ANCS_NOTIF_ATTR_MESSAGE)
+  if (attr == ANCS_ATTR_TITLE || attr == ANCS_ATTR_SUBTITLE || attr == ANCS_ATTR_MESSAGE)
   {
     cmdlen = 8;
   }
@@ -202,7 +206,7 @@ void BLEAncs::_handleNotification(uint8_t* data, uint16_t len)
 {
   if ( len != 8  ) return;
 
-  PRINT_BUFFER(data, len);
+//  PRINT_BUFFER(data, len);
 
   if ( _notif_cb ) _notif_cb((ancsNotification_t*) data);
 }
@@ -211,7 +215,7 @@ void BLEAncs::_handleData(uint8_t* data, uint16_t len)
 {
   static uint16_t attr_len = 0;
 
-  PRINT_BUFFER(data, len);
+//  PRINT_BUFFER(data, len);
 
   // Parse Attribute Length
   if ( attr_len == 0 )
@@ -229,7 +233,7 @@ void BLEAncs::_handleData(uint8_t* data, uint16_t len)
     }
   }
 
-  PRINT_INT(attr_len);
+//  PRINT_INT(attr_len);
 
   if ( _evt_bufsize && _evt_buf )
   {
@@ -240,13 +244,13 @@ void BLEAncs::_handleData(uint8_t* data, uint16_t len)
     _evt_buf     += cplen;
     _evt_bufsize -= cplen;
 
-    PRINT_INT(cplen);
+//    PRINT_INT(cplen);
   }
 
   attr_len -= len;
 
-  PRINT_INT(attr_len);
-  PRINT_INT(_evt_bufsize);
+//  PRINT_INT(attr_len);
+//  PRINT_INT(_evt_bufsize);
 
   // all data arrived, signal semaphore
   if (attr_len == 0) xSemaphoreGive(_sem);

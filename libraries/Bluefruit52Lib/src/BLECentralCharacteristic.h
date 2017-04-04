@@ -54,6 +54,7 @@ class BLECentralCharacteristic
     BLECentralCharacteristic(void);
     BLECentralCharacteristic(BLEUuid bleuuid);
 
+    void assign(ble_gattc_char_t* gattc_chr);
     bool discoverDescriptor(uint16_t conn_handle);
     void begin(void);
 
@@ -80,7 +81,8 @@ class BLECentralCharacteristic
     /*------------- Callbacks -------------*/
     void setNotifyCallback(notify_cb_t fp);
 
-    void assign(ble_gattc_char_t* gattc_chr);
+    void useAdaCallback(bool enabled);
+
 
   private:
     ble_gattc_char_t   _chr;
@@ -88,6 +90,7 @@ class BLECentralCharacteristic
 
     BLECentralService* _service;
     notify_cb_t        _notify_cb;
+    bool               _use_AdaCallback; // whether callback is invoked in seperated task with AdaCallback
 
     SemaphoreHandle_t  _sem;
 

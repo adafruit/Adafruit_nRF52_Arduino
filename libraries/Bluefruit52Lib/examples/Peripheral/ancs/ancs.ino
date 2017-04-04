@@ -79,18 +79,27 @@ void loop()
 void ancs_notification_callback(ancsNotification_t* notif)
 {
   int n;
-  Serial.printf("| %-13s | ", EVENT_STR[notif->eventID]);
+  Serial.printf("| %-8s | ", EVENT_STR[notif->eventID]);
   
   // Print Category with padding
   n = Serial.printf("%s (%d)", CAT_STR[notif->categoryID], notif->categoryCount);
   for (int i=n; i<20; i++) Serial.print(' ');
   Serial.print(" | ");
 
-  // Get notification title
-  //memset(buffer, 0, sizeof(buffer));
-  //n = bleancs.getAttribute(notif->uid, ANCS_NOTIF_ATTR_TITLE, buffer, sizeof(buffer));
-  //PRINT_INT(n);
-  //Serial.print(buffer);
+  // Get notification Title
+  memset(buffer, 0, sizeof(buffer));
+  bleancs.getAttribute(notif->uid, ANCS_ATTR_TITLE, buffer, sizeof(buffer));
+  Serial.printf("%-14s | ", buffer);
+
+  // Get notification Message
+  memset(buffer, 0, sizeof(buffer));
+  bleancs.getAttribute(notif->uid, ANCS_ATTR_MESSAGE, buffer, sizeof(buffer));
+  Serial.printf("%-15s | ", buffer);
+
+  // Get App ID
+  memset(buffer, 0, sizeof(buffer));
+  bleancs.getAttribute(notif->uid, ANCS_ATTR_APP_IDENTIFIER, buffer, sizeof(buffer));
+  Serial.printf("%-20s | ", buffer);
 
   Serial.println();
 }
@@ -111,7 +120,7 @@ void connect_callback(void)
       Serial.println("Enable Notification");      
       bleancs.enableNotification();
 
-      Serial.println("| Notification | Category (count)     | Title               | Message               | App ID | App Name |");
+      Serial.println("| Event    | Category (count)     | Title          | Message         | App ID               | App Name      |");
       Serial.println("-------------------------------------------------------------------------------------------------------------");
     }
   }

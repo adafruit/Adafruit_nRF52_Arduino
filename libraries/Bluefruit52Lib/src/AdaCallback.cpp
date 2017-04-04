@@ -47,13 +47,12 @@ void adafruit_callback_task(void* arg)
     ada_callback_t* cb_data;
     if ( xQueueReceive(_cb_queue, (void*) &cb_data, portMAX_DELAY) )
     {
-      PRINT_HEX(cb_data);
-      PRINT_INT(cb_data->callback_type);
-      PRINT_HEX(cb_data->malloced_data);
+//      PRINT_HEX(cb_data);
+//      PRINT_INT(cb_data->callback_type);
+//      PRINT_HEX(cb_data->malloced_data);
 
       void* func = cb_data->callback_func;
       uint32_t* args = cb_data->arguments;
-
 
       switch(cb_data->callback_type)
       {

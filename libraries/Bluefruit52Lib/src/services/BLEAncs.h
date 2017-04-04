@@ -82,14 +82,14 @@ enum
 // Notification Attribute ID
 enum
 {
-  ANCS_NOTIF_ATTR_APP_IDENTIFIER        ,
-  ANCS_NOTIF_ATTR_TITLE                 , // followed bye 2-byte length
-  ANCS_NOTIF_ATTR_SUBTITLE              , // followed bye 2-byte length
-  ANCS_NOTIF_ATTR_MESSAGE               , // followed bye 2-byte length
-  ANCS_NOTIF_ATTR_MESSAGE_SIZE          ,
-  ANCS_NOTIF_ATTR_DATE                  , // UTC#35 yyyyMMdd'T'HHmmSS
-  ANCS_NOTIF_ATTR_POSITIVE_ACTION_LABEL ,
-  ANCS_NOTIF_ATTR_NEGATIVE_ACTION_LABEL
+  ANCS_ATTR_APP_IDENTIFIER        ,
+  ANCS_ATTR_TITLE                 , // followed bye 2-byte length
+  ANCS_ATTR_SUBTITLE              , // followed bye 2-byte length
+  ANCS_ATTR_MESSAGE               , // followed bye 2-byte length
+  ANCS_ATTR_MESSAGE_SIZE          ,
+  ANCS_ATTR_DATE                  , // UTC#35 yyyyMMdd'T'HHmmSS
+  ANCS_ATTR_POSITIVE_ACTION_LABEL ,
+  ANCS_ATTR_NEGATIVE_ACTION_LABEL
 };
 
 // Action ID

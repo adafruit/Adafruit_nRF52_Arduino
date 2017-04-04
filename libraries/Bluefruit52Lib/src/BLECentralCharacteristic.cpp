@@ -45,6 +45,7 @@ void BLECentralCharacteristic::_init(void)
   _cccd_handle = 0;
 
   _notify_cb = NULL;
+  _use_AdaCallback = true;
   _sem       = NULL;
 }
 
@@ -63,6 +64,11 @@ BLECentralCharacteristic::BLECentralCharacteristic(BLEUuid bleuuid)
 void BLECentralCharacteristic::assign(ble_gattc_char_t* gattc_chr)
 {
   _chr = *gattc_chr;
+}
+
+void BLECentralCharacteristic::useAdaCallback(bool enabled)
+{
+  _use_AdaCallback = enabled;
 }
 
 uint16_t BLECentralCharacteristic::valueHandle()
@@ -265,12 +271,18 @@ void BLECentralCharacteristic::_eventHandler(ble_evt_t* evt)
       {
         if (_notify_cb)
         {
-          uint8_t* data = (uint8_t*) rtos_malloc(hvx->len);
-          if (!data) return;
+          // use AdaCallback or invoke directly
+          if (_use_AdaCallback)
+          {
+            uint8_t* data = (uint8_t*) rtos_malloc(hvx->len);
+            if (!data) return;
+            memcpy(data, hvx->data, hvx->len);
 
-          memcpy(data, hvx->data, hvx->len);
-
-          ada_callback(data, _notify_cb, this, data, hvx->len);
+            ada_callback(data, _notify_cb, this, data, hvx->len);
+          }else
+          {
+            _notify_cb(*this, hvx->data, hvx->len);
+          }
         }
       }else
       {
