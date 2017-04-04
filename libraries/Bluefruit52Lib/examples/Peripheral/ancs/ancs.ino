@@ -20,10 +20,10 @@ char buffer[128];
 
 // Check BLEAncs.h for ancsNotification_t
 const char* EVENT_STR[] = { "Added", "Modified", "Removed" };
-const char* CAT_STR  [] = 
-{ 
-  "Other"             , "Incoming Call"       , "Missed Call", "Voice Mail"   , 
-  "Social"            , "Schedule"            , "Email"      , "News"         , 
+const char* CAT_STR  [] =
+{
+  "Other"             , "Incoming Call"       , "Missed Call", "Voice Mail"   ,
+  "Social"            , "Schedule"            , "Email"      , "News"         ,
   "Health and Fitness", "Business and Finance", "Location"   , "Entertainment"
 };
 
@@ -33,7 +33,8 @@ void setup()
   Serial.println("Bluefruit52 BLE ANCS Example");
   Serial.println("----------------------------");
 
-  Serial.println("Go to iOS's Bluetooth settings to connect to Bluefruit");
+  Serial.println("Go to iOS's Bluetooth settings and connect to Bluefruit52");
+  Serial.println("It may appear up as 'Accessory' depending on your OS version.");
 
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
@@ -43,7 +44,7 @@ void setup()
   // Configure and Start Service
   bleancs.begin();
   bleancs.setNotificationCallback(ancs_notification_callback);
-  
+
   // Set up Advertising Packet
   setupAdv();
 
@@ -56,7 +57,7 @@ void setupAdv(void)
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
 
-  // Include ancs 128-bit uuid
+  // Include ANCS 128-bit uuid
   Bluefruit.Advertising.addService(bleancs);
 
   // There is no room for Name in Advertising packet
@@ -66,11 +67,11 @@ void setupAdv(void)
 
 void loop()
 {
-  // not connected, nothing to do
+  // Not connected, wait for a connection
   if ( !Bluefruit.connected() ) return ;
 
-  // Discover service if not yet
- // if ( bleancs.discovered() )
+  // Discover service if not yet discovered
+  //if ( bleancs.discovered() )
   {
 
   }
@@ -107,8 +108,8 @@ void ancs_notification_callback(ancsNotification_t* notif)
   // memset(buffer, 0, sizeof(buffer));
   // n = bleancs.getAppAttribute(app_id, ANCS_APP_ATTR_DISPLAY_NAME, buffer, sizeof(buffer));
   // PRINT_INT(n);
-  // Serial.printf("%-20s | ", buffer);  
-  
+  // Serial.printf("%-20s | ", buffer);
+
   Serial.println();
 
   // Automatically accept incoming call using perform Action
@@ -148,5 +149,5 @@ void disconnect_callback(uint8_t reason)
 
   Serial.println();
   Serial.println("Disconnected");
-  Serial.println("Bluefruit will auto start advertising (default)");
+  Serial.println("Bluefruit will start advertising again");
 }
