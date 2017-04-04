@@ -110,6 +110,13 @@ void ancs_notification_callback(ancsNotification_t* notif)
   // Serial.printf("%-20s | ", buffer);  
   
   Serial.println();
+
+  // Automatically accept incoming call using perform Action
+  if ( notif->categoryID == ANCS_CAT_INCOMING_CALL && notif->eventID == ANCS_EVT_NOTIFICATION_ADDED)
+  {
+    Serial.println("Incoming accepted");
+    bleancs.performAction(notif->uid, ANCS_ACTION_POSITIVE);
+  }
 }
 
 void connect_callback(void)

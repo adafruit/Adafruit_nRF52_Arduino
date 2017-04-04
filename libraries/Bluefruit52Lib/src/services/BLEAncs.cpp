@@ -163,6 +163,20 @@ typedef struct ATTR_PACKED
 
 VERIFY_STATIC( sizeof(get_notif_attr_t) == 8);
 
+typedef struct ATTR_PACKED
+{
+  // Cortex M4 can access unaligned memory
+  uint8_t  cmd;
+  uint32_t uid;
+  uint8_t  actionid;
+}perform_action_t;
+
+VERIFY_STATIC( sizeof(perform_action_t) == 6);
+
+/*------------------------------------------------------------------*/
+/*
+ *------------------------------------------------------------------*/
+
 uint16_t BLEAncs::getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_t bufsize)
 {
   VERIFY ( attr < ANCS_ATTR_INVALID, 0);
@@ -275,6 +289,18 @@ uint16_t BLEAncs::getAppAttribute(const char* appid, uint8_t attr, void* buffer,
   return actual_attrlen;
 
   return 0;
+}
+
+bool BLEAncs::performAction(uint32_t uid, uint8_t actionid)
+{
+  perform_action_t action =
+  {
+      .cmd      = ANCS_CMD_PERFORM_NOTIFICATION_ACTION,
+      .uid      = uid,
+      .actionid = actionid
+  };
+
+  return sizeof(perform_action_t) == _control.write_resp(&action, sizeof(perform_action_t));
 }
 
 void BLEAncs::_handleNotification(uint8_t* data, uint16_t len)
