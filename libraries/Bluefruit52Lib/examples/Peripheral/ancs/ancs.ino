@@ -68,13 +68,12 @@ void setupAdv(void)
 void loop()
 {
   // Not connected, wait for a connection
-  if ( !Bluefruit.connected() ) return ;
+  if ( !Bluefruit.connected() ) return;
 
-  // Discover service if not yet discovered
-  //if ( bleancs.discovered() )
-  {
+  // If service is not yet discovered
+  if ( !bleancs.discovered() ) return;
 
-  }
+  // Your handling code here
 }
 
 void ancs_notification_callback(ancsNotification_t* notif)
@@ -115,7 +114,7 @@ void ancs_notification_callback(ancsNotification_t* notif)
   // Automatically accept incoming call using perform Action
   if ( notif->categoryID == ANCS_CAT_INCOMING_CALL && notif->eventID == ANCS_EVT_NOTIFICATION_ADDED)
   {
-    Serial.println("Incoming accepted");
+    Serial.println("Incoming call accepted");
     bleancs.performAction(notif->uid, ANCS_ACTION_POSITIVE);
   }
 }

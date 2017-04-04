@@ -221,7 +221,7 @@ uint16_t BLEAncs::getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_
   uint16_t actual_attrlen = bufsize - _evt_bufsize - sizeof(get_notif_attr_t);
 
   // Shift out the Command data, left only Attribute data
-  memmove(buffer, buffer+sizeof(get_notif_attr_t), actual_attrlen);
+  memmove(buffer, ((uint8_t*)buffer) +sizeof(get_notif_attr_t), actual_attrlen);
 
   // including null-terminator for some string application
   ((char*) buffer)[actual_attrlen] = 0;
@@ -251,8 +251,7 @@ uint16_t BLEAncs::getAppAttribute(const char* appid, uint8_t attr, void* buffer,
   _evt_bufsize = bufsize;
 
   // Write command using write response
-  uint8_t* appcmd = command;
-  PRINT_BUFFER(appcmd, cmdlen);
+  PRINT_BUFFER(command, cmdlen);
   (void) _control.write_resp(command, cmdlen);
   rtos_free(command);
 
@@ -264,7 +263,7 @@ uint16_t BLEAncs::getAppAttribute(const char* appid, uint8_t attr, void* buffer,
   }
 
   uint16_t attr_len;
-  memcpy(&attr_len, buffer+cmdlen, 2);
+  memcpy(&attr_len, ((uint8_t*)buffer)+cmdlen, 2);
 
   // Phase 2: Get data until all attribute data received
   // Note (bufsize-_evt_bufsize) is number of bytes received so far
@@ -277,7 +276,7 @@ uint16_t BLEAncs::getAppAttribute(const char* appid, uint8_t attr, void* buffer,
   uint16_t actual_attrlen = bufsize - _evt_bufsize - (cmdlen+2);
 
   // Shift out the Command data, left only Attribute data
-  memmove(buffer, buffer+cmdlen+2, actual_attrlen);
+  memmove(buffer, ((uint8_t*)buffer) +cmdlen+2, actual_attrlen);
 
   // including null-terminator for some string application
   ((char*) buffer)[actual_attrlen] = 0;
