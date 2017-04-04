@@ -97,7 +97,6 @@ bool BLEAncs::begin(void)
   _notification.setNotifyCallback(bleancs_notification_cb);
   _data.setNotifyCallback(bleancs_data_cb);
 
-
   return true;
 }
 

@@ -35,6 +35,7 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
+#include "AdaCallback.h"
 
 #define MAX_DESCIRPTORS         8
 
@@ -262,7 +263,15 @@ void BLECentralCharacteristic::_eventHandler(ble_evt_t* evt)
 
       if ( hvx->type == BLE_GATT_HVX_NOTIFICATION )
       {
-        if (_notify_cb) _notify_cb(*this, hvx->data, hvx->len);
+        if (_notify_cb)
+        {
+          uint8_t* data = (uint8_t*) rtos_malloc(hvx->len);
+          if (!data) return;
+
+          memcpy(data, hvx->data, hvx->len);
+
+          ada_callback(data, _notify_cb, this, data, hvx->len);
+        }
       }else
       {
 

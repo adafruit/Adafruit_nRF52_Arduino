@@ -18,6 +18,15 @@ BLEAncs  bleancs;
 
 char buffer[128];
 
+// Check BLEAncs.h for ancsNotification_t
+const char* EVENT_STR[] = { "Added", "Modified", "Removed" };
+const char* CAT_STR  [] = 
+{ 
+  "Other"             , "Incoming Call"       , "Missed Call", "Voice Mail"   , 
+  "Social"            , "Schedule"            , "Email"      , "News"         , 
+  "Health and Fitness", "Business and Finance", "Location"   , "Entertainment"
+};
+
 void setup()
 {
   Serial.begin(115200);
@@ -61,52 +70,27 @@ void loop()
   if ( !Bluefruit.connected() ) return ;
 
   // Discover service if not yet
-  if ( !bleancs.discovered() )
+ // if ( bleancs.discovered() )
   {
-    Serial.print("Discovering ANCS ... ");
-    if ( bleancs.discover( Bluefruit.connHandle() ) )
-    {
-      Serial.println("Found it");
 
-      // ANCS requires pairing to work, it makes sense to request security here as well
-      Serial.println("Attempt to bond/pair with iOS, please press PAIR on your phone");
-      if ( Bluefruit.requestPairing() )
-      {
-        Serial.println("Enable Notification Source's CCCD");      
-        bleancs.enableNotification();
-
-        Serial.println("| Notification | Category (count)     | Title               | Message               | App ID | App Name |");
-        Serial.println("-------------------------------------------------------------------------------------------------------------");
-      }
-    }
   }
 }
 
 void ancs_notification_callback(ancsNotification_t* notif)
 {
   int n;
-  
-  // Check BLEAncs.h for ancsNotification_t
-  const char* event_str[] = { "Added", "Modified", "Removed" };
-  const char* cat_str  [] = 
-  { 
-    "Other"             , "Incoming Call"       , "Missed Call", "Voice Mail"   , 
-    "Social"            , "Schedule"            , "Email"      , "News"         , 
-    "Health and Fitness", "Business and Finance", "Location"   , "Entertainment"
-  };
-
-  Serial.printf("| %-13s | ", event_str[notif->eventID]);
+  Serial.printf("| %-13s | ", EVENT_STR[notif->eventID]);
   
   // Print Category with padding
-  n = Serial.printf("%s (%d)", cat_str[notif->categoryID], notif->categoryCount);
+  n = Serial.printf("%s (%d)", CAT_STR[notif->categoryID], notif->categoryCount);
   for (int i=n; i<20; i++) Serial.print(' ');
   Serial.print(" | ");
 
   // Get notification title
-//  memset(buffer, 0, sizeof(buffer));
-//  n = bleancs.getAttribute(notif->uid, ANCS_NOTIF_ATTR_TITLE, buffer, sizeof(buffer));
-//  PRINT_INT(n);
-//  Serial.print(buffer);
+  //memset(buffer, 0, sizeof(buffer));
+  //n = bleancs.getAttribute(notif->uid, ANCS_NOTIF_ATTR_TITLE, buffer, sizeof(buffer));
+  //PRINT_INT(n);
+  //Serial.print(buffer);
 
   Serial.println();
 }
@@ -114,6 +98,23 @@ void ancs_notification_callback(ancsNotification_t* notif)
 void connect_callback(void)
 {
   Serial.println("Connected");
+
+  Serial.print("Discovering ANCS ... ");
+  if ( bleancs.discover( Bluefruit.connHandle() ) )
+  {
+    Serial.println("Found it");
+
+    // ANCS requires pairing to work, it makes sense to request security here as well
+    Serial.println("Attempt to bond/pair with iOS, please press PAIR on your phone");
+    if ( Bluefruit.requestPairing() )
+    {
+      Serial.println("Enable Notification");      
+      bleancs.enableNotification();
+
+      Serial.println("| Notification | Category (count)     | Title               | Message               | App ID | App Name |");
+      Serial.println("-------------------------------------------------------------------------------------------------------------");
+    }
+  }
 }
 
 void disconnect_callback(uint8_t reason)

@@ -47,19 +47,29 @@ void adafruit_callback_task(void* arg)
     ada_callback_t* cb_data;
     if ( xQueueReceive(_cb_queue, (void*) &cb_data, portMAX_DELAY) )
     {
+      PRINT_HEX(cb_data);
+      PRINT_INT(cb_data->callback_type);
+      PRINT_HEX(cb_data->malloced_data);
+
+      void* func = cb_data->callback_func;
+      uint32_t* args = cb_data->arguments;
+
+
       switch(cb_data->callback_type)
       {
         case AdafruitBluefruit_connect_callback_t:
+          ((AdafruitBluefruit::connect_callback_t) func) ();
         break;
 
         case BLECentral_connect_callback_t:
-        {
-          BLECentral::connect_callback_t func = (BLECentral::connect_callback_t) cb_data->callback_func;
-          func(cb_data->arguments[0]);
-        }
+          ((BLECentral::connect_callback_t) func)( (uint16_t) args[0]);
         break;
 
-        default: VERIFY_MESS(NRF_ERROR_INVALID_PARAM);
+        case BLECentralCharacteristic_notify_cb_t:
+          ((BLECentralCharacteristic::notify_cb_t) func) ( *((BLECentralCharacteristic*) args[0]), (uint8_t*) args[1], (uint16_t) args[2] );
+        break;
+
+        default: VERIFY_MESS(NRF_ERROR_INVALID_PARAM); break;
       }
 
       // free up resource

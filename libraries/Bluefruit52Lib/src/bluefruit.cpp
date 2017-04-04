@@ -493,7 +493,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
             VERIFY_STATUS( sd_ble_gap_conn_param_update(_conn_hdl, NULL), );
           }
 
-          if ( _connect_cb ) _connect_cb();
+          if ( _connect_cb ) ada_callback(NULL, _connect_cb);
         }
       }
       break;

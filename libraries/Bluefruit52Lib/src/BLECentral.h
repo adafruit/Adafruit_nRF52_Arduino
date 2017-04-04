@@ -52,9 +52,9 @@ class AdafruitBluefruit;
 class BLECentral
 {
   public:
+    typedef void (*scan_callback_t       ) (ble_gap_evt_adv_report_t*);
     typedef void (*connect_callback_t    ) (uint16_t conn_handle);
     typedef void (*disconnect_callback_t ) (uint16_t conn_handle, uint8_t reason);
-    typedef void (*scan_callback_t       ) (ble_gap_evt_adv_report_t*);
 
     BLECentral(void); // Constructor
     void begin(void);

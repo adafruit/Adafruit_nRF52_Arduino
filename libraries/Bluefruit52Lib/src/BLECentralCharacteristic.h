@@ -46,6 +46,9 @@ class BLECentralService;
 class BLECentralCharacteristic
 {
   public:
+    typedef void (*notify_cb_t  ) (BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
+    typedef void (*indicate_cb_t) (BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
+
     BLEUuid uuid;
 
     BLECentralCharacteristic(void);
@@ -75,9 +78,6 @@ class BLECentralCharacteristic
 
 
     /*------------- Callbacks -------------*/
-    typedef void (*notify_cb_t  ) (BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
-    typedef void (*indicate_cb_t) (BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
-
     void setNotifyCallback(notify_cb_t fp);
 
     void assign(ble_gattc_char_t* gattc_chr);

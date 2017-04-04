@@ -70,7 +70,7 @@
  * Nth position is the same as the number of arguments
  * - ##__VA_ARGS__ is used to deal with 0 paramerter (swallows comma)
  *------------------------------------------------------------------*/
-#define NARG(...) 	 NARG_(_0, ##__VA_ARGS__,_RSEQ_N())
+#define VA_ARGS_NUM(...) 	 NARG_(_0, ##__VA_ARGS__,_RSEQ_N())
 #define NARG_(...)   _GET_NTH_ARG(__VA_ARGS__)
 #define _GET_NTH_ARG( \
           _1, _2, _3, _4, _5, _6, _7, _8, _9,_10, \

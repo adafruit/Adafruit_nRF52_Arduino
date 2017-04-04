@@ -39,7 +39,7 @@
 #include <Arduino.h>
 #include "bluefruit.h"
 
-#define CFG_CALLBACK_TASK_STACKSIZE     (512*1)
+#define CFG_CALLBACK_TASK_STACKSIZE     (512*2)
 #define CFG_CALLBACK_QUEUE_LENGTH       10
 
 typedef struct
@@ -61,15 +61,23 @@ static_assert(sizeof(ada_callback_t) == 16, "Incorrect Size");
 /* X Macros expansion
  *------------------------------------------------------------------*/
 #define ADA_CB_LOOKUP(XPAND)  \
-    XPAND(AdafruitBluefruit, connect_callback_t) \
-    XPAND(BLECentral, connect_callback_t) \
+    /* Bluefruit  */                                         \
+    XPAND(AdafruitBluefruit        , connect_callback_t    ) \
+    XPAND(AdafruitBluefruit        , disconnect_callback_t ) \
+    /* Central */                                            \
+    XPAND(BLECentral               , scan_callback_t       ) \
+    XPAND(BLECentral               , connect_callback_t    ) \
+    XPAND(BLECentral               , disconnect_callback_t ) \
+    /* Central Characteristic */                             \
+    XPAND(BLECentralCharacteristic , notify_cb_t           ) \
+    /*XPAND(BLECentralCharacteristic , indicate_cb_t         )*/ \
 
-
-#define ADA_CB_ENUM_XPAND(_class, _cbname)      _class##_##_cbname,\
+#define ADA_CB_ENUM_XPAND(_class, _cbname) \
+    _class##_##_cbname,
 
 
 #define ADA_CB_FUNC_XPAND(_class, _cbname) \
-    static inline uint8_t ada_callback_type(_class::_cbname _func) { return _class##_##_cbname; }
+    static inline uint8_t ada_callback_type(_class::_cbname _func) { (void) _func; return _class##_##_cbname; }
 
 enum
 {
@@ -98,15 +106,15 @@ ADA_CB_LOOKUP(ADA_CB_FUNC_XPAND)
  */
 #define ada_callback(_malloced, _func , ... ) \
     do { \
-      uint8_t const count = NARG(__VA_ARGS__);\
-      ada_callback_t* cb_data = (ada_callback_t*) rtos_malloc( sizeof(ada_callback_t) + (count ? (count-1)*4 : 0) ); \
+      uint8_t const _count = VA_ARGS_NUM(__VA_ARGS__);\
+      ada_callback_t* cb_data = (ada_callback_t*) rtos_malloc( sizeof(ada_callback_t) + (_count ? (_count-1)*4 : 0) ); \
       cb_data->malloced_data = _malloced;\
       cb_data->callback_func = (void*)_func;\
       cb_data->callback_type = ada_callback_type(_func);\
-      cb_data->arg_count = count;\
-      if ( count ) {\
+      cb_data->arg_count = _count;\
+      if ( _count ) {\
         uint32_t arguments[] = { _ADA_CB_ARGS(__VA_ARGS__) };\
-        memcpy(cb_data->arguments, arguments, 4*count);\
+        memcpy(cb_data->arguments, arguments, 4*_count);\
       }\
       ada_callback_queue(cb_data);\
     }while(0)
