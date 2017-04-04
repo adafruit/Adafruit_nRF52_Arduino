@@ -29,6 +29,8 @@ Uart::Uart(NRF_UART_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pi
   uc_pinTX = g_ADigitalPinMap[_pinTX];
   uc_hwFlow = 0;
 
+  _mutex = NULL;
+
   _begun = false;
 }
 
@@ -41,6 +43,8 @@ Uart::Uart(NRF_UART_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pi
   uc_pinCTS = g_ADigitalPinMap[_pinCTS];
   uc_pinRTS = g_ADigitalPinMap[_pinRTS];
   uc_hwFlow = 1;
+
+  _mutex = NULL;
 
   _begun = false;
 }
@@ -152,6 +156,8 @@ void Uart::begin(unsigned long baudrate, uint16_t /*config*/)
   NVIC_SetPriority(IRQn, 3);
   NVIC_EnableIRQ(IRQn);
 
+  _mutex = xSemaphoreCreateMutex();
+
   _begun = true;
 }
 
@@ -206,11 +212,15 @@ int Uart::read()
 
 size_t Uart::write(const uint8_t data)
 {
+  xSemaphoreTake(_mutex, portMAX_DELAY);
+
   nrfUart->TXD = data;
 
   while(!nrfUart->EVENTS_TXDRDY);
 
   nrfUart->EVENTS_TXDRDY = 0x0UL;
+
+  xSemaphoreGive(_mutex);
 
   return 1;
 }

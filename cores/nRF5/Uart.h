@@ -23,6 +23,7 @@
 
 #include "HardwareSerial.h"
 #include "RingBuffer.h"
+#include "rtos.h"
 
 #include <cstddef>
 
@@ -58,6 +59,9 @@ class Uart : public HardwareSerial
     uint8_t uc_hwFlow;
 
     bool _begun;
+
+    // Adafruit
+    SemaphoreHandle_t _mutex;
 };
 
 #ifdef __cplusplus
