@@ -89,7 +89,9 @@ enum
   ANCS_ATTR_MESSAGE_SIZE          ,
   ANCS_ATTR_DATE                  , // UTC#35 yyyyMMdd'T'HHmmSS
   ANCS_ATTR_POSITIVE_ACTION_LABEL ,
-  ANCS_ATTR_NEGATIVE_ACTION_LABEL
+  ANCS_ATTR_NEGATIVE_ACTION_LABEL ,
+
+  ANCS_ATTR_INVALID
 };
 
 // Action ID
@@ -102,7 +104,9 @@ enum
 // Application Attribute ID
 enum
 {
-  ANCS_APP_ATTR_DISPLAY_NAME
+  ANCS_APP_ATTR_DISPLAY_NAME,
+
+  ANCS_APP_ATTR_INVALID
 };
 
 typedef struct
@@ -140,6 +144,7 @@ class BLEAncs : public BLECentralService
     bool disableNotification(void);
 
     uint16_t getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_t bufsize);
+    uint16_t getAppAttribute(const char* appid, uint8_t attr, void* buffer, uint16_t bufsize);
 
   protected:
     virtual void  disconnect(void);

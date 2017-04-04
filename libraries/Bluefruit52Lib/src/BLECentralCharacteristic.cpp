@@ -158,7 +158,12 @@ uint16_t BLECentralCharacteristic::write_resp(const void* data, int len)
         .p_value  = (uint8_t* ) u8data
     };
 
-    if ( ERROR_NONE != sd_ble_gattc_write(conn_handle, &param) ) break;
+    uint32_t status = sd_ble_gattc_write(conn_handle, &param);
+    if ( ERROR_NONE != status )
+    {
+      VERIFY_MESS(status);
+      break;
+    }
 
     if ( !xSemaphoreTake(_sem, ms2tick(BLE_GENERIC_TIMEOUT) ) ) break;
 
@@ -298,7 +303,7 @@ void BLECentralCharacteristic::_eventHandler(ble_evt_t* evt)
       if (wr_rsp->write_op == BLE_GATT_OP_WRITE_REQ &&_sem)
       {
         // TODO check evt->evt.gattc_evt.gatt_status
-        xSemaphoreGive(_sem);
+        if (_sem) xSemaphoreGive(_sem);
       }
     }
     break;

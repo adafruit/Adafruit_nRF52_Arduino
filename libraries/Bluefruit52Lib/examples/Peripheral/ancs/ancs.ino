@@ -80,7 +80,7 @@ void ancs_notification_callback(ancsNotification_t* notif)
 {
   int n;
   Serial.printf("| %-8s | ", EVENT_STR[notif->eventID]);
-  
+
   // Print Category with padding
   n = Serial.printf("%s (%d)", CAT_STR[notif->categoryID], notif->categoryCount);
   for (int i=n; i<20; i++) Serial.print(' ');
@@ -96,11 +96,19 @@ void ancs_notification_callback(ancsNotification_t* notif)
   bleancs.getAttribute(notif->uid, ANCS_ATTR_MESSAGE, buffer, sizeof(buffer));
   Serial.printf("%-15s | ", buffer);
 
-  // Get App ID
+  // Get App ID and store to app_id
+  char app_id[64] = { 0 };
   memset(buffer, 0, sizeof(buffer));
   bleancs.getAttribute(notif->uid, ANCS_ATTR_APP_IDENTIFIER, buffer, sizeof(buffer));
-  Serial.printf("%-20s | ", buffer);
+  strcpy(app_id, buffer);
+  Serial.printf("%-20s | ", app_id);
 
+  // Get Application Name ( not work yet)
+  // memset(buffer, 0, sizeof(buffer));
+  // n = bleancs.getAppAttribute(app_id, ANCS_APP_ATTR_DISPLAY_NAME, buffer, sizeof(buffer));
+  // PRINT_INT(n);
+  // Serial.printf("%-20s | ", buffer);  
+  
   Serial.println();
 }
 
@@ -117,7 +125,8 @@ void connect_callback(void)
     Serial.println("Attempt to bond/pair with iOS, please press PAIR on your phone");
     if ( Bluefruit.requestPairing() )
     {
-      Serial.println("Enable Notification");      
+      Serial.println("Enable Notification");
+      Serial.println();
       bleancs.enableNotification();
 
       Serial.println("| Event    | Category (count)     | Title          | Message         | App ID               | App Name      |");
