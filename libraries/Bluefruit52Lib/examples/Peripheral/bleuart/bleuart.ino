@@ -87,7 +87,7 @@ void loop()
   }
 
   // forward from Serial to BLEUART
-  if (Serial.available())
+  while (Serial.available())
   {
     // delay to get enough inputs, since we have limited number of transmission buffer
     delay(2);
@@ -98,12 +98,14 @@ void loop()
   }
 
   // forward from BLEUART to Serial
-  if ( bleuart.available() )
+  while ( bleuart.available() )
   {
     uint8_t ch;
     ch = (uint8_t) bleuart.read();
     Serial.write(ch);
   }
+
+  sleep();
 }
 
 void connect_callback(void)

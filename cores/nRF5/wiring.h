@@ -24,6 +24,11 @@ extern "C" {
 
 extern void init(void);
 
+static inline void sleep(void)
+{
+  __WFE();
+}
+
 extern void enterSerialDfu(void);
 extern void enterOTADfu(void);
 
