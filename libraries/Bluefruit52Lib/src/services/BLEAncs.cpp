@@ -305,7 +305,7 @@ bool BLEAncs::performAction(uint32_t uid, uint8_t actionid)
 void BLEAncs::_handleNotification(uint8_t* data, uint16_t len)
 {
   if ( len != 8  ) return;
-  if ( _notif_cb ) _notif_cb((ancsNotification_t*) data);
+  if ( _notif_cb ) _notif_cb((AncsNotification_t*) data);
 }
 
 void BLEAncs::_handleData(uint8_t* data, uint16_t len)

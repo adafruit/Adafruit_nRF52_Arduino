@@ -125,14 +125,14 @@ typedef struct
   uint8_t  categoryID;
   uint8_t  categoryCount;
   uint32_t uid;
-} ancsNotification_t;
+} AncsNotification_t;
 
-VERIFY_STATIC( sizeof(ancsNotification_t) == 8);
+VERIFY_STATIC( sizeof(AncsNotification_t) == 8);
 
 class BLEAncs : public BLECentralService
 {
   public:
-    typedef void (*notification_callback_t) (ancsNotification_t* notif);
+    typedef void (*notification_callback_t) (AncsNotification_t* notif);
 
     BLEAncs(void);
 

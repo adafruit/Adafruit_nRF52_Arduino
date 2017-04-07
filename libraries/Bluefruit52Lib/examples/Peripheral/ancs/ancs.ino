@@ -18,7 +18,7 @@ BLEAncs  bleancs;
 
 char buffer[128];
 
-// Check BLEAncs.h for ancsNotification_t
+// Check BLEAncs.h for AncsNotification_t
 const char* EVENT_STR[] = { "Added", "Modified", "Removed" };
 const char* CAT_STR  [] =
 {
@@ -76,7 +76,7 @@ void loop()
   // Your handling code here
 }
 
-void ancs_notification_callback(ancsNotification_t* notif)
+void ancs_notification_callback(AncsNotification_t* notif)
 {
   int n;
   Serial.printf("| %-8s | ", EVENT_STR[notif->eventID]);
