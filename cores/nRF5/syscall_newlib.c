@@ -38,33 +38,22 @@
 #include <sys/stat.h>
 #include <malloc.h>
 
-// defined in linker script
-extern unsigned char __HeapBase[];
-extern unsigned char __HeapLimit[];
+#include "Arduino.h"
 
-static unsigned char *sbrk_heap_top = __HeapBase;
+// linker provide end symbol is enough for nanolib's sbrk()
 
-//volatile uint32_t first_sbrk = 0;
-//volatile uint32_t last_sbrk = 0;
-
-caddr_t _sbrk( int incr )
+#if 0
+void __malloc_lock(struct _reent *ptr)
 {
-  unsigned char *prev_heap;
-
-  if ( sbrk_heap_top + incr > __HeapLimit )
-  {
-    /* Out of dynamic memory heap space */
-    errno = ENOMEM;
-    return (caddr_t) -1;
-  }
-
-  prev_heap = sbrk_heap_top;
-
-//  if ( !first_sbrk) first_sbrk = sbrk_heap_top;
-//  last_sbrk = sbrk_heap_top;
-
-  sbrk_heap_top += incr;
-
-  return (caddr_t) prev_heap;
+  (void) ptr;
+  ledOn(LED_RED);
 }
+
+void __malloc_unlock(struct _reent *ptr)
+{
+  (void) ptr;
+
+  ledOn(LED_BLUE);
+}
+#endif
 
