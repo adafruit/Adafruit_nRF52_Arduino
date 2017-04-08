@@ -212,8 +212,8 @@ uint16_t BLEAncs::getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_
 
   // wait until all data received
   // Note (bufsize-_evt_bufsize) is number of bytes received so far
-  while ( ((attr_len + sizeof(get_notif_attr_t))  > (bufsize-_evt_bufsize))
-          && (_evt_bufsize > 0) )
+  while ( ( (attr_len + sizeof(get_notif_attr_t))  > ((uint16_t) (bufsize-_evt_bufsize)) ) &&
+          ( _evt_bufsize > 0 ) )
   {
     if ( !xSemaphoreTake(_sem, ms2tick(BLE_ANCS_TIMEOUT)) ) break;
   }
