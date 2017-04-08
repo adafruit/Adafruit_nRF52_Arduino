@@ -225,7 +225,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   return ERROR_NONE;
 }
 
-err_t AdafruitBluefruit::setConnInterval(uint16_t min, uint16_t max)
+bool AdafruitBluefruit::setConnInterval(uint16_t min, uint16_t max)
 {
   _ppcp_min_conn = min;
   _ppcp_max_conn = max;
@@ -238,10 +238,12 @@ err_t AdafruitBluefruit::setConnInterval(uint16_t min, uint16_t max)
       .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
   };
 
-  return sd_ble_gap_ppcp_set(&gap_conn_params);
+  VERIFY_STATUS( sd_ble_gap_ppcp_set(&gap_conn_params), false);
+
+  return true;
 }
 
-err_t AdafruitBluefruit::setConnIntervalMS(uint16_t min_ms, uint16_t max_ms)
+bool AdafruitBluefruit::setConnIntervalMS(uint16_t min_ms, uint16_t max_ms)
 {
   return setConnInterval( MS100TO125(min_ms), MS100TO125(max_ms) );
 }

@@ -9,10 +9,18 @@
 AdafruitBluefruit	KEYWORD1
 BLECentral	KEYWORD1
 BLEService	KEYWORD1
-BLECharacteristic	KEYWORD1
-BLEUuid	KEYWORD1
-BLEAdvertising	KEYWORD1
 
+BLECharacteristic	KEYWORD1
+BLECentralService	KEYWORD1
+BLECentralCharacteristic	KEYWORD1
+
+BLEUuid	KEYWORD1
+BLEGap	KEYWORD1
+BLEGatt	KEYWORD1
+BLEAdvertising	KEYWORD1
+BLEDiscovery	KEYWORD1
+
+# Gatt Server 
 BLEBas	KEYWORD1
 BLEBeacon	KEYWORD1
 BLEDfu	KEYWORD1
@@ -21,6 +29,10 @@ BLEHidGeneric	KEYWORD1
 BLEHidAdafruit	KEYWORD1
 BLEMidi	KEYWORD1
 BLEUart	KEYWORD1
+
+# Gatt Client
+BLECentralUart	KEYWORD1
+BLEAncs	KEYWORD1
 
 #######################################
 # AdafruitBluefruit Methods (KEYWORD2)
@@ -42,6 +54,7 @@ setConnIntervalMS	KEYWORD2
 connHandle	KEYWORD2
 connPaired	KEYWORD2
 connInterval	KEYWORD2
+requestPairing	KEYWORD2
 clearBonds	KEYWORD2
 
 peerAddr	KEYWORD2

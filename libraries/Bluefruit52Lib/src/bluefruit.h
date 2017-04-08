@@ -119,8 +119,8 @@ class AdafruitBluefruit
     bool     connected         (void);
     void     disconnect        (void);
 
-    err_t    setConnInterval   (uint16_t min, uint16_t max);
-    err_t    setConnIntervalMS (uint16_t min_ms, uint16_t max_ms);
+    bool     setConnInterval   (uint16_t min, uint16_t max);
+    bool     setConnIntervalMS (uint16_t min_ms, uint16_t max_ms);
 
     uint16_t connHandle        (void);
     bool     connPaired        (void);
