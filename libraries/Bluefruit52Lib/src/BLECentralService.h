@@ -42,7 +42,6 @@
 class BLECentralService
 {
   protected:
-    bool     _discovered;
     uint16_t _conn_hdl;
 
     void  _init(void);

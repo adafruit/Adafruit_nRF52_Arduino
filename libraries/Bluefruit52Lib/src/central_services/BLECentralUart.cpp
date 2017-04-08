@@ -78,14 +78,13 @@ bool BLECentralUart::discover(uint16_t conn_handle)
 {
   // Call BLECentralService discover
   VERIFY( BLECentralService::discover(conn_handle) );
-  _discovered = false;
+  _conn_hdl = BLE_CONN_HANDLE_INVALID; // make as invalid until we found all chars
 
   // Discover TXD, RXD characteristics
   BLECentralCharacteristic* chr_arr[] = { &_rxd, &_txd };
   VERIFY( 2 == Bluefruit.Discovery.discoverCharacteristic(conn_handle, chr_arr, 2) );
 
-  _discovered = true;
-
+  _conn_hdl = conn_handle;
   return true;
 }
 

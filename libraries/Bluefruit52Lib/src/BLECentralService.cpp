@@ -41,7 +41,6 @@ BLECentralService* BLECentralService::lastService = NULL;
 
 void BLECentralService::_init(void)
 {
-  _discovered = false;
   _conn_hdl   = BLE_CONN_HANDLE_INVALID;
 }
 
@@ -71,15 +70,14 @@ bool BLECentralService::begin(void)
 
 bool BLECentralService::discover(uint16_t conn_handle)
 {
-  _conn_hdl = conn_handle;
   VERIFY( Bluefruit.Discovery._discoverService(conn_handle, *this) );
-  _discovered = true;
+  _conn_hdl = conn_handle;
   return true;
 }
 
 bool BLECentralService::discovered(void)
 {
-  return _discovered;
+  return _conn_hdl != BLE_CONN_HANDLE_INVALID;
 }
 
 uint16_t BLECentralService::connHandle(void)
@@ -89,7 +87,6 @@ uint16_t BLECentralService::connHandle(void)
 
 void BLECentralService::disconnect(void)
 {
-  _discovered = false;
   _conn_hdl   = BLE_CONN_HANDLE_INVALID;
   // inherited service may want to clean up its own characteristic
 }
