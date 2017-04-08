@@ -77,12 +77,9 @@ class BLECentralCharacteristic
     bool enableIndicate  (void);
     bool disableIndicate (void);
 
-
     /*------------- Callbacks -------------*/
     void setNotifyCallback(notify_cb_t fp);
-
     void useAdaCallback(bool enabled);
-
 
   private:
     ble_gattc_char_t   _chr;

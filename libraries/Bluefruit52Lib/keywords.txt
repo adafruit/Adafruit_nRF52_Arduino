@@ -34,6 +34,8 @@ BLEUart	KEYWORD1
 BLECentralUart	KEYWORD1
 BLEAncs	KEYWORD1
 
+AncsNotification_t	KEYWORD3
+
 #######################################
 # AdafruitBluefruit Methods (KEYWORD2)
 #######################################
@@ -76,9 +78,22 @@ checkUuidInScan	KEYWORD2
 
 connect	KEYWORD2
 connected	KEYWORD2
+connHandle	KEYWORD2
 
 setConnectCallback	KEYWORD2
 setDisconnectCallback	KEYWORD2
+
+#######################################
+# BLEGap Methods (KEYWORD2)
+#######################################
+
+getTxPacket	KEYWORD2
+
+#######################################
+# BLEGatt Methods (KEYWORD2)
+#######################################
+
+# no public API yet
 
 #######################################
 # BLEService Methods (KEYWORD2)
@@ -111,6 +126,36 @@ notifyEnabled	KEYWORD2
 notify	KEYWORD2
 
 #######################################
+# BLECentralService Methods (KEYWORD2)
+#######################################
+
+discover	KEYWORD2
+discovered	KEYWORD2
+connHandle	KEYWORD2
+
+#######################################
+# BLECentralCharacteristic Methods (KEYWORD2)
+#######################################
+
+parentService	KEYWORD2
+assign	KEYWORD2
+discoverDescriptor	KEYWORD2
+valueHandle	KEYWORD2
+
+read	KEYWORD2
+write	KEYWORD2
+write_resp	KEYWORD2
+
+writeCCCD	KEYWORD2
+enableNotify	KEYWORD2
+disableNotify	KEYWORD2
+enableIndicate	KEYWORD2
+disableIndicate	KEYWORD2
+
+setNotifyCallback	KEYWORD2
+useAdaCallback	KEYWORD2
+
+#######################################
 # BLEAdvertising Methods (KEYWORD2)
 #######################################
 
@@ -131,19 +176,48 @@ setData	KEYWORD2
 clearData	KEYWORD2
 
 #######################################
+# BLEDiscovery Methods (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+begun	KEYWORD2
+discoverCharacteristic	KEYWORD2
+
+#######################################
 # BLEUuid Methods (KEYWORD2)
 #######################################
 set	KEYWORD2
+get	KEYWORD2
+size	KEYWORD2
+
+
+
+
+
+
+#######################################
+# BLEAncs Methods (KEYWORD2)
+#######################################
+
+setNotificationCallback	KEYWORD2
+enableNotification	KEYWORD2
+disableNotification	KEYWORD2
+
+getAttribute	KEYWORD2
+getAppAttribute	KEYWORD2
+performAction	KEYWORD2
 
 #######################################
 # BLEBas Methods (KEYWORD2)
 #######################################
-update	KEYWORD2
+
+write	KEYWORD2
 notify	KEYWORD2
 
 #######################################
 # BLEBeacon Methods (KEYWORD2)
 #######################################
+
 setManufacturer	KEYWORD2
 setUuid	KEYWORD2
 setMajorMinor	KEYWORD2
@@ -152,6 +226,7 @@ setRssiAt1m	KEYWORD2
 #######################################
 # BLEDis Methods (KEYWORD2)
 #######################################
+
 setModel	KEYWORD2
 setHardwareRev	KEYWORD2
 setSoftwareRev	KEYWORD2
@@ -160,6 +235,7 @@ setManufacturer	KEYWORD2
 #######################################
 # BLEHidGeneric Methods (KEYWORD2)
 #######################################
+
 enableBootProtocol	KEYWORD2
 setHidInfo	KEYWORD2
 setReportLen	KEYWORD2
@@ -170,6 +246,7 @@ inputReport	KEYWORD2
 #######################################
 # BLEHidAdafruit Methods (KEYWORD2)
 #######################################
+
 keyboardReport	KEYWORD2
 keyPress	KEYWORD2
 keyRelease	KEYWORD2
@@ -189,15 +266,41 @@ mousePan	KEYWORD2
 #######################################
 # BLEMidi Methods (KEYWORD2)
 #######################################
+
 send	KEYWORD2
-autoMIDIread	KEYWORD2
+sendSplit	KEYWORD2
+
 notifyEnabled	KEYWORD2
+
+isStatusByte	KEYWORD2
+oneByteMessage	KEYWORD2
+twoByteMessage	KEYWORD2
+threeByteMessage	KEYWORD2
+setWriteCallback	KEYWORD2
+autoMIDIread	KEYWORD2
 
 #######################################
 # BLEUart Methods (KEYWORD2)
 #######################################
+
 setRxCallback	KEYWORD2
 notifyEnabled	KEYWORD2
+
+#######################################
+# BLECentralUart Methods (KEYWORD2)
+#######################################
+
+setRxCallback	KEYWORD2
+enableTXD	KEYWORD2
+disableTXD	KEYWORD2
+
+
+
+
+
+
+
+
 
 #######################################
 # Constants (LITERAL1)
@@ -210,8 +313,9 @@ LED_CONN	LITERAL1
 
 
 #######################################
-# Constants (LITERAL1)
+# Characteristic Constants (LITERAL1)
 #######################################
+
 CHR_PROPS_BROADCAST	LITERAL1
 CHR_PROPS_READ	LITERAL1
 CHR_PROPS_WRITE_WO_RESP	LITERAL1
@@ -225,6 +329,47 @@ SECMODE_ENC_NO_MITM	LITERAL1
 SECMODE_ENC_WITH_MITM	LITERAL1
 SECMODE_SIGNED_NO_MITM	LITERAL1
 SECMODE_SIGNED_WITH_MITM	LITERAL1
+
+#######################################
+# ANCS Constants
+#######################################
+
+ANCS_CAT_OTHER	LITERAL1
+ANCS_CAT_INCOMING_CALL	LITERAL1
+ANCS_CAT_MISSED_CALL	LITERAL1
+ANCS_CAT_VOICE_MAIL	LITERAL1
+ANCS_CAT_SOCIAL	LITERAL1
+ANCS_CAT_SCHEDULE	LITERAL1
+ANCS_CAT_EMAIL	LITERAL1
+ANCS_CAT_NEWS	LITERAL1
+ANCS_CAT_HEALTH_AND_FITNESS	LITERAL1
+ANCS_CAT_BUSSINESS_AND_FINANCE	LITERAL1
+ANCS_CAT_LOCATION	LITERAL1
+ANCS_CAT_ENTERTAINMENT	LITERAL1
+ANCS_EVT_NOTIFICATION_ADDED	LITERAL1
+ANCS_EVT_NOTIFICATION_MODIFIED	LITERAL1
+ANCS_EVT_NOTIFICATION_REMOVED	LITERAL1
+ANCS_CMD_GET_NOTIFICATION_ATTR	LITERAL1
+ANCS_CMD_GET_APP_ATTR	LITERAL1
+ANCS_CMD_PERFORM_NOTIFICATION_ACTION	LITERAL1
+ANCS_ATTR_APP_IDENTIFIER	LITERAL1
+ANCS_ATTR_TITLE	LITERAL1
+ANCS_ATTR_SUBTITLE	LITERAL1
+ANCS_ATTR_MESSAGE	LITERAL1
+ANCS_ATTR_MESSAGE_SIZE	LITERAL1
+ANCS_ATTR_DATE	LITERAL1
+ANCS_ATTR_POSITIVE_ACTION_LABEL	LITERAL1
+ANCS_ATTR_NEGATIVE_ACTION_LABEL	LITERAL1
+ANCS_ACTION_POSITIVE	LITERAL1
+ANCS_ACTION_NEGATIVE	LITERAL1
+ANCS_APP_ATTR_DISPLAY_NAME	LITERAL1
+
+#######################################
+# UUID128 Serivce Constants
+#######################################
+
+BLEUART_UUID_SERVICE	LITERAL1
+BLEANCS_UUID_SERVICE	LITERAL1
 
 #######################################
 # UUID16 Serivce Constants
@@ -342,5 +487,6 @@ UUID16_CGM_SPECIFIC_OPS_CTRLPT	LITERAL1
 UUID16_PLX_SPOT_CHECK_MEAS	LITERAL1
 UUID16_PLX_CONTINUOUS_MEAS	LITERAL1
 UUID16_PLX_FEATURES	LITERAL1
+
 
 
