@@ -107,7 +107,7 @@ void loop()
 
   // Equavilent to __WFE (Wait For Event) instruction.
   // It is a hint to allow CPU to enter low-power state until an event occured
-  sleep();
+  waitForEvent();
 }
 
 void connect_callback(void)
