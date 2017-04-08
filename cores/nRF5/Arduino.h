@@ -110,6 +110,9 @@ uint32_t setLoopStacksize(void);
 #define portModeRegister(port)     ( &(NRF_GPIO->DIRSET) )
 #define digitalPinHasPWM(P)        ( true )
 
+// Hint instruction to tell CPU go to low power mode
+#define waitForEvent() __WFE()
+
 /*
  * digitalPinToTimer(..) is AVR-specific and is not defined for nRF52
  * architecture. If you need to check if a pin supports PWM you must

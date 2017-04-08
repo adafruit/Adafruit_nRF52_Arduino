@@ -24,8 +24,6 @@ extern "C" {
 
 extern void init(void);
 
-#define waitForEvent() __WFE()
-
 extern void enterSerialDfu(void);
 extern void enterOTADfu(void);
 
