@@ -82,18 +82,15 @@ bool SchedulerRTOS::startLoop(taskfunc_t task, const char* name, uint32_t stack_
   return pdPASS == xTaskCreate( _redirect_task, name, stack_size, (void*) task, TASK_PRIO_NORMAL, &handle);
 }
 
-
 extern "C"
 {
 
 void vApplicationIdleHook( void )
 {
-  // Enter low-power mode will turn of hardware PWM
-  // Only go there if no PWM device is active.
-  if ( !(PWM0.begun() ||  PWM1.begun() || PWM2.begun() ) )
-  {
-    waitForEvent();
-  }
+  // Internal background task
+
+  // Weak symbol do nothing if is not implementation
+  rtos_idle_callback();
 }
 
 }

@@ -3,7 +3,8 @@
 ### Core
 
 - Add HardwarePWM class to support up to 12 channels and compatible with Neopixel library
-- Enable FreeRTOS's Idle hook to call waitForEvent()
+- Add waitForEvent() as alias to __WFE() instruction
+- Enable FreeRTOS's Idle hook, add rtos_idle_callback() as optional callback for user
 - Add mutex to prevent uart conflict
 
 #### New Example
@@ -25,7 +26,7 @@
   - change BLECentral startScanning()/stopScanning()/connect() return type from `err_t` to `bool`
   - change BLECharacteristic notify() return type from `err_t` to `bool`
   - change BLEHid report function return type from `err_t` to `bool`
-  - change BLEMid send/sendSplit 
+  - change BLEMid send/sendSplit return type from `err_t` to `bool`
 - New BLE Serivce
   - Apple Notification Center Service (ANCS)
   - Central BLE UART
