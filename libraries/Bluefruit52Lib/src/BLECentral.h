@@ -63,8 +63,8 @@ class BLECentral
     /* Scan & Parser
      *------------------------------------------------------------------*/
     void     setScanCallback(scan_callback_t fp);
-    err_t    startScanning(uint16_t timeout = 0);
-    err_t    stopScanning(void);
+    bool     startScanning(uint16_t timeout = 0);
+    bool     stopScanning(void);
 
     uint8_t* extractScanData(uint8_t const* scandata, uint8_t scanlen, uint8_t type, uint8_t* result_len);
     uint8_t* extractScanData(const ble_gap_evt_adv_report_t* report, uint8_t type, uint8_t* result_len);
@@ -73,11 +73,11 @@ class BLECentral
     /*------------------------------------------------------------------*/
     /*
      *------------------------------------------------------------------*/
-    err_t    connect(const ble_gap_evt_adv_report_t* adv_report,
+    bool     connect(const ble_gap_evt_adv_report_t* adv_report,
                      uint16_t min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT,
                      uint16_t max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT);
 
-    err_t    connect(const ble_gap_addr_t *peer_addr,
+    bool     connect(const ble_gap_addr_t *peer_addr,
                      uint16_t min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT,
                      uint16_t max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT);
 

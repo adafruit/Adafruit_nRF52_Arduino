@@ -120,6 +120,7 @@ void BLECentralCharacteristic::begin(void)
  *------------------------------------------------------------------*/
 uint16_t BLECentralCharacteristic::read(void* buffer, int bufsize)
 {
+  // TODO implement READ
 //  VERIFY_STATUS( sd_ble_gattc_read(Bluefruit.Central.connHandle(), _chr.handle_value, offset), 0 );
 
 //  return ERROR_NONE;

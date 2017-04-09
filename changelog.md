@@ -19,9 +19,10 @@
   -  Add BLEDiscovery
 - Add BLEGap and BLEGatt to manage peripheral & central with Gatt client and server support
 - BLE API changes
-  - change setConnInterval()/setConnIntervalMS() return type from `err_t` to `bool`
   - connPaired(), requestPairing()
   - rename BLEBas .update() to .write()
+  - change Bluefruit setConnInterval()/setConnIntervalMS() return type from `err_t` to `bool`
+  - change BLECentral startScanning()/stopScanning()/connect() return type from `err_t` to `bool`
 - New BLE Serivce
   - Apple Notification Center Service (ANCS)
   - Central BLE UART

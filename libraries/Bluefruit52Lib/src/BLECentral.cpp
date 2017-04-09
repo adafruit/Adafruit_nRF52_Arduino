@@ -73,18 +73,19 @@ void BLECentral::setScanCallback(scan_callback_t fp)
   _scan_cb = fp;
 }
 
-err_t BLECentral::startScanning(uint16_t timeout)
+bool BLECentral::startScanning(uint16_t timeout)
 {
   _scan_param.timeout = timeout;
-  VERIFY_STATUS( sd_ble_gap_scan_start(&_scan_param) );
+  VERIFY_STATUS( sd_ble_gap_scan_start(&_scan_param), false );
   Bluefruit.startConnLed(); // start blinking
   return ERROR_NONE;
 }
 
-err_t BLECentral::stopScanning(void)
+bool BLECentral::stopScanning(void)
 {
   Bluefruit.stopConnLed(); // stop blinking
-  return sd_ble_gap_scan_stop();
+  VERIFY_STATUS( sd_ble_gap_scan_stop(), false );
+  return true;
 }
 
 uint8_t* BLECentral::extractScanData(uint8_t const* scandata, uint8_t scanlen, uint8_t type, uint8_t* result_len)
@@ -163,7 +164,7 @@ bool BLECentral::checkUuidInScan(const ble_gap_evt_adv_report_t* report, BLEUuid
 /*------------------------------------------------------------------*/
 /*
  *------------------------------------------------------------------*/
-err_t BLECentral::connect(const ble_gap_addr_t* peer_addr, uint16_t min_conn_interval, uint16_t max_conn_interval)
+bool BLECentral::connect(const ble_gap_addr_t* peer_addr, uint16_t min_conn_interval, uint16_t max_conn_interval)
 {
   ble_gap_conn_params_t gap_conn_params =
   {
@@ -173,10 +174,11 @@ err_t BLECentral::connect(const ble_gap_addr_t* peer_addr, uint16_t min_conn_int
       .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
   };
 
-  return sd_ble_gap_connect(peer_addr, &_scan_param, &gap_conn_params);
+  VERIFY_STATUS( sd_ble_gap_connect(peer_addr, &_scan_param, &gap_conn_params), false );
+  return true;
 }
 
-err_t BLECentral::connect(const ble_gap_evt_adv_report_t* adv_report, uint16_t min_conn_interval, uint16_t max_conn_interval)
+bool BLECentral::connect(const ble_gap_evt_adv_report_t* adv_report, uint16_t min_conn_interval, uint16_t max_conn_interval)
 {
   return connect(&adv_report->peer_addr, min_conn_interval, max_conn_interval);
 }
