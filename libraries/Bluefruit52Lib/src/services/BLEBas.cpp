@@ -54,12 +54,12 @@ err_t BLEBas::begin(void)
   return ERROR_NONE;
 }
 
-void BLEBas::write(uint8_t level)
+bool BLEBas::write(uint8_t level)
 {
-  _battery.write(level);
+  return _battery.write(level) > 0;
 }
 
-void BLEBas::notify(uint8_t level)
+bool BLEBas::notify(uint8_t level)
 {
-  _battery.notify(level);
+  return _battery.notify(level);
 }
