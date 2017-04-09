@@ -349,7 +349,7 @@ bool BLEMidi::threeByteMessage( uint8_t status )
 /*------------------------------------------------------------------*/
 /* Send Event (notify)
  *------------------------------------------------------------------*/
-err_t BLEMidi::send(uint8_t data[], uint8_t len)
+bool BLEMidi::send(uint8_t data[], uint8_t len)
 {
   uint32_t tstamp = millis();
 
@@ -369,12 +369,10 @@ err_t BLEMidi::send(uint8_t data[], uint8_t len)
   memcpy(event.data, data, len);
 
   // send data length + 1 byte for header + 1 byte for timestamp
-  VERIFY_STATUS( _io.notify(&event, len + 2) );
-
-  return ERROR_NONE;
+  return _io.notify(&event, len + 2);
 }
 
-err_t BLEMidi::sendSplit(uint8_t data[], uint8_t len)
+bool BLEMidi::sendSplit(uint8_t data[], uint8_t len)
 {
   uint32_t tstamp = millis();
 
@@ -390,7 +388,5 @@ err_t BLEMidi::sendSplit(uint8_t data[], uint8_t len)
 
   // send data length + 1 byte for header
   // don't include the second timestamp byte
-  VERIFY_STATUS( _io.notify(&event, len + 1) );
-
-  return ERROR_NONE;
+  return _io.notify(&event, len + 1);
 }

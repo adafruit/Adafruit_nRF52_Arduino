@@ -23,6 +23,9 @@
   - rename BLEBas .update() to .write()
   - change Bluefruit setConnInterval()/setConnIntervalMS() return type from `err_t` to `bool`
   - change BLECentral startScanning()/stopScanning()/connect() return type from `err_t` to `bool`
+  - change BLECharacteristic notify() return type from `err_t` to `bool`
+  - change BLEHid report function return type from `err_t` to `bool`
+  - change BLEMid send/sendSplit 
 - New BLE Serivce
   - Apple Notification Center Service (ANCS)
   - Central BLE UART

@@ -136,7 +136,7 @@ size_t BLEUart::write (uint8_t b)
 
 size_t BLEUart::write (const uint8_t *content, size_t len)
 {
-  return (_txd.notify(content, len) == ERROR_NONE) ? len : 0;
+  return _txd.notify(content, len) ? len : 0;
 }
 
 int BLEUart::available (void)

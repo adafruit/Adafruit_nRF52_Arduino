@@ -102,7 +102,7 @@ class BLEHidGeneric : public BLEService
 
     virtual err_t begin(void);
 
-    err_t inputReport(uint8_t reportID, void const* data, int len);
+    bool inputReport(uint8_t reportID, void const* data, int len);
 
   protected:
     uint8_t _num_input;

@@ -236,7 +236,7 @@ err_t BLEHidGeneric::begin(void)
   return ERROR_NONE;
 }
 
-err_t BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
+bool BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
 {
   // 0 will treated as report ID = 1
   if ( reportID == 0 ) reportID++;

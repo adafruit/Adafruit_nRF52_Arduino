@@ -60,8 +60,8 @@ class BLEMidi: public BLEService, public Stream
     void begin(int baudrate); // MidiInterface
     bool  notifyEnabled(void);
 
-    err_t send(uint8_t data[], uint8_t len);
-    err_t sendSplit(uint8_t data[], uint8_t len);
+    bool send(uint8_t data[], uint8_t len);
+    bool sendSplit(uint8_t data[], uint8_t len);
 
     // message type helpers
     bool isStatusByte(uint8_t b);

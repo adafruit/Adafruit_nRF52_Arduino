@@ -187,11 +187,6 @@ uint8_t const hid_report_descriptor[] =
       HID_LOGICAL_MIN  ( 0                                      ),
       HID_LOGICAL_MAX  ( 1                                      ),
       HID_REPORT_COUNT ( 8                                      ),    // Keyboard
-      err_t keyboardReport(uint8_t modifier, uint8_t keycode[6]);
-      err_t keyboardReport(hid_keyboard_report_t* report);
-      err_t keyPress(char ch);
-      err_t keyRelease(void);
-      err_t keySequence(const char* str, int ms=5);
       HID_REPORT_SIZE  ( 1                                      ),
       HID_INPUT        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE),
   HID_COLLECTION_END
@@ -224,12 +219,12 @@ err_t BLEHidAdafruit::begin(void)
 /*------------------------------------------------------------------*/
 /* Keyboard
  *------------------------------------------------------------------*/
-err_t BLEHidAdafruit::keyboardReport(hid_keyboard_report_t* report)
+bool BLEHidAdafruit::keyboardReport(hid_keyboard_report_t* report)
 {
   return inputReport( REPORT_ID_KEYBOARD, report, sizeof(hid_keyboard_report_t));
 }
 
-err_t BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode[6])
+bool BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode[6])
 {
   hid_keyboard_report_t report =
   {
@@ -240,7 +235,7 @@ err_t BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode[6])
   return keyboardReport(&report);
 }
 
-err_t BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode0, uint8_t keycode1, uint8_t keycode2, uint8_t keycode3, uint8_t keycode4, uint8_t keycode5)
+bool BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode0, uint8_t keycode1, uint8_t keycode2, uint8_t keycode3, uint8_t keycode4, uint8_t keycode5)
 {
   hid_keyboard_report_t report =
   {
@@ -252,7 +247,7 @@ err_t BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode0, uint8_t
   return keyboardReport(&report);
 }
 
-err_t BLEHidAdafruit::keyPress(char ch)
+bool BLEHidAdafruit::keyPress(char ch)
 {
   hid_keyboard_report_t report;
   varclr(&report);
@@ -263,7 +258,7 @@ err_t BLEHidAdafruit::keyPress(char ch)
   return keyboardReport(&report);
 }
 
-err_t BLEHidAdafruit::keyRelease(void)
+bool BLEHidAdafruit::keyRelease(void)
 {
   hid_keyboard_report_t report;
   varclr(&report);
@@ -271,7 +266,7 @@ err_t BLEHidAdafruit::keyRelease(void)
   return keyboardReport(&report);
 }
 
-err_t BLEHidAdafruit::keySequence(const char* str, int interal)
+bool BLEHidAdafruit::keySequence(const char* str, int interal)
 {
   // Send each key in sequence
   char ch;
@@ -291,23 +286,23 @@ err_t BLEHidAdafruit::keySequence(const char* str, int interal)
     }
   }
 
-  return ERROR_NONE;
+  return true;
 }
 
 /*------------------------------------------------------------------*/
 /* Consumer Media Key
  *------------------------------------------------------------------*/
-err_t BLEHidAdafruit::consumerReport(uint16_t usage_code)
+bool BLEHidAdafruit::consumerReport(uint16_t usage_code)
 {
   return inputReport( REPORT_ID_CONSUMER_CONTROL, &usage_code, sizeof(usage_code));
 }
 
-err_t BLEHidAdafruit::consumerKeyPress(uint16_t usage_code)
+bool BLEHidAdafruit::consumerKeyPress(uint16_t usage_code)
 {
   return consumerReport(usage_code);
 }
 
-err_t BLEHidAdafruit::consumerKeyRelease(void)
+bool BLEHidAdafruit::consumerKeyRelease(void)
 {
   uint16_t usage = 0;
   return consumerReport(usage);
@@ -316,12 +311,12 @@ err_t BLEHidAdafruit::consumerKeyRelease(void)
 /*------------------------------------------------------------------*/
 /* Mouse
  *------------------------------------------------------------------*/
-err_t BLEHidAdafruit::mouseReport(hid_mouse_report_t* report)
+bool BLEHidAdafruit::mouseReport(hid_mouse_report_t* report)
 {
   return inputReport( REPORT_ID_MOUSE, report, sizeof(hid_mouse_report_t));
 }
 
-err_t BLEHidAdafruit::mouseReport(uint8_t buttons, int8_t x, int8_t y, int8_t wheel, int8_t pan)
+bool BLEHidAdafruit::mouseReport(uint8_t buttons, int8_t x, int8_t y, int8_t wheel, int8_t pan)
 {
   hid_mouse_report_t report =
   {
@@ -337,28 +332,28 @@ err_t BLEHidAdafruit::mouseReport(uint8_t buttons, int8_t x, int8_t y, int8_t wh
   return mouseReport(&report);
 }
 
-err_t BLEHidAdafruit::mouseButtonPress(uint8_t buttons)
+bool BLEHidAdafruit::mouseButtonPress(uint8_t buttons)
 {
   _mse_buttons = buttons;
   return mouseReport(buttons, 0, 0, 0, 0);
 }
 
-err_t BLEHidAdafruit::mouseButtonRelease(void)
+bool BLEHidAdafruit::mouseButtonRelease(void)
 {
   return mouseReport(0, 0, 0, 0, 0);
 }
 
-err_t BLEHidAdafruit::mouseMove(int8_t x, int8_t y)
+bool BLEHidAdafruit::mouseMove(int8_t x, int8_t y)
 {
   return mouseReport(_mse_buttons, x, y, 0, 0);
 }
 
-err_t BLEHidAdafruit::mouseScroll(int8_t scroll)
+bool BLEHidAdafruit::mouseScroll(int8_t scroll)
 {
   return mouseReport(_mse_buttons, 0, 0, scroll, 0);
 }
 
-err_t BLEHidAdafruit::mousePan(int8_t pan)
+bool BLEHidAdafruit::mousePan(int8_t pan)
 {
   return mouseReport(_mse_buttons, 0, 0, 0, pan);
 }

@@ -155,13 +155,13 @@ class BLECharacteristic
     uint16_t read(uint8_t*  num);
 
     /*------------- Notify -------------*/
-    bool  notifyEnabled(void);
-    err_t notify(const void* data, int len);
-    err_t notify(const char   * str);
-    err_t notify(int      num);
-    err_t notify(uint32_t num);
-    err_t notify(uint16_t num);
-    err_t notify(uint8_t  num);
+    bool notifyEnabled(void);
+    bool notify(const void* data, int len);
+    bool notify(const char   * str);
+    bool notify(int      num);
+    bool notify(uint32_t num);
+    bool notify(uint16_t num);
+    bool notify(uint8_t  num);
 
     friend class BLEGatt;
 };

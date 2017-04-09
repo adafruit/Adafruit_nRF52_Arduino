@@ -454,9 +454,9 @@ bool BLECharacteristic::notifyEnabled(void)
   return (cccd & BLE_GATT_HVX_NOTIFICATION);
 }
 
-err_t BLECharacteristic::notify(const void* data, int len)
+bool BLECharacteristic::notify(const void* data, int len)
 {
-  VERIFY( _properties.notify, NRF_ERROR_INVALID_PARAM);
+  VERIFY( _properties.notify );
 
   // could not exceed max len
   uint16_t actual_len = min16(len, _max_len);
@@ -485,7 +485,7 @@ err_t BLECharacteristic::notify(const void* data, int len)
           .p_data = (uint8_t*) u8data,
       };
 
-      VERIFY_STATUS( sd_ble_gatts_hvx(Bluefruit.connHandle(), &hvx_params) );
+      VERIFY_STATUS( sd_ble_gatts_hvx(Bluefruit.connHandle(), &hvx_params), false );
 
       actual_len -= packet_len;
       u8data     += packet_len;
@@ -494,33 +494,33 @@ err_t BLECharacteristic::notify(const void* data, int len)
   else
   {
     write(data, actual_len);
-    return NRF_ERROR_INVALID_STATE;
+    return false;
   }
 
-  return ERROR_NONE;
+  return true;
 }
 
-err_t BLECharacteristic::notify(const char * str)
+bool BLECharacteristic::notify(const char * str)
 {
   return notify( (const uint8_t*) str, strlen(str) );
 }
 
-err_t BLECharacteristic::notify(int num)
+bool BLECharacteristic::notify(int num)
 {
   return notify( (uint8_t*) &num, sizeof(num));
 }
 
-err_t BLECharacteristic::notify(uint32_t num)
+bool BLECharacteristic::notify(uint32_t num)
 {
   return notify( (uint8_t*) &num, sizeof(num));
 }
 
-err_t BLECharacteristic::notify(uint16_t num)
+bool BLECharacteristic::notify(uint16_t num)
 {
   return notify( (uint8_t*) &num, sizeof(num));
 }
 
-err_t BLECharacteristic::notify(uint8_t  num)
+bool BLECharacteristic::notify(uint8_t  num)
 {
   return notify( (uint8_t*) &num, sizeof(num));
 }

@@ -55,29 +55,29 @@ class BLEHidAdafruit : public BLEHidGeneric
     virtual err_t begin(void);
 
     // Keyboard
-    err_t keyboardReport(hid_keyboard_report_t* report);
-    err_t keyboardReport(uint8_t modifier, uint8_t keycode[6]);
-    err_t keyboardReport(uint8_t modifier, uint8_t keycode0, uint8_t keycode1=0, uint8_t keycode2=0, uint8_t keycode3=0, uint8_t keycode4=0, uint8_t keycode5=0);
+    bool keyboardReport(hid_keyboard_report_t* report);
+    bool keyboardReport(uint8_t modifier, uint8_t keycode[6]);
+    bool keyboardReport(uint8_t modifier, uint8_t keycode0, uint8_t keycode1=0, uint8_t keycode2=0, uint8_t keycode3=0, uint8_t keycode4=0, uint8_t keycode5=0);
 
-    err_t keyPress(char ch);
-    err_t keyRelease(void);
-    err_t keySequence(const char* str, int interal=5);
+    bool keyPress(char ch);
+    bool keyRelease(void);
+    bool keySequence(const char* str, int interal=5);
 
     // Consumer Media Keys
-    err_t consumerReport(uint16_t usage_code);
-    err_t consumerKeyPress(uint16_t usage_code);
-    err_t consumerKeyRelease(void);
+    bool consumerReport(uint16_t usage_code);
+    bool consumerKeyPress(uint16_t usage_code);
+    bool consumerKeyRelease(void);
 
     // Mouse
-    err_t mouseReport(hid_mouse_report_t* report);
-    err_t mouseReport(uint8_t buttons, int8_t x, int8_t y, int8_t wheel=0, int8_t pan=0);
+    bool mouseReport(hid_mouse_report_t* report);
+    bool mouseReport(uint8_t buttons, int8_t x, int8_t y, int8_t wheel=0, int8_t pan=0);
 
-    err_t mouseButtonPress(uint8_t buttons);
-    err_t mouseButtonRelease(void);
+    bool mouseButtonPress(uint8_t buttons);
+    bool mouseButtonRelease(void);
 
-    err_t mouseMove(int8_t x, int8_t y);
-    err_t mouseScroll(int8_t scroll);
-    err_t mousePan(int8_t pan);
+    bool mouseMove(int8_t x, int8_t y);
+    bool mouseScroll(int8_t scroll);
+    bool mousePan(int8_t pan);
 };
 
 #endif /* BLEHIDADAFRUIT_H_ */
