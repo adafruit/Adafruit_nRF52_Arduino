@@ -69,9 +69,6 @@ void analogWrite( uint32_t pin, uint32_t value )
     // If pin is added (already) in this group
     if ( PWMx[i]->addPin(pin) )
     {
-      // begin if not previously
-      if ( !PWMx[i]->begun() ) PWMx[i]->begin();
-
       PWMx[i]->writePin(pin, value);
       return;
     }

@@ -51,6 +51,7 @@ HardwarePWM::HardwarePWM(NRF_PWM_Type* pwm)
   arrclr(_seq0);
 
   _resolution = 8;
+  _clock_div = PWM_PRESCALER_PRESCALER_DIV_1; // 16 Mhz
 }
 
 #if 0
@@ -90,8 +91,8 @@ void HardwarePWM::setResolution(uint8_t bitnum)
 
 void HardwarePWM::setClockDiv(uint8_t div)
 {
-  div = min8(div, PWM_PRESCALER_PRESCALER_DIV_128);
-  _pwm->PRESCALER = div;
+  _clock_div = min8(div, PWM_PRESCALER_PRESCALER_DIV_128);
+  _pwm->PRESCALER = _clock_div;
 }
 
 /**
@@ -137,7 +138,7 @@ void HardwarePWM::begin(void)
   // Initialize Registers
   _pwm->MODE            = PWM_MODE_UPDOWN_Up;
   _pwm->COUNTERTOP      = bit(_resolution) - 1; // default is 8 bit, can be configured before begin()
-  _pwm->PRESCALER       = PWM_PRESCALER_PRESCALER_DIV_1; // 16MHz
+  _pwm->PRESCALER       = _clock_div;
   _pwm->DECODER         = PWM_DECODER_LOAD_Individual;
   _pwm->LOOP            = 0;
 

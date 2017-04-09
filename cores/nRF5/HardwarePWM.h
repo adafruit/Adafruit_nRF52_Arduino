@@ -49,6 +49,7 @@ class HardwarePWM
     uint16_t _seq0[MAX_CHANNELS];
 
     uint8_t  _resolution;
+    uint8_t  _clock_div;
 
     void _start(void);
 

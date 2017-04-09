@@ -88,7 +88,12 @@ extern "C"
 
 void vApplicationIdleHook( void )
 {
-  waitForEvent();
+  // Enter low-power mode will turn of hardware PWM
+  // Only go there if no PWM device is active.
+  if ( !(PWM0.begun() ||  PWM1.begun() || PWM2.begun() ) )
+  {
+    waitForEvent();
+  }
 }
 
 }
