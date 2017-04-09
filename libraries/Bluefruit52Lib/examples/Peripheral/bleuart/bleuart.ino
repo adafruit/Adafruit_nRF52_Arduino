@@ -18,20 +18,10 @@ BLEDis  bledis;
 BLEUart bleuart;
 BLEBas  blebas;
 
-#define STATUS_LED  (17)
-#define BLINKY_MS   (2000)
-
-uint32_t blinkyms;
-
 void setup()
 {
   Serial.begin(115200);
-
   Serial.println("Bluefruit52 BLEUART Example");
-
-  // Setup LED pins and reset blinky counter
-  pinMode(STATUS_LED, OUTPUT);
-  blinkyms = millis();
 
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behaviour, but provided
@@ -80,12 +70,6 @@ void setupAdv(void)
 
 void loop()
 {
-  // Blinky!
-  if (blinkyms+BLINKY_MS < millis()) {
-    blinkyms = millis();
-    digitalToggle(STATUS_LED);
-  }
-
   // forward from Serial to BLEUART
   while (Serial.available())
   {
@@ -105,8 +89,8 @@ void loop()
     Serial.write(ch);
   }
 
-  // Equavilent to __WFE (Wait For Event) instruction.
-  // It is a hint to allow CPU to enter low-power state until an event occured
+  // Instruct CPU to enter low-power state until an event/interrupt occured
+  // Note: This will turn off hardware PWM and maybe other peripherlas !!
   waitForEvent();
 }
 
@@ -123,3 +107,25 @@ void disconnect_callback(uint8_t reason)
   Serial.println("Disconnected");
   Serial.println("Bluefruit will auto start advertising (default)");
 }
+
+/**
+ * RTOS Idle callback is automatically invoked by FreeRTOS
+ * when there is no active threads. This function must not
+ * call any blocking FreeRTOS API such as delay(), xSemaphoreTake() etc ..
+ * 
+ * Notes: Should be used for background work. Great place to call
+ * waitForEvent() (see comment below)
+ */
+void rtos_idle_callback(void)
+{
+  // Background task here
+  
+  // Instruct CPU to enter low-power state until an event/interrupt occured
+  // Note: This will turn off hardware PWM and maybe other peripherlas !!
+  // Should only call there is no active PWM devices
+  if ( !(PWM0.begun() ||  PWM1.begun() || PWM2.begun() ) )
+  {
+    waitForEvent();
+  }
+}
+

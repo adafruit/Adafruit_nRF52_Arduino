@@ -103,5 +103,9 @@ void loop()
     // Delay a bit after a report
     delay(5);
   }
+
+  // Instruct CPU to enter low-power state until an event/interrupt occured
+  // Note: This will turn off hardware PWM and maybe other peripherlas !!
+  waitForEvent();  
 }
 
