@@ -121,7 +121,8 @@ void loop()
       break;
 
       case 'X':
-        blehid.mouseButtonPress(0);
+        // X to release all buttons
+        blehid.mouseButtonRelease();
       break;
 
       default: break;

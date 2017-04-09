@@ -201,27 +201,14 @@ void loop()
 
     if (Bluefruit.connected()) {
       uint8_t hrmdata[2] = { 0b00000110, bps++ };           // Sensor connected, increment BPS value
-      err_t resp = hrmc.notify(hrmdata, sizeof(hrmdata));   // Note: We use .notify instead of .write!
-
-      // This isn't strictly necessary, but you can check the result
-      // of the .notify() attempt to see if it was successful or not
-      switch (resp) {
-        case ERROR_NONE:
-          // Value was written correctly!
-          Serial.print("Heart Rate Measurement updated to: "); Serial.println(bps);
-          break;
-        case NRF_ERROR_INVALID_PARAM:
-          // Characteristic property not set to 'Notify'
-          Serial.println("ERROR: Characteristic 'Property' not set to Notify!");
-          break;
-        case NRF_ERROR_INVALID_STATE:
-          // Notify bit not set in the CCCD or not connected
-          Serial.println("ERROR: Notify not set in the CCCD or not connected!");
-          break;
-        default:
-          // Unhandled error code
-          Serial.print("ERROR: Ox"); Serial.println(resp, HEX);
-          break;
+      
+      // Note: We use .notify instead of .write!
+      // If it is connected but CCCD is not enabled
+      // The characteristic's value is still updated although notification is not sent
+      if ( hrmc.notify(hrmdata, sizeof(hrmdata)) ){
+        Serial.print("Heart Rate Measurement updated to: "); Serial.println(bps); 
+      }else{
+        Serial.println("ERROR: Notify not set in the CCCD or not connected!");
       }
     }
   }
