@@ -97,7 +97,7 @@
 #define configCPU_CLOCK_HZ                                                        ( SystemCoreClock )
 #define configTICK_RATE_HZ                                                        10000
 #define configMAX_PRIORITIES                                                      ( 5 )
-#define configMINIMAL_STACK_SIZE                                                  ( 60 )
+#define configMINIMAL_STACK_SIZE                                                  ( 100 )
 #define configTOTAL_HEAP_SIZE                                                     ( 4096 ) /* not used since we use malloc */
 #define configMAX_TASK_NAME_LEN                                                   ( 8 )
 #define configUSE_16_BIT_TICKS                                                    0
