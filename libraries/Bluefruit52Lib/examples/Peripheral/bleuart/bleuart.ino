@@ -26,13 +26,13 @@ void setup()
   Serial.begin(115200);
   Serial.println("Bluefruit52 BLEUART Example");
 
-  // Initialize Blink Timer for 1000 ms and start it
+  // Initialize blinkTimer for 1000 ms and start it
   blinkTimer.begin(1000, blink_timer_callback);
   blinkTimer.start();
 
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behaviour, but provided
-  // here in case you want to control this manually via PIN 19
+  // here in case you want to control this LED manually via PIN 19
   Bluefruit.autoConnLed(true);
 
   Bluefruit.begin();
@@ -58,8 +58,8 @@ void setup()
   // Start Advertising
   Bluefruit.Advertising.start();
 
-  Serial.println("Please use Adafruit Bluefruit LE app to connect in UART mode");
-  Serial.println("Then Enter characters to send");
+  Serial.println("Please use Adafruit's Bluefruit LE app to connect in UART mode");
+  Serial.println("Once connected, enter character(s) that you wish to send");
 }
 
 void setupAdv(void)
@@ -77,10 +77,10 @@ void setupAdv(void)
 
 void loop()
 {
-  // forward from Serial to BLEUART
+  // Forward data from HW Serial to BLEUART
   while (Serial.available())
   {
-    // delay to get enough inputs, since we have limited number of transmission buffer
+    // Delay to wait for enough input, since we have a limited transmission buffer
     delay(2);
 
     uint8_t buf[64];
@@ -88,7 +88,7 @@ void loop()
     bleuart.write( buf, count );
   }
 
-  // forward from BLEUART to Serial
+  // Forward from BLEUART to HW Serial
   while ( bleuart.available() )
   {
     uint8_t ch;
@@ -96,8 +96,8 @@ void loop()
     Serial.write(ch);
   }
 
-  // Instruct CPU to enter low-power state until an event/interrupt occured
-  // Note: This will turn off hardware PWM and maybe other peripherlas !!
+  // Request CPU to enter low-power mode until an event/interrupt occurs
+  // Note: This will turn off hardware PWM and potentially other peripherals!
   waitForEvent();
 }
 
@@ -116,10 +116,10 @@ void disconnect_callback(uint8_t reason)
 }
 
 /**
- * Software Timer callback is invoked in built-in thread of FreeRTOS with
+ * Software Timer callback is invoked via a built-in FreeRTOS thread with
  * minimal stack size. Therefore it should be as simple as possible. If
- * a periodically heavy-task is needed, please use Scheduler.startLoop() to
- * create an own task for it.
+ * a periodically heavy task is needed, please use Scheduler.startLoop() to
+ * create a dedicated task for it.
  * 
  * More information http://www.freertos.org/RTOS-software-timer.html
  */
@@ -131,13 +131,13 @@ void blink_timer_callback(TimerHandle_t xTimerID)
 
 /**
  * RTOS Idle callback is automatically invoked by FreeRTOS
- * when there is no active threads. E.g loop() call delay() and
- * there is no bluetooth or hw event. This is a greate place to handle
+ * when there are no active threads. E.g when loop() calls delay() and
+ * there is no bluetooth or hw event. This is the ideal place to handle
  * background data.
  * 
  * NOTE: After this callback returns, MCU will enter low-power mode
- * by waitForEvent() internally. THerefore user SHOULD NOT call 
- * waitForEvent() in this callback.
+ * via waitForEvent() internally. Therefore you SHOULD NOT call 
+ * waitForEvent() in this callback!
  * 
  * WARNING: This function MUST NOT call any blocking FreeRTOS API 
  * such as delay(), xSemaphoreTake() etc ... for more information
@@ -145,10 +145,9 @@ void blink_timer_callback(TimerHandle_t xTimerID)
  */
 void rtos_idle_callback(void)
 {
-  // Background task here
+  // Perform background task(s) here
 
-
-  // waitForEvent() will be invoked by internal code when this callback return. 
-  // Don't call waitForEvent() in this function nor any other blocking API()
+  // waitForEvent() will be invoked internally when this callback returns. 
+  // Don't call waitForEvent() in this function nor any other blocking API()!
 }
 
