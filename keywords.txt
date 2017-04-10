@@ -8,6 +8,7 @@
 
 TimeoutTimer	KEYWORD1
 Adafruit_FIFO	KEYWORD1
+HardwarePWM	KEYWORD1
 
 #######################################
 # Core Function (KEYWORD2)
@@ -72,6 +73,21 @@ set	KEYWORD2
 expired	KEYWORD2
 restart	KEYWORD2
 reset	KEYWORD2
+
+#######################################
+# HardwarePWM Methods (KEYWORD2)
+#######################################
+
+setResolution	KEYWORD2
+setClockDiv	KEYWORD2
+addPin	KEYWORD2
+pin2channel	KEYWORD2
+
+checkPin	KEYWORD2
+
+enabled	KEYWORD2
+writePin	KEYWORD2
+writeChannel	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

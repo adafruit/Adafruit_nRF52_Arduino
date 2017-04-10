@@ -56,9 +56,6 @@ class HardwarePWM
   public:
     HardwarePWM(NRF_PWM_Type* pwm);
 
-    // Enable & Disable module
-    void disable(void);
-
     // Configure
     void setResolution(uint8_t bitnum);
     void setClockDiv(uint8_t div); // value is PWM_PRESCALER_PRESCALER_DIV_x, DIV1 is 16Mhz
@@ -78,11 +75,11 @@ class HardwarePWM
       return pin2channel(pin) >= 0;
     }
 
-    // Generate PWM
     void begin (void);
-    bool begun (void);
+    bool enabled (void);
     void stop  (void);
 
+    // Generate PWM
     bool writePin    (uint8_t pin, uint16_t value, bool inverted = false);
     bool writeChannel(uint8_t ch , uint16_t value, bool inverted = false);
 

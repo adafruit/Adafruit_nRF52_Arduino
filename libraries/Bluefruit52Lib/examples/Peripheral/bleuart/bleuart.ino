@@ -123,7 +123,7 @@ void rtos_idle_callback(void)
   // Instruct CPU to enter low-power state until an event/interrupt occured
   // Note: This will turn off hardware PWM and maybe other peripherlas !!
   // Should only call there is no active PWM devices
-  if ( !(PWM0.begun() ||  PWM1.begun() || PWM2.begun() ) )
+  if ( !(PWM0.enabled() ||  PWM1.enabled() || PWM2.enabled() ) )
   {
     waitForEvent();
   }

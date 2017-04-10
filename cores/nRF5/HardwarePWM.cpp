@@ -114,7 +114,7 @@ bool HardwarePWM::addPin(uint8_t pin)
   digitalWrite(pin, LOW);
 
   // Must disable before changing PSEL
-  if ( begun() )
+  if ( enabled() )
   {
     _pwm->ENABLE = 0;
     _pwm->PSEL.OUT[_count++] = pin;
@@ -128,7 +128,7 @@ bool HardwarePWM::addPin(uint8_t pin)
   return true;
 }
 
-bool HardwarePWM::begun (void)
+bool HardwarePWM::enabled (void)
 {
   return _pwm->ENABLE;
 }
@@ -182,7 +182,7 @@ bool HardwarePWM::writeChannel(uint8_t ch, uint16_t value, bool inverted )
   _seq0[ch] = value | (inverted ? 0 : bit(15));
 
   // Start PWM if not already
-  if ( !begun() ) begin();
+  if ( !enabled() ) begin();
 
   _start();
 
