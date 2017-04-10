@@ -97,7 +97,6 @@ void loop()
   }
 
   // Request CPU to enter low-power mode until an event/interrupt occurs
-  // Note: This will turn off hardware PWM and potentially other peripherals!
   waitForEvent();
 }
 
