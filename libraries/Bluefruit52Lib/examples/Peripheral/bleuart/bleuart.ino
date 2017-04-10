@@ -110,22 +110,24 @@ void disconnect_callback(uint8_t reason)
 
 /**
  * RTOS Idle callback is automatically invoked by FreeRTOS
- * when there is no active threads. This function must not
- * call any blocking FreeRTOS API such as delay(), xSemaphoreTake() etc ..
+ * when there is no active threads. E.g loop() call delay() and
+ * there is no bluetooth or hw event. This is a greate place to handle
+ * background data.
  * 
- * Notes: Should be used for background work. Great place to call
- * waitForEvent() (see comment below)
+ * NOTE: After this callback returns, MCU will enter low-power mode
+ * by waitForEvent() internally. THerefore user SHOULD NOT call 
+ * waitForEvent() in this callback.
+ * 
+ * WARNING: This function MUST NOT call any blocking FreeRTOS API 
+ * such as delay(), xSemaphoreTake() etc ... for more information
+ * http://www.freertos.org/a00016.html
  */
 void rtos_idle_callback(void)
 {
   // Background task here
-  
-  // Instruct CPU to enter low-power state until an event/interrupt occured
-  // Note: This will turn off hardware PWM and maybe other peripherlas !!
-  // Should only call there is no active PWM devices
-  if ( !(PWM0.enabled() ||  PWM1.enabled() || PWM2.enabled() ) )
-  {
-    waitForEvent();
-  }
+
+
+  // waitForEvent() will be invoked by internal code when this callback return. 
+  // Don't call waitForEvent() in this function nor any other blocking API()
 }
 

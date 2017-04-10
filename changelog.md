@@ -4,7 +4,8 @@
 
 - Add HardwarePWM class to support up to 12 channels and compatible with Neopixel library
 - Add waitForEvent() as alias to __WFE() instruction
-- Enable FreeRTOS's Idle hook, add rtos_idle_callback() as optional callback for user
+- Enable FreeRTOS's Idle hook, and call waitForEvent() in the Idle hook.
+- Add rtos_idle_callback() as optional callback for user to handle background task
 - Add mutex to prevent uart conflict
 - Change FreeRTOS tick source from systick to RTC for low-power mode
 

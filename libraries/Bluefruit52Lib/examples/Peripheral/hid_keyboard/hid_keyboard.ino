@@ -109,3 +109,25 @@ void loop()
   waitForEvent();  
 }
 
+/**
+ * RTOS Idle callback is automatically invoked by FreeRTOS
+ * when there is no active threads. E.g loop() call delay() and
+ * there is no bluetooth or hw event. This is a greate place to handle
+ * background data.
+ * 
+ * NOTE: After this callback returns, MCU will enter low-power mode
+ * by waitForEvent() internally. THerefore user SHOULD NOT call 
+ * waitForEvent() in this callback.
+ * 
+ * WARNING: This function MUST NOT call any blocking FreeRTOS API 
+ * such as delay(), xSemaphoreTake() etc ... for more information
+ * http://www.freertos.org/a00016.html
+ */
+void rtos_idle_callback(void)
+{
+  // Background task here
+
+
+  // waitForEvent() will be invoked by internal code when this callback return. 
+  // Don't call waitForEvent() in this function nor any other blocking API()
+}

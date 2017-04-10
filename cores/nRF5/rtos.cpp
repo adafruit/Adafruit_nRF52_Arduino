@@ -94,6 +94,9 @@ void vApplicationIdleHook( void )
 
   // Weak symbol do nothing if is not implementation
   rtos_idle_callback();
+
+  // All done. Instruct CPU to enter low-power state until an event/interrupt occurred
+  waitForEvent();
 }
 
 }
