@@ -20,6 +20,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "nrf.h"
+#include "nrf_soc.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -82,6 +82,9 @@ bool SchedulerRTOS::startLoop(taskfunc_t task, const char* name, uint32_t stack_
   return pdPASS == xTaskCreate( _redirect_task, name, stack_size, (void*) task, TASK_PRIO_NORMAL, &handle);
 }
 
+void rtos_idle_callback(void) ATTR_WEAK;
+void rtos_idle_callback(void) {}
+
 extern "C"
 {
 

@@ -111,9 +111,7 @@ uint32_t setLoopStacksize(void);
 #define digitalPinHasPWM(P)        ( true )
 
 // Hint instruction to tell CPU go to low power mode
-#define waitForEvent() __WFE()
-
-extern void rtos_idle_callback(void) ATTR_WEAK;
+#define waitForEvent() sd_app_evt_wait() // __WFE()
 
 /*
  * digitalPinToTimer(..) is AVR-specific and is not defined for nRF52
