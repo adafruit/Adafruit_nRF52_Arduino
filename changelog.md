@@ -9,6 +9,7 @@
 - Add mutex to prevent uart conflict
 - Change FreeRTOS tick source from systick to RTC for low-power mode
 - Add SoftwareTimer class as wrapper for FreeRTOS software timer
+- Increase configMINIMAL_STACK_SIZE from 60 to 100
 
 #### New Example
 
