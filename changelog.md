@@ -8,6 +8,7 @@
 - Add rtos_idle_callback() as optional callback for user to handle background task
 - Add mutex to prevent uart conflict
 - Change FreeRTOS tick source from systick to RTC for low-power mode
+- Add SoftwareTimer class as wrapper for FreeRTOS software timer
 
 #### New Example
 

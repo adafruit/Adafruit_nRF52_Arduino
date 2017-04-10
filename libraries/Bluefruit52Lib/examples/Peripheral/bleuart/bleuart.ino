@@ -18,10 +18,17 @@ BLEDis  bledis;
 BLEUart bleuart;
 BLEBas  blebas;
 
+// Software Timer for blinking RED LED
+SoftwareTimer blinkTimer;
+
 void setup()
 {
   Serial.begin(115200);
   Serial.println("Bluefruit52 BLEUART Example");
+
+  // Initialize Blink Timer for 1000 ms and start it
+  blinkTimer.begin(1000, blink_timer_callback);
+  blinkTimer.start();
 
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behaviour, but provided
@@ -106,6 +113,20 @@ void disconnect_callback(uint8_t reason)
   Serial.println();
   Serial.println("Disconnected");
   Serial.println("Bluefruit will auto start advertising (default)");
+}
+
+/**
+ * Software Timer callback is invoked in built-in thread of FreeRTOS with
+ * minimal stack size. Therefore it should be as simple as possible. If
+ * a periodically heavy-task is needed, please use Scheduler.startLoop() to
+ * create an own task for it.
+ * 
+ * More information http://www.freertos.org/RTOS-software-timer.html
+ */
+void blink_timer_callback(TimerHandle_t xTimerID)
+{
+  (void) xTimerID;
+  digitalToggle(LED_RED);
 }
 
 /**

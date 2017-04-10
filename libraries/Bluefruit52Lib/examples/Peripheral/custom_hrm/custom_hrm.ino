@@ -13,9 +13,6 @@
 *********************************************************************/
 #include <bluefruit.h>
 
-#define STATUS_LED  (LED_RED)
-#define BLINKY_MS   (2000)
-
 /* HRM Service Definitions
  * Heart Rate Monitor Service:  0x180D
  * Heart Rate Measurement Char: 0x2A37
@@ -28,7 +25,6 @@ BLECharacteristic bslc = BLECharacteristic(UUID16_CHR_BODY_SENSOR_LOCATION);
 BLEDis bledis;    // DIS (Device Information Service) helper class instance
 BLEBas blebas;    // BAS (Battery Service) helper class instance
 
-uint32_t blinkyms;
 uint8_t  bps = 0;
 
 // Advanced function prototypes
@@ -38,15 +34,13 @@ void connect_callback(void);
 void disconnect_callback(uint8_t reason);
 void cccd_callback(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
 
+void blink_timer_callback(TimerHandle_t xTimerID);
+
 void setup()
 {
   Serial.begin(115200);
   Serial.println("Bluefruit52 HRM Example");
   Serial.println("-----------------------");
-
-  // Setup LED pins and reset blinky counter
-  pinMode(STATUS_LED, OUTPUT);
-  blinkyms = millis();
 
   // Initialise the Bluefruit module
   Serial.println("Initialise the Bluefruit nRF52 module");
@@ -194,22 +188,47 @@ void cccd_callback(BLECharacteristic& chr, uint16_t cccd_value)
 
 void loop()
 {
-  // Blinky!
-  if (blinkyms+BLINKY_MS < millis()) {
-    blinkyms = millis();
-    digitalToggle(STATUS_LED);
-
-    if (Bluefruit.connected()) {
-      uint8_t hrmdata[2] = { 0b00000110, bps++ };           // Sensor connected, increment BPS value
-      
-      // Note: We use .notify instead of .write!
-      // If it is connected but CCCD is not enabled
-      // The characteristic's value is still updated although notification is not sent
-      if ( hrmc.notify(hrmdata, sizeof(hrmdata)) ){
-        Serial.print("Heart Rate Measurement updated to: "); Serial.println(bps); 
-      }else{
-        Serial.println("ERROR: Notify not set in the CCCD or not connected!");
-      }
+  digitalToggle(LED_RED);
+  
+  if ( Bluefruit.connected() ) {
+    uint8_t hrmdata[2] = { 0b00000110, bps++ };           // Sensor connected, increment BPS value
+    
+    // Note: We use .notify instead of .write!
+    // If it is connected but CCCD is not enabled
+    // The characteristic's value is still updated although notification is not sent
+    if ( hrmc.notify(hrmdata, sizeof(hrmdata)) ){
+      Serial.print("Heart Rate Measurement updated to: "); Serial.println(bps); 
+    }else{
+      Serial.println("ERROR: Notify not set in the CCCD or not connected!");
     }
   }
+
+  // Only send update once per second
+  delay(1000);
+
+  // No need to call waitForEvent() here, it is already invoked
+  // by above delay() via Idle Task internally. See the note below
+}
+
+/**
+ * RTOS Idle callback is automatically invoked by FreeRTOS
+ * when there is no active threads. E.g loop() call delay() and
+ * there is no bluetooth or hw event. This is a greate place to handle
+ * background data.
+ * 
+ * NOTE: After this callback returns, MCU will enter low-power mode
+ * by waitForEvent() internally. THerefore user SHOULD NOT call 
+ * waitForEvent() in this callback.
+ * 
+ * WARNING: This function MUST NOT call any blocking FreeRTOS API 
+ * such as delay(), xSemaphoreTake() etc ... for more information
+ * http://www.freertos.org/a00016.html
+ */
+void rtos_idle_callback(void)
+{
+  // Background task here
+
+
+  // waitForEvent() will be invoked by internal code when this callback return. 
+  // Don't call waitForEvent() in this function nor any other blocking API()
 }

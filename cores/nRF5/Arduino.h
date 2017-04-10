@@ -43,6 +43,9 @@ uint32_t setLoopStacksize(void);
 } // extern "C"
 #endif
 
+// RTOS
+#include "rtos.h"
+
 // The following headers are for C++ only compilation
 #ifdef __cplusplus
   #include "WCharacter.h"
@@ -52,6 +55,7 @@ uint32_t setLoopStacksize(void);
   #include "HardwareSerial.h"
   #include "pulse.h"
   #include "HardwarePWM.h"
+  #include "utility/SoftwareTimer.h"
 #endif
 
 #include "delay.h"
@@ -71,9 +75,6 @@ uint32_t setLoopStacksize(void);
 #include "wiring_analog.h"
 #include "wiring_shift.h"
 #include "WInterrupts.h"
-
-// RTOS
-#include "rtos.h"
 
 // undefine stdlib's abs if encountered
 #ifdef abs
