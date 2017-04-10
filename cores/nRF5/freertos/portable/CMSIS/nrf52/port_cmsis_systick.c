@@ -153,9 +153,16 @@ void vPortSetupTimerInterrupt( void )
 
 void xPortSysTickHandler( void )
 {
-    nrf_rtc_event_clear(portNRF_RTC_REG, NRF_RTC_EVENT_TICK);
+//    nrf_rtc_event_clear(portNRF_RTC_REG, NRF_RTC_EVENT_TICK);
+    portNRF_RTC_REG->EVENTS_TICK = 0;
+    uint32_t dummy = portNRF_RTC_REG->EVENTS_TICK;
+    (void) dummy;
+
 #if configUSE_TICKLESS_IDLE == 1
-    nrf_rtc_event_clear(portNRF_RTC_REG, NRF_RTC_EVENT_COMPARE_0);
+//    nrf_rtc_event_clear(portNRF_RTC_REG, NRF_RTC_EVENT_COMPARE_0);
+    portNRF_RTC_REG->EVENTS_COMPARE[0] = 0;
+    uint32_t dummy2 = portNRF_RTC_REG->EVENTS_COMPARE[0];
+    (void) dummy2;
 #endif
 
     /* The SysTick runs at the lowest interrupt priority, so when this interrupt
@@ -198,6 +205,7 @@ void xPortSysTickHandler( void )
  */
 void vPortSetupTimerInterrupt( void )
 {
+#if 0
     /* Request LF clock */
     nrf_drv_clock_lfclk_request(NULL);
 
@@ -206,6 +214,12 @@ void vPortSetupTimerInterrupt( void )
     nrf_rtc_int_enable   (portNRF_RTC_REG, RTC_INTENSET_TICK_Msk);
     nrf_rtc_task_trigger (portNRF_RTC_REG, NRF_RTC_TASK_CLEAR);
     nrf_rtc_task_trigger (portNRF_RTC_REG, NRF_RTC_TASK_START);
+#else
+    portNRF_RTC_REG->PRESCALER = portNRF_RTC_PRESCALER;
+    portNRF_RTC_REG->INTENSET  = RTC_INTENSET_TICK_Msk;
+    portNRF_RTC_REG->TASKS_CLEAR = 1;
+    portNRF_RTC_REG->TASKS_START = 1;
+#endif
 
     NVIC_SetPriority(portNRF_RTC_IRQn, configKERNEL_INTERRUPT_PRIORITY);
     NVIC_EnableIRQ(portNRF_RTC_IRQn);

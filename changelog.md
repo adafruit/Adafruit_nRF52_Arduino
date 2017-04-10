@@ -6,6 +6,7 @@
 - Add waitForEvent() as alias to __WFE() instruction
 - Enable FreeRTOS's Idle hook, add rtos_idle_callback() as optional callback for user
 - Add mutex to prevent uart conflict
+- Change FreeRTOS tick source from systick to RTC for low-power mode
 
 #### New Example
 
@@ -20,13 +21,13 @@
   -  Add BLEDiscovery
 - Add BLEGap and BLEGatt to manage peripheral & central with Gatt client and server support
 - BLE API changes
-  - connPaired(), requestPairing()
-  - rename BLEBas .update() to .write()
-  - change Bluefruit setConnInterval()/setConnIntervalMS() return type from `err_t` to `bool`
-  - change BLECentral startScanning()/stopScanning()/connect() return type from `err_t` to `bool`
-  - change BLECharacteristic notify() return type from `err_t` to `bool`
-  - change BLEHid report function return type from `err_t` to `bool`
-  - change BLEMid send/sendSplit return type from `err_t` to `bool`
+  - Add connPaired(), requestPairing()
+  - Rename BLEBas .update() to .write()
+  - Change Bluefruit setConnInterval()/setConnIntervalMS() return type from `err_t` to `bool`
+  - Change BLECentral startScanning()/stopScanning()/connect() return type from `err_t` to `bool`
+  - Change BLECharacteristic notify() return type from `err_t` to `bool`
+  - Change BLEHid report function return type from `err_t` to `bool`
+  - Change BLEMid send/sendSplit return type from `err_t` to `bool`
 - New BLE Serivce
   - Apple Notification Center Service (ANCS)
   - Central BLE UART

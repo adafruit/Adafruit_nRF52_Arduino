@@ -89,7 +89,7 @@
  * See http://www.freertos.org/a00110.html.
  *----------------------------------------------------------*/
 
-#define configTICK_SOURCE                                                         FREERTOS_USE_SYSTICK
+#define configTICK_SOURCE                                                         FREERTOS_USE_RTC
 
 #define configUSE_PREEMPTION                                                      1
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION                                   0
