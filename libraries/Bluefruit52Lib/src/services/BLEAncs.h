@@ -39,7 +39,7 @@
 #include "bluefruit_common.h"
 
 #include "BLECentralCharacteristic.h"
-#include "BLECentralService.h"
+#include "BLEClientService.h"
 
 extern const uint8_t BLEANCS_UUID_SERVICE[];
 extern const uint8_t BLEANCS_UUID_CHR_CONTROL[];
@@ -129,7 +129,7 @@ typedef struct
 
 VERIFY_STATIC( sizeof(AncsNotification_t) == 8);
 
-class BLEAncs : public BLECentralService
+class BLEAncs : public BLEClientService
 {
   public:
     typedef void (*notification_callback_t) (AncsNotification_t* notif);

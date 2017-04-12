@@ -38,11 +38,10 @@
 
 #include <Arduino.h>
 #include "bluefruit_common.h"
+#include "BLEClientService.h"
 
 #include "BLEUuid.h"
 #include "BLEService.h"
-#include "BLECentralService.h"
-
 #include "services/BLEBeacon.h"
 
 //enum
@@ -70,7 +69,7 @@ public:
 
   bool addUuid(BLEUuid bleuuid);
   bool addService(BLEService& service);
-  bool addService(BLECentralService& service);
+  bool addService(BLEClientService& service);
 
   bool setBeacon(BLEBeacon& beacon);
 

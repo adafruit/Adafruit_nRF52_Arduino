@@ -18,9 +18,9 @@
 
 ### BLE Library
 
-- Initial Central support
-  -  Add BLECentralService
-  -  Add BLECentralCharacteristic
+- Initial Central support and Gatt client service/characteristic
+  -  Add BLEClientService
+  -  Add BLEClientCharacteristic
   -  Add BLEDiscovery
 - Add BLEGap and BLEGatt to manage peripheral & central with Gatt client and server support
 - BLE API changes
@@ -33,7 +33,7 @@
   - Change BLEMid send/sendSplit return type from `err_t` to `bool`
 - New BLE Serivce
   - Apple Notification Center Service (ANCS)
-  - Central BLE UART
+  - BLEClientUart
 - Add separated Thread for callbacks to allow most functions API() to be invoked directly in the callback
 
 #### New Examples

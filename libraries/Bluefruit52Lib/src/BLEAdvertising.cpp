@@ -124,7 +124,7 @@ bool BLEAdvertising::addService(BLEService& service)
   return addUuid(service.uuid);
 }
 
-bool BLEAdvertising::addService(BLECentralService& service)
+bool BLEAdvertising::addService(BLEClientService& service)
 {
   // Central service is added to Solicitation UUID
   switch ( service.uuid.size() )

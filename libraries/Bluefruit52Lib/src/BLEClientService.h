@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLECentralService.h
+    @file     BLEClientService.h
     @author   hathach
 
     @section LICENSE
@@ -33,13 +33,13 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLECENTRALSERVICE_H_
-#define BLECENTRALSERVICE_H_
+#ifndef BLECLIENTSERVICE_H_
+#define BLECLIENTSERVICE_H_
 
 #include "bluefruit_common.h"
 #include "BLEUuid.h"
 
-class BLECentralService
+class BLEClientService
 {
   protected:
     uint16_t _conn_hdl;
@@ -48,12 +48,12 @@ class BLECentralService
     virtual void disconnect(void);
 
   public:
-    static BLECentralService* lastService;
+    static BLEClientService* lastService;
 
     BLEUuid uuid;
 
-    BLECentralService(void);
-    BLECentralService(BLEUuid bleuuid);
+    BLEClientService(void);
+    BLEClientService(BLEUuid bleuuid);
 
     virtual bool     begin(void);
 
@@ -67,4 +67,4 @@ class BLECentralService
 
 
 
-#endif /* BLECENTRALSERVICE_H_ */
+#endif /* BLECLIENTSERVICE_H_ */

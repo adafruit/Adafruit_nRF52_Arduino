@@ -41,7 +41,7 @@
 #include "BLECharacteristic.h"
 
 // Forward declaration
-class BLECentralService;
+class BLEClientService;
 
 class BLECentralCharacteristic
 {
@@ -59,7 +59,7 @@ class BLECentralCharacteristic
     void begin(void);
 
     uint16_t valueHandle();
-    BLECentralService& parentService(void);
+    BLEClientService& parentService(void);
 
     /*------------- Read -------------*/
     uint16_t read(void* buffer, int bufsize);
@@ -85,7 +85,7 @@ class BLECentralCharacteristic
     ble_gattc_char_t   _chr;
     uint16_t           _cccd_handle;
 
-    BLECentralService* _service;
+    BLEClientService* _service;
     notify_cb_t        _notify_cb;
     bool               _use_AdaCallback; // whether callback is invoked in seperated task with AdaCallback
 

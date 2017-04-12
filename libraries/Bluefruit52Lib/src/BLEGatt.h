@@ -44,7 +44,7 @@
 #include "BLEService.h"
 
 #include "BLECentralCharacteristic.h"
-#include "BLECentralService.h"
+#include "BLEClientService.h"
 
 #define BLE_GATT_MAX_SERVER_CHARS        40
 
@@ -67,7 +67,7 @@ class BLEGatt
 
     // Client
     bool _addCharacteristic(BLECentralCharacteristic* chr);
-    bool _addService(BLECentralService* svc);
+    bool _addService(BLEClientService* svc);
 
     void _eventHandler(ble_evt_t* evt);
 
@@ -79,7 +79,7 @@ class BLEGatt
 
     struct {
       uint8_t                   _svc_count;
-      BLECentralService*        _svc_list[BLE_GATT_MAX_CLIENT_SERVICE];
+      BLEClientService*        _svc_list[BLE_GATT_MAX_CLIENT_SERVICE];
 
       uint8_t                   _chars_count;
       BLECentralCharacteristic* _chars_list[BLE_GATT_MAX_CLIENT_CHARS];

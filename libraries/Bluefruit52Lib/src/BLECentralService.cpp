@@ -37,27 +37,27 @@
 #include "bluefruit.h"
 
 // Last service that is discovered
-BLECentralService* BLECentralService::lastService = NULL;
+BLEClientService* BLEClientService::lastService = NULL;
 
-void BLECentralService::_init(void)
+void BLEClientService::_init(void)
 {
   _conn_hdl   = BLE_CONN_HANDLE_INVALID;
 }
 
-BLECentralService::BLECentralService(void)
+BLEClientService::BLEClientService(void)
   : uuid()
 {
   _init();
 }
 
-BLECentralService::BLECentralService(BLEUuid bleuuid)
+BLEClientService::BLEClientService(BLEUuid bleuuid)
   : uuid(bleuuid)
 {
   _init();
 }
 
 
-bool BLECentralService::begin(void)
+bool BLEClientService::begin(void)
 {
   // Add UUID128 if needed
   uuid.begin();
@@ -68,24 +68,24 @@ bool BLECentralService::begin(void)
   return true;
 }
 
-bool BLECentralService::discover(uint16_t conn_handle)
+bool BLEClientService::discover(uint16_t conn_handle)
 {
   VERIFY( Bluefruit.Discovery._discoverService(conn_handle, *this) );
   _conn_hdl = conn_handle;
   return true;
 }
 
-bool BLECentralService::discovered(void)
+bool BLEClientService::discovered(void)
 {
   return _conn_hdl != BLE_CONN_HANDLE_INVALID;
 }
 
-uint16_t BLECentralService::connHandle(void)
+uint16_t BLEClientService::connHandle(void)
 {
   return _conn_hdl;
 }
 
-void BLECentralService::disconnect(void)
+void BLEClientService::disconnect(void)
 {
   _conn_hdl   = BLE_CONN_HANDLE_INVALID;
   // inherited service may want to clean up its own characteristic

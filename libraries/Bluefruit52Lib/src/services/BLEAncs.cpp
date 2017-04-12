@@ -72,7 +72,7 @@ const uint8_t BLEANCS_UUID_CHR_DATA[] =
 };
 
 BLEAncs::BLEAncs(void)
-  : BLECentralService(BLEANCS_UUID_SERVICE), _control(BLEANCS_UUID_CHR_CONTROL),
+  : BLEClientService(BLEANCS_UUID_SERVICE), _control(BLEANCS_UUID_CHR_CONTROL),
     _notification(BLEANCS_UUID_CHR_NOTIFICATION), _data(BLEANCS_UUID_CHR_DATA)
 {
   _notif_cb    = NULL;
@@ -85,7 +85,7 @@ BLEAncs::BLEAncs(void)
 bool BLEAncs::begin(void)
 {
   // Invoke base class begin()
-  BLECentralService::begin();
+  BLEClientService::begin();
 
   // Initialize Discovery module if needed
   if ( !Bluefruit.Discovery.begun() ) Bluefruit.Discovery.begin();
@@ -109,7 +109,7 @@ bool BLEAncs::begin(void)
 bool BLEAncs::discover(uint16_t conn_handle)
 {
   // Call BLECentralService discover
-  VERIFY( BLECentralService::discover(conn_handle) );
+  VERIFY( BLEClientService::discover(conn_handle) );
   _conn_hdl = BLE_CONN_HANDLE_INVALID; // make as invalid until we found all chars
 
   // Discover characteristics
@@ -123,7 +123,7 @@ bool BLEAncs::discover(uint16_t conn_handle)
 
 void BLEAncs::disconnect(void)
 {
-  BLECentralService::disconnect();
+  BLEClientService::disconnect();
 }
 
 void BLEAncs::setNotificationCallback(notification_callback_t fp)

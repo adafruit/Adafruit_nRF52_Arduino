@@ -41,7 +41,7 @@
 
 #include "BLEUuid.h"
 #include "BLECentralCharacteristic.h"
-#include "BLECentralService.h"
+#include "BLEClientService.h"
 
 #define BLE_DISCOVERY_TIMEOUT     1000
 
@@ -99,7 +99,7 @@ class BLEDiscovery
      * Although declare as public, it is meant to be invoked by internal
      * code. User should not call these directly
      *------------------------------------------------------------------*/
-    bool     _discoverService(uint16_t conn_handle, BLECentralService& svc, uint16_t start_handle = 1);
+    bool     _discoverService(uint16_t conn_handle, BLEClientService& svc, uint16_t start_handle = 1);
     uint16_t _discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t max_count);
 
     friend class AdafruitBluefruit;

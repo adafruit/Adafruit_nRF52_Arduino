@@ -76,7 +76,7 @@ uint16_t BLECentralCharacteristic::valueHandle()
   return _chr.handle_value;
 }
 
-BLECentralService& BLECentralCharacteristic::parentService (void)
+BLEClientService& BLECentralCharacteristic::parentService (void)
 {
   return *_service;
 }
@@ -109,7 +109,7 @@ void BLECentralCharacteristic::begin(void)
   // Add UUID128 if needed
   uuid.begin();
 
-  _service = BLECentralService::lastService;
+  _service = BLEClientService::lastService;
 
   // Register to Bluefruit (required for callback and write response)
   (void) Bluefruit.Gatt._addCharacteristic(this);

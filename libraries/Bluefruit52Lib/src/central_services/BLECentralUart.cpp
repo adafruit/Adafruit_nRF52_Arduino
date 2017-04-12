@@ -39,7 +39,7 @@
 void bleuart_central_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
 
 BLECentralUart::BLECentralUart(uint16_t fifo_depth)
-  : BLECentralService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD),
+  : BLEClientService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD),
     _fifo(fifo_depth, 1)
 {
   _rx_cb = NULL;
@@ -48,7 +48,7 @@ BLECentralUart::BLECentralUart(uint16_t fifo_depth)
 bool BLECentralUart::begin(void)
 {
   // Invoke base class begin()
-  BLECentralService::begin();
+  BLEClientService::begin();
 
   _rxd.begin();
   _txd.begin();
@@ -77,7 +77,7 @@ void BLECentralUart::setRxCallback( rx_callback_t fp)
 bool BLECentralUart::discover(uint16_t conn_handle)
 {
   // Call BLECentralService discover
-  VERIFY( BLECentralService::discover(conn_handle) );
+  VERIFY( BLEClientService::discover(conn_handle) );
   _conn_hdl = BLE_CONN_HANDLE_INVALID; // make as invalid until we found all chars
 
   // Discover TXD, RXD characteristics
@@ -89,7 +89,7 @@ bool BLECentralUart::discover(uint16_t conn_handle)
 
 void BLECentralUart::disconnect(void)
 {
-  BLECentralService::disconnect();
+  BLEClientService::disconnect();
 
   flush();
 }

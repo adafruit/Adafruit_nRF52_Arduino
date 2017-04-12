@@ -54,7 +54,7 @@
 
 #include "BLECentral.h"
 #include "BLECentralCharacteristic.h"
-#include "BLECentralService.h"
+#include "BLEClientService.h"
 #include "BLEDiscovery.h"
 #include "BLEGap.h"
 #include "BLEGatt.h"

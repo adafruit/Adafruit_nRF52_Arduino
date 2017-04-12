@@ -59,7 +59,7 @@ bool BLEDiscovery::begun(void)
   return (_sem != NULL);
 }
 
-bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLECentralService& svc, uint16_t start_handle)
+bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLEClientService& svc, uint16_t start_handle)
 {
   ble_gattc_evt_prim_srvc_disc_rsp_t disc_svc;
 

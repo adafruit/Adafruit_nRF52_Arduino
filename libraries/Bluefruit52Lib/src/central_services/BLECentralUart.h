@@ -40,11 +40,11 @@
 #include "utility/adafruit_fifo.h"
 
 #include "BLECentralCharacteristic.h"
-#include "BLECentralService.h"
+#include "BLEClientService.h"
 
 #include "services/BLEUart.h"
 
-class BLECentralUart : public BLECentralService, public Stream
+class BLECentralUart : public BLEClientService, public Stream
 {
   public:
     typedef void (*rx_callback_t) (void);
