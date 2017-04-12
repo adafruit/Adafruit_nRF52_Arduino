@@ -70,7 +70,7 @@
 #include "services/BLEMidi.h"
 #include "services/BLEAncs.h"
 
-#include "central_services/BLEClientUart.h"
+#include "clients/BLEClientUart.h"
 
 #define BLE_MAX_DATA_PER_MTU  (GATT_MTU_SIZE_DEFAULT - 3)
 
