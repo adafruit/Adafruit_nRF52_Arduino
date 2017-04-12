@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLECentralCharacteristic.cpp
+    @file     BLEClientCharacteristic.cpp
     @author   hathach
 
     @section LICENSE
