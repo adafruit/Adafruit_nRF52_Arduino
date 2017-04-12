@@ -124,7 +124,7 @@ size_t BLEClientUart::write (uint8_t b)
 
 size_t BLEClientUart::write (const uint8_t *content, size_t len)
 {
-  // do nothing
+  // write without response
   return _rxd.write(content, len);
 }
 
