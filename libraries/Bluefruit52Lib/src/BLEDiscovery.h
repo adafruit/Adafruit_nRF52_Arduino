@@ -64,6 +64,36 @@ class BLEDiscovery
 
     uint8_t  discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic* chr[], uint8_t count);
 
+    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic& chr1)
+    {
+      BLECentralCharacteristic* chr_arr[] = {&chr1};
+      return discoverCharacteristic(conn_handle, chr_arr, arrcount(chr_arr));
+    }
+
+    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic& chr1, BLECentralCharacteristic& chr2)
+    {
+      BLECentralCharacteristic* chr_arr[] = {&chr1, &chr2};
+      return discoverCharacteristic(conn_handle, chr_arr, arrcount(chr_arr));
+    }
+
+    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic& chr1, BLECentralCharacteristic& chr2, BLECentralCharacteristic& chr3)
+    {
+      BLECentralCharacteristic* chr_arr[] = {&chr1, &chr2, &chr3};
+      return discoverCharacteristic(conn_handle, chr_arr, arrcount(chr_arr));
+    }
+
+    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic& chr1, BLECentralCharacteristic& chr2, BLECentralCharacteristic& chr3, BLECentralCharacteristic& chr4)
+    {
+      BLECentralCharacteristic* chr_arr[] = {&chr1, &chr2, &chr3, &chr4};
+      return discoverCharacteristic(conn_handle, chr_arr, arrcount(chr_arr));
+    }
+
+    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic& chr1, BLECentralCharacteristic& chr2, BLECentralCharacteristic& chr3, BLECentralCharacteristic& chr4, BLECentralCharacteristic& chr5)
+    {
+      BLECentralCharacteristic* chr_arr[] = {&chr1, &chr2, &chr3, &chr4, &chr5};
+      return discoverCharacteristic(conn_handle, chr_arr, arrcount(chr_arr));
+    }
+
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal
