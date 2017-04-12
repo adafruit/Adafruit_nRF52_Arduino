@@ -18,7 +18,7 @@
  */
 #include <bluefruit.h>
 
-BLEClientUart bleCentralUart;
+BLEClientUart centralUart;
 
 void setup() 
 {
@@ -32,8 +32,8 @@ void setup()
   Bluefruit.setName("Bluefruit52");
 
   // Init BLE Central Uart Serivce
-  bleCentralUart.begin();
-  bleCentralUart.setRxCallback(uart_rx_callback);
+  centralUart.begin();
+  centralUart.setRxCallback(uart_rx_callback);
 
   // Increase BLink rate to different from PrPh advertising mode 
   Bluefruit.setConnLedInterval(250);
@@ -68,12 +68,12 @@ void connect_callback(uint16_t conn_handle)
 
   Serial.print("Discovering BLE Uart Service ... ");
 
-  if ( bleCentralUart.discover( Bluefruit.Central.connHandle() ) )
+  if ( centralUart.discover( Bluefruit.Central.connHandle() ) )
   {
     Serial.println("Found it");
 
     Serial.println("Enable TXD's notify");
-    bleCentralUart.enableTXD();
+    centralUart.enableTXD();
 
     Serial.println("Ready to receive from peripheral");
   }else
@@ -95,9 +95,9 @@ void uart_rx_callback(void)
 {
   Serial.print("[RX]: ");
   
-  while ( bleCentralUart.available() )
+  while ( centralUart.available() )
   {
-    Serial.print( (char) bleCentralUart.read() );
+    Serial.print( (char) centralUart.read() );
   }
 
   Serial.println();
@@ -108,7 +108,7 @@ void loop()
   if ( Bluefruit.Central.connected() )
   {
     // Not discovered yet
-    if ( bleCentralUart.discovered() )
+    if ( centralUart.discovered() )
     {
       // Discovered means in working state
       // Get Serial input and send to Peripheral
@@ -119,7 +119,7 @@ void loop()
         char str[20+1] = { 0 };
         Serial.readBytes(str, 20);
         
-        bleCentralUart.print( str );
+        centralUart.print( str );
       }
     }
   }

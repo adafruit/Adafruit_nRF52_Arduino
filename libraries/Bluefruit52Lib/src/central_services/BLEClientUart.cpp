@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLECentralUart.cpp
+    @file     BLEClientUart.cpp
     @author   hathach
 
     @section LICENSE
