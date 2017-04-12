@@ -18,7 +18,7 @@
  */
 #include <bluefruit.h>
 
-BLECentralUart bleCentralUart;
+BLEClientUart bleCentralUart;
 
 void setup() 
 {

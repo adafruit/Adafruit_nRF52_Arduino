@@ -33,8 +33,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLECENTRALUART_H_
-#define BLECENTRALUART_H_
+#ifndef BLECLIENTUART_H_
+#define BLECLIENTUART_H_
 
 #include "bluefruit_common.h"
 #include "utility/adafruit_fifo.h"
@@ -44,12 +44,12 @@
 
 #include "services/BLEUart.h"
 
-class BLECentralUart : public BLEClientService, public Stream
+class BLEClientUart : public BLEClientService, public Stream
 {
   public:
     typedef void (*rx_callback_t) (void);
 
-    BLECentralUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
+    BLEClientUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
 
     virtual bool  begin(void);
     virtual bool  discover(uint16_t conn_handle);
@@ -84,4 +84,4 @@ class BLECentralUart : public BLEClientService, public Stream
     friend void bleuart_central_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
 };
 
-#endif /* BLECENTRALUART_H_ */
+#endif /* BLECLIENTUART_H_ */

@@ -38,14 +38,14 @@
 
 void bleuart_central_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
 
-BLECentralUart::BLECentralUart(uint16_t fifo_depth)
+BLEClientUart::BLEClientUart(uint16_t fifo_depth)
   : BLEClientService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD),
     _fifo(fifo_depth, 1)
 {
   _rx_cb = NULL;
 }
 
-bool BLECentralUart::begin(void)
+bool BLEClientUart::begin(void)
 {
   // Invoke base class begin()
   BLEClientService::begin();
@@ -59,22 +59,22 @@ bool BLECentralUart::begin(void)
   return true;
 }
 
-bool BLECentralUart::enableTXD(void)
+bool BLEClientUart::enableTXD(void)
 {
   return _txd.enableNotify();
 }
 
-bool BLECentralUart::disableTXD(void)
+bool BLEClientUart::disableTXD(void)
 {
   return _txd.disableNotify();
 }
 
-void BLECentralUart::setRxCallback( rx_callback_t fp)
+void BLEClientUart::setRxCallback( rx_callback_t fp)
 {
   _rx_cb = fp;
 }
 
-bool BLECentralUart::discover(uint16_t conn_handle)
+bool BLEClientUart::discover(uint16_t conn_handle)
 {
   // Call BLECentralService discover
   VERIFY( BLEClientService::discover(conn_handle) );
@@ -87,7 +87,7 @@ bool BLECentralUart::discover(uint16_t conn_handle)
   return true;
 }
 
-void BLECentralUart::disconnect(void)
+void BLEClientUart::disconnect(void)
 {
   BLEClientService::disconnect();
 
@@ -96,7 +96,7 @@ void BLECentralUart::disconnect(void)
 
 void bleuart_central_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len)
 {
-  BLECentralUart& uart_svc = (BLECentralUart&) chr.parentService();
+  BLEClientUart& uart_svc = (BLEClientUart&) chr.parentService();
   uart_svc._fifo.write(data, len);
 
   // invoke callback
@@ -106,40 +106,40 @@ void bleuart_central_notify_cb(BLECentralCharacteristic& chr, uint8_t* data, uin
 /*------------------------------------------------------------------*/
 /* STREAM API
  *------------------------------------------------------------------*/
-int BLECentralUart::read (void)
+int BLEClientUart::read (void)
 {
   uint8_t ch;
   return read(&ch, 1) ? (int) ch : EOF;
 }
 
-int BLECentralUart::read (uint8_t * buf, size_t size)
+int BLEClientUart::read (uint8_t * buf, size_t size)
 {
   return _fifo.read(buf, size);
 }
 
-size_t BLECentralUart::write (uint8_t b)
+size_t BLEClientUart::write (uint8_t b)
 {
   return write(&b, 1);
 }
 
-size_t BLECentralUart::write (const uint8_t *content, size_t len)
+size_t BLEClientUart::write (const uint8_t *content, size_t len)
 {
   // do nothing
   return _rxd.write(content, len);
 }
 
-int BLECentralUart::available (void)
+int BLEClientUart::available (void)
 {
   return _fifo.count();
 }
 
-int BLECentralUart::peek (void)
+int BLEClientUart::peek (void)
 {
   uint8_t ch;
   return _fifo.peek(&ch) ? (int) ch : EOF;
 }
 
-void BLECentralUart::flush (void)
+void BLEClientUart::flush (void)
 {
   _fifo.clear();
 }
