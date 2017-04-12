@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLECentralService.cpp
+    @file     BLEClientService.cpp
     @author   hathach
 
     @section LICENSE
