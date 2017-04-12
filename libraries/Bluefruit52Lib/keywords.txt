@@ -11,8 +11,8 @@ BLECentral	KEYWORD1
 BLEService	KEYWORD1
 
 BLECharacteristic	KEYWORD1
-BLECentralService	KEYWORD1
-BLECentralCharacteristic	KEYWORD1
+BLEClientService	KEYWORD1
+BLEClientCharacteristic	KEYWORD1
 
 BLEUuid	KEYWORD1
 BLEGap	KEYWORD1
@@ -126,7 +126,7 @@ notifyEnabled	KEYWORD2
 notify	KEYWORD2
 
 #######################################
-# BLECentralService Methods (KEYWORD2)
+# BLEClientService Methods (KEYWORD2)
 #######################################
 
 discover	KEYWORD2
@@ -134,7 +134,7 @@ discovered	KEYWORD2
 connHandle	KEYWORD2
 
 #######################################
-# BLECentralCharacteristic Methods (KEYWORD2)
+# BLEClientCharacteristic Methods (KEYWORD2)
 #######################################
 
 parentService	KEYWORD2

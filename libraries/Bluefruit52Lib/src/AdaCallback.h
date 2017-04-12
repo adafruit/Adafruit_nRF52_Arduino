@@ -68,9 +68,9 @@ static_assert(sizeof(ada_callback_t) == 16, "Incorrect Size");
     XPAND(BLECentral               , scan_callback_t       ) \
     XPAND(BLECentral               , connect_callback_t    ) \
     XPAND(BLECentral               , disconnect_callback_t ) \
-    /* Central Characteristic */                             \
-    XPAND(BLECentralCharacteristic , notify_cb_t           ) \
-    /*XPAND(BLECentralCharacteristic , indicate_cb_t         )*/ \
+    /* Client Characteristic */                             \
+    XPAND(BLEClientCharacteristic , notify_cb_t           ) \
+    /*XPAND(BLEClientCharacteristic , indicate_cb_t         )*/ \
 
 #define ADA_CB_ENUM_XPAND(_class, _cbname) \
     _class##_##_cbname,
