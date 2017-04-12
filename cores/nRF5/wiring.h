@@ -28,7 +28,7 @@ extern void enterSerialDfu(void);
 extern void enterOTADfu(void);
 
 // Hint instruction to tell CPU go to low power mode
-#if 1
+#if 0
 #define waitForEvent()  __WFE()
 #else
 ATTR_ALWAYS_INLINE static inline void waitForEvent(void)
