@@ -104,10 +104,9 @@ void ancs_notification_callback(AncsNotification_t* notif)
   Serial.printf("%-20s | ", app_id);
 
   // Get Application Name ( not work yet)
-  // memset(buffer, 0, sizeof(buffer));
-  // n = bleancs.getAppAttribute(app_id, ANCS_APP_ATTR_DISPLAY_NAME, buffer, sizeof(buffer));
-  // PRINT_INT(n);
-  // Serial.printf("%-20s | ", buffer);
+  memset(buffer, 0, sizeof(buffer));
+  n = bleancs.getAppAttribute(app_id, ANCS_APP_ATTR_DISPLAY_NAME, buffer, sizeof(buffer));
+  Serial.printf("%-15 | ", buffer);
 
   Serial.println();
 
@@ -129,9 +128,10 @@ void connect_callback(void)
     Serial.println("Found it");
 
     // ANCS requires pairing to work, it makes sense to request security here as well
-    Serial.println("Attempt to bond/pair with iOS, please press PAIR on your phone");
+    Serial.print("Attempt to bond/pair with iOS, please press PAIR on your phone ... ");
     if ( Bluefruit.requestPairing() )
     {
+      Serial.println("Done");      
       Serial.println("Enable Notification");
       Serial.println();
       bleancs.enableNotification();
