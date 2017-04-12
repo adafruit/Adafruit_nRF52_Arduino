@@ -129,53 +129,89 @@ uint16_t BLEClientCharacteristic::read(void* buffer, int bufsize)
 /*------------------------------------------------------------------*/
 /* WRITE
  *------------------------------------------------------------------*/
+err_t BLEClientCharacteristic::_write_and_wait_rsp(ble_gattc_write_params_t* param)
+{
+  VERIFY_STATUS ( sd_ble_gattc_write(_service->connHandle(), param) );
+
+  // Wait for WRITE_RESP event
+  return xSemaphoreTake(_sem, ms2tick(BLE_GENERIC_TIMEOUT) ) ? ERROR_NONE : NRF_ERROR_TIMEOUT;
+}
+
 uint16_t BLEClientCharacteristic::write_resp(const void* data, int len)
 {
   // Break into multiple MTU-3 packet
   // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
   // SD132 v3.0 could negotiate MTU to higher number
-  const uint16_t MTU_MPS = 20;
-
-  const uint16_t conn_handle = _service->connHandle();
-
+  // For BLE_GATT_OP_PREP_WRITE_REQ, max data is 18 ( 2 byte is used for offset)
+  enum { MTU_MPS = 20 } ;
+  const bool long_write = (len > MTU_MPS);
   const uint8_t* u8data = (const uint8_t*) data;
+
+  uint32_t status = ERROR_NONE;
 
   // Write Response requires to wait for BLE_GATTC_EVT_WRITE_RSP event
   _sem = xSemaphoreCreateBinary();
 
-  int remaining = len;
-  while( remaining )
+  // CMD WRITE_REQUEST for single transaction
+  if ( !long_write )
   {
-    // Write Req need to wait for response
-    uint16_t packet_len = min16(MTU_MPS, remaining);
+      ble_gattc_write_params_t param =
+      {
+          .write_op = BLE_GATT_OP_WRITE_REQ,
+          .flags    = 0,
+          .handle   = _chr.handle_value,
+          .offset   = 0,
+          .len      = len,
+          .p_value  = (uint8_t* ) u8data
+      };
 
-    ble_gattc_write_params_t param =
-    {
-        .write_op = BLE_GATT_OP_WRITE_REQ,
-        .flags    = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_WRITE,
-        .handle   = _chr.handle_value,
-        .offset   = 0, // For WRITE_CMD and WRITE_REQ, offset must be 0.
-        .len      = packet_len,
-        .p_value  = (uint8_t* ) u8data
-    };
+      status = _write_and_wait_rsp(&param);
+  }
+  else
+  {
+    /*------------- Long Write Prepare -------------*/
+    const uint16_t max_packet = MTU_MPS - 2; // 2 bytes for offset
 
-    uint32_t status = sd_ble_gattc_write(conn_handle, &param);
-    if ( ERROR_NONE != status )
+    int remaining = len;
+    while( remaining )
     {
-      VERIFY_MESS(status);
-      break;
+      uint16_t packet_len = min16(max_packet, remaining);
+
+      ble_gattc_write_params_t param =
+      {
+          .write_op = BLE_GATT_OP_PREP_WRITE_REQ,
+          .flags    = 0,
+          .handle   = _chr.handle_value,
+          .offset   = (uint16_t) len-remaining,
+          .len      = packet_len,
+          .p_value  = (uint8_t* ) u8data
+      };
+      status = _write_and_wait_rsp(&param);
+
+      if ( ERROR_NONE != status ) break;
+
+      remaining -= packet_len;
+      u8data    += packet_len;
     }
 
-    if ( !xSemaphoreTake(_sem, ms2tick(BLE_GENERIC_TIMEOUT) ) ) break;
+    /*------------- Execute Long Write -------------*/
+    ble_gattc_write_params_t param =
+    {
+        .write_op = BLE_GATT_OP_EXEC_WRITE_REQ,
+        .flags    = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_WRITE,
+        .handle   = _chr.handle_value,
+        .offset   = 0,
+        .len      = 0,
+        .p_value  = NULL
+    };
 
-    remaining -= packet_len;
-    u8data    += packet_len;
+    status = _write_and_wait_rsp(&param);
   }
 
   vSemaphoreDelete(_sem);
   _sem = NULL;
 
-  return len - remaining;
+  return (status == ERROR_NONE) ? (uint16_t) len : 0;
 }
 
 uint16_t BLEClientCharacteristic::write(const void* data, int len)
@@ -183,31 +219,28 @@ uint16_t BLEClientCharacteristic::write(const void* data, int len)
   // Break into multiple MTU-3 packet
   // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
   // SD132 v3.0 could negotiate MTU to higher number
-  const uint16_t MTU_MPS = 20;
-
-  const uint16_t conn_handle = _service->connHandle();
-
+  enum { MTU_MPS = 20 } ;
   const uint8_t* u8data = (const uint8_t*) data;
 
   int remaining = len;
   while( remaining )
   {
     // Write CMD consume a TX buffer
-    if ( !Bluefruit.Gap.getTxPacket(conn_handle) )  return BLE_ERROR_NO_TX_PACKETS;
+    if ( !Bluefruit.Gap.getTxPacket(_service->connHandle()) )  return BLE_ERROR_NO_TX_PACKETS;
 
     uint16_t packet_len = min16(MTU_MPS, remaining);
 
     ble_gattc_write_params_t param =
     {
-        .write_op = BLE_GATT_OP_WRITE_CMD,
-        .flags    = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_WRITE,
-        .handle   = _chr.handle_value,
-        .offset   = 0, // For WRITE_CMD and WRITE_REQ, offset must be 0.
-        .len      = packet_len,
+        .write_op = BLE_GATT_OP_WRITE_CMD ,
+        .flags    = 0                     , // not used with BLE_GATT_OP_WRITE_CMD
+        .handle   = _chr.handle_value     ,
+        .offset   = 0                     , // not used with BLE_GATT_OP_WRITE_CMD
+        .len      = packet_len            ,
         .p_value  = (uint8_t* ) u8data
     };
 
-    VERIFY_STATUS( sd_ble_gattc_write(conn_handle, &param), len - remaining );
+    VERIFY_STATUS( sd_ble_gattc_write(_service->connHandle(), &param), len-remaining);
 
     remaining -= packet_len;
     u8data    += packet_len;
@@ -300,8 +333,9 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
     case BLE_GATTC_EVT_WRITE_RSP:
     {
       ble_gattc_evt_write_rsp_t* wr_rsp = (ble_gattc_evt_write_rsp_t*) &evt->evt.gattc_evt.params.write_rsp;
+      (void) wr_rsp;
 
-      if (wr_rsp->write_op == BLE_GATT_OP_WRITE_REQ &&_sem)
+      if (_sem)
       {
         // TODO check evt->evt.gattc_evt.gatt_status
         if (_sem) xSemaphoreGive(_sem);

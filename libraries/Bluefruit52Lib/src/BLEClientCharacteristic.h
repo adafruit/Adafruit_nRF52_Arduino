@@ -91,8 +91,10 @@ class BLEClientCharacteristic
 
     SemaphoreHandle_t  _sem;
 
-    void     _init         (void);
-    void     _eventHandler (ble_evt_t* event);
+    void  _init         (void);
+    void  _eventHandler (ble_evt_t* event);
+
+    err_t _write_and_wait_rsp(ble_gattc_write_params_t* param);
 
     friend class BLEGatt;
 };
