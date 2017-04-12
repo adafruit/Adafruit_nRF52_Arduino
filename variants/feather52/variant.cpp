@@ -76,6 +76,13 @@ void initVariant()
 {
   bootloaderVersion = BOOTLOADER_VERSION_REGISTER;
 
+  // RTC1 is already configured by bootloader. Disable it here
+  NVIC_DisableIRQ(RTC1_IRQn);
+  NRF_RTC1->EVTENCLR    = RTC_EVTEN_COMPARE0_Msk;
+  NRF_RTC1->INTENCLR    = RTC_INTENSET_COMPARE0_Msk;
+  NRF_RTC1->TASKS_STOP  = 1;
+  NRF_RTC1->TASKS_CLEAR = 1;
+
   // LED1 & LED2
   pinMode(PIN_LED1, OUTPUT);
   ledOff(PIN_LED1);

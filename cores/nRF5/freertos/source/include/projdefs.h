@@ -77,16 +77,9 @@
 typedef void (*TaskFunction_t)( void * );
 
 /* Converts a time in milliseconds to a time in ticks. */
-#if configTICK_RATE_HZ == 1000
-#define ms2tick(ms)    (ms)
-#define tick2ms(tck)   (tck)
-#define tick2us(tck)   (1000*(tck))
-#else
 #define ms2tick( xTimeInMs ) ( ( TickType_t ) ( ( ( TickType_t ) ( xTimeInMs ) * ( TickType_t ) configTICK_RATE_HZ ) / ( TickType_t ) 1000 ) )
 #define tick2ms(tck)         ( ( ((uint64_t)(tck)) * 1000) / configTICK_RATE_HZ )
 #define tick2us(tck)         ( ( ((uint64_t)(tck)) * 1000000) / configTICK_RATE_HZ )
-#endif
-
 
 #define pdFALSE			( ( BaseType_t ) 0 )
 #define pdTRUE			( ( BaseType_t ) 1 )
@@ -115,7 +108,7 @@ typedef void (*TaskFunction_t)( void * );
 /* The following endian values are used by FreeRTOS+ components, not FreeRTOS
 itself. */
 #define pdFREERTOS_LITTLE_ENDIAN	0
-#define pdFREERTOS_BIG_ENDIAN		1
+#define pdFREERTOS_BIG_ENDIAN		  1
 
 #endif /* PROJDEFS_H */
 

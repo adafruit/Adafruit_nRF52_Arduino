@@ -28,6 +28,8 @@ void setup()
   Bluefruit.setConnLedInterval(250);
   Bluefruit.Central.setScanCallback(scan_callback);
   Bluefruit.Central.startScanning();
+
+  Serial.println("Scanning ...");
 }
 
 void scan_callback(ble_gap_evt_adv_report_t* report)
