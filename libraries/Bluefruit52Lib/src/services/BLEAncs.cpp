@@ -38,8 +38,8 @@
 
 #define BLE_ANCS_TIMEOUT   (4*BLE_GENERIC_TIMEOUT)
 
-void bleancs_notification_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
-void bleancs_data_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
+void bleancs_notification_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
+void bleancs_data_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
 
 /* ANCS Service        : 7905F431-B5CE-4E99-A40F-4B1E122D00D0
  * Notification Source : 9FBF120D-6301-42D9-8C58-25E699A21DBD
@@ -113,7 +113,7 @@ bool BLEAncs::discover(uint16_t conn_handle)
   _conn_hdl = BLE_CONN_HANDLE_INVALID; // make as invalid until we found all chars
 
   // Discover characteristics
-  BLECentralCharacteristic* chr_arr[] = { &_control, &_notification, &_data };
+  BLEClientCharacteristic* chr_arr[] = { &_control, &_notification, &_data };
 
   VERIFY( 3 == Bluefruit.Discovery.discoverCharacteristic(conn_handle, chr_arr, 3) );
 
@@ -328,13 +328,13 @@ void BLEAncs::_handleData(uint8_t* data, uint16_t len)
 /*------------------------------------------------------------------*/
 /* Callback
  *------------------------------------------------------------------*/
-void bleancs_notification_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len)
+void bleancs_notification_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len)
 {
   BLEAncs& svc = (BLEAncs&) chr.parentService();
   svc._handleNotification(data, len);
 }
 
-void bleancs_data_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len)
+void bleancs_data_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len)
 {
   BLEAncs& svc = (BLEAncs&) chr.parentService();
   svc._handleData(data, len);

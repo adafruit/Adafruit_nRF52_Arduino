@@ -38,9 +38,9 @@
 
 #include <Arduino.h>
 #include "bluefruit_common.h"
+#include "BLEClientCharacteristic.h"
 
 #include "BLEUuid.h"
-#include "BLECentralCharacteristic.h"
 #include "BLEClientService.h"
 
 #define BLE_DISCOVERY_TIMEOUT     1000
@@ -62,35 +62,35 @@ class BLEDiscovery
     void     begin(void);
     bool     begun(void);
 
-    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic* chr[], uint8_t count);
+    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLEClientCharacteristic* chr[], uint8_t count);
 
-    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic& chr1)
+    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLEClientCharacteristic& chr1)
     {
-      BLECentralCharacteristic* chr_arr[] = {&chr1};
+      BLEClientCharacteristic* chr_arr[] = {&chr1};
       return discoverCharacteristic(conn_handle, chr_arr, arrcount(chr_arr));
     }
 
-    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic& chr1, BLECentralCharacteristic& chr2)
+    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLEClientCharacteristic& chr1, BLEClientCharacteristic& chr2)
     {
-      BLECentralCharacteristic* chr_arr[] = {&chr1, &chr2};
+      BLEClientCharacteristic* chr_arr[] = {&chr1, &chr2};
       return discoverCharacteristic(conn_handle, chr_arr, arrcount(chr_arr));
     }
 
-    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic& chr1, BLECentralCharacteristic& chr2, BLECentralCharacteristic& chr3)
+    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLEClientCharacteristic& chr1, BLEClientCharacteristic& chr2, BLEClientCharacteristic& chr3)
     {
-      BLECentralCharacteristic* chr_arr[] = {&chr1, &chr2, &chr3};
+      BLEClientCharacteristic* chr_arr[] = {&chr1, &chr2, &chr3};
       return discoverCharacteristic(conn_handle, chr_arr, arrcount(chr_arr));
     }
 
-    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic& chr1, BLECentralCharacteristic& chr2, BLECentralCharacteristic& chr3, BLECentralCharacteristic& chr4)
+    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLEClientCharacteristic& chr1, BLEClientCharacteristic& chr2, BLEClientCharacteristic& chr3, BLEClientCharacteristic& chr4)
     {
-      BLECentralCharacteristic* chr_arr[] = {&chr1, &chr2, &chr3, &chr4};
+      BLEClientCharacteristic* chr_arr[] = {&chr1, &chr2, &chr3, &chr4};
       return discoverCharacteristic(conn_handle, chr_arr, arrcount(chr_arr));
     }
 
-    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic& chr1, BLECentralCharacteristic& chr2, BLECentralCharacteristic& chr3, BLECentralCharacteristic& chr4, BLECentralCharacteristic& chr5)
+    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLEClientCharacteristic& chr1, BLEClientCharacteristic& chr2, BLEClientCharacteristic& chr3, BLEClientCharacteristic& chr4, BLEClientCharacteristic& chr5)
     {
-      BLECentralCharacteristic* chr_arr[] = {&chr1, &chr2, &chr3, &chr4, &chr5};
+      BLEClientCharacteristic* chr_arr[] = {&chr1, &chr2, &chr3, &chr4, &chr5};
       return discoverCharacteristic(conn_handle, chr_arr, arrcount(chr_arr));
     }
 

@@ -65,7 +65,7 @@ void adafruit_callback_task(void* arg)
         break;
 
         case BLECentralCharacteristic_notify_cb_t:
-          ((BLECentralCharacteristic::notify_cb_t) func) ( *((BLECentralCharacteristic*) args[0]), (uint8_t*) args[1], (uint16_t) args[2] );
+          ((BLEClientCharacteristic::notify_cb_t) func) ( *((BLEClientCharacteristic*) args[0]), (uint8_t*) args[1], (uint16_t) args[2] );
         break;
 
         default: VERIFY_MESS(NRF_ERROR_INVALID_PARAM); break;

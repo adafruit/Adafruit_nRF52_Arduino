@@ -39,7 +39,7 @@
 
 #define MAX_DESCIRPTORS         8
 
-void BLECentralCharacteristic::_init(void)
+void BLEClientCharacteristic::_init(void)
 {
   varclr(&_chr);
   _cccd_handle = 0;
@@ -49,39 +49,39 @@ void BLECentralCharacteristic::_init(void)
   _sem       = NULL;
 }
 
-BLECentralCharacteristic::BLECentralCharacteristic(void)
+BLEClientCharacteristic::BLEClientCharacteristic(void)
   : uuid()
 {
   _init();
 }
 
-BLECentralCharacteristic::BLECentralCharacteristic(BLEUuid bleuuid)
+BLEClientCharacteristic::BLEClientCharacteristic(BLEUuid bleuuid)
   : uuid(bleuuid)
 {
   _init();
 }
 
-void BLECentralCharacteristic::assign(ble_gattc_char_t* gattc_chr)
+void BLEClientCharacteristic::assign(ble_gattc_char_t* gattc_chr)
 {
   _chr = *gattc_chr;
 }
 
-void BLECentralCharacteristic::useAdaCallback(bool enabled)
+void BLEClientCharacteristic::useAdaCallback(bool enabled)
 {
   _use_AdaCallback = enabled;
 }
 
-uint16_t BLECentralCharacteristic::valueHandle()
+uint16_t BLEClientCharacteristic::valueHandle()
 {
   return _chr.handle_value;
 }
 
-BLEClientService& BLECentralCharacteristic::parentService (void)
+BLEClientService& BLEClientCharacteristic::parentService (void)
 {
   return *_service;
 }
 
-bool BLECentralCharacteristic::discoverDescriptor(uint16_t conn_handle)
+bool BLEClientCharacteristic::discoverDescriptor(uint16_t conn_handle)
 {
   struct {
     uint16_t count;
@@ -104,7 +104,7 @@ bool BLECentralCharacteristic::discoverDescriptor(uint16_t conn_handle)
   return true;
 }
 
-void BLECentralCharacteristic::begin(void)
+void BLEClientCharacteristic::begin(void)
 {
   // Add UUID128 if needed
   uuid.begin();
@@ -118,7 +118,7 @@ void BLECentralCharacteristic::begin(void)
 /*------------------------------------------------------------------*/
 /* READ
  *------------------------------------------------------------------*/
-uint16_t BLECentralCharacteristic::read(void* buffer, int bufsize)
+uint16_t BLEClientCharacteristic::read(void* buffer, int bufsize)
 {
   // TODO implement READ
 //  VERIFY_STATUS( sd_ble_gattc_read(Bluefruit.Central.connHandle(), _chr.handle_value, offset), 0 );
@@ -129,7 +129,7 @@ uint16_t BLECentralCharacteristic::read(void* buffer, int bufsize)
 /*------------------------------------------------------------------*/
 /* WRITE
  *------------------------------------------------------------------*/
-uint16_t BLECentralCharacteristic::write_resp(const void* data, int len)
+uint16_t BLEClientCharacteristic::write_resp(const void* data, int len)
 {
   // Break into multiple MTU-3 packet
   // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
@@ -178,7 +178,7 @@ uint16_t BLECentralCharacteristic::write_resp(const void* data, int len)
   return len - remaining;
 }
 
-uint16_t BLECentralCharacteristic::write(const void* data, int len)
+uint16_t BLEClientCharacteristic::write(const void* data, int len)
 {
   // Break into multiple MTU-3 packet
   // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
@@ -216,12 +216,12 @@ uint16_t BLECentralCharacteristic::write(const void* data, int len)
   return len;
 }
 
-void BLECentralCharacteristic::setNotifyCallback(notify_cb_t fp)
+void BLEClientCharacteristic::setNotifyCallback(notify_cb_t fp)
 {
   _notify_cb = fp;
 }
 
-bool BLECentralCharacteristic::writeCCCD(uint16_t value)
+bool BLEClientCharacteristic::writeCCCD(uint16_t value)
 {
   const uint16_t conn_handle = _service->connHandle();
 
@@ -243,29 +243,29 @@ bool BLECentralCharacteristic::writeCCCD(uint16_t value)
   return true;
 }
 
-bool BLECentralCharacteristic::enableNotify(void)
+bool BLEClientCharacteristic::enableNotify(void)
 {
   VERIFY( _chr.char_props.notify );
   return writeCCCD(0x0001);
 }
 
-bool BLECentralCharacteristic::disableNotify(void)
+bool BLEClientCharacteristic::disableNotify(void)
 {
   return writeCCCD(0x0000);
 }
 
-bool BLECentralCharacteristic::enableIndicate  (void)
+bool BLEClientCharacteristic::enableIndicate  (void)
 {
   VERIFY( _chr.char_props.indicate );
   return writeCCCD(0x0002);
 }
 
-bool BLECentralCharacteristic::disableIndicate (void)
+bool BLEClientCharacteristic::disableIndicate (void)
 {
   return writeCCCD(0x0000);
 }
 
-void BLECentralCharacteristic::_eventHandler(ble_evt_t* evt)
+void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
 {
   switch(evt->header.evt_id)
   {

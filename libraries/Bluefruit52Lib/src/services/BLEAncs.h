@@ -36,9 +36,9 @@
 #ifndef BLEANCS_H_
 #define BLEANCS_H_
 
+#include "../BLEClientCharacteristic.h"
 #include "bluefruit_common.h"
 
-#include "BLECentralCharacteristic.h"
 #include "BLEClientService.h"
 
 extern const uint8_t BLEANCS_UUID_SERVICE[];
@@ -151,9 +151,9 @@ class BLEAncs : public BLEClientService
     virtual void  disconnect(void);
 
   private:
-    BLECentralCharacteristic _control;
-    BLECentralCharacteristic _notification;
-    BLECentralCharacteristic _data;
+    BLEClientCharacteristic _control;
+    BLEClientCharacteristic _notification;
+    BLEClientCharacteristic _data;
 
     notification_callback_t  _notif_cb;
 
@@ -165,8 +165,8 @@ class BLEAncs : public BLEClientService
     void _handleNotification(uint8_t* data, uint16_t len);
     void _handleData(uint8_t* data, uint16_t len);
 
-    friend void bleancs_notification_cb(BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
-    friend void bleancs_data_cb        (BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
+    friend void bleancs_notification_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
+    friend void bleancs_data_cb        (BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
 };
 
 

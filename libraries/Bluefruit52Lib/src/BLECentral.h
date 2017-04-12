@@ -41,9 +41,9 @@
 
 #include "BLEUuid.h"
 #include "BLECharacteristic.h"
+#include "BLEClientCharacteristic.h"
 #include "BLEService.h"
 
-#include "BLECentralCharacteristic.h"
 #include "BLEClientService.h"
 
 

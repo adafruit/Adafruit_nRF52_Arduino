@@ -53,7 +53,7 @@
 #include "BLEService.h"
 
 #include "BLECentral.h"
-#include "BLECentralCharacteristic.h"
+#include "BLEClientCharacteristic.h"
 #include "BLEClientService.h"
 #include "BLEDiscovery.h"
 #include "BLEGap.h"

@@ -33,8 +33,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLECENTRALCHARACTERISTIC_H_
-#define BLECENTRALCHARACTERISTIC_H_
+#ifndef BLECLIENTCHARACTERISTIC_H_
+#define BLECLIENTCHARACTERISTIC_H_
 
 #include "bluefruit_common.h"
 #include "BLEUuid.h"
@@ -43,16 +43,16 @@
 // Forward declaration
 class BLEClientService;
 
-class BLECentralCharacteristic
+class BLEClientCharacteristic
 {
   public:
-    typedef void (*notify_cb_t  ) (BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
-    typedef void (*indicate_cb_t) (BLECentralCharacteristic& chr, uint8_t* data, uint16_t len);
+    typedef void (*notify_cb_t  ) (BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
+    typedef void (*indicate_cb_t) (BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
 
     BLEUuid uuid;
 
-    BLECentralCharacteristic(void);
-    BLECentralCharacteristic(BLEUuid bleuuid);
+    BLEClientCharacteristic(void);
+    BLEClientCharacteristic(BLEUuid bleuuid);
 
     void assign(ble_gattc_char_t* gattc_chr);
     bool discoverDescriptor(uint16_t conn_handle);
@@ -97,4 +97,4 @@ class BLECentralCharacteristic
     friend class BLEGatt;
 };
 
-#endif /* BLECENTRALCHARACTERISTIC_H_ */
+#endif /* BLECLIENTCHARACTERISTIC_H_ */

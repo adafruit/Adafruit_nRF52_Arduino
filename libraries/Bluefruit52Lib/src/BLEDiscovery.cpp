@@ -84,7 +84,7 @@ bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLEClientService& svc,
   return false;
 }
 
-uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLECentralCharacteristic* chr[], uint8_t count)
+uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientCharacteristic* chr[], uint8_t count)
 {
   uint8_t found = 0;
 

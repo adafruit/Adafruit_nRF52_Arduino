@@ -89,7 +89,7 @@ bool BLEGatt::_addCharacteristic(BLECharacteristic* chr)
 
 
 
-bool BLEGatt::_addCharacteristic(BLECentralCharacteristic* chr)
+bool BLEGatt::_addCharacteristic(BLEClientCharacteristic* chr)
 {
   VERIFY( client._chars_count < BLE_GATT_MAX_CLIENT_CHARS );
   client._chars_list[ client._chars_count++ ] = chr;
