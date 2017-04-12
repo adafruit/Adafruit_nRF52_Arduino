@@ -52,7 +52,7 @@ class SoftwareTimer
     }
 
     void start(void) { xTimerStart(_handle, 0); }
-    void stop (void)  { xTimerStop(_handle, 0); }
+    void stop (void) { xTimerStop (_handle, 0); }
 
     void setPeriod(uint32_t ms)
     {

@@ -74,6 +74,10 @@
 
 #define ROUNDED_DIV(A, B) (((A) + ((B) / 2)) / (B))
 
+#ifdef SOFTDEVICE_PRESENT
+#include "nrf_soc.h"
+#endif
+
 /*-----------------------------------------------------------
  * Implementation of functions defined in portable.h for the ARM CM4F port.
  * CMSIS compatible layer to menage SysTick ticking source.
@@ -81,9 +85,6 @@
 
 #if configTICK_SOURCE == FREERTOS_USE_SYSTICK
 
-#ifdef SOFTDEVICE_PRESENT
-#include "nrf_soc.h"
-#endif
 
 #ifndef configSYSTICK_CLOCK_HZ
     #define configSYSTICK_CLOCK_HZ configCPU_CLOCK_HZ
@@ -111,7 +112,7 @@ void xPortSysTickHandler( void )
     ( void ) portSET_INTERRUPT_MASK_FROM_ISR();
     {
         /* Increment the RTOS tick. */
-        if( xTaskIncrementTick() != pdFALSE )
+        if ( xTaskIncrementTick() != pdFALSE )
         {
             /* A context switch is required.  Context switching is performed in
             the PendSV interrupt.  Pend the PendSV interrupt. */
@@ -145,58 +146,63 @@ void vPortSetupTimerInterrupt( void )
 #error This port does not support 16 bit ticks.
 #endif
 
-//#include "nrf_rtc.h"
-//#include "nrf_drv_clock.h"
+#define RTC_EVENT_CLEAR(_base, _reg) \
+  do {\
+    _base->_reg = 0;\
+    volatile uint32_t dummy = _base->_reg; /* required by M4 !!! */\
+    (void) dummy;\
+  }while (0)
 
 
+static volatile TickType_t m_tick_overflow_count = 0;
+#define portNRF_RTC_BITWIDTH 24
 /*-----------------------------------------------------------*/
 
 void xPortSysTickHandler( void )
 {
-//    nrf_rtc_event_clear(portNRF_RTC_REG, NRF_RTC_EVENT_TICK);
-    portNRF_RTC_REG->EVENTS_TICK = 0;
-    uint32_t dummy = portNRF_RTC_REG->EVENTS_TICK;
-    (void) dummy;
-
 #if configUSE_TICKLESS_IDLE == 1
-//    nrf_rtc_event_clear(portNRF_RTC_REG, NRF_RTC_EVENT_COMPARE_0);
-    portNRF_RTC_REG->EVENTS_COMPARE[0] = 0;
-    uint32_t dummy2 = portNRF_RTC_REG->EVENTS_COMPARE[0];
-    (void) dummy2;
+    RTC_EVENT_CLEAR(portNRF_RTC_REG, EVENTS_COMPARE[0]);
 #endif
 
-    /* The SysTick runs at the lowest interrupt priority, so when this interrupt
-    executes all interrupts must be unmasked.  There is therefore no need to
-    save and then restore the interrupt mask value as its value is already
-    known. */
-    ( void ) portSET_INTERRUPT_MASK_FROM_ISR();
-    do{
-#if configUSE_TICKLESS_IDLE == 1
+    BaseType_t switch_req = pdFALSE;
+    uint32_t isrstate = portSET_INTERRUPT_MASK_FROM_ISR();
+
+    uint32_t systick_counter = portNRF_RTC_REG->COUNTER;
+    RTC_EVENT_CLEAR(portNRF_RTC_REG, EVENTS_TICK);
+
+    /* check for overflow in TICK counter */
+    if(portNRF_RTC_REG->EVENTS_OVRFLW)
+    {
+        RTC_EVENT_CLEAR(portNRF_RTC_REG, EVENTS_OVRFLW);
+        m_tick_overflow_count++;
+    }
+
+    if (configUSE_DISABLE_TICK_AUTO_CORRECTION_DEBUG == 0)
+    {
+        /* check FreeRTOSConfig.h file for more details on configUSE_DISABLE_TICK_AUTO_CORRECTION_DEBUG */
         TickType_t diff;
-        TickType_t actualTicks = xTaskGetTickCountFromISR();
-        TickType_t hwTicks     = nrf_rtc_counter_get(portNRF_RTC_REG);
+        diff = ((m_tick_overflow_count << portNRF_RTC_BITWIDTH) + systick_counter) - xTaskGetTickCount();
 
-        diff = (hwTicks - actualTicks) & portNRF_RTC_MAXTICKS;
-        if(diff <= 0)
+        while((diff--) > 0)
         {
-            break;
+            switch_req |= xTaskIncrementTick();
         }
+    }
+    else
+    {
+        switch_req = xTaskIncrementTick();
+    }
 
-        if(diff > 2) // Correct internat ticks
-        {
-            vTaskStepTick(diff - 1);
-        }
-#endif
-        /* Increment the RTOS tick. */
-        if( xTaskIncrementTick() != pdFALSE )
-        {
-            /* A context switch is required.  Context switching is performed in
-            the PendSV interrupt.  Pend the PendSV interrupt. */
-            SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
-            __SEV();
-        }
-    }while(0);
-    portCLEAR_INTERRUPT_MASK_FROM_ISR( 0 );
+    /* Increment the RTOS tick as usual which checks if there is a need for rescheduling */
+    if ( switch_req != pdFALSE )
+    {
+        /* A context switch is required.  Context switching is performed in
+        the PendSV interrupt.  Pend the PendSV interrupt. */
+        SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+        __SEV();
+    }
+
+    portCLEAR_INTERRUPT_MASK_FROM_ISR( isrstate );
 }
 
 /*
@@ -214,11 +220,13 @@ void vPortSetupTimerInterrupt( void )
     nrf_rtc_int_enable   (portNRF_RTC_REG, RTC_INTENSET_TICK_Msk);
     nrf_rtc_task_trigger (portNRF_RTC_REG, NRF_RTC_TASK_CLEAR);
     nrf_rtc_task_trigger (portNRF_RTC_REG, NRF_RTC_TASK_START);
+    nrf_rtc_event_enable(portNRF_RTC_REG, RTC_EVTEN_OVRFLW_Msk);
 #else
-    portNRF_RTC_REG->PRESCALER = portNRF_RTC_PRESCALER;
-    portNRF_RTC_REG->INTENSET  = RTC_INTENSET_TICK_Msk;
+    portNRF_RTC_REG->PRESCALER   = portNRF_RTC_PRESCALER;
+    portNRF_RTC_REG->INTENSET    = RTC_INTENSET_TICK_Msk;
     portNRF_RTC_REG->TASKS_CLEAR = 1;
     portNRF_RTC_REG->TASKS_START = 1;
+    portNRF_RTC_REG->EVTENSET    = RTC_EVTEN_OVRFLW_Msk;
 #endif
 
     NVIC_SetPriority(portNRF_RTC_IRQn, configKERNEL_INTERRUPT_PRIORITY);
@@ -229,62 +237,118 @@ void vPortSetupTimerInterrupt( void )
 
 void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
 {
-    TickType_t wakeupTime;
+    /*
+     * Implementation note:
+     *
+     * To help debugging the option configUSE_TICKLESS_IDLE_SIMPLE_DEBUG was presented.
+     * This option would make sure that even if program execution was stopped inside
+     * this function no more than expected number of ticks would be skipped.
+     *
+     * Normally RTC works all the time even if firmware execution was stopped
+     * and that may lead to skipping too much of ticks.
+     */
+    TickType_t enterTime;
 
     /* Make sure the SysTick reload value does not overflow the counter. */
-    if( xExpectedIdleTime > portNRF_RTC_MAXTICKS - configEXPECTED_IDLE_TIME_BEFORE_SLEEP )
+    if ( xExpectedIdleTime > portNRF_RTC_MAXTICKS - configEXPECTED_IDLE_TIME_BEFORE_SLEEP )
     {
         xExpectedIdleTime = portNRF_RTC_MAXTICKS - configEXPECTED_IDLE_TIME_BEFORE_SLEEP;
     }
-    /* Block the scheduler now */
-    portDISABLE_INTERRUPTS();
-
-    /* Stop tick events */
-    nrf_rtc_int_disable(portNRF_RTC_REG, NRF_RTC_INT_TICK_MASK);
-
-    /* Configure CTC interrupt */
-    wakeupTime = nrf_rtc_counter_get(portNRF_RTC_REG) + xExpectedIdleTime;
-    wakeupTime &= portNRF_RTC_MAXTICKS;
-    nrf_rtc_cc_set(portNRF_RTC_REG, 0, wakeupTime);
-    nrf_rtc_event_clear(portNRF_RTC_REG, NRF_RTC_EVENT_COMPARE_0);
-    nrf_rtc_int_enable(portNRF_RTC_REG, NRF_RTC_INT_COMPARE0_MASK);
-
-    if( eTaskConfirmSleepModeStatus() == eAbortSleep )
-    {
-        portENABLE_INTERRUPTS();
-    }
-    else
-    {
-        TickType_t xModifiableIdleTime = xExpectedIdleTime;
-        configPRE_SLEEP_PROCESSING( xModifiableIdleTime );
-        if( xModifiableIdleTime > 0 )
-        {
-            __DSB();
+    /* Block all the interrupts globally */
 #ifdef SOFTDEVICE_PRESENT
-            /* With SD there is no problem with possibility of interrupt lost.
-             * every interrupt is counted and the counter is processed inside
-             * sd_app_evt_wait function. */
-            portENABLE_INTERRUPTS();
-            sd_app_evt_wait();
+    do{
+        uint8_t dummy = 0;
+        uint32_t err_code = sd_nvic_critical_region_enter(&dummy);
+        APP_ERROR_CHECK(err_code);
+    }while(0);
 #else
-            /* No SD -  we would just block interrupts globally.
-             * BASEPRI cannot be used for that because it would prevent WFE from wake up.
-             */
-            __disable_irq();
-            portENABLE_INTERRUPTS();
-            do{
-                __WFE();
-            } while(0 == (NVIC->ISPR[0] | NVIC->ISPR[1]));
-            __enable_irq();
+    __disable_irq();
 #endif
+
+    enterTime = nrf_rtc_counter_get(portNRF_RTC_REG);
+
+    if ( eTaskConfirmSleepModeStatus() != eAbortSleep )
+    {
+        TickType_t xModifiableIdleTime;
+        TickType_t wakeupTime = (enterTime + xExpectedIdleTime) & portNRF_RTC_MAXTICKS;
+
+        /* Stop tick events */
+        nrf_rtc_int_disable(portNRF_RTC_REG, NRF_RTC_INT_TICK_MASK);
+
+        /* Configure CTC interrupt */
+        nrf_rtc_cc_set(portNRF_RTC_REG, 0, wakeupTime);
+        nrf_rtc_event_clear(portNRF_RTC_REG, NRF_RTC_EVENT_COMPARE_0);
+        nrf_rtc_int_enable(portNRF_RTC_REG, NRF_RTC_INT_COMPARE0_MASK);
+
+        __DSB();
+
+        /* Sleep until something happens.  configPRE_SLEEP_PROCESSING() can
+         * set its parameter to 0 to indicate that its implementation contains
+         * its own wait for interrupt or wait for event instruction, and so wfi
+         * should not be executed again.  However, the original expected idle
+         * time variable must remain unmodified, so a copy is taken. */
+        xModifiableIdleTime = xExpectedIdleTime;
+        configPRE_SLEEP_PROCESSING( xModifiableIdleTime );
+        if ( xModifiableIdleTime > 0 )
+        {
+#ifdef SOFTDEVICE_PRESENT
+            if (softdevice_handler_is_enabled())
+            {
+                uint32_t err_code = sd_app_evt_wait();
+                APP_ERROR_CHECK(err_code);
+            }
+            else
+#endif
+            {
+                /* No SD -  we would just block interrupts globally.
+                * BASEPRI cannot be used for that because it would prevent WFE from wake up.
+                */
+                do{
+                    __WFE();
+                } while (0 == (NVIC->ISPR[0] | NVIC->ISPR[1]));
+            }
         }
         configPOST_SLEEP_PROCESSING( xExpectedIdleTime );
-        portENABLE_INTERRUPTS();
+
+        nrf_rtc_int_disable(portNRF_RTC_REG, NRF_RTC_INT_COMPARE0_MASK);
+        nrf_rtc_event_clear(portNRF_RTC_REG, NRF_RTC_EVENT_COMPARE_0);
+
+        /* Correct the system ticks */
+        {
+            TickType_t diff;
+
+            nrf_rtc_event_clear(portNRF_RTC_REG, NRF_RTC_EVENT_TICK);
+            nrf_rtc_int_enable (portNRF_RTC_REG, NRF_RTC_INT_TICK_MASK);
+
+            /* check for overflow in TICK counter */
+            if(nrf_rtc_event_pending(portNRF_RTC_REG, NRF_RTC_EVENT_OVERFLOW))
+            {
+                nrf_rtc_event_clear(portNRF_RTC_REG, NRF_RTC_EVENT_OVERFLOW);
+                m_tick_overflow_count++;
+            }
+
+            diff = ((m_tick_overflow_count << portNRF_RTC_BITWIDTH) + nrf_rtc_counter_get(portNRF_RTC_REG)) - xTaskGetTickCount();
+
+            /* It is important that we clear pending here so that our corrections are latest and in sync with tick_interrupt handler */
+            NVIC_ClearPendingIRQ(portNRF_RTC_IRQn);
+
+            if((configUSE_TICKLESS_IDLE_SIMPLE_DEBUG) && (diff > xExpectedIdleTime))
+            {
+                diff = xExpectedIdleTime;
+            }
+
+            if (diff > 0)
+            {
+                vTaskStepTick(diff);
+            }
+        }
     }
-    // We can do operations below safely, because when we are inside vPortSuppressTicksAndSleep
-    // scheduler is already suspended.
-    nrf_rtc_int_disable(portNRF_RTC_REG, NRF_RTC_INT_COMPARE0_MASK);
-    nrf_rtc_int_enable (portNRF_RTC_REG, NRF_RTC_INT_TICK_MASK);
+#ifdef SOFTDEVICE_PRESENT
+    uint32_t err_code = sd_nvic_critical_region_exit(0);
+    APP_ERROR_CHECK(err_code);
+#else
+    __enable_irq();
+#endif
 }
 
 #endif // configUSE_TICKLESS_IDLE

@@ -4,12 +4,12 @@
 
 - Add HardwarePWM class to support up to 12 channels and compatible with Neopixel library
 - Add waitForEvent() as alias to __WFE() instruction
+- Change FreeRTOS tick source from systick to RTC for low-power mode. configTICK_RATE_HZ changed to 1024. Upgrade port_cmsis_systick.c to sdk13 for bug fix
 - Enable FreeRTOS's Idle hook, and call waitForEvent() in the Idle hook.
 - Add rtos_idle_callback() as optional callback for user to handle background task
 - Add mutex to prevent uart conflict
-- Change FreeRTOS tick source from systick to RTC for low-power mode
 - Add SoftwareTimer class as wrapper for FreeRTOS software timer
-- Increase configMINIMAL_STACK_SIZE from 60 to 100
+- Increase configMINIMAL_STACK_SIZE from 60 to 100, Increase configTIMER_TASK_STACK_DEPTH from 80 to 100
 
 #### New Example
 
