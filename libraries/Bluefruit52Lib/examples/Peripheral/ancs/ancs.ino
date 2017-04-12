@@ -106,7 +106,7 @@ void ancs_notification_callback(AncsNotification_t* notif)
   // Get Application Name ( not work yet)
   memset(buffer, 0, sizeof(buffer));
   n = bleancs.getAppAttribute(app_id, ANCS_APP_ATTR_DISPLAY_NAME, buffer, sizeof(buffer));
-  Serial.printf("%-15 | ", buffer);
+  Serial.printf("%-15s | ", buffer);
 
   Serial.println();
 
@@ -136,8 +136,8 @@ void connect_callback(void)
       Serial.println();
       bleancs.enableNotification();
 
-      Serial.println("| Event    | Category (count)     | Title          | Message         | App ID               | App Name      |");
-      Serial.println("-------------------------------------------------------------------------------------------------------------");
+      Serial.println("| Event    | Category (count)     | Title          | Message         | App ID               | App Name        |");
+      Serial.println("---------------------------------------------------------------------------------------------------------------");
     }
   }
 }

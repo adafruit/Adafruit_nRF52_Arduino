@@ -201,7 +201,6 @@ uint16_t BLEAncs::getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_
   _evt_bufsize = bufsize;
 
   // Write command using write response
-  PRINT_BUFFER(&command, cmdlen);
   VERIFY( cmdlen == _control.write_resp(&command, cmdlen), 0);
 
   // wait for 1st response's data arrived to parse attribute length
@@ -251,7 +250,12 @@ uint16_t BLEAncs::getAppAttribute(const char* appid, uint8_t attr, void* buffer,
 
   // Write command using write response
   PRINT_BUFFER(command, cmdlen);
-  (void) _control.write_resp(command, cmdlen);
+  if ( cmdlen != _control.write_resp(command, cmdlen) )
+  {
+    rtos_free(command);
+    return 0;
+  }
+
   rtos_free(command);
 
   // Phase 1: Get data until Attribute Length is known
