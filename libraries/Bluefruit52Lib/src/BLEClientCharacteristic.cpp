@@ -42,11 +42,14 @@
 void BLEClientCharacteristic::_init(void)
 {
   varclr(&_chr);
-  _cccd_handle = 0;
+  _cccd_handle     = 0;
 
-  _notify_cb = NULL;
+  _notify_cb       = NULL;
   _use_AdaCallback = true;
-  _sem       = NULL;
+
+  _sem             = NULL;
+  _evt_buf         = NULL;
+  _evt_bufsize     = 0;
 }
 
 BLEClientCharacteristic::BLEClientCharacteristic(void)
@@ -130,12 +133,19 @@ uint16_t BLEClientCharacteristic::read(void* buffer, uint16_t bufsize)
   VERIFY( _chr.char_props.read, 0 );
   uint16_t rxlen = 0;
 
-  // Used to wait for BLE_GATTC_EVT_READ_RSP event
+  // Semaphore to wait for BLE_GATTC_EVT_READ_RSP event
   _sem = xSemaphoreCreateBinary();
+
+  _evt_buf     = buffer;
+  _evt_bufsize = bufsize;
 
   sd_ble_gattc_read(_service->connHandle(), _chr.handle_value, rxlen);
 
   xSemaphoreTake(_sem, ms2tick(BLE_GENERIC_TIMEOUT));
+
+
+  _evt_buf     = NULL;
+  _evt_bufsize = 0;
 
     vSemaphoreDelete(_sem);
   _sem = NULL;
@@ -146,19 +156,18 @@ uint16_t BLEClientCharacteristic::read(void* buffer, uint16_t bufsize)
 /*------------------------------------------------------------------*/
 /* WRITE
  *------------------------------------------------------------------*/
-err_t BLEClientCharacteristic::_write_and_wait_rsp(ble_gattc_write_params_t* param)
+err_t BLEClientCharacteristic::_write_and_wait_rsp(ble_gattc_write_params_t* param, uint32_t ms)
 {
   VERIFY_STATUS ( sd_ble_gattc_write(_service->connHandle(), param) );
 
   // Wait for WRITE_RESP event
-  return xSemaphoreTake(_sem, ms2tick(BLE_GENERIC_TIMEOUT) ) ? ERROR_NONE : NRF_ERROR_TIMEOUT;
+  return xSemaphoreTake(_sem, ms2tick(ms) ) ? ERROR_NONE : NRF_ERROR_TIMEOUT;
 }
 
 uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
 {
   VERIFY( _chr.char_props.write, 0 );
 
-  // Break into multiple MTU-3 packet
   // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
   // SD132 v3.0 could negotiate MTU to higher number
   // For BLE_GATT_OP_PREP_WRITE_REQ, max data is 18 ( 2 byte is used for offset)
@@ -175,60 +184,41 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
   // CMD WRITE_REQUEST for single transaction
   if ( !long_write )
   {
-      ble_gattc_write_params_t param =
-      {
-          .write_op = BLE_GATT_OP_WRITE_REQ,
-          .flags    = 0,
-          .handle   = _chr.handle_value,
-          .offset   = 0,
-          .len      = len,
-          .p_value  = (uint8_t*) u8data
-      };
+    ble_gattc_write_params_t param =
+    {
+        .write_op = BLE_GATT_OP_WRITE_REQ,
+        .flags    = 0,
+        .handle   = _chr.handle_value,
+        .offset   = 0,
+        .len      = len,
+        .p_value  = (uint8_t*) u8data
+    };
 
-      status = _write_and_wait_rsp(&param);
+    status = _write_and_wait_rsp(&param, BLE_GENERIC_TIMEOUT);
   }
   else
   {
-    /*------------- Long Write Prepare -------------*/
-    const uint16_t max_packet = MTU_MPS - 2; // 2 bytes for offset
+    /*------------- Long Write Sequence -------------*/
+    _evt_buf     = (void*) data;
+    _evt_bufsize = len;
 
-    uint16_t remaining = len;
-    while( remaining )
-    {
-      uint16_t packet_len = min16(max_packet, remaining);
-
-      ble_gattc_write_params_t param =
-      {
-          .write_op = BLE_GATT_OP_PREP_WRITE_REQ,
-          .flags    = 0,
-          .handle   = _chr.handle_value,
-          .offset   = (uint16_t) (len-remaining),
-          .len      = packet_len,
-          .p_value  = (uint8_t*) u8data
-      };
-      status = _write_and_wait_rsp(&param);
-      if ( ERROR_NONE != status ) break;
-
-      remaining -= packet_len;
-      u8data    += packet_len;
-    }
-
-    /*------------- Execute Long Write -------------*/
     ble_gattc_write_params_t param =
     {
-        .write_op = BLE_GATT_OP_EXEC_WRITE_REQ,
-        .flags    = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_WRITE,
+        .write_op = BLE_GATT_OP_PREP_WRITE_REQ,
+        .flags    = 0,
         .handle   = _chr.handle_value,
         .offset   = 0,
-        .len      = 0,
-        .p_value  = NULL
+        .len      = min16(len, MTU_MPS-2),
+        .p_value  = (uint8_t*) data
     };
 
-    // Last BLE_GATTC_EVT_WRITE_RSP for BLE_GATT_OP_EXEC_WRITE_REQ does not
-    // contain characteristic's handle. Therefor BLEGatt couldn't forward the
-    // event to us. Just skip the wait for now
-//    status = _write_and_wait_rsp(&param);
-    status = sd_ble_gattc_write(_service->connHandle(), &param);
+    status = _write_and_wait_rsp(&param, (len/(MTU_MPS-2)+1) * BLE_GENERIC_TIMEOUT);
+
+    _evt_buf     = NULL;
+    _evt_bufsize = 0;
+
+    // delay to swallow last WRITE RESPONSE
+    // delay(20);
   }
 
   vSemaphoreDelete(_sem);
@@ -328,6 +318,8 @@ bool BLEClientCharacteristic::disableIndicate (void)
 
 void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
 {
+  uint16_t gatt_status = evt->evt.gattc_evt.gatt_status;
+
   switch(evt->header.evt_id)
   {
     case BLE_GATTC_EVT_HVX:
@@ -363,11 +355,77 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
       ble_gattc_evt_write_rsp_t* wr_rsp = (ble_gattc_evt_write_rsp_t*) &evt->evt.gattc_evt.params.write_rsp;
       (void) wr_rsp;
 
-      if (_sem)
+      if ( wr_rsp->write_op == BLE_GATT_OP_WRITE_REQ)
       {
-        // TODO check evt->evt.gattc_evt.gatt_status
-        xSemaphoreGive(_sem);
+        if (_sem) xSemaphoreGive(_sem);
+      }else if ( wr_rsp->write_op == BLE_GATT_OP_PREP_WRITE_REQ)
+      {
+        enum { MTU_MPS = 20 } ;
+
+        _evt_buf     += wr_rsp->len;
+        _evt_bufsize -= wr_rsp->len;
+
+        uint16_t packet_len = min16(_evt_bufsize, MTU_MPS-2);
+
+        // still has data, continue to prepare
+        if ( packet_len )
+        {
+          // Long Write Prepare
+          ble_gattc_write_params_t param =
+          {
+              .write_op = BLE_GATT_OP_PREP_WRITE_REQ,
+              .flags    = 0,
+              .handle   = _chr.handle_value,
+              .offset   = (uint16_t) wr_rsp->offset + wr_rsp->len,
+              .len      = packet_len,
+              .p_value  = (uint8_t*) _evt_buf
+          };
+
+          uint32_t status = sd_ble_gattc_write(_service->connHandle(), &param);
+
+          if ( ERROR_NONE != status )
+          {
+            // give up if cannot write
+            if (_sem) xSemaphoreGive(_sem);
+          }
+        }else
+        {
+          // Long Write Execute
+          ble_gattc_write_params_t param =
+          {
+              .write_op = BLE_GATT_OP_EXEC_WRITE_REQ,
+              .flags    = BLE_GATT_EXEC_WRITE_FLAG_PREPARED_WRITE,
+              .handle   = _chr.handle_value
+          };
+
+          sd_ble_gattc_write(_service->connHandle(), &param);
+
+          // Last BLE_GATTC_EVT_WRITE_RSP for BLE_GATT_OP_EXEC_WRITE_REQ does not
+          // contain characteristic's handle. Therefore BLEGatt couldn't forward the
+          // event to us. Just skip the wait for now
+          if (_sem) xSemaphoreGive(_sem);
+        }
+      }else
+      {
+        // BLE_GATT_OP_EXEC_WRITE_REQ wont reach here due to the handle = 0 issue
       }
+    }
+    break;
+
+    case BLE_GATTC_EVT_READ_RSP:
+    {
+      ble_gattc_evt_read_rsp_t* rd_rsp = (ble_gattc_evt_read_rsp_t*) &evt->evt.gattc_evt.params.read_rsp;
+
+      // process is complete if len is less than MTU or we get BLE_GATT_STATUS_ATTERR_INVALID_OFFSET
+//      if (gatt_status == BLE_GATT_STATUS_SUCCESS)
+//      {
+//        if ( _evt_bufsize && _evt_buf )
+//        {
+////          memcpy(_evt_buf + , rd_rsp->data, rd_rsp->len);
+//        }
+//      }
+//
+//      if (_sem) xSemaphoreGive(_sem);
     }
     break;
 
