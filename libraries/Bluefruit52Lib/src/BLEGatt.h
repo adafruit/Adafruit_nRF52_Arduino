@@ -69,6 +69,8 @@ class BLEGatt
 
     // Client
     bool _addCharacteristic(BLEClientCharacteristic* chr);
+    void _removeCharacteristic(BLEClientCharacteristic* chr);
+
     bool _addService(BLEClientService* svc);
 
     void _eventHandler(ble_evt_t* evt);

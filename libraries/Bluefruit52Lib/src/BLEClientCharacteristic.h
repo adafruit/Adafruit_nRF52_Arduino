@@ -54,9 +54,12 @@ class BLEClientCharacteristic
     BLEClientCharacteristic(void);
     BLEClientCharacteristic(BLEUuid bleuuid);
 
+    virtual ~BLEClientCharacteristic();
+
     void assign(ble_gattc_char_t* gattc_chr);
     bool discoverDescriptor(uint16_t conn_handle);
-    void begin(void);
+
+    void begin(BLEClientService* parent_svc = NULL);
 
     uint16_t valueHandle(void);
     uint8_t  properties(void);

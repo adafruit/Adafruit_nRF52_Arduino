@@ -71,6 +71,7 @@
 
 #include "clients/BLEAncs.h"
 #include "clients/BLEClientUart.h"
+#include "clients/BLEClientDis.h"
 
 #define BLE_MAX_DATA_PER_MTU  (GATT_MTU_SIZE_DEFAULT - 3)
 

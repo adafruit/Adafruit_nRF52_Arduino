@@ -53,6 +53,7 @@ class AdaMsg
 
     // dynamic mean semaphore is malloced and freed only when in action
     void     begin(bool dynamic = true);
+    void     stop(void);
 
     void     prepare(void* buf, uint16_t bufsize);
     int32_t  waitUntilComplete(uint32_t ms);

@@ -52,6 +52,11 @@ void AdaMsg::begin(bool dynamic)
   if ( !_dynamic ) _sem = xSemaphoreCreateBinary();
 }
 
+void AdaMsg::stop(void)
+{
+  if (!_dynamic) vSemaphoreDelete(_sem);
+}
+
 void AdaMsg::prepare(void* buf, uint16_t bufsize)
 {
   buffer    = (uint8_t*) buf;

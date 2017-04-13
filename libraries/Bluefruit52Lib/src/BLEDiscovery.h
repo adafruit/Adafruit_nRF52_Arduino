@@ -62,6 +62,9 @@ class BLEDiscovery
     void     begin(void);
     bool     begun(void);
 
+    void                     setHandleRange(ble_gattc_handle_range_t handle_range);
+    ble_gattc_handle_range_t getHandleRange(void);
+
     uint8_t  discoverCharacteristic(uint16_t conn_handle, BLEClientCharacteristic* chr[], uint8_t count);
 
     uint8_t  discoverCharacteristic(uint16_t conn_handle, BLEClientCharacteristic& chr1)

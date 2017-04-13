@@ -60,6 +60,29 @@ BLEClientCharacteristic::BLEClientCharacteristic(BLEUuid bleuuid)
   _init();
 }
 
+/**
+ * Destructor
+ */
+BLEClientCharacteristic::~BLEClientCharacteristic()
+{
+  _adamsg.stop();
+  Bluefruit.Gatt._removeCharacteristic(this);
+}
+
+void BLEClientCharacteristic::begin(BLEClientService* parent_svc)
+{
+  // Add UUID128 if needed
+  uuid.begin();
+
+  // Use the last (discovered) service as parent if not provided
+  _service = ( parent_svc == NULL ) ? BLEClientService::lastService : parent_svc;
+
+  // Register to Bluefruit (required for callback and write response)
+  (void) Bluefruit.Gatt._addCharacteristic(this);
+
+  _adamsg.begin(true);
+}
+
 void BLEClientCharacteristic::assign(ble_gattc_char_t* gattc_chr)
 {
   _chr = *gattc_chr;
@@ -108,19 +131,6 @@ bool BLEClientCharacteristic::discoverDescriptor(uint16_t conn_handle)
   }
 
   return true;
-}
-
-void BLEClientCharacteristic::begin(void)
-{
-  // Add UUID128 if needed
-  uuid.begin();
-
-  _service = BLEClientService::lastService;
-
-  // Register to Bluefruit (required for callback and write response)
-  (void) Bluefruit.Gatt._addCharacteristic(this);
-
-  _adamsg.begin(true);
 }
 
 /*------------------------------------------------------------------*/

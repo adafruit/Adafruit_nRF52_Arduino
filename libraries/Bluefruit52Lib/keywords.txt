@@ -33,6 +33,7 @@ BLEUart	KEYWORD1
 # Gatt Client
 BLECentralUart	KEYWORD1
 BLEAncs	KEYWORD1
+BLEClientDis	KEYWORD1
 
 AncsNotification_t	KEYWORD3
 
@@ -182,6 +183,8 @@ clearData	KEYWORD2
 begin	KEYWORD2
 begun	KEYWORD2
 discoverCharacteristic	KEYWORD2
+setHandleRange	KEYWORD2
+getHandleRange	KEYWORD2
 
 #######################################
 # BLEUuid Methods (KEYWORD2)
@@ -190,6 +193,17 @@ set	KEYWORD2
 get	KEYWORD2
 size	KEYWORD2
 
+
+
+#######################################
+# BLEClientDis Methods (KEYWORD2)
+#######################################
+getModel	KEYWORD2
+getSerial	KEYWORD2
+getFirmwareRev	KEYWORD2
+getHardwareRev	KEYWORD2
+getSoftwareRev	KEYWORD2
+getManufacturer	KEYWORD2
 
 
 

@@ -59,6 +59,16 @@ bool BLEDiscovery::begun(void)
   return (_sem != NULL);
 }
 
+void BLEDiscovery::setHandleRange(ble_gattc_handle_range_t handle_range)
+{
+  _hdl_range = handle_range;
+}
+
+ble_gattc_handle_range_t BLEDiscovery::getHandleRange(void)
+{
+  return _hdl_range;
+}
+
 bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLEClientService& svc, uint16_t start_handle)
 {
   ble_gattc_evt_prim_srvc_disc_rsp_t disc_svc;

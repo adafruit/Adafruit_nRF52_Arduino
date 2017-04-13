@@ -110,6 +110,9 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
 #endif
 }
 
+/*------------------------------------------------------------------*/
+/* Server
+ *------------------------------------------------------------------*/
 bool BLEGatt::_addCharacteristic(BLECharacteristic* chr)
 {
   if ( _server.chr_count == BLE_GATT_MAX_SERVER_CHARS ) return false;
@@ -118,7 +121,29 @@ bool BLEGatt::_addCharacteristic(BLECharacteristic* chr)
   return true;
 }
 
+/*------------------------------------------------------------------*/
+/* Client
+ *------------------------------------------------------------------*/
+void BLEGatt::_removeCharacteristic(BLEClientCharacteristic* chr)
+{
+  for(int i=0; i<_client.chr_count; i++)
+  {
+    // found the char, swap with the last one
+    if ( _client.chr_list[i] == chr )
+    {
+      vTaskSuspendAll();
 
+      _client.chr_count--;
+
+      _client.chr_list[i] = _client.chr_list[ _client.chr_count ];
+      _client.chr_list[_client.chr_count] = NULL;
+
+      ( void ) xTaskResumeAll();
+
+      break;
+    }
+  }
+}
 
 bool BLEGatt::_addCharacteristic(BLEClientCharacteristic* chr)
 {
