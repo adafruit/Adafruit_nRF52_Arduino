@@ -2,36 +2,36 @@
 
 ### Core
 
-- Add HardwarePWM class to support up to 12 channels and compatible with Neopixel library
-- Add waitForEvent() as alias to __WFE() instruction
-- Change FreeRTOS tick source from systick to RTC for low-power mode. configTICK_RATE_HZ changed to 1024. Upgrade port_cmsis_systick.c to sdk13 for bug fix
-- Enable FreeRTOS's Idle hook, and call waitForEvent() in the Idle hook if rtos_idle_callback() is not defined
-- Add rtos_idle_callback() as optional callback for user to handle background task
-- Add mutex to prevent uart conflict
-- Add SoftwareTimer class as wrapper for FreeRTOS software timer
-- Increase configMINIMAL_STACK_SIZE from 60 to 100, Increase configTIMER_TASK_STACK_DEPTH from 80 to 100
+- Added a `HardwarePWM` class to support up to 12 PWM channels, compatible with Neopixel library
+- Added waitForEvent() as alias for `__WFE()` instruction
+- Changed FreeRTOS tick source from systick to RTC for low-power mode. `configTICK_RATE_HZ` changed to 1024. Upgraded port_cmsis_systick.c to SDK13 for bug fix.
+- Enabled FreeRTOS's Idle hook, and call `waitForEvent()` in the Idle hook if `rtos_idle_callback()` is not defined
+- Added `rtos_idle_callback()` as an optional callback to handle background tasks in user sketches
+- Added a mutex to prevent UART conflicts
+- Add a `SoftwareTimer` wrapper class for FreeRTOS's software timer
+- Increased `configMINIMAL_STACK_SIZE` from 60 to 100, Increased `configTIMER_TASK_STACK_DEPTH` from 80 to 100
 
-#### New Example
+#### New Examples
 
 - Hardware/hwpwm
 - Hardware/Fading
 
 ### BLE Library
 
-- Initial Central support and Gatt client service/characteristic
-  - Add BLEClientService
-  - Add BLEClientCharacteristic: support long read/write, write with/without response.
-  - Add BLEDiscovery
-- Add BLEGap and BLEGatt to manage peripheral & central with Gatt client and server support
+- Add initial Central support and Gatt client service/characteristic classes
+  - Added `BLEClientService`
+  - Added `BLEClientCharacteristic`: support for long read/write, write with/without response.
+  - Added `BLEDiscovery`
+- Added `BLEGap` and `BLEGatt` to manage peripheral & central with Gatt client and server support
 - BLE API changes
-  - Add connPaired(), requestPairing()
-  - Rename BLEBas .update() to .write()
-  - Change Bluefruit setConnInterval()/setConnIntervalMS() return type from `err_t` to `bool`
-  - Change BLECentral startScanning()/stopScanning()/connect() return type from `err_t` to `bool`
-  - Change BLECharacteristic notify() return type from `err_t` to `bool`
-  - Change BLEHid report function return type from `err_t` to `bool`
-  - Change BLEMid send/sendSplit return type from `err_t` to `bool`
-- New BLE Serivce
+  - Added `connPaired()`, `requestPairing()`
+  - Renamed `BLEBas.update()` to `.write()`
+  - Changed Bluefruit `setConnInterval()`/`setConnIntervalMS()` return types from `err_t` to `bool`
+  - Changed BLECentral `startScanning()`/`stopScanning()`/`connect()` return types from `err_t` to `bool`
+  - Changed BLECharacteristic `notify()` return type from `err_t` to `bool`
+  - Changed BLEHid `report()` function return type from `err_t` to `bool`
+  - Changed BLEMid `send()`/`sendSplit()` return type from `err_t` to `bool`
+- New BLE Services
   - Apple Notification Center Service (ANCS)
   - BLEClientUart
   - BLEClientDis
@@ -44,7 +44,6 @@
 - Peripheral
   - ancs
   - hid_camerashutter
-
 
 ## 0.5.1
 
