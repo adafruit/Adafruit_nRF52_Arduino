@@ -75,7 +75,7 @@ bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLEClientService& svc,
   if ( (disc_svc.count == 1) && (svc.uuid == disc_svc.services[0].uuid) )
   {
     _hdl_range = disc_svc.services[0].handle_range;
-    LOG_LV1(Discover, "[SVC] Found 0x%04X, Handle start = %d, end = %d", disc_svc.services[0].uuid.uuid, _hdl_range.start_handle, _hdl_range.end_handle);
+    LOG_LV2(Discover, "[SVC] Found 0x%04X, Handle start = %d, end = %d", disc_svc.services[0].uuid.uuid, _hdl_range.start_handle, _hdl_range.end_handle);
 
     _hdl_range.start_handle++; // increase for characteristic discovery
     return true;
@@ -95,7 +95,7 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
     _evt_buf     = &disc_chr;
     _evt_bufsize = sizeof(disc_chr);
 
-//    LOG_LV1(Discover, "[CHR] Handle start = %d, end = %d", _hdl_range.start_handle, _hdl_range.end_handle);
+//    LOG_LV2(Discover, "[CHR] Handle start = %d, end = %d", _hdl_range.start_handle, _hdl_range.end_handle);
 
     VERIFY_STATUS( sd_ble_gattc_characteristics_discover(conn_handle, &_hdl_range), found );
 
@@ -111,7 +111,7 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
     {
       if ( chr[i]->uuid == disc_chr.chars[0].uuid )
       {
-        LOG_LV1(Discover, "[CHR] Found 0x%04X, handle = %d", disc_chr.chars[0].uuid.uuid,  disc_chr.chars[0].handle_value);
+        LOG_LV2(Discover, "[CHR] Found 0x%04X, handle = %d", disc_chr.chars[0].uuid.uuid,  disc_chr.chars[0].handle_value);
 
         // characteristic assign overload
         chr[i]->assign(&disc_chr.chars[0]);
@@ -134,7 +134,7 @@ uint16_t BLEDiscovery::_discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_d
   _evt_buf     = disc_desc;
   _evt_bufsize = sizeof(ble_gattc_evt_desc_disc_rsp_t) + (max_count-1)*sizeof(ble_gattc_desc_t);
 
-//  LOG_LV1(Discover, "[DESC] Handle start = %d, end = %d", _hdl_range.start_handle, _hdl_range.end_handle);
+//  LOG_LV2(Discover, "[DESC] Handle start = %d, end = %d", _hdl_range.start_handle, _hdl_range.end_handle);
 
   uint16_t result = 0;
   VERIFY_STATUS( sd_ble_gattc_descriptors_discover(conn_handle, &_hdl_range), 0 );
@@ -147,7 +147,7 @@ uint16_t BLEDiscovery::_discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_d
   {
     for(uint16_t i=0; i<result; i++)
     {
-      LOG_LV1(Discover, "[DESC] Descriptor %d: uuid = 0x%04X, handle = %d", i, disc_desc->descs[i].uuid.uuid, disc_desc->descs[i].handle);
+      LOG_LV2(Discover, "[DESC] Descriptor %d: uuid = 0x%04X, handle = %d", i, disc_desc->descs[i].uuid.uuid, disc_desc->descs[i].handle);
     }
 
     // increase handle range for next discovery
@@ -169,7 +169,7 @@ void BLEDiscovery::_event_handler(ble_evt_t* evt)
       ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
       ble_gattc_evt_prim_srvc_disc_rsp_t* svc_rsp = &gattc->params.prim_srvc_disc_rsp;
 
-      LOG_LV1(Discover, "[SVC] Service Count: %d", svc_rsp->count);
+      LOG_LV2(Discover, "[SVC] Service Count: %d", svc_rsp->count);
 
       if (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS && svc_rsp->count && _evt_buf)
       {
@@ -191,7 +191,7 @@ void BLEDiscovery::_event_handler(ble_evt_t* evt)
       ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
       ble_gattc_evt_char_disc_rsp_t* chr_rsp = &gattc->params.char_disc_rsp;
 
-      LOG_LV1(Discover, "[CHR] Characteristic Count: %d", chr_rsp->count);
+      LOG_LV2(Discover, "[CHR] Characteristic Count: %d", chr_rsp->count);
       if ( (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS) && chr_rsp->count && _evt_buf )
       {
         // TODO support only 1 discovered char now
@@ -212,7 +212,7 @@ void BLEDiscovery::_event_handler(ble_evt_t* evt)
       ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
       ble_gattc_evt_desc_disc_rsp_t* desc_rsp = &gattc->params.desc_disc_rsp;
 
-      LOG_LV1(Discover, "[DESC] Descriptor Count: %d", desc_rsp->count);
+      LOG_LV2(Discover, "[DESC] Descriptor Count: %d", desc_rsp->count);
 
       if ( (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS) && desc_rsp->count && _evt_buf )
       {
