@@ -31,7 +31,7 @@ BLEMidi	KEYWORD1
 BLEUart	KEYWORD1
 
 # Gatt Client
-BLECentralUart	KEYWORD1
+BLEClientUart	KEYWORD1
 BLEAncs	KEYWORD1
 BLEClientDis	KEYWORD1
 
@@ -301,7 +301,7 @@ setRxCallback	KEYWORD2
 notifyEnabled	KEYWORD2
 
 #######################################
-# BLECentralUart Methods (KEYWORD2)
+# BLEClientUart Methods (KEYWORD2)
 #######################################
 
 setRxCallback	KEYWORD2

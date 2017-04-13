@@ -130,14 +130,25 @@ void connect_callback(void)
   if ( bleClientDis.discover( Bluefruit.connHandle()) )
   {
     Serial.println("Found it");
-    Serial.print("DIS Model: ");
+    char buffer[32+1];
     
-    // read and print out Model Number
-    char buffer[32+1] = { 0 };
-    if ( bleClientDis.getModel(buffer, sizeof(buffer)) )
+    // read and print out Manufacturer
+    memset(buffer, 0, sizeof(buffer));
+    if ( bleClientDis.getManufacturer(buffer, sizeof(buffer)) )
     {
+      Serial.print("Manufacturer: ");
       Serial.println(buffer);
     }
+
+    // read and print out Model Number
+    memset(buffer, 0, sizeof(buffer));
+    if ( bleClientDis.getModel(buffer, sizeof(buffer)) )
+    {
+      Serial.print("Model: ");
+      Serial.println(buffer);
+    }
+
+    Serial.println();
   }
 
   Serial.print("Discovering ANCS ... ");
