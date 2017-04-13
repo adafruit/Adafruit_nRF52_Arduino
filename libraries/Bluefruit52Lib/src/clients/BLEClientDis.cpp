@@ -60,7 +60,25 @@ bool BLEClientDis::discover(uint16_t conn_handle)
 
 uint16_t BLEClientDis::getChars(uint16_t uuid, char* buffer, uint16_t bufsize)
 {
+  uint16_t count = 0;
+  ble_gattc_handle_range_t bck_range = Bluefruit.Discovery.getHandleRange();
 
+  // Set discovery handle to DIS service
+  Bluefruit.Discovery.setHandleRange(_hdl_range);
+
+  BLEClientCharacteristic chr(uuid);
+  chr.begin(this);
+
+  if ( Bluefruit.Discovery.discoverCharacteristic(_conn_hdl, chr) )
+  {
+    count = chr.read(buffer, bufsize);
+    PRINT_INT(count);
+  }
+
+  // Set back
+  Bluefruit.Discovery.setHandleRange(bck_range);
+
+  return count;
 }
 
 uint16_t BLEClientDis::getModel(char* buffer, uint16_t bufsize)

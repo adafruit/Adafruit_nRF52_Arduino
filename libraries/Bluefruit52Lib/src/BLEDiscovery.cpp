@@ -76,6 +76,8 @@ bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLEClientService& svc,
   _evt_buf     = &disc_svc;
   _evt_bufsize = sizeof(disc_svc);
 
+  LOG_LV2(Discover, "[SVC] Handle start = %d", start_handle);
+
   VERIFY_STATUS( sd_ble_gattc_primary_services_discover(conn_handle, start_handle, &svc.uuid._uuid), false );
 
   // wait for discovery event: timeout or has no data
@@ -100,6 +102,7 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
 {
   uint8_t found = 0;
 
+
   while( found < count )
   {
     ble_gattc_evt_char_disc_rsp_t disc_chr;
@@ -107,8 +110,7 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
     _evt_buf     = &disc_chr;
     _evt_bufsize = sizeof(disc_chr);
 
-//    LOG_LV2(Discover, "[CHR] Handle start = %d, end = %d", _hdl_range.start_handle, _hdl_range.end_handle);
-
+    LOG_LV2(Discover, "[CHR] Handle start = %d, end = %d", _hdl_range.start_handle, _hdl_range.end_handle);
     VERIFY_STATUS( sd_ble_gattc_characteristics_discover(conn_handle, &_hdl_range), found );
 
     // wait for discovery event: timeout or has no data

@@ -13,8 +13,9 @@
 *********************************************************************/
 #include <bluefruit.h>
 
-// BLE Service
-BLEAncs  bleancs;
+// BLE Client Service
+BLEClientDis  bleClientDis;
+BLEAncs       bleancs;
 
 char buffer[128];
 
@@ -41,7 +42,10 @@ void setup()
   Bluefruit.setConnectCallback(connect_callback);
   Bluefruit.setDisconnectCallback(disconnect_callback);
 
-  // Configure and Start Service
+  // Configure DIS client
+  bleClientDis.begin();
+
+  // Configure ANCS client
   bleancs.begin();
   bleancs.setNotificationCallback(ancs_notification_callback);
 
@@ -121,6 +125,20 @@ void ancs_notification_callback(AncsNotification_t* notif)
 void connect_callback(void)
 {
   Serial.println("Connected");
+  
+  Serial.print("Dicovering DIS ... ");
+  if ( bleClientDis.discover( Bluefruit.connHandle()) )
+  {
+    Serial.println("Found it");
+    Serial.print("DIS Model: ");
+    
+    // read and print out Model Number
+    char buffer[32+1] = { 0 };
+    if ( bleClientDis.getModel(buffer, sizeof(buffer)) )
+    {
+      Serial.println(buffer);
+    }
+  }
 
   Serial.print("Discovering ANCS ... ");
   if ( bleancs.discover( Bluefruit.connHandle() ) )

@@ -58,6 +58,8 @@ class BLEClientDis : public BLEClientService
   private:
     uint16_t getChars(uint16_t uuid, char* buffer, uint16_t bufsize);
 
+    // BLE DIS has several characteristics but is often used one or two times
+    // It is better to implement get() with on-the-fly BLEClientCharacteristic
 };
 
 
