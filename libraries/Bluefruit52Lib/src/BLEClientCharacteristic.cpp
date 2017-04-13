@@ -118,12 +118,11 @@ void BLEClientCharacteristic::begin(void)
 /*------------------------------------------------------------------*/
 /* READ
  *------------------------------------------------------------------*/
-uint16_t BLEClientCharacteristic::read(void* buffer, int bufsize)
+uint16_t BLEClientCharacteristic::read(void* buffer, uint16_t bufsize)
 {
-  // TODO implement READ
 //  VERIFY_STATUS( sd_ble_gattc_read(Bluefruit.Central.connHandle(), _chr.handle_value, offset), 0 );
 
-//  return ERROR_NONE;
+  return ERROR_NONE;
 }
 
 /*------------------------------------------------------------------*/
@@ -137,7 +136,7 @@ err_t BLEClientCharacteristic::_write_and_wait_rsp(ble_gattc_write_params_t* par
   return xSemaphoreTake(_sem, ms2tick(BLE_GENERIC_TIMEOUT) ) ? ERROR_NONE : NRF_ERROR_TIMEOUT;
 }
 
-uint16_t BLEClientCharacteristic::write_resp(const void* data, int len32)
+uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
 {
   // Break into multiple MTU-3 packet
   // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
@@ -145,7 +144,6 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, int len32)
   // For BLE_GATT_OP_PREP_WRITE_REQ, max data is 18 ( 2 byte is used for offset)
   enum { MTU_MPS = 20 } ;
 
-  uint16_t len = (uint16_t) len32;
   const bool long_write = (len > MTU_MPS);
   const uint8_t* u8data = (const uint8_t*) data;
 
@@ -184,7 +182,7 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, int len32)
           .write_op = BLE_GATT_OP_PREP_WRITE_REQ,
           .flags    = 0,
           .handle   = _chr.handle_value,
-          .offset   = len-remaining,
+          .offset   = (uint16_t) (len-remaining),
           .len      = packet_len,
           .p_value  = (uint8_t*) u8data
       };
@@ -220,7 +218,7 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, int len32)
   return len;
 }
 
-uint16_t BLEClientCharacteristic::write(const void* data, int len)
+uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
 {
   // Break into multiple MTU-3 packet
   // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
@@ -228,7 +226,7 @@ uint16_t BLEClientCharacteristic::write(const void* data, int len)
   enum { MTU_MPS = 20 } ;
   const uint8_t* u8data = (const uint8_t*) data;
 
-  int remaining = len;
+  uint16_t remaining = len;
   while( remaining )
   {
     // Write CMD consume a TX buffer

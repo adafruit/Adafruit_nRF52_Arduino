@@ -62,11 +62,11 @@ class BLEClientCharacteristic
     BLEClientService& parentService(void);
 
     /*------------- Read -------------*/
-    uint16_t read(void* buffer, int bufsize);
+    uint16_t read(void* buffer, uint16_t bufsize);
 
     /*------------- Write -------------*/
-    uint16_t write     (const void* data, int len);
-    uint16_t write_resp(const void* data, int len);
+    uint16_t write     (const void* data, uint16_t len);
+    uint16_t write_resp(const void* data, uint16_t len);
 
     /*------------- Notify -------------*/
     bool writeCCCD       (uint16_t value);

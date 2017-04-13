@@ -347,15 +347,12 @@ uint16_t BLECharacteristic::write(const char   * str)
   return write((const uint8_t*) str, strlen(str));
 }
 
-uint16_t BLECharacteristic::write(const void* data, int len, uint16_t offset)
+uint16_t BLECharacteristic::write(const void* data, uint16_t len)
 {
-  // could not exceed max len
-  uint16_t actual_len = min16(len, _max_len);
-
   ble_gatts_value_t value =
   {
-      .len     = (uint16_t) actual_len,
-      .offset  = offset,
+      .len     = min16(len, _max_len), // could not exceed max len
+      .offset  = 0                   , // TODO gatts long write
       .p_value = (uint8_t*) data
   };
 
@@ -395,12 +392,12 @@ uint16_t BLECharacteristic::write(uint8_t  num)
  * @param offset  offset of value (dfeault is 0)
  * @return  number of read bytes
  */
-uint16_t BLECharacteristic::read(void* buffer, int bufsize, uint16_t offset)
+uint16_t BLECharacteristic::read(void* buffer, uint16_t bufsize)
 {
   ble_gatts_value_t value =
   {
-      .len     = (uint16_t) bufsize,
-      .offset  = offset,
+      .len     = bufsize,
+      .offset  = 0, // TODO gatts long read
       .p_value = (uint8_t*) buffer
   };
 
@@ -454,12 +451,12 @@ bool BLECharacteristic::notifyEnabled(void)
   return (cccd & BLE_GATT_HVX_NOTIFICATION);
 }
 
-bool BLECharacteristic::notify(const void* data, int len)
+bool BLECharacteristic::notify(const void* data, uint16_t len)
 {
   VERIFY( _properties.notify );
 
   // could not exceed max len
-  uint16_t actual_len = min16(len, _max_len);
+  uint16_t remaining = min16(len, _max_len);
 
   if ( notifyEnabled() )
   {
@@ -470,30 +467,30 @@ bool BLECharacteristic::notify(const void* data, int len)
 
     const uint8_t* u8data = (const uint8_t*) data;
 
-    while ( actual_len )
+    while ( remaining )
     {
       if ( !Bluefruit.Gap.getTxPacket() )  return BLE_ERROR_NO_TX_PACKETS;
 
-      uint16_t packet_len = min16(MTU_MPS, actual_len);
+      uint16_t packet_len = min16(MTU_MPS, remaining);
 
       ble_gatts_hvx_params_t hvx_params =
       {
           .handle = _handles.value_handle,
           .type   = BLE_GATT_HVX_NOTIFICATION,
-          .offset = 0, // TODO more work with offset
+          .offset = 0,
           .p_len  = &packet_len,
           .p_data = (uint8_t*) u8data,
       };
 
       VERIFY_STATUS( sd_ble_gatts_hvx(Bluefruit.connHandle(), &hvx_params), false );
 
-      actual_len -= packet_len;
+      remaining -= packet_len;
       u8data     += packet_len;
     }
   }
   else
   {
-    write(data, actual_len);
+    write(data, remaining);
     return false;
   }
 

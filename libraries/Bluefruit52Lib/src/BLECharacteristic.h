@@ -140,7 +140,7 @@ class BLECharacteristic
     ble_gatts_char_handles_t handles(void);
 
     /*------------- Write -------------*/
-    uint16_t write(const void* data, int len, uint16_t offset = 0);
+    uint16_t write(const void* data, uint16_t len);
     uint16_t write(const char   * str);
 
     uint16_t write(int      num);
@@ -149,14 +149,14 @@ class BLECharacteristic
     uint16_t write(uint8_t  num);
 
     /*------------- Read -------------*/
-    uint16_t read(void* buffer, int bufsize, uint16_t offset = 0);
+    uint16_t read(void* buffer, uint16_t bufsize);
     uint16_t read(uint32_t* num);
     uint16_t read(uint16_t* num);
     uint16_t read(uint8_t*  num);
 
     /*------------- Notify -------------*/
     bool notifyEnabled(void);
-    bool notify(const void* data, int len);
+    bool notify(const void* data, uint16_t len);
     bool notify(const char   * str);
     bool notify(int      num);
     bool notify(uint32_t num);
