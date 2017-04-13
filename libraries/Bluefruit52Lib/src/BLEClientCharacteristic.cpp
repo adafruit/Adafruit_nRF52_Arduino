@@ -399,10 +399,19 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
         break;
       }
 
+      PRINT_INT(rd_rsp->len);
+      PRINT_INT(rd_rsp->offset);
+
+      PRINT_BUFFER(rd_rsp->data, rd_rsp->len);
       _adamsg.feed(rd_rsp->data, rd_rsp->len);
 
-      // If running out of buffer, or couldn't perform GATTC Read
-      if (( _adamsg.remaining == 0) ||
+      /* Complete condition is one of follows
+       * - Running out of buffer
+       * - Receive data less than MPS - 1 (19)
+       * - Couldn't perform GATTC Read
+       */
+      if (( _adamsg.remaining == 0)    ||
+          (rd_rsp->len < (MTU_MPS-1) ) ||
           (ERROR_NONE != sd_ble_gattc_read(_service->connHandle(), _chr.handle_value, _adamsg.xferlen)) )
       {
         _adamsg.complete();
