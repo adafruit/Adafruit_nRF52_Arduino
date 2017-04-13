@@ -88,6 +88,14 @@ BLEService& BLECharacteristic::parentService (void)
 }
 
 /**
+ * Destructor
+ */
+BLECharacteristic::~BLECharacteristic()
+{
+//   Bluefruit.Gatt._removeCharacteristic(this);
+}
+
+/**
  * Must be set when Charactertistic is declared locally (e.g insdie function)
  * and is not last throughout programs. Useful for one-shot set-and-forget
  * Characteristics such as read-only one. Where there is no need for interactions

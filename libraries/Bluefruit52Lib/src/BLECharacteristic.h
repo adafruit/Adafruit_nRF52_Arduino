@@ -116,6 +116,8 @@ class BLECharacteristic
     BLECharacteristic(void);
     BLECharacteristic(BLEUuid bleuuid);
 
+    virtual ~BLECharacteristic();
+
     BLEService& parentService(void);
 
     void setTempMemory(void);
