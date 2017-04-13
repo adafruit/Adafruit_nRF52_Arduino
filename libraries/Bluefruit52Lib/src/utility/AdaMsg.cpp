@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     AdaMess.cpp
+    @file     AdaMsg.cpp
     @author   hathach
 
     @section LICENSE
@@ -34,9 +34,9 @@
 */
 /**************************************************************************/
 
-#include "AdaMess.h"
+#include "AdaMsg.h"
 
-AdaMess::AdaMess(void)
+AdaMsg::AdaMsg(void)
 {
   _dynamic = true;
   _sem     = NULL;
@@ -46,13 +46,13 @@ AdaMess::AdaMess(void)
 }
 
 // dynamic mean semaphore is malloced and freed only when in action
-void AdaMess::begin(bool dynamic)
+void AdaMsg::begin(bool dynamic)
 {
   _dynamic = dynamic;
   if ( !_dynamic ) _sem = xSemaphoreCreateBinary();
 }
 
-uint16_t AdaMess::waitForData(void* buf, uint16_t bufsize, uint32_t ms)
+uint16_t AdaMsg::waitForData(void* buf, uint16_t bufsize, uint32_t ms)
 {
   buffer    = (uint8_t*) buf;
   remaining = bufsize;
@@ -75,7 +75,7 @@ uint16_t AdaMess::waitForData(void* buf, uint16_t bufsize, uint32_t ms)
   return result;
 }
 
-uint16_t AdaMess::feed(void* data, uint16_t len)
+uint16_t AdaMsg::feed(void* data, uint16_t len)
 {
   len = min16(len, remaining);
 
@@ -89,7 +89,7 @@ uint16_t AdaMess::feed(void* data, uint16_t len)
   return len;
 }
 
-void AdaMess::complete(void)
+void AdaMsg::complete(void)
 {
    xSemaphoreGive(_sem);
 }

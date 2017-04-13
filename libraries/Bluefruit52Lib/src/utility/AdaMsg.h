@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     AdaMess.h
+    @file     AdaMsg.h
     @author   hathach
 
     @section LICENSE
@@ -33,12 +33,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef ADAMESS_H_
-#define ADAMESS_H_
+#ifndef ADAMSG_H_
+#define ADAMSG_H_
 
 #include "Arduino.h"
 
-class AdaMess
+class AdaMsg
 {
   private:
     bool              _dynamic;
@@ -49,7 +49,7 @@ class AdaMess
     uint16_t          remaining;
     uint16_t          xferlen;
 
-    AdaMess(void);
+    AdaMsg(void);
 
     // dynamic mean semaphore is malloced and freed only when in action
     void     begin(bool dynamic = true);
@@ -60,4 +60,4 @@ class AdaMess
 
 
 
-#endif /* ADAMESS_H_ */
+#endif /* ADAMSG_H_ */
