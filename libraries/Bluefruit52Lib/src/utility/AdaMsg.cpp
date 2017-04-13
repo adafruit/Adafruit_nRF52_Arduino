@@ -52,19 +52,27 @@ void AdaMsg::begin(bool dynamic)
   if ( !_dynamic ) _sem = xSemaphoreCreateBinary();
 }
 
-uint16_t AdaMsg::waitForData(void* buf, uint16_t bufsize, uint32_t ms)
+void AdaMsg::prepare(void* buf, uint16_t bufsize)
 {
   buffer    = (uint8_t*) buf;
   remaining = bufsize;
   xferlen   = 0;
+}
 
+int AdaMsg::waitUntilComplete(uint32_t ms)
+{
   if (_dynamic)
   {
     _sem = xSemaphoreCreateBinary();
     VERIFY(_sem, 0);
   }
 
-  uint16_t result = xSemaphoreTake(_sem, ms2tick(ms) ) ? xferlen : 0;
+  int result = -1;
+
+  if ( xSemaphoreTake(_sem, ms2tick(ms) ) )
+  {
+    result = xferlen;
+  }
 
   if (_dynamic)
   {
@@ -91,6 +99,6 @@ uint16_t AdaMsg::feed(void* data, uint16_t len)
 
 void AdaMsg::complete(void)
 {
-   xSemaphoreGive(_sem);
+  if(_sem) xSemaphoreGive(_sem);
 }
 

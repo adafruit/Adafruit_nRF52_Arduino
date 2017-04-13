@@ -47,13 +47,16 @@ class AdaMsg
   public:
     uint8_t*          buffer;
     uint16_t          remaining;
-    uint16_t          xferlen;
+    volatile uint16_t          xferlen;
 
     AdaMsg(void);
 
     // dynamic mean semaphore is malloced and freed only when in action
     void     begin(bool dynamic = true);
-    uint16_t waitForData(void* buf, uint16_t bufsize, uint32_t ms);
+
+    void     prepare(void* buf, uint16_t bufsize);
+    int      waitUntilComplete(uint32_t ms);
+
     uint16_t feed(void* data, uint16_t len);
     void     complete(void);
 };

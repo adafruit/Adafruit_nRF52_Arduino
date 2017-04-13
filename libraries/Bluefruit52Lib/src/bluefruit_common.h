@@ -41,6 +41,8 @@
 #include "ble_hci.h"
 #include "nrf_sdm.h"
 
+#include "utility/AdaMsg.h"
+
 #define BLE_GENERIC_TIMEOUT                     100
 
 #define BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS     2000
