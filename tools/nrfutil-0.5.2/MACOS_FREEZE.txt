@@ -10,20 +10,34 @@ Initial setup (do this once):
   the nrfutil script doesn't work with Python 3 and cx_freeze will use whichever
   version of Python it's run with to build the exe (i.e. you need to run
   cx_freeze with Python 2.7).  Assuming you have homebrew installed:
+  
   - Update python 2 in homebrew to the latest version, and reinstall just to
     fix odd issues like links to old dynamic libraries that might be missing,
     etc.  Run:
+      
       brew update
       brew reinstall python
 
     Or if you never had homebrew python2 installed run:
+      
       brew install python
 
     Now just to make sure homebrew python is setup and linked as the 'active'
     python run:
+  
       brew unlink python && brew link python
+  
   - At this point when you run python or pip you should be using homebrew
     python.  Do not continue until this is true.
+
+  - Make sure there is no other version of cx_freeze already installed.  Run
+    these to wipe it out if so (it's ok if these fail with errors that cx_freeze
+    isn't installed):
+    
+      pip uninstall cx_freeze
+      pip2 uninstall cx_freeze
+      pip3 uninstall cx_freeze
+    
   - Install cx_freeze for homebrew python 2:
 
       pip2 install cx_freeze
@@ -32,12 +46,14 @@ Initial setup (do this once):
     cxfreeze script and verify it shows usage info:
 
       cxfreeze
+
 - Install nrfutil dependencies.  Be sure to install them into homebrew's python
   2 as this is what cx_freeze will run from and use to find dependencies. Run
   from this directory:
 
     pip2 install -r requirements.txt
     python setup.py install
+
 - That's it, you should be setup with cx_freeze on homebrew python 2 and all
   the nrfutil dependencies ready to go.
 
