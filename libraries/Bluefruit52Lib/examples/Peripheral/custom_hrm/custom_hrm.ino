@@ -206,8 +206,8 @@ void loop()
   // Only send update once per second
   delay(1000);
 
-  // No need to call waitForEvent() here, it is already invoked
-  // by above delay() via Idle Task internally. See the note below
+  // No need to call waitForEvent() here, it will be invoked by
+  // rtos_idle_callback() caused by above delay()
 }
 
 /**
@@ -216,9 +216,22 @@ void loop()
  * there is no bluetooth or hw event. This is the ideal place to handle
  * background data.
  * 
- * NOTE: After this callback returns, MCU will enter low-power mode
- * via waitForEvent() internally. Therefore you SHOULD NOT call 
- * waitForEvent() in this callback!
+ * NOTE: It is recommended to call waitForEvent() to put MCU into low-power mode
+ * at the end of this callback. You could also turn off other Peripherals such as
+ * Serial/PWM and turn them back on if wanted
+ *
+ * e.g
+ *
+ * void rtos_idle_callback(void)
+ * {
+ *    Serial.stop(); // will lose data when sleeping
+ *    waitForEvent();
+ *    Serial.begin(115200);
+ * }
+ *
+ * NOTE2: If rtos_idle_callback() is not defined at all. Bluefruit will force
+ * waitForEvent() to save power. If you don't want MCU to sleep at all, define
+ * an rtos_idle_callback() with empty body !
  * 
  * WARNING: This function MUST NOT call any blocking FreeRTOS API 
  * such as delay(), xSemaphoreTake() etc ... for more information
@@ -226,8 +239,9 @@ void loop()
  */
 void rtos_idle_callback(void)
 {
+  // Don't call any other FreeRTOS blocking API()
   // Perform background task(s) here
 
-  // waitForEvent() will be invoked internally when this callback returns. 
-  // Don't call waitForEvent() in this function nor any other blocking API()!
+  // Request CPU to enter low-power mode until an event/interrupt occurs
+  waitForEvent();
 }

@@ -28,7 +28,7 @@ void setup()
 
   // Initialize blinkTimer for 1000 ms and start it
   blinkTimer.begin(1000, blink_timer_callback);
-  blinkTimer.start();
+  //blinkTimer.start();
 
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behaviour, but provided
@@ -134,9 +134,22 @@ void blink_timer_callback(TimerHandle_t xTimerID)
  * there is no bluetooth or hw event. This is the ideal place to handle
  * background data.
  * 
- * NOTE: After this callback returns, MCU will enter low-power mode
- * via waitForEvent() internally. Therefore you SHOULD NOT call 
- * waitForEvent() in this callback!
+ * NOTE: It is recommended to call waitForEvent() to put MCU into low-power mode
+ * at the end of this callback. You could also turn off other Peripherals such as
+ * Serial/PWM and turn them back on if wanted
+ * 
+ * e.g
+ * 
+ * void rtos_idle_callback(void)
+ * {
+ *    Serial.stop(); // will lose data when sleeping
+ *    waitForEvent();
+ *    Serial.begin(115200); 
+ * }
+ * 
+ * NOTE2: If rtos_idle_callback() is not defined at all. Bluefruit will force
+ * waitForEvent() to save power. If you don't want MCU to sleep at all, define
+ * an rtos_idle_callback() with empty body !
  * 
  * WARNING: This function MUST NOT call any blocking FreeRTOS API 
  * such as delay(), xSemaphoreTake() etc ... for more information
@@ -144,9 +157,10 @@ void blink_timer_callback(TimerHandle_t xTimerID)
  */
 void rtos_idle_callback(void)
 {
+  // Don't call any other FreeRTOS blocking API()
   // Perform background task(s) here
 
-  // waitForEvent() will be invoked internally when this callback returns. 
-  // Don't call waitForEvent() in this function nor any other blocking API()!
+  // Request CPU to enter low-power mode until an event/interrupt occurs
+  waitForEvent();
 }
 
