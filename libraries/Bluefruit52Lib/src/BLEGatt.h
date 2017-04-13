@@ -73,17 +73,17 @@ class BLEGatt
 
   private:
     struct {
-      uint8_t            _chars_count;
-      BLECharacteristic* _chars_list[BLE_GATT_MAX_SERVER_CHARS];
-    } server;
+      uint8_t            chr_count;
+      BLECharacteristic* chr_list[BLE_GATT_MAX_SERVER_CHARS];
+    } _server;
 
     struct {
-      uint8_t                   _svc_count;
-      BLEClientService*        _svc_list[BLE_GATT_MAX_CLIENT_SERVICE];
+      uint8_t                  svc_count;
+      BLEClientService*        svc_list[BLE_GATT_MAX_CLIENT_SERVICE];
 
-      uint8_t                   _chars_count;
-      BLEClientCharacteristic* _chars_list[BLE_GATT_MAX_CLIENT_CHARS];
-    }client;
+      uint8_t                  chr_count;
+      BLEClientCharacteristic* chr_list[BLE_GATT_MAX_CLIENT_CHARS];
+    }_client;
 };
 
 #endif /* BLEGATT_H_ */

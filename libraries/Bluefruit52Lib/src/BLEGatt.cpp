@@ -39,20 +39,20 @@
 
 BLEGatt::BLEGatt(void)
 {
-  varclr(&server);
-  varclr(&client);
+  varclr(&_server);
+  varclr(&_client);
 }
 
 void BLEGatt::_eventHandler(ble_evt_t* evt)
 {
   // Server Characteristics
-  for(int i=0; i<server._chars_count; i++)
+  for(int i=0; i<_server.chr_count; i++)
   {
-    server._chars_list[i]->_eventHandler(evt);
+    _server.chr_list[i]->_eventHandler(evt);
   }
 
   // Client Characteristics
-  for(int i=0; i<client._chars_count; i++)
+  for(int i=0; i<_client.chr_count; i++)
   {
     bool matched = false;
 
@@ -62,27 +62,27 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
       case BLE_GATTC_EVT_WRITE_RSP:
       case BLE_GATTC_EVT_READ_RSP:
         // write & read & hvc response's handle has same offset from the struct
-        matched = (client._chars_list[i]->_chr.handle_value == evt->evt.gattc_evt.params.write_rsp.handle);
+        matched = (_client.chr_list[i]->_chr.handle_value == evt->evt.gattc_evt.params.write_rsp.handle);
       break;
 
       default: break;
     }
 
     // invoke charactersistic handler if matched
-    if ( matched ) client._chars_list[i]->_eventHandler(evt);
+    if ( matched ) _client.chr_list[i]->_eventHandler(evt);
   }
 
   // disconnect Client Service
   if ( evt->header.evt_id == BLE_GAP_EVT_DISCONNECTED )
   {
-    for(int i=0; i<client._svc_count; i++) client._svc_list[i]->disconnect();
+    for(int i=0; i<_client.svc_count; i++) _client.svc_list[i]->disconnect();
   }
 }
 
 bool BLEGatt::_addCharacteristic(BLECharacteristic* chr)
 {
-  if ( server._chars_count == BLE_GATT_MAX_SERVER_CHARS ) return false;
-  server._chars_list[ server._chars_count++ ] = chr;
+  if ( _server.chr_count == BLE_GATT_MAX_SERVER_CHARS ) return false;
+  _server.chr_list[ _server.chr_count++ ] = chr;
 
   return true;
 }
@@ -91,16 +91,16 @@ bool BLEGatt::_addCharacteristic(BLECharacteristic* chr)
 
 bool BLEGatt::_addCharacteristic(BLEClientCharacteristic* chr)
 {
-  VERIFY( client._chars_count < BLE_GATT_MAX_CLIENT_CHARS );
-  client._chars_list[ client._chars_count++ ] = chr;
+  VERIFY( _client.chr_count < BLE_GATT_MAX_CLIENT_CHARS );
+  _client.chr_list[ _client.chr_count++ ] = chr;
 
   return true;
 }
 
 bool BLEGatt::_addService(BLEClientService* svc)
 {
-  VERIFY( client._svc_count < BLE_GATT_MAX_CLIENT_SERVICE );
-  client._svc_list[ client._svc_count++ ] = svc;
+  VERIFY( _client.svc_count < BLE_GATT_MAX_CLIENT_SERVICE );
+  _client.svc_list[ _client.svc_count++ ] = svc;
 
   return true;
 }
