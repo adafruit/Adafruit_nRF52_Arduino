@@ -58,7 +58,8 @@ class BLEClientCharacteristic
     bool discoverDescriptor(uint16_t conn_handle);
     void begin(void);
 
-    uint16_t valueHandle();
+    uint16_t valueHandle(void);
+    uint8_t  properties(void);
     BLEClientService& parentService(void);
 
     /*------------- Read -------------*/

@@ -71,9 +71,16 @@ void BLEClientCharacteristic::useAdaCallback(bool enabled)
   _use_AdaCallback = enabled;
 }
 
-uint16_t BLEClientCharacteristic::valueHandle()
+uint16_t BLEClientCharacteristic::valueHandle(void)
 {
   return _chr.handle_value;
+}
+
+uint8_t BLEClientCharacteristic::properties(void)
+{
+  uint8_t u8;
+  memcpy(&u8, &_chr.char_props, 1);
+  return u8;
 }
 
 BLEClientService& BLEClientCharacteristic::parentService (void)
@@ -120,9 +127,20 @@ void BLEClientCharacteristic::begin(void)
  *------------------------------------------------------------------*/
 uint16_t BLEClientCharacteristic::read(void* buffer, uint16_t bufsize)
 {
-//  VERIFY_STATUS( sd_ble_gattc_read(Bluefruit.Central.connHandle(), _chr.handle_value, offset), 0 );
+  VERIFY( _chr.char_props.read, 0 );
+  uint16_t rxlen = 0;
 
-  return ERROR_NONE;
+  // Used to wait for BLE_GATTC_EVT_READ_RSP event
+  _sem = xSemaphoreCreateBinary();
+
+  sd_ble_gattc_read(_service->connHandle(), _chr.handle_value, rxlen);
+
+  xSemaphoreTake(_sem, ms2tick(BLE_GENERIC_TIMEOUT));
+
+    vSemaphoreDelete(_sem);
+  _sem = NULL;
+
+  return rxlen;
 }
 
 /*------------------------------------------------------------------*/
@@ -138,6 +156,8 @@ err_t BLEClientCharacteristic::_write_and_wait_rsp(ble_gattc_write_params_t* par
 
 uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
 {
+  VERIFY( _chr.char_props.write, 0 );
+
   // Break into multiple MTU-3 packet
   // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
   // SD132 v3.0 could negotiate MTU to higher number
@@ -220,6 +240,8 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
 
 uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
 {
+//  VERIFY( _chr.char_props.write_wo_resp, 0 );
+
   // Break into multiple MTU-3 packet
   // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
   // SD132 v3.0 could negotiate MTU to higher number
@@ -288,6 +310,7 @@ bool BLEClientCharacteristic::enableNotify(void)
 
 bool BLEClientCharacteristic::disableNotify(void)
 {
+  VERIFY( _chr.char_props.notify );
   return writeCCCD(0x0000);
 }
 
@@ -299,6 +322,7 @@ bool BLEClientCharacteristic::enableIndicate  (void)
 
 bool BLEClientCharacteristic::disableIndicate (void)
 {
+  VERIFY( _chr.char_props.indicate );
   return writeCCCD(0x0000);
 }
 
