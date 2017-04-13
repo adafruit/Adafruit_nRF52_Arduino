@@ -75,6 +75,8 @@ bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLEClientService& svc,
   if ( (disc_svc.count == 1) && (svc.uuid == disc_svc.services[0].uuid) )
   {
     _hdl_range = disc_svc.services[0].handle_range;
+    svc.setHandleRange(_hdl_range.start_handle, _hdl_range.end_handle);
+
     LOG_LV2(Discover, "[SVC] Found 0x%04X, Handle start = %d, end = %d", disc_svc.services[0].uuid.uuid, _hdl_range.start_handle, _hdl_range.end_handle);
 
     _hdl_range.start_handle++; // increase for characteristic discovery

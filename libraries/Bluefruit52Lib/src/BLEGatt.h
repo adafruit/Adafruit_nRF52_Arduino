@@ -57,6 +57,8 @@ class BLEGatt
   public:
     BLEGatt(void);
 
+    uint16_t readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffer, uint16_t bufsize, uint16_t start_hdl = 1, uint16_t end_hdl = 0xffff);
+
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal
@@ -84,6 +86,8 @@ class BLEGatt
       uint8_t                  chr_count;
       BLEClientCharacteristic* chr_list[BLE_GATT_MAX_CLIENT_CHARS];
     }_client;
+
+//    AdaMsg             _adamsg;
 };
 
 #endif /* BLEGATT_H_ */

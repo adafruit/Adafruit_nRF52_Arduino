@@ -42,6 +42,9 @@ BLEClientService* BLEClientService::lastService = NULL;
 void BLEClientService::_init(void)
 {
   _conn_hdl   = BLE_CONN_HANDLE_INVALID;
+
+  _hdl_range.start_handle = 1;
+  _hdl_range.end_handle   = 0xffff;
 }
 
 BLEClientService::BLEClientService(void)
@@ -83,6 +86,12 @@ bool BLEClientService::discovered(void)
 uint16_t BLEClientService::connHandle(void)
 {
   return _conn_hdl;
+}
+
+void BLEClientService::setHandleRange(uint16_t start_hdl, uint16_t end_hdl)
+{
+  _hdl_range.start_handle = start_hdl;
+  _hdl_range.end_handle   = end_hdl;
 }
 
 void BLEClientService::disconnect(void)

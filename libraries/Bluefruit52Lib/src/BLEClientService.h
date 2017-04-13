@@ -43,6 +43,7 @@ class BLEClientService
 {
   protected:
     uint16_t _conn_hdl;
+    ble_gattc_handle_range_t _hdl_range;
 
     void  _init(void);
     virtual void disconnect(void);
@@ -61,6 +62,7 @@ class BLEClientService
             bool     discovered(void);
 
             uint16_t connHandle(void);
+            void     setHandleRange(uint16_t start_hdl, uint16_t end_hdl);
 
     friend class BLEGatt;
 };
