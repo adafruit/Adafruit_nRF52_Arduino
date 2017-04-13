@@ -131,7 +131,7 @@ uint16_t BLEClientCharacteristic::read(void* buffer, uint16_t bufsize)
   VERIFY( _chr.char_props.read, 0 );
 
   _adamsg.prepare(buffer, bufsize);
-  VERIFY_STATUS( sd_ble_gattc_read(_service->connHandle(), _chr.handle_value, bufsize), 0);
+  VERIFY_STATUS( sd_ble_gattc_read(_service->connHandle(), _chr.handle_value, 0), 0);
   int32_t rxlen = _adamsg.waitUntilComplete( (bufsize/(MTU_MPS-2)+1) * BLE_GENERIC_TIMEOUT );
 
   return (rxlen < 0) ? 0 : rxlen;
@@ -319,19 +319,20 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
       ble_gattc_evt_write_rsp_t* wr_rsp = (ble_gattc_evt_write_rsp_t*) &evt->evt.gattc_evt.params.write_rsp;
 
       // Give up if failed
-//      if ( gatt_status != BLE_GATT_STATUS_SUCCESS )
-//      {
-//        if (_sem) xSemaphoreGive(_sem);
-//        break;
-//      }
+      if ( gatt_status != BLE_GATT_STATUS_SUCCESS )
+      {
+        _adamsg.complete();
+        break;
+      }
+
+      _adamsg.feed(NULL, wr_rsp->len);
 
       if ( wr_rsp->write_op == BLE_GATT_OP_WRITE_REQ)
       {
-        _adamsg.feed(NULL, wr_rsp->len); // len is known to be zero
+        // len is known to be zero for WRITE_REQ
         _adamsg.complete();
       }else if ( wr_rsp->write_op == BLE_GATT_OP_PREP_WRITE_REQ)
       {
-        _adamsg.feed(NULL, wr_rsp->len);
         uint16_t packet_len = min16(_adamsg.remaining, MTU_MPS-2);
 
         // still has data, continue to prepare
@@ -381,13 +382,20 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
     {
       ble_gattc_evt_read_rsp_t* rd_rsp = (ble_gattc_evt_read_rsp_t*) &evt->evt.gattc_evt.params.read_rsp;
 
-      // process is complete if len is less than MTU or we get BLE_GATT_STATUS_ATTERR_INVALID_OFFSET
-      if (gatt_status == BLE_GATT_STATUS_SUCCESS)
+      // Give up if failed (BLE_GATT_STATUS_ATTERR_INVALID_OFFSET usually)
+      if ( gatt_status != BLE_GATT_STATUS_SUCCESS )
       {
-//        if ( _evt_bufsize && _evt_buf )
-        {
-//          memcpy(_evt_buf + , rd_rsp->data, rd_rsp->len);
-        }
+        _adamsg.complete();
+        break;
+      }
+
+      _adamsg.feed(rd_rsp->data, rd_rsp->len);
+
+      // If running out of buffer, or couldn't perform GATTC Read
+      if (( _adamsg.remaining == 0) ||
+          (ERROR_NONE != sd_ble_gattc_read(_service->connHandle(), _chr.handle_value, _adamsg.xferlen)) )
+      {
+        _adamsg.complete();
       }
     }
     break;
