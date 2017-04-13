@@ -44,16 +44,16 @@ class AdaMess
     bool              _dynamic;
     SemaphoreHandle_t _sem;
 
-    uint8_t*          _buffer;
-    uint16_t          _bufsize;
-    uint16_t          _rxlen;
-
   public:
+    uint8_t*          buffer;
+    uint16_t          remaining;
+    uint16_t          xferlen;
+
     AdaMess(void);
 
     // dynamic mean semaphore is malloced and freed only when in action
     void     begin(bool dynamic = true);
-    uint16_t waitForData(void* buffer, uint16_t bufsize, uint32_t ms);
+    uint16_t waitForData(void* buf, uint16_t bufsize, uint32_t ms);
     uint16_t feed(void* data, uint16_t len);
     void     complete(void);
 };

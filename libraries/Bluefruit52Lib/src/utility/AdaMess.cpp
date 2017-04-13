@@ -40,8 +40,9 @@ AdaMess::AdaMess(void)
 {
   _dynamic = true;
   _sem     = NULL;
-  _buffer  = NULL;
-  _bufsize = _rxlen = 0;
+
+  buffer  = NULL;
+  remaining = xferlen = 0;
 }
 
 // dynamic mean semaphore is malloced and freed only when in action
@@ -51,11 +52,11 @@ void AdaMess::begin(bool dynamic)
   if ( !_dynamic ) _sem = xSemaphoreCreateBinary();
 }
 
-uint16_t AdaMess::waitForData(void* buffer, uint16_t bufsize, uint32_t ms)
+uint16_t AdaMess::waitForData(void* buf, uint16_t bufsize, uint32_t ms)
 {
-  _buffer  = (uint8_t*) buffer;
-  _bufsize = bufsize;
-  _rxlen   = 0;
+  buffer    = (uint8_t*) buf;
+  remaining = bufsize;
+  xferlen   = 0;
 
   if (_dynamic)
   {
@@ -63,7 +64,7 @@ uint16_t AdaMess::waitForData(void* buffer, uint16_t bufsize, uint32_t ms)
     VERIFY(_sem, 0);
   }
 
-  uint16_t result = xSemaphoreTake(_sem, ms2tick(ms) ) ? _rxlen : 0;
+  uint16_t result = xSemaphoreTake(_sem, ms2tick(ms) ) ? xferlen : 0;
 
   if (_dynamic)
   {
@@ -76,13 +77,14 @@ uint16_t AdaMess::waitForData(void* buffer, uint16_t bufsize, uint32_t ms)
 
 uint16_t AdaMess::feed(void* data, uint16_t len)
 {
-  len = min16(len, _bufsize);
+  len = min16(len, remaining);
 
-  memcpy(_buffer, data, len);
+  // pass NULL to skip copy
+  if ( data ) memcpy(buffer, data, len);
 
-  _buffer  += len;
-  _bufsize -= len;
-  _rxlen   += len;
+  buffer    += len;
+  remaining -= len;
+  xferlen   += len;
 
   return len;
 }
