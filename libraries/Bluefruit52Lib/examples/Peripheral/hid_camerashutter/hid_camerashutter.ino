@@ -13,9 +13,9 @@
 *********************************************************************/
 
 /*
- * Sketch use HID Consumer Key API to send Volume Down key when
- * PIN_SHUTTER is grounded. Which cause mobile to capture photo
- * when you are in Camera App
+ * This sketch uses the HID Consumer Key API to send the Volume Down
+ * key when PIN_SHUTTER is grounded. This will cause your mobile device
+ * to capture a photo when you are in Camera App
  */
 #include <bluefruit.h>
 
@@ -35,10 +35,10 @@ void setup()
 
   Serial.println();
   Serial.println("Go to your phone's Bluetooth settings to pair your device");
-  Serial.println("then open an Camera application");
+  Serial.println("then open the camera application");
 
   Serial.println();
-  Serial.printf("Wire your Pin %d to GND to capture picture\n", PIN_SHUTTER);
+  Serial.printf("Set pin %d to GND to capture a photo\n", PIN_SHUTTER);
   Serial.println();
 
   Bluefruit.begin();
@@ -50,11 +50,12 @@ void setup()
   bledis.begin();
 
   /* Start BLE HID
-   * Note: Apple requires BLE device must have min connection interval >= 20m
-   * ( The smaller the connection interval the faster we could send data).
-   * However for HID and MIDI device, Apple could accept min connection interval 
-   * up to 11.25 ms. Therefore BLEHidAdafruit::begin() will try to set the min and max
-   * connection interval to 11.25  ms and 15 ms respectively for best performance.
+   * Note: Apple requires BLE devices to have a min connection interval >= 20m
+   * (The smaller the connection interval the faster we can send data).
+   * However for HID and MIDI device, Apple will accept a min connection interval 
+   * as low as 11.25 ms. Therefore BLEHidAdafruit::begin() will try to set
+   * the min and max connection interval to 11.25 ms and 15 ms respectively
+   * for the best performance.
    */
   blehid.begin();
 
@@ -87,26 +88,26 @@ void setupAdv(void)
 
 void loop() 
 {
-  // Connected and Bonded/Paired
+  // Make sure you are connected and bonded/paired
   if ( Bluefruit.connected() && Bluefruit.connPaired() )
   {
-    // Pin is wired to GND
+    // Check if pin GND'ed
     if ( digitalRead(PIN_SHUTTER) == 0 )
     {
-      // Turn on LED Red when start sending
+      // Turn on red LED when we start sending data
       digitalWrite(LED_RED, 1);
       
-      // Send Volumn Down key press
-      // Check BLEHidGerneric.h for list of defined consumer usage code
+      // Send the 'volume down' key press
+      // Check BLEHidGerneric.h for list of defined consumer usage codes
       blehid.consumerKeyPress(HID_USAGE_CONSUMER_VOLUME_DECREMENT);
 
-      // Delay a bit between repots
+      // Delay a bit between reports
       delay(10);
       
       // Send key release
       blehid.consumerKeyRelease();
 
-      // Turn off LED Red
+      // Turn off the red LED
       digitalWrite(LED_RED, 0);
 
       // Delay to avoid constant capturing
@@ -114,4 +115,3 @@ void loop()
     }
   }
 }
-
