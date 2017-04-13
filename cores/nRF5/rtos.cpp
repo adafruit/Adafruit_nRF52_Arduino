@@ -82,9 +82,6 @@ bool SchedulerRTOS::startLoop(taskfunc_t task, const char* name, uint32_t stack_
   return pdPASS == xTaskCreate( _redirect_task, name, stack_size, (void*) task, TASK_PRIO_NORMAL, &handle);
 }
 
-void rtos_idle_callback(void) ATTR_WEAK;
-void rtos_idle_callback(void) {}
-
 extern "C"
 {
 
@@ -92,11 +89,15 @@ void vApplicationIdleHook( void )
 {
   // Internal background task
 
-  // Weak symbol do nothing if is not implementation
-  rtos_idle_callback();
-
-  // All done. Instruct CPU to enter low-power state until an event/interrupt occurred
-  waitForEvent();
+  // User callback is not defined. Go to low-power mode
+  if ( rtos_idle_callback )
+  {
+    rtos_idle_callback();
+  }else
+  {
+    // instruct CPU to enter low-power state until an event/interrupt occurred
+    waitForEvent();
+  }
 }
 
-}
+} // extern C
