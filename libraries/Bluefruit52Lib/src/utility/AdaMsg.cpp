@@ -59,7 +59,7 @@ void AdaMsg::prepare(void* buf, uint16_t bufsize)
   xferlen   = 0;
 }
 
-int AdaMsg::waitUntilComplete(uint32_t ms)
+int32_t AdaMsg::waitUntilComplete(uint32_t ms)
 {
   if (_dynamic)
   {

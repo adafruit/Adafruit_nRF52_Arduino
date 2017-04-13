@@ -83,6 +83,8 @@ class BLEClientCharacteristic
     void useAdaCallback(bool enabled);
 
   private:
+    enum { MTU_MPS = 20 } ;
+
     ble_gattc_char_t   _chr;
     uint16_t           _cccd_handle;
 

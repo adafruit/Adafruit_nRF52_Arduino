@@ -55,7 +55,7 @@ class AdaMsg
     void     begin(bool dynamic = true);
 
     void     prepare(void* buf, uint16_t bufsize);
-    int      waitUntilComplete(uint32_t ms);
+    int32_t  waitUntilComplete(uint32_t ms);
 
     uint16_t feed(void* data, uint16_t len);
     void     complete(void);

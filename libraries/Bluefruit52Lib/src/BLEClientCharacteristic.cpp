@@ -129,26 +129,12 @@ void BLEClientCharacteristic::begin(void)
 uint16_t BLEClientCharacteristic::read(void* buffer, uint16_t bufsize)
 {
   VERIFY( _chr.char_props.read, 0 );
-  uint16_t rxlen = 0;
 
-  // Semaphore to wait for BLE_GATTC_EVT_READ_RSP event
-//  _sem = xSemaphoreCreateBinary();
-//
-//  _evt_buf     = buffer;
-//  _evt_bufsize = bufsize;
-//
-//  sd_ble_gattc_read(_service->connHandle(), _chr.handle_value, rxlen);
-//
-//  xSemaphoreTake(_sem, ms2tick(BLE_GENERIC_TIMEOUT));
-//
-//
-//  _evt_buf     = NULL;
-//  _evt_bufsize = 0;
-//
-//    vSemaphoreDelete(_sem);
-//  _sem = NULL;
+  _adamsg.prepare(buffer, bufsize);
+  VERIFY_STATUS( sd_ble_gattc_read(_service->connHandle(), _chr.handle_value, bufsize), 0);
+  int32_t rxlen = _adamsg.waitUntilComplete( (bufsize/(MTU_MPS-2)+1) * BLE_GENERIC_TIMEOUT );
 
-  return rxlen;
+  return (rxlen < 0) ? 0 : rxlen;
 }
 
 /*------------------------------------------------------------------*/
@@ -161,10 +147,8 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
   // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
   // SD132 v3.0 could negotiate MTU to higher number
   // For BLE_GATT_OP_PREP_WRITE_REQ, max data is 18 ( 2 byte is used for offset)
-  enum { MTU_MPS = 20 } ;
-
   const bool long_write = (len > MTU_MPS);
-  int count = 0;
+  int32_t count = 0;
 
   // CMD WRITE_REQUEST for single transaction
   if ( !long_write )
@@ -216,7 +200,6 @@ uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
   // Break into multiple MTU-3 packet
   // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
   // SD132 v3.0 could negotiate MTU to higher number
-  enum { MTU_MPS = 20 } ;
   const uint8_t* u8data = (const uint8_t*) data;
 
   uint16_t remaining = len;
@@ -348,8 +331,6 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
         _adamsg.complete();
       }else if ( wr_rsp->write_op == BLE_GATT_OP_PREP_WRITE_REQ)
       {
-        enum { MTU_MPS = 20 } ;
-
         _adamsg.feed(NULL, wr_rsp->len);
         uint16_t packet_len = min16(_adamsg.remaining, MTU_MPS-2);
 
@@ -362,7 +343,7 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
               .write_op = BLE_GATT_OP_PREP_WRITE_REQ,
               .flags    = 0,
               .handle   = _chr.handle_value,
-              .offset   = (uint16_t) wr_rsp->offset + wr_rsp->len,
+              .offset   = (uint16_t) (wr_rsp->offset + wr_rsp->len),
               .len      = packet_len,
               .p_value  = (uint8_t*) _adamsg.buffer
           };
