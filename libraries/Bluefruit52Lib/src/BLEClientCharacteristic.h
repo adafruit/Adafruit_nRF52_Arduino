@@ -90,15 +90,10 @@ class BLEClientCharacteristic
     notify_cb_t        _notify_cb;
     bool               _use_AdaCallback; // whether callback is invoked in seperated task with AdaCallback
 
-    SemaphoreHandle_t  _sem;
-    void*              _evt_buf;
-    uint16_t           _evt_bufsize;
-
+    AdaMsg             _adamsg;
 
     void  _init         (void);
     void  _eventHandler (ble_evt_t* event);
-
-    err_t _write_and_wait_rsp(ble_gattc_write_params_t* param, uint32_t ms);
 
     friend class BLEGatt;
 };
