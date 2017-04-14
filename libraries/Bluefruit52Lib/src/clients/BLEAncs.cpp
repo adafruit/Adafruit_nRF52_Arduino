@@ -310,6 +310,26 @@ void BLEAncs::_handleData(uint8_t* data, uint16_t len)
 /*------------------------------------------------------------------*/
 /* High Level API
  *------------------------------------------------------------------*/
+uint16_t BLEAncs::getAppID(uint32_t uid, void* buffer, uint16_t bufsize)
+{
+  return getAttribute(uid, ANCS_ATTR_APP_IDENTIFIER, buffer, bufsize);
+}
+
+uint16_t BLEAncs::getTitle(uint32_t uid, void* buffer, uint16_t bufsize)
+{
+  return getAttribute(uid, ANCS_ATTR_TITLE, buffer, bufsize);
+}
+
+uint16_t BLEAncs::getSubtitle(uint32_t uid, void* buffer, uint16_t bufsize)
+{
+  return getAttribute(uid, ANCS_ATTR_SUBTITLE, buffer, bufsize);
+}
+
+uint16_t BLEAncs::getMessage(uint32_t uid, void* buffer, uint16_t bufsize)
+{
+  return getAttribute(uid, ANCS_ATTR_MESSAGE, buffer, bufsize);
+}
+
 uint16_t BLEAncs::getMessageSize(uint32_t uid)
 {
   char buf[20] = { 0 };
@@ -319,6 +339,32 @@ uint16_t BLEAncs::getMessageSize(uint32_t uid)
 
   return result;
 }
+
+uint16_t BLEAncs::getDate(uint32_t uid, void* buffer, uint16_t bufsize)
+{
+  return getAttribute(uid, ANCS_ATTR_DATE, buffer, bufsize);
+}
+
+uint16_t BLEAncs::getPosActionLabel(uint32_t uid, void* buffer, uint16_t bufsize)
+{
+  return getAttribute(uid, ANCS_ATTR_POSITIVE_ACTION_LABEL, buffer, bufsize);
+}
+
+uint16_t BLEAncs::getNegActionLabel(uint32_t uid, void* buffer, uint16_t bufsize)
+{
+  return getAttribute(uid, ANCS_ATTR_NEGATIVE_ACTION_LABEL, buffer, bufsize);
+}
+
+uint16_t BLEAncs::getAppName(uint32_t uid, void* buffer, uint16_t bufsize)
+{
+  // First get AppID
+  char appID[64] = { 0 };
+  VERIFY( getAppID(uid, appID, sizeof(appID)), 0 );
+
+  // Then get App Display Name
+  return getAppAttribute(appID, ANCS_APP_ATTR_DISPLAY_NAME, buffer, bufsize);
+}
+
 
 /*------------------------------------------------------------------*/
 /* Callback

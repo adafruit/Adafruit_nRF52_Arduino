@@ -99,7 +99,7 @@ void ancs_notification_callback(AncsNotification_t* notif)
   memset(buffer, 0, sizeof(buffer));
   bleancs.getAttribute(notif->uid, ANCS_ATTR_MESSAGE, buffer, sizeof(buffer));
   Serial.printf("%-15s | ", buffer);
-
+  
   // Get App ID and store to app_id
   char app_id[64] = { 0 };
   memset(buffer, 0, sizeof(buffer));
@@ -107,9 +107,9 @@ void ancs_notification_callback(AncsNotification_t* notif)
   strcpy(app_id, buffer);
   Serial.printf("%-20s | ", app_id);
 
-  // Get Application Name ( not work yet)
+  // Get Application Name
   memset(buffer, 0, sizeof(buffer));
-  n = bleancs.getAppAttribute(app_id, ANCS_APP_ATTR_DISPLAY_NAME, buffer, sizeof(buffer));
+  bleancs.getAppAttribute(app_id, ANCS_APP_ATTR_DISPLAY_NAME, buffer, sizeof(buffer));
   Serial.printf("%-15s | ", buffer);
 
   Serial.println();
@@ -130,7 +130,6 @@ void connect_callback(void)
   if ( bleClientDis.discover( Bluefruit.connHandle()) )
   {
     Serial.println("Found it");
-    char buffer[32+1];
     
     // read and print out Manufacturer
     memset(buffer, 0, sizeof(buffer));

@@ -155,8 +155,10 @@ class BLEAncs : public BLEClientService
     uint16_t getMessage(uint32_t uid, void* buffer, uint16_t bufsize);
     uint16_t getMessageSize(uint32_t uid);
     uint16_t getDate(uint32_t uid, void* buffer, uint16_t bufsize);
-//    uint16_t getPosActionLabel(uint32_t uid, void* buffer, uint16_t bufsize);
-//    uint16_t getNegActionLabel(uint32_t uid, void* buffer, uint16_t bufsize);
+    uint16_t getPosActionLabel(uint32_t uid, void* buffer, uint16_t bufsize);
+    uint16_t getNegActionLabel(uint32_t uid, void* buffer, uint16_t bufsize);
+
+    uint16_t getAppName(uint32_t uid, void* buffer, uint16_t bufsize);
 
   protected:
     virtual void  disconnect(void);
