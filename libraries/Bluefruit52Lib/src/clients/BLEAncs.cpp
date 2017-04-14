@@ -73,13 +73,10 @@ const uint8_t BLEANCS_UUID_CHR_DATA[] =
 
 BLEAncs::BLEAncs(void)
   : BLEClientService(BLEANCS_UUID_SERVICE), _control(BLEANCS_UUID_CHR_CONTROL),
-    _notification(BLEANCS_UUID_CHR_NOTIFICATION), _data(BLEANCS_UUID_CHR_DATA)
+    _notification(BLEANCS_UUID_CHR_NOTIFICATION), _data(BLEANCS_UUID_CHR_DATA),
+    _adamsg()
 {
   _notif_cb    = NULL;
-  _sem         = NULL;
-
-  _evt_buf     = NULL;
-  _evt_bufsize = 0;
 }
 
 bool BLEAncs::begin(void)
@@ -90,7 +87,7 @@ bool BLEAncs::begin(void)
   // Initialize Discovery module if needed
   if ( !Bluefruit.Discovery.begun() ) Bluefruit.Discovery.begin();
 
-  _sem = xSemaphoreCreateCounting(10, 0);
+  _adamsg.begin(false);
 
   _control.begin();
   _notification.begin();
@@ -196,39 +193,35 @@ uint16_t BLEAncs::getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_
     cmdlen = 8;
   }
 
-  // Configure event buffer to hold data
-  _evt_buf     = buffer;
-  _evt_bufsize = bufsize;
-
   // Write command using write response
+//   PRINT_BUFFER(&command, cmdlen);
+  _adamsg.prepare(buffer, bufsize);
   VERIFY( cmdlen == _control.write_resp(&command, cmdlen), 0);
+  VERIFY( _adamsg.waitUntilComplete(BLE_ANCS_TIMEOUT) >= 0, 0);
 
-  // wait for 1st response's data arrived to parse attribute length
-  if ( !xSemaphoreTake(_sem, ms2tick(BLE_ANCS_TIMEOUT)) ) return 0;
-
+  // At least 1 packet arrived, enough to know attribute length
   uint16_t attr_len = ((get_notif_attr_t*) buffer)->len;
 
-  // wait until all data received
-  // Note (bufsize-_evt_bufsize) is number of bytes received so far
-  while ( ( (attr_len + sizeof(get_notif_attr_t))  > ((uint16_t) (bufsize-_evt_bufsize)) ) &&
-          ( _evt_bufsize > 0 ) )
+  // wait until all data received Or we run out of memory
+  while ( ( (attr_len + sizeof(get_notif_attr_t))  > _adamsg.xferlen ) &&
+          ( _adamsg.remaining > 0 ) )
   {
-    if ( !xSemaphoreTake(_sem, ms2tick(BLE_ANCS_TIMEOUT)) ) break;
+    VERIFY( _adamsg.waitUntilComplete(BLE_ANCS_TIMEOUT) >= 0, 0);
   }
 
-  uint16_t actual_attrlen = bufsize - _evt_bufsize - sizeof(get_notif_attr_t);
+  // Received length could be less if we run out of buffer
+  attr_len = _adamsg.xferlen - sizeof(get_notif_attr_t);
 
   // Shift out the Command data, left only Attribute data
-  memmove(buffer, ((uint8_t*)buffer) +sizeof(get_notif_attr_t), actual_attrlen);
+  memmove(buffer, ((uint8_t*)buffer) +sizeof(get_notif_attr_t), attr_len);
 
-  // including null-terminator for some string application
-  ((char*) buffer)[actual_attrlen] = 0;
+  // Include null-terminator for some string application
+  if ( attr_len < bufsize )
+  {
+    ((char*) buffer)[attr_len] = 0;
+  }
 
-  // Clear event buffer
-  _evt_buf     = NULL;
-  _evt_bufsize = 0;
-
-  return actual_attrlen;
+  return attr_len;
 
 }
 
@@ -244,53 +237,48 @@ uint16_t BLEAncs::getAppAttribute(const char* appid, uint8_t attr, void* buffer,
   strcpy( (char*) command+1, appid);
   command[cmdlen-1] = attr;
 
-  // Configure event buffer to hold data
-  _evt_buf     = buffer;
-  _evt_bufsize = bufsize;
+//  PRINT_BUFFER(command, cmdlen);
+  _adamsg.prepare(buffer, bufsize);
 
   // Write command using write response
-  PRINT_BUFFER(command, cmdlen);
   if ( cmdlen != _control.write_resp(command, cmdlen) )
   {
     rtos_free(command);
     return 0;
   }
-
   rtos_free(command);
 
   // Phase 1: Get data until Attribute Length is known
-  while ( (cmdlen+2) > (bufsize-_evt_bufsize) &&
-          (_evt_bufsize > 0))
+  while ( (cmdlen+2) > _adamsg.xferlen &&
+          (_adamsg.remaining > 0) )
   {
-    if ( !xSemaphoreTake(_sem, ms2tick(BLE_ANCS_TIMEOUT)) ) return 0;
+    VERIFY( _adamsg.waitUntilComplete(BLE_ANCS_TIMEOUT) >= 0, 0);
   }
 
   uint16_t attr_len;
   memcpy(&attr_len, ((uint8_t*)buffer)+cmdlen, 2);
 
   // Phase 2: Get data until all attribute data received
-  // Note (bufsize-_evt_bufsize) is number of bytes received so far
-  while ( (attr_len + cmdlen+2)  > (bufsize-_evt_bufsize) &&
-          (_evt_bufsize > 0) )
+  // Or we run out of memory
+  while ( (attr_len + cmdlen+2) > _adamsg.xferlen &&
+          (_adamsg.remaining > 0) )
   {
-    if ( !xSemaphoreTake(_sem, ms2tick(BLE_ANCS_TIMEOUT)) ) break;
+    VERIFY( _adamsg.waitUntilComplete(BLE_ANCS_TIMEOUT) >= 0, 0);
   }
 
-  uint16_t actual_attrlen = bufsize - _evt_bufsize - (cmdlen+2);
+  // Received length could be less if we run out of buffer
+  attr_len = _adamsg.xferlen - (cmdlen+2);
 
   // Shift out the Command data, left only Attribute data
-  memmove(buffer, ((uint8_t*)buffer) +cmdlen+2, actual_attrlen);
+  memmove(buffer, ((uint8_t*)buffer) +cmdlen+2, attr_len);
 
   // including null-terminator for some string application
-  ((char*) buffer)[actual_attrlen] = 0;
+  if ( attr_len < bufsize )
+  {
+    ((char*) buffer)[attr_len] = 0;
+  }
 
-  // Clear event buffer
-  _evt_buf     = NULL;
-  _evt_bufsize = 0;
-
-  return actual_attrlen;
-
-  return 0;
+  return attr_len;
 }
 
 bool BLEAncs::performAction(uint32_t uid, uint8_t actionid)
@@ -313,21 +301,24 @@ void BLEAncs::_handleNotification(uint8_t* data, uint16_t len)
 
 void BLEAncs::_handleData(uint8_t* data, uint16_t len)
 {
-  PRINT_BUFFER(data, len);
+  //PRINT_BUFFER(data, len);
 
-  if ( _evt_bufsize && _evt_buf )
-  {
-    uint16_t cplen = min16(len, _evt_bufsize);
-
-    memcpy(_evt_buf, data, cplen);
-
-    _evt_buf     += cplen;
-    _evt_bufsize -= cplen;
-
-    xSemaphoreGive(_sem);
-  }
+  _adamsg.feed(data, len);
+  _adamsg.complete(); // mark as complete each time we received data
 }
 
+/*------------------------------------------------------------------*/
+/* High Level API
+ *------------------------------------------------------------------*/
+uint16_t BLEAncs::getMessageSize(uint32_t uid)
+{
+  char buf[20] = { 0 };
+
+  VERIFY( getAttribute(uid, ANCS_ATTR_MESSAGE_SIZE, buf, sizeof(buf)), 0);
+  uint16_t result = strtoul(buf, NULL, 10);
+
+  return result;
+}
 
 /*------------------------------------------------------------------*/
 /* Callback

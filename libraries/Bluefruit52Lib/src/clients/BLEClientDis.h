@@ -48,6 +48,8 @@ class BLEClientDis : public BLEClientService
     virtual bool  begin(void);
     virtual bool  discover(uint16_t conn_handle);
 
+    uint16_t getChars(uint16_t uuid, char* buffer, uint16_t bufsize);
+
     uint16_t getModel       (char* buffer, uint16_t bufsize);
     uint16_t getSerial      (char* buffer, uint16_t bufsize);
     uint16_t getFirmwareRev (char* buffer, uint16_t bufsize);
@@ -56,7 +58,6 @@ class BLEClientDis : public BLEClientService
     uint16_t getManufacturer(char* buffer, uint16_t bufsize);
 
   private:
-    uint16_t getChars(uint16_t uuid, char* buffer, uint16_t bufsize);
 
     // BLE DIS has several characteristics but is often used one or two times
     // It is better to implement get() with on-the-fly BLEClientCharacteristic

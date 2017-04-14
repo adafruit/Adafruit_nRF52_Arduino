@@ -143,9 +143,20 @@ class BLEAncs : public BLEClientService
     bool enableNotification(void);
     bool disableNotification(void);
 
+    // Main commands
     uint16_t getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_t bufsize);
     uint16_t getAppAttribute(const char* appid, uint8_t attr, void* buffer, uint16_t bufsize);
     bool     performAction(uint32_t uid, uint8_t actionid);
+
+    // Get Attribute helper
+    uint16_t getAppID(uint32_t uid, void* buffer, uint16_t bufsize);
+    uint16_t getTitle(uint32_t uid, void* buffer, uint16_t bufsize);
+    uint16_t getSubtitle(uint32_t uid, void* buffer, uint16_t bufsize);
+    uint16_t getMessage(uint32_t uid, void* buffer, uint16_t bufsize);
+    uint16_t getMessageSize(uint32_t uid);
+    uint16_t getDate(uint32_t uid, void* buffer, uint16_t bufsize);
+//    uint16_t getPosActionLabel(uint32_t uid, void* buffer, uint16_t bufsize);
+//    uint16_t getNegActionLabel(uint32_t uid, void* buffer, uint16_t bufsize);
 
   protected:
     virtual void  disconnect(void);
@@ -155,12 +166,9 @@ class BLEAncs : public BLEClientService
     BLEClientCharacteristic _notification;
     BLEClientCharacteristic _data;
 
-    notification_callback_t  _notif_cb;
+    notification_callback_t _notif_cb;
 
-    SemaphoreHandle_t        _sem;
-
-    void*                    _evt_buf;
-    uint16_t                 _evt_bufsize;
+    AdaMsg                  _adamsg;
 
     void _handleNotification(uint8_t* data, uint16_t len);
     void _handleData(uint8_t* data, uint16_t len);

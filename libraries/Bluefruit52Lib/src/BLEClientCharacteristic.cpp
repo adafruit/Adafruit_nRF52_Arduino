@@ -399,10 +399,6 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
         break;
       }
 
-      PRINT_INT(rd_rsp->len);
-      PRINT_INT(rd_rsp->offset);
-
-      PRINT_BUFFER(rd_rsp->data, rd_rsp->len);
       _adamsg.feed(rd_rsp->data, rd_rsp->len);
 
       /* Complete condition is one of follows

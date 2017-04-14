@@ -49,7 +49,10 @@ AdaMsg::AdaMsg(void)
 void AdaMsg::begin(bool dynamic)
 {
   _dynamic = dynamic;
-  if ( !_dynamic ) _sem = xSemaphoreCreateBinary();
+  if ( !_dynamic )
+  {
+    _sem = xSemaphoreCreateCounting(10, 0);
+  }
 }
 
 void AdaMsg::stop(void)

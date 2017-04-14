@@ -72,7 +72,6 @@ uint16_t BLEClientDis::getChars(uint16_t uuid, char* buffer, uint16_t bufsize)
   if ( Bluefruit.Discovery.discoverCharacteristic(_conn_hdl, chr) )
   {
     count = chr.read(buffer, bufsize);
-    PRINT_INT(count);
   }
 
   // Set back
