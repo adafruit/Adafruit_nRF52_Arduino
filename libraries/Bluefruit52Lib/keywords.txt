@@ -221,6 +221,16 @@ getAttribute	KEYWORD2
 getAppAttribute	KEYWORD2
 performAction	KEYWORD2
 
+getAppID	KEYWORD2
+getTitle	KEYWORD2
+getSubtitle	KEYWORD2
+getMessage	KEYWORD2
+getMessageSize	KEYWORD2
+getDate	KEYWORD2
+getPosActionLabel	KEYWORD2
+getNegActionLabel	KEYWORD2
+getAppName	KEYWORD2
+
 #######################################
 # BLEBas Methods (KEYWORD2)
 #######################################
