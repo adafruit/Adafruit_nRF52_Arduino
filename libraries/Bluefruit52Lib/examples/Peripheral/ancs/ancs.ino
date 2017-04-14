@@ -80,48 +80,6 @@ void loop()
   // Your handling code here
 }
 
-void ancs_notification_callback(AncsNotification_t* notif)
-{
-  int n;
-  Serial.printf("| %-8s | ", EVENT_STR[notif->eventID]);
-
-  // Print Category with padding
-  n = Serial.printf("%s (%d)", CAT_STR[notif->categoryID], notif->categoryCount);
-  for (int i=n; i<20; i++) Serial.print(' ');
-  Serial.print(" | ");
-
-  // Get notification Title
-  memset(buffer, 0, sizeof(buffer));
-  bleancs.getAttribute(notif->uid, ANCS_ATTR_TITLE, buffer, sizeof(buffer));
-  Serial.printf("%-14s | ", buffer);
-
-  // Get notification Message
-  memset(buffer, 0, sizeof(buffer));
-  bleancs.getAttribute(notif->uid, ANCS_ATTR_MESSAGE, buffer, sizeof(buffer));
-  Serial.printf("%-15s | ", buffer);
-  
-  // Get App ID and store to app_id
-  char app_id[64] = { 0 };
-  memset(buffer, 0, sizeof(buffer));
-  bleancs.getAttribute(notif->uid, ANCS_ATTR_APP_IDENTIFIER, buffer, sizeof(buffer));
-  strcpy(app_id, buffer);
-  Serial.printf("%-20s | ", app_id);
-
-  // Get Application Name
-  memset(buffer, 0, sizeof(buffer));
-  bleancs.getAppAttribute(app_id, ANCS_APP_ATTR_DISPLAY_NAME, buffer, sizeof(buffer));
-  Serial.printf("%-15s | ", buffer);
-
-  Serial.println();
-
-  // Automatically accept incoming call using perform Action
-  if ( notif->categoryID == ANCS_CAT_INCOMING_CALL && notif->eventID == ANCS_EVT_NOTIFICATION_ADDED)
-  {
-    Serial.println("Incoming call accepted");
-    bleancs.performAction(notif->uid, ANCS_ACTION_POSITIVE);
-  }
-}
-
 void connect_callback(void)
 {
   Serial.println("Connected");
@@ -167,6 +125,48 @@ void connect_callback(void)
       Serial.println("| Event    | Category (count)     | Title          | Message         | App ID               | App Name        |");
       Serial.println("---------------------------------------------------------------------------------------------------------------");
     }
+  }
+}
+
+void ancs_notification_callback(AncsNotification_t* notif)
+{
+  int n;
+  Serial.printf("| %-8s | ", EVENT_STR[notif->eventID]);
+
+  // Print Category with padding
+  n = Serial.printf("%s (%d)", CAT_STR[notif->categoryID], notif->categoryCount);
+  for (int i=n; i<20; i++) Serial.print(' ');
+  Serial.print(" | ");
+
+  // Get notification Title
+  memset(buffer, 0, sizeof(buffer));
+  bleancs.getAttribute(notif->uid, ANCS_ATTR_TITLE, buffer, sizeof(buffer));
+  Serial.printf("%-14s | ", buffer);
+
+  // Get notification Message
+  memset(buffer, 0, sizeof(buffer));
+  bleancs.getAttribute(notif->uid, ANCS_ATTR_MESSAGE, buffer, sizeof(buffer));
+  Serial.printf("%-15s | ", buffer);
+  
+  // Get App ID and store to app_id
+  char app_id[64] = { 0 };
+  memset(buffer, 0, sizeof(buffer));
+  bleancs.getAttribute(notif->uid, ANCS_ATTR_APP_IDENTIFIER, buffer, sizeof(buffer));
+  strcpy(app_id, buffer);
+  Serial.printf("%-20s | ", app_id);
+
+  // Get Application Name
+  memset(buffer, 0, sizeof(buffer));
+  bleancs.getAppAttribute(app_id, ANCS_APP_ATTR_DISPLAY_NAME, buffer, sizeof(buffer));
+  Serial.printf("%-15s | ", buffer);
+
+  Serial.println();
+
+  // Automatically accept incoming call using perform Action
+  if ( notif->categoryID == ANCS_CAT_INCOMING_CALL && notif->eventID == ANCS_EVT_NOTIFICATION_ADDED)
+  {
+    Serial.println("Incoming call accepted");
+    bleancs.performAction(notif->uid, ANCS_ACTION_POSITIVE);
   }
 }
 
