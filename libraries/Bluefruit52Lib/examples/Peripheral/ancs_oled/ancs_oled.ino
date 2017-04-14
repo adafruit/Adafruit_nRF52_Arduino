@@ -16,6 +16,10 @@
  * This sketch is similar to 'ancs' and use Feather OLED Wing 
  * https://www.adafruit.com/product/2900
  * as the notification display
+ *
+ * BUTTON A: UP
+ * BUTTON B: DOWN
+ * BUTTON C: Accept incoming call
  */
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -42,19 +46,15 @@ typedef struct
 
 MyNotif_t myNotifs[MAX_COUNT] = { 0 };
 
-int notifCount  = 0;
-int activeIndex = -1;
-int nextIndex   = -1;
+int notifCount   = 0;
+int activeIndex  = 0;
+int displayIndex = -1;
 
 // BLE Client Service
 char deviceModel[BUFSIZE] = { 0 };
 
 BLEClientDis  bleClientDis;
 BLEAncs       bleancs;
-
-
-// General purpose buffer
-char buffer[128];
 
 void setup()
 {
@@ -120,29 +120,47 @@ void loop()
   // Check buttons
   uint32_t presedButtons = readPressedButtons();
 
-//  PRINT_HEX(presedButtons);
+  // Accept incoming call with BUTTON C
+  if ( presedButtons & bit(BUTTON_C) )
+  {
+    if ( myNotifs[activeIndex].ntf.categoryID == ANCS_CAT_INCOMING_CALL &&
+         myNotifs[activeIndex].ntf.eventID    == ANCS_EVT_NOTIFICATION_ADDED)
+    {
+      bleancs.performAction(myNotifs[activeIndex].ntf.uid, ANCS_ACTION_POSITIVE);
+    }
+  }
 
+  // Button A as UP
   if ( presedButtons & bit(BUTTON_A) )
   {
     if (activeIndex != 0)
     {
-      nextIndex = activeIndex - 1;
+      displayIndex = activeIndex - 1;
+    }else
+    {
+      displayIndex = notifCount-1; // wrap around
     }
   }
 
+  // Button B as DOWN
   if ( presedButtons & bit(BUTTON_B) )
   {
     if (activeIndex != (notifCount-1))
     {
-      nextIndex = activeIndex + 1;
+      displayIndex = activeIndex + 1;
+    }else
+    {
+      displayIndex = 0; // wrap around
     }
   }
 
   // Only display when index is different
-  if ( activeIndex != nextIndex )
+  if ( displayIndex >= 0 )
   {
-    activeIndex = nextIndex;
-    displayNotification(activeIndex);
+    displayNotification(displayIndex);
+
+    activeIndex = displayIndex;
+    displayIndex = -1;
   }
 }
 
@@ -172,13 +190,24 @@ void displayNotification(int index)
   oled.clearDisplay();
   oled.setCursor(0, 0);
 
-  char tempbuf[32];
-  sprintf(tempbuf, "%02d/%02d %15s", index+1, notifCount, deviceModel);
+  // Incoming call, display a bit different
+  if ( myNotifs[index].ntf.categoryID == ANCS_CAT_INCOMING_CALL &&
+       myNotifs[index].ntf.eventID    == ANCS_EVT_NOTIFICATION_ADDED)
+  {
+    oled.println(myNotifs[index].title);
+    oled.println("      is calling");
+    oled.println();
+    oled.println("Button C to answer");
+  }else
+  {
+    char tempbuf[32];
+    sprintf(tempbuf, "%02d/%02d %15s", index+1, notifCount, deviceModel);
 
-  oled.println(tempbuf);
-  oled.println(myNotifs[index].app_name);
-  oled.println(myNotifs[index].title);
-  oled.println(myNotifs[index].message);
+    oled.println(tempbuf);
+    oled.println(myNotifs[index].app_name);
+    oled.println(myNotifs[index].title);
+    oled.println(myNotifs[index].message);
+  }
 
   oled.display();
 }
@@ -220,6 +249,74 @@ void connect_callback(void)
     oled.println("Failed");
   }
 
+  oled.display();
+}
+
+void ancs_notification_callback(AncsNotification_t* notif)
+{
+  // Clear screen if it is the first notification
+  if ( notifCount == 0 )
+  {
+    displayIndex = 0;
+  }
+  
+  if (notif->eventID == ANCS_EVT_NOTIFICATION_ADDED )
+  {
+    displayIndex = notifCount; // display new notification
+
+    myNotifs[ notifCount++ ].ntf = *notif;
+  }else if (notif->eventID == ANCS_EVT_NOTIFICATION_REMOVED )
+  {
+    for(int i=0; i<notifCount; i++)
+    {
+      if ( notif->uid == myNotifs[i].ntf.uid )
+      {
+        // remove by swapping with the last one
+        notifCount--;
+        myNotifs[i] = myNotifs[notifCount];
+
+        // Invalid removed data
+        memset(&myNotifs[notifCount], 0, sizeof(MyNotif_t));
+
+        // remove the last notification, adjust display index
+        if (activeIndex == notifCount)
+        {
+          displayIndex = notifCount-1;
+        }else if (activeIndex == i)
+        {
+          // re-draw display
+          displayIndex = activeIndex;
+        }
+
+        break;
+      }
+    }
+  }else
+  {
+    for(int i=0; i<notifCount; i++)
+    {
+      if ( notif->uid == myNotifs[i].ntf.uid )
+      {
+        // Display modification
+        displayIndex = i;
+        break;
+      }
+    }
+  }
+}
+
+void disconnect_callback(uint8_t reason)
+{
+  (void) reason;
+
+  // reset notification array
+  notifCount   = 0;
+  activeIndex  = 0;
+  displayIndex = -1;
+
+  oled.clearDisplay();
+  oled.setCursor(0, 0);
+  oled.println("Not connected");
   oled.display();
 }
 
@@ -278,58 +375,4 @@ uint32_t readPressedButtons(void)
   lastDebounced = debounced;
 
   return result;
-}
-
-void ancs_notification_callback(AncsNotification_t* notif)
-{
-  // Clear screen if it is the first notification
-  if ( notifCount == 0 )
-  {
-    // will cause loop() to display
-    activeIndex = -1;
-    nextIndex   = 0;
-  }
-  
-  if (notif->eventID == ANCS_EVT_NOTIFICATION_ADDED )
-  {
-    myNotifs[ notifCount++ ].ntf = *notif;
-  }else if (notif->eventID == ANCS_EVT_NOTIFICATION_REMOVED )
-  {
-    for(int i=0; i<notifCount; i++)
-    {
-      if ( notif->uid == myNotifs[i].ntf.uid )
-      {
-        // remove by swapping with the last one
-        notifCount--;
-        myNotifs[i] = myNotifs[notifCount];
-        break;
-      }
-    }
-  }else
-  {
-    // modification: do nothing now !!
-  }
-  
-  oled.display();
-
-  // Automatically accept incoming call using perform Action
-//  if ( notif->categoryID == ANCS_CAT_INCOMING_CALL && notif->eventID == ANCS_EVT_NOTIFICATION_ADDED)
-//  {
-//    Serial.println("Incoming call accepted");
-//    bleancs.performAction(notif->uid, ANCS_ACTION_POSITIVE);
-//  }
-}
-
-void disconnect_callback(uint8_t reason)
-{
-  (void) reason;
-
-  // reset notification array
-  notifCount = 0;
-  activeIndex = nextIndex = -1;
-
-  oled.clearDisplay();
-  oled.setCursor(0, 0);
-  oled.println("Not connected");
-  oled.display();
 }
