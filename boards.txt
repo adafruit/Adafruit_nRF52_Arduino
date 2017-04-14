@@ -48,7 +48,12 @@ feather52.build.lfclk_flags=-DUSE_LFXO
 
 feather52.build.nrfutil=nrfutil
 feather52.build.nrfutil.windows={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/win32/nrfutil.exe
-feather52.build.nrfutil.macosx=/usr/local/bin/nrfutil
+# Legacy MacOS nrfutil location, this is for when people had it globally
+# installed and is left just for reference:
+# feather52.build.nrfutil.macosx=/usr/local/bin/nrfutil
+# Frozen MacOS nrfutil location, this uses a frozen or pre-built standalone
+# version of nrfutil included in the BSP (no manual install required):
+feather52.build.nrfutil.macosx={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/macos/nrfutil
 
 feather52.menu.debug.l0=Level 0 (Release)
 feather52.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
