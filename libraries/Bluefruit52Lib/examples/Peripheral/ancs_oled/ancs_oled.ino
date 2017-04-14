@@ -58,7 +58,12 @@ char buffer[128];
 
 void setup()
 {
-  // Init with the I2C addr 0x3C (for the 128x32) and show splashscreen
+  // Button configured
+  pinMode(BUTTON_A, INPUT_PULLUP);
+  pinMode(BUTTON_B, INPUT_PULLUP);
+  pinMode(BUTTON_C, INPUT_PULLUP);
+
+  // init with the I2C addr 0x3C (for the 128x32) and show splashscreen
   oled.begin(SSD1306_SWITCHCAPVCC, 0x3C); 
   oled.display();
 
@@ -112,6 +117,27 @@ void loop()
   // If service is not yet discovered
   if ( !bleancs.discovered() ) return;
 
+  // Check buttons
+  uint32_t presedButtons = readPressedButtons();
+
+//  PRINT_HEX(presedButtons);
+
+  if ( presedButtons & bit(BUTTON_A) )
+  {
+    if (activeIndex != 0)
+    {
+      nextIndex = activeIndex - 1;
+    }
+  }
+
+  if ( presedButtons & bit(BUTTON_B) )
+  {
+    if (activeIndex != (notifCount-1))
+    {
+      nextIndex = activeIndex + 1;
+    }
+  }
+
   // Only display when index is different
   if ( activeIndex != nextIndex )
   {
@@ -120,6 +146,10 @@ void loop()
   }
 }
 
+/**
+ * Display notification contents
+ * @param index index of notification
+ */
 void displayNotification(int index)
 {
   // safeguard
@@ -143,7 +173,7 @@ void displayNotification(int index)
   oled.setCursor(0, 0);
 
   char tempbuf[32];
-  sprintf(tempbuf, "%02d/%02d %s", index+1, notifCount, deviceModel);
+  sprintf(tempbuf, "%02d/%02d %15s", index+1, notifCount, deviceModel);
 
   oled.println(tempbuf);
   oled.println(myNotifs[index].app_name);
@@ -191,6 +221,63 @@ void connect_callback(void)
   }
 
   oled.display();
+}
+
+/**
+ * Check if button A,B,C state are pressed, include some software
+ * debouncing.
+ *
+ * Note: Only set bit when Button is state change from
+ * idle -> pressed. Press and hold only report 1 time, release
+ * won't report as well
+ *
+ * @return Bitmask of pressed buttons e.g If BUTTON_A is pressed
+ * bit 31 will be set.
+ */
+uint32_t readPressedButtons(void)
+{
+  // must be exponent of 2
+  enum { MAX_CHECKS = 8, SAMPLE_TIME = 10 };
+
+  /* Array that maintains bounce status/, which is sampled
+   * 10 ms each. Debounced state is regconized if all the values
+   * of a button has the same value (bit set or clear)
+   */
+  static uint32_t lastReadTime = 0;
+  static uint32_t states[MAX_CHECKS] = { 0 };
+  static uint32_t index = 0;
+
+  // Last Debounced state, used to detect changed
+  static uint32_t lastDebounced = 0;
+
+  // Too soon, nothing to do
+  if (millis() - lastReadTime < SAMPLE_TIME ) return 0;
+
+  lastReadTime = millis();
+
+  // Take current read and masked with BUTTONs
+  // Note: Bitwise inverted since buttons are active (pressed) LOW
+  uint32_t debounced = ~(*portInputRegister(0));
+  debounced &= (bit(BUTTON_A) | bit(BUTTON_B) | bit(BUTTON_C));
+
+  // Copy current state into array
+  states[ (index & (MAX_CHECKS-1)) ] = debounced;
+  index++;
+
+  // Bitwise And all the state in the array together to get the result
+  // This means pin must stay at least MAX_CHECKS time to be realized as changed
+  for(int i=0; i<MAX_CHECKS; i++)
+  {
+    debounced &= states[i];
+  }
+
+  // result is button changed and current debounced is set
+  // Mean button is pressed (idle previously)
+  uint32_t result = (debounced ^ lastDebounced) & debounced;
+
+  lastDebounced = debounced;
+
+  return result;
 }
 
 void ancs_notification_callback(AncsNotification_t* notif)
