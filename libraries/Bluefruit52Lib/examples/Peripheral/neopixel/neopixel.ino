@@ -15,6 +15,8 @@
 // This sketch is intended to be used with the NeoPixel control
 // surface in Adafruit's Bluefruit LE Connect mobile application.
 
+/* NOTE: This sketch required at least version 1.1.0 of Adafruit_Neopixel !!! */
+
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #include <bluefruit.h>
