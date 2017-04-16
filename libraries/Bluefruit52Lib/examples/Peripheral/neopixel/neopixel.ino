@@ -50,7 +50,7 @@ void setup()
   Serial.println("--------------------------------");
 
   Serial.println();
-  Serial.println("Please connect using Bluefruit Connect LE application");
+  Serial.println("Please connect using the Bluefruit Connect LE application");
   
   // Config Neopixels
   pixels.begin();
@@ -91,7 +91,7 @@ void setupAdv(void)
 
 void connect_callback(void)
 {
-  Serial.println("Connected !! Please select 'Neopixles' tab, click 'Connect' and have fun");
+  Serial.println("Connected !! Please select the 'Neopixels' tab, click 'Connect' and have fun");
 }
 
 void loop()
