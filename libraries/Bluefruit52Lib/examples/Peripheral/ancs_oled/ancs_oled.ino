@@ -26,13 +26,16 @@
 #include <Adafruit_SSD1306.h>
 #include <bluefruit.h>
 
-#define OLED_RESET 4
-Adafruit_SSD1306 oled(OLED_RESET);
-
+/*------------- OLED and Buttons -------------*/
 #define BUTTON_A    31
 #define BUTTON_B    30
 #define BUTTON_C    27
 
+#define OLED_RESET 4
+Adafruit_SSD1306 oled(OLED_RESET);
+
+
+/*------------- Notification List -------------*/
 #define MAX_COUNT   20
 #define BUFSIZE     32
 
@@ -46,11 +49,18 @@ typedef struct
 
 MyNotif_t myNotifs[MAX_COUNT] = { 0 };
 
-int notifCount   = 0;
-int activeIndex  = 0;
-int displayIndex = -1;
+// Number of notifications
+int notifCount = 0;
 
-// BLE Client Service
+/*------------- Display Management -------------*/
+#define WALKROUND_TIME 5000  // On-screen time for each notification
+
+int  activeIndex  = 0;       // Index of currently displayed notification
+int  displayIndex = -1;      // Index of notification about to display
+
+uint32_t drawTime = 0;       // Last time oled display notification
+
+/*------------- BLE Client Service-------------*/
 char deviceModel[BUFSIZE] = { 0 };
 
 BLEClientDis  bleClientDis;
@@ -111,24 +121,11 @@ void setupAdv(void)
 
 void loop()
 {
-  // Not connected, wait for a connection
-  if ( !Bluefruit.connected() ) return;
-
   // If service is not yet discovered
   if ( !bleancs.discovered() ) return;
 
   // Check buttons
   uint32_t presedButtons = readPressedButtons();
-
-  // Accept incoming call with BUTTON C
-  if ( presedButtons & bit(BUTTON_C) )
-  {
-    if ( myNotifs[activeIndex].ntf.categoryID == ANCS_CAT_INCOMING_CALL &&
-         myNotifs[activeIndex].ntf.eventID    == ANCS_EVT_NOTIFICATION_ADDED)
-    {
-      bleancs.performAction(myNotifs[activeIndex].ntf.uid, ANCS_ACTION_POSITIVE);
-    }
-  }
 
   // Button A as UP
   if ( presedButtons & bit(BUTTON_A) )
@@ -154,13 +151,35 @@ void loop()
     }
   }
 
-  // Only display when index is different
+  // BUTTON C to accept incoming call
+  if ( presedButtons & bit(BUTTON_C) )
+  {
+    if ( myNotifs[activeIndex].ntf.categoryID == ANCS_CAT_INCOMING_CALL &&
+         myNotifs[activeIndex].ntf.eventID    == ANCS_EVT_NOTIFICATION_ADDED)
+    {
+      bleancs.performAction(myNotifs[activeIndex].ntf.uid, ANCS_ACTION_POSITIVE);
+    }
+  }
+
+  // Display requested notification
   if ( displayIndex >= 0 )
   {
     displayNotification(displayIndex);
 
     activeIndex = displayIndex;
     displayIndex = -1;
+
+    // Save time we draw a notification
+    drawTime = millis();
+  }
+  // Display next notification if time is up
+  else if ( drawTime + WALKROUND_TIME < millis() )
+  {
+    activeIndex = (activeIndex+1)%notifCount;
+    displayNotification(activeIndex);
+
+    // Save time we draw a notification
+    drawTime = millis();
   }
 }
 
@@ -174,27 +193,33 @@ void displayNotification(int index)
   if ( index < 0 || (index >= notifCount) ) return;
 
   /*-------------Extract data if needed -------------*/
-  if ( !strlen(myNotifs[index].app_name) ||
-       !strlen(myNotifs[index].title   ) ||
-       !strlen(myNotifs[index].message ) )
-  {
-    uint32_t uid = myNotifs[index].ntf.uid;
+  MyNotif_t* notif = &myNotifs[index];
+  uint32_t uid = notif->ntf.uid;
 
-    // App Name, Title, Message
-    bleancs.getAppName(uid, myNotifs[index].app_name, BUFSIZE);
-    bleancs.getTitle  (uid, myNotifs[index].title   , BUFSIZE);
-    bleancs.getMessage(uid, myNotifs[index].message , BUFSIZE);
+  if ( notif->app_name[0] == 0 )
+  {
+    bleancs.getAppName(uid, notif->app_name, BUFSIZE);
+  }
+
+  if ( notif->title[0] == 0)
+  {
+    bleancs.getTitle  (uid, notif->title   , BUFSIZE);
+  }
+
+  if ( notif->message[0] == 0 )
+  {
+    bleancs.getMessage(uid, notif->message , BUFSIZE);
   }
 
   /*------------- Display to OLED -------------*/
   oled.clearDisplay();
   oled.setCursor(0, 0);
 
-  // Incoming call, display a bit different
-  if ( myNotifs[index].ntf.categoryID == ANCS_CAT_INCOMING_CALL &&
-       myNotifs[index].ntf.eventID    == ANCS_EVT_NOTIFICATION_ADDED)
+  // Incoming call event, display a bit differently
+  if ( notif->ntf.categoryID == ANCS_CAT_INCOMING_CALL &&
+       notif->ntf.eventID    == ANCS_EVT_NOTIFICATION_ADDED)
   {
-    oled.println(myNotifs[index].title);
+    oled.println(notif->title);
     oled.println("      is calling");
     oled.println();
     oled.println("Button C to answer");
@@ -204,9 +229,9 @@ void displayNotification(int index)
     sprintf(tempbuf, "%02d/%02d %15s", index+1, notifCount, deviceModel);
 
     oled.println(tempbuf);
-    oled.println(myNotifs[index].app_name);
-    oled.println(myNotifs[index].title);
-    oled.println(myNotifs[index].message);
+    oled.println(notif->app_name);
+    oled.println(notif->title);
+    oled.println(notif->message);
   }
 
   oled.display();
@@ -231,7 +256,7 @@ void connect_callback(void)
     oled.println("OK");
 
     // ANCS requires pairing to work
-    oled.print("Paring    ... ");
+    oled.print("Paring      ... ");
     oled.display();
 
     if ( Bluefruit.requestPairing() )
@@ -254,12 +279,6 @@ void connect_callback(void)
 
 void ancs_notification_callback(AncsNotification_t* notif)
 {
-  // Clear screen if it is the first notification
-  if ( notifCount == 0 )
-  {
-    displayIndex = 0;
-  }
-  
   if (notif->eventID == ANCS_EVT_NOTIFICATION_ADDED )
   {
     displayIndex = notifCount; // display new notification
@@ -278,13 +297,13 @@ void ancs_notification_callback(AncsNotification_t* notif)
         // Invalid removed data
         memset(&myNotifs[notifCount], 0, sizeof(MyNotif_t));
 
-        // remove the last notification, adjust display index
         if (activeIndex == notifCount)
         {
+          // If remove the last notification, adjust display index
           displayIndex = notifCount-1;
         }else if (activeIndex == i)
         {
-          // re-draw display
+          // Re-draw if remove currently active one
           displayIndex = activeIndex;
         }
 
@@ -293,6 +312,7 @@ void ancs_notification_callback(AncsNotification_t* notif)
     }
   }else
   {
+    // Modification
     for(int i=0; i<notifCount; i++)
     {
       if ( notif->uid == myNotifs[i].ntf.uid )
@@ -313,6 +333,8 @@ void disconnect_callback(uint8_t reason)
   notifCount   = 0;
   activeIndex  = 0;
   displayIndex = -1;
+
+  memset(myNotifs, 0, sizeof(myNotifs));
 
   oled.clearDisplay();
   oled.setCursor(0, 0);
