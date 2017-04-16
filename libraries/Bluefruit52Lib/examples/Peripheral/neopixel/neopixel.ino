@@ -14,6 +14,15 @@
 
 // This sketch is intended to be used with the NeoPixel control
 // surface in Adafruit's Bluefruit LE Connect mobile application.
+//
+// - Compile and flash this sketch to the nRF52 Feather
+// - Open the Bluefruit LE Connect app
+// - Switch to the NeoPixel utility
+// - Click the 'connect' button to establish a connection and
+//   send the meta-data about the pixel layout
+// - Use the NeoPixel utility to update the pixels on your device
+
+/* NOTE: This sketch required at least version 1.1.0 of Adafruit_Neopixel !!! */
 
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
@@ -41,7 +50,7 @@ void setup()
   Serial.println("--------------------------------");
 
   Serial.println();
-  Serial.println("Please connect using Bluefruit Connect LE application");
+  Serial.println("Please connect using the Bluefruit Connect LE application");
   
   // Config Neopixels
   pixels.begin();
@@ -82,7 +91,7 @@ void setupAdv(void)
 
 void connect_callback(void)
 {
-  Serial.println("Connected !! Please select 'Neopixles' tab, click 'Connect' and have fun");
+  Serial.println("Connected !! Please select the 'Neopixels' tab, click 'Connect' and have fun");
 }
 
 void loop()

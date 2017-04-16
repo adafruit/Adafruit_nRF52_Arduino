@@ -13,15 +13,18 @@
 *********************************************************************/
 
 /* How to run this sketch
- *  - Connect Neopixel FeatherWing and Load sketch to Bluefruit52
- *  - Connect using Bluefruit Connect LE app
- *  - Send character using BLEUART
- *  - Bluefruit will draw received character on Neopixel FeatherWing
+ *  - Connect the Neopixel FeatherWing and load this sketch to your Bluefruit52
+ *  - Connect to the board using the Bluefruit Connect LE app
+ *  - Send character(s) using BLEUART
+ *  - Bluefruit will render the received character(s) on Neopixel FeatherWing
  *  
- *  Note: due to the font is larger than 4x8 Neopixel Wing, you can
- *  only see part of the characters (but you got the idea). 
- *  Run the sketch with larger Neopixel Matrix for complete demo
+ *  Note: due to the font being larger than the 4x8 Neopixel Wing, you can
+ *  only see part of the characters in some cases.
+ *  Run the sketch with a larger Neopixel Matrix for a complete demo
  */
+
+/* NOTE: This sketch required at least version 1.1.0 of Adafruit_Neopixel !!! */
+
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #include <Adafruit_GFX.h>
