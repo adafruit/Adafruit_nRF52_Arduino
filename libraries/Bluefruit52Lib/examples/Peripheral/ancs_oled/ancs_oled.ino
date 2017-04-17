@@ -27,9 +27,9 @@
 #include <bluefruit.h>
 
 /*------------- OLED and Buttons -------------*/
-#define BUTTON_A    31
-#define BUTTON_B    30
-#define BUTTON_C    27
+#define BUTTON_A    31  // Up or accept call
+#define BUTTON_B    30  // Not used since it is hard to press
+#define BUTTON_C    27  // Down or decline call
 
 #define OLED_RESET 4
 Adafruit_SSD1306 oled(OLED_RESET);
@@ -53,12 +53,12 @@ MyNotif_t myNotifs[MAX_COUNT] = { 0 };
 int notifCount = 0;
 
 /*------------- Display Management -------------*/
-#define WALKROUND_TIME 5000  // On-screen time for each notification
+#define ONSCREEN_TIME 5000  // On-screen time for each notification
 
-int  activeIndex  = 0;       // Index of currently displayed notification
-int  displayIndex = -1;      // Index of notification about to display
+int  activeIndex  = 0;      // Index of currently displayed notification
+int  displayIndex = -1;     // Index of notification about to display
 
-uint32_t drawTime = 0;       // Last time oled display notification
+uint32_t drawTime = 0;      // Last time oled display notification
 
 /*------------- BLE Client Service-------------*/
 BLEAncs       bleancs;
@@ -121,70 +121,78 @@ void loop()
   // If service is not yet discovered
   if ( !bleancs.discovered() ) return;
 
+  // No data, do nothing
+  if ( notifCount == 0 ) return;
+
   // Check buttons
   uint32_t presedButtons = readPressedButtons();
 
-  // Button A as UP
-  if ( presedButtons & bit(BUTTON_A) )
+  if ( myNotifs[activeIndex].ntf.categoryID == ANCS_CAT_INCOMING_CALL )
   {
-    if (activeIndex != 0)
+    /* Incoming call event
+     * - Button A to accept call
+     * - Button C to decline call
+     */
+    if ( presedButtons & bit(BUTTON_A) )
     {
-      displayIndex = activeIndex - 1;
-    }else
+      bleancs.actPositive(myNotifs[activeIndex].ntf.uid);
+    }
+
+    if ( presedButtons & bit(BUTTON_C) )
     {
-      displayIndex = notifCount-1; // wrap around
+      bleancs.actNegative(myNotifs[activeIndex].ntf.uid);
     }
   }
-
-  // Button B as DOWN
-  if ( presedButtons & bit(BUTTON_B) )
+  else
   {
-    if (activeIndex != (notifCount-1))
+    /* Normal events navigation (wrap around)
+     * - Button A to display previous notification
+     * - Button C to display next notification
+     *
+     * When a notification is display ONSCREEN_TIME,
+     * we will display the next one
+     */
+    if ( presedButtons & bit(BUTTON_A) )
     {
-      displayIndex = activeIndex + 1;
-    }else
-    {
-      displayIndex = 0; // wrap around
+      displayIndex = (activeIndex != 0) ? (activeIndex-1) : (notifCount-1) ;
     }
-  }
 
-  // BUTTON C to accept incoming call
-  if ( presedButtons & bit(BUTTON_C) )
-  {
-    if ( myNotifs[activeIndex].ntf.categoryID == ANCS_CAT_INCOMING_CALL &&
-         myNotifs[activeIndex].ntf.eventID    == ANCS_EVT_NOTIFICATION_ADDED)
+    if ( presedButtons & bit(BUTTON_C) )
     {
-      bleancs.performAction(myNotifs[activeIndex].ntf.uid, ANCS_ACTION_POSITIVE);
+      displayIndex = (activeIndex != (notifCount-1)) ? (activeIndex + 1) : 0;
     }
-  }
 
-  // Display requested notification
-  if ( displayIndex >= 0 )
-  {
-    activeIndex = displayIndex;
-    displayIndex = -1;
+    // Display requested notification
+    if ( displayIndex >= 0 )
+    {
+      activeIndex = displayIndex;
+      displayIndex = -1;
 
-    displayNotification(activeIndex);
-    drawTime = millis(); // Save time we draw
-  }
-  // Display next notification if time is up
-  else if ( drawTime + WALKROUND_TIME < millis() )
-  {
-    activeIndex = (activeIndex+1)%notifCount;
+      displayNotification(activeIndex);
+      drawTime = millis(); // Save time we draw
+    }
+    // Display next notification if time is up
+    else if ( drawTime + ONSCREEN_TIME < millis() )
+    {
+      activeIndex = (activeIndex+1)%notifCount;
 
-    displayNotification(activeIndex);
-    drawTime = millis(); // Save time we draw
+      displayNotification(activeIndex);
+      drawTime = millis(); // Save time we draw
+    }
   }
 }
 
 /**
- * Display notification contents
+ * Display notification contents to oled screen
  * @param index index of notification
  */
 void displayNotification(int index)
 {
   // safeguard
   if ( index < 0 || (index >= notifCount) ) return;
+
+  // let's Turn on and off RED LED when we draw to get attention
+  digitalWrite(LED_RED, HIGH);
 
   /*-------------Extract data if needed -------------*/
   MyNotif_t* notif = &myNotifs[index];
@@ -228,13 +236,12 @@ void displayNotification(int index)
   oled.setCursor(0, 0);
 
   // Incoming call event, display a bit differently
-  if ( notif->ntf.categoryID == ANCS_CAT_INCOMING_CALL &&
-       notif->ntf.eventID    == ANCS_EVT_NOTIFICATION_ADDED)
+  if ( notif->ntf.categoryID == ANCS_CAT_INCOMING_CALL )
   {
     oled.println(notif->title);
-    oled.println("      is calling");
-    oled.println();
-    oled.println("Button C to answer");
+    oled.println("          is calling");
+    oled.println("  Btn A to ACCEPT");
+    oled.println("  Btn C to DECLINE");
   }else
   {
     // Text size = 1, max char is 21
@@ -250,8 +257,14 @@ void displayNotification(int index)
   }
 
   oled.display();
+
+  digitalWrite(LED_RED, LOW);
 }
 
+/**
+ * Connect Callback
+ *  Perform ANCS discovering, request Pairing
+ */
 void connect_callback(void)
 {
   oled.clearDisplay();
@@ -287,6 +300,12 @@ void connect_callback(void)
   oled.display();
 }
 
+/**
+ * Notification callback
+ * @param notif Notification from iDevice
+ *
+ * Save/Modify notification into myNotifs struct to display later
+ */
 void ancs_notification_callback(AncsNotification_t* notif)
 {
   if (notif->eventID == ANCS_EVT_NOTIFICATION_ADDED )
