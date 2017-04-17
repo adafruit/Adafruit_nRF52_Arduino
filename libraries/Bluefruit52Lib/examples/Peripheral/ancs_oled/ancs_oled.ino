@@ -61,9 +61,6 @@ int  displayIndex = -1;      // Index of notification about to display
 uint32_t drawTime = 0;       // Last time oled display notification
 
 /*------------- BLE Client Service-------------*/
-char deviceModel[BUFSIZE] = { 0 };
-
-BLEClientDis  bleClientDis;
 BLEAncs       bleancs;
 
 void setup()
@@ -164,22 +161,19 @@ void loop()
   // Display requested notification
   if ( displayIndex >= 0 )
   {
-    displayNotification(displayIndex);
-
     activeIndex = displayIndex;
     displayIndex = -1;
 
-    // Save time we draw a notification
-    drawTime = millis();
+    displayNotification(activeIndex);
+    drawTime = millis(); // Save time we draw
   }
   // Display next notification if time is up
   else if ( drawTime + WALKROUND_TIME < millis() )
   {
     activeIndex = (activeIndex+1)%notifCount;
-    displayNotification(activeIndex);
 
-    // Save time we draw a notification
-    drawTime = millis();
+    displayNotification(activeIndex);
+    drawTime = millis(); // Save time we draw
   }
 }
 
@@ -198,17 +192,35 @@ void displayNotification(int index)
 
   if ( notif->app_name[0] == 0 )
   {
-    bleancs.getAppName(uid, notif->app_name, BUFSIZE);
+    if ( !bleancs.getAppName(uid, notif->app_name, BUFSIZE) )
+    {
+      notif->app_name[0] = 0; // invalid data if failed to receive
+    }
   }
 
-  if ( notif->title[0] == 0)
+  if ( notif->title[0] == 0 )
   {
-    bleancs.getTitle  (uid, notif->title   , BUFSIZE);
+    if ( !bleancs.getTitle  (uid, notif->title   , BUFSIZE) )
+    {
+      notif->title[0] = 0; // invalid data if failed to receive
+    }
   }
 
   if ( notif->message[0] == 0 )
   {
-    bleancs.getMessage(uid, notif->message , BUFSIZE);
+    if ( !bleancs.getMessage(uid, notif->message , BUFSIZE) )
+    {
+      notif->message[0] = 0; // invalid data if failed to receive
+    }
+  }
+
+  // Couldn't get all the data, possibly due to the timeout, iphone is busy
+  // Return and retrieve the data later
+  if ( (notif->app_name[0] == 0) || (notif->title[0] == 0) || (notif->message[0] == 0) )
+  {
+    // cause re-display in the next loop
+    displayIndex = index;
+    return;
   }
 
   /*------------- Display to OLED -------------*/
@@ -225,13 +237,16 @@ void displayNotification(int index)
     oled.println("Button C to answer");
   }else
   {
-    char tempbuf[32];
-    sprintf(tempbuf, "%02d/%02d %15s", index+1, notifCount, deviceModel);
+    // Text size = 1, max char is 21
+    // Text size = 2, max char is 10
+    char tempbuf[22];
+    sprintf(tempbuf, "%-15s %02d/%02d", notif->app_name, index+1, notifCount);
 
     oled.println(tempbuf);
-    oled.println(notif->app_name);
     oled.println(notif->title);
-    oled.println(notif->message);
+
+    oled.print("  ");
+    oled.print(notif->message);
   }
 
   oled.display();
@@ -244,12 +259,6 @@ void connect_callback(void)
   oled.println("Connected.");
   oled.print("Discovering ... ");
   oled.display();
-
-  // Discover DIS to read Device Model
-  if ( bleClientDis.discover( Bluefruit.connHandle()) )
-  {
-    bleClientDis.getModel(deviceModel, BUFSIZE);
-  }
   
   if ( bleancs.discover( Bluefruit.connHandle() ) )
   {
@@ -257,6 +266,7 @@ void connect_callback(void)
 
     // ANCS requires pairing to work
     oled.print("Paring      ... ");
+
     oled.display();
 
     if ( Bluefruit.requestPairing() )
@@ -264,7 +274,7 @@ void connect_callback(void)
       oled.println("OK");
 
       bleancs.enableNotification();
-      oled.println("Getting Notification");
+      oled.println("Receiving   ...");
     }else
     {
       oled.println("Failed");
