@@ -231,6 +231,9 @@ getPosActionLabel	KEYWORD2
 getNegActionLabel	KEYWORD2
 getAppName	KEYWORD2
 
+actPositive	KEYWORD2
+actNegative	KEYWORD2
+
 #######################################
 # BLEBas Methods (KEYWORD2)
 #######################################
