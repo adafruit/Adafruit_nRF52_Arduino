@@ -144,21 +144,23 @@ class BLEAncs : public BLEClientService
     bool disableNotification(void);
 
     // Main commands
-    uint16_t getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_t bufsize);
-    uint16_t getAppAttribute(const char* appid, uint8_t attr, void* buffer, uint16_t bufsize);
-    bool     performAction(uint32_t uid, uint8_t actionid);
+    uint16_t getAttribute    (uint32_t uid, uint8_t attr, void* buffer, uint16_t bufsize);
+    uint16_t getAppAttribute (const char* appid, uint8_t attr, void* buffer, uint16_t bufsize);
+    bool     performAction   (uint32_t uid, uint8_t actionid);
 
-    // Get Attribute helper
-    uint16_t getAppID(uint32_t uid, void* buffer, uint16_t bufsize);
-    uint16_t getTitle(uint32_t uid, void* buffer, uint16_t bufsize);
-    uint16_t getSubtitle(uint32_t uid, void* buffer, uint16_t bufsize);
-    uint16_t getMessage(uint32_t uid, void* buffer, uint16_t bufsize);
-    uint16_t getMessageSize(uint32_t uid);
-    uint16_t getDate(uint32_t uid, void* buffer, uint16_t bufsize);
-    uint16_t getPosActionLabel(uint32_t uid, void* buffer, uint16_t bufsize);
-    uint16_t getNegActionLabel(uint32_t uid, void* buffer, uint16_t bufsize);
+    // High Level helper
+    uint16_t getAppName        (uint32_t uid, void* buffer, uint16_t bufsize);
+    uint16_t getAppID          (uint32_t uid, void* buffer, uint16_t bufsize);
+    uint16_t getTitle          (uint32_t uid, void* buffer, uint16_t bufsize);
+    uint16_t getSubtitle       (uint32_t uid, void* buffer, uint16_t bufsize);
+    uint16_t getMessage        (uint32_t uid, void* buffer, uint16_t bufsize);
+    uint16_t getMessageSize    (uint32_t uid);
+    uint16_t getDate           (uint32_t uid, void* buffer, uint16_t bufsize);
+    uint16_t getPosActionLabel (uint32_t uid, void* buffer, uint16_t bufsize);
+    uint16_t getNegActionLabel (uint32_t uid, void* buffer, uint16_t bufsize);
 
-    uint16_t getAppName(uint32_t uid, void* buffer, uint16_t bufsize);
+    bool     actPositive       (uint32_t uid);
+    bool     actNegative       (uint32_t uid);
 
   protected:
     virtual void  disconnect(void);

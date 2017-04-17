@@ -172,7 +172,6 @@ VERIFY_STATIC( sizeof(perform_action_t) == 6);
 /*------------------------------------------------------------------*/
 /*
  *------------------------------------------------------------------*/
-
 uint16_t BLEAncs::getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_t bufsize)
 {
   VERIFY ( attr < ANCS_ATTR_INVALID, 0);
@@ -363,6 +362,16 @@ uint16_t BLEAncs::getAppName(uint32_t uid, void* buffer, uint16_t bufsize)
 
   // Then get App Display Name
   return getAppAttribute(appID, ANCS_APP_ATTR_DISPLAY_NAME, buffer, bufsize);
+}
+
+bool BLEAncs::actPositive(uint32_t uid)
+{
+  return performAction(uid, ANCS_ACTION_POSITIVE);
+}
+
+bool BLEAncs::actNegative(uint32_t uid)
+{
+  return performAction(uid, ANCS_ACTION_NEGATIVE);
 }
 
 
