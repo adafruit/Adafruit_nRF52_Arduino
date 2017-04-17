@@ -36,7 +36,7 @@
 
 #include "bluefruit.h"
 
-#define BLE_ANCS_TIMEOUT   (10*BLE_GENERIC_TIMEOUT)
+#define BLE_ANCS_TIMEOUT   (5*BLE_GENERIC_TIMEOUT)
 
 void bleancs_notification_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
 void bleancs_data_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);

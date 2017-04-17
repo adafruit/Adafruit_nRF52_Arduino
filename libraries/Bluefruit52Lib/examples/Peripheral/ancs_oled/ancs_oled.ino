@@ -42,9 +42,9 @@ Adafruit_SSD1306 oled(OLED_RESET);
 typedef struct
 {
   AncsNotification_t ntf;
-  char app_name[BUFSIZE];
   char title[BUFSIZE];
   char message[BUFSIZE];
+  char app_name[BUFSIZE];
 } MyNotif_t;
 
 MyNotif_t myNotifs[MAX_COUNT] = { 0 };
@@ -121,7 +121,7 @@ void loop()
   // If service is not yet discovered
   if ( !bleancs.discovered() ) return;
 
-  // No data, do nothing
+  // No notifications, do nothing
   if ( notifCount == 0 ) return;
 
   // Check buttons
@@ -194,71 +194,16 @@ void displayNotification(int index)
   // let's Turn on and off RED LED when we draw to get attention
   digitalWrite(LED_RED, HIGH);
 
-  /*-------------Extract data if needed -------------*/
-  MyNotif_t* notif = &myNotifs[index];
-  uint32_t uid = notif->ntf.uid;
-
-  if ( notif->app_name[0] == 0 )
-  {
-    if ( !bleancs.getAppName(uid, notif->app_name, BUFSIZE) )
-    {
-      notif->app_name[0] = 0; // invalid data if failed to receive
-    }
-  }
-
-  if ( notif->title[0] == 0 )
-  {
-    if ( !bleancs.getTitle  (uid, notif->title   , BUFSIZE) )
-    {
-      notif->title[0] = 0; // invalid data if failed to receive
-    }
-    else
-    {
-      // iDevice often include Unicode "Bidirection Text Control" in the Title.
-      // Mostly are U+202D as beginning and U+202C as ending. Let's remove them
-      char u202D[3] = { 0xE2, 0x80, 0xAD }; // U+202D in UTF-8
-      char u202C[3] = { 0xE2, 0x80, 0xAC }; // U+202C in UTF-8
-
-      int len = strlen(notif->title);
-
-      if ( 0 == memcmp(&notif->title[len-3], u202C, 3) )
-      {
-        len -= 3;
-        notif->title[len] = 0; // chop ending U+202C
-      }
-
-      if ( 0 == memcmp(notif->title, u202D, 3) )
-      {
-        memmove(notif->title, notif->title+3, len-2); // move null-terminator as well
-      }
-    }
-  }
-
-  if ( notif->message[0] == 0 )
-  {
-    if ( !bleancs.getMessage(uid, notif->message , BUFSIZE) )
-    {
-      notif->message[0] = 0; // invalid data if failed to receive
-    }
-  }
-
-  // Couldn't get all the data, possibly due to the timeout, iphone is busy
-  // Return and retrieve the data later
-  if ( (notif->app_name[0] == 0) || (notif->title[0] == 0) || (notif->message[0] == 0) )
-  {
-    // cause re-display in the next loop
-    displayIndex = index;
-    return;
-  }
-
   /*------------- Display to OLED -------------*/
+  MyNotif_t* myNtf = &myNotifs[index];
+
   oled.clearDisplay();
   oled.setCursor(0, 0);
 
   // Incoming call event, display a bit differently
-  if ( notif->ntf.categoryID == ANCS_CAT_INCOMING_CALL )
+  if ( myNtf->ntf.categoryID == ANCS_CAT_INCOMING_CALL )
   {
-    oled.println(notif->title);
+    oled.println(myNtf->title);
     oled.println("          is calling");
     oled.println("  Btn A to ACCEPT");
     oled.println("  Btn C to DECLINE");
@@ -266,13 +211,13 @@ void displayNotification(int index)
   {
     // Text size = 1, max char is 21. Text size = 2, max char is 10
     char tempbuf[22];
-    sprintf(tempbuf, "%-15s %02d/%02d", notif->app_name, index+1, notifCount);
+    sprintf(tempbuf, "%-15s %02d/%02d", myNtf->app_name, index+1, notifCount);
 
     oled.println(tempbuf);
-    oled.println(notif->title);
+    oled.println(myNtf->title);
 
     oled.print("  ");
-    oled.print(notif->message);
+    oled.print(myNtf->message);
   }
 
   oled.display();
@@ -329,9 +274,37 @@ void ancs_notification_callback(AncsNotification_t* notif)
 {
   if (notif->eventID == ANCS_EVT_NOTIFICATION_ADDED )
   {
-    displayIndex = notifCount; // display new notification
+    myNotifs[ notifCount ].ntf = *notif;
 
-    myNotifs[ notifCount++ ].ntf = *notif;
+    /*------------- Retrieve Title, Message, App Name -------------*/
+    MyNotif_t* myNtf = &myNotifs[notifCount];
+    uint32_t uid = myNtf->ntf.uid;
+
+    // iDevice often include Unicode "Bidirection Text Control" in the Title.
+    // Mostly are U+202D as beginning and U+202C as ending. Let's remove them
+    if ( bleancs.getTitle  (uid, myNtf->title   , BUFSIZE) )
+    {
+      char u202D[3] = { 0xE2, 0x80, 0xAD }; // U+202D in UTF-8
+      char u202C[3] = { 0xE2, 0x80, 0xAC }; // U+202C in UTF-8
+
+      int len = strlen(myNtf->title);
+
+      if ( 0 == memcmp(&myNtf->title[len-3], u202C, 3) )
+      {
+        len -= 3;
+        myNtf->title[len] = 0; // chop ending U+202C
+      }
+
+      if ( 0 == memcmp(myNtf->title, u202D, 3) )
+      {
+        memmove(myNtf->title, myNtf->title+3, len-2); // move null-terminator as well
+      }
+    }
+
+    bleancs.getAppName(uid, myNtf->app_name, BUFSIZE);
+    bleancs.getMessage(uid, myNtf->message , BUFSIZE);
+
+    displayIndex = notifCount++; // display new notification
   }else if (notif->eventID == ANCS_EVT_NOTIFICATION_REMOVED )
   {
     for(int i=0; i<notifCount; i++)
