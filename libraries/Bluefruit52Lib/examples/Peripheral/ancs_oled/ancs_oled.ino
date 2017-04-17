@@ -37,7 +37,7 @@ Adafruit_SSD1306 oled(OLED_RESET);
 
 /*------------- Notification List -------------*/
 #define MAX_COUNT   20
-#define BUFSIZE     32
+#define BUFSIZE     64
 
 typedef struct
 {
@@ -301,8 +301,8 @@ void ancs_notification_callback(AncsNotification_t* notif)
       }
     }
 
-    bleancs.getAppName(uid, myNtf->app_name, BUFSIZE);
     bleancs.getMessage(uid, myNtf->message , BUFSIZE);
+    bleancs.getAppName(uid, myNtf->app_name, BUFSIZE);
 
     displayIndex = notifCount++; // display new notification
   }else if (notif->eventID == ANCS_EVT_NOTIFICATION_REMOVED )
