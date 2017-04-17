@@ -212,6 +212,26 @@ void displayNotification(int index)
     {
       notif->title[0] = 0; // invalid data if failed to receive
     }
+    else
+    {
+      // iDevice often include Unicode "Bidirection Text Control" in the Title.
+      // Mostly are U+202D as beginning and U+202C as ending. Let's remove them
+      char u202D[3] = { 0xE2, 0x80, 0xAD }; // U+202D in UTF-8
+      char u202C[3] = { 0xE2, 0x80, 0xAC }; // U+202C in UTF-8
+
+      int len = strlen(notif->title);
+
+      if ( 0 == memcmp(&notif->title[len-3], u202C, 3) )
+      {
+        len -= 3;
+        notif->title[len] = 0; // chop ending U+202C
+      }
+
+      if ( 0 == memcmp(notif->title, u202D, 3) )
+      {
+        memmove(notif->title, notif->title+3, len-2); // move null-terminator as well
+      }
+    }
   }
 
   if ( notif->message[0] == 0 )
@@ -244,8 +264,7 @@ void displayNotification(int index)
     oled.println("  Btn C to DECLINE");
   }else
   {
-    // Text size = 1, max char is 21
-    // Text size = 2, max char is 10
+    // Text size = 1, max char is 21. Text size = 2, max char is 10
     char tempbuf[22];
     sprintf(tempbuf, "%-15s %02d/%02d", notif->app_name, index+1, notifCount);
 

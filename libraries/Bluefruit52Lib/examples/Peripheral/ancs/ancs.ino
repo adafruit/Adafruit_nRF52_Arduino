@@ -114,7 +114,7 @@ void connect_callback(void)
     Serial.println("Found it");
 
     // ANCS requires pairing to work, it makes sense to request security here as well
-    Serial.print("Attempt to bond/pair with iOS, please press PAIR on your phone ... ");
+    Serial.print("Attempt to PAIR with iOS, please press PAIR on your phone ... ");
     if ( Bluefruit.requestPairing() )
     {
       Serial.println("Done");      
@@ -139,10 +139,13 @@ void ancs_notification_callback(AncsNotification_t* notif)
   Serial.print(" | ");
 
   // Get notification Title
+  // iDevice often include Unicode "Bidirection Text Control" in the Title.
+  // Mostly are U+202D as beginning and U+202C as ending. You may want to remove them
+  // U+202D is E2-80-AD, U+202C is E2-80-AC in UTF-8
   memset(buffer, 0, sizeof(buffer));
   bleancs.getAttribute(notif->uid, ANCS_ATTR_TITLE, buffer, sizeof(buffer));
   Serial.printf("%-14s | ", buffer);
-
+  
   // Get notification Message
   memset(buffer, 0, sizeof(buffer));
   bleancs.getAttribute(notif->uid, ANCS_ATTR_MESSAGE, buffer, sizeof(buffer));
