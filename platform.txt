@@ -128,11 +128,10 @@ tools.nrfutil.upload.pattern={cmd} {upload.verbose} dfu serial -pkg "{build.path
 
 ## nrfjprog bootloader
 tools.nrfjprog.path={runtime.platform.path}/tools/nrf5x-command-line-tools
-tools.nrfjprog.cmd.linux=linux-x86_64/nrfjprog/nrfjprog
+tools.nrfjprog.cmd.windows=windows/nrfjprog.exe
+tools.nrfjprog.cmd.macosx=osx/nrfjprog/nrfjprog
 tools.nrfjprog.cmd.linux64=linux-x86_64/nrfjprog/nrfjprog
 tools.nrfjprog.cmd.linux32=linux-i386/nrfjprog/nrfjprog
-tools.nrfjprog.cmd.macosx=osx/nrfjprog/nrfjprog
-tools.nrfjprog.cmd.windows=windows/nrfjprog.exe
 tools.nrfjprog.bootloader.params.verbose=
 tools.nrfjprog.bootloader.params.quiet=-q
 tools.nrfjprog.bootloader.pattern="{path}/{cmd}" --program "{runtime.platform.path}/bin/bootloader/bootloader_v050_s132_v201.hex" -f nrf52 --chiperase --reset
