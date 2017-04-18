@@ -13,9 +13,9 @@
 *********************************************************************/
 
 /*
- * This sketch is similar to 'ancs' and use Feather OLED Wing 
+ * This sketch is similar to 'ancs', but it also uses a Feather OLED
+ * Wing to display incoming ANCS alerts:
  * https://www.adafruit.com/product/2900
- * as the notification display
  *
  * BUTTON A: UP
  * BUTTON B: DOWN
