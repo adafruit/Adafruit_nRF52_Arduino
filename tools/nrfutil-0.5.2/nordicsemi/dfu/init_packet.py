@@ -79,7 +79,8 @@ class Packet(object):
         format_string = self.__generate_struct_format_string()
         args = []
 
-        for key in sorted(self.init_packet_fields.keys(), key=lambda x: x.value):
+        #for key in sorted(self.init_packet_fields.keys(), key=lambda x: x.value):
+        for key in sorted(self.init_packet_fields.keys(), key=lambda x: x):
             # Add length to fields that required that
             if key in [PacketField.REQUIRED_SOFTDEVICES_ARRAY,
                        PacketField.OPT_DATA]:
@@ -94,7 +95,8 @@ class Packet(object):
         format_string = "<"  # Use little endian format with standard sizes for python,
         # see https://docs.python.org/2/library/struct.html
 
-        for key in sorted(self.init_packet_fields.keys(), key=lambda x: x.value):
+        #for key in sorted(self.init_packet_fields.keys(), key=lambda x: x.value):
+        for key in sorted(self.init_packet_fields.keys(), key=lambda x: x):
             if key in [PacketField.DEVICE_TYPE,
                        PacketField.DEVICE_REVISION,
                        ]:
