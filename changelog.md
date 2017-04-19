@@ -59,9 +59,9 @@
 
 ## 0.5.1
 
-- Enhance BLEUuid
-- fix typos
+- Enhanced BLEUuid
+- Fixed various typos
 
 ## 0.5.0
 
-Initial Release
+- Initial Release
