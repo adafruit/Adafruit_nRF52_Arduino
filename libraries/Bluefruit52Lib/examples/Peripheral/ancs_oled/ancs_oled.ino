@@ -17,9 +17,9 @@
  * Wing to display incoming ANCS alerts:
  * https://www.adafruit.com/product/2900
  *
- * BUTTON A: UP
- * BUTTON B: DOWN
- * BUTTON C: Accept incoming call
+ * BUTTON A: Up or accept call
+ * BUTTON B: Not used since it is hard to press
+ * BUTTON C: Down or decline call
  */
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -27,9 +27,9 @@
 #include <bluefruit.h>
 
 /*------------- OLED and Buttons -------------*/
-#define BUTTON_A    31  // Up or accept call
-#define BUTTON_B    30  // Not used since it is hard to press
-#define BUTTON_C    27  // Down or decline call
+#define BUTTON_A    31
+#define BUTTON_B    30
+#define BUTTON_C    27
 
 #define OLED_RESET 4
 Adafruit_SSD1306 oled(OLED_RESET);
