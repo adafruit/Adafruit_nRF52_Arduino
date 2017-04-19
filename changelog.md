@@ -47,8 +47,8 @@
 
 ### Tools
 
-- Updated `tools/nrfutil-0.5.2/nordicsemi/dfu/init_packet.py` to avoid a build
-  error on OS X and Linux.
+- `nrfutil-0.5.2` is now pre-compiled for OS X to avoid compilation
+  errors across different versions of the Python interpretter
 
 ### New Examples
 
