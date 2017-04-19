@@ -45,6 +45,11 @@
 - Added separate thread for callbacks to allow most API functions to be
   invoked directly inside the callback handler
 
+#### Tools
+
+- Updated `tools/nrfutil-0.5.2/nordicsemi/dfu/init_packet.py` to avoid a build
+  error on OS X and Linux.
+
 #### New Examples
 
 - Hardware/
