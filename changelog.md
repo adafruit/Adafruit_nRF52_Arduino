@@ -47,8 +47,6 @@
 
 ### Tools
 
-- `nrfutil-0.5.2` is now pre-compiled for OS X to avoid compilation
-  errors across different versions of the Python interpretter. Issue #24
 - `nrf5x-command-line-tools` is moved to tool dependency to fix windows 10 installation issue #28
 
 ### New Examples
