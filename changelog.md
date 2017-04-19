@@ -5,7 +5,7 @@
 ### Core
 
 - Added a `HardwarePWM` class to support up to 12 PWM channels,
-  compatible with Neopixel library
+  compatible with Adafruit_Neopixel version 1.1.0 or higher
 - Added waitForEvent() as alias for `__WFE()` instruction
 - Changed FreeRTOS tick source from systick to RTC for low-power mode.
   `configTICK_RATE_HZ` changed to 1024. Upgraded port_cmsis_systick.c to
@@ -64,4 +64,4 @@
 
 ## 0.5.0
 
-- Initial Release
+- Initial release
