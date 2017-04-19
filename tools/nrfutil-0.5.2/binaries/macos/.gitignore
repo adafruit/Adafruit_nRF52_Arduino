@@ -1,0 +1,3 @@
+# Allow .pyc files as these are required for frozen nrfutil.
+# The ! syntax tells git to invert the ignored pattern.
+!*.pyc
