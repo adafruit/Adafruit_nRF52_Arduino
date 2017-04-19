@@ -98,7 +98,7 @@ void loop()
       digitalWrite(LED_RED, 1);
 
       // Send the 'volume down' key press
-      // Check BLEHidGerneric.h for list of defined consumer usage codes
+      // Check BLEHidGeneric.h for a list of valid consumer usage codes
       blehid.consumerKeyPress(HID_USAGE_CONSUMER_VOLUME_DECREMENT);
 
       // Delay a bit between reports
