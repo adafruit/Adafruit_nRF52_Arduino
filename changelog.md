@@ -22,40 +22,40 @@
 ### BLE Library
 
 - Add initial Central support and Gatt client service/characteristic classes
-  - Added `BLEClientService`
-  - Added `BLEClientCharacteristic`: support for long read/write, write
-    with/without response.
-  - Added `BLEDiscovery`
+    - Added `BLEClientService`
+    - Added `BLEClientCharacteristic`: support for long read/write, write
+      with/without response.
+    - Added `BLEDiscovery`
 - Added `BLEGap` and `BLEGatt` to manage peripheral & central with Gatt client
   and server support
 - BLE API changes
-  - Added `connPaired()`, `requestPairing()`
-  - Renamed `BLEBas.update()` to `.write()`
-  - Changed Bluefruit `setConnInterval()`/`setConnIntervalMS()` return types
-    from `err_t` to `bool`
-  - Changed BLECentral `startScanning()`/`stopScanning()`/`connect()` return
-    types from `err_t` to `bool`
-  - Changed BLECharacteristic `notify()` return type from `err_t` to `bool`
-  - Changed BLEHid `report()` function return type from `err_t` to `bool`
-  - Changed BLEMid `send()`/`sendSplit()` return type from `err_t` to `bool`
+    - Added `connPaired()`, `requestPairing()`
+    - Renamed `BLEBas.update()` to `.write()`
+    - Changed Bluefruit `setConnInterval()`/`setConnIntervalMS()` return types
+      from `err_t` to `bool`
+    - Changed BLECentral `startScanning()`/`stopScanning()`/`connect()` return
+      types from `err_t` to `bool`
+    - Changed BLECharacteristic `notify()` return type from `err_t` to `bool`
+    - Changed BLEHid `report()` function return type from `err_t` to `bool`
+    - Changed BLEMid `send()`/`sendSplit()` return type from `err_t` to `bool`
 - New BLE services
-  - BLEAncs (Apple Notification Center Service)
-  - BLEClientUart
-  - BLEClientDis
+    - BLEAncs (Apple Notification Center Service)
+    - BLEClientUart
+    - BLEClientDis
 - Added separate thread for callbacks to allow most API functions to be
   invoked directly inside the callback handler
 
 #### New Examples
 
 - Hardware/
-  - hwpwm
-  - Fading
+    - hwpwm
+    - Fading
 - Central/
-  - central_bleuart
+    - central_bleuart
 - Peripheral/
-  - ancs
-  - ancs_oled
-  - hid_camerashutter
+    - ancs
+    - ancs_oled
+    - hid_camerashutter
 
 ## 0.5.1
 
