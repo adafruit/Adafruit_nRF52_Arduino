@@ -32,7 +32,7 @@
   - Changed BLEHid `report()` function return type from `err_t` to `bool`
   - Changed BLEMid `send()`/`sendSplit()` return type from `err_t` to `bool`
 - New BLE Services
-  - Apple Notification Center Service (ANCS)
+  - BLEAncs (Apple Notification Center Service)
   - BLEClientUart
   - BLEClientDis
 - Add separated Thread for callbacks to allow most functions API() to be invoked directly in the callback
@@ -43,6 +43,7 @@
   - central_bleuart
 - Peripheral
   - ancs
+  - ancs_oled
   - hid_camerashutter
 
 ## 0.5.1
