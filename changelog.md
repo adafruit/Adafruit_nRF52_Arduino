@@ -1,5 +1,10 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.7.0
+
+- fix setName()
+
+
 ## 0.6.0
 
 ### Core
