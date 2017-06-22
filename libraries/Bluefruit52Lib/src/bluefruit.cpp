@@ -252,6 +252,9 @@ bool AdafruitBluefruit::setConnIntervalMS(uint16_t min_ms, uint16_t max_ms)
 void AdafruitBluefruit::setName(const char* str)
 {
   strncpy(_name, str, 32);
+
+  ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
+  sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) _name, strlen(_name));
 }
 
 char* AdafruitBluefruit::getName(void)

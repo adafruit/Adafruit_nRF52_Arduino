@@ -48,7 +48,7 @@ void setup()
 
   // Set the advertised device name (keep it short!)
   Serial.println("Setting Device Name to 'Feather52 HRM'");
-  Bluefruit.setName("Feather52 HRM");
+  Bluefruit.setName("Bluefruit52 HRM");
 
   // Set the connect/disconnect callback handlers
   Bluefruit.setConnectCallback(connect_callback);
