@@ -21,16 +21,16 @@
 BLEClientDis  clientDis;
 BLEClientUart clientUart;
 
-void setup() 
+void setup()
 {
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 Central BLEUART Example");
   Serial.println("-----------------------------------");
-  
+
   // up to 1 peripheral conn and 1 central conn
+  Bluefruit.setName("Bluefruit52"); // set name first
   Bluefruit.begin(true, true);
-  Bluefruit.setName("Bluefruit52");
 
   // Configure DIS client
   clientDis.begin();
@@ -39,7 +39,7 @@ void setup()
   clientUart.begin();
   clientUart.setRxCallback(uart_rx_callback);
 
-  // Increase BLink rate to different from PrPh advertising mode 
+  // Increase BLink rate to different from PrPh advertising mode
   Bluefruit.setConnLedInterval(250);
 
   // Callbacks for Central
@@ -74,7 +74,7 @@ void connect_callback(uint16_t conn_handle)
   {
     Serial.println("Found it");
     char buffer[32+1];
-    
+
     // read and print out Manufacturer
     memset(buffer, 0, sizeof(buffer));
     if ( clientDis.getManufacturer(buffer, sizeof(buffer)) )
@@ -92,7 +92,7 @@ void connect_callback(uint16_t conn_handle)
     }
 
     Serial.println();
-  }  
+  }
 
   Serial.print("Discovering BLE Uart Service ... ");
 
@@ -107,14 +107,14 @@ void connect_callback(uint16_t conn_handle)
   }else
   {
     Serial.println("Found NONE");
-  }  
+  }
 }
 
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
   (void) conn_handle;
   (void) reason;
-  
+
   Serial.println("Disconnected");
   Serial.println("Bluefruit will auto start scanning (default)");
 }
@@ -122,7 +122,7 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 void uart_rx_callback(void)
 {
   Serial.print("[RX]: ");
-  
+
   while ( clientUart.available() )
   {
     Serial.print( (char) clientUart.read() );
@@ -131,7 +131,7 @@ void uart_rx_callback(void)
   Serial.println();
 }
 
-void loop() 
+void loop()
 {
   if ( Bluefruit.Central.connected() )
   {
@@ -143,13 +143,12 @@ void loop()
       if ( Serial.available() )
       {
         delay(2); // delay a bit for all characters to arrive
-        
+
         char str[20+1] = { 0 };
         Serial.readBytes(str, 20);
-        
+
         clientUart.print( str );
       }
     }
   }
 }
-

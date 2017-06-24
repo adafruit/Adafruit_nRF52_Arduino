@@ -37,8 +37,8 @@ void setup()
   Serial.println("Go to iOS's Bluetooth settings and connect to Bluefruit52");
   Serial.println("It may appear up as 'Accessory' depending on your OS version.");
 
+  Bluefruit.setName("Bluefruit52"); // set name first
   Bluefruit.begin();
-  Bluefruit.setName("Bluefruit52");
   Bluefruit.setConnectCallback(connect_callback);
   Bluefruit.setDisconnectCallback(disconnect_callback);
 
@@ -83,12 +83,12 @@ void loop()
 void connect_callback(void)
 {
   Serial.println("Connected");
-  
+
   Serial.print("Discovering DIS ... ");
   if ( bleClientDis.discover( Bluefruit.connHandle()) )
   {
     Serial.println("Discovered");
-    
+
     // Read and print Manufacturer string
     memset(buffer, 0, sizeof(buffer));
     if ( bleClientDis.getManufacturer(buffer, sizeof(buffer)) )
@@ -146,12 +146,12 @@ void ancs_notification_callback(AncsNotification_t* notif)
   memset(buffer, 0, sizeof(buffer));
   bleancs.getAttribute(notif->uid, ANCS_ATTR_TITLE, buffer, sizeof(buffer));
   Serial.printf("%-14s | ", buffer);
-  
+
   // Get notification Message
   memset(buffer, 0, sizeof(buffer));
   bleancs.getAttribute(notif->uid, ANCS_ATTR_MESSAGE, buffer, sizeof(buffer));
   Serial.printf("%-15s | ", buffer);
-  
+
   // Get App ID and store in the app_id variable
   char app_id[64] = { 0 };
   memset(buffer, 0, sizeof(buffer));

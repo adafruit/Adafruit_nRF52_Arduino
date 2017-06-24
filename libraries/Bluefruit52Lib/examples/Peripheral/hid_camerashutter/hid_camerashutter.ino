@@ -41,8 +41,8 @@ void setup()
   Serial.printf("Set pin %d to GND to capture a photo\n", PIN_SHUTTER);
   Serial.println();
 
-  Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
+  Bluefruit.begin();
 
   // Configure and start DIS (Device Information Service)
   bledis.setManufacturer("Adafruit Industries");

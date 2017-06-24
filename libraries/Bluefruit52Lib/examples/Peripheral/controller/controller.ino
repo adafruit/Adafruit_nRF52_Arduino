@@ -30,8 +30,8 @@ void setup(void)
   Serial.println(F("Adafruit Bluefruit52 Controller App Example"));
   Serial.println(F("-------------------------------------------"));
 
-  Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
+  Bluefruit.begin();
 
   // Configure and start the BLE Uart service
   bleuart.begin();
@@ -44,14 +44,14 @@ void setup(void)
 
   Serial.println(F("Please use Adafruit Bluefruit LE app to connect in Controller mode"));
   Serial.println(F("Then activate/use the sensors, color picker, game controller, etc!"));
-  Serial.println();  
+  Serial.println();
 }
 
 void setupAdv(void)
 {
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
-  
+
   // Include the BLE UART (AKA 'NUS') 128-bit UUID
   Bluefruit.Advertising.addService(bleuart);
 

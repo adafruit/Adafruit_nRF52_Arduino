@@ -40,8 +40,8 @@ void setup(void)
   // here in case you want to control this manually via PIN 19
   Bluefruit.autoConnLed(true);
 
-  Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
+  Bluefruit.begin();
   Bluefruit.setConnectCallback(connect_callback);
   Bluefruit.setDisconnectCallback(disconnect_callback);
 
@@ -103,7 +103,7 @@ void loop(void)
     // Wait for user input before trying again
     Serial.println("Connected. Send a key and press enter to start test");
     getUserInput();
-    
+
     Serial.print("Sending ");
     Serial.print(remaining);
     Serial.println(" bytes ...");
