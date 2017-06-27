@@ -18,29 +18,30 @@
 
 menu.debug=Debug Mode
 
+#**********************************************
+# Feather nrf52 Board
+#**********************************************
 feather52.name=Adafruit Bluefruit nRF52 Feather
-
-#feather52.vid.0=0x10C4
-#feather52.pid.0=0xEA60
-
-feather52.upload.tool=nrfutil
-feather52.upload.protocol=nrfutil
-feather52.upload.interface=serial
-feather52.upload.target=nrf52
-feather52.upload.maximum_size=167936
-feather52.upload.use_1200bps_touch=false
-feather52.upload.wait_for_upload_port=false
-feather52.upload.native_usb=false
 
 feather52.bootloader.tool=nrfjprog
 
+# Upload
+feather52.upload.tool=nrfutil
+feather52.upload.protocol=nrfutil
+feather52.upload.maximum_size=167936
+
+# required if using native usb ( for reference )
+#feather52.upload.use_1200bps_touch=false
+#feather52.upload.wait_for_upload_port=false
+#feather52.upload.native_usb=false
+
+# Build
 feather52.build.mcu=cortex-m4
 feather52.build.f_cpu=64000000
 feather52.build.board=FEATHER52
 feather52.build.core=nRF5
 feather52.build.variant=feather52
-feather52.build.variant_system_lib=
-feather52.build.extra_flags=-DNRF52 -DS132 -DNRF51_S132
+feather52.build.extra_flags=-DNRF52 -DS132
 feather52.build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
 feather52.build.ldscript=feather52_s132.ld
 
@@ -55,11 +56,10 @@ feather52.build.nrfutil.macosx=/usr/local/bin/nrfutil
 # version of nrfutil included in the BSP (no manual install required):
 #feather52.build.nrfutil.macosx={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/macos/nrfutil
 
+# Debug
 feather52.menu.debug.l0=Level 0 (Release)
 feather52.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
-
 feather52.menu.debug.l1=Level 1 (Error Message)
 feather52.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
-
 feather52.menu.debug.l2=Level 2 (Full Debug)
 feather52.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
