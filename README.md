@@ -16,14 +16,19 @@ There are two methods that you can use to install this BSP. We highly recommend 
 
 ### Optional (Core Development): Adafruit nRF52 BSP via git
 
- 1. ```cd <SKETCHBOOK>```, where ```<SKETCHBOOK>``` is your Arduino Sketch folder:
-  * OS X: ```~/Documents/Arduino```
-  * Linux: ```~/Arduino```
+ 1. Install BSP via Board Manager as above to install compiler & tools.
+ 2. Delete the core folder `nrf52` installed by Board Manager in Adruino15, depending on your OS. It could be
+  * OS X   : `~/Library/Arduino15/packages/adafruit/hardware/nrf52`
+  * Linux  : `~/.arduino15/packages/adafruit/hardware/nrf52`
+  * Windows: `%APPDATA%\Local\Arduino15\packages\adafruit\hardware\nrf52`
+ 3. ```cd <SKETCHBOOK>```, where ```<SKETCHBOOK>``` is your Arduino Sketch folder:
+  * OS X   : ```~/Documents/Arduino```
+  * Linux  : ```~/Arduino```
   * Windows: ```~/Documents/Arduino```
- 3. Create a folder named ```hardware/Adafruit```, if it does not exist, and change directories to it
- 4. Clone this repo: `git clone git@github.com:adafruit/Adafruit_nRF52_Arduino.git`
- 5. Restart the Arduino IDE
- 6. Once the BSP is installed, select 'Adafruit Bluefruit nRF52 Feather' from the Tools -> Board menu, which will update your system config to use the right compiler and settings for the nRF52.
+ 4. Create a folder named ```hardware/Adafruit```, if it does not exist, and change directories to it
+ 5. Clone this repo: `git clone git@github.com:adafruit/Adafruit_nRF52_Arduino.git`
+ 6. Restart the Arduino IDE
+ 7. Once the BSP is installed, select 'Adafruit Bluefruit nRF52 Feather' from the Tools -> Board menu, which will update your system config to use the right compiler and settings for the nRF52.
 
 ### Third Party Tools
 
