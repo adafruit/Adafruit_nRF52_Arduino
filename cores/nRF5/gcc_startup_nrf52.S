@@ -1,4 +1,3 @@
-#ifdef NRF52
 /* Copyright (c) 2013 ARM LIMITED
 
    All rights reserved.
@@ -29,6 +28,7 @@
     .syntax unified
     .arch armv7e-m
 
+/* Adafruit nrf52 use RTOS, thus disable stack here */
 /*    .section .stack
     .align 3
 #ifdef __STACK_SIZE
@@ -523,4 +523,3 @@ Default_Handler:
     IRQ  FPU_IRQHandler
 
   .end
-#endif
