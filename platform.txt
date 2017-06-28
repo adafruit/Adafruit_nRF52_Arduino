@@ -144,7 +144,7 @@ tools.nrfjprog.cmd=nrfjprog
 tools.nrfjprog.cmd.windows=nrfjprog.exe
 tools.nrfjprog.bootloader.params.verbose=
 tools.nrfjprog.bootloader.params.quiet=-q
-tools.nrfjprog.bootloader.pattern="{path}{cmd}" --program "{runtime.platform.path}/bin/bootloader/{build.variant}_bootloader_v050_s132_v201.hex" -f nrf52 --chiperase --reset
+tools.nrfjprog.bootloader.pattern="{path}{cmd}" --program "{runtime.platform.path}/bin/bootloader/s132_v201/{build.variant}_bootloader_v050_s132_v201.hex" -f nrf52 --chiperase --reset
 
 # nrfjprog auto erase flash page while programming
 tools.nrfjprog.erase.params.verbose=
