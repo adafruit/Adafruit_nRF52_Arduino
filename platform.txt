@@ -50,14 +50,16 @@ compiler.size.cmd=arm-none-eabi-size
 
 # this can be overriden in boards.txt
 build.extra_flags=
-build.lfclk_flags=
+build.lfclk_flags=-DUSE_LFXO
 build.debug_flags=
+build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
+build.ldscript=feather52_s132.ld
 
 nrf.sdk.path={build.core.path}/SDK
 rtos.path={build.core.path}/freertos
 nffs.path={runtime.platform.path}/libraries/nffs/src
 
-compiler.nrf.flags=-DNRF5 "-I{nrf.sdk.path}/components/toolchain/" "-I{nrf.sdk.path}/components/toolchain/CMSIS/Include" "-I{nrf.sdk.path}/components/toolchain/gcc/" "-I{nrf.sdk.path}/components/device/" "-I{nrf.sdk.path}/components/drivers_nrf/delay/" "-I{nrf.sdk.path}/components/softdevice/s132/headers/" "-I{rtos.path}/source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52"
+compiler.nrf.flags=-DNRF5 -DNRF52 -DS132 "-I{nrf.sdk.path}/components/toolchain/" "-I{nrf.sdk.path}/components/toolchain/CMSIS/Include" "-I{nrf.sdk.path}/components/toolchain/gcc/" "-I{nrf.sdk.path}/components/device/" "-I{nrf.sdk.path}/components/drivers_nrf/delay/" "-I{nrf.sdk.path}/components/softdevice/s132/headers/" "-I{rtos.path}/source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52"
 
 nffs.includes="-I{nffs.path}/fs/nffs/include" "-I{nffs.path}/fs/fs/include" "-I{nffs.path}/util/crc/include" "-I{nffs.path}/kernel/os/include" "-I{nffs.path}/kernel/os/include/os/arch/cortex_m4" "-I{nffs.path}/hw/hal/include" "-I{nffs.path}/sys/flash_map/include"
 
@@ -96,7 +98,7 @@ recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}"
 recipe.objcopy.hex.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} {compiler.elf2hex.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.hex"
 
 ## Creat dfu package zip file
-recipe.objcopy.zip.pattern="{build.nrfutil}" dfu genpkg --dev-type 0x0052 --application "{build.path}/{build.project_name}.hex" "{build.path}/{build.project_name}.zip"
+recipe.objcopy.zip.pattern="{tools.nrfutil.cmd}" dfu genpkg --dev-type 0x0052 --application "{build.path}/{build.project_name}.hex" "{build.path}/{build.project_name}.zip"
 
 ## Save bin
 recipe.output.tmp_file_bin={build.project_name}.bin
@@ -114,31 +116,35 @@ recipe.size.regex=\.text\s+([0-9]+).*
 recipe.output.tmp_file={build.project_name}.hex
 recipe.output.save_file={build.project_name}.{build.variant}.hex
 
-#
+#**********************************************
 # nrfutil for uploading
-#
-tools.nrfutil.cmd={build.nrfutil}
+#**********************************************
+
+tools.nrfutil.cmd=nrfutil
+tools.nrfutil.cmd.windows={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/win32/nrfutil.exe
+# Legacy MacOS nrfutil location, this is for when people had it globally
+# installed and is left just for reference:
+tools.nrfutil.cmd.macosx=/usr/local/bin/nrfutil
+# Frozen MacOS nrfutil location, this uses a frozen or pre-built standalone
+# version of nrfutil included in the BSP (no manual install required):
+#tools.nrfutil.cmd.macosx={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/macos/nrfutil
+
 tools.nrfutil.upload.params.verbose=--verbose
 tools.nrfutil.upload.params.quiet=
 tools.nrfutil.upload.pattern={cmd} {upload.verbose} dfu serial -pkg "{build.path}/{build.project_name}.zip" -p {serial.port} -b 115200
 
-#
-# Using jlink with nrfjprog
-#
+#**********************************************
+# Jlink with nrfjprog to burn bootloader
+#**********************************************
 
 ## nrfjprog bootloader
-tools.nrfjprog.path={runtime.tools.nrfjprog.path}
+tools.nrfjprog.path={runtime.tools.nrfjprog.path}/
+#tools.nrfjprog.path=
 tools.nrfjprog.cmd=nrfjprog
 tools.nrfjprog.cmd.windows=nrfjprog.exe
 tools.nrfjprog.bootloader.params.verbose=
 tools.nrfjprog.bootloader.params.quiet=-q
-tools.nrfjprog.bootloader.pattern="{path}/{cmd}" --program "{runtime.platform.path}/bin/bootloader/bootloader_v050_s132_v201.hex" -f nrf52 --chiperase --reset
-
-## nrfjprog program (won't work, need to update bootloader validation setting)
-tools.nrfjprog.program.params.verbose=
-tools.nrfjprog.program.params.quiet=-q
-tools.nrfjprog.program.pattern=
-#tools.nrfjprog.program.pattern="{cmd}" --program "{build.path}/{build.project_name}.hex" -f nrf52
+tools.nrfjprog.bootloader.pattern="{path}{cmd}" --program "{runtime.platform.path}/bin/bootloader/bootloader_v050_s132_v201.hex" -f nrf52 --chiperase --reset
 
 # nrfjprog auto erase flash page while programming
 tools.nrfjprog.erase.params.verbose=

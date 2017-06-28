@@ -1,4 +1,4 @@
-nrfjprog.name=J-Link for Feather52
+nrfjprog.name=J-Link for Bluefruit 52
 nrfjprog.communication=USB
 nrfjprog.protocol=swd
 nrfjprog.program.tool=nrfjprog
