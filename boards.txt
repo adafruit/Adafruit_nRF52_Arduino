@@ -28,6 +28,8 @@ feather52.bootloader.tool=nrfjprog
 feather52.upload.tool=nrfutil
 feather52.upload.protocol=nrfutil
 feather52.upload.maximum_size=167936
+# ram size varies depending on S132 (check linker script)
+feather52.upload.maximum_data_size=51072
 
 # required if using native usb ( for reference )
 #feather52.upload.use_1200bps_touch=false
