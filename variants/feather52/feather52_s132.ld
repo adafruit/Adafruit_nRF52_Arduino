@@ -7,20 +7,20 @@ MEMORY
 {
   FLASH (rx) : ORIGIN = 0x1c000, LENGTH = 0x64000
   
-  /* ATTR SIZE = 0x0580, (central, prph, sec)  = (0, 1, 0) */
-  /* RAM (rwx) :  ORIGIN = 0x20002080, LENGTH = 0xdf80 */
-  
-  /* ATTR SIZE = 0x1000, (central, prph, sec) = (0, 1, 0) */
-  /* RAM (rwx) :  ORIGIN = 0x20002B00, LENGTH = 0xD500 */
+  /* SRAM required by S132 depend on
+   * - Attribute Table Size
+   * - Number of concurrent connection central + peripherl + secure links
+   * Several configuration with different SRAM config is included for reference
+   */ 
   
   /* ATTR SIZE = 0x0B00, (central, prph, sec) = (0, 1, 0) */
-  /*RAM (rwx) :  ORIGIN = 0x20001B00 + 0x0B00, LENGTH = 0xE500 - 0x0B00*/
+  /* RAM (rwx) :  ORIGIN = 0x20001B00 + 0x0B00, LENGTH = 0xE500 - 0x0B00 */
     
   /* ATTR SIZE = 0x0B00, (central, prph, sec) = (4, 1, 1) */
-  RAM (rwx) :  ORIGIN = 0x20001B00 + 0x0B00 + 0x1280, LENGTH = 0xE500 - 0x0B00 - 0x1280
+  RAM (rwx) :  ORIGIN = 0x20001B00 + (0x0B00 + 0x1280), LENGTH = 0xE500 - (0x0B00 + 0x1280)
   
   /* ATTR SIZE = 0x0B00, (central, prph, sec) = (7, 1, 1) */
-  /* RAM (rwx) :  ORIGIN = 0x20001B00 + 0x0B00 + 0x1F08, LENGTH = 0xE500 - 0x0B00 - 0x1F08 */
+  /* RAM (rwx) :  ORIGIN = 0x20001B00 + (0x0B00 + 0x1F08), LENGTH = 0xE500 - (0x0B00 + 0x1F08) */
 }
 
 SECTIONS
