@@ -119,7 +119,16 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 
 static inline bool isPinValid(uint32_t pin)
 {
-  return (pin < PINS_COUNT) && (pin != PIN_SERIAL_RX) && (pin != PIN_SERIAL_TX);
+  // 0, 1 is xtal
+  if (pin >= PINS_COUNT) return false;
+
+  const uint8_t forbid[] = { 0, 1, };
+  for(uint8_t i=0; i<sizeof(forbid); i++)
+  {
+    if ( pin == forbid[i] ) return false;
+  }
+
+  return true;
 }
 
 #ifdef __cplusplus
