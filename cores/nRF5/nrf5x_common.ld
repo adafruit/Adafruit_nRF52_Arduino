@@ -156,6 +156,15 @@ SECTIONS
         . = ALIGN(__StackLimit);
         __HeapLimit = .;
     } > RAM
+
+    
+    /* .stack section doesn't contains any symbols. It is only
+     * used for linker to calculate size of stack sections */
+    .stack :
+    {
+      . = ALIGN(__StackLimit);
+      . = ALIGN(__StackTop);
+    } > RAM
     
     /* Check if data + heap + stack exceeds RAM limit */
     ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
