@@ -28,16 +28,19 @@
 #include <Adafruit_NeoPixel.h>
 #include <bluefruit.h>
 
-#define PIN            30   /* Pin used to drive the NeoPixels */
+#define NEOPIXEL_VERSION_STRING "Neopixel v2.0"
+#define PIN                     30   /* Pin used to drive the NeoPixels */
 
 #define MAXCOMPONENTS  4
 uint8_t *pixelBuffer = NULL;
 uint8_t width = 0;
 uint8_t height = 0;
-uint8_t components = 3;     // only 3 and 4 are valid values
 uint8_t stride;
+uint8_t componentsValue;
+bool is400Hz;
+uint8_t components = 3;     // only 3 and 4 are valid values
 
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel();
+Adafruit_NeoPixel neopixel = Adafruit_NeoPixel();
 
 // BLE Service
 BLEDis  bledis;
@@ -53,7 +56,7 @@ void setup()
   Serial.println("Please connect using the Bluefruit Connect LE application");
   
   // Config Neopixels
-  pixels.begin();
+  neopixel.begin();
 
   // Init Bluefruit
   Bluefruit.begin();
@@ -144,23 +147,23 @@ void swapBuffers()
   {
     for (int i = 0; i < width; i++) {
       if (components == 3) {
-        pixels.setPixelColor(pixelIndex, pixels.Color(*base_addr, *(base_addr+1), *(base_addr+2)));
+        neopixel.setPixelColor(pixelIndex, neopixel.Color(*base_addr, *(base_addr+1), *(base_addr+2)));
       }
       else {
-        Serial.println(F("TODO: implement me"));
+        neopixel.setPixelColor(pixelIndex, neopixel.Color(*base_addr, *(base_addr+1), *(base_addr+2), *(base_addr+3) ));
       }
       base_addr+=components;
       pixelIndex++;
     }
     pixelIndex += stride - width;   // Move pixelIndex to the next row (take into account the stride)
   }
-  pixels.show();
+  neopixel.show();
 
 }
 
 void commandVersion() {
   Serial.println(F("Command: Version check"));
-  sendResponse("Neopixel v1.0");
+  sendResponse(NEOPIXEL_VERSION_STRING);
 }
 
 void commandSetup() {
@@ -168,17 +171,19 @@ void commandSetup() {
 
   width = bleuart.read();
   height = bleuart.read();
-  components = bleuart.read();
   stride = bleuart.read();
+  componentsValue = bleuart.read();
+  is400Hz = bleuart.read();
+
   neoPixelType pixelType;
-  pixelType = bleuart.read();
-  pixelType += bleuart.read()<<8;
+  pixelType = componentsValue + (is400Hz ? NEO_KHZ400 : NEO_KHZ800);
+
+  components = (componentsValue == NEO_RGB || componentsValue == NEO_RBG || componentsValue == NEO_GRB || componentsValue == NEO_GBR || componentsValue == NEO_BRG || componentsValue == NEO_BGR) ? 3:4;
   
   Serial.printf("\tsize: %dx%d\n", width, height);
-  Serial.printf("\tcomponents: %d\n", components);
   Serial.printf("\tstride: %d\n", stride);
-  Serial.printf("\tpixelType %d\n", pixelType );
-
+  Serial.printf("\tpixelType %d\n", pixelType);
+  Serial.printf("\tcomponents: %d\n", components);
 
   if (pixelBuffer != NULL) {
       delete[] pixelBuffer;
@@ -186,9 +191,9 @@ void commandSetup() {
 
   uint32_t size = width*height;
   pixelBuffer = new uint8_t[size*components];
-  pixels.updateLength(size);
-  pixels.updateType(pixelType);
-  pixels.setPin(PIN);
+  neopixel.updateLength(size);
+  neopixel.updateType(pixelType);
+  neopixel.setPin(PIN);
 
   // Done
   sendResponse("OK");
@@ -201,7 +206,7 @@ void commandSetBrightness() {
   uint8_t brightness = bleuart.read();
 
   // Set brightness
-  pixels.setBrightness(brightness);
+  neopixel.setBrightness(brightness);
 
   // Refresh pixels
   swapBuffers();
@@ -238,7 +243,10 @@ void commandClearColor() {
 
 
   if (components == 3) {
-    Serial.printf("\tcolor (%d, %d, %d)\n", color[0], color[1], color[2] );
+    Serial.printf("\tclear (%d, %d, %d)\n", color[0], color[1], color[2] );
+  }
+  else {
+    Serial.printf("\tclear (%d, %d, %d, %d)\n", color[0], color[1], color[2], color[3] );
   }
   
   // Done
@@ -253,9 +261,9 @@ void commandSetPixel() {
   uint8_t y = bleuart.read();
 
   // Read colors
-  uint32_t pixelIndex = y*width+x;
-  uint32_t pixelComponentOffset = pixelIndex*components;
-  uint8_t *base_addr = pixelBuffer+pixelComponentOffset;
+  uint32_t pixelOffset = y*width+x;
+  uint32_t pixelDataOffset = pixelOffset*components;
+  uint8_t *base_addr = pixelBuffer+pixelDataOffset;
   for (int j = 0; j < components;) {
     if (bleuart.available()) {
       *base_addr = bleuart.read();
@@ -265,16 +273,19 @@ void commandSetPixel() {
   }
 
   // Set colors
+  uint32_t neopixelIndex = y*stride+x;
+  uint8_t *pixelBufferPointer = pixelBuffer + pixelDataOffset;
+  uint32_t color;
   if (components == 3) {
-    uint32_t pixelIndex = y*stride+x;
-    pixels.setPixelColor(pixelIndex, pixels.Color(pixelBuffer[pixelComponentOffset], pixelBuffer[pixelComponentOffset+1], pixelBuffer[pixelComponentOffset+2]));
-
-    Serial.printf("\tcolor (%d, %d, %d)\n", pixelBuffer[pixelComponentOffset], pixelBuffer[pixelComponentOffset+1], pixelBuffer[pixelComponentOffset+2] );
+    color = neopixel.Color( *pixelBufferPointer, *(pixelBufferPointer+1), *(pixelBufferPointer+2) );
+    Serial.printf("\tcolor (%d, %d, %d)\n",*pixelBufferPointer, *(pixelBufferPointer+1), *(pixelBufferPointer+2) );
   }
   else {
-    Serial.println(F("TODO: implement me"));
+    color = neopixel.Color( *pixelBufferPointer, *(pixelBufferPointer+1), *(pixelBufferPointer+2), *(pixelBufferPointer+3) );
+    Serial.printf("\tcolor (%d, %d, %d, %d)\n", *pixelBufferPointer, *(pixelBufferPointer+1), *(pixelBufferPointer+2), *(pixelBufferPointer+3) );    
   }
-  pixels.show();
+  neopixel.setPixelColor(neopixelIndex, color);
+  neopixel.show();
 
   // Done
   sendResponse("OK");
