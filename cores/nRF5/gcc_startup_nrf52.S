@@ -28,7 +28,7 @@
     .syntax unified
     .arch armv7e-m
 
-/* Adafruit nrf52 use RTOS, thus disable stack here */
+/* Adafruit define stack & heap inside linker script */
 /*    .section .stack
     .align 3
 #ifdef __STACK_SIZE
@@ -361,6 +361,16 @@ Reset_Handler:
     bgt .L_loop1
 
 .L_loop1_done:
+
+/* Adafruit fill stack region with pattern 0xADADADAD */
+    ldr     r0, =__StackLimit
+    ldr     r1, =__StackSize
+    ldr     r2, =0xADADADAD
+.L_fill:
+    str     r2, [r0]
+    adds    r0, 4
+    subs    r1, 4
+    bne     .L_fill
 
 /* This part of work usually is done in C library startup code. Otherwise,
  * define __STARTUP_CLEAR_BSS to enable it in this startup. This section
