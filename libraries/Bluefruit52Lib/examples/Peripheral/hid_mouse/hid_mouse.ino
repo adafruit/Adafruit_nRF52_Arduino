@@ -18,7 +18,7 @@ BLEHidAdafruit blehid;
 
 #define MOVE_STEP    10
 
-void setup() 
+void setup()
 {
   Serial.begin(115200);
 
@@ -33,10 +33,11 @@ void setup()
   Serial.println("- 'LRMBF' to press mouse button(s) (left, right, middle, backward, forward)");
   Serial.println("- 'X'     to release mouse button(s)");
 
-  Bluefruit.begin();
   // HID Device can have a min connection interval of 9*1.25 = 11.25 ms
   Bluefruit.setConnInterval(9, 16); // min = 9*1.25=11.25 ms, max = 16*1.25=20ms
   Bluefruit.setName("Bluefruit52");
+
+  Bluefruit.begin();
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
@@ -54,12 +55,12 @@ void setup()
 }
 
 void setupAdv(void)
-{  
+{
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
 
   Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_MOUSE);
-  
+
   // Include BLE HID service
   Bluefruit.Advertising.addService(blehid);
 
@@ -67,18 +68,18 @@ void setupAdv(void)
   Bluefruit.Advertising.addName();
 }
 
-void loop() 
-{    
+void loop()
+{
   if (Serial.available())
   {
     char ch = (char) Serial.read();
 
     // convert to upper case
     ch = (char) toupper(ch);
-    
+
     // echo
     Serial.println(ch);
-  
+
     switch(ch)
     {
       // WASD to move the mouse
@@ -129,4 +130,3 @@ void loop()
     }
   }
 }
-

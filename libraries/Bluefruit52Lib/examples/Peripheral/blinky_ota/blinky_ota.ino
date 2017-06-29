@@ -14,14 +14,14 @@
 
 #include <bluefruit.h>
 
-void setup() 
+void setup()
 {
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 Blinky Example");
 
-  Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
+  Bluefruit.begin();
 
   // Set up Advertising Packet
   setupAdv();
@@ -31,7 +31,7 @@ void setup()
 }
 
 void setupAdv(void)
-{  
+{
   //Bluefruit.Advertising.addTxPower();
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
@@ -41,11 +41,10 @@ void setupAdv(void)
   Bluefruit.ScanResponse.addName();
 }
 
-void loop() 
+void loop()
 {
   // Toggle both LEDs every 1 second
   digitalToggle(LED_RED);
 
   delay(1000);
 }
-

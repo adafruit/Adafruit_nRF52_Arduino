@@ -17,7 +17,7 @@
  *  - Connect to the board using the Bluefruit Connect LE app
  *  - Send character(s) using BLEUART
  *  - Bluefruit will render the received character(s) on Neopixel FeatherWing
- *  
+ *
  *  Note: due to the font being larger than the 4x8 Neopixel Wing, you can
  *  only see part of the characters in some cases.
  *  Run the sketch with a larger Neopixel Matrix for a complete demo
@@ -59,7 +59,7 @@
 Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(MATRIX_WIDTH, MATRIX_HEIGHT, PIN,
                                                MATRIX_LAYOUT,
                                                NEO_GRB + NEO_KHZ800);
-                                                 
+
 // BLE Service
 BLEDis  bledis;
 BLEUart bleuart;
@@ -72,7 +72,7 @@ void setup()
 
   Serial.println();
   Serial.println("Please connect using Bluefruit Connect LE application");
-  
+
   // Config Neopixels Matrix
   matrix.begin();
   matrix.setTextWrap(false);
@@ -80,14 +80,14 @@ void setup()
   matrix.setTextColor( matrix.Color(0, 0, 255) ); // Blue for Bluefruit
 
   // Init Bluefruit
-  Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
   Bluefruit.setConnectCallback(connect_callback);
+  Bluefruit.begin();
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
   bledis.setModel("Bluefruit Feather52");
-  bledis.begin();  
+  bledis.begin();
 
   // Configure and start BLE UART service
   bleuart.begin();
@@ -100,11 +100,11 @@ void setup()
 }
 
 void setupAdv(void)
-{  
+{
   // Bluefruit.Advertising.addTxPower();
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
-  
+
   // Include bleuart 128-bit uuid
   Bluefruit.Advertising.addService(bleuart);
 
@@ -134,7 +134,6 @@ void loop()
 
       matrix.show();
       delay(100);
-    }    
-  }  
+    }
+  }
 }
-

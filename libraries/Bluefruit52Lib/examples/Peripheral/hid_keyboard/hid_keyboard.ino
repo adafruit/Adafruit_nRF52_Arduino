@@ -18,7 +18,7 @@ BLEHidAdafruit blehid;
 
 bool hasKeyPressed = false;
 
-void setup() 
+void setup()
 {
   Serial.begin(115200);
 
@@ -31,10 +31,10 @@ void setup()
 
   Serial.println();
   Serial.println("Enter the character(s) to send:");
-  Serial.println();  
+  Serial.println();
 
-  Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
+  Bluefruit.begin();
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
@@ -44,7 +44,7 @@ void setup()
   /* Start BLE HID
    * Note: Apple requires BLE device must have min connection interval >= 20m
    * ( The smaller the connection interval the faster we could send data).
-   * However for HID and MIDI device, Apple could accept min connection interval 
+   * However for HID and MIDI device, Apple could accept min connection interval
    * up to 11.25 ms. Therefore BLEHidAdafruit::begin() will try to set the min and max
    * connection interval to 11.25  ms and 15 ms respectively for best performance.
    */
@@ -52,7 +52,7 @@ void setup()
 
   /* Set connection interval (min, max) to your perferred value.
    * Note: It is already set by BLEHidAdafruit::begin() to 11.25ms - 15ms
-   * min = 9*1.25=11.25 ms, max = 12*1.25= 15 ms 
+   * min = 9*1.25=11.25 ms, max = 12*1.25= 15 ms
    */
   /* Bluefruit.setConnInterval(9, 12); */
 
@@ -64,12 +64,12 @@ void setup()
 }
 
 void setupAdv(void)
-{  
+{
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
 
   Bluefruit.Advertising.addAppearance(BLE_APPEARANCE_HID_KEYBOARD);
-  
+
   // Include BLE HID service
   Bluefruit.Advertising.addService(blehid);
 
@@ -77,7 +77,7 @@ void setupAdv(void)
   Bluefruit.Advertising.addName();
 }
 
-void loop() 
+void loop()
 {
   // Only send KeyRelease if previously pressed to avoid sending
   // multiple keyRelease reports (that consume memory and bandwidth)
@@ -85,27 +85,27 @@ void loop()
   {
     hasKeyPressed = false;
     blehid.keyRelease();
-    
+
     // Delay a bit after a report
     delay(5);
   }
-    
+
   if (Serial.available())
   {
     char ch = (char) Serial.read();
 
     // echo
-    Serial.write(ch); 
+    Serial.write(ch);
 
     blehid.keyPress(ch);
     hasKeyPressed = true;
-    
+
     // Delay a bit after a report
     delay(5);
   }
 
   // Request CPU to enter low-power mode until an event/interrupt occurs
-  waitForEvent();  
+  waitForEvent();
 }
 
 /**
@@ -113,7 +113,7 @@ void loop()
  * when there are no active threads. E.g when loop() calls delay() and
  * there is no bluetooth or hw event. This is the ideal place to handle
  * background data.
- * 
+ *
  * NOTE: It is recommended to call waitForEvent() to put MCU into low-power mode
  * at the end of this callback. You could also turn off other Peripherals such as
  * Serial/PWM and turn them back on if wanted
@@ -130,8 +130,8 @@ void loop()
  * NOTE2: If rtos_idle_callback() is not defined at all. Bluefruit will force
  * waitForEvent() to save power. If you don't want MCU to sleep at all, define
  * an rtos_idle_callback() with empty body !
- * 
- * WARNING: This function MUST NOT call any blocking FreeRTOS API 
+ *
+ * WARNING: This function MUST NOT call any blocking FreeRTOS API
  * such as delay(), xSemaphoreTake() etc ... for more information
  * http://www.freertos.org/a00016.html
  */

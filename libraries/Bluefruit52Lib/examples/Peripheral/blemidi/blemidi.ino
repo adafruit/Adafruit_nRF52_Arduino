@@ -42,8 +42,8 @@ void setup()
   Serial.begin(115200);
   Serial.println("Adafruit Bluefruit52 MIDI over Bluetooth LE Example");
 
-  Bluefruit.begin();
   Bluefruit.setName("Bluefruit52 MIDI");
+  Bluefruit.begin();
 
   // Setup the on board blue LED to be enabled on CONNECT
   Bluefruit.autoConnLed(true);
@@ -153,4 +153,3 @@ void midiRead()
   // read any new MIDI messages
   MIDI.read();
 }
-

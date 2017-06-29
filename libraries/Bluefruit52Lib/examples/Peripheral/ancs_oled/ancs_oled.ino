@@ -71,7 +71,7 @@ void setup()
   pinMode(BUTTON_C, INPUT_PULLUP);
 
   // init with the I2C addr 0x3C (for the 128x32) and show splashscreen
-  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C); 
+  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   oled.display();
 
   oled.setTextSize(1);// max is 4 line, 21 chars each
@@ -79,8 +79,8 @@ void setup()
 
   Serial.begin(115200);
 
+  Bluefruit.setName("Bluefruit52"); // set name first
   Bluefruit.begin();
-  Bluefruit.setName("Bluefruit52");
   Bluefruit.setConnectCallback(connect_callback);
   Bluefruit.setDisconnectCallback(disconnect_callback);
 
@@ -236,7 +236,7 @@ void connect_callback(void)
   oled.println("Connected.");
   oled.print("Discovering ... ");
   oled.display();
-  
+
   if ( bleancs.discover( Bluefruit.connHandle() ) )
   {
     oled.println("OK");

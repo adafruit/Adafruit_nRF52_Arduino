@@ -42,13 +42,13 @@ void setup()
   Serial.println("Bluefruit52 HRM Example");
   Serial.println("-----------------------");
 
-  // Initialise the Bluefruit module
-  Serial.println("Initialise the Bluefruit nRF52 module");
-  Bluefruit.begin();
-
   // Set the advertised device name (keep it short!)
   Serial.println("Setting Device Name to 'Feather52 HRM'");
   Bluefruit.setName("Bluefruit52 HRM");
+
+  // Initialise the Bluefruit module
+  Serial.println("Initialise the Bluefruit nRF52 module");
+  Bluefruit.begin();
 
   // Set the connect/disconnect callback handlers
   Bluefruit.setConnectCallback(connect_callback);
@@ -189,15 +189,15 @@ void cccd_callback(BLECharacteristic& chr, uint16_t cccd_value)
 void loop()
 {
   digitalToggle(LED_RED);
-  
+
   if ( Bluefruit.connected() ) {
     uint8_t hrmdata[2] = { 0b00000110, bps++ };           // Sensor connected, increment BPS value
-    
+
     // Note: We use .notify instead of .write!
     // If it is connected but CCCD is not enabled
     // The characteristic's value is still updated although notification is not sent
     if ( hrmc.notify(hrmdata, sizeof(hrmdata)) ){
-      Serial.print("Heart Rate Measurement updated to: "); Serial.println(bps); 
+      Serial.print("Heart Rate Measurement updated to: "); Serial.println(bps);
     }else{
       Serial.println("ERROR: Notify not set in the CCCD or not connected!");
     }
@@ -215,7 +215,7 @@ void loop()
  * when there are no active threads. E.g when loop() calls delay() and
  * there is no bluetooth or hw event. This is the ideal place to handle
  * background data.
- * 
+ *
  * NOTE: It is recommended to call waitForEvent() to put MCU into low-power mode
  * at the end of this callback. You could also turn off other Peripherals such as
  * Serial/PWM and turn them back on if wanted
@@ -232,8 +232,8 @@ void loop()
  * NOTE2: If rtos_idle_callback() is not defined at all. Bluefruit will force
  * waitForEvent() to save power. If you don't want MCU to sleep at all, define
  * an rtos_idle_callback() with empty body !
- * 
- * WARNING: This function MUST NOT call any blocking FreeRTOS API 
+ *
+ * WARNING: This function MUST NOT call any blocking FreeRTOS API
  * such as delay(), xSemaphoreTake() etc ... for more information
  * http://www.freertos.org/a00016.html
  */

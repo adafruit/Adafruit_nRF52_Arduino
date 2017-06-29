@@ -51,19 +51,19 @@ void setup()
 
   Serial.println();
   Serial.println("Please connect using the Bluefruit Connect LE application");
-  
+
   // Config Neopixels
   pixels.begin();
 
   // Init Bluefruit
-  Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
   Bluefruit.setConnectCallback(connect_callback);
+  Bluefruit.begin();
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
   bledis.setModel("Bluefruit Feather52");
-  bledis.begin();  
+  bledis.begin();
 
   // Configure and start BLE UART service
   bleuart.begin();
@@ -76,11 +76,11 @@ void setup()
 }
 
 void setupAdv(void)
-{  
+{
   // Bluefruit.Advertising.addTxPower();
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
-  
+
   // Include bleuart 128-bit uuid
   Bluefruit.Advertising.addService(bleuart);
 
@@ -106,7 +106,7 @@ void loop()
           commandVersion();
           break;
         }
-  
+
       case 'S': {   // Setup dimensions, components, stride...
           commandSetup();
           break;
@@ -121,12 +121,12 @@ void loop()
           commandSetBrightness();
           break;
       }
-            
+
       case 'P': {   // Set Pixel
           commandSetPixel();
           break;
       }
-  
+
       case 'I': {   // Receive new image
           commandImage();
           break;
@@ -173,7 +173,7 @@ void commandSetup() {
   neoPixelType pixelType;
   pixelType = bleuart.read();
   pixelType += bleuart.read()<<8;
-  
+
   Serial.printf("\tsize: %dx%d\n", width, height);
   Serial.printf("\tcomponents: %d\n", components);
   Serial.printf("\tstride: %d\n", stride);
@@ -240,7 +240,7 @@ void commandClearColor() {
   if (components == 3) {
     Serial.printf("\tcolor (%d, %d, %d)\n", color[0], color[1], color[2] );
   }
-  
+
   // Done
   sendResponse("OK");
 }
@@ -282,7 +282,7 @@ void commandSetPixel() {
 
 void commandImage() {
   Serial.printf("Command: Image %dx%d, %d, %d\n", width, height, components, stride);
-  
+
   // Receive new pixel buffer
   int size = width * height;
   uint8_t *base_addr = pixelBuffer;
@@ -315,4 +315,3 @@ void sendResponse(char const *response) {
     Serial.printf("Send Response: %s\n", response);
     bleuart.write(response, strlen(response)*sizeof(char));
 }
-

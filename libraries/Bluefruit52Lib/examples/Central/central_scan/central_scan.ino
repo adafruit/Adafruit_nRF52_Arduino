@@ -14,15 +14,15 @@
 
 #include <bluefruit.h>
 
-void setup() 
+void setup()
 {
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 Central Scan Example");
 
   // up to 1 peripheral conn and 1 central conn
+  Bluefruit.setName("Bluefruit52"); // set name first
   Bluefruit.begin(true, true);
-  Bluefruit.setName("Bluefruit52");
 
   // Start Central Scan
   Bluefruit.setConnLedInterval(250);
@@ -37,7 +37,7 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   Serial.println("Timestamp Addr              Rssi Data");
 
   Serial.printf("%09d ", millis());
-  
+
   Serial.printBuffer(report->peer_addr.addr, 6, ':');
   Serial.print(" ");
 
@@ -56,11 +56,10 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   Serial.println();
 }
 
-void loop() 
+void loop()
 {
   // Toggle both LEDs every 1 second
   digitalToggle(LED_RED);
 
   delay(1000);
 }
-
