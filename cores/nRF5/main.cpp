@@ -64,7 +64,6 @@ static void loop_task(void* arg)
 int main( void )
 {
   init();
-
   initVariant();
 
   if (setLoopStacksize)

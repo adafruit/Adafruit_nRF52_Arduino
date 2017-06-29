@@ -70,7 +70,6 @@ metro52.build.board=METRO52
 metro52.build.core=nRF5
 metro52.build.variant=metro52
 
-
 # Debug Menu
 metro52.menu.debug.l0=Level 0 (Release)
 metro52.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0

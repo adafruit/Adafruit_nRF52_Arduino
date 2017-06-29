@@ -27,6 +27,11 @@ extern void init(void);
 extern void enterSerialDfu(void);
 extern void enterOTADfu(void);
 
+/* Bootloader version. Assigned by init().
+ * - value of 0x000500 is version 0.5.0
+ */
+extern uint32_t bootloaderVersion;
+
 // Hint instruction to tell CPU go to low power mode
 #if 0
 #define waitForEvent()  __WFE()

@@ -11,7 +11,7 @@ typedef volatile uint32_t REG32;
 void setup() {
   Serial.begin(115200);
 
-  Serial.println("Bluefruit Feather 52 HW Info");
+  Serial.println("Bluefruit 52 HW Info");
   Serial.println("");
 
   // MAC Address
