@@ -61,6 +61,7 @@ metro52.bootloader.tool=nrfjprog
 metro52.upload.tool=nrfutil
 metro52.upload.protocol=nrfutil
 metro52.upload.maximum_size=167936
+metro52.upload.maximum_data_size=51072
 
 # Build
 metro52.build.mcu=cortex-m4
