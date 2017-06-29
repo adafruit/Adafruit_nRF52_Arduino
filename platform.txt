@@ -53,7 +53,7 @@ build.extra_flags=
 build.lfclk_flags=-DUSE_LFXO
 build.debug_flags=
 build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
-build.ldscript=feather52_s132.ld
+build.ldscript=bluefruit52_s132_v201.ld
 
 nrf.sdk.path={build.core.path}/SDK
 rtos.path={build.core.path}/freertos
