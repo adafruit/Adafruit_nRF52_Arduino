@@ -91,6 +91,29 @@ int dbgHeapUsed(void)
   return (mallinfo()).uordblks;
 }
 
+int dbgStackTotal(void)
+{
+  return ((uint32_t) __StackTop) - ((uint32_t) __StackLimit);
+}
+
+int dbgStackUsed(void)
+{
+  enum { STACK_PATTERN = 0xADADADAD };
+
+  uint32_t * p_start = (uint32_t*) &__StackLimit;
+  uint32_t * p_end   = (uint32_t*) &__StackTop;
+
+  uint32_t * p_buf = p_start;
+  while( *p_buf == STACK_PATTERN && p_buf != p_end)
+  {
+    p_buf++;
+  }
+
+  if (p_buf == p_end) return (-1);
+
+  return ((uint32_t) p_end) - ((uint32_t) p_buf);
+}
+
 static void printMemRegion(const char* name, uint32_t top, uint32_t bottom, uint32_t used)
 {
   char buffer[30];
@@ -111,10 +134,10 @@ void dbgMemInfo(void)
   Serial.println("|                                 |");
 
   // Pritn SRAM used for Stack executed by S132 and ISR
-  printMemRegion("Stack", ((uint32_t) __StackTop), ((uint32_t) __StackLimit), 0);
+  printMemRegion("Stack", ((uint32_t) __StackTop), ((uint32_t) __StackLimit), dbgStackUsed() );
 
   // Print Heap usage overall (including memory malloced to tasks)
-  printMemRegion("Heap", ((uint32_t) __HeapLimit), ((uint32_t) __HeapBase), dbgHeapUsed());
+  printMemRegion("Heap", ((uint32_t) __HeapLimit), ((uint32_t) __HeapBase), dbgHeapUsed() );
 
   // DATA + BSS
   printMemRegion("Data & Bss", ((uint32_t) __bss_end__), ((uint32_t) __data_start__), 0);

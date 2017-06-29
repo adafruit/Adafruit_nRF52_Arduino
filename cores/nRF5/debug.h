@@ -46,6 +46,9 @@ const char* dbg_ble_event_str(uint16_t evt_id);
 int dbgHeapTotal(void);
 int dbgHeapUsed(void);
 
+int dbgStackTotal(void);
+int dbgStackUsed(void);
+
 static inline int dbgHeapFree(void)
 {
   return dbgHeapTotal() - dbgHeapUsed();
