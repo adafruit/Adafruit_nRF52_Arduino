@@ -1,9 +1,12 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-## 0.7.0
+## 0.6.5
 
-- fix setName()
-
+- Fix setName() issue
+- Add Low Level format sketch for filesystem: `libraries/nffs/examples/EraseNffs`
+- Add SRAM usage when compiling
+- Reduce Stack size from 3KB to 2KB, and functions dbgStackUsed(), dbgStackTotal() for dynamic stack usage
+- Updated for latest Bluefruit LE Connect version with RGBW support
 
 ## 0.6.0
 
