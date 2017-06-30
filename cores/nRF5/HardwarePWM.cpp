@@ -54,35 +54,6 @@ HardwarePWM::HardwarePWM(NRF_PWM_Type* pwm)
   _clock_div = PWM_PRESCALER_PRESCALER_DIV_1; // 16 Mhz
 }
 
-#if 0
-void HardwarePWM::printInfo(void)
-{
-  PRINT_HEX( (uint32_t) _pwm);
-
-  PRINT_INT(_pwm->ENABLE);
-  PRINT_INT(_pwm->MODE);
-  PRINT_INT(_pwm->COUNTERTOP);
-  PRINT_INT(_pwm->PRESCALER);
-  PRINT_INT(_pwm->DECODER);
-  PRINT_INT(_pwm->LOOP);
-  PRINT_INT(_pwm->EVENTS_STOPPED);
-  Serial.println();
-
-  PRINT_HEX(_pwm->SEQ[0].PTR);
-  PRINT_INT(_pwm->SEQ[0].CNT);
-  PRINT_INT(_pwm->SEQ[0].REFRESH);
-  PRINT_INT(_pwm->SEQ[0].ENDDELAY);
-  Serial.println();
-
-  PRINT_INT(_count);
-  for(int i=0; i<MAX_CHANNELS; i++)
-  {
-    cprintf("%d: pin = %d, value = %04X\n", i, _pwm->PSEL.OUT[i], _seq0[i]);
-  }
-  Serial.println();
-}
-#endif 
-
 void HardwarePWM::setResolution(uint8_t bitnum)
 {
   _resolution = min8(bitnum, 15); // max is 15 bit
@@ -166,12 +137,6 @@ void HardwarePWM::_start(void)
 
 void HardwarePWM::stop(void)
 {
-#if 0
-  _pwm->EVENTS_STOPPED = 0;
-  _pwm->TASKS_STOP = 1;
-  while( !_pwm->EVENTS_STOPPED ) yield();
-#endif
-
   _pwm->ENABLE = 0;
 }
 
