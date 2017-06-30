@@ -7,6 +7,7 @@
 - Add SRAM usage when compiling
 - Reduce Stack size from 3KB to 2KB, and functions dbgStackUsed(), dbgStackTotal() for dynamic stack usage
 - Updated for latest Bluefruit LE Connect version with RGBW support
+- Fix #48 SPI & I2C warnings
 
 ## 0.6.0
 
