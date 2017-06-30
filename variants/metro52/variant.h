@@ -117,7 +117,7 @@ static const uint8_t A5  = PIN_A5 ;
 #define ADC_RESOLUTION    14
 
 // Other pins
-#define PIN_AREF           (24) // ?
+#define PIN_AREF           (-1)
 #define PIN_DFU            (22) // Mux with LED2
 #define PIN_NFC1           (9)
 #define PIN_NFC2           (10)
