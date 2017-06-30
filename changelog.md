@@ -9,6 +9,7 @@
 - Updated for latest Bluefruit LE Connect version with RGBW support
 - Fix #48 SPI & I2C warnings
 - Change board define from ARDUINO_FEATHER52 to ARDUINO_NRF52_FEATHER (ARDUINO_FEATHER52 still exists for backward comaptiable)
+- change pin in hwpwm and hid_camerashutter sketches
 
 ## 0.6.0
 

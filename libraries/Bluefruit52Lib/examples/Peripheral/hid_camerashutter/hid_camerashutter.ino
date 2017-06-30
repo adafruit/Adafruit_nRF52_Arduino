@@ -22,7 +22,7 @@
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
-#define PIN_SHUTTER   27
+#define PIN_SHUTTER   11
 
 void setup()
 {

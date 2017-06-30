@@ -29,12 +29,24 @@
 #include <Arduino.h>
 
 // Maximum 12 pins can be used for 3 PWM module ( 4 channel each )
+#if defined ARDUINO_NRF52_FEATHER
 int pins[12] = 
 { 
-  PIN_A0 , PIN_A1  , PIN_A2      , PIN_A3, 
-  PIN_A4 , PIN_A5  , PIN_A6      , LED_RED, /* avoid A7 (VBAT)  */
-  27     , LED_BLUE, PIN_WIRE_SDA, PIN_WIRE_SCL
+  A0 , A1      , A2          , A3,
+  A4 , A5      , A6          , LED_RED, /* avoid A7 (VBAT)  */
+  27 , LED_BLUE, PIN_WIRE_SDA, PIN_WIRE_SCL
 };
+
+#elif defined ARDUINO_NRF52_METRO
+
+int pins[12] =
+{
+  D0, D1      , D2, D3,
+  D4, D5      , D6, LED_RED,
+  D7, LED_BLUE, D8, D9
+};
+
+#endif
 
 /**************************************************************************/
 /*!
