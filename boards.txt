@@ -39,9 +39,12 @@ feather52.upload.maximum_data_size=51072
 # Build
 feather52.build.mcu=cortex-m4
 feather52.build.f_cpu=64000000
-feather52.build.board=FEATHER52
+feather52.build.board=NRF52_FEATHER
 feather52.build.core=nRF5
 feather52.build.variant=feather52
+
+# compatiable with other lib only, would remove in the future
+feather52.build.extra_flags=-DARDUINO_FEATHER52
 
 # Debug Menu
 feather52.menu.debug.l0=Level 0 (Release)
@@ -66,9 +69,12 @@ feather52.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 # Build
 #metro52.build.mcu=cortex-m4
 #metro52.build.f_cpu=64000000
-#metro52.build.board=METRO52
+#metro52.build.board=NRF52_METRO
 #metro52.build.core=nRF5
 #metro52.build.variant=metro52
+
+# compatiable with other lib only, would remove in the future
+#metro52.build.extra_flags=-DARDUINO_FEATHER52
 
 # Debug Menu
 #metro52.menu.debug.l0=Level 0 (Release)
