@@ -8,6 +8,7 @@
 - Reduce Stack size from 3KB to 2KB, and functions dbgStackUsed(), dbgStackTotal() for dynamic stack usage
 - Updated for latest Bluefruit LE Connect version with RGBW support
 - Fix #48 SPI & I2C warnings
+- Change board define from ARDUINO_FEATHER52 to ARDUINO_NRF52_FEATHER (ARDUINO_FEATHER52 still exists for backward comaptiable)
 
 ## 0.6.0
 
