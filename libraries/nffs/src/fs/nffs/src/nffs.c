@@ -26,7 +26,7 @@
 //#include "sysflash/sysflash.h"
 //#include "bsp/bsp.h"
 #include "hal/hal_flash.h"
-//#include "flash_map/flash_map.h"
+#include "flash_map/flash_map.h"
 #include "os/os_mempool.h"
 #include "os/os_mutex.h"
 #include "os/os_malloc.h"

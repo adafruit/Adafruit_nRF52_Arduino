@@ -37,8 +37,7 @@
 
 #include "syscfg/syscfg.h"
 #include "hal/hal_flash.h"
-
-#define NFFS_AREA_MAX    8
+#include "flash_map/flash_map.h"
 
 ApacheNffs Nffs;
 
@@ -54,20 +53,21 @@ bool ApacheNffs::begin(void)
   if (_initialized) return true;
   _initialized = true;
 
-  // Init flash
-  nrf52_flash_init();
+  // Init flash map (required before accessing flash API)
+  flash_map_init();
 
   /* Initialize nffs's internal state. */
   errnum = nffs_init();
   VERIFY_STATUS( errnum, false );
 
   /* Convert the set of flash blocks we intend to use for nffs into an array
-   * of nffs area descriptors.
+   * of nffs area descriptors. Number of descriptor must be larger than
+   * number of sectors for nffs a.k.a 7
    */
-  struct nffs_area_desc descs[NFFS_AREA_MAX + 1];
-  int cnt = NFFS_AREA_MAX;
+  struct nffs_area_desc descs[NFFS_SECTOR_NUM + 1];
+  int cnt = NFFS_SECTOR_NUM;
 
-  errnum = nffs_misc_desc_from_flash_area( MYNEWT_VAL(NFFS_FLASH_AREA), &cnt, descs);
+  errnum = nffs_misc_desc_from_flash_area( FLASH_AREA_NFFS, &cnt, descs);
   VERIFY_STATUS( errnum, false );
 
   /* Attempt to restore an existing nffs file system from flash. */
@@ -78,18 +78,19 @@ bool ApacheNffs::begin(void)
   {
     PRINT_MESS("No FS detected, format");
     errnum = nffs_format(descs);
-    VERIFY_STATUS( errnum, false );
   }
+
+  VERIFY_STATUS( errnum, false );
 
   return true;
 }
 
 bool ApacheNffs::format(void)
 {
-  struct nffs_area_desc descs[NFFS_AREA_MAX + 1];
-  int cnt = NFFS_AREA_MAX;
+  struct nffs_area_desc descs[NFFS_SECTOR_NUM + 1];
+  int cnt = NFFS_SECTOR_NUM;
 
-  errnum = nffs_misc_desc_from_flash_area( MYNEWT_VAL(NFFS_FLASH_AREA), &cnt, descs);
+  errnum = nffs_misc_desc_from_flash_area( FLASH_AREA_NFFS, &cnt, descs);
   VERIFY_STATUS( errnum, false );
 
   errnum = nffs_format(descs);

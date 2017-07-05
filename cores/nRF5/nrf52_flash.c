@@ -34,6 +34,7 @@
 */
 /**************************************************************************/
 
+#include <assert.h>
 #include "Arduino.h"
 #include "nrf52_flash.h"
 
@@ -69,6 +70,24 @@ static void print_write_after(uint32_t address, uint32_t count)
 
 #endif
 
+static int nrf52_flash_sector_info(void *dev, int idx, uint32_t *address, uint32_t *sz);
+
+static const struct hal_flash_funcs nrf52k_flash_funcs = {
+    .hff_read         = nrf52k_flash_read,
+    .hff_write        = nrf52_flash_write,
+    .hff_erase_sector = nrf52_flash_erase_sector,
+    .hff_sector_info  = nrf52_flash_sector_info,
+    .hff_init         = nrf52_flash_init
+};
+
+const struct hal_flash nrf52k_flash_dev = {
+    .hf_itf        = &nrf52k_flash_funcs,
+    .hf_base_addr  = 0x00000000,
+    .hf_size       = 512 * 1024,	/* XXX read from factory info? */
+    .hf_sector_cnt = 128,	        /* XXX read from factory info? */
+    .hf_align      = 1
+};
+
 static SemaphoreHandle_t _evt_sem = NULL;
 static volatile uint32_t _op_result;
 
@@ -78,14 +97,16 @@ void hal_flash_event_cb(uint32_t event)
   xSemaphoreGive(_evt_sem);
 }
 
-int nrf52_flash_init(void)
+int nrf52_flash_init(const struct hal_flash *dev)
 {
+  (void) dev;
   _evt_sem = xSemaphoreCreateCounting(10, 0);
   return (_evt_sem != NULL) ? 0 : 1;
 }
 
-int nrf52_flash_erase_sector(uint32_t sector_address)
+int nrf52_flash_erase_sector(const struct hal_flash *dev, uint32_t sector_address)
 {
+  (void) dev;
   uint32_t err;
 
 #if CFG_DEBUG_NFFS
@@ -124,8 +145,10 @@ static int write_and_wait(uint32_t addr, uint32_t const * const data, uint32_t s
   return (_op_result == NRF_EVT_FLASH_OPERATION_SUCCESS ) ? 0 : (-1);
 }
 
-int nrf52_flash_write(uint32_t address, const void *src, uint32_t num_bytes)
+int nrf52_flash_write(const struct hal_flash *dev, uint32_t address, const void *src, uint32_t num_bytes)
 {
+  (void) dev;
+
 #if CFG_DEBUG_NFFS
   const uint32_t _num  = num_bytes;
   const uint32_t _addr = address;
@@ -233,5 +256,34 @@ int nrf52_flash_write(uint32_t address, const void *src, uint32_t num_bytes)
 #endif
 
   return 0;
+}
+
+int nrf52k_flash_read(const struct hal_flash *dev, uint32_t address, void *dst, uint32_t num_bytes)
+{
+  (void) dev;
+  memcpy(dst, (void *)address, num_bytes);
+  return 0;
+}
+
+static int nrf52_flash_sector_info(void *dev, int idx, uint32_t *address, uint32_t *sz)
+{
+  (void) dev;
+  assert(idx < nrf52k_flash_dev.hf_sector_cnt);
+  *address = idx * NRF52K_FLASH_SECTOR_SZ;
+  *sz = NRF52K_FLASH_SECTOR_SZ;
+  return 0;
+}
+
+
+const struct hal_flash *
+hal_bsp_flash_dev(uint8_t id)
+{
+  /*
+   * Internal flash mapped to id 0.
+   */
+  if (id != 0) {
+    return NULL;
+  }
+  return &nrf52k_flash_dev;
 }
 

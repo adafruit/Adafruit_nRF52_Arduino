@@ -25,22 +25,6 @@
 #include "nffs/nffs.h"
 #include "nffs_priv.h"
 
-static const struct flash_area sysflash_map_dfl =
-{
-    .fa_id        = 0,
-    .fa_device_id = 0,
-    .fa_off       = 0x6D000,
-    .fa_size      = 7*4096, /* 28 kB */
-};
-
-static int
-flash_area_open(uint8_t id, const struct flash_area **fap)
-{
-  (void) id;
-  *fap = &sysflash_map_dfl;
-  return 0;
-}
-
 /**
  * Determines if the file system contains a valid root directory.  For the root
  * directory to be valid, it must be present and have the following traits:
@@ -489,7 +473,7 @@ nffs_misc_desc_from_flash_area(int id, int *cnt, struct nffs_area_desc *nad)
 
     hf = hal_bsp_flash_dev(fa->fa_device_id);
     for (i = 0; i < hf->hf_sector_cnt; i++) {
-        hf->hf_itf->hff_sector_info(i, &start, &size);
+        hf->hf_itf->hff_sector_info(hf, i, &start, &size);
         if (start >= fa->fa_off && start < fa->fa_off + fa->fa_size) {
             if (first_idx == -1) {
                 first_idx = i;
@@ -507,7 +491,7 @@ nffs_misc_desc_from_flash_area(int id, int *cnt, struct nffs_area_desc *nad)
 
     move_on = 1;
     for (i = first_idx, j = 0; i < last_idx + 1; i++) {
-        hf->hf_itf->hff_sector_info(i, &start, &size);
+        hf->hf_itf->hff_sector_info(hf, i, &start, &size);
         if (move_on) {
             nad[j].nad_flash_id = fa->fa_device_id;
             nad[j].nad_offset = start;

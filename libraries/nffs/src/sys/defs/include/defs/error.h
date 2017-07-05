@@ -17,27 +17,30 @@
  * under the License.
  */
 
-#ifndef H_HAL_FLASH_
-#define H_HAL_FLASH_
+#ifndef H_DEFS_ERROR_
+#define H_DEFS_ERROR_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <inttypes.h>
+#define SYS_EOK      (0)
+#define SYS_ENOMEM   (-1)
+#define SYS_EINVAL   (-2)
+#define SYS_ETIMEOUT (-3)
+#define SYS_ENOENT   (-4)
+#define SYS_EIO      (-5)
+#define SYS_EAGAIN   (-6)
+#define SYS_EACCES   (-7)
+#define SYS_EBUSY    (-8)
+#define SYS_ENODEV   (-9)
+#define SYS_ERANGE   (-10)
 
-int hal_flash_ioctl(uint8_t flash_id, uint32_t cmd, void *args);
-int hal_flash_read(uint8_t flash_id, uint32_t address, void *dst,
-  uint32_t num_bytes);
-int hal_flash_write(uint8_t flash_id, uint32_t address, const void *src,
-  uint32_t num_bytes);
-int hal_flash_erase_sector(uint8_t flash_id, uint32_t sector_address);
-int hal_flash_erase(uint8_t flash_id, uint32_t address, uint32_t num_bytes);
-uint8_t hal_flash_align(uint8_t flash_id);
-int hal_flash_init(void);
+#define SYS_EPERUSER (-65535)
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* H_HAL_FLASH_ */
+
+#endif /* H_DEFS_ERROR_ */

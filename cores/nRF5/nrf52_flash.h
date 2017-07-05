@@ -37,6 +37,7 @@
 #define NRF52_FLASH_H_
 
 #include <stdint.h>
+#include <hal/hal_flash_int.h>
 
 #ifdef __cplusplus
  extern "C" {
@@ -44,9 +45,13 @@
 
 #define NRF52K_FLASH_SECTOR_SZ	4096
 
-int nrf52_flash_init(void);
-int nrf52_flash_erase_sector(uint32_t sector_address);
-int nrf52_flash_write(uint32_t address, const void *src, uint32_t num_bytes);
+// const struct hal_flash*  dev is required for nffs flash interface but not used
+// by nrf52_flash, just simply pass NULL when invoked
+
+int nrf52_flash_init(const struct hal_flash *dev);
+int nrf52_flash_erase_sector(const struct hal_flash *dev, uint32_t sector_address);
+int nrf52_flash_write(const struct hal_flash *dev, uint32_t address, const void *src, uint32_t num_bytes);
+int nrf52k_flash_read(const struct hal_flash *dev, uint32_t address, void *dst, uint32_t num_bytes);
 
 #ifdef __cplusplus
  }

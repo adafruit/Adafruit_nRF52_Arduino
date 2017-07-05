@@ -24,6 +24,12 @@
 extern "C" {
 #endif
 
+// Adafruit
+#define NFFS_SECTOR_NUM               7
+#define NFFS_START_ADDR               0x6D000
+
+#define FLASH_AREA_NFFS               0
+
 /**
  *
  * Provides abstraction of flash regions for type of use.
@@ -51,7 +57,6 @@ struct flash_area {
     uint32_t fa_size;
 };
 
-#if 0
 extern const struct flash_area *flash_map;
 extern int flash_map_entries;
 
@@ -82,6 +87,7 @@ int flash_area_erase(const struct flash_area *, uint32_t off, uint32_t len);
  */
 uint8_t flash_area_align(const struct flash_area *);
 
+#if 0
 /*
  * Given flash map index, return info about sectors within the area.
  */
