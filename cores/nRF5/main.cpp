@@ -16,6 +16,10 @@
 #define ARDUINO_MAIN
 #include "Arduino.h"
 
+#if CFG_DEBUG >= 3
+#include "SEGGER_SYSVIEW.h"
+#endif
+
 #define MEMINFO_INTERVAL    60000
 
 // Weak empty variant initialization function.
@@ -70,6 +74,10 @@ int main( void )
   {
     _loopStacksize = setLoopStacksize();
   }
+
+#if CFG_DEBUG >= 3
+  SEGGER_SYSVIEW_Conf();
+#endif
 
   // Create a task for loop()
   TaskHandle_t  _loopHandle;
