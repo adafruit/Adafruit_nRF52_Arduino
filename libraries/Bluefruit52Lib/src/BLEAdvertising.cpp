@@ -75,7 +75,7 @@ bool BLEAdvertising::start(uint8_t mode)
 
 bool BLEAdvertising::stop(void)
 {
-  // Only allow to call start with Bluefruit.Advertising.start()
+  // Only allow to call stop with Bluefruit.Advertising.stop()
   VERIFY( this == &Bluefruit.Advertising );
   VERIFY_STATUS( sd_ble_gap_adv_stop(), false);
 
