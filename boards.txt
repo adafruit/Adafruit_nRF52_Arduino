@@ -53,7 +53,7 @@ feather52.menu.debug.l1=Level 1 (Error Message)
 feather52.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1 -Os
 feather52.menu.debug.l2=Level 2 (Full Debug)
 feather52.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
-feather52.menu.debug.l3=Level 3 (Realtime Trace, Jlink required)
+feather52.menu.debug.l3=Level 3 (Segger SystemView)
 feather52.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 
 #**********************************************
@@ -85,5 +85,5 @@ feather52.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 #metro52.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1 -Os
 #metro52.menu.debug.l2=Level 2 (Full Debug)
 #metro52.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
-#metro52.menu.debug.l3=Level 3 (Realtime Trace, Jlink required)
+#metro52.menu.debug.l3=Level 3 (Segger SystemView)
 #metro52.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Og
