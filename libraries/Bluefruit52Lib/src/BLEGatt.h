@@ -89,7 +89,7 @@ class BLEGatt
       BLEClientCharacteristic* chr_list[BLE_GATT_MAX_CLIENT_CHARS];
     }_client;
 
-//    AdaMsg             _adamsg;
+    AdaMsg             _adamsg;
 };
 
 #endif /* BLEGATT_H_ */

@@ -50,6 +50,9 @@ class BLEGap
     bool getTxPacket(void);
     bool getTxPacket(uint16_t conn_handle);
 
+    uint16_t getPeerDevName(char* buf, uint16_t bufsize);
+    uint16_t getPeerDevName(uint16_t conn_handle, char* buf, uint16_t bufsize);
+
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal

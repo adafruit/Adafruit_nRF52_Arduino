@@ -38,7 +38,7 @@
 
 
 BLEGatt::BLEGatt(void)
-  //: _adamsg()
+  : _adamsg()
 {
   varclr(&_server);
   varclr(&_client);
@@ -46,17 +46,20 @@ BLEGatt::BLEGatt(void)
 
 uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffer, uint16_t bufsize, uint16_t start_hdl, uint16_t end_hdl)
 {
-#if 0
+  int32_t count = 0;
   ble_gattc_handle_range_t hdl_range = { .start_handle = start_hdl, .end_handle = end_hdl };
 
+  _adamsg.begin(true);
   _adamsg.prepare(buffer, bufsize);
-  VERIFY_STATUS( sd_ble_gattc_char_value_by_uuid_read(conn_hdl, &bleuuid._uuid, &hdl_range), 0);
 
-  int32_t count = _adamsg.waitUntilComplete(BLE_GENERIC_TIMEOUT);
+  if( NRF_SUCCESS == sd_ble_gattc_char_value_by_uuid_read(conn_hdl, &bleuuid._uuid, &hdl_range) )
+  {
+    count = _adamsg.waitUntilComplete(BLE_GENERIC_TIMEOUT);
+  }
+
+  _adamsg.stop();
+
   return (count < 0) ? 0 : count;
-#endif
-
-  return 0;
 }
 
 void BLEGatt::_eventHandler(ble_evt_t* evt)
@@ -94,7 +97,6 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
     for(int i=0; i<_client.svc_count; i++) _client.svc_list[i]->disconnect();
   }
 
-#if 0
   // GATTC Read Characteristic by UUID procedure
   if ( evt->header.evt_id == BLE_GATTC_EVT_CHAR_VAL_BY_UUID_READ_RSP )
   {
@@ -104,10 +106,10 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
     PRINT_INT(rd_rsp->value_len);
     if (rd_rsp->count)
     {
-      _adamsg.feed(rd_rsp->handle_value[0].p_value, rd_rsp->value_len)
+      _adamsg.feed(rd_rsp->handle_value[0].p_value, rd_rsp->value_len);
+      _adamsg.complete();
     }
   }
-#endif
 }
 
 /*------------------------------------------------------------------*/
