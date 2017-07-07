@@ -47,7 +47,7 @@ class AdaMsg
   public:
     uint8_t*          buffer;
     uint16_t          remaining;
-    volatile uint16_t          xferlen;
+    volatile uint16_t xferlen;
 
     AdaMsg(void);
 
