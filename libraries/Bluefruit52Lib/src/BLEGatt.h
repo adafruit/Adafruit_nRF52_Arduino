@@ -48,7 +48,7 @@
 
 #define BLE_GATT_MAX_SERVER_CHARS        40
 
-#define BLE_GATT_MAX_CLIENT_SERVICE      10
+#define BLE_GATT_MAX_CLIENT_SERVICE      20
 #define BLE_GATT_MAX_CLIENT_CHARS        30
 
 

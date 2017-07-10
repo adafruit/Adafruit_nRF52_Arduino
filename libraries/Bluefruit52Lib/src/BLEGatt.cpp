@@ -70,6 +70,9 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
 
 void BLEGatt::_eventHandler(ble_evt_t* evt)
 {
+  // conn handle has fixed offset regardless of event type
+  const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
+
   // Server Characteristics
   for(int i=0; i<_server.chr_count; i++)
   {
@@ -79,28 +82,37 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
   // Client Characteristics
   for(int i=0; i<_client.chr_count; i++)
   {
-    bool matched = false;
-
-    switch(evt->header.evt_id)
+    if ( evt_conn_hdl == _client.chr_list[i]->connHandle() )
     {
-      case BLE_GATTC_EVT_HVX:
-      case BLE_GATTC_EVT_WRITE_RSP:
-      case BLE_GATTC_EVT_READ_RSP:
-        // write & read & hvc response's handle has same offset from the struct
-        matched = (_client.chr_list[i]->_chr.handle_value == evt->evt.gattc_evt.params.write_rsp.handle);
-      break;
+      bool matched = false;
 
-      default: break;
+      switch(evt->header.evt_id)
+      {
+        case BLE_GATTC_EVT_HVX:
+        case BLE_GATTC_EVT_WRITE_RSP:
+        case BLE_GATTC_EVT_READ_RSP:
+          // write & read & hvc response's handle has same offset from the struct
+          matched = (_client.chr_list[i]->_chr.handle_value == evt->evt.gattc_evt.params.write_rsp.handle);
+          break;
+
+        default: break;
+      }
+
+      // invoke charactersistic handler if matched
+      if ( matched ) _client.chr_list[i]->_eventHandler(evt);
     }
-
-    // invoke charactersistic handler if matched
-    if ( matched ) _client.chr_list[i]->_eventHandler(evt);
   }
 
-  // disconnect Client Service
+  // disconnect Client Service of the disconnected handle
   if ( evt->header.evt_id == BLE_GAP_EVT_DISCONNECTED )
   {
-    for(int i=0; i<_client.svc_count; i++) _client.svc_list[i]->disconnect();
+    for(int i=0; i<_client.svc_count; i++)
+    {
+      if ( evt_conn_hdl == _client.svc_list[i]->_conn_hdl)
+      {
+        _client.svc_list[i]->disconnect();
+      }
+    }
   }
 
   // GATTC Read Characteristic by UUID procedure
