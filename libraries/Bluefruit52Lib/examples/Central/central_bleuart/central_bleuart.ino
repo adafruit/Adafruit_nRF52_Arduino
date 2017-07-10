@@ -21,14 +21,14 @@
 BLEClientDis  clientDis;
 BLEClientUart clientUart;
 
-void setup() 
+void setup()
 {
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 Central BLEUART Example");
   Serial.println("-----------------------------------");
   
-  // up to 1 peripheral conn and 1 central conn
+  // Enable both peripheral and central
   Bluefruit.begin(true, true);
   Bluefruit.setName("Bluefruit52");
 
@@ -39,7 +39,7 @@ void setup()
   clientUart.begin();
   clientUart.setRxCallback(uart_rx_callback);
 
-  // Increase BLink rate to different from PrPh advertising mode 
+  // Increase Blink rate to different from PrPh advertising mode
   Bluefruit.setConnLedInterval(250);
 
   // Callbacks for Central
@@ -51,6 +51,10 @@ void setup()
   Bluefruit.Central.startScanning();
 }
 
+/**
+ * Callback invoked when scanner pick up an advertising data
+ * @param report Structural advertising data
+ */
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
   // Check if advertising contain BleUart service
@@ -65,6 +69,10 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   }
 }
 
+/**
+ * Callback invoked when an connection is established
+ * @param conn_handle
+ */
 void connect_callback(uint16_t conn_handle)
 {
   Serial.println("Connected");
@@ -110,6 +118,11 @@ void connect_callback(uint16_t conn_handle)
   }  
 }
 
+/**
+ * Callback invoked when a connection is dropped
+ * @param conn_handle
+ * @param reason
+ */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
   (void) conn_handle;
