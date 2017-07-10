@@ -103,7 +103,7 @@ void loop()
 void connect_callback(void)
 {
   char central_name[32] = { 0 };
-  Bluefruit.Gap.getPeerDevName(central_name, sizeof(central_name));
+  Bluefruit.Gap.getPeerName(central_name, sizeof(central_name));
 
   Serial.print("Connected to ");
   Serial.println(central_name);
