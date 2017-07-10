@@ -12,6 +12,8 @@
 - Change pin in hwpwm and hid_camerashutter sketches
 - Update nffs code to mynewt v1.0.0
 - Add Realtrace support using Segger Sysview
+- Implement Gatt readCharByUuid()
+- Implement Gap getPeerName()
 
 ## 0.6.0
 
