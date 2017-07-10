@@ -156,7 +156,11 @@ void setupHRM(void)
 
 void connect_callback(void)
 {
-  Serial.println("Connected");
+  char central_name[32] = { 0 };
+  Bluefruit.Gap.getPeerName(central_name, sizeof(central_name));
+
+  Serial.print("Connected to ");
+  Serial.println(central_name);
 }
 
 void disconnect_callback(uint8_t reason)

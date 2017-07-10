@@ -115,7 +115,13 @@ void setupAdv(void)
 
 void connect_callback(void)
 {
-  Serial.println("Connected ! Please select 'Uart' tab and send any characters");
+  char central_name[32] = { 0 };
+  Bluefruit.Gap.getPeerName(central_name, sizeof(central_name));
+
+  Serial.print("Connected to ");
+  Serial.println(central_name);
+
+  Serial.println("Please select 'Uart' tab and send any characters");
 }
 
 
