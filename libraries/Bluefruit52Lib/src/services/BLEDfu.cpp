@@ -131,7 +131,7 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
 
       if ( !Bluefruit.connPaired() )
       {
-        peer_data->addr  = Bluefruit.peerAddr();
+        peer_data->addr  = Bluefruit.getPeerAddr();
       }else
       {
         peer_data->addr    = Bluefruit._bond_data.peer_id.id_addr_info;

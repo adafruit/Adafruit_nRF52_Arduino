@@ -47,11 +47,16 @@ class BLEGap
   public:
     BLEGap(void);
 
-    bool getTxPacket(void);
-    bool getTxPacket(uint16_t conn_handle);
+    bool connected(uint16_t conn_handle);
+
+    uint8_t getPeerAddr(uint16_t conn_handle, uint8_t addr[6]);
+    ble_gap_addr_t getPeerAddr(uint16_t conn_handle);
 
     uint16_t getPeerName(char* buf, uint16_t bufsize);
     uint16_t getPeerName(uint16_t conn_handle, char* buf, uint16_t bufsize);
+
+    bool getTxPacket(void);
+    bool getTxPacket(uint16_t conn_handle);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
@@ -62,7 +67,15 @@ class BLEGap
 
   private:
     // Array of TX Packet semaphore, indexed by connection handle
-    SemaphoreHandle_t _txpacket_sem[BLE_GAP_MAX_CONN];
+    // Peer info where conn_handle serves as index
+    typedef struct {
+      bool connected;
+      ble_gap_addr_t addr;
+
+      SemaphoreHandle_t txpacket_sem;
+    } gap_peer_t;
+
+    gap_peer_t _peers[BLE_GAP_MAX_CONN];
 };
 
 #endif /* BLEGAP_H_ */

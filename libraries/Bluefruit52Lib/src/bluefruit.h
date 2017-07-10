@@ -130,7 +130,8 @@ class AdafruitBluefruit
     bool     requestPairing    (void);
     void     clearBonds        (void);
 
-    ble_gap_addr_t peerAddr(void);
+    ble_gap_addr_t getPeerAddr(void);
+    uint8_t        getPeerAddr(uint8_t addr[6]);
 
     /*------------------------------------------------------------------*/
     /* Callbacks
@@ -177,8 +178,6 @@ public: // TODO temporary for bledfu to load bonding data
 
 private:
     ble_gap_sec_params_t _sec_param;
-
-    ble_gap_addr_t    _peer_addr;
 
 COMMENT_OUT(
     uint8_t _auth_type;

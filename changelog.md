@@ -2,18 +2,26 @@
 
 ## 0.6.5
 
+### Core
+
 - Fix setName() issue
-- Add Low Level format sketch for filesystem: `libraries/nffs/examples/EraseNffs`
 - Add SRAM usage when compiling
 - Reduce Stack size from 3KB to 2KB, and functions dbgStackUsed(), dbgStackTotal() for dynamic stack usage
-- Updated for latest Bluefruit LE Connect version with RGBW support
 - Fix #48 SPI & I2C warnings
 - Change board define from ARDUINO_FEATHER52 to ARDUINO_NRF52_FEATHER (ARDUINO_FEATHER52 still exists for backward comaptiable)
 - Change pin in hwpwm and hid_camerashutter sketches
 - Update nffs code to mynewt v1.0.0
-- Add Realtrace support using Segger Sysview
+- Add Event recording support using Segger Sysview
+
+### BLE
+
+- Updated for latest Bluefruit LE Connect version with RGBW support
 - Implement Gatt readCharByUuid()
 - Implement Gap getPeerName()
+
+### New Examples
+
+- Add Low Level format sketch for filesystem: `libraries/nffs/examples/EraseNffs`
 
 ## 0.6.0
 

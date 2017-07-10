@@ -339,9 +339,14 @@ uint16_t AdafruitBluefruit::connInterval(void)
   return _conn_interval;
 }
 
-ble_gap_addr_t AdafruitBluefruit::peerAddr(void)
+ble_gap_addr_t AdafruitBluefruit::getPeerAddr(void)
 {
-  return _peer_addr;
+  return Gap.getPeerAddr(_conn_hdl);
+}
+
+uint8_t AdafruitBluefruit::getPeerAddr(uint8_t addr[6])
+{
+  return Gap.getPeerAddr(_conn_hdl, addr);
 }
 
 COMMENT_OUT (
@@ -488,7 +493,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 
           _conn_hdl      = evt->evt.gap_evt.conn_handle;
           _conn_interval = para->conn_params.min_conn_interval;
-          _peer_addr     = para->peer_addr;
 
           // Connection interval set by Central is out of preferred range
           // Try to negotiate with Central using our preferred values
@@ -520,7 +524,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
         _bonded   = false;
-        varclr(&_peer_addr);
 
         if ( _discconnect_cb ) _discconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
 

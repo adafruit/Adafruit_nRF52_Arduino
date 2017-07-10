@@ -38,7 +38,23 @@
 
 BLEGap::BLEGap(void)
 {
-  for(int i=0; i<BLE_GAP_MAX_CONN; i++) _txpacket_sem[i] = NULL;
+  varclr(&_peers);
+}
+
+bool BLEGap::connected(uint16_t conn_handle)
+{
+  return _peers[conn_handle].connected;
+}
+
+uint8_t BLEGap::getPeerAddr(uint16_t conn_handle, uint8_t addr[6])
+{
+  memcpy(addr, _peers[conn_handle].addr.addr, BLE_GAP_ADDR_LEN);
+  return _peers[conn_handle].addr.addr_type;
+}
+
+ble_gap_addr_t BLEGap::getPeerAddr(uint16_t conn_handle)
+{
+  return _peers[conn_handle].addr;
 }
 
 bool BLEGap::getTxPacket(void)
@@ -48,9 +64,9 @@ bool BLEGap::getTxPacket(void)
 
 bool BLEGap::getTxPacket(uint16_t conn_handle)
 {
-  VERIFY( (conn_handle < BLE_GAP_MAX_CONN) && (_txpacket_sem[conn_handle] != NULL) );
+  VERIFY( (conn_handle < BLE_GAP_MAX_CONN) && (_peers[conn_handle].txpacket_sem != NULL) );
 
-  return xSemaphoreTake(_txpacket_sem[conn_handle], ms2tick(BLE_GENERIC_TIMEOUT));
+  return xSemaphoreTake(_peers[conn_handle].txpacket_sem, ms2tick(BLE_GENERIC_TIMEOUT));
 }
 
 uint16_t BLEGap::getPeerName(char* buf, uint16_t bufsize)
@@ -63,33 +79,42 @@ uint16_t BLEGap::getPeerName(uint16_t conn_handle, char* buf, uint16_t bufsize)
   return Bluefruit.Gatt.readCharByUuid(conn_handle, BLEUuid(BLE_UUID_GAP_CHARACTERISTIC_DEVICE_NAME), buf, bufsize);
 }
 
+/**
+ * Event handler
+ * @param evt
+ */
 void BLEGap::_eventHandler(ble_evt_t* evt)
 {
   // conn handle has fixed offset regardless of event type
   const uint16_t conn_handle = evt->evt.common_evt.conn_handle;
 
+  gap_peer_t* peer = &_peers[conn_handle];
+
   switch(evt->header.evt_id)
   {
     case BLE_GAP_EVT_CONNECTED:
-    {
+      peer->connected = true;
+      peer->addr      = evt->evt.gap_evt.params.connected.peer_addr;
+
       // Init transmission buffer for notification
       uint8_t txbuf_max;
       (void) sd_ble_tx_packet_count_get(conn_handle, &txbuf_max);
-      _txpacket_sem[conn_handle] = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
-    }
+      peer->txpacket_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
-      vSemaphoreDelete( _txpacket_sem[conn_handle] );
-      _txpacket_sem[conn_handle] = NULL;
+      peer->connected = false;
+
+      vSemaphoreDelete( peer->txpacket_sem );
+      peer->txpacket_sem = NULL;
     break;
 
     case BLE_EVT_TX_COMPLETE:
-      if ( _txpacket_sem[conn_handle] )
+      if ( peer->txpacket_sem )
       {
         for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
         {
-          xSemaphoreGive(_txpacket_sem[conn_handle]);
+          xSemaphoreGive(peer->txpacket_sem);
         }
       }
     break;

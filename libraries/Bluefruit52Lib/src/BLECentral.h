@@ -81,8 +81,10 @@ class BLECentral
                      uint16_t min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT,
                      uint16_t max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT);
 
+    // Check if connected to a specific peripheral
+    bool     connected  (uint16_t conn_handle);
+    // Check if connected to any peripherals
     bool     connected  (void);
-    uint16_t connHandle (void);
 
     /*------------------------------------------------------------------*/
     /* CALLBACKS

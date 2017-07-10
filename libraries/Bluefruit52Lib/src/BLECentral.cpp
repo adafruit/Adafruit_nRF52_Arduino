@@ -183,14 +183,33 @@ bool BLECentral::connect(const ble_gap_evt_adv_report_t* adv_report, uint16_t mi
   return connect(&adv_report->peer_addr, min_conn_interval, max_conn_interval);
 }
 
-bool BLECentral::connected(void)
+/**
+ * Check if connected to a specific peripheral
+ * @param conn_handle
+ * @return
+ */
+bool BLECentral::connected(uint16_t conn_handle)
 {
-  return (_conn_hdl != BLE_CONN_HANDLE_INVALID);
+  return Bluefruit.Gap.connected(conn_handle);
 }
 
-uint16_t BLECentral::connHandle (void)
+/**
+ * Check if connected to ANY peripherals
+ * @param conn_handle
+ * @return
+ */
+bool BLECentral::connected(void)
 {
-  return _conn_hdl;
+  for (uint8_t conn=0; conn<BLE_GAP_MAX_CONN; conn++)
+  {
+    // skip Peripherl Role handle
+    if (conn != Bluefruit.connHandle() )
+    {
+      if ( Bluefruit.Gap.connected(conn) ) return true;
+    }
+  }
+
+  return false;
 }
 
 void BLECentral::setConnectCallback( connect_callback_t fp)
