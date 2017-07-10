@@ -61,6 +61,7 @@ class BLEClientCharacteristic
 
     void begin(BLEClientService* parent_svc = NULL);
 
+    uint16_t connHandle(void);
     uint16_t valueHandle(void);
     uint8_t  properties(void);
     BLEClientService& parentService(void);
@@ -93,7 +94,7 @@ class BLEClientCharacteristic
 
     BLEClientService* _service;
     notify_cb_t        _notify_cb;
-    bool               _use_AdaCallback; // whether callback is invoked in seperated task with AdaCallback
+    bool               _use_AdaCallback; // whether callback is invoked in separated task with AdaCallback
 
     AdaMsg             _adamsg;
 

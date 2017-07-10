@@ -467,6 +467,8 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   // conn handle has fixed offset regardless of event type
   const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
 
+  LOG_LV2(BLE, "Conn Handle = %d", evt_conn_hdl);
+
   // GAP handler
   Gap._eventHandler(evt);
 
@@ -650,7 +652,15 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   }
 
   // Central Event Handler
-  if (_central_enabled) Central._event_handler(evt);
+  if (_central_enabled)
+  {
+    // Skip if not central connection
+    if (evt_conn_hdl != _conn_hdl ||
+        evt_conn_hdl == BLE_CONN_HANDLE_INVALID)
+    {
+      Central._event_handler(evt);
+    }
+  }
 
   // Discovery Event Handler
   if ( Discovery.begun() ) Discovery._event_handler(evt);

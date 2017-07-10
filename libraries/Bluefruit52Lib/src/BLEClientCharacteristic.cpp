@@ -93,6 +93,11 @@ void BLEClientCharacteristic::useAdaCallback(bool enabled)
   _use_AdaCallback = enabled;
 }
 
+uint16_t BLEClientCharacteristic::connHandle(void)
+{
+  return _service->connHandle();
+}
+
 uint16_t BLEClientCharacteristic::valueHandle(void)
 {
   return _chr.handle_value;
