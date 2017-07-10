@@ -47,6 +47,8 @@
 #define BLE_CENTRAL_MAX_CONN             4
 #define BLE_CENTRAL_MAX_SECURE_CONN      1 // should be enough
 
+#define BLE_MAX_CONN                     (BLE_CENTRAL_MAX_CONN+BLE_PRPH_MAX_CONN)
+
 #include "BLEUuid.h"
 #include "BLEAdvertising.h"
 #include "BLECharacteristic.h"

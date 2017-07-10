@@ -42,8 +42,6 @@
  */
 BLECentral::BLECentral(void)
 {
-  _conn_hdl    = BLE_CONN_HANDLE_INVALID;
-
   _scan_cb     = NULL;
   _scan_param  = (ble_gap_scan_params_t) {
     .active      = 1,
@@ -200,7 +198,7 @@ bool BLECentral::connected(uint16_t conn_handle)
  */
 bool BLECentral::connected(void)
 {
-  for (uint8_t conn=0; conn<BLE_GAP_MAX_CONN; conn++)
+  for (uint8_t conn=0; conn<BLE_MAX_CONN; conn++)
   {
     // skip Peripherl Role handle
     if (conn != Bluefruit.connHandle() )
@@ -232,66 +230,55 @@ void BLECentral::_event_handler(ble_evt_t* evt)
   // conn handle has fixed offset regardless of event type
   const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
 
-  /* Only handle Central events with matched connection handle
-   * or a few special one
-   * - Connected event
-   * - Advertising Report
-   * - Advertising timeout (could be connected and advertising at the same time)
+  /* PrPh handle connection is already filtered. Only handle Central events or
+   * connection handle is BLE_CONN_HANDLE_INVALID (e.g BLE_GAP_EVT_ADV_REPORT)
    */
-  if ( evt_conn_hdl       == _conn_hdl              ||
-       evt->header.evt_id == BLE_GAP_EVT_CONNECTED  ||
-       evt->header.evt_id == BLE_GAP_EVT_ADV_REPORT ||
-       evt->header.evt_id == BLE_GAP_EVT_TIMEOUT )
+  switch ( evt->header.evt_id  )
   {
-    switch ( evt->header.evt_id  )
+    case BLE_GAP_EVT_ADV_REPORT:
     {
-      case BLE_GAP_EVT_ADV_REPORT:
-      {
-        ble_gap_evt_adv_report_t* adv_report = &evt->evt.gap_evt.params.adv_report;
-        if (_scan_cb) _scan_cb(adv_report);
-      }
-      break;
-
-      case BLE_GAP_EVT_CONNECTED:
-      {
-        ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
-
-        if (para->role == BLE_GAP_ROLE_CENTRAL)
-        {
-          Bluefruit.stopConnLed();
-          if (Bluefruit._led_conn) ledOn(LED_BLUE);
-
-          // TODO multiple connections
-          _conn_hdl = evt->evt.gap_evt.conn_handle;
-
-          if ( _connect_cb )
-          {
-            ada_callback(NULL, _connect_cb,  evt->evt.gap_evt.conn_handle);
-          }
-        }
-      }
-      break;
-
-      case BLE_GAP_EVT_DISCONNECTED:
-        if (Bluefruit._led_conn)  ledOff(LED_BLUE);
-
-        _conn_hdl = BLE_CONN_HANDLE_INVALID;
-
-        if ( _disconnect_cb ) _disconnect_cb(evt_conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
-
-        startScanning();
-      break;
-
-      case BLE_GAP_EVT_TIMEOUT:
-        if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_SCAN)
-        {
-          // TODO Advance Scanning
-          // Restart Scanning
-          startScanning();
-        }
-      break;
-
-      default: break;
+      // evt_conn_hdl is equal to BLE_CONN_HANDLE_INVALID
+      ble_gap_evt_adv_report_t* adv_report = &evt->evt.gap_evt.params.adv_report;
+      if (_scan_cb) _scan_cb(adv_report);
     }
+    break;
+
+    case BLE_GAP_EVT_CONNECTED:
+    {
+      ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
+
+      if (para->role == BLE_GAP_ROLE_CENTRAL)
+      {
+        Bluefruit.stopConnLed();
+        if (Bluefruit._led_conn) ledOn(LED_BLUE);
+
+        if ( _connect_cb )
+        {
+          ada_callback(NULL, _connect_cb,  evt->evt.gap_evt.conn_handle);
+        }
+      }
+    }
+    break;
+
+    case BLE_GAP_EVT_DISCONNECTED:
+      if (Bluefruit._led_conn)  ledOff(LED_BLUE);
+
+      _conn_hdl = BLE_CONN_HANDLE_INVALID;
+
+      if ( _disconnect_cb ) _disconnect_cb(evt_conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
+
+      startScanning();
+    break;
+
+    case BLE_GAP_EVT_TIMEOUT:
+      if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_SCAN)
+      {
+        // TODO Advance Scanning
+        // Restart Scanning
+        startScanning();
+      }
+    break;
+
+    default: break;
   }
 }

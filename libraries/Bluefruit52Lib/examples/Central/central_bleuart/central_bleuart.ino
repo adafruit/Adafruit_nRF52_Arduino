@@ -132,19 +132,24 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   Serial.println("Bluefruit will auto start scanning (default)");
 }
 
-void uart_rx_callback(void)
+/**
+ * Callback invoked when uart received data
+ * @param uart_svc Reference object to the service where the data 
+ * arrived. In this example it is clientUart
+ */
+void uart_rx_callback(BLEClientUart& uart_svc)
 {
   Serial.print("[RX]: ");
   
-  while ( clientUart.available() )
+  while ( uart_svc.available() )
   {
-    Serial.print( (char) clientUart.read() );
+    Serial.print( (char) uart_svc.read() );
   }
 
   Serial.println();
 }
 
-void loop() 
+void loop()
 {
   if ( Bluefruit.Central.connected() )
   {

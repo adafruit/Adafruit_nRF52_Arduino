@@ -40,8 +40,6 @@
 #include "bluefruit_common.h"
 #include "BLEUuid.h"
 
-#define BLE_GAP_MAX_CONN  (BLE_CENTRAL_MAX_CONN+BLE_PRPH_MAX_CONN)
-
 class BLEGap
 {
   public:
@@ -75,7 +73,7 @@ class BLEGap
       SemaphoreHandle_t txpacket_sem;
     } gap_peer_t;
 
-    gap_peer_t _peers[BLE_GAP_MAX_CONN];
+    gap_peer_t _peers[BLE_MAX_CONN];
 };
 
 #endif /* BLEGAP_H_ */

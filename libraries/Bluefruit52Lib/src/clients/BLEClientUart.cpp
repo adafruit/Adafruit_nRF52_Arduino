@@ -50,8 +50,8 @@ bool BLEClientUart::begin(void)
   // Invoke base class begin()
   BLEClientService::begin();
 
-  _rxd.begin();
-  _txd.begin();
+  _rxd.begin(this);
+  _txd.begin(this);
 
   // set up notify callback
   _txd.setNotifyCallback(bleuart_central_notify_cb);
@@ -100,7 +100,7 @@ void bleuart_central_notify_cb(BLEClientCharacteristic& chr, uint8_t* data, uint
   uart_svc._fifo.write(data, len);
 
   // invoke callback
-  if ( uart_svc._rx_cb ) uart_svc._rx_cb();
+  if ( uart_svc._rx_cb ) uart_svc._rx_cb(uart_svc);
 }
 
 /*------------------------------------------------------------------*/

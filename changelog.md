@@ -18,6 +18,8 @@
 - Updated for latest Bluefruit LE Connect version with RGBW support
 - Implement Gatt readCharByUuid()
 - Implement Gap getPeerName()
+- Change Bluefruit.peerAddr() to Bluefruit.getPeerAddr()
+- change rx callback of BLEClientUart
 
 ### New Examples
 

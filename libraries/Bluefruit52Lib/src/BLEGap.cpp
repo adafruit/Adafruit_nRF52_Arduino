@@ -64,7 +64,7 @@ bool BLEGap::getTxPacket(void)
 
 bool BLEGap::getTxPacket(uint16_t conn_handle)
 {
-  VERIFY( (conn_handle < BLE_GAP_MAX_CONN) && (_peers[conn_handle].txpacket_sem != NULL) );
+  VERIFY( (conn_handle < BLE_MAX_CONN) && (_peers[conn_handle].txpacket_sem != NULL) );
 
   return xSemaphoreTake(_peers[conn_handle].txpacket_sem, ms2tick(BLE_GENERIC_TIMEOUT));
 }
