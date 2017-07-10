@@ -28,7 +28,7 @@ void setup()
 
   // Initialize blinkTimer for 1000 ms and start it
   blinkTimer.begin(1000, blink_timer_callback);
-  //blinkTimer.start();
+  blinkTimer.start();
 
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behaviour, but provided
@@ -102,7 +102,11 @@ void loop()
 
 void connect_callback(void)
 {
-  Serial.println("Connected");
+  char central_name[32] = { 0 };
+  Bluefruit.Gap.getPeerDevName(central_name, sizeof(central_name));
+
+  Serial.print("Connected to ");
+  Serial.println(central_name);
 }
 
 void disconnect_callback(uint8_t reason)

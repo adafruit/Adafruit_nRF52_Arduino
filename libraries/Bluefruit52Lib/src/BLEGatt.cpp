@@ -52,12 +52,18 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
   _adamsg.begin(true);
   _adamsg.prepare(buffer, bufsize);
 
-  if( NRF_SUCCESS == sd_ble_gattc_char_value_by_uuid_read(conn_hdl, &bleuuid._uuid, &hdl_range) )
-  {
-    count = _adamsg.waitUntilComplete(BLE_GENERIC_TIMEOUT);
-  }
+  err_t err = sd_ble_gattc_char_value_by_uuid_read(conn_hdl, &bleuuid._uuid, &hdl_range);
 
+  if( NRF_SUCCESS == err )
+  {
+    // Read by uuid could take long if the uuid handle is far from start handle
+    count = _adamsg.waitUntilComplete(5*BLE_GENERIC_TIMEOUT);
+  }else
+  {
+    VERIFY_MESS(err);
+  }
   _adamsg.stop();
+
 
   return (count < 0) ? 0 : count;
 }
@@ -102,8 +108,6 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
   {
     ble_gattc_evt_char_val_by_uuid_read_rsp_t* rd_rsp = &evt->evt.gattc_evt.params.char_val_by_uuid_read_rsp;
 
-    PRINT_INT(rd_rsp->count);
-    PRINT_INT(rd_rsp->value_len);
     if (rd_rsp->count)
     {
       _adamsg.feed(rd_rsp->handle_value[0].p_value, rd_rsp->value_len);
