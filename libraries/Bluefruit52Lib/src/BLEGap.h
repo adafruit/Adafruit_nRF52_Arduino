@@ -53,7 +53,6 @@ class BLEGap
     uint8_t        getPeerAddr(uint16_t conn_handle, uint8_t addr[6]);
     ble_gap_addr_t getPeerAddr(uint16_t conn_handle);
 
-    uint16_t       getPeerName(char* buf, uint16_t bufsize);
     uint16_t       getPeerName(uint16_t conn_handle, char* buf, uint16_t bufsize);
 
     bool           getTxPacket(void);

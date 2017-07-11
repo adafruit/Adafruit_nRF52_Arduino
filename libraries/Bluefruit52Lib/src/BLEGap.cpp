@@ -94,11 +94,6 @@ bool BLEGap::getTxPacket(uint16_t conn_handle)
   return xSemaphoreTake(_peers[conn_handle].txpacket_sem, ms2tick(BLE_GENERIC_TIMEOUT));
 }
 
-uint16_t BLEGap::getPeerName(char* buf, uint16_t bufsize)
-{
-  return getPeerName(Bluefruit.connHandle(), buf, bufsize);
-}
-
 uint16_t BLEGap::getPeerName(uint16_t conn_handle, char* buf, uint16_t bufsize)
 {
   return Bluefruit.Gatt.readCharByUuid(conn_handle, BLEUuid(BLE_UUID_GAP_CHARACTERISTIC_DEVICE_NAME), buf, bufsize);
