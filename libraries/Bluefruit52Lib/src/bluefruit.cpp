@@ -313,12 +313,12 @@ void AdafruitBluefruit::disconnect(void)
 
 void AdafruitBluefruit::setConnectCallback( BLEGap::connect_callback_t fp )
 {
-  Gap.setConnectCallback(fp, false);
+  Gap.setConnectCallback(fp, BLE_GAP_ROLE_PERIPH);
 }
 
 void AdafruitBluefruit::setDisconnectCallback( BLEGap::disconnect_callback_t fp )
 {
-  Gap.setDisconnectCallback(fp, false);
+  Gap.setDisconnectCallback(fp, BLE_GAP_ROLE_PERIPH);
 }
 
 uint16_t AdafruitBluefruit::connHandle(void)
