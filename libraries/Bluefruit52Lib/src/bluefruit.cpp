@@ -527,7 +527,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
         _bonded   = false;
 
-        if ( _disconnect_cb ) _disconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
+        if ( _disconnect_cb ) ada_callback(NULL, _disconnect_cb, evt->evt.gap_evt.params.disconnected.reason);
 
         Advertising.start();
       break;
