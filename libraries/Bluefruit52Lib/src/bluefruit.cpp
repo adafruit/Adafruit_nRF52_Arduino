@@ -35,7 +35,7 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
-#include "AdaCallback.h"
+#include "utility/AdaCallback.h"
 #include <Nffs.h>
 
 #define SVC_CONTEXT_FLAG                 (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)

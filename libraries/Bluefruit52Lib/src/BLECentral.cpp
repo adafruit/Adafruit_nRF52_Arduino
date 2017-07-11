@@ -35,7 +35,7 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
-#include "AdaCallback.h"
+#include "utility/AdaCallback.h"
 
 /**
  * Constructor
