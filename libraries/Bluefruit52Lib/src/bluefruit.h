@@ -85,9 +85,6 @@ extern "C"
 class AdafruitBluefruit
 {
   public:
-    typedef void (*connect_callback_t   ) (void);
-    typedef void (*disconnect_callback_t) (uint8_t reason);
-
     // Constructor
     AdafruitBluefruit(void);
 
@@ -138,8 +135,8 @@ class AdafruitBluefruit
     /*------------------------------------------------------------------*/
     /* Callbacks
      *------------------------------------------------------------------*/
-    void setConnectCallback   ( connect_callback_t    fp);
-    void setDisconnectCallback( disconnect_callback_t fp);
+    void setConnectCallback   ( BLEGap::connect_callback_t    fp);
+    void setDisconnectCallback( BLEGap::disconnect_callback_t fp);
 
     COMMENT_OUT ( bool setPIN(const char* pin); )
 
@@ -186,10 +183,9 @@ COMMENT_OUT(
     char _pin[BLE_GAP_PASSKEY_LEN];
 )
 
-    /*------------- Callbacks -------------*/
-    connect_callback_t    _connect_cb;
-    disconnect_callback_t _disconnect_cb;
-
+    /*------------------------------------------------------------------*/
+    /* INTERNAL USAGE ONLY
+     *------------------------------------------------------------------*/
     bool _addToAdv(bool scan_resp, uint8_t type, const void* data, uint8_t len);
 
     bool _saveBondKeys(void);

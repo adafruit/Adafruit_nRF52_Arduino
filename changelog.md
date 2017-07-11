@@ -1,5 +1,13 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.7.0
+
+### BLE
+
+- Change Bluefruit.peerAddr() to Bluefruit.getPeerAddr()
+- Change BLEClientUart's rx callback
+- Add connection handle to Bluefruit's connect and disconnect callback prototype
+
 ## 0.6.5
 
 ### Core
@@ -18,8 +26,7 @@
 - Updated for latest Bluefruit LE Connect version with RGBW support
 - Implement Gatt readCharByUuid()
 - Implement Gap getPeerName()
-- Change Bluefruit.peerAddr() to Bluefruit.getPeerAddr()
-- change rx callback of BLEClientUart
+
 
 ### New Examples
 

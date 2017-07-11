@@ -35,15 +35,40 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
+#include "utility/AdaCallback.h"
 
 BLEGap::BLEGap(void)
 {
+  varclr(&_prph_cb);
+  varclr(&_central_cb);
   varclr(&_peers);
 }
 
 bool BLEGap::connected(uint16_t conn_handle)
 {
   return _peers[conn_handle].connected;
+}
+
+void BLEGap::setConnectCallback(connect_callback_t fp, bool isCentral)
+{
+  if (isCentral)
+  {
+    _central_cb.connect_cb = fp;
+  }else
+  {
+    _prph_cb.connect_cb = fp;
+  }
+}
+
+void BLEGap::setDisconnectCallback(disconnect_callback_t fp, bool isCentral)
+{
+  if (isCentral)
+  {
+    _central_cb.disconnect_cb = fp;
+  }else
+  {
+    _prph_cb.disconnect_cb = fp;
+  }
 }
 
 uint8_t BLEGap::getPeerAddr(uint16_t conn_handle, uint8_t addr[6])
@@ -93,20 +118,46 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
   switch(evt->header.evt_id)
   {
     case BLE_GAP_EVT_CONNECTED:
+    {
+      ble_gap_evt_connected_t const * para = &evt->evt.gap_evt.params.connected;
+
       peer->connected = true;
-      peer->addr      = evt->evt.gap_evt.params.connected.peer_addr;
+      peer->role      = para->role;
+      peer->addr      = para->peer_addr;
 
       // Init transmission buffer for notification
       uint8_t txbuf_max;
       (void) sd_ble_tx_packet_count_get(conn_handle, &txbuf_max);
       peer->txpacket_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
+
+      // Invoke callback according to the role
+      if ( peer->role == BLE_GAP_ROLE_PERIPH)
+      {
+        if (_prph_cb.connect_cb)  ada_callback(NULL, _prph_cb.connect_cb, conn_handle);
+      }else
+      {
+        if (_central_cb.connect_cb)  ada_callback(NULL, _central_cb.connect_cb, conn_handle);
+      }
+    }
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
+    {
+      ble_gap_evt_disconnected_t const* para = &evt->evt.gap_evt.params.disconnected;
+
       peer->connected = false;
 
       vSemaphoreDelete( peer->txpacket_sem );
       peer->txpacket_sem = NULL;
+
+      if ( peer->role == BLE_GAP_ROLE_PERIPH)
+      {
+        if (_prph_cb.disconnect_cb)  ada_callback(NULL, _prph_cb.disconnect_cb, conn_handle, para->reason);
+      }else
+      {
+        if (_central_cb.disconnect_cb)  ada_callback(NULL, _central_cb.disconnect_cb, conn_handle, para->reason);
+      }
+    }
     break;
 
     case BLE_EVT_TX_COMPLETE:

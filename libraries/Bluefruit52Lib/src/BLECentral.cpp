@@ -51,10 +51,6 @@ BLECentral::BLECentral(void)
     .window      = 0x0050,
     .timeout     = 0, // no timeout
   };
-
-
-  _connect_cb     = NULL;
-  _disconnect_cb = NULL;
 }
 
 void BLECentral::begin(void)
@@ -210,14 +206,14 @@ bool BLECentral::connected(void)
   return false;
 }
 
-void BLECentral::setConnectCallback( connect_callback_t fp)
+void BLECentral::setConnectCallback( BLEGap::connect_callback_t fp)
 {
-  _connect_cb = fp;
+  Bluefruit.Gap.setConnectCallback(fp, true);
 }
 
-void BLECentral::setDisconnectCallback( disconnect_callback_t fp)
+void BLECentral::setDisconnectCallback( BLEGap::disconnect_callback_t fp)
 {
-  _disconnect_cb = fp;
+  Bluefruit.Gap.setDisconnectCallback(fp, true);
 }
 
 
@@ -244,29 +240,21 @@ void BLECentral::_event_handler(ble_evt_t* evt)
     break;
 
     case BLE_GAP_EVT_CONNECTED:
-    {
+    { // Note callback is invoked by BLEGap
       ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
 
       if (para->role == BLE_GAP_ROLE_CENTRAL)
       {
         Bluefruit.stopConnLed();
         if (Bluefruit._led_conn) ledOn(LED_BLUE);
-
-        if ( _connect_cb )
-        {
-          ada_callback(NULL, _connect_cb,  evt->evt.gap_evt.conn_handle);
-        }
       }
     }
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
+      // Note callback is invoked by BLEGap
       if (Bluefruit._led_conn)  ledOff(LED_BLUE);
-
       _conn_hdl = BLE_CONN_HANDLE_INVALID;
-
-      if ( _disconnect_cb ) _disconnect_cb(evt_conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
-
       startScanning();
     break;
 

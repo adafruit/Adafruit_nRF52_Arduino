@@ -120,9 +120,6 @@ COMMENT_OUT(
                 .kdist_own    = { .enc = 1, .id = 1},
                 .kdist_peer   = { .enc = 1, .id = 1},
               };
-
-  _connect_cb    = NULL;
-  _disconnect_cb = NULL;
 }
 
 err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
@@ -314,14 +311,14 @@ void AdafruitBluefruit::disconnect(void)
   }
 }
 
-void AdafruitBluefruit::setConnectCallback   ( connect_callback_t fp )
+void AdafruitBluefruit::setConnectCallback( BLEGap::connect_callback_t fp )
 {
-  _connect_cb = fp;
+  Gap.setConnectCallback(fp, false);
 }
 
-void AdafruitBluefruit::setDisconnectCallback( disconnect_callback_t fp )
+void AdafruitBluefruit::setDisconnectCallback( BLEGap::disconnect_callback_t fp )
 {
-  _disconnect_cb = fp;
+  Gap.setDisconnectCallback(fp, false);
 }
 
 uint16_t AdafruitBluefruit::connHandle(void)
@@ -485,7 +482,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
     switch ( evt->header.evt_id  )
     {
       case BLE_GAP_EVT_CONNECTED:
-      {
+      { // Note callback is invoked by BLEGap
         ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
 
         if (para->role == BLE_GAP_ROLE_PERIPH)
@@ -503,8 +500,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
             // Null, value is set by sd_ble_gap_ppcp_set will be used
             VERIFY_STATUS( sd_ble_gap_conn_param_update(_conn_hdl, NULL), );
           }
-
-          if ( _connect_cb ) ada_callback(NULL, _connect_cb);
         }
       }
       break;
@@ -519,6 +514,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       break;
 
       case BLE_GAP_EVT_DISCONNECTED:
+        // Note callback is invoked by BLEGap
         if (_led_conn)  ledOff(LED_BLUE);
 
         // Save all configured cccd
@@ -526,8 +522,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
         _bonded   = false;
-
-        if ( _disconnect_cb ) ada_callback(NULL, _disconnect_cb, evt->evt.gap_evt.params.disconnected.reason);
 
         Advertising.start();
       break;

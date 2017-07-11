@@ -39,6 +39,9 @@
 #include <Arduino.h>
 #include "bluefruit_common.h"
 
+#include "BLEGap.h"
+#include "BLEGatt.h"
+
 #include "BLEUuid.h"
 #include "BLECharacteristic.h"
 #include "BLEClientCharacteristic.h"
@@ -53,8 +56,6 @@ class BLECentral
 {
   public:
     typedef void (*scan_callback_t       ) (ble_gap_evt_adv_report_t*);
-    typedef void (*connect_callback_t    ) (uint16_t conn_handle);
-    typedef void (*disconnect_callback_t ) (uint16_t conn_handle, uint8_t reason);
 
     BLECentral(void); // Constructor
     void begin(void);
@@ -89,17 +90,14 @@ class BLECentral
     /*------------------------------------------------------------------*/
     /* CALLBACKS
      *------------------------------------------------------------------*/
-    void setConnectCallback   ( connect_callback_t    fp);
-    void setDisconnectCallback( disconnect_callback_t fp);
+    void setConnectCallback   ( BLEGap::connect_callback_t    fp);
+    void setDisconnectCallback( BLEGap::disconnect_callback_t fp);
 
   private:
     uint16_t _conn_hdl;
 
     ble_gap_scan_params_t _scan_param;
     scan_callback_t       _scan_cb;
-
-    connect_callback_t    _connect_cb;
-    disconnect_callback_t _disconnect_cb;
 
     bool  _checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t uuid[], uint8_t uuid_len);
 

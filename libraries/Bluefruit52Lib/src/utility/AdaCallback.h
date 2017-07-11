@@ -61,15 +61,14 @@ static_assert(sizeof(ada_callback_t) == 16, "Incorrect Size");
 /* X Macros expansion
  *------------------------------------------------------------------*/
 #define ADA_CB_LOOKUP(XPAND)  \
+    /* BLEGap  */                                            \
+    XPAND(BLEGap                   , connect_callback_t    ) \
+    XPAND(BLEGap                   , disconnect_callback_t ) \
     /* Bluefruit  */                                         \
-    XPAND(AdafruitBluefruit        , connect_callback_t    ) \
-    XPAND(AdafruitBluefruit        , disconnect_callback_t ) \
     /* Central */                                            \
     XPAND(BLECentral               , scan_callback_t       ) \
-    XPAND(BLECentral               , connect_callback_t    ) \
-    XPAND(BLECentral               , disconnect_callback_t ) \
-    /* Client Characteristic */                             \
-    XPAND(BLEClientCharacteristic , notify_cb_t           ) \
+    /* Client Characteristic */                              \
+    XPAND(BLEClientCharacteristic  , notify_cb_t           ) \
     /*XPAND(BLEClientCharacteristic , indicate_cb_t         )*/ \
 
 #define ADA_CB_ENUM_XPAND(_class, _cbname) \

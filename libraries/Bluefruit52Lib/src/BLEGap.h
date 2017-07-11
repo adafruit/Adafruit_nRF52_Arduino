@@ -43,18 +43,24 @@
 class BLEGap
 {
   public:
+    typedef void (*connect_callback_t    ) (uint16_t conn_handle);
+    typedef void (*disconnect_callback_t ) (uint16_t conn_handle, uint8_t reason);
+
     BLEGap(void);
 
     bool connected(uint16_t conn_handle);
 
-    uint8_t getPeerAddr(uint16_t conn_handle, uint8_t addr[6]);
+    uint8_t        getPeerAddr(uint16_t conn_handle, uint8_t addr[6]);
     ble_gap_addr_t getPeerAddr(uint16_t conn_handle);
 
-    uint16_t getPeerName(char* buf, uint16_t bufsize);
-    uint16_t getPeerName(uint16_t conn_handle, char* buf, uint16_t bufsize);
+    uint16_t       getPeerName(char* buf, uint16_t bufsize);
+    uint16_t       getPeerName(uint16_t conn_handle, char* buf, uint16_t bufsize);
 
-    bool getTxPacket(void);
-    bool getTxPacket(uint16_t conn_handle);
+    bool           getTxPacket(void);
+    bool           getTxPacket(uint16_t conn_handle);
+
+    void setConnectCallback   (connect_callback_t    fp, bool isCentral);
+    void setDisconnectCallback(disconnect_callback_t fp, bool isCentral);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
@@ -64,10 +70,17 @@ class BLEGap
     void _eventHandler(ble_evt_t* evt);
 
   private:
+    struct {
+      connect_callback_t    connect_cb;
+      disconnect_callback_t disconnect_cb;
+    }_prph_cb, _central_cb;
+
     // Array of TX Packet semaphore, indexed by connection handle
     // Peer info where conn_handle serves as index
     typedef struct {
-      bool connected;
+      bool    connected;
+      uint8_t role;
+
       ble_gap_addr_t addr;
 
       SemaphoreHandle_t txpacket_sem;

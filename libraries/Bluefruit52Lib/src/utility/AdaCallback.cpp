@@ -56,19 +56,19 @@ void adafruit_callback_task(void* arg)
 
       switch(cb_data->callback_type)
       {
-        /*------------- Bluefruit -------------*/
-        case AdafruitBluefruit_connect_callback_t:
-          ((AdafruitBluefruit::connect_callback_t) func) ();
+
+        /*------------- BLEGap -------------*/
+        case BLEGap_connect_callback_t:
+          ((BLEGap::connect_callback_t) func) ( (uint16_t) args[0] );
         break;
 
-        case AdafruitBluefruit_disconnect_callback_t:
-          ((AdafruitBluefruit::disconnect_callback_t) func) ( (uint8_t) args[0] );
+        case BLEGap_disconnect_callback_t:
+          ((BLEGap::disconnect_callback_t) func) ( (uint16_t) args[0], (uint8_t) args[1]  );
         break;
+
+        /*------------- Bluefruit -------------*/
 
         /*------------- Central -------------*/
-        case BLECentral_connect_callback_t:
-          ((BLECentral::connect_callback_t) func)( (uint16_t) args[0]);
-        break;
 
         /*------------- Client Service & Chars -------------*/
         case BLEClientCharacteristic_notify_cb_t:
