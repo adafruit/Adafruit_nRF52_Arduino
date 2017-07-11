@@ -37,6 +37,7 @@ void setup()
 
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
+  //Bluefruit.setName(getMcuUniqueID()); // useful testing with multiple central connections
   Bluefruit.setConnectCallback(connect_callback);
   Bluefruit.setDisconnectCallback(disconnect_callback);
 

@@ -30,7 +30,7 @@ void setup()
   
   // Enable both peripheral and central
   Bluefruit.begin(true, true);
-  Bluefruit.setName("Bluefruit52");
+  Bluefruit.setName("Bluefruit52 Central");
 
   // Configure DIS client
   clientDis.begin();

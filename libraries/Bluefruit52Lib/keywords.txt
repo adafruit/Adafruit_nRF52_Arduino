@@ -337,6 +337,15 @@ LED_BLUE	LITERAL1
 LED_BUILTIN	LITERAL1
 LED_CONN	LITERAL1
 
+#######################################
+# BLE Constants (LITERAL1)
+#######################################
+BLE_MAX_CONN	LITERAL1
+BLE_CENTRAL_MAX_CONN	LITERAL1
+BLE_PRPH_MAX_CONN	LITERAL1
+
+BLE_CONN_HANDLE_INVALID	LITERAL1
+
 
 #######################################
 # Characteristic Constants (LITERAL1)
