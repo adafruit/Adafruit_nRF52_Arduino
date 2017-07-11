@@ -73,13 +73,15 @@ void setupAdv(void)
   Bluefruit.ScanResponse.addName();
 }
 
-void connect_callback(void)
+void connect_callback(uint16_t conn_handle)
 {
+  (void) conn_handle;
   Serial.println("Connected");
 }
 
-void disconnect_callback(uint8_t reason)
+void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
+  (void) conn_handle;
   (void) reason;
 
   Serial.println();

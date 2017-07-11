@@ -12,6 +12,10 @@
  any redistribution
 *********************************************************************/
 
+/* This sketch remove the folder that contains the bonding information
+ * used by Bluefruit which is "/adafruit/bond"
+ */
+
 #include <bluefruit.h>
 #include <Nffs.h>
 

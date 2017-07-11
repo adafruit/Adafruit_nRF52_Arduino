@@ -80,12 +80,12 @@ void loop()
   // Your code here
 }
 
-void connect_callback(void)
+void connect_callback(uint16_t conn_handle)
 {
   Serial.println("Connected");
   
   Serial.print("Discovering DIS ... ");
-  if ( bleClientDis.discover( Bluefruit.connHandle()) )
+  if ( bleClientDis.discover(conn_handle) )
   {
     Serial.println("Discovered");
     
@@ -109,7 +109,7 @@ void connect_callback(void)
   }
 
   Serial.print("Discovering ANCS ... ");
-  if ( bleancs.discover( Bluefruit.connHandle() ) )
+  if ( bleancs.discover(conn_handle) )
   {
     Serial.println("Discovered");
 
@@ -174,7 +174,7 @@ void ancs_notification_callback(AncsNotification_t* notif)
   }
 }
 
-void disconnect_callback(uint8_t reason)
+void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
   (void) reason;
 

@@ -30,8 +30,8 @@ uint8_t  bps = 0;
 // Advanced function prototypes
 void setupAdv(void);
 void setupHRM(void);
-void connect_callback(void);
-void disconnect_callback(uint8_t reason);
+void connect_callback(uint16_t conn_handle);
+void disconnect_callback(uint16_t conn_handle, uint8_t reason);
 void cccd_callback(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
 
 void blink_timer_callback(TimerHandle_t xTimerID);
@@ -154,17 +154,18 @@ void setupHRM(void)
   bslc.write(2);    // Set the characteristic to 'Wrist' (2)
 }
 
-void connect_callback(void)
+void connect_callback(uint16_t conn_handle)
 {
   char central_name[32] = { 0 };
-  Bluefruit.Gap.getPeerName(central_name, sizeof(central_name));
+  Bluefruit.Gap.getPeerName(conn_handle, central_name, sizeof(central_name));
 
   Serial.print("Connected to ");
   Serial.println(central_name);
 }
 
-void disconnect_callback(uint8_t reason)
+void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
+  (void) conn_handle;
   (void) reason;
 
   Serial.println("Disconnected");

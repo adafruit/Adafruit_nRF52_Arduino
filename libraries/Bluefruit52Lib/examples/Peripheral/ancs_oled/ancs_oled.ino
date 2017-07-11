@@ -229,7 +229,7 @@ void displayNotification(int index)
  * Connect Callback
  *  Perform ANCS discovering, request Pairing
  */
-void connect_callback(void)
+void connect_callback(uint16_t conn_handle)
 {
   oled.clearDisplay();
   oled.setCursor(0, 0);
@@ -237,7 +237,7 @@ void connect_callback(void)
   oled.print("Discovering ... ");
   oled.display();
   
-  if ( bleancs.discover( Bluefruit.connHandle() ) )
+  if ( bleancs.discover( conn_handle ) )
   {
     oled.println("OK");
 
@@ -346,8 +346,9 @@ void ancs_notification_callback(AncsNotification_t* notif)
   }
 }
 
-void disconnect_callback(uint8_t reason)
+void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
+  (void) conn_handle;
   (void) reason;
 
   // reset notification array

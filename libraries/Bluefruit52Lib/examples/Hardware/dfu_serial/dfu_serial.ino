@@ -14,7 +14,10 @@
 
 #include <Arduino.h>
 
-
+/*
+ * This sketch will reset the board into Serial DFU mode
+ */
+ 
 void setup() 
 {
   enterSerialDfu();
