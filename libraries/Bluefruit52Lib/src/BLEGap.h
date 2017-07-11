@@ -56,8 +56,8 @@ class BLEGap
     uint16_t       getPeerName(uint16_t conn_handle, char* buf, uint16_t bufsize);
     bool           getTxPacket(uint16_t conn_handle);
 
-    void setConnectCallback   (connect_callback_t    fp, bool isCentral);
-    void setDisconnectCallback(disconnect_callback_t fp, bool isCentral);
+    void setConnectCallback   (connect_callback_t    fp, uint8_t role);
+    void setDisconnectCallback(disconnect_callback_t fp, uint8_t role);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY

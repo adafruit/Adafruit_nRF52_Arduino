@@ -49,25 +49,25 @@ bool BLEGap::connected(uint16_t conn_handle)
   return _peers[conn_handle].connected;
 }
 
-void BLEGap::setConnectCallback(connect_callback_t fp, bool isCentral)
+void BLEGap::setConnectCallback(connect_callback_t fp, uint8_t role)
 {
-  if (isCentral)
-  {
-    _central_cb.connect_cb = fp;
-  }else
+  if (role == BLE_GAP_ROLE_PERIPH)
   {
     _prph_cb.connect_cb = fp;
+  }else
+  {
+    _central_cb.connect_cb = fp;
   }
 }
 
-void BLEGap::setDisconnectCallback(disconnect_callback_t fp, bool isCentral)
+void BLEGap::setDisconnectCallback(disconnect_callback_t fp, uint8_t role)
 {
-  if (isCentral)
-  {
-    _central_cb.disconnect_cb = fp;
-  }else
+  if (role == BLE_GAP_ROLE_PERIPH)
   {
     _prph_cb.disconnect_cb = fp;
+  }else
+  {
+    _central_cb.disconnect_cb = fp;
   }
 }
 

@@ -208,12 +208,12 @@ bool BLECentral::connected(void)
 
 void BLECentral::setConnectCallback( BLEGap::connect_callback_t fp)
 {
-  Bluefruit.Gap.setConnectCallback(fp, true);
+  Bluefruit.Gap.setConnectCallback(fp, BLE_GAP_ROLE_CENTRAL);
 }
 
 void BLECentral::setDisconnectCallback( BLEGap::disconnect_callback_t fp)
 {
-  Bluefruit.Gap.setDisconnectCallback(fp, true);
+  Bluefruit.Gap.setDisconnectCallback(fp, BLE_GAP_ROLE_CENTRAL);
 }
 
 
