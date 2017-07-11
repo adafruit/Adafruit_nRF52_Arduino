@@ -82,11 +82,6 @@ ble_gap_addr_t BLEGap::getPeerAddr(uint16_t conn_handle)
   return _peers[conn_handle].addr;
 }
 
-bool BLEGap::getTxPacket(void)
-{
-  return getTxPacket( Bluefruit.connHandle() );
-}
-
 bool BLEGap::getTxPacket(uint16_t conn_handle)
 {
   VERIFY( (conn_handle < BLE_MAX_CONN) && (_peers[conn_handle].txpacket_sem != NULL) );

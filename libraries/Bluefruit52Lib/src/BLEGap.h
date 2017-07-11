@@ -54,8 +54,6 @@ class BLEGap
     ble_gap_addr_t getPeerAddr(uint16_t conn_handle);
 
     uint16_t       getPeerName(uint16_t conn_handle, char* buf, uint16_t bufsize);
-
-    bool           getTxPacket(void);
     bool           getTxPacket(uint16_t conn_handle);
 
     void setConnectCallback   (connect_callback_t    fp, bool isCentral);
