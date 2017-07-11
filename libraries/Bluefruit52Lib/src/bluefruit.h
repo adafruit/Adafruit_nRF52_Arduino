@@ -188,7 +188,7 @@ COMMENT_OUT(
 
     /*------------- Callbacks -------------*/
     connect_callback_t    _connect_cb;
-    disconnect_callback_t _discconnect_cb;
+    disconnect_callback_t _disconnect_cb;
 
     bool _addToAdv(bool scan_resp, uint8_t type, const void* data, uint8_t len);
 

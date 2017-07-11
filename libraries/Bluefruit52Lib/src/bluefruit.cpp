@@ -121,8 +121,8 @@ COMMENT_OUT(
                 .kdist_peer   = { .enc = 1, .id = 1},
               };
 
-  _connect_cb     = NULL;
-  _discconnect_cb = NULL;
+  _connect_cb    = NULL;
+  _disconnect_cb = NULL;
 }
 
 err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
@@ -321,7 +321,7 @@ void AdafruitBluefruit::setConnectCallback   ( connect_callback_t fp )
 
 void AdafruitBluefruit::setDisconnectCallback( disconnect_callback_t fp )
 {
-  _discconnect_cb = fp;
+  _disconnect_cb = fp;
 }
 
 uint16_t AdafruitBluefruit::connHandle(void)
@@ -527,7 +527,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
         _bonded   = false;
 
-        if ( _discconnect_cb ) _discconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
+        if ( _disconnect_cb ) _disconnect_cb(evt->evt.gap_evt.params.disconnected.reason);
 
         Advertising.start();
       break;
