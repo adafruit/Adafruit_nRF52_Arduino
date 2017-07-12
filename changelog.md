@@ -4,12 +4,20 @@
 
 ### BLE
 
-- Change Bluefruit.peerAddr() to Bluefruit.getPeerAddr()
+- Rename Bluefruit.peerAddr() to Bluefruit.getPeerAddr()
 - Change BLEClientUart's rx callback
 - Add connection handle to Bluefruit's connect and disconnect callback prototype
-- BLEAdvertising enhancement
-  - Seperated BLEAdvertisingData and BLEAdvertising
-  - Add setTimeout(), setType()
+
+BLEAdvertising enhancement
+
+- Separate BLEAdvertisingData and BLEAdvertising
+- Add setStopCallback() support
+- Add option to only advertising for a specific time (in multiple of timeout) with start(stop_sec)
+- Default timeout = 30 second, fast = 20 ms, slow = 152.5 ms
+
+BLEGAP support multiple connections
+
+- getRole()
 
 ## 0.6.5
 

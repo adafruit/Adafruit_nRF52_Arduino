@@ -65,10 +65,10 @@ public:
   bool addService(BLEClientService& service);
 
   // Custom API
-  uint8_t count(void);
-  char*   getData(void);
-  bool    setData(const uint8_t* data, uint8_t count);
-  void    clearData(void);
+  uint8_t  count(void);
+  uint8_t* getData(void);
+  bool     setData(const uint8_t* data, uint8_t count);
+  void     clearData(void);
 };
 
 

@@ -93,13 +93,13 @@ class AdafruitBluefruit
     /*------------------------------------------------------------------*/
     /* Lower Level Classes (Bluefruit.Advertising.*, etc.)
      *------------------------------------------------------------------*/
-    BLEAdvertising Advertising;
-    BLEAdvertising ScanResponse;
-    BLECentral     Central;
-    BLEDiscovery   Discovery;
+    BLEAdvertising     Advertising;
+    BLEAdvertisingData ScanResponse;
+    BLECentral         Central;
+    BLEDiscovery       Discovery;
 
-    BLEGap         Gap;
-    BLEGatt        Gatt;
+    BLEGap             Gap;
+    BLEGatt            Gatt;
 
     /*------------------------------------------------------------------*/
     /* General Purpose Functions

@@ -58,8 +58,6 @@ void setupAdv(void)
   // earlier in this example
   Bluefruit.Advertising.setBeacon(beacon);
 
-  // char* adv = Bluefruit.Advertising.getData();
-
   // There is no room left for 'Name' in the advertising packet
   // Use the optinal secondary Scan Response packet for 'Name' instead
   Bluefruit.ScanResponse.addName();

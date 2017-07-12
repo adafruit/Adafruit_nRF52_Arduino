@@ -152,9 +152,9 @@ uint8_t BLEAdvertisingData::count(void)
   return _count;
 }
 
-char* BLEAdvertisingData::getData(void)
+uint8_t* BLEAdvertisingData::getData(void)
 {
-  return (char*) _data;
+  return _data;
 }
 
 bool BLEAdvertisingData::setData(uint8_t const * data, uint8_t count)
@@ -243,7 +243,7 @@ bool BLEAdvertising::_start(uint16_t interval)
 bool BLEAdvertising::start(uint32_t stop_sec)
 {
   // Configure Data
-  VERIFY_STATUS( sd_ble_gap_adv_data_set(_data, _count, Bluefruit.ScanResponse._data, Bluefruit.ScanResponse._count), false );
+  VERIFY_STATUS( sd_ble_gap_adv_data_set(_data, _count, Bluefruit.ScanResponse.getData(), Bluefruit.ScanResponse.count()), false );
   VERIFY( _start(_fast_interval) );
 
   _started_sec = 0; // reset established time
