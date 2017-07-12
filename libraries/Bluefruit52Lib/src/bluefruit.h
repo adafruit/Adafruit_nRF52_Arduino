@@ -106,10 +106,10 @@ class AdafruitBluefruit
      *------------------------------------------------------------------*/
     void   autoConnLed         (bool enabled);
     void   setConnLedInterval  (uint32_t ms);
-    void   startConnLed        (void);
-    void   stopConnLed         (void);
+
     void   setName             (const char* str);
     char*  getName             (void);
+
     bool   setTxPower          (int8_t power);
     int8_t getTxPower          (void);
 
@@ -139,6 +139,16 @@ class AdafruitBluefruit
     void setDisconnectCallback( BLEGap::disconnect_callback_t fp);
 
     COMMENT_OUT ( bool setPIN(const char* pin); )
+
+    /*------------------------------------------------------------------*/
+    /* INTERNAL USAGE ONLY
+     * Although declare as public, it is meant to be invoked by internal
+     * code. User should not call these directly
+     *------------------------------------------------------------------*/
+    void   _startConnLed       (void);
+    void   _stopConnLed        (void);
+    void   _setConnLed         (bool on_off);
+
 
   private:
     /*------------- BLE para -------------*/

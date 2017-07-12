@@ -64,6 +64,7 @@ static_assert(sizeof(ada_callback_t) == 16, "Incorrect Size");
     /* BLEGap  */                                            \
     XPAND(BLEGap                   , connect_callback_t    ) \
     XPAND(BLEGap                   , disconnect_callback_t ) \
+    XPAND(BLEAdvertising           , stop_callback_t       ) \
     /* Bluefruit  */                                         \
     /* Central */                                            \
     XPAND(BLECentral               , scan_callback_t       ) \

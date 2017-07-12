@@ -35,57 +35,23 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
+#include "utility/AdaCallback.h"
 
-#define GAP_ADV_INTERVAL_MS              20
-#define GAP_ADV_TIMEOUT_S                30
+#define BLE_ADV_INTERVAL_FAST_DFLT       32  // 20    ms (in 0.625 ms unit)
+#define BLE_ADV_INTERVAL_SLOW_DFLT       244 // 152.5 ms (in 0.625 ms unit)
 
-BLEAdvertising::BLEAdvertising(void)
+#define BLE_ADV_TIMEOUT_DFLT             30  // in seconds
+
+/*------------------------------------------------------------------*/
+/* BLEAdvertisingData shared between ADV and ScanResponse
+ *------------------------------------------------------------------*/
+BLEAdvertisingData::BLEAdvertisingData(void)
 {
   _count = 0;
   varclr(_data);
 }
 
-bool BLEAdvertising::start(uint8_t mode)
-{
-  (void) mode; // not used yet
-
-  // Only allow to call start with Bluefruit.Advertising.start()
-  VERIFY( this == &Bluefruit.Advertising );
-
-  // Configure Data
-  VERIFY_STATUS( sd_ble_gap_adv_data_set(_data, _count, Bluefruit.ScanResponse._data, Bluefruit.ScanResponse._count), false );
-
-  // ADV Params
-  ble_gap_adv_params_t adv_para =
-  {
-      .type        = BLE_GAP_ADV_TYPE_ADV_IND,
-      .p_peer_addr = NULL                            , // Undirected advertisement
-      .fp          = BLE_GAP_ADV_FP_ANY              ,
-      .p_whitelist = NULL                            ,
-      .interval    = MS1000TO625(GAP_ADV_INTERVAL_MS), // advertising interval (in units of 0.625 ms)
-      .timeout     = GAP_ADV_TIMEOUT_S
-  };
-
-  VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para), false );
-
-  Bluefruit.startConnLed(); // start blinking
-
-  return ERROR_NONE;
-}
-
-bool BLEAdvertising::stop(void)
-{
-  // Only allow to call stop with Bluefruit.Advertising.stop()
-  VERIFY( this == &Bluefruit.Advertising );
-  VERIFY_STATUS( sd_ble_gap_adv_stop(), false);
-
-  Bluefruit.stopConnLed(); // stop blinking
-
-  return true;
-}
-
-
-bool BLEAdvertising::addData(uint8_t type, const void* data, uint8_t len)
+bool BLEAdvertisingData::addData(uint8_t type, const void* data, uint8_t len)
 {
   VERIFY( _count + len + 2 <= BLE_GAP_ADV_MAX_SIZE );
 
@@ -101,7 +67,7 @@ bool BLEAdvertising::addData(uint8_t type, const void* data, uint8_t len)
   return true;
 }
 
-bool BLEAdvertising::addUuid(BLEUuid bleuuid)
+bool BLEAdvertisingData::addUuid(BLEUuid bleuuid)
 {
   switch ( bleuuid.size() )
   {
@@ -119,12 +85,12 @@ bool BLEAdvertising::addUuid(BLEUuid bleuuid)
   return false;
 }
 
-bool BLEAdvertising::addService(BLEService& service)
+bool BLEAdvertisingData::addService(BLEService& service)
 {
   return addUuid(service.uuid);
 }
 
-bool BLEAdvertising::addService(BLEClientService& service)
+bool BLEAdvertisingData::addService(BLEClientService& service)
 {
   // Central service is added to Solicitation UUID
   switch ( service.uuid.size() )
@@ -144,7 +110,7 @@ bool BLEAdvertising::addService(BLEClientService& service)
 }
 
 // Add Name to Adv packet, use setName() to set
-bool BLEAdvertising::addName(void)
+bool BLEAdvertisingData::addName(void)
 {
   const char* name = Bluefruit.getName();
 
@@ -162,41 +128,36 @@ bool BLEAdvertising::addName(void)
 }
 
 // tx power is set by setTxPower
-bool BLEAdvertising::addTxPower(void)
+bool BLEAdvertisingData::addTxPower(void)
 {
   int8_t tx_power = Bluefruit.getTxPower();
   return addData(BLE_GAP_AD_TYPE_TX_POWER_LEVEL, &tx_power, 1);
 }
 
-bool BLEAdvertising::addFlags(uint8_t flags)
+bool BLEAdvertisingData::addFlags(uint8_t flags)
 {
   return addData(BLE_GAP_AD_TYPE_FLAGS, &flags, 1);
 }
 
-bool BLEAdvertising::addAppearance(uint16_t appearance)
+bool BLEAdvertisingData::addAppearance(uint16_t appearance)
 {
   return addData(BLE_GAP_AD_TYPE_APPEARANCE, &appearance, 2);
-}
-
-bool BLEAdvertising::setBeacon(BLEBeacon& beacon)
-{
-  return beacon.start(*this);
 }
 
 /*------------------------------------------------------------------*/
 /* CUSTOM API
  *------------------------------------------------------------------*/
-uint8_t BLEAdvertising::count(void)
+uint8_t BLEAdvertisingData::count(void)
 {
   return _count;
 }
 
-char* BLEAdvertising::getData(void)
+char* BLEAdvertisingData::getData(void)
 {
   return (char*) _data;
 }
 
-bool BLEAdvertising::setData(uint8_t const * data, uint8_t count)
+bool BLEAdvertisingData::setData(uint8_t const * data, uint8_t count)
 {
   VERIFY( data && (count <= BLE_GAP_ADV_MAX_SIZE) );
 
@@ -206,9 +167,145 @@ bool BLEAdvertising::setData(uint8_t const * data, uint8_t count)
   return true;
 }
 
-void BLEAdvertising::clearData(void)
+void BLEAdvertisingData::clearData(void)
 {
   _count = 0;
   varclr(_data);
+}
+
+/*------------------------------------------------------------------*/
+/* BLEAdvertising only
+ *------------------------------------------------------------------*/
+BLEAdvertising::BLEAdvertising(void)
+{
+  _timeout_sec   = BLE_ADV_TIMEOUT_DFLT;
+  _type          = BLE_GAP_ADV_TYPE_ADV_IND;
+
+  _fast_interval = BLE_ADV_INTERVAL_FAST_DFLT;
+  _slow_interval = BLE_ADV_INTERVAL_SLOW_DFLT;
+
+  _started_sec   = 0;
+  _stop_sec      = 0;
+  _stop_cb       = NULL;
+}
+
+void BLEAdvertising::setTimeout(uint16_t sec)
+{
+  _timeout_sec = sec;
+}
+
+void BLEAdvertising::setType(uint8_t adv_type)
+{
+  _type = adv_type;
+}
+
+void BLEAdvertising::setInterval(uint16_t fast, uint16_t slow)
+{
+  _fast_interval = fast;
+  _slow_interval = slow;
+}
+
+void BLEAdvertising::setIntervalMS(uint16_t fast, uint16_t slow)
+{
+  _fast_interval = MS1000TO625(fast);
+  _slow_interval = MS1000TO625(slow);
+}
+
+void BLEAdvertising::setStopCallback(stop_callback_t fp)
+{
+  fp = _stop_cb;
+}
+
+bool BLEAdvertising::setBeacon(BLEBeacon& beacon)
+{
+  return beacon.start(*this);
+}
+
+bool BLEAdvertising::_start(uint16_t interval)
+{
+  // ADV Params
+  ble_gap_adv_params_t adv_para =
+  {
+      .type        = _type              ,
+      .p_peer_addr = NULL               , // Undirected advertisement
+      .fp          = BLE_GAP_ADV_FP_ANY ,
+      .p_whitelist = NULL               ,
+      .interval    = interval           , // advertising interval (in units of 0.625 ms)
+      .timeout     = _timeout_sec
+  };
+
+  VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para), false );
+  Bluefruit._startConnLed(); // start blinking
+
+  return true;
+}
+
+bool BLEAdvertising::start(uint32_t stop_sec)
+{
+  // Configure Data
+  VERIFY_STATUS( sd_ble_gap_adv_data_set(_data, _count, Bluefruit.ScanResponse._data, Bluefruit.ScanResponse._count), false );
+  VERIFY( _start(_fast_interval) );
+
+  _started_sec = 0; // reset established time
+
+  return true;
+}
+
+bool BLEAdvertising::stop(void)
+{
+  VERIFY_STATUS( sd_ble_gap_adv_stop(), false);
+
+  Bluefruit._stopConnLed(); // stop blinking
+
+  return true;
+}
+
+
+void BLEAdvertising::_eventHandler(ble_evt_t* evt)
+{
+  switch ( evt->header.evt_id  )
+  {
+    case BLE_GAP_EVT_CONNECTED:
+    {
+      ble_gap_evt_connected_t const * para = &evt->evt.gap_evt.params.connected;
+
+      if ( para->role == BLE_GAP_ROLE_PERIPH)
+      {
+        // Turn on Conn LED
+        Bluefruit._stopConnLed();
+        Bluefruit._setConnLed(true);
+      }
+    }
+    break;
+
+    case BLE_GAP_EVT_DISCONNECTED:
+      if ( BLE_GAP_ROLE_PERIPH == Bluefruit.Gap.getRole(evt->evt.common_evt.conn_handle) )
+      {
+        // Turn off Conn LED
+        Bluefruit._setConnLed(false);
+      }
+    break;
+
+    case BLE_GAP_EVT_TIMEOUT:
+      if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISING)
+      {
+        _started_sec += _timeout_sec;
+
+        // Continue to adv if stop is not configured or time not reach it yet
+        if ( (_stop_sec == 0) || (_started_sec < _stop_sec) )
+        {
+          _start(_slow_interval);
+        }else
+        {
+          Bluefruit._stopConnLed(); // stop blinking
+
+          // invoke stop callback
+          if (_stop_cb) ada_callback(NULL, _stop_cb);
+        }
+      }
+    break;
+
+    default: break;
+  }
 }
 

@@ -50,12 +50,15 @@ class BLEGap
 
     bool connected(uint16_t conn_handle);
 
+    uint8_t        getRole(uint16_t conn_handle);
+
     uint8_t        getPeerAddr(uint16_t conn_handle, uint8_t addr[6]);
     ble_gap_addr_t getPeerAddr(uint16_t conn_handle);
 
     uint16_t       getPeerName(uint16_t conn_handle, char* buf, uint16_t bufsize);
     bool           getTxPacket(uint16_t conn_handle);
 
+    /*------------- Callbacks -------------*/
     void setConnectCallback   (connect_callback_t    fp, uint8_t role);
     void setDisconnectCallback(disconnect_callback_t fp, uint8_t role);
 

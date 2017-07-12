@@ -365,19 +365,6 @@ bool AdafruitBluefruit::setPIN(const char* pin)
 )
 
 /*------------------------------------------------------------------*/
-/* Private Methods
- *------------------------------------------------------------------*/
-void AdafruitBluefruit::startConnLed(void)
-{
-  if (_led_conn) xTimerStart(_led_blink_th, 0);
-}
-
-void AdafruitBluefruit::stopConnLed(void)
-{
-  xTimerStop(_led_blink_th, 0);
-}
-
-/*------------------------------------------------------------------*/
 /* Thread & SoftDevice Event handler
  *------------------------------------------------------------------*/
 void SD_EVT_IRQHandler(void)
@@ -457,6 +444,10 @@ void adafruit_ble_task(void* arg)
   }
 }
 
+/**
+ * BLE event handler
+ * @param evt event
+ */
 void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 {
   LOG_LV1(BLE, dbg_ble_event_str(evt->header.evt_id));
@@ -468,6 +459,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 
   // GAP handler
   Gap._eventHandler(evt);
+  Advertising._eventHandler(evt);
 
   /*------------- BLE Peripheral Events -------------*/
   /* Only handle Peripheral events with matched connection handle
@@ -487,9 +479,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 
         if (para->role == BLE_GAP_ROLE_PERIPH)
         {
-          stopConnLed();
-          if (_led_conn) ledOn(LED_BLUE);
-
           _conn_hdl      = evt->evt.gap_evt.conn_handle;
           _conn_interval = para->conn_params.min_conn_interval;
 
@@ -515,7 +504,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 
       case BLE_GAP_EVT_DISCONNECTED:
         // Note callback is invoked by BLEGap
-        if (_led_conn)  ledOff(LED_BLUE);
 
         // Save all configured cccd
         if (_bonded) _saveBondedCCCD();
@@ -662,6 +650,28 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   // GATTs characteristics event handler
   Gatt._eventHandler(evt);
 }
+
+/*------------------------------------------------------------------*/
+/* Internal Connection LED
+ *------------------------------------------------------------------*/
+void AdafruitBluefruit::_startConnLed(void)
+{
+  if (_led_conn) xTimerStart(_led_blink_th, 0);
+}
+
+void AdafruitBluefruit::_stopConnLed(void)
+{
+  xTimerStop(_led_blink_th, 0);
+}
+
+void AdafruitBluefruit::_setConnLed (bool on_off)
+{
+  if (_led_conn)
+  {
+    digitalWrite(LED_BLUE, on_off ? LED_STATE_ON : (1-LED_STATE_ON) );
+  }
+}
+
 /*------------------------------------------------------------------*/
 /* Bonds
  *------------------------------------------------------------------*/

@@ -66,6 +66,10 @@ void adafruit_callback_task(void* arg)
           ((BLEGap::disconnect_callback_t) func) ( (uint16_t) args[0], (uint8_t) args[1]  );
         break;
 
+        case BLEAdvertising_stop_callback_t:
+          ((BLEAdvertising::stop_callback_t) func)();
+        break;
+
         /*------------- Bluefruit -------------*/
 
         /*------------- Central -------------*/

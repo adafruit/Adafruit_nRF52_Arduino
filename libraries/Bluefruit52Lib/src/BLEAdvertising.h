@@ -44,23 +44,16 @@
 #include "BLEService.h"
 #include "services/BLEBeacon.h"
 
-//enum
-//{
-//  BLE_ADV_MODE
-//};
-
-class BLEAdvertising
+class BLEAdvertisingData
 {
-private:
+protected:
   uint8_t _data[BLE_GAP_ADV_MAX_SIZE];
   uint8_t _count;
 
 public:
-  BLEAdvertising(void);
+  BLEAdvertisingData(void);
 
-  bool start(uint8_t mode = 0);
-  bool stop (void);
-
+  /*------------- Adv Data -------------*/
   bool addData(uint8_t type, const void* data, uint8_t len);
   bool addFlags(uint8_t flags);
   bool addTxPower(void);
@@ -71,13 +64,53 @@ public:
   bool addService(BLEService& service);
   bool addService(BLEClientService& service);
 
-  bool setBeacon(BLEBeacon& beacon);
-
   // Custom API
   uint8_t count(void);
   char*   getData(void);
   bool    setData(const uint8_t* data, uint8_t count);
   void    clearData(void);
+};
+
+
+class BLEAdvertising : public BLEAdvertisingData
+{
+public:
+  typedef void (*stop_callback_t) (void);
+  BLEAdvertising(void);
+
+  void setType(uint8_t adv_type);
+  void setTimeout(uint16_t sec);
+  void setStopCallback(stop_callback_t fp);
+
+  void setInterval(uint16_t fast, uint16_t slow);
+  void setIntervalMS(uint16_t fast, uint16_t slow);
+
+  bool setBeacon(BLEBeacon& beacon);
+
+  bool start(uint32_t stop_sec = 0);
+  bool stop (void);
+
+  /*------------------------------------------------------------------*/
+  /* INTERNAL USAGE ONLY
+   * Although declare as public, it is meant to be invoked by internal
+   * code. User should not call these directly
+   *------------------------------------------------------------------*/
+  void _eventHandler(ble_evt_t* evt);
+
+private:
+  uint16_t _timeout_sec;
+  uint8_t  _type;
+
+  uint16_t _fast_interval;
+  uint16_t _slow_interval;
+
+  uint16_t _started_sec;
+  uint16_t _stop_sec;
+
+  stop_callback_t _stop_cb;
+
+  // Internal function
+  bool _start(uint16_t interval);
 
 };
 

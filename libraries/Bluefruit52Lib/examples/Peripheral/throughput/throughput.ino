@@ -86,7 +86,6 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 
   Serial.println();
   Serial.println("Disconnected");
-  Serial.println("Bluefruit will auto start advertising (default)");
 }
 
 /**************************************************************************/

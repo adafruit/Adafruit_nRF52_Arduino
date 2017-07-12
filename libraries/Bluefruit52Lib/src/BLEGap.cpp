@@ -49,6 +49,11 @@ bool BLEGap::connected(uint16_t conn_handle)
   return _peers[conn_handle].connected;
 }
 
+uint8_t BLEGap::getRole(uint16_t conn_handle)
+{
+  return _peers[conn_handle].role;
+}
+
 void BLEGap::setConnectCallback(connect_callback_t fp, uint8_t role)
 {
   if (role == BLE_GAP_ROLE_PERIPH)
@@ -135,6 +140,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     {
       ble_gap_evt_disconnected_t const* para = &evt->evt.gap_evt.params.disconnected;
 
+      // mark as disconnected, but keep the role for sub sequence event handler
       peer->connected = false;
 
       vSemaphoreDelete( peer->txpacket_sem );

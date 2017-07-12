@@ -7,6 +7,9 @@
 - Change Bluefruit.peerAddr() to Bluefruit.getPeerAddr()
 - Change BLEClientUart's rx callback
 - Add connection handle to Bluefruit's connect and disconnect callback prototype
+- BLEAdvertising enhancement
+  - Seperated BLEAdvertisingData and BLEAdvertising
+  - Add setTimeout(), setType()
 
 ## 0.6.5
 
