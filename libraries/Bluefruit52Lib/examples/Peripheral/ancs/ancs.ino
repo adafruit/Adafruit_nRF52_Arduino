@@ -49,14 +49,14 @@ void setup()
   bleancs.begin();
   bleancs.setNotificationCallback(ancs_notification_callback);
 
-  // Set up Advertising Packet
+  // Set up the Advertising Packet
   setupAdv();
 
   /* Start Advertising
    * - Enable auto advertising if disconnected
    * - Interval:  fast mode = 20 ms, slow mode = 152.5 ms
    * - Timeout for fast mode is 30 seconds
-   * - Start(timeout) with timeout = 0 will advertising forever
+   * - Start(timeout) with timeout = 0 will advertise forever
    */
   Bluefruit.Advertising.startIfDisconnect(true);
   Bluefruit.Advertising.setInterval(32, 244);    // in unit of 0.625 ms
