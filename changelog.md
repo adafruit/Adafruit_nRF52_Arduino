@@ -4,16 +4,16 @@
 
 ### BLE
 
-- Rename Bluefruit.peerAddr() to Bluefruit.getPeerAddr()
-- Change BLEClientUart's rx callback
-- Add connection handle to Bluefruit's connect and disconnect callback prototype
+- Renamed `Bluefruit.peerAddr()` to `Bluefruit.getPeerAddr()`
+- Changed BLEClientUart's RX callback
+- Added connection handle to the connect and disconnect callback prototypes
 
 BLEAdvertising enhancement
 
-- Separate BLEAdvertisingData and BLEAdvertising
-- Add setStopCallback() support
-- Add option to only advertising for a specific time (in multiple of timeout) with start(stop_sec)
-- Default timeout = 30 second, fast = 20 ms, slow = 152.5 ms
+- Separated `BLEAdvertisingData` and `BLEAdvertising`
+- Added `setStopCallback()` support to declare a callback when advertising stops
+- Add the option to advertise for a specific time. There are multiple timeouts: initial fast advertising mode, slow advertising mode, and an optional delay to stop advertising entirely. Values can be set in multiple of timeout ticks (0.625ms per unit) or in ms (approximate since it gets converted to 0.625ms units). The optional timeout to stop advertising entire is set via the `.stop(timeout)` parameter.
+- Default timeout to slow mode = 30 seconds. Default adv intervals are fast mode = 20 ms, slow = 152.5 ms
 
 BLEGAP support multiple connections
 
@@ -23,20 +23,20 @@ BLEGAP support multiple connections
 
 ### Core
 
-- Fix setName() issue
-- Add SRAM usage when compiling
-- Reduce Stack size from 3KB to 2KB, and functions dbgStackUsed(), dbgStackTotal() for dynamic stack usage
-- Fix #48 SPI & I2C warnings
-- Change board define from ARDUINO_FEATHER52 to ARDUINO_NRF52_FEATHER (ARDUINO_FEATHER52 still exists for backward comaptiable)
-- Change pin in hwpwm and hid_camerashutter sketches
-- Update nffs code to mynewt v1.0.0
-- Add Event recording support using Segger Sysview
+- Fixed `setName()` issue
+- Add SRAM usage to output when compiling
+- Reduced stack size from 3KB to 2KB, and added functions `dbgStackUsed()` and `dbgStackTotal()` for dynamic stack usage
+- Fixed #48 SPI & I2C warnings
+- Changed board defines from `ARDUINO_FEATHER52` to `ARDUINO_NRF52_FEATHER` (`ARDUINO_FEATHER52` still exists for backward comaptiability)
+- Changed pin in hwpwm and hid_camerashutter sketches
+- Updated nffs code to mynewt v1.0.0
+- Added event recording support using Segger's Sysview
 
 ### BLE
 
-- Updated for latest Bluefruit LE Connect version with RGBW support
-- Implement Gatt readCharByUuid()
-- Implement Gap getPeerName()
+- Updated for the latest Bluefruit LE Connect version with RGBW support
+- Implemented Gatt `readCharByUuid()`
+- Implemented Gap `getPeerName()`
 
 
 ### New Examples
