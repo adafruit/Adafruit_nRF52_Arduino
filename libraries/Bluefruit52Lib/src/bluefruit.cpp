@@ -514,15 +514,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         Advertising.start();
       break;
 
-      case BLE_GAP_EVT_TIMEOUT:
-        if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISING)
-        {
-          // TODO advanced advertising
-          // Restart Advertising
-          Advertising.start();
-        }
-      break;
-
       case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
       {
         // Pairing in progress
