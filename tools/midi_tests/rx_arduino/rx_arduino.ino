@@ -47,8 +47,8 @@ void setup()
   // Advertise device name in the Scan Response
   Bluefruit.ScanResponse.addName();
   
-  // Start Advertising
-  Bluefruit.Advertising.start();
+  // Start Advertising forever (stop second = 0)
+  Bluefruit.Advertising.start(0);
   
   Scheduler.startLoop(midiRead);
 

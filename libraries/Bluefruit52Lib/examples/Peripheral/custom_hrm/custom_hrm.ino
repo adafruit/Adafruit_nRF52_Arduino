@@ -74,10 +74,10 @@ void setup()
   Serial.println("Setting up the advertising payload(s)");
   setupAdv();
 
-  // Start Advertising
+  // Start Advertising forever (stop second = 0)
   Serial.println("Ready Player One!!!");
   Serial.println("\nAdvertising");
-  Bluefruit.Advertising.start();
+  Bluefruit.Advertising.start(0);
 }
 
 void setupAdv(void)

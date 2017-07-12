@@ -46,8 +46,8 @@ void setup()
   // Setup the advertising packet
   setupAdv();
 
-  // Start advertising
-  Bluefruit.Advertising.start();
+  // Start Advertising forever (stop second = 0)
+  Bluefruit.Advertising.start(0);
 
   Serial.println("Broadcasting beacon, open your beacon app to test");
 }

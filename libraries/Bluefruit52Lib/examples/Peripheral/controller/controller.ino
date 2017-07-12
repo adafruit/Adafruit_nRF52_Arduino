@@ -39,8 +39,8 @@ void setup(void)
   // Set up the advertising packet
   setupAdv();
 
-  // Start advertising
-  Bluefruit.Advertising.start();
+  // Start Advertising forever (stop second = 0)
+  Bluefruit.Advertising.start(0);
 
   Serial.println(F("Please use Adafruit Bluefruit LE app to connect in Controller mode"));
   Serial.println(F("Then activate/use the sensors, color picker, game controller, etc!"));

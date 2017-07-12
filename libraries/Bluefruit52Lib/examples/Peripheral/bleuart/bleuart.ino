@@ -56,8 +56,8 @@ void setup()
   // Set up Advertising Packet
   setupAdv();
 
-  // Start Advertising
-  Bluefruit.Advertising.start();
+  // Start Advertising forever (stop second = 0)
+  Bluefruit.Advertising.start(0);
 
   Serial.println("Please use Adafruit's Bluefruit LE app to connect in UART mode");
   Serial.println("Once connected, enter character(s) that you wish to send");

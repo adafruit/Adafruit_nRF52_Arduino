@@ -52,8 +52,8 @@ void setup()
   // Set up Advertising Packet
   setupAdv();
 
-  // Start Advertising
-  Bluefruit.Advertising.start();
+  // Start Advertising forever (stop second = 0)
+  Bluefruit.Advertising.start(0);
 }
 
 void setupAdv(void)
