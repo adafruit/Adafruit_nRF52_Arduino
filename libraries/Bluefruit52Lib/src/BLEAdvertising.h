@@ -106,7 +106,7 @@ public:
 
   bool setBeacon(BLEBeacon& beacon);
 
-  bool start(uint32_t stop_sec = 0);
+  bool start(uint16_t timeout = 0);
   bool stop (void);
 
   /*------------------------------------------------------------------*/

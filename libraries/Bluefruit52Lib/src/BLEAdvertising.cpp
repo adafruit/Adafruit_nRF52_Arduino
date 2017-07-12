@@ -234,8 +234,10 @@ bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
   return true;
 }
 
-bool BLEAdvertising::start(uint32_t stop_sec)
+bool BLEAdvertising::start(uint16_t timeout)
 {
+  _stop_timeout = timeout;
+
   // Configure Data
   VERIFY_STATUS( sd_ble_gap_adv_data_set(_data, _count, Bluefruit.ScanResponse.getData(), Bluefruit.ScanResponse.count()), false );
 
