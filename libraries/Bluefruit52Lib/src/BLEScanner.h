@@ -39,6 +39,9 @@
 #include <Arduino.h>
 #include "bluefruit_common.h"
 
+#define BLE_SCAN_INTERVAL_DFLT    160 // 100 ms (in 0.625 ms)
+#define BLE_SCAN_WINDOW_DFLT      80  // 50  ms (in 0.625 ms)
+
 class BLEScanner
 {
 public:

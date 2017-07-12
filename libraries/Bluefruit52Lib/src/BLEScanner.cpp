@@ -49,8 +49,8 @@ BLEScanner::BLEScanner(void)
     .active      = 0,
     .selective   = 0,
     .p_whitelist = NULL,
-    .interval    = 0x00A0,
-    .window      = 0x0050,
+    .interval    = BLE_SCAN_INTERVAL_DFLT,
+    .window      = BLE_SCAN_WINDOW_DFLT,
     .timeout     = 0, // no timeout
   };
 }
