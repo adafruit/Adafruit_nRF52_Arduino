@@ -73,7 +73,7 @@ void setupAdv(void)
 void loop() 
 {
   // Only check pin when advertising has already stopped
-  if ( !Bluefruit.Advertising.isAdvertising() )
+  if ( !Bluefruit.Advertising.isRunning() )
   {
     // Check if Pin is grounded
     if ( digitalRead(PIN_ADV) == 0 )
