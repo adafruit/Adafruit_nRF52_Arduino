@@ -16,21 +16,21 @@
 - Default timeout to slow mode = 30 seconds. Default adv intervals are fast mode = 20 ms, slow = 152.5 ms
 - Add new example `advance_adv`
 
-### BLEGAP (To support multiple connections)
+### BLEGAP (To support multiple connections, etc.)
 
-- Added `getRole()`
+- Added `getRole()` to distinguish between peripheral/central
 
 ## 0.6.5
 
 ### Core
 
 - Fixed `setName()` issue
-- Add SRAM usage to output when compiling
+- Added SRAM usage to output when compiling
 - Reduced stack size from 3KB to 2KB, and added functions `dbgStackUsed()` and `dbgStackTotal()` for dynamic stack usage
 - Fixed #48 SPI & I2C warnings
 - Changed board defines from `ARDUINO_FEATHER52` to `ARDUINO_NRF52_FEATHER` (`ARDUINO_FEATHER52` still exists for backward comaptiability)
 - Changed pin in hwpwm and hid_camerashutter sketches
-- Updated nffs code to mynewt v1.0.0
+- Updated NFFS code to mynewt v1.0.0
 - Added event recording support using Segger's Sysview
 
 ### BLE
@@ -39,10 +39,9 @@
 - Implemented Gatt `readCharByUuid()`
 - Implemented Gap `getPeerName()`
 
-
 ### New Examples
 
-- Add Low Level format sketch for filesystem: `libraries/nffs/examples/EraseNffs`
+- Added Low Level format sketch for filesystem: `libraries/nffs/examples/EraseNffs`
 
 ## 0.6.0
 
