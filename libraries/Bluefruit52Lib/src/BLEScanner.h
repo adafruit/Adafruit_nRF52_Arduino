@@ -47,12 +47,14 @@ public:
 
   BLEScanner(void);
 
-
   ble_gap_scan_params_t* getParams(void);
-
   bool isRunning(void);
 
+  void useActiveScan(bool enable);
+  void setInterval(uint16_t interval, uint16_t window);
+  void setIntervalMS(uint16_t interval, uint16_t window);
   void restartOnDisconnect(bool enable);
+
   bool start(uint16_t timeout = 0);
   bool stop(void);
 
@@ -74,7 +76,7 @@ private:
   rx_callback_t   _rx_cb;
   stop_callback_t _stop_cb;
 
-  ble_gap_scan_params_t _scan_param;
+  ble_gap_scan_params_t _param;
 };
 
 

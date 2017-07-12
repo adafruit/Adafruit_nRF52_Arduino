@@ -45,14 +45,31 @@ BLEScanner::BLEScanner(void)
   _rx_cb   = NULL;
   _stop_cb = NULL;
 
-  _scan_param  = (ble_gap_scan_params_t) {
-    .active      = 1,
+  _param  = (ble_gap_scan_params_t) {
+    .active      = 0,
     .selective   = 0,
     .p_whitelist = NULL,
     .interval    = 0x00A0,
     .window      = 0x0050,
     .timeout     = 0, // no timeout
   };
+}
+
+void BLEScanner::useActiveScan(bool enable)
+{
+  _param.active = enable;
+}
+
+void BLEScanner::setInterval(uint16_t interval, uint16_t window)
+{
+  _param.interval = interval;
+  _param.window   = window;
+}
+
+void BLEScanner::setIntervalMS(uint16_t interval, uint16_t window)
+{
+  _param.interval = MS1000TO625(interval);
+  _param.window   = MS1000TO625(window);
 }
 
 bool BLEScanner::isRunning(void)
@@ -72,13 +89,13 @@ void BLEScanner::restartOnDisconnect(bool enable)
 
 ble_gap_scan_params_t* BLEScanner::getParams(void)
 {
-  return &_scan_param;
+  return &_param;
 }
 
 bool BLEScanner::start(uint16_t timeout)
 {
-  _scan_param.timeout = timeout;
-  VERIFY_STATUS( sd_ble_gap_scan_start(&_scan_param), false );
+  _param.timeout = timeout;
+  VERIFY_STATUS( sd_ble_gap_scan_start(&_param), false );
 
   Bluefruit._startConnLed(); // start blinking
   _runnning = true;
@@ -132,7 +149,7 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
         // Auto start if enabled
         if ( _start_if_disconnect )
         {
-          if (!_runnning) start(_scan_param.timeout);
+          if (!_runnning) start(_param.timeout);
         }
       }
     break;
