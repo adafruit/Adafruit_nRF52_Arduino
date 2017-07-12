@@ -217,15 +217,6 @@ void BLECentral::_event_handler(ble_evt_t* evt)
       _conn_hdl = BLE_CONN_HANDLE_INVALID;
     break;
 
-    case BLE_GAP_EVT_TIMEOUT:
-      if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_SCAN)
-      {
-        // TODO Advance Scanning
-        // Restart Scanning
-        Bluefruit.Scanner.start(0);
-      }
-    break;
-
     default: break;
   }
 }
