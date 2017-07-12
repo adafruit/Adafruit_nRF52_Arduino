@@ -52,8 +52,17 @@ void setup()
   // Advertise device name in the Scan Response
   Bluefruit.ScanResponse.addName();
   
-  // Start Advertising forever (stop second = 0)
-  Bluefruit.Advertising.start(0);
+  /* Start Advertising
+   * - Enable auto advertising if disconnected
+   * - Interval:  fast mode = 20 ms, slow mode = 152.5 ms
+   * - Timeout for fast mode is 30 seconds
+   * - Start(timeout) with timeout = 0 will advertising forever
+   */
+  Bluefruit.Advertising.startIfDisconnect(true);
+  Bluefruit.Advertising.setInterval(32, 244);    // in unit of 0.625 ms
+  Bluefruit.Advertising.setFastTimeout(30);      // number of seconds in fast mode
+  Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds
+
   Serial.println("Waiting for connection...");
 }
 
