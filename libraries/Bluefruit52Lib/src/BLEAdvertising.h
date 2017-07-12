@@ -44,6 +44,10 @@
 #include "BLEService.h"
 #include "services/BLEBeacon.h"
 
+#define BLE_ADV_INTERVAL_FAST_DFLT       32  // 20    ms (in 0.625 ms unit)
+#define BLE_ADV_INTERVAL_SLOW_DFLT       244 // 152.5 ms (in 0.625 ms unit)
+#define BLE_ADV_FAST_TIMEOUT_DFLT        30  // in seconds
+
 class BLEAdvertisingData
 {
 protected:
@@ -79,10 +83,10 @@ public:
   BLEAdvertising(void);
 
   void setType(uint8_t adv_type);
-  void setTimeout(uint16_t sec);
+  void setFastTimeout(uint16_t sec);
   void setStopCallback(stop_callback_t fp);
 
-  void setInterval(uint16_t fast, uint16_t slow);
+  void setInterval  (uint16_t fast, uint16_t slow);
   void setIntervalMS(uint16_t fast, uint16_t slow);
 
   bool setBeacon(BLEBeacon& beacon);
@@ -98,19 +102,18 @@ public:
   void _eventHandler(ble_evt_t* evt);
 
 private:
-  uint16_t _timeout_sec;
   uint8_t  _type;
 
-  uint16_t _fast_interval;
-  uint16_t _slow_interval;
+  uint16_t _fast_interval; // in 0.625 ms
+  uint16_t _slow_interval; // in 0.625 ms
 
-  uint16_t _started_sec;
-  uint16_t _stop_sec;
+  uint16_t _fast_timeout; // in second
+  uint16_t _stop_timeout; // in second
 
   stop_callback_t _stop_cb;
 
   // Internal function
-  bool _start(uint16_t interval);
+  bool _start(uint16_t interval, uint16_t timeout);
 
 };
 

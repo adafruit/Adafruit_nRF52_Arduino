@@ -37,11 +37,6 @@
 #include "bluefruit.h"
 #include "utility/AdaCallback.h"
 
-#define BLE_ADV_INTERVAL_FAST_DFLT       32  // 20    ms (in 0.625 ms unit)
-#define BLE_ADV_INTERVAL_SLOW_DFLT       244 // 152.5 ms (in 0.625 ms unit)
-
-#define BLE_ADV_TIMEOUT_DFLT             30  // in seconds
-
 /*------------------------------------------------------------------*/
 /* BLEAdvertisingData shared between ADV and ScanResponse
  *------------------------------------------------------------------*/
@@ -178,20 +173,19 @@ void BLEAdvertisingData::clearData(void)
  *------------------------------------------------------------------*/
 BLEAdvertising::BLEAdvertising(void)
 {
-  _timeout_sec   = BLE_ADV_TIMEOUT_DFLT;
   _type          = BLE_GAP_ADV_TYPE_ADV_IND;
 
   _fast_interval = BLE_ADV_INTERVAL_FAST_DFLT;
   _slow_interval = BLE_ADV_INTERVAL_SLOW_DFLT;
 
-  _started_sec   = 0;
-  _stop_sec      = 0;
+  _fast_timeout  = BLE_ADV_FAST_TIMEOUT_DFLT;
+  _stop_timeout  = 0;
   _stop_cb       = NULL;
 }
 
-void BLEAdvertising::setTimeout(uint16_t sec)
+void BLEAdvertising::setFastTimeout(uint16_t sec)
 {
-  _timeout_sec = sec;
+  _fast_timeout = sec;
 }
 
 void BLEAdvertising::setType(uint8_t adv_type)
@@ -221,7 +215,7 @@ bool BLEAdvertising::setBeacon(BLEBeacon& beacon)
   return beacon.start(*this);
 }
 
-bool BLEAdvertising::_start(uint16_t interval)
+bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
 {
   // ADV Params
   ble_gap_adv_params_t adv_para =
@@ -231,7 +225,7 @@ bool BLEAdvertising::_start(uint16_t interval)
       .fp          = BLE_GAP_ADV_FP_ANY ,
       .p_whitelist = NULL               ,
       .interval    = interval           , // advertising interval (in units of 0.625 ms)
-      .timeout     = _timeout_sec
+      .timeout     = timeout            ,
   };
 
   VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para), false );
@@ -244,9 +238,9 @@ bool BLEAdvertising::start(uint32_t stop_sec)
 {
   // Configure Data
   VERIFY_STATUS( sd_ble_gap_adv_data_set(_data, _count, Bluefruit.ScanResponse.getData(), Bluefruit.ScanResponse.count()), false );
-  VERIFY( _start(_fast_interval) );
 
-  _started_sec = 0; // reset established time
+  // Initially advertising with fast interval
+  VERIFY( _start(_fast_interval, _fast_timeout) );
 
   return true;
 }
@@ -289,18 +283,27 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_TIMEOUT:
       if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISING)
       {
-        _started_sec += _timeout_sec;
-
-        // Continue to adv if stop is not configured or time not reach it yet
-        if ( (_stop_sec == 0) || (_started_sec < _stop_sec) )
+        if ( _stop_timeout == 0 )
         {
-          _start(_slow_interval);
+          // if stop_timeout is 0 --> no timeout
+          _start(_slow_interval, 0);
         }else
         {
-          Bluefruit._stopConnLed(); // stop blinking
+          // Advertising if there is still time left, otherwise stop it
+          if ( _stop_timeout > _fast_timeout )
+          {
+            _start(_slow_interval, _stop_timeout - _fast_timeout);
 
-          // invoke stop callback
-          if (_stop_cb) ada_callback(NULL, _stop_cb);
+            // this will cause the next timeout event (this case code) stop advertising
+            _stop_timeout = _fast_timeout;
+          }else
+          {
+            // Stop advertising
+            Bluefruit._stopConnLed(); // stop blinking
+
+            // invoke stop callback
+            if (_stop_cb) ada_callback(NULL, _stop_cb);
+          }
         }
       }
     break;
