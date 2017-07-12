@@ -8,14 +8,14 @@
 - Changed BLEClientUart's RX callback
 - Added connection handle to the connect and disconnect callback prototypes
 
-BLEAdvertising enhancement
+### BLEAdvertising enhancement
 
 - Separated `BLEAdvertisingData` and `BLEAdvertising`
 - Added `setStopCallback()` support to declare a callback when advertising stops
 - Add the option to advertise for a specific time. There are multiple timeouts: initial fast advertising mode, slow advertising mode, and an optional delay to stop advertising entirely. Values can be set in multiple of timeout ticks (0.625ms per unit) or in ms (approximate since it gets converted to 0.625ms units). The optional timeout to stop advertising entire is set via the `.stop(timeout)` parameter.
 - Default timeout to slow mode = 30 seconds. Default adv intervals are fast mode = 20 ms, slow = 152.5 ms
 
-BLEGAP support multiple connections
+### BLEGAP support multiple connections
 
 - getRole()
 
