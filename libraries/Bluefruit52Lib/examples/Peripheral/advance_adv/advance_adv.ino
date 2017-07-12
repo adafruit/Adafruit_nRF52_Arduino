@@ -12,10 +12,11 @@
  any redistribution
 *********************************************************************/
 
-/* This sketches demontrate Bluefruit.Advertising API(). When power up
- * Bluefruit will advertising for ADV_TIMEOUT seconds (30 seconds in fast mode, 
- * the lesft in slow mode) and then stopped completely. Bluefruit only start
- * advertising again if PIN_ADV is grounded.
+/* This sketches demontrates the Bluefruit.Advertising API(). When powered up,
+ * the Bluefruit module will start advertising for ADV_TIMEOUT seconds (by
+ * default 30 seconds in fast mode, the remaining time slow mode) and then
+ * stop advertising completely. The module will start advertising again if
+ * PIN_ADV is grounded.
  */
 #include <bluefruit.h>
 
@@ -27,7 +28,7 @@ SoftwareTimer blinkTimer;
 
 void setup() 
 {
-  // configure pin as input
+  // configure PIN_ADV as input with a pullup (pin is active low)
   pinMode(PIN_ADV, INPUT_PULLUP);
   
   Serial.begin(115200);
@@ -40,20 +41,20 @@ void setup()
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
 
-  // Set up Advertising Packet
+  // Set up the Advertising Packet
   setupAdv();
 
   /* Start Advertising
    * - Enable auto advertising if disconnected
    * - Interval:  fast mode = 20 ms, slow mode = 152.5 ms
    * - Timeout for fast mode is 30 seconds
-   * - Start(timeout) with timeout = 0 will advertising forever
+   * - Start(timeout) with timeout = 0 will advertise forever
    */
   Bluefruit.Advertising.setStopCallback(adv_stop_callback);
   Bluefruit.Advertising.startIfDisconnect(true);
-  Bluefruit.Advertising.setInterval(32, 244);    // in unit of 0.625 ms
+  Bluefruit.Advertising.setInterval(32, 244);    // in units of 0.625 ms
   Bluefruit.Advertising.setFastTimeout(30);      // number of seconds in fast mode
-  Bluefruit.Advertising.start(ADV_TIMEOUT);      // Stop advertising after ADV_TIMEOUT seconds
+  Bluefruit.Advertising.start(ADV_TIMEOUT);      // Stop advertising entirely after ADV_TIMEOUT seconds
 
   Serial.println("Advertising is started");
 }
@@ -64,14 +65,14 @@ void setupAdv(void)
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
 
-  // There is no room for Name in Advertising packet
-  // Use Scan response for Name
+  // There is no room for Name in the advertising packet
+  // Use Scan response for Name instead
   Bluefruit.ScanResponse.addName();
 }
 
 void loop() 
 {
-  // Only check pin only when we stopped already
+  // Only check pin when advertising has already stopped
   if ( !Bluefruit.Advertising.isAdvertising() )
   {
     // Check if Pin is grounded
@@ -88,7 +89,7 @@ void loop()
  */
 void adv_stop_callback(void)
 {
-  Serial.println("Advertising timeout and stopped");
+  Serial.println("Advertising time passed, advertising will now stop.");
 }
 
 /**
