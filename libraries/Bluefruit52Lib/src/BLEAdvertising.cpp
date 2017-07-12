@@ -207,7 +207,7 @@ void BLEAdvertising::setIntervalMS(uint16_t fast, uint16_t slow)
 
 void BLEAdvertising::setStopCallback(stop_callback_t fp)
 {
-  fp = _stop_cb;
+  _stop_cb = fp;
 }
 
 bool BLEAdvertising::setBeacon(BLEBeacon& beacon)
