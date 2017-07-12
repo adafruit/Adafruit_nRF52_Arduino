@@ -42,11 +42,11 @@
 class BLEScanner
 {
 public:
-  typedef void (*rx_callback_t) (ble_gap_evt_adv_report_t*);
+  typedef void (*rx_callback_t  ) (ble_gap_evt_adv_report_t*);
+  typedef void (*stop_callback_t) (void);
 
   BLEScanner(void);
 
-  void setRxCallback(rx_callback_t fp);
 
   ble_gap_scan_params_t* getParams(void);
 
@@ -55,6 +55,10 @@ public:
   void restartOnDisconnect(bool enable);
   bool start(uint16_t timeout = 0);
   bool stop(void);
+
+  /*------------- Callbacks -------------*/
+  void setRxCallback(rx_callback_t fp);
+  void setStopCallback(stop_callback_t fp);
 
   /*------------------------------------------------------------------*/
   /* INTERNAL USAGE ONLY
@@ -66,7 +70,9 @@ public:
 private:
   bool          _runnning;
   bool          _start_if_disconnect;
-  rx_callback_t _rx_cb;
+
+  rx_callback_t   _rx_cb;
+  stop_callback_t _stop_cb;
 
   ble_gap_scan_params_t _scan_param;
 };

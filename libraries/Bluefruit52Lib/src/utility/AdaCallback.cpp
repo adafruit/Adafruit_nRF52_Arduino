@@ -67,8 +67,13 @@ void adafruit_callback_task(void* arg)
         break;
 
         case BLEAdvertising_stop_callback_t:
+//      case BLEScanner_stop_callback_t:
           ((BLEAdvertising::stop_callback_t) func)();
         break;
+
+//        case BLEScanner_rx_callback_t:
+//          ((BLEScanner::BLEScanner_rx_callback_t) func)();
+//        break;
 
         /*------------- Bluefruit -------------*/
 

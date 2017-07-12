@@ -35,12 +35,15 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
+#include "utility/AdaCallback.h"
 
 BLEScanner::BLEScanner(void)
 {
   _runnning = false;
   _start_if_disconnect = true;
-  _rx_cb    = NULL;
+
+  _rx_cb   = NULL;
+  _stop_cb = NULL;
 
   _scan_param  = (ble_gap_scan_params_t) {
     .active      = 1,
@@ -137,7 +140,7 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_TIMEOUT:
       if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_SCAN)
       {
-
+        if (_stop_cb) ada_callback(NULL, _stop_cb);
       }
     break;
 

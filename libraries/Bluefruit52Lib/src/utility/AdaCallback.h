@@ -58,19 +58,22 @@ static_assert(sizeof(ada_callback_t) == 16, "Incorrect Size");
 
 
 /*------------------------------------------------------------------*/
-/* X Macros expansion
+/* X Macros expansion for callback function
+ * If callbacks from separated classes share the same prototype, only
+ * one instance is enough (mandatory)
  *------------------------------------------------------------------*/
 #define ADA_CB_LOOKUP(XPAND)  \
-    /* BLEGap  */                                            \
-    XPAND(BLEGap                   , connect_callback_t    ) \
-    XPAND(BLEGap                   , disconnect_callback_t ) \
-    XPAND(BLEAdvertising           , stop_callback_t       ) \
-    /* Bluefruit  */                                         \
-    /* Central */                                            \
-    XPAND(BLECentral               , scan_callback_t       ) \
-    /* Client Characteristic */                              \
-    XPAND(BLEClientCharacteristic  , notify_cb_t           ) \
-    /*XPAND(BLEClientCharacteristic , indicate_cb_t         )*/ \
+    /* BLEGap  */                                  \
+    XPAND(BLEGap         , connect_callback_t    ) \
+    XPAND(BLEGap         , disconnect_callback_t ) \
+    XPAND(BLEAdvertising , stop_callback_t       ) \
+    /*BLEScanner::stop_callback_t is same as BLEAdvertising::stop_callback_t */\
+    XPAND(BLEScanner     , rx_callback_t         ) \
+    /* Bluefruit  */                               \
+    /* Central */                                  \
+    /* Client Characteristic */                    \
+    XPAND(BLEClientCharacteristic  , notify_cb_t   ) \
+    /*XPAND(BLEClientCharacteristic , indicate_cb_t)*/ \
 
 #define ADA_CB_ENUM_XPAND(_class, _cbname) \
     _class##_##_cbname,
