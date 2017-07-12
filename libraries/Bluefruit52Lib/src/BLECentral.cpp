@@ -202,31 +202,19 @@ void BLECentral::_event_handler(ble_evt_t* evt)
    */
   switch ( evt->header.evt_id  )
   {
-    case BLE_GAP_EVT_ADV_REPORT:
-    {
-      // evt_conn_hdl is equal to BLE_CONN_HANDLE_INVALID
-      ble_gap_evt_adv_report_t* adv_report = &evt->evt.gap_evt.params.adv_report;
-      if (_scan_cb) _scan_cb(adv_report);
-    }
-    break;
-
     case BLE_GAP_EVT_CONNECTED:
     { // Note callback is invoked by BLEGap
       ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
 
       if (para->role == BLE_GAP_ROLE_CENTRAL)
       {
-        Bluefruit._stopConnLed();
-        Bluefruit._setConnLed(true);
       }
     }
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
       // Note callback is invoked by BLEGap
-      Bluefruit._setConnLed(false);
       _conn_hdl = BLE_CONN_HANDLE_INVALID;
-      Bluefruit.Scanner.start(0);
     break;
 
     case BLE_GAP_EVT_TIMEOUT:

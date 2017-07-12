@@ -50,12 +50,24 @@ public:
 
   ble_gap_scan_params_t* getParams(void);
 
+  bool isRunning(void);
+
+  void restartOnDisconnect(bool enable);
   bool start(uint16_t timeout = 0);
   bool stop(void);
 
-private:
+  /*------------------------------------------------------------------*/
+  /* INTERNAL USAGE ONLY
+   * Although declare as public, it is meant to be invoked by internal
+   * code. User should not call these directly
+   *------------------------------------------------------------------*/
+  void _eventHandler(ble_evt_t* evt);
 
+private:
+  bool          _runnning;
+  bool          _start_if_disconnect;
   rx_callback_t _rx_cb;
+
   ble_gap_scan_params_t _scan_param;
 };
 

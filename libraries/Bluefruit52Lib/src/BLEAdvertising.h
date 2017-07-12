@@ -108,8 +108,8 @@ public:
 
   bool isRunning(void);
 
+  void restartOnDisconnect(bool enable);
   bool start(uint16_t timeout = 0);
-  bool restartOnDisconnect(bool enable);
   bool stop (void);
 
   /*------------------------------------------------------------------*/

@@ -460,6 +460,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   // GAP handler
   Gap._eventHandler(evt);
   Advertising._eventHandler(evt);
+  Scanner._eventHandler(evt);
 
   /*------------- BLE Peripheral Events -------------*/
   /* Only handle Peripheral events with matched connection handle

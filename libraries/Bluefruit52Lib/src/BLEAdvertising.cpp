@@ -222,7 +222,7 @@ bool BLEAdvertising::setBeacon(BLEBeacon& beacon)
   return beacon.start(*this);
 }
 
-bool BLEAdvertising::restartOnDisconnect(bool enable)
+void BLEAdvertising::restartOnDisconnect(bool enable)
 {
   _start_if_disconnect = enable;
 }
