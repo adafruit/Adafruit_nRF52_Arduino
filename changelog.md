@@ -15,9 +15,9 @@
 - Add the option to advertise for a specific time. There are multiple timeouts: initial fast advertising mode, slow advertising mode, and an optional delay to stop advertising entirely. Values can be set in multiple of timeout ticks (0.625ms per unit) or in ms (approximate since it gets converted to 0.625ms units). The optional timeout to stop advertising entire is set via the `.stop(timeout)` parameter.
 - Default timeout to slow mode = 30 seconds. Default adv intervals are fast mode = 20 ms, slow = 152.5 ms
 
-### BLEGAP support multiple connections
+### BLEGAP (To support multiple connections)
 
-- getRole()
+- Added `getRole()`
 
 ## 0.6.5
 
