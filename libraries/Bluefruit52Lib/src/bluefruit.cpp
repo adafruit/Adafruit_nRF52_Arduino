@@ -510,8 +510,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
         _bonded   = false;
-
-        Advertising.start();
       break;
 
       case BLE_GAP_EVT_SEC_PARAMS_REQUEST:

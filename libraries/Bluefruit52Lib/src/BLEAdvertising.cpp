@@ -173,13 +173,14 @@ void BLEAdvertisingData::clearData(void)
  *------------------------------------------------------------------*/
 BLEAdvertising::BLEAdvertising(void)
 {
-  _type          = BLE_GAP_ADV_TYPE_ADV_IND;
+  _type                = BLE_GAP_ADV_TYPE_ADV_IND;
+  _start_if_disconnect = true;
 
   _fast_interval = BLE_ADV_INTERVAL_FAST_DFLT;
   _slow_interval = BLE_ADV_INTERVAL_SLOW_DFLT;
 
   _fast_timeout  = BLE_ADV_FAST_TIMEOUT_DFLT;
-  _stop_timeout  = 0;
+  _stop_timeout  = _left_timeout = 0;
   _stop_cb       = NULL;
 }
 
@@ -215,6 +216,11 @@ bool BLEAdvertising::setBeacon(BLEBeacon& beacon)
   return beacon.start(*this);
 }
 
+bool BLEAdvertising::startIfDisconnect(bool enable)
+{
+  _start_if_disconnect = enable;
+}
+
 bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
 {
   // ADV Params
@@ -231,17 +237,19 @@ bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
   VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para), false );
   Bluefruit._startConnLed(); // start blinking
 
+  _left_timeout -= min16(_left_timeout, timeout);
+
   return true;
 }
 
 bool BLEAdvertising::start(uint16_t timeout)
 {
-  _stop_timeout = timeout;
+  _stop_timeout = _left_timeout = timeout;
 
   // Configure Data
   VERIFY_STATUS( sd_ble_gap_adv_data_set(_data, _count, Bluefruit.ScanResponse.getData(), Bluefruit.ScanResponse.count()), false );
 
-  // Initially advertising with fast interval
+  // Initially advertising in fast mode
   VERIFY( _start(_fast_interval, _fast_timeout) );
 
   return true;
@@ -279,6 +287,9 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
       {
         // Turn off Conn LED
         Bluefruit._setConnLed(false);
+
+        // Auto start if enabled
+        if ( _start_if_disconnect ) start(_stop_timeout);
       }
     break;
 
@@ -292,12 +303,9 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
         }else
         {
           // Advertising if there is still time left, otherwise stop it
-          if ( _stop_timeout > _fast_timeout )
+          if ( _left_timeout )
           {
-            _start(_slow_interval, _stop_timeout - _fast_timeout);
-
-            // this will cause the next timeout event (this case code) stop advertising
-            _stop_timeout = _fast_timeout;
+            _start(_slow_interval, _left_timeout);
           }else
           {
             // Stop advertising
