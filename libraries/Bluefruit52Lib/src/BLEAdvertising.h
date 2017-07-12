@@ -106,7 +106,7 @@ public:
 
   bool setBeacon(BLEBeacon& beacon);
 
-  bool isAdvertising(void);
+  bool isRunning(void);
 
   bool start(uint16_t timeout = 0);
   bool startIfDisconnect(bool enable);
@@ -122,7 +122,7 @@ public:
 private:
   uint8_t  _type;
   bool     _start_if_disconnect;
-  bool     _is_advertising;
+  bool     _runnning;
 
   uint16_t _fast_interval; // in 0.625 ms
   uint16_t _slow_interval; // in 0.625 ms

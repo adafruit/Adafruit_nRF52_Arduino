@@ -175,7 +175,7 @@ BLEAdvertising::BLEAdvertising(void)
 {
   _type                = BLE_GAP_ADV_TYPE_ADV_IND;
   _start_if_disconnect = true;
-  _is_advertising      = false;
+  _runnning            = false;
 
   _fast_interval = BLE_ADV_INTERVAL_FAST_DFLT;
   _slow_interval = BLE_ADV_INTERVAL_SLOW_DFLT;
@@ -212,9 +212,9 @@ void BLEAdvertising::setStopCallback(stop_callback_t fp)
   _stop_cb = fp;
 }
 
-bool BLEAdvertising::isAdvertising(void)
+bool BLEAdvertising::isRunning(void)
 {
-  return _is_advertising;
+  return _runnning;
 }
 
 bool BLEAdvertising::setBeacon(BLEBeacon& beacon)
@@ -243,7 +243,7 @@ bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
   VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para), false );
 
   Bluefruit._startConnLed(); // start blinking
-  _is_advertising = true;
+  _runnning = true;
 
   _left_timeout -= min16(_left_timeout, timeout);
 
@@ -283,7 +283,7 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
 
       if ( para->role == BLE_GAP_ROLE_PERIPH)
       {
-        _is_advertising = false;
+        _runnning = false;
 
         // Turn on Conn LED
         Bluefruit._stopConnLed();
@@ -306,7 +306,7 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_TIMEOUT:
       if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISING)
       {
-        _is_advertising = false;
+        _runnning = false;
 
         if ( _stop_timeout == 0 )
         {
