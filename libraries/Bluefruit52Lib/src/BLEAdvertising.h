@@ -109,7 +109,7 @@ public:
   bool isRunning(void);
 
   bool start(uint16_t timeout = 0);
-  bool advOnDisconnect(bool enable);
+  bool restartOnDisconnect(bool enable);
   bool stop (void);
 
   /*------------------------------------------------------------------*/

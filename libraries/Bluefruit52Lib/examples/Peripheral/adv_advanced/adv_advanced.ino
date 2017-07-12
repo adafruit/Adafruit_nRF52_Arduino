@@ -51,7 +51,7 @@ void setup()
    * - Start(timeout) with timeout = 0 will advertise forever
    */
   Bluefruit.Advertising.setStopCallback(adv_stop_callback);
-  Bluefruit.Advertising.advOnDisconnect(true);
+  Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.setInterval(32, 244);    // in units of 0.625 ms
   Bluefruit.Advertising.setFastTimeout(30);      // number of seconds in fast mode
   Bluefruit.Advertising.start(ADV_TIMEOUT);      // Stop advertising entirely after ADV_TIMEOUT seconds
