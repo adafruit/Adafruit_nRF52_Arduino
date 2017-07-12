@@ -8,7 +8,7 @@
 - Changed BLEClientUart's RX callback
 - Added connection handle to the connect and disconnect callback prototypes
 
-### BLEAdvertising enhancement
+### BLEAdvertising
 
 - Separated `BLEAdvertisingData` and `BLEAdvertising`
 - Added `setStopCallback()` support to declare a callback when advertising stops
