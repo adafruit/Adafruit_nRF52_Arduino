@@ -26,8 +26,8 @@ void setup()
 
   // Start Central Scan
   Bluefruit.setConnLedInterval(250);
-  Bluefruit.Central.setScanCallback(scan_callback);
-  Bluefruit.Central.startScanning();
+  Bluefruit.Scanner.setRxCallback(scan_callback);
+  Bluefruit.Scanner.start(0);
 
   Serial.println("Scanning ...");
 }

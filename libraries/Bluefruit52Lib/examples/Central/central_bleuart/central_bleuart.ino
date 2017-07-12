@@ -47,8 +47,8 @@ void setup()
   Bluefruit.Central.setDisconnectCallback(disconnect_callback);
 
   // Start Central Scan
-  Bluefruit.Central.setScanCallback(scan_callback);
-  Bluefruit.Central.startScanning();
+  Bluefruit.Scanner.setRxCallback(scan_callback);
+  Bluefruit.Scanner.start(0);
 }
 
 /**

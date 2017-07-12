@@ -42,15 +42,6 @@
  */
 BLECentral::BLECentral(void)
 {
-  _scan_cb     = NULL;
-  _scan_param  = (ble_gap_scan_params_t) {
-    .active      = 1,
-    .selective   = 0,
-    .p_whitelist = NULL,
-    .interval    = 0x00A0,
-    .window      = 0x0050,
-    .timeout     = 0, // no timeout
-  };
 }
 
 void BLECentral::begin(void)
@@ -62,26 +53,6 @@ void BLECentral::begin(void)
 /*------------------------------------------------------------------*/
 /* Scan  and Parser
  *------------------------------------------------------------------*/
-void BLECentral::setScanCallback(scan_callback_t fp)
-{
-  _scan_cb = fp;
-}
-
-bool BLECentral::startScanning(uint16_t timeout)
-{
-  _scan_param.timeout = timeout;
-  VERIFY_STATUS( sd_ble_gap_scan_start(&_scan_param), false );
-  Bluefruit._startConnLed(); // start blinking
-  return ERROR_NONE;
-}
-
-bool BLECentral::stopScanning(void)
-{
-  Bluefruit._stopConnLed(); // stop blinking
-  VERIFY_STATUS( sd_ble_gap_scan_stop(), false );
-  return true;
-}
-
 uint8_t* BLECentral::extractScanData(uint8_t const* scandata, uint8_t scanlen, uint8_t type, uint8_t* result_len)
 {
   *result_len = 0;
@@ -168,7 +139,7 @@ bool BLECentral::connect(const ble_gap_addr_t* peer_addr, uint16_t min_conn_inte
       .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
   };
 
-  VERIFY_STATUS( sd_ble_gap_connect(peer_addr, &_scan_param, &gap_conn_params), false );
+  VERIFY_STATUS( sd_ble_gap_connect(peer_addr, Bluefruit.Scanner.getParams(), &gap_conn_params), false );
   return true;
 }
 
@@ -255,7 +226,7 @@ void BLECentral::_event_handler(ble_evt_t* evt)
       // Note callback is invoked by BLEGap
       Bluefruit._setConnLed(false);
       _conn_hdl = BLE_CONN_HANDLE_INVALID;
-      startScanning();
+      Bluefruit.Scanner.start(0);
     break;
 
     case BLE_GAP_EVT_TIMEOUT:
@@ -263,7 +234,7 @@ void BLECentral::_event_handler(ble_evt_t* evt)
       {
         // TODO Advance Scanning
         // Restart Scanning
-        startScanning();
+        Bluefruit.Scanner.start(0);
       }
     break;
 

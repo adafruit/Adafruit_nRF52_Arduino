@@ -63,10 +63,6 @@ class BLECentral
     /*------------------------------------------------------------------*/
     /* Scan & Parser
      *------------------------------------------------------------------*/
-    void     setScanCallback(scan_callback_t fp);
-    bool     startScanning(uint16_t timeout = 0);
-    bool     stopScanning(void);
-
     uint8_t* extractScanData(uint8_t const* scandata, uint8_t scanlen, uint8_t type, uint8_t* result_len);
     uint8_t* extractScanData(const ble_gap_evt_adv_report_t* report, uint8_t type, uint8_t* result_len);
     bool     checkUuidInScan(const ble_gap_evt_adv_report_t* adv_report, BLEUuid ble_uuid);
@@ -96,11 +92,7 @@ class BLECentral
   private:
     uint16_t _conn_hdl;
 
-    ble_gap_scan_params_t _scan_param;
-    scan_callback_t       _scan_cb;
-
     bool  _checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t uuid[], uint8_t uuid_len);
-
     void  _event_handler(ble_evt_t* evt);
 
     friend class AdafruitBluefruit;

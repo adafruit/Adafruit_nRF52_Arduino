@@ -54,6 +54,7 @@
 #include "BLECharacteristic.h"
 #include "BLEService.h"
 
+#include "BLEScanner.h"
 #include "BLECentral.h"
 #include "BLEClientCharacteristic.h"
 #include "BLEClientService.h"
@@ -95,6 +96,7 @@ class AdafruitBluefruit
      *------------------------------------------------------------------*/
     BLEAdvertising     Advertising;
     BLEAdvertisingData ScanResponse;
+    BLEScanner         Scanner;
     BLECentral         Central;
     BLEDiscovery       Discovery;
 
