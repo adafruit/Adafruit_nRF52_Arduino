@@ -69,21 +69,17 @@ class BLECentral
                      uint16_t min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT,
                      uint16_t max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT);
 
-    // Check if connected to a specific peripheral
-    bool     connected  (uint16_t conn_handle);
-    // Check if connected to any peripherals
-    bool     connected  (void);
 
-    /*------------------------------------------------------------------*/
-    /* CALLBACKS
-     *------------------------------------------------------------------*/
+    bool     connected  (uint16_t conn_handle); // If connected to a specific peripheral
+    bool     connected  (void);                 // If connected to any peripherals
+
+    /*------------- Callbacks -------------*/
     void setConnectCallback   ( BLEGap::connect_callback_t    fp);
     void setDisconnectCallback( BLEGap::disconnect_callback_t fp);
 
   private:
     uint16_t _conn_hdl;
 
-    bool  _checkUuidInScan(const ble_gap_evt_adv_report_t* report, const uint8_t uuid[], uint8_t uuid_len);
     void  _event_handler(ble_evt_t* evt);
 
     friend class AdafruitBluefruit;
