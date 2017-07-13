@@ -121,6 +121,9 @@ void connect_callback(uint16_t conn_handle)
   }else
   {
     Serial.println("Found NONE");
+    
+    // disconect since we couldn't find bleuart service
+    Bluefruit.Central.disconnect(conn_handle);
   }  
 }
 
@@ -135,7 +138,6 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   (void) reason;
   
   Serial.println("Disconnected");
-  Serial.println("Bluefruit will auto start scanning (default)");
 }
 
 /**

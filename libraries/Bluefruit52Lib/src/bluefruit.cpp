@@ -302,13 +302,15 @@ bool AdafruitBluefruit::connected(void)
   return ( _conn_hdl != BLE_CONN_HANDLE_INVALID );
 }
 
-void AdafruitBluefruit::disconnect(void)
+bool AdafruitBluefruit::disconnect(void)
 {
   // disconnect if connected
   if ( connected() )
   {
-    sd_ble_gap_disconnect(_conn_hdl, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+    return ERROR_NONE == sd_ble_gap_disconnect(_conn_hdl, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
   }
+
+  return true; // not connected still return true
 }
 
 void AdafruitBluefruit::setConnectCallback( BLEGap::connect_callback_t fp )

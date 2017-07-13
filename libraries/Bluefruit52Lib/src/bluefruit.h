@@ -119,7 +119,7 @@ class AdafruitBluefruit
     /* GAP, Connections and Bonding
      *------------------------------------------------------------------*/
     bool     connected         (void);
-    void     disconnect        (void);
+    bool     disconnect        (void);
 
     bool     setConnInterval   (uint16_t min, uint16_t max);
     bool     setConnIntervalMS (uint16_t min_ms, uint16_t max_ms);

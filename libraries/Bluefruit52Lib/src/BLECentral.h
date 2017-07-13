@@ -68,6 +68,8 @@ class BLECentral
     bool     connect(const ble_gap_evt_adv_report_t* adv_report);
     bool     connect(const ble_gap_addr_t *peer_addr);
 
+    bool     disconnect(uint16_t conn_handle);
+
     bool     connected (uint16_t conn_handle); // If connected to a specific peripheral
     bool     connected (void);                 // If connected to any peripherals
 

@@ -87,6 +87,11 @@ bool BLECentral::connect(const ble_gap_evt_adv_report_t* adv_report)
   return connect(&adv_report->peer_addr);
 }
 
+bool BLECentral::disconnect(uint16_t conn_handle)
+{
+  return ERROR_NONE == sd_ble_gap_disconnect(conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+}
+
 /**
  * Check if connected to a specific peripheral
  * @param conn_handle
@@ -106,10 +111,10 @@ bool BLECentral::connected(void)
 {
   for (uint8_t conn=0; conn<BLE_MAX_CONN; conn++)
   {
-    // skip Peripherl Role handle
-    if (conn != Bluefruit.connHandle() )
+    // skip Peripheral Role handle
+    if ( Bluefruit.Gap.connected(conn) && (Bluefruit.Gap.getRole(conn) == BLE_GAP_ROLE_CENTRAL) )
     {
-      if ( Bluefruit.Gap.connected(conn) ) return true;
+      return true;
     }
   }
 
