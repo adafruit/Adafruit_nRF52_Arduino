@@ -20,6 +20,10 @@
 
 - Added `getRole()` to distinguish between peripheral/central
 
+### BLECentral
+
+- Move scanner & report parser into new BLEScanner class
+
 ## 0.6.5
 
 ### Core

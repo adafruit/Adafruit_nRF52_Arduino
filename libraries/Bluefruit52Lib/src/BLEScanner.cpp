@@ -116,17 +116,28 @@ bool BLEScanner::stop(void)
 /*------------------------------------------------------------------*/
 /* Paser helper
  *------------------------------------------------------------------*/
-uint8_t* BLEScanner::parseReportByType(uint8_t const* scandata, uint8_t scanlen, uint8_t type, uint8_t* result_len)
+
+ /**
+  * @param scandata
+  * @param scanlen
+  * @param type
+  * @param buf
+  * @param bufsize If bufsize is skipped (zero), len check will be skipped
+  * @return
+  */
+uint8_t BLEScanner::parseReportByType(const uint8_t* scandata, uint8_t scanlen, uint8_t type, uint8_t* buf, uint8_t bufsize)
 {
-  *result_len = 0;
+  uint8_t len = 0;
+  uint8_t const* ptr = NULL;
 
   // len (1+data), type, data
   while ( scanlen )
   {
     if ( scandata[1] == type )
     {
-      *result_len = scandata[0]-1;
-      return (uint8_t*) (scandata + 2);
+      len = (scandata[0]-1);
+      ptr = (scandata + 2);
+      break;
     }
     else
     {
@@ -135,12 +146,19 @@ uint8_t* BLEScanner::parseReportByType(uint8_t const* scandata, uint8_t scanlen,
     }
   }
 
-  return NULL;
+  // not found return 0
+  if (ptr == NULL) return 0;
+
+  // found but not enough data, skip copying
+  if ( (bufsize > 0) && (bufsize < len) ) return len;
+
+  memcpy(buf, ptr, len);
+  return len;
 }
 
-uint8_t* BLEScanner::parseReportByType(const ble_gap_evt_adv_report_t* report, uint8_t type, uint8_t* result_len)
+uint8_t BLEScanner::parseReportByType(const ble_gap_evt_adv_report_t* report, uint8_t type, uint8_t* buf, uint8_t bufsize)
 {
-  return parseReportByType(report->data, report->dlen, type, result_len);
+  return parseReportByType(report->data, report->dlen, type, buf, bufsize);
 }
 
 bool BLEScanner::checkReportForUuid(const ble_gap_evt_adv_report_t* report, BLEUuid ble_uuid)
@@ -150,7 +168,7 @@ bool BLEScanner::checkReportForUuid(const ble_gap_evt_adv_report_t* report, BLEU
 
   uint8_t type_arr[2];
 
-  // Check both UUID16 more available and complete list
+  // Check both more available and complete list
   if ( uuid_len == 16)
   {
     type_arr[0] = BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE;
@@ -165,23 +183,26 @@ bool BLEScanner::checkReportForUuid(const ble_gap_evt_adv_report_t* report, BLEU
     uuid = ble_uuid._uuid128;
   }
 
-  uuid_len /= 8; // convert uuid_len to number of bytes
+  uuid_len /= 8; // convert to number of bytes
 
   for (int i=0; i<2; i++)
   {
-    uint8_t len = 0;
-    uint8_t const* data = parseReportByType(report, type_arr[i] , &len);
+    uint8_t buffer[BLE_GAP_ADV_MAX_SIZE] = { 0 };
+    uint8_t len = parseReportByType(report, type_arr[i], buffer);
 
+    uint8_t* ptr = buffer;
+
+    // look for uuid in the uuid list
     while( len )
     {
       // found matched
-      if ( !memcmp(data, uuid, uuid_len) )
+      if ( !memcmp(ptr, uuid, uuid_len) )
       {
         return true;
       }else
       {
-        data += uuid_len;
-        len  -= uuid_len;
+        ptr += uuid_len;
+        len -= uuid_len;
       }
     }
   }
