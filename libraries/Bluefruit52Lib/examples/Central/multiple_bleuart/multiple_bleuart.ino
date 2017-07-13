@@ -78,9 +78,17 @@ void setup()
   Bluefruit.Central.setConnectCallback(connect_callback);
   Bluefruit.Central.setDisconnectCallback(disconnect_callback);
 
-  // Start Central Scan
+  /* Start Central Scanning
+   * - Enable auto scan if disconnected
+   * - Interval = 100 ms, window = 80 ms
+   * - Don't use active scan
+   * - Start(timeout) with timeout = 0 will scan forever (until connected)
+   */
   Bluefruit.Scanner.setRxCallback(scan_callback);
-  Bluefruit.Scanner.start(0);
+  Bluefruit.Scanner.restartOnDisconnect(true);
+  Bluefruit.Scanner.setInterval(160, 80);       // in unit of 0.625 ms
+  Bluefruit.Scanner.useActiveScan(false);
+  Bluefruit.Scanner.start(0);                   // 0 = Don't stop scanning after n seconds
 }
 
 /**
@@ -92,11 +100,9 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   // Check if advertising contain BleUart service
   if ( Bluefruit.Scanner.checkReportForUuid(report, BLEUART_UUID_SERVICE) )
   {
-    Serial.println("BLE UART service detected");
-    Serial.println("Attempt to connect ... ");
+    Serial.print("BLE UART service detected. Connecting ... ");
 
     // Connect to device with bleuart service in advertising
-    // Use Min & Max Connection Interval default value
     Bluefruit.Central.connect(report);
   }
 }
