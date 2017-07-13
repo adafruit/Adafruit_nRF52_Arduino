@@ -42,6 +42,8 @@
  */
 BLECentral::BLECentral(void)
 {
+  _ppcp_min_conn = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
+  _ppcp_max_conn = BLE_GAP_CONN_MAX_INTERVAL_DFLT;
 }
 
 void BLECentral::begin(void)
@@ -53,12 +55,25 @@ void BLECentral::begin(void)
 /*------------------------------------------------------------------*/
 /*
  *------------------------------------------------------------------*/
-bool BLECentral::connect(const ble_gap_addr_t* peer_addr, uint16_t min_conn_interval, uint16_t max_conn_interval)
+bool BLECentral::setConnInterval(uint16_t min, uint16_t max)
+{
+  _ppcp_min_conn = min;
+  _ppcp_max_conn = max;
+
+  return true;
+}
+
+bool BLECentral::setConnIntervalMS (uint16_t min_ms, uint16_t max_ms)
+{
+  return setConnInterval( MS100TO125(min_ms), MS100TO125(max_ms) );
+}
+
+bool BLECentral::connect(const ble_gap_addr_t* peer_addr)
 {
   ble_gap_conn_params_t gap_conn_params =
   {
-      .min_conn_interval = min_conn_interval, // in 1.25ms unit
-      .max_conn_interval = max_conn_interval, // in 1.25ms unit
+      .min_conn_interval = _ppcp_min_conn, // in 1.25ms unit
+      .max_conn_interval = _ppcp_max_conn, // in 1.25ms unit
       .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
       .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
   };
@@ -67,9 +82,9 @@ bool BLECentral::connect(const ble_gap_addr_t* peer_addr, uint16_t min_conn_inte
   return true;
 }
 
-bool BLECentral::connect(const ble_gap_evt_adv_report_t* adv_report, uint16_t min_conn_interval, uint16_t max_conn_interval)
+bool BLECentral::connect(const ble_gap_evt_adv_report_t* adv_report)
 {
-  return connect(&adv_report->peer_addr, min_conn_interval, max_conn_interval);
+  return connect(&adv_report->peer_addr);
 }
 
 /**

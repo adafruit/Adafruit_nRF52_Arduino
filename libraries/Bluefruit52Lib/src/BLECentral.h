@@ -56,28 +56,30 @@ class BLECentral
 {
   public:
     BLECentral(void); // Constructor
+
     void begin(void);
 
     /*------------------------------------------------------------------*/
     /*
      *------------------------------------------------------------------*/
-    bool     connect(const ble_gap_evt_adv_report_t* adv_report,
-                     uint16_t min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT,
-                     uint16_t max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT);
+    bool     setConnInterval(uint16_t min, uint16_t max);
+    bool     setConnIntervalMS (uint16_t min_ms, uint16_t max_ms);
 
-    bool     connect(const ble_gap_addr_t *peer_addr,
-                     uint16_t min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT,
-                     uint16_t max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT);
+    bool     connect(const ble_gap_evt_adv_report_t* adv_report);
+    bool     connect(const ble_gap_addr_t *peer_addr);
 
-
-    bool     connected  (uint16_t conn_handle); // If connected to a specific peripheral
-    bool     connected  (void);                 // If connected to any peripherals
+    bool     connected (uint16_t conn_handle); // If connected to a specific peripheral
+    bool     connected (void);                 // If connected to any peripherals
 
     /*------------- Callbacks -------------*/
     void setConnectCallback   ( BLEGap::connect_callback_t    fp);
     void setDisconnectCallback( BLEGap::disconnect_callback_t fp);
 
   private:
+    // Peripheral Preferred Connection Parameters (PPCP)
+    uint16_t _ppcp_min_conn;
+    uint16_t _ppcp_max_conn;
+
     uint16_t _conn_hdl;
 
     void  _event_handler(ble_evt_t* evt);
