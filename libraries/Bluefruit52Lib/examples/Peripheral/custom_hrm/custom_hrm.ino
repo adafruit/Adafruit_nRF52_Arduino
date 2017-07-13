@@ -28,7 +28,7 @@ BLEBas blebas;    // BAS (Battery Service) helper class instance
 uint8_t  bps = 0;
 
 // Advanced function prototypes
-void setupAdv(void);
+void startAdv(void);
 void setupHRM(void);
 void connect_callback(uint16_t conn_handle);
 void disconnect_callback(uint16_t conn_handle, uint8_t reason);
@@ -72,34 +72,37 @@ void setup()
 
   // Setup the advertising packet(s)
   Serial.println("Setting up the advertising payload(s)");
-  setupAdv();
+  startAdv();
 
   Serial.println("Ready Player One!!!");
   Serial.println("\nAdvertising");
-
-  /* Start Advertising
-   * - Enable auto advertising if disconnected
-   * - Interval:  fast mode = 20 ms, slow mode = 152.5 ms
-   * - Timeout for fast mode is 30 seconds
-   * - Start(timeout) with timeout = 0 will advertise forever
-   */
-  Bluefruit.Advertising.restartOnDisconnect(true);
-  Bluefruit.Advertising.setInterval(32, 244);    // in unit of 0.625 ms
-  Bluefruit.Advertising.setFastTimeout(30);      // number of seconds in fast mode
-  Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds
 }
 
-void setupAdv(void)
+void startAdv(void)
 {
+  // Advertising packet
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
 
   // Include HRM Service UUID
   Bluefruit.Advertising.addService(hrms);
 
-  // There isn't enough room in the advertising packet for the
-  // name so we'll place it on the secondary Scan Response packet
-  Bluefruit.ScanResponse.addName();
+  // Include Name
+  Bluefruit.Advertising.addName();
+  
+  /* Start Advertising
+   * - Enable auto advertising if disconnected
+   * - Interval:  fast mode = 20 ms, slow mode = 152.5 ms
+   * - Timeout for fast mode is 30 seconds
+   * - Start(timeout) with timeout = 0 will advertise forever
+   * 
+   * For recommended advertising interval
+   * https://developer.apple.com/library/content/qa/qa1931/_index.html   
+   */
+  Bluefruit.Advertising.restartOnDisconnect(true);
+  Bluefruit.Advertising.setInterval(32, 244);    // in unit of 0.625 ms
+  Bluefruit.Advertising.setFastTimeout(30);      // number of seconds in fast mode
+  Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds  
 }
 
 void setupHRM(void)

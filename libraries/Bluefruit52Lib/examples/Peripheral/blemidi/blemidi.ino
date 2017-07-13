@@ -63,7 +63,16 @@ void setup()
 
   // Do the same for MIDI Note Off messages.
   MIDI.setHandleNoteOff(handleNoteOff);
+  
+  // Set up and start advertising
+  startAdv();
 
+  // Start MIDI read loop
+  Scheduler.startLoop(midiRead);
+}
+
+void startAdv(void)
+{
   // Set General Discoverable Mode flag
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
 
@@ -73,7 +82,8 @@ void setup()
   // Advertise BLE MIDI Service
   Bluefruit.Advertising.addService(blemidi);
 
-  // Advertise device name in the Scan Response
+  // Secondary Scan Response packet (optional)
+  // Since there is no room for 'Name' in Advertising packet
   Bluefruit.ScanResponse.addName();
 
   /* Start Advertising
@@ -81,14 +91,14 @@ void setup()
    * - Interval:  fast mode = 20 ms, slow mode = 152.5 ms
    * - Timeout for fast mode is 30 seconds
    * - Start(timeout) with timeout = 0 will advertise forever
+   *
+   * For recommended advertising interval
+   * https://developer.apple.com/library/content/qa/qa1931/_index.html   
    */
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.setInterval(32, 244);    // in unit of 0.625 ms
   Bluefruit.Advertising.setFastTimeout(30);      // number of seconds in fast mode
-  Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds
-
-  // Start MIDI read loop
-  Scheduler.startLoop(midiRead);
+  Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds  
 }
 
 void handleNoteOn(byte channel, byte pitch, byte velocity)

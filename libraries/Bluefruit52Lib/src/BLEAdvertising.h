@@ -47,12 +47,6 @@
 /* Advertising Guideline from Apple
  * https://developer.apple.com/library/content/qa/qa1931/_index.html
  *
- * The advertising interval of your peripheral affects the time to discovery
- * and connect performance. Outside of ideal conditions, for example when your
- * app is no longer active in the foreground, the time to discovery becomes
- * longer. To maximize the probability of being discovered, the accessory
- * must advertise at one of the listed intervals exactly.
- *
  * The recommended advertising pattern and advertising intervals are:
  * - First, advertise at 20 ms intervals for at least 30 seconds
  * - If not discovered after 30 seconds, you may change to one of the following

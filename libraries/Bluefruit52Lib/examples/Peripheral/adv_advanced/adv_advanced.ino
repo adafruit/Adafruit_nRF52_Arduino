@@ -41,33 +41,33 @@ void setup()
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
 
-  // Set up the Advertising Packet
-  setupAdv();
+  // Set up and start advertising
+  startAdv();
+
+  Serial.println("Advertising is started"); 
+}
+
+void startAdv(void)
+{   
+  // Advertising packet
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  Bluefruit.Advertising.addTxPower();
+  Bluefruit.Advertising.addName();
 
   /* Start Advertising
    * - Enable auto advertising if disconnected
    * - Interval:  fast mode = 20 ms, slow mode = 152.5 ms
    * - Timeout for fast mode is 30 seconds
    * - Start(timeout) with timeout = 0 will advertise forever
+   * 
+   * For recommended advertising interval
+   * https://developer.apple.com/library/content/qa/qa1931/_index.html
    */
   Bluefruit.Advertising.setStopCallback(adv_stop_callback);
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.setInterval(32, 244);    // in units of 0.625 ms
   Bluefruit.Advertising.setFastTimeout(30);      // number of seconds in fast mode
-  Bluefruit.Advertising.start(ADV_TIMEOUT);      // Stop advertising entirely after ADV_TIMEOUT seconds
-
-  Serial.println("Advertising is started");
-}
-
-void setupAdv(void)
-{  
-  //Bluefruit.Advertising.addTxPower();
-  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.Advertising.addTxPower();
-
-  // There is no room for Name in the advertising packet
-  // Use Scan response for Name instead
-  Bluefruit.ScanResponse.addName();
+  Bluefruit.Advertising.start(ADV_TIMEOUT);      // Stop advertising entirely after ADV_TIMEOUT seconds 
 }
 
 void loop() 
