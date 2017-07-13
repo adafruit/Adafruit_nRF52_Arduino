@@ -210,6 +210,17 @@ bool BLEScanner::checkReportForUuid(const ble_gap_evt_adv_report_t* report, BLEU
   return false;
 }
 
+bool BLEScanner::checkReportForService(const ble_gap_evt_adv_report_t* report, BLEClientService svc)
+{
+  return checkReportForUuid(report, svc.uuid);
+}
+
+bool BLEScanner::checkReportForService(const ble_gap_evt_adv_report_t* report, BLEService svc)
+{
+  return checkReportForUuid(report, svc.uuid);
+}
+
+
 /**
  * Event Handler
  * @param evt
