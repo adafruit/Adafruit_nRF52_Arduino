@@ -40,7 +40,7 @@
 #include "bluefruit.h"
 
 #define CFG_CALLBACK_TASK_STACKSIZE     (512*2)
-#define CFG_CALLBACK_QUEUE_LENGTH       10
+#define CFG_CALLBACK_QUEUE_LENGTH       20
 
 typedef struct
 {

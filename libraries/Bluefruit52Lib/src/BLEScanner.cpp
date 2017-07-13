@@ -232,8 +232,9 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_ADV_REPORT:
     {
       // evt_conn_hdl is equal to BLE_CONN_HANDLE_INVALID
-      ble_gap_evt_adv_report_t* adv_report = &evt->evt.gap_evt.params.adv_report;
-      if (_rx_cb) _rx_cb(adv_report); // TODO ada_callback
+      ble_gap_evt_adv_report_t* adv_report = (ble_gap_evt_adv_report_t*) rtos_malloc( sizeof(ble_gap_evt_adv_report_t) );
+      (*adv_report) = evt->evt.gap_evt.params.adv_report;
+      if (_rx_cb) ada_callback(adv_report, _rx_cb, adv_report);
     }
     break;
 

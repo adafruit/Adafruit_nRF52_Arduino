@@ -71,9 +71,9 @@ void adafruit_callback_task(void* arg)
           ((BLEAdvertising::stop_callback_t) func)();
         break;
 
-//        case BLEScanner_rx_callback_t:
-//          ((BLEScanner::BLEScanner_rx_callback_t) func)();
-//        break;
+        case BLEScanner_rx_callback_t:
+          ((BLEScanner::rx_callback_t) func)( (ble_gap_evt_adv_report_t*) args[0] );
+        break;
 
         /*------------- Bluefruit -------------*/
 
