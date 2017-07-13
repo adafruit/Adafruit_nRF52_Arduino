@@ -65,6 +65,12 @@ public:
   void setRxCallback(rx_callback_t fp);
   void setStopCallback(stop_callback_t fp);
 
+  /*------------- Data Parser -------------*/
+  uint8_t* parseReportByType(uint8_t const* scandata, uint8_t scanlen, uint8_t type, uint8_t* result_len);
+  uint8_t* parseReportByType(const ble_gap_evt_adv_report_t* report, uint8_t type, uint8_t* result_len);
+
+  bool    checkReportForUuid(const ble_gap_evt_adv_report_t* adv_report, BLEUuid ble_uuid);
+
   /*------------------------------------------------------------------*/
   /* INTERNAL USAGE ONLY
    * Although declare as public, it is meant to be invoked by internal

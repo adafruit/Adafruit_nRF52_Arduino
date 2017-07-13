@@ -20,7 +20,7 @@ void setup()
 
   Serial.println("Bluefruit52 Central Scan Example");
 
-  // up to 1 peripheral conn and 1 central conn
+  // Enable both peripheral and central
   Bluefruit.begin(true, true);
   Bluefruit.setName("Bluefruit52");
 
@@ -48,7 +48,7 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   Serial.println();
 
   // Check if advertising contain BleUart service
-  if ( Bluefruit.Central.checkUuidInScan(report, BLEUART_UUID_SERVICE) )
+  if ( Bluefruit.Scanner.checkReportForUuid(report, BLEUART_UUID_SERVICE) )
   {
     Serial.println("                       BLE UART service detected");
   }

@@ -58,7 +58,7 @@ void setup()
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
   // Check if advertising contain BleUart service
-  if ( Bluefruit.Central.checkUuidInScan(report, BLEUART_UUID_SERVICE) )
+  if ( Bluefruit.Scanner.checkReportForUuid(report, BLEUART_UUID_SERVICE) )
   {
     Serial.println("BLE UART service detected");
     Serial.println("Attempt to connect ... ");

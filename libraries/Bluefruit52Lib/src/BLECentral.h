@@ -59,13 +59,6 @@ class BLECentral
     void begin(void);
 
     /*------------------------------------------------------------------*/
-    /* Scan & Parser
-     *------------------------------------------------------------------*/
-    uint8_t* extractScanData(uint8_t const* scandata, uint8_t scanlen, uint8_t type, uint8_t* result_len);
-    uint8_t* extractScanData(const ble_gap_evt_adv_report_t* report, uint8_t type, uint8_t* result_len);
-    bool     checkUuidInScan(const ble_gap_evt_adv_report_t* adv_report, BLEUuid ble_uuid);
-
-    /*------------------------------------------------------------------*/
     /*
      *------------------------------------------------------------------*/
     bool     connect(const ble_gap_evt_adv_report_t* adv_report,

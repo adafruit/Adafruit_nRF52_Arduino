@@ -113,6 +113,86 @@ bool BLEScanner::stop(void)
   return true;
 }
 
+/*------------------------------------------------------------------*/
+/* Paser helper
+ *------------------------------------------------------------------*/
+uint8_t* BLEScanner::parseReportByType(uint8_t const* scandata, uint8_t scanlen, uint8_t type, uint8_t* result_len)
+{
+  *result_len = 0;
+
+  // len (1+data), type, data
+  while ( scanlen )
+  {
+    if ( scandata[1] == type )
+    {
+      *result_len = scandata[0]-1;
+      return (uint8_t*) (scandata + 2);
+    }
+    else
+    {
+      scanlen  -= (scandata[0] + 1);
+      scandata += (scandata[0] + 1);
+    }
+  }
+
+  return NULL;
+}
+
+uint8_t* BLEScanner::parseReportByType(const ble_gap_evt_adv_report_t* report, uint8_t type, uint8_t* result_len)
+{
+  return parseReportByType(report->data, report->dlen, type, result_len);
+}
+
+bool BLEScanner::checkReportForUuid(const ble_gap_evt_adv_report_t* report, BLEUuid ble_uuid)
+{
+  const uint8_t* uuid;
+  uint8_t uuid_len = ble_uuid.size();
+
+  uint8_t type_arr[2];
+
+  // Check both UUID16 more available and complete list
+  if ( uuid_len == 16)
+  {
+    type_arr[0] = BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE;
+    type_arr[1] = BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_COMPLETE;
+
+    uuid = (uint8_t*) &ble_uuid._uuid.uuid;
+  }else
+  {
+    type_arr[0] = BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_MORE_AVAILABLE;
+    type_arr[1] = BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_COMPLETE;
+
+    uuid = ble_uuid._uuid128;
+  }
+
+  uuid_len /= 8; // convert uuid_len to number of bytes
+
+  for (int i=0; i<2; i++)
+  {
+    uint8_t len = 0;
+    uint8_t const* data = parseReportByType(report, type_arr[i] , &len);
+
+    while( len )
+    {
+      // found matched
+      if ( !memcmp(data, uuid, uuid_len) )
+      {
+        return true;
+      }else
+      {
+        data += uuid_len;
+        len  -= uuid_len;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Event Handler
+ * @param evt
+ */
 void BLEScanner::_eventHandler(ble_evt_t* evt)
 {
   switch ( evt->header.evt_id  )
