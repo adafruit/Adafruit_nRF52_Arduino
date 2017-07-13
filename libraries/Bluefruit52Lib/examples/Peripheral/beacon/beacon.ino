@@ -63,7 +63,7 @@ void startAdv(void)
   /* Start Advertising
    * - Enable auto advertising if disconnected
    * - Timeout for fast mode is 30 seconds
-   * - Start(timeout) with timeout = 0 will advertise forever
+   * - Start(timeout) with timeout = 0 will advertise forever (until connected)
    * 
    * Apple Beacon specs
    * - Type: Non connectable, undirected
