@@ -153,7 +153,6 @@ void BLECentral::_event_handler(ble_evt_t* evt)
 
     case BLE_GAP_EVT_DISCONNECTED:
       // Note callback is invoked by BLEGap
-      _conn_hdl = BLE_CONN_HANDLE_INVALID;
     break;
 
     default: break;

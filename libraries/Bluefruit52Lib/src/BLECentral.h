@@ -80,8 +80,6 @@ class BLECentral
     uint16_t _ppcp_min_conn;
     uint16_t _ppcp_max_conn;
 
-    uint16_t _conn_hdl;
-
     void  _event_handler(ble_evt_t* evt);
 
     friend class AdafruitBluefruit;
