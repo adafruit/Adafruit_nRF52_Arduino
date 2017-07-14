@@ -28,8 +28,10 @@
  * - E.g If our board connect to mobile phone first (as peripheral), afterward, it connects
  * to another bluefruit board as central. Then the connection handle of mobile is 0, and
  * handle of bluefruit board is 1. And so on.
- * 
- * 
+ */
+
+/* LED_RED fast sequence blink the number of connections.
+ * LED_BLUE blink constantly when scanning
  */
 #include <bluefruit.h>
 
@@ -53,9 +55,18 @@ typedef struct
  */
 prph_info_t prphs[BLE_MAX_CONN];
 
+
+// Software Timer for blinking RED LED
+SoftwareTimer blinkTimer;
+uint8_t connection_num = 0; // for blink pattern
+
 void setup() 
 {
   Serial.begin(115200);
+
+  // Initialize blinkTimer for 100 ms and start it
+  blinkTimer.begin(100, blink_timer_callback);
+  blinkTimer.start();
 
   Serial.println("Bluefruit52 Central Mulitple BLEUART Example");
   Serial.println("--------------------------------------------");
@@ -70,9 +81,6 @@ void setup()
     prphs[idx].bleuart.begin();
     prphs[idx].bleuart.setRxCallback(uart_rx_callback);
   }
-  
-  // Increase Blink rate to different from PrPh advertising mode 
-  Bluefruit.setConnLedInterval(250);
 
   // Callbacks for Central
   Bluefruit.Central.setConnectCallback(connect_callback);
@@ -125,15 +133,20 @@ void connect_callback(uint16_t conn_handle)
   if ( peer->bleuart.discover(conn_handle) )
   {
     Serial.println("Found it");
-
     Serial.println("Enable TXD's notify");
     peer->bleuart.enableTXD();
 
-    Serial.println("Ready to receive from peripheral");
+    Serial.println("Continue scanning for more peripherals");
+    Bluefruit.Scanner.start(0);
   }else
   {
     Serial.println("Found NONE");
-  }  
+
+    // disconect since we couldn't find bleuart service
+    Bluefruit.Central.disconnect(conn_handle);
+  }
+
+  connection_num++;
 }
 
 /**
@@ -147,7 +160,8 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   (void) reason;
   
   Serial.println("Disconnected");
-  Serial.println("Bluefruit will auto start scanning (default)");
+
+  connection_num--;
 }
 
 /**
@@ -199,3 +213,27 @@ void loop()
   }
 }
 
+
+
+/**
+ * Software Timer callback is invoked via a built-in FreeRTOS thread with
+ * minimal stack size. Therefore it should be as simple as possible. If
+ * a periodically heavy task is needed, please use Scheduler.startLoop() to
+ * create a dedicated task for it.
+ * 
+ * More information http://www.freertos.org/RTOS-software-timer.html
+ */
+void blink_timer_callback(TimerHandle_t xTimerID)
+{
+  (void) xTimerID;
+
+  // Period of sequence is 10 times (1 second). 
+  // RED LED will toggle first 2*n times (on/off) and remain off for the rest of period
+  // Where n = number of connection
+  static uint8_t count = 0;
+
+  if ( count < 2*connection_num) digitalToggle(LED_RED);
+
+  count++;
+  if (count >= 10) count = 0;
+}
