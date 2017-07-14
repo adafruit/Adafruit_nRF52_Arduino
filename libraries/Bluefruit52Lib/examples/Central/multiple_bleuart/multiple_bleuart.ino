@@ -13,7 +13,7 @@
 *********************************************************************/
 
 /* This sketch demonstrate the central API() to connect multiple peripherals. 
- * One or more Bluefruit board that configured as peripheral bleuart is required 
+ * One or more Bluefruit boards that configured as peripheral bleuart is required 
  * for the demo. The sektch will 
  * - Read from HW Serial and send to all connected peripherals
  * - Forward any messages from a peripherals to all.
@@ -21,9 +21,9 @@
  * It is advised to name peripherals board differently to make it
  * easier to regconize.
  * 
- * Note: Connection Handle explanation
+ * Note: Connection Handle Explanation
  * 
- * There are total concurrent connections BLE_MAX_CONN = BLE_PRPH_MAX_CONN + BLE_CENTRAL_MAX_CONN.
+ * The total connections is BLE_MAX_CONN = BLE_PRPH_MAX_CONN + BLE_CENTRAL_MAX_CONN.
  * 
  * Connection handle is an integer number assigned by SoftDevice (ble stack) 
  * for each connection starting from 0 to to BLE_MAX_CONN-1, depending on the order
@@ -43,20 +43,20 @@ typedef struct
 {
   char name[32];
 
+  uint16_t conn_handle;
+
   // Each prph need its own client service
   BLEClientUart bleuart;
 } prph_info_t;
 
-/* Peripherals info array indexed by connnection handle.
+/* Peripherals info array 
  * 
- * Note: Although there is only BLE_CENTRAL_MAX_CONN central connections
- * The conn handle can be larger (if peripheral role is used, e.g connect to mobile).
- * We just declare this array using BLE_MAX_CONN to prevent out of array access.
- * 
- * If you are tight on memory, you can declare this pool to only BLE_CENTRAL_MAX_CONN and
- * have a seperated mapping array from connection handle to array index.
+ * Since there is only BLE_CENTRAL_MAX_CONN central connections and
+ * the connection handle can be larger (if peripheral role is used, 
+ * e.g connect to mobile). We need to convert connection handle <-> array index 
+ * where approriate to prevent out of array access.
  */
-prph_info_t prphs[BLE_MAX_CONN];
+prph_info_t prphs[BLE_CENTRAL_MAX_CONN];
 
 
 // Software Timer for blinking RED LED
@@ -78,11 +78,15 @@ void setup()
   Bluefruit.begin(true, true);
   Bluefruit.setName("Bluefruit52 Central");
   
-  // Init All of BLE Central Uart Serivce
+  // Init peripheral pool
   for (uint8_t idx=0; idx<BLE_CENTRAL_MAX_CONN; idx++)
   {
+    // Invalid all connection handle
+    prphs[idx].conn_handle = BLE_CONN_HANDLE_INVALID;
+    
+    // All of BLE Central Uart Serivce
     prphs[idx].bleuart.begin();
-    prphs[idx].bleuart.setRxCallback(uart_rx_callback);
+    prphs[idx].bleuart.setRxCallback(bleuart_rx_callback);
   }
 
   // Callbacks for Central
@@ -124,7 +128,14 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
  */
 void connect_callback(uint16_t conn_handle)
 {
-  prph_info_t* peer = &prphs[conn_handle];
+  // Find an available id to use
+  int id  = findConnHandle(BLE_CONN_HANDLE_INVALID);
+
+  // Exceeded the number of connections !!!
+  if ( id < 0 ) return;
+  
+  prph_info_t* peer = &prphs[id];
+  peer->conn_handle = conn_handle;
   
   Bluefruit.Gap.getPeerName(conn_handle, peer->name, 32);
 
@@ -149,7 +160,7 @@ void connect_callback(uint16_t conn_handle)
 
     // disconect since we couldn't find bleuart service
     Bluefruit.Central.disconnect(conn_handle);
-  }
+  }  
 
   connection_num++;
 }
@@ -163,10 +174,20 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
   (void) conn_handle;
   (void) reason;
-  
-  Serial.println("Disconnected");
 
   connection_num--;
+
+  // Mark the id as invalid
+  int id  = findConnHandle(conn_handle);
+
+  // Not existed connection, something went wrong !!!
+  if ( id < 0 ) return;
+
+  // make conn handle as invalid
+  prphs[id].conn_handle = BLE_CONN_HANDLE_INVALID;
+
+  Serial.print(prphs[id].name);
+  Serial.println(" disconnected");
 }
 
 /**
@@ -174,11 +195,13 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
  * @param uart_svc Reference object to the service where the data 
  * arrived.
  */
-void uart_rx_callback(BLEClientUart& uart_svc)
+void bleuart_rx_callback(BLEClientUart& uart_svc)
 {
   // uart_svc is prphs[conn_handle].bleuart
   uint16_t conn_handle = uart_svc.connHandle();
-  prph_info_t* peer = &prphs[conn_handle];
+
+  int id = findConnHandle(conn_handle);
+  prph_info_t* peer = &prphs[id];
   
   // Print sender's name
   Serial.printf("[From %s]: ", peer->name);
@@ -197,13 +220,17 @@ void uart_rx_callback(BLEClientUart& uart_svc)
   }
 }
 
+/**
+ * Send a string to all connected peripherals
+ */
 void sendAll(const char* str)
 {
   Serial.print("[Send to All]: ");
-  Serial.println(str);  
-  for(uint8_t conn=0; conn < BLE_MAX_CONN; conn++)
+  Serial.println(str);
+  
+  for(uint8_t id=0; id < BLE_CENTRAL_MAX_CONN; id++)
   {
-    prph_info_t* peer = &prphs[conn];
+    prph_info_t* peer = &prphs[id];
 
     if ( peer->bleuart.discovered() )
     {
@@ -226,6 +253,24 @@ void loop()
       sendAll(buf);
     }
   }
+}
+
+/**
+ * Find the connection handle in the peripheral array
+ * @param conn_handle Connection handle
+ * @return array index if found, otherwise -1
+ */
+int findConnHandle(uint16_t conn_handle)
+{
+  for(int id=0; id<BLE_CENTRAL_MAX_CONN; id++)
+  {
+    if (conn_handle == prphs[id].conn_handle)
+    {
+      return id;
+    }
+  }
+
+  return -1;  
 }
 
 
