@@ -12,10 +12,13 @@
  any redistribution
 *********************************************************************/
 
-/*
- * This sketch demonstrate the central API() to connect multiple peripherals. 
+/* This sketch demonstrate the central API() to connect multiple peripherals. 
  * One or more Bluefruit board that configured as peripheral bleuart is required 
- * for the demo. It is advised to name other peripherals differently to make it
+ * for the demo. The sektch will 
+ * - Read from HW Serial and send to all connected peripherals
+ * - Forward any messages from a peripherals to all.
+ * 
+ * It is advised to name peripherals board differently to make it
  * easier to regconize.
  * 
  * Note: Connection Handle explanation
