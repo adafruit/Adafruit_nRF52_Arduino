@@ -49,7 +49,6 @@
 
 #include "BLEClientService.h"
 
-
 class AdafruitBluefruit;
 
 class BLECentral
@@ -67,7 +66,6 @@ class BLECentral
 
     bool     connect(const ble_gap_evt_adv_report_t* adv_report);
     bool     connect(const ble_gap_addr_t *peer_addr);
-
     bool     disconnect(uint16_t conn_handle);
 
     bool     connected (uint16_t conn_handle); // If connected to a specific peripheral
@@ -82,7 +80,10 @@ class BLECentral
     uint16_t _ppcp_min_conn;
     uint16_t _ppcp_max_conn;
 
-    void  _event_handler(ble_evt_t* evt);
+    BLEGap::connect_callback_t    _connect_cb;
+    BLEGap::disconnect_callback_t _disconnect_cb;
+
+    void     _event_handler(ble_evt_t* evt);
 
     friend class AdafruitBluefruit;
 };

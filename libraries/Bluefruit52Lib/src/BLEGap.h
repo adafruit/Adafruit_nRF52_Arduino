@@ -58,10 +58,6 @@ class BLEGap
     uint16_t       getPeerName(uint16_t conn_handle, char* buf, uint16_t bufsize);
     bool           getTxPacket(uint16_t conn_handle);
 
-    /*------------- Callbacks -------------*/
-    void setConnectCallback   (connect_callback_t    fp, uint8_t role);
-    void setDisconnectCallback(disconnect_callback_t fp, uint8_t role);
-
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal
@@ -70,11 +66,6 @@ class BLEGap
     void _eventHandler(ble_evt_t* evt);
 
   private:
-    struct {
-      connect_callback_t    connect_cb;
-      disconnect_callback_t disconnect_cb;
-    }_prph_cb, _central_cb;
-
     // Array of TX Packet semaphore, indexed by connection handle
     // Peer info where conn_handle serves as index
     typedef struct {

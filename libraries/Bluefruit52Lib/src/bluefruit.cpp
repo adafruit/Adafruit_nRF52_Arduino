@@ -95,9 +95,12 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _conn_hdl  = BLE_CONN_HANDLE_INVALID;
   _bonded    = false;
 
-   _ppcp_min_conn = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
-   _ppcp_max_conn = BLE_GAP_CONN_MAX_INTERVAL_DFLT;
-   _conn_interval = 0;
+  _ppcp_min_conn = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
+  _ppcp_max_conn = BLE_GAP_CONN_MAX_INTERVAL_DFLT;
+  _conn_interval = 0;
+
+  _connect_cb    = NULL;
+  _disconnect_cb = NULL;
 
 COMMENT_OUT(
   _auth_type = BLE_GAP_AUTH_KEY_TYPE_NONE;
@@ -315,12 +318,12 @@ bool AdafruitBluefruit::disconnect(void)
 
 void AdafruitBluefruit::setConnectCallback( BLEGap::connect_callback_t fp )
 {
-  Gap.setConnectCallback(fp, BLE_GAP_ROLE_PERIPH);
+  _connect_cb = fp;
 }
 
 void AdafruitBluefruit::setDisconnectCallback( BLEGap::disconnect_callback_t fp )
 {
-  Gap.setDisconnectCallback(fp, BLE_GAP_ROLE_PERIPH);
+  _disconnect_cb = fp;
 }
 
 uint16_t AdafruitBluefruit::connHandle(void)
@@ -492,6 +495,8 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
             // Null, value is set by sd_ble_gap_ppcp_set will be used
             VERIFY_STATUS( sd_ble_gap_conn_param_update(_conn_hdl, NULL), );
           }
+
+          if (_connect_cb) ada_callback(NULL, _connect_cb, _conn_hdl);
         }
       }
       break;
@@ -510,6 +515,8 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 
         // Save all configured cccd
         if (_bonded) _saveBondedCCCD();
+
+        if (_disconnect_cb) ada_callback(NULL, _disconnect_cb, _conn_hdl);
 
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
         _bonded   = false;

@@ -94,14 +94,14 @@ class AdafruitBluefruit
     /*------------------------------------------------------------------*/
     /* Lower Level Classes (Bluefruit.Advertising.*, etc.)
      *------------------------------------------------------------------*/
+    BLEGap             Gap;
+    BLEGatt            Gatt;
+
     BLEAdvertising     Advertising;
     BLEAdvertisingData ScanResponse;
     BLEScanner         Scanner;
     BLECentral         Central;
     BLEDiscovery       Discovery;
-
-    BLEGap             Gap;
-    BLEGatt            Gatt;
 
     /*------------------------------------------------------------------*/
     /* General Purpose Functions
@@ -177,6 +177,9 @@ class AdafruitBluefruit
 
     uint16_t _conn_hdl;
     bool     _bonded;
+
+    BLEGap::connect_callback_t    _connect_cb;
+    BLEGap::disconnect_callback_t _disconnect_cb;
 
 public: // TODO temporary for bledfu to load bonding data
     struct

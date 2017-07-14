@@ -44,6 +44,9 @@ BLECentral::BLECentral(void)
 {
   _ppcp_min_conn = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
   _ppcp_max_conn = BLE_GAP_CONN_MAX_INTERVAL_DFLT;
+
+  _connect_cb    = NULL;
+  _disconnect_cb = NULL;
 }
 
 void BLECentral::begin(void)
@@ -123,14 +126,13 @@ bool BLECentral::connected(void)
 
 void BLECentral::setConnectCallback( BLEGap::connect_callback_t fp)
 {
-  Bluefruit.Gap.setConnectCallback(fp, BLE_GAP_ROLE_CENTRAL);
+  _connect_cb = fp;
 }
 
 void BLECentral::setDisconnectCallback( BLEGap::disconnect_callback_t fp)
 {
-  Bluefruit.Gap.setDisconnectCallback(fp, BLE_GAP_ROLE_CENTRAL);
+  _disconnect_cb = fp;
 }
-
 
 /**
  * Event is forwarded from Bluefruit Poll() method
@@ -147,17 +149,19 @@ void BLECentral::_event_handler(ble_evt_t* evt)
   switch ( evt->header.evt_id  )
   {
     case BLE_GAP_EVT_CONNECTED:
-    { // Note callback is invoked by BLEGap
-      ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
-
-      if (para->role == BLE_GAP_ROLE_CENTRAL)
+      if ( Bluefruit.Gap.getRole(evt_conn_hdl) == BLE_GAP_ROLE_CENTRAL)
       {
+        // Invoke callback
+        if ( _connect_cb) ada_callback(NULL, _connect_cb, evt_conn_hdl);
       }
-    }
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
-      // Note callback is invoked by BLEGap
+      if ( Bluefruit.Gap.getRole(evt_conn_hdl) == BLE_GAP_ROLE_CENTRAL)
+      {
+        // Invoke callback
+        if ( _disconnect_cb) ada_callback(NULL, _disconnect_cb, evt_conn_hdl);
+      }
     break;
 
     default: break;
