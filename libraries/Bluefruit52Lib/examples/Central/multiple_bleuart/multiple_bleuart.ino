@@ -138,6 +138,8 @@ void connect_callback(uint16_t conn_handle)
 
     Serial.println("Continue scanning for more peripherals");
     Bluefruit.Scanner.start(0);
+
+    Serial.println("Enter any texts to send to all peripherals:");
   }else
   {
     Serial.println("Found NONE");
@@ -171,45 +173,54 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
  */
 void uart_rx_callback(BLEClientUart& uart_svc)
 {
+  // uart_svc is prphs[conn_handle].bleuart
   uint16_t conn_handle = uart_svc.connHandle();
   prph_info_t* peer = &prphs[conn_handle];
-
-  // Print to Serial and forward to all other peripherals
-  Serial.printf("[From %s]: ", peer->name);
   
+  // Print sender's name
+  Serial.printf("[From %s]: ", peer->name);
+
+  // Read Then forward to all peripherals
   while ( uart_svc.available() )
   {
-    uint8_t buf[20];
-    int count = uart_svc.read(buf,sizeof(buf));
+    // default MTU with an extra byte for string terminator
+    char buf[20+1] = { 0 };
     
-    Serial.write(buf, count);
+    if ( uart_svc.read(buf,sizeof(buf)-1) )
+    {
+      sendAll(buf);
+    }
   }
-  Serial.println();
-
-  
 }
 
-void loop() 
+void sendAll(const char* str)
 {
+  Serial.print("[Send to All]: ");
+  Serial.println(str);  
+  for(uint8_t conn=0; conn < BLE_MAX_CONN; conn++)
+  {
+    prph_info_t* peer = &prphs[conn];
+
+    if ( peer->bleuart.discovered() )
+    {
+      peer->bleuart.print(str);
+    }
+  }
+}
+
+void loop()
+{
+  // First check if we are connected to any peripherals
   if ( Bluefruit.Central.connected() )
   {
-    #if 0
-    // Not discovered yet
-    if ( bleuart.discovered() )
+    // default MTU with an extra byte for string terminator
+    char buf[20+1] = { 0 };
+    
+    // Read from HW Serial and send to all peripherals
+    if ( Serial.readBytes(buf, sizeof(buf)-1) )
     {
-      // Discovered means in working state
-      // Get Serial input and send to Peripheral
-      if ( Serial.available() )
-      {
-        delay(2); // delay a bit for all characters to arrive
-        
-        char str[20+1] = { 0 };
-        Serial.readBytes(str, 20);
-        
-        bleuart.print( str );
-      }
+      sendAll(buf);
     }
-    #endif
   }
 }
 

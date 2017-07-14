@@ -62,6 +62,7 @@ class BLEClientUart : public BLEClientService, public Stream
     // Stream API
     virtual int       read       ( void );
     virtual int       read       ( uint8_t * buf, size_t size );
+            int       read       ( char    * buf, size_t size ) { return read( (uint8_t*) buf, size); }
     virtual size_t    write      ( uint8_t b );
     virtual size_t    write      ( const uint8_t *content, size_t len );
     virtual int       available  ( void );
