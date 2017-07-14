@@ -12,54 +12,68 @@
  any redistribution
 *********************************************************************/
 
-/* This sketch demonstrate the central API() to connect multiple peripherals. 
- * One or more Bluefruit boards that configured as peripheral bleuart is required 
- * for the demo. The sektch will 
- * - Read from HW Serial and send to all connected peripherals
- * - Forward any messages from a peripherals to all.
+/* This sketch demonstrates the central API() that allows you to connect
+ * to multiple peripherals boards (Bluefruit nRF52 in peripheral mode, or
+ * any Bluefruit nRF51 boards).
+ *
+ * One or more Bluefruit boards, configured as a peripheral with the
+ * bleuart service running are required for this demo.
+ *
+ * This sketch will: 
+ *  - Read data from the HW serial port (normally USB serial, accessible
+ *    via the Serial Monitor for example), and send any incoming data to
+ *    all other peripherals connected to the central device.
+ *  - Forward any incoming bleuart messages from a peripheral to all of
+ *    the other connected devices.
  * 
- * It is advised to name peripherals board differently to make it
- * easier to regconize.
+ * It is recommended to give each peripheral board a distinct name in order
+ * to more easily distinguish the individual devices.
  * 
- * Note: Connection Handle Explanation
+ * Connection Handle Explanation
+ * -----------------------------
+ * The total number of connections is BLE_MAX_CONN = BLE_PRPH_MAX_CONN + BLE_CENTRAL_MAX_CONN.
  * 
- * The total connections is BLE_MAX_CONN = BLE_PRPH_MAX_CONN + BLE_CENTRAL_MAX_CONN.
- * 
- * Connection handle is an integer number assigned by SoftDevice (ble stack) 
- * for each connection starting from 0 to to BLE_MAX_CONN-1, depending on the order
- * of connection.
- * - E.g If our board connect to mobile phone first (as peripheral), afterward, it connects
- * to another bluefruit board as central. Then the connection handle of mobile is 0, and
- * handle of bluefruit board is 1. And so on.
+ * The 'connection handle' is an integer number assigned by the SoftDevice
+ * (Nordic's proprietary BLE stack). Each connection will receive it's own
+ * numeric 'handle' starting from 0 to BLE_MAX_CONN-1, depending on the order
+ * of connection(s).
+ *
+ * - E.g If our Central board connects to a mobile phone first (running as a peripheral),
+ *   then afterwards connects to another Bluefruit board running in peripheral mode, then
+ *    the connection handle of mobile phone is 0, and the handle for the Bluefruit
+ *    board is 1, and so on.
  */
 
-/* LED_RED fast sequence blink the number of connections.
- * LED_BLUE blink constantly when scanning
+/* LED PATTERNS
+ * ------------
+ * LED_RED   - Blinks pattern changes based on the number of connections.
+ * LED_BLUE  - Blinks constantly when scanning
  */
+
 #include <bluefruit.h>
 
-// Struct contain peripheral info
+// Struct containing peripheral info
 typedef struct
 {
   char name[32];
 
   uint16_t conn_handle;
 
-  // Each prph need its own client service
+  // Each prph need its own bleuart client service
   BLEClientUart bleuart;
 } prph_info_t;
 
-/* Peripherals info array 
+/* Peripheral info array (one per peripheral device)
  * 
- * Since there is only BLE_CENTRAL_MAX_CONN central connections and
- * the connection handle can be larger (if peripheral role is used, 
- * e.g connect to mobile). We need to convert connection handle <-> array index 
- * where approriate to prevent out of array access.
+ * There are 'BLE_CENTRAL_MAX_CONN' central connections, but the
+ * the connection handle can be numerically larger (for example if
+ * the peripheral role is also used, such as connecting to a mobile
+ * device). As such, we need to convert connection handles <-> the array
+ * index where appropriate to prevent out of array accesses.
  */
 prph_info_t prphs[BLE_CENTRAL_MAX_CONN];
 
-
-// Software Timer for blinking RED LED
+// Software Timer for blinking the RED LED
 SoftwareTimer blinkTimer;
 uint8_t connection_num = 0; // for blink pattern
 
@@ -97,27 +111,27 @@ void setup()
    * - Enable auto scan if disconnected
    * - Interval = 100 ms, window = 80 ms
    * - Don't use active scan
-   * - Start(timeout) with timeout = 0 will scan forever (until connected)
+   * - Start(0) = will scan forever since no timeout is given
    */
   Bluefruit.Scanner.setRxCallback(scan_callback);
   Bluefruit.Scanner.restartOnDisconnect(true);
-  Bluefruit.Scanner.setInterval(160, 80);       // in unit of 0.625 ms
+  Bluefruit.Scanner.setInterval(160, 80);       // in units of 0.625 ms
   Bluefruit.Scanner.useActiveScan(false);
   Bluefruit.Scanner.start(0);                   // 0 = Don't stop scanning after n seconds
 }
 
 /**
- * Callback invoked when scanner pick up an advertising data
+ * Callback invoked when scanner picks up an advertising packet
  * @param report Structural advertising data
  */
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
-  // Check if advertising contain BleUart service
+  // Check if advertising data contains the BleUart service UUID
   if ( Bluefruit.Scanner.checkReportForUuid(report, BLEUART_UUID_SERVICE) )
   {
     Serial.print("BLE UART service detected. Connecting ... ");
 
-    // Connect to device with bleuart service in advertising
+    // Connect to the device with bleuart service in advertising packet
     Bluefruit.Central.connect(report);
   }
 }
@@ -128,10 +142,10 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
  */
 void connect_callback(uint16_t conn_handle)
 {
-  // Find an available id to use
+  // Find an available ID to use
   int id  = findConnHandle(BLE_CONN_HANDLE_INVALID);
 
-  // Exceeded the number of connections !!!
+  // Eeek: Exceeded the number of connections !!!
   if ( id < 0 ) return;
   
   prph_info_t* peer = &prphs[id];
@@ -142,21 +156,21 @@ void connect_callback(uint16_t conn_handle)
   Serial.print("Connected to ");
   Serial.println(peer->name);
 
-  Serial.print("Discovering BLE Uart Service ... ");
+  Serial.print("Discovering BLE UART service ... ");
 
   if ( peer->bleuart.discover(conn_handle) )
   {
     Serial.println("Found it");
-    Serial.println("Enable TXD's notify");
+    Serial.println("Enabling TXD characteristic's CCCD notify bit");
     peer->bleuart.enableTXD();
 
     Serial.println("Continue scanning for more peripherals");
     Bluefruit.Scanner.start(0);
 
-    Serial.println("Enter any texts to send to all peripherals:");
-  }else
+    Serial.println("Enter some text in the Serial Monitor to send it to all connected peripherals:");
+  } else
   {
-    Serial.println("Found NONE");
+    Serial.println("Found ... NOTHING!");
 
     // disconect since we couldn't find bleuart service
     Bluefruit.Central.disconnect(conn_handle);
@@ -177,21 +191,21 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 
   connection_num--;
 
-  // Mark the id as invalid
+  // Mark the ID as invalid
   int id  = findConnHandle(conn_handle);
 
-  // Not existed connection, something went wrong !!!
+  // Non-existant connection, something went wrong, DBG !!!
   if ( id < 0 ) return;
 
-  // make conn handle as invalid
+  // Mark conn handle as invalid
   prphs[id].conn_handle = BLE_CONN_HANDLE_INVALID;
 
   Serial.print(prphs[id].name);
-  Serial.println(" disconnected");
+  Serial.println(" disconnected!");
 }
 
 /**
- * Callback invoked when uart received data
+ * Callback invoked when BLE UART data is received
  * @param uart_svc Reference object to the service where the data 
  * arrived.
  */
@@ -206,7 +220,7 @@ void bleuart_rx_callback(BLEClientUart& uart_svc)
   // Print sender's name
   Serial.printf("[From %s]: ", peer->name);
 
-  // Read Then forward to all peripherals
+  // Read then forward to all peripherals
   while ( uart_svc.available() )
   {
     // default MTU with an extra byte for string terminator
@@ -221,7 +235,7 @@ void bleuart_rx_callback(BLEClientUart& uart_svc)
 }
 
 /**
- * Send a string to all connected peripherals
+ * Helper function to send a string to all connected peripherals
  */
 void sendAll(const char* str)
 {
@@ -247,7 +261,7 @@ void loop()
     // default MTU with an extra byte for string terminator
     char buf[20+1] = { 0 };
     
-    // Read from HW Serial and send to all peripherals
+    // Read from HW Serial (normally USB Serial) and send to all peripherals
     if ( Serial.readBytes(buf, sizeof(buf)-1) )
     {
       sendAll(buf);
@@ -272,8 +286,6 @@ int findConnHandle(uint16_t conn_handle)
 
   return -1;  
 }
-
-
 
 /**
  * Software Timer callback is invoked via a built-in FreeRTOS thread with
