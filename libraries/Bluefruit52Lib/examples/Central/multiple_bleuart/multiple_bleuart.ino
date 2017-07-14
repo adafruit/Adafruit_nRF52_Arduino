@@ -191,6 +191,7 @@ void uart_rx_callback(BLEClientUart& uart_svc)
     
     if ( uart_svc.read(buf,sizeof(buf)-1) )
     {
+      Serial.println(buf);
       sendAll(buf);
     }
   }
