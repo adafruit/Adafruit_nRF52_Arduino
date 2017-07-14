@@ -37,7 +37,7 @@ void setup()
 
   // Init BLE Central Uart Serivce
   clientUart.begin();
-  clientUart.setRxCallback(uart_rx_callback);
+  clientUart.setRxCallback(bleuart_rx_callback);
 
   // Increase Blink rate to different from PrPh advertising mode
   Bluefruit.setConnLedInterval(250);
@@ -145,7 +145,7 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
  * @param uart_svc Reference object to the service where the data 
  * arrived. In this example it is clientUart
  */
-void uart_rx_callback(BLEClientUart& uart_svc)
+void bleuart_rx_callback(BLEClientUart& uart_svc)
 {
   Serial.print("[RX]: ");
   
