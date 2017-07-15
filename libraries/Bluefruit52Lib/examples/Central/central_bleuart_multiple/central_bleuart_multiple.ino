@@ -110,13 +110,13 @@ void setup()
   /* Start Central Scanning
    * - Enable auto scan if disconnected
    * - Interval = 100 ms, window = 80 ms
-   * - Don't use active scan
+   * - Don't use active scan (used to retrieve the optional scan response adv packet)
    * - Start(0) = will scan forever since no timeout is given
    */
   Bluefruit.Scanner.setRxCallback(scan_callback);
   Bluefruit.Scanner.restartOnDisconnect(true);
   Bluefruit.Scanner.setInterval(160, 80);       // in units of 0.625 ms
-  Bluefruit.Scanner.useActiveScan(false);
+  Bluefruit.Scanner.useActiveScan(false);       // Don't request scan response data
   Bluefruit.Scanner.start(0);                   // 0 = Don't stop scanning after n seconds
 }
 
