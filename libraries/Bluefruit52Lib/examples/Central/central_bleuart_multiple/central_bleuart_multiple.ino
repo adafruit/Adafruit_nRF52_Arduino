@@ -70,6 +70,9 @@ typedef struct
  * the peripheral role is also used, such as connecting to a mobile
  * device). As such, we need to convert connection handles <-> the array
  * index where appropriate to prevent out of array accesses.
+ * 
+ * Note: One can simply declares the array with BLE_MAX_CONN and use connection
+ * handle as index directly with the expense of SRAM.
  */
 prph_info_t prphs[BLE_CENTRAL_MAX_CONN];
 
