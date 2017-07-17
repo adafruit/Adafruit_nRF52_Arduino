@@ -132,9 +132,9 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   if (msdlen)
   {
     Serial.printf("%14s ", "MAN SPEC DATA");
-    memset(buffer, 0, sizeof(buffer));
     Serial.printBuffer(buffer, msdlen, '-');
     Serial.println();
+    memset(buffer, 0, sizeof(buffer));
   }  
 
   Serial.println();
