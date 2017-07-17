@@ -123,12 +123,8 @@ recipe.output.save_file={build.project_name}.{build.variant}.hex
 
 tools.nrfutil.cmd=nrfutil
 tools.nrfutil.cmd.windows={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/win32/nrfutil.exe
-# Legacy MacOS nrfutil location, this is for when people had it globally
-# installed and is left just for reference:
+# MacOS nrfutil location, make a symlink if installed to other location
 tools.nrfutil.cmd.macosx=/usr/local/bin/nrfutil
-# Frozen MacOS nrfutil location, this uses a frozen or pre-built standalone
-# version of nrfutil included in the BSP (no manual install required):
-#tools.nrfutil.cmd.macosx={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/macos/nrfutil
 
 tools.nrfutil.upload.params.verbose=--verbose
 tools.nrfutil.upload.params.quiet=
