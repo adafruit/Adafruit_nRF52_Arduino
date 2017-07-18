@@ -23,6 +23,7 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println("Bluefruit52 Clear Bonds Example");
+  Serial.println("-------------------------------\n");
 
   Bluefruit.begin();
 

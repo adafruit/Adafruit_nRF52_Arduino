@@ -19,6 +19,7 @@ void setup()
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 Blinky Example");
+  Serial.println("--------------------------\n");
 
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");

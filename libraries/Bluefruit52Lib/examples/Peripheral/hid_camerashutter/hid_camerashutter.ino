@@ -31,7 +31,7 @@ void setup()
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 HID Camera Shutter Example");
-  Serial.println("--------------------------------------");
+  Serial.println("--------------------------------------\n");
 
   Serial.println();
   Serial.println("Go to your phone's Bluetooth settings to pair your device");

@@ -23,7 +23,7 @@ void setup()
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 HID Mouse Example");
-  Serial.println("-----------------------------");
+  Serial.println("-----------------------------\n");
   Serial.println("Go to your phone's Bluetooth settings to pair your device");
   Serial.println("then open an application that accepts mouse input");
   Serial.println();

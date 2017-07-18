@@ -40,7 +40,7 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println("Bluefruit52 HRM Example");
-  Serial.println("-----------------------");
+  Serial.println("-----------------------\n");
 
   // Initialise the Bluefruit module
   Serial.println("Initialise the Bluefruit nRF52 module");

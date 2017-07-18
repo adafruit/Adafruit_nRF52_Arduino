@@ -19,6 +19,7 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println("Bluefruit52 Memory Info Example");
+  Serial.println("-------------------------------\n");
 }
 
 

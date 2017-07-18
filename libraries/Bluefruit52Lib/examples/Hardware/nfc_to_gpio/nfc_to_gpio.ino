@@ -18,6 +18,7 @@
 void setup() {
   Serial.begin(115200);
   Serial.println("Bluefruit52 NFC to GPIO Pin Config");
+  Serial.println("----------------------------------\n");
       if ((NRF_UICR->NFCPINS & UICR_NFCPINS_PROTECT_Msk) == (UICR_NFCPINS_PROTECT_NFC << UICR_NFCPINS_PROTECT_Pos)){
         Serial.println("Fix NFC pins");
         NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen << NVMC_CONFIG_WEN_Pos;

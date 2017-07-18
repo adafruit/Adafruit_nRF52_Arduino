@@ -36,6 +36,7 @@ void setup()
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 Beacon Example");
+  Serial.println("--------------------------\n");
 
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");

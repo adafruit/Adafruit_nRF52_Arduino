@@ -38,7 +38,7 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println("Bluefruit52 BLE ANCS Example");
-  Serial.println("----------------------------");
+  Serial.println("----------------------------\n");
 
   Serial.println("Go to iOS's Bluetooth settings and connect to Bluefruit52");
   Serial.println("It may appear up as 'Accessory' depending on your OS version.");

@@ -23,6 +23,7 @@ void setup()
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 Central ADV Scan Example");
+  Serial.println("------------------------------------\n");
 
   /* Enable both peripheral and central modes */
   Bluefruit.begin(true, true);

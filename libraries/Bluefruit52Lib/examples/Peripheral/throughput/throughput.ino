@@ -34,6 +34,7 @@ void setup(void)
 {
   Serial.begin(115200);
   Serial.println("Bluefruit52 Throughput Example");
+  Serial.println("------------------------------\n");
 
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behaviour, but provided

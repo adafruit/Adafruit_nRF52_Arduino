@@ -28,6 +28,7 @@ void setup()
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 BLEMIDI RX Test");
+  Serial.println("---------------------------\n");
 
   Bluefruit.autoConnLed(true);
 

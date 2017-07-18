@@ -35,6 +35,7 @@ void setup()
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 BLEMIDI TX Test");
+  Serial.println("---------------------------\n");
 
   Bluefruit.autoConnLed(true);
 

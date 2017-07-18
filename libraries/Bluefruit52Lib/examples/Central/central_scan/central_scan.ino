@@ -19,6 +19,7 @@ void setup()
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 Central Scan Example");
+  Serial.println("--------------------------------\n");
 
   // Enable both peripheral and central
   Bluefruit.begin(true, true);
