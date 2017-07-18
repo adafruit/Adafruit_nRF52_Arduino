@@ -116,7 +116,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
 
     for(int i=0; i<_client.chr_count; i++)
     {
-      if ( evt_conn_hdl == _client.chr_list[i]->_conn_hdl )
+      if ( evt_conn_hdl == _client.chr_list[i]->connHandle() )
       {
         _client.chr_list[i]->disconnect();
       }
