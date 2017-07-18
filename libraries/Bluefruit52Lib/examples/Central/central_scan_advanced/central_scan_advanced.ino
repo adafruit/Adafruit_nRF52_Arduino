@@ -27,6 +27,7 @@ void setup()
 
   /* Enable both peripheral and central modes */
   Bluefruit.begin(true, true);
+  Bluefruit.setTxPower(4);
 
   /* Set the device name */
   Bluefruit.setName("Bluefruit52");
@@ -36,12 +37,15 @@ void setup()
 
   /* Start Central Scanning
    * - Enable auto scan if disconnected
-   * - Interval = 100 ms, window = 80 ms
+   * - Filter out packet with a min rssi
+   * - Interval = 100 ms, window = 50 ms
    * - Use active scan (used to retrieve the optional scan response adv packet)
    * - Start(0) = will scan forever since no timeout is given
    */
   Bluefruit.Scanner.setRxCallback(scan_callback);
   Bluefruit.Scanner.restartOnDisconnect(true);
+  Bluefruit.Scanner.filterRssi(-80);
+  Bluefruit.Scanner.filterUuid(BLEUART_UUID_SERVICE);
   Bluefruit.Scanner.setInterval(160, 80);       // in units of 0.625 ms
   Bluefruit.Scanner.useActiveScan(true);        // Request scan response data
   Bluefruit.Scanner.start(0);                   // 0 = Don't stop scanning after n seconds

@@ -58,6 +58,9 @@ public:
   void setIntervalMS(uint16_t interval, uint16_t window);
   void restartOnDisconnect(bool enable);
 
+  void filterRssi(int8_t min_rssi);
+  void filterUuid(BLEUuid ble_uuid);
+
   bool start(uint16_t timeout = 0);
   bool stop(void);
 
@@ -81,8 +84,11 @@ public:
   void _eventHandler(ble_evt_t* evt);
 
 private:
-  bool          _runnning;
-  bool          _start_if_disconnect;
+  bool     _runnning;
+  bool     _start_if_disconnect;
+
+  int8_t   _filter_rssi;
+  BLEUuid* _filter_uuid;
 
   rx_callback_t   _rx_cb;
   stop_callback_t _stop_cb;

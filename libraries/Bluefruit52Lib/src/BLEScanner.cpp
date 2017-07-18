@@ -42,6 +42,9 @@ BLEScanner::BLEScanner(void)
   _runnning = false;
   _start_if_disconnect = true;
 
+  _filter_rssi = INT8_MIN;
+  _filter_uuid = NULL;
+
   _rx_cb   = NULL;
   _stop_cb = NULL;
 
@@ -220,6 +223,17 @@ bool BLEScanner::checkReportForService(const ble_gap_evt_adv_report_t* report, B
   return checkReportForUuid(report, svc.uuid);
 }
 
+void BLEScanner::filterRssi(int8_t min_rssi)
+{
+  _filter_rssi = min_rssi;
+}
+
+void BLEScanner::filterUuid(BLEUuid ble_uuid)
+{
+  if ( _filter_uuid == NULL ) _filter_uuid = new BLEUuid();
+
+  (*_filter_uuid) = ble_uuid;
+}
 
 /**
  * Event Handler
@@ -230,10 +244,17 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
   switch ( evt->header.evt_id  )
   {
     case BLE_GAP_EVT_ADV_REPORT:
-    {
-      // evt_conn_hdl is equal to BLE_CONN_HANDLE_INVALID
+    { // evt_conn_hdl is equal to BLE_CONN_HANDLE_INVALID
+      ble_gap_evt_adv_report_t const* evt_report = &evt->evt.gap_evt.params.adv_report;
+
+      // filter by rssi
+      if ( _filter_rssi > evt_report->rssi ) break;
+
+      // filter by uuid
+      if ( _filter_uuid && !checkReportForUuid(evt_report, *_filter_uuid) ) break;
+
       ble_gap_evt_adv_report_t* adv_report = (ble_gap_evt_adv_report_t*) rtos_malloc( sizeof(ble_gap_evt_adv_report_t) );
-      (*adv_report) = evt->evt.gap_evt.params.adv_report;
+      (*adv_report) = (*evt_report);
       if (_rx_cb) ada_callback(adv_report, _rx_cb, adv_report);
     }
     break;
