@@ -43,14 +43,50 @@
 class BLEClientCts : public BLEClientService
 {
   public:
+    typedef void (*adjust_callback_t) (uint8_t reason);
+
     BLEClientCts(void);
 
     virtual bool  begin(void);
     virtual bool  discover(uint16_t conn_handle);
 
+    bool getCurrentTime(void);
+    bool getLocalTimeInfo(void);
+
+    bool enableAdjust(void);
+    void setAdjustCallback(adjust_callback_t fp);
+
+    // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.current_time.xml
+    struct ATTR_PACKED {
+      uint16_t year;
+      uint8_t  month;
+      uint8_t  day;
+      uint8_t  hour;
+      uint8_t  minute;
+      uint8_t  second;
+      uint8_t  weekday;
+      uint8_t  subsecond;
+      uint8_t  adjust_reason;
+    } Time;
+
+    // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.local_time_information.xml
+    struct ATTR_PACKED {
+      int8_t  timezone;
+      uint8_t dst_offset;
+    }LocalInfo;
+
+    /*------------------------------------------------------------------*/
+    /* INTERNAL USAGE ONLY
+     * Although declare as public, it is meant to be invoked by internal
+     * code. User should not call these directly
+     *------------------------------------------------------------------*/
+    void _cur_time_notify_cb(uint8_t* data, uint16_t len);
+
   private:
     BLEClientCharacteristic _cur_time;
     BLEClientCharacteristic _local_info;
+
+    adjust_callback_t _adjust_cb;
 };
 
 #endif /* BLECLIENTCTS_H_ */

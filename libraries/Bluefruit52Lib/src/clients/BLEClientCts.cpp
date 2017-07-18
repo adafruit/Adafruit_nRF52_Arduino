@@ -36,18 +36,28 @@
 
 #include "bluefruit.h"
 
+void blects_central_notify_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
+
 BLEClientCts::BLEClientCts(void)
  : BLEClientService(UUID16_SVC_CURRENT_TIME), _cur_time(UUID16_CHR_CURRENT_TIME), _local_info(UUID16_CHR_LOCAL_TIME_INFORMATION)
 {
+  varclr(&Time);
+  varclr(&LocalInfo);
 
+  _adjust_cb = NULL;
 }
 
 bool BLEClientCts::begin(void)
 {
+  VERIFY_STATIC(sizeof(Time) == 10);
+  VERIFY_STATIC(sizeof(LocalInfo) == 2);
+
   // Invoke base class begin()
   BLEClientService::begin();
 
   _cur_time.begin(this);
+  _cur_time.setNotifyCallback(blects_central_notify_cb);
+
   _local_info.begin(this);
 
   return true;
@@ -65,5 +75,39 @@ bool BLEClientCts::discover(uint16_t conn_handle)
   // Current Time chars is mandatory
   VERIFY( _cur_time.valueHandle() != BLE_GATT_HANDLE_INVALID, false);
 
+  _conn_hdl = conn_handle;
   return true;
+}
+
+bool BLEClientCts::getCurrentTime(void)
+{
+  return _cur_time.read(&Time, sizeof(Time)) > 0;
+}
+
+bool BLEClientCts::getLocalTimeInfo(void)
+{
+  return _local_info.read(&LocalInfo, sizeof(LocalInfo)) > 0;
+}
+
+bool BLEClientCts::enableAdjust(void)
+{
+  return _cur_time.enableNotify();
+}
+
+void BLEClientCts::setAdjustCallback(adjust_callback_t fp)
+{
+  _adjust_cb = fp;
+}
+
+void BLEClientCts::_cur_time_notify_cb(uint8_t* data, uint16_t len)
+{
+  memcpy(&Time, data, len);
+
+  // invoked callback if set
+  if ( _adjust_cb ) _adjust_cb( Time.adjust_reason );
+}
+
+void blects_central_notify_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len)
+{
+  ((BLEClientCts&) chr.parentService())._cur_time_notify_cb(data, len);
 }

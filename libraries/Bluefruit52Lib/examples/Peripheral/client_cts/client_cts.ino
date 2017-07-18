@@ -18,6 +18,11 @@
  * 
  * Note: Currently only iOS act as CTS server, Android does not, The easiest 
  * way to test this sketch is using an iOS device.
+ * 
+ * Current Time Service Info
+ *    https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.current_time.xml
+ *    https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.current_time.xml
+ *    https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.local_time_information.xml
  */
 
 #include <bluefruit.h>
@@ -41,6 +46,7 @@ void setup()
 
   // Configure CTS client
   bleCTime.begin();
+  bleCTime.setAdjustCallback(cts_adjust_callback);
 
   // Set up and start advertising
   startAdv();
@@ -81,7 +87,12 @@ void loop()
   // If service is not yet discovered
   if ( !bleCTime.discovered() ) return;
 
-  // Your code here
+  // Get Time from iOS one every 1 second
+  bleCTime.getCurrentTime();
+
+  printTime();
+
+  delay(1000);
 }
 
 void connect_callback(uint16_t conn_handle)
@@ -93,19 +104,47 @@ void connect_callback(uint16_t conn_handle)
   {
     Serial.println("Discovered");
     
-    // ANCS requires pairing to work, it makes sense to request security here as well
+    // iOS requires pairing to work, it makes sense to request security here as well
     Serial.print("Attempting to PAIR with the iOS device, please press PAIR on your phone ... ");
     if ( Bluefruit.requestPairing() )
     {
       Serial.println("Done");
-//      Serial.println("Enabling notifications");
-//      Serial.println();
-//      bleancs.enableNotification();
+      Serial.println("Enabling Time Adjust Notify");
+      bleCTime.enableAdjust();
+
+      Serial.print("Get Current Time chars value");
+      bleCTime.getCurrentTime();
+
+      Serial.print("Get Local Time Info chars value");
+      bleCTime.getLocalTimeInfo();
+
+      Serial.println();
     }
 
     Serial.println();
   }
 }
+
+void cts_adjust_callback(uint8_t reason)
+{
+  const char * reason_str[] = { "Manual", "External Reference", "Change of Time Zone", "Change of DST" };
+
+  Serial.println("iOS Device time changed due to ");
+  Serial.println( reason_str[reason] );
+}
+
+void printTime(void)
+{
+  const char * day_of_week_str[] = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+  
+  Serial.printf("%04d-%02d-%02d ", bleCTime.Time.year, bleCTime.Time.month, bleCTime.Time.day);
+  Serial.printf("%02d:%02d:%02d ", bleCTime.Time.hour, bleCTime.Time.minute, bleCTime.Time.second);
+  Serial.println(day_of_week_str[bleCTime.Time.weekday]);
+  Serial.printf("UTC %d min, ", bleCTime.LocalInfo.timezone*15);
+  Serial.printf("Daytime Saving +%d min", bleCTime.LocalInfo.dst_offset*15);
+  Serial.println();
+}
+
 
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
