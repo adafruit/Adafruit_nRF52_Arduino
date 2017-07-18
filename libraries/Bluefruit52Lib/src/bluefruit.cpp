@@ -366,6 +366,63 @@ bool AdafruitBluefruit::setPIN(const char* pin)
 }
 )
 
+void Bluefruit_printInfo(void)
+{
+  Bluefruit.printInfo();
+}
+
+void AdafruitBluefruit::printInfo(void)
+{
+  // Skip if Serial is not initialised
+  if ( !Serial.started() ) return;
+
+  // Skip if Bluefruit.begin() is not called
+  if ( _ble_event_sem == NULL ) return;
+
+  // Name
+  Serial.printf("%-15s ", "Name");
+  {
+    char name[32];
+    memclr(name, sizeof(name));
+    getName(name, sizeof(name));
+    Serial.printf(name);
+  }
+  Serial.println();
+
+  // Max Connections
+  Serial.printf("%-15s ", "Max Connection");
+  Serial.printf("Peripheral = %d, ", _prph_enabled ? 1 : 0);
+  Serial.printf("Central = %d, ", _central_enabled ? BLE_CENTRAL_MAX_CONN : 0);
+  Serial.println();
+
+  // Address
+  Serial.printf("%-15s ", "Address");
+  {
+    const char* type_str[] = { "Public", "Static", "Private Resolvable", "Private Non Resolvable" };
+    uint8_t mac[6];
+    uint8_t type = Gap.getAddr(mac);
+    Serial.printBuffer(mac, 6, ':');
+    Serial.printf(" (%s)", type_str[type]);
+  }
+  Serial.println();
+
+  Serial.printf("%-15s ", "TX Power");
+  Serial.printf("%d dBm", _tx_power);
+  Serial.println();
+
+  Serial.printf("%-15s ", "Conn Intervals");
+  // TODO enable newlib nano float format
+  Serial.print("min = "); Serial.print( ((double) _ppcp_min_conn)*0.625, 3); Serial.print(" ms, ");
+  Serial.print("max = "); Serial.print( ((double) _ppcp_max_conn)*0.625, 3); Serial.print(" ms");
+  Serial.println();
+
+  Serial.printf("%-15s ", "Paired Devices");
+  Serial.printf("TODO");
+  Serial.println();
+
+  Serial.println();
+}
+
 /*------------------------------------------------------------------*/
 /* Thread & SoftDevice Event handler
  *------------------------------------------------------------------*/

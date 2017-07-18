@@ -42,6 +42,49 @@ BLEGap::BLEGap(void)
   varclr(&_peers);
 }
 
+/**
+ * Get current Mac address and its type
+ * @param mac address
+ * @return Address type e.g BLE_GAP_ADDR_TYPE_RANDOM_STATIC
+ */
+uint8_t BLEGap::getAddr(uint8_t mac[6])
+{
+  ble_gap_addr_t addr;
+
+  sd_ble_gap_address_get(&addr);
+  memcpy(mac, addr.addr, 6);
+
+  return addr.addr_type;
+}
+
+/**
+ * Set the MAC address
+ * @param mac   Address for PUBLIC and RANDOM_STATIC and should be NULL
+ *              if RANDOM_PRIVATE_* since it is ignored
+ * @param type  Type e.g BLE_GAP_ADDR_TYPE_RANDOM_STATIC
+ * @return
+ */
+bool BLEGap::setAddr(uint8_t mac[6], uint8_t type)
+{
+  ble_gap_addr_t addr;
+  addr.addr_type = type;
+
+  uint8_t mode = BLE_GAP_ADDR_CYCLE_MODE_NONE;
+
+  if ( (type == BLE_GAP_ADDR_TYPE_RANDOM_PRIVATE_RESOLVABLE) || (type == BLE_GAP_ADDR_TYPE_RANDOM_PRIVATE_NON_RESOLVABLE) )
+  {
+    // Private address require cycling mode
+    // Input Mac is also ignored, user can pass NULL
+    mode = BLE_GAP_ADDR_CYCLE_MODE_AUTO;
+  }else
+  {
+    memcpy(addr.addr, mac, 6);
+  }
+
+  VERIFY_STATUS( sd_ble_gap_address_set(mode, &addr), false );
+  return true;
+}
+
 bool BLEGap::connected(uint16_t conn_handle)
 {
   return _peers[conn_handle].connected;

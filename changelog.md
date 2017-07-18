@@ -2,11 +2,20 @@
 
 ## 0.7.0
 
-### BLE
+### Bluefruit
 
 - Renamed `Bluefruit.peerAddr()` to `Bluefruit.getPeerAddr()`
-- Changed BLEClientUart's RX callback
 - Added connection handle to the connect and disconnect callback prototypes
+- Change signature of Bluefruit.getName()
+- Add printInfo() for configuration summary
+
+### BLEGap
+
+- Add getAddr() and setAddr()
+
+### BLE Service
+
+- Add BLEClientUart& reference pointer BLEClientUart's RX callback
 
 ### BLEAdvertising
 

@@ -20,6 +20,13 @@
 #include "SEGGER_SYSVIEW.h"
 #endif
 
+#if CFG_DEBUG
+// weak function to avoid compilation error with
+// non-Bluefruit library sketch such as ADC read test
+void Bluefruit_printInfo() __attribute__((weak));
+void Bluefruit_printInfo() {}
+#endif
+
 #define MEMINFO_INTERVAL    60000
 
 // Weak empty variant initialization function.
@@ -39,8 +46,10 @@ static void loop_task(void* arg)
 
 #if CFG_DEBUG
   // If Serial is not begin(), call it to avoid hard fault
-  if (!Serial) Serial.begin(115200);
+  if ( !Serial.started() ) Serial.begin(115200);
   dbgPrintVersion();
+
+  Bluefruit_printInfo();
 #endif
 
   while (1)

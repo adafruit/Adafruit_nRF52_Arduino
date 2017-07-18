@@ -48,6 +48,9 @@ class BLEGap
 
     BLEGap(void);
 
+    uint8_t getAddr(uint8_t mac[6]);
+    bool    setAddr(uint8_t mac[6], uint8_t type);
+
     bool connected(uint16_t conn_handle);
 
     uint8_t        getRole(uint16_t conn_handle);

@@ -14,8 +14,9 @@
 
 #include <bluefruit.h>
 
-/* For a list of EIR data types see: https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile */
-/* Matching enum: cores/nRF5/SDK/components/softdevice/s132/headers/ble_gap.h */
+/* For a list of EIR data types see:
+ *    https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile
+ *    Matching enum: cores/nRF5/SDK/components/softdevice/s132/headers/ble_gap.h */
 
 void setup() 
 {

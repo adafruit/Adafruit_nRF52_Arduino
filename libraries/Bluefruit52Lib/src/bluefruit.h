@@ -134,6 +134,8 @@ class AdafruitBluefruit
     ble_gap_addr_t getPeerAddr(void);
     uint8_t        getPeerAddr(uint8_t addr[6]);
 
+    void      printInfo(void);
+
     /*------------------------------------------------------------------*/
     /* Callbacks
      *------------------------------------------------------------------*/
