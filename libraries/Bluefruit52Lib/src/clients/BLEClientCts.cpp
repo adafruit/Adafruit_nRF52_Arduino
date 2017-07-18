@@ -59,10 +59,11 @@ bool BLEClientCts::discover(uint16_t conn_handle)
   VERIFY( BLEClientService::discover(conn_handle) );
   _conn_hdl = BLE_CONN_HANDLE_INVALID; // make as invalid until we found all chars
 
-  // Discover Current Time chars ( mandatory )
+  // Discover characteristics
+  Bluefruit.Discovery.discoverCharacteristic(conn_handle, _cur_time, _local_info);
 
-
-  // Discover Local Time Information chars ( optional )
+  // Current Time chars is mandatory
+  VERIFY( _cur_time.valueHandle() != BLE_GATT_HANDLE_INVALID, false);
 
   return true;
 }
