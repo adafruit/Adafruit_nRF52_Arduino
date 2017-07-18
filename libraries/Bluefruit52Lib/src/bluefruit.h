@@ -106,14 +106,14 @@ class AdafruitBluefruit
     /*------------------------------------------------------------------*/
     /* General Purpose Functions
      *------------------------------------------------------------------*/
-    void   autoConnLed         (bool enabled);
-    void   setConnLedInterval  (uint32_t ms);
+    void    autoConnLed         (bool enabled);
+    void    setConnLedInterval  (uint32_t ms);
 
-    void   setName             (const char* str);
-    char*  getName             (void);
+    void    setName             (const char* str);
+    uint8_t getName             (char* name, uint16_t bufsize);
 
-    bool   setTxPower          (int8_t power);
-    int8_t getTxPower          (void);
+    bool    setTxPower          (int8_t power);
+    int8_t  getTxPower          (void);
 
     /*------------------------------------------------------------------*/
     /* GAP, Connections and Bonding
@@ -165,7 +165,6 @@ class AdafruitBluefruit
     uint16_t _conn_interval;
 
     int8_t _tx_power;
-    char _name[32+1];
 
     SemaphoreHandle_t _ble_event_sem;
     SemaphoreHandle_t _soc_event_sem;

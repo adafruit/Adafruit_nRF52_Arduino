@@ -107,10 +107,10 @@ bool BLEAdvertisingData::addService(BLEClientService& service)
 // Add Name to Adv packet, use setName() to set
 bool BLEAdvertisingData::addName(void)
 {
-  const char* name = Bluefruit.getName();
+  char name[BLE_GAP_ADV_MAX_SIZE+1];
 
   uint8_t type = BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME;
-  uint8_t len  = strlen(name);
+  uint8_t len  = Bluefruit.getName(name, sizeof(name));
 
   // not enough for full name, chop it
   if (_count + len + 2 > BLE_GAP_ADV_MAX_SIZE)

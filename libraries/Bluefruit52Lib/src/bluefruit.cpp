@@ -90,8 +90,6 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _tx_power  = 0;
 
-  strcpy(_name, CFG_DEFAULT_NAME);
-
   _conn_hdl  = BLE_CONN_HANDLE_INVALID;
   _bonded    = false;
 
@@ -185,7 +183,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 
   // Default device name
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
-  VERIFY_STATUS ( sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) _name, strlen(_name)) );
+  VERIFY_STATUS ( sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)) );
 
   VERIFY_STATUS( sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN) );
   VERIFY_STATUS( sd_ble_gap_tx_power_set( CFG_BLE_TX_POWER_LEVEL ) );
@@ -251,15 +249,14 @@ bool AdafruitBluefruit::setConnIntervalMS(uint16_t min_ms, uint16_t max_ms)
 
 void AdafruitBluefruit::setName(const char* str)
 {
-  strncpy(_name, str, 32);
-
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
-  sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) _name, strlen(_name));
+  sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) str, strlen(str));
 }
 
-char* AdafruitBluefruit::getName(void)
+uint8_t AdafruitBluefruit::getName(char* name, uint16_t bufsize)
 {
-  return _name;
+  VERIFY_STATUS( sd_ble_gap_device_name_get((uint8_t*) name, &bufsize), 0);
+  return bufsize;
 }
 
 bool AdafruitBluefruit::setTxPower(int8_t power)
