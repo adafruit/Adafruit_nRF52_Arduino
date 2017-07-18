@@ -103,7 +103,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
     }
   }
 
-  // disconnect Client Service of the disconnected handle
+  // disconnect Client Services & Characteristics of the disconnected handle
   if ( evt->header.evt_id == BLE_GAP_EVT_DISCONNECTED )
   {
     for(int i=0; i<_client.svc_count; i++)
@@ -111,6 +111,14 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
       if ( evt_conn_hdl == _client.svc_list[i]->_conn_hdl)
       {
         _client.svc_list[i]->disconnect();
+      }
+    }
+
+    for(int i=0; i<_client.chr_count; i++)
+    {
+      if ( evt_conn_hdl == _client.chr_list[i]->_conn_hdl )
+      {
+        _client.chr_list[i]->disconnect();
       }
     }
   }

@@ -76,7 +76,7 @@ void BLEClientUart::setRxCallback( rx_callback_t fp)
 
 bool BLEClientUart::discover(uint16_t conn_handle)
 {
-  // Call BLECentralService discover
+  // Call Base class discover
   VERIFY( BLEClientService::discover(conn_handle) );
   _conn_hdl = BLE_CONN_HANDLE_INVALID; // make as invalid until we found all chars
 

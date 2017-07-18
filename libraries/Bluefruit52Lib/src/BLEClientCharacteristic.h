@@ -101,6 +101,8 @@ class BLEClientCharacteristic
     void  _init         (void);
     void  _eventHandler (ble_evt_t* event);
 
+    void disconnect(void);
+
     friend class BLEGatt;
 };
 

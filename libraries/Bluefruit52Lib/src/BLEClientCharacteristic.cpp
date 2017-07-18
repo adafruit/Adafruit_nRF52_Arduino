@@ -42,7 +42,8 @@
 void BLEClientCharacteristic::_init(void)
 {
   varclr(&_chr);
-  _cccd_handle     = 0;
+  _chr.handle_value = BLE_GATT_HANDLE_INVALID;
+  _cccd_handle      = BLE_GATT_HANDLE_INVALID;
 
   _notify_cb       = NULL;
   _use_AdaCallback = true;
@@ -86,6 +87,11 @@ void BLEClientCharacteristic::begin(BLEClientService* parent_svc)
 void BLEClientCharacteristic::assign(ble_gattc_char_t* gattc_chr)
 {
   _chr = *gattc_chr;
+}
+
+void BLEClientCharacteristic::disconnect(void)
+{
+  _chr.handle_value = BLE_GATT_HANDLE_INVALID;
 }
 
 void BLEClientCharacteristic::useAdaCallback(bool enabled)
