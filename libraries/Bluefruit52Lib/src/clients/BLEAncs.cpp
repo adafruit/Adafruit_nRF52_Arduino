@@ -84,9 +84,6 @@ bool BLEAncs::begin(void)
   // Invoke base class begin()
   BLEClientService::begin();
 
-  // Initialize Discovery module if needed
-  if ( !Bluefruit.Discovery.begun() ) Bluefruit.Discovery.begin();
-
   _adamsg.begin(false);
 
   _control.begin();

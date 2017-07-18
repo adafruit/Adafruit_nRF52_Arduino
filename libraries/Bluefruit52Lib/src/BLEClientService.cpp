@@ -73,6 +73,9 @@ bool BLEClientService::begin(void)
 
 bool BLEClientService::discover(uint16_t conn_handle)
 {
+  // Initialize Discovery module if needed
+  if ( !Bluefruit.Discovery.begun() ) Bluefruit.Discovery.begin();
+
   VERIFY( Bluefruit.Discovery._discoverService(conn_handle, *this) );
   _conn_hdl = conn_handle;
   return true;
