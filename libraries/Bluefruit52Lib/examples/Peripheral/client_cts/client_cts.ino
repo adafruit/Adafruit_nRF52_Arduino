@@ -12,17 +12,17 @@
  any redistribution
 *********************************************************************/
 
-/* This sketch demonstrate the client Current Time service using BLEClientCts
- * API(). After uploading, go to iOS setting and connect to Bluefruit52, 
- * and then press PAIR.
+/* This sketch demonstrates the client Current Time Service using the
+ * BLEClientCts API(). After uploading, go to iOS setting and connect
+ * to Bluefruit52, and then press PAIR.
  * 
- * Note: Currently only iOS act as CTS server, Android does not, The easiest 
- * way to test this sketch is using an iOS device.
+ * Note: Currently only iOS act as a CTS server, Android does not. The
+ * easiest way to test this sketch is using an iOS device.
  * 
- * Current Time Service Info
- *    https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.current_time.xml
- *    https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.current_time.xml
- *    https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.local_time_information.xml
+ * Current Time Service info:
+ *   https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.current_time.xml
+ *   https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.current_time.xml
+ *   https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.local_time_information.xml
  */
 
 #include <bluefruit.h>
@@ -37,7 +37,7 @@ void setup()
   Serial.println("-------------------------------------------\n");
 
   Serial.println("Go to iOS's Bluetooth settings and connect to Bluefruit52");
-  Serial.println("It may appear up as 'Accessory' depending on your OS version.");
+  Serial.println("It may appear up as 'Accessory' depending on your iOS version.");
 
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
@@ -47,7 +47,7 @@ void setup()
   // Configure CTS client
   bleCTime.begin();
 
-  // Callback invoked when iOS device's time changes
+  // Callback invoked when iOS device time changes
   // To test this go to Setting -> Date & Time -> Toggle Time Zone "Set Automatically"
   // Or change the time manually etc ...
   bleCTime.setAdjustCallback(cts_adjust_callback);
@@ -62,7 +62,7 @@ void startAdv(void)
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
 
-  // Include CTS client uuid
+  // Include CTS client UUID
   Bluefruit.Advertising.addService(bleCTime);
 
   // Includes name
@@ -91,7 +91,7 @@ void loop()
   // If service is not yet discovered
   if ( !bleCTime.discovered() ) return;
 
-  // Get Time from iOS one every 1 second
+  // Get Time from iOS once per second
   // Note it is advised to update this quickly
   // Application should use local clock and update time after 
   // a long period (e.g an hour or day)s
