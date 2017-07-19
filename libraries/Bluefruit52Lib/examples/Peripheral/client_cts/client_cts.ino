@@ -46,6 +46,10 @@ void setup()
 
   // Configure CTS client
   bleCTime.begin();
+
+  // Callback invoked when iOS device's time changes
+  // To test this go to Setting -> Date & Time -> Toggle Time Zone "Set Automatically"
+  // Or change the time manually etc ...
   bleCTime.setAdjustCallback(cts_adjust_callback);
 
   // Set up and start advertising
