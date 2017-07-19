@@ -79,10 +79,10 @@ bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLEClientService& svc,
   VERIFY_STATUS( sd_ble_gattc_primary_services_discover(conn_handle, start_handle, &svc.uuid._uuid), false );
 
   // wait for discovery event
-  int32_t count = _adamsg.waitUntilComplete(BLE_DISCOVERY_TIMEOUT);
+  int32_t bytecount = _adamsg.waitUntilComplete(BLE_DISCOVERY_TIMEOUT);
 
   // timeout or has no data (due to GATT Error)
-  if ( count <= 0 ) return false;
+  if ( bytecount <= 0 ) return false;
 
   // Check the discovered UUID with input one
   if ( (disc_svc.count) && (svc.uuid == disc_svc.services[0].uuid) )
@@ -104,45 +104,56 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
 {
   uint8_t found = 0;
 
+  uint16_t bufsize = sizeof(ble_gattc_evt_char_disc_rsp_t) + (count-1)*sizeof(ble_gattc_char_t);
+  ble_gattc_evt_char_disc_rsp_t* disc_chr = (ble_gattc_evt_char_disc_rsp_t*) rtos_malloc( bufsize );
 
   while( found < count )
   {
-    ble_gattc_evt_char_disc_rsp_t disc_chr;
-
     LOG_LV2(Discover, "[CHR] Handle start = %d, end = %d", _hdl_range.start_handle, _hdl_range.end_handle);
 
-    _adamsg.prepare(&disc_chr, sizeof(disc_chr));
-    VERIFY_STATUS( sd_ble_gattc_characteristics_discover(conn_handle, &_hdl_range), found );
+    memclr(disc_chr, bufsize);
+    _adamsg.prepare(disc_chr, bufsize);
+
+    if( ERROR_NONE != sd_ble_gattc_characteristics_discover(conn_handle, &_hdl_range) ) break;
 
     // wait for discovery event
-    // Assume only 1 characteristic discovered each
-    int32_t count = _adamsg.waitUntilComplete(BLE_DISCOVERY_TIMEOUT);
+    int32_t bytecount = _adamsg.waitUntilComplete(BLE_DISCOVERY_TIMEOUT);
 
     // timeout or has no data (due to GATT Error)
-    if ( count <= 0 ) return false;
+    if ( bytecount <= 0 ) break;
 
-    // increase handle range for next discovery
-    _hdl_range.start_handle = disc_chr.chars[0].handle_value + 1;
-
-    // Look for matched uuid
-    for (uint8_t i=0; i<count; i++)
+    // Look for matched uuid in the discovered list
+    for(uint8_t d=0 ; d<disc_chr->count; d++)
     {
-      if ( chr[i]->uuid == disc_chr.chars[0].uuid )
+      for (uint8_t i=0; i<count; i++)
       {
-        LOG_LV2(Discover, "[CHR] Found 0x%04X, handle = %d", disc_chr.chars[0].uuid.uuid,  disc_chr.chars[0].handle_value);
+        if ( chr[i]->uuid == disc_chr->chars[d].uuid )
+        {
+          LOG_LV2(Discover, "[CHR] Found 0x%04X, handle = %d", disc_chr->chars[d].uuid.uuid,  disc_chr->chars[d].handle_value);
 
-        // characteristic assign overload
-        chr[i]->assign(&disc_chr.chars[0]);
+          // characteristic assign overload
+          chr[i]->assign(&disc_chr->chars[d]);
 
-        // Discovery All descriptors as well
-        chr[i]->discoverDescriptor(conn_handle);
+          // Discovery All descriptors as well
+          _hdl_range.start_handle = disc_chr->chars[d].handle_value + 1;
+          if (_hdl_range.start_handle < _hdl_range.end_handle )
+          {
+            // skip discovery descriptor if it is last characteristic without descriptor
+            chr[i]->discoverDescriptor(conn_handle);
+          }
 
-        found++;
+          found++;
 
-        break;
+          break;
+        }
       }
     }
+
+    // increase handle range for next discovery
+    _hdl_range.start_handle = disc_chr->chars[ disc_chr->count-1  ].handle_value + 1;
   }
+
+  rtos_free(disc_chr);
 
   return found;
 }
@@ -156,26 +167,22 @@ uint16_t BLEDiscovery::_discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_d
   VERIFY_STATUS( sd_ble_gattc_descriptors_discover(conn_handle, &_hdl_range), 0 );
 
   // wait for discovery event
-  int32_t count = _adamsg.waitUntilComplete(BLE_DISCOVERY_TIMEOUT);
+  int32_t bytecount = _adamsg.waitUntilComplete(BLE_DISCOVERY_TIMEOUT);
 
   // timeout or has no data (due to GATT Error)
-  if ( count <= 0 ) return false;
+  if ( bytecount <= 0 ) return 0;
 
-  uint16_t desc_count = disc_desc->count;
-  if (desc_count)
+  for(uint16_t i=0; i<disc_desc->count; i++)
   {
-    for(uint16_t i=0; i<desc_count; i++)
-    {
-      LOG_LV2(Discover, "[DESC] Descriptor %d: uuid = 0x%04X, handle = %d", i, disc_desc->descs[i].uuid.uuid, disc_desc->descs[i].handle);
-    }
-
-    // increase handle range for next discovery
-    // should be +1 more, but that will cause missing on the next Characteristic !!!!!
-    // Reason is descriptor also include BLE_UUID_CHARACTERISTIC 0x2803 (Char declaration) in the result
-    _hdl_range.start_handle = disc_desc->descs[desc_count-1].handle;
+    LOG_LV2(Discover, "[DESC] Descriptor %d: uuid = 0x%04X, handle = %d", i, disc_desc->descs[i].uuid.uuid, disc_desc->descs[i].handle);
   }
 
-  return desc_count;
+  // increase handle range for next discovery
+  // should be +1 more, but that will cause missing on the next Characteristic !!!!!
+  // Reason is descriptor also include BLE_UUID_CHARACTERISTIC 0x2803 (Char declaration) in the result
+  _hdl_range.start_handle = disc_desc->descs[ disc_desc->count-1 ].handle;
+
+  return disc_desc->count;
 }
 
 
@@ -217,8 +224,8 @@ void BLEDiscovery::_event_handler(ble_evt_t* evt)
       {
         if ( chr_rsp->count )
         {
-          // TODO support only 1 discovered char now
-          _adamsg.feed(chr_rsp, sizeof(ble_gattc_evt_char_disc_rsp_t));
+          uint16_t len = sizeof(ble_gattc_evt_char_disc_rsp_t) + (chr_rsp->count-1)*sizeof(ble_gattc_char_t);
+          _adamsg.feed(chr_rsp, len);
         }
       }else
       {
