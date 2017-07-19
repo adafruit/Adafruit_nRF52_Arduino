@@ -2,6 +2,10 @@
 
 ## 0.7.0
 
+### Core
+
+- Add printf with float format aka %f
+
 ### Bluefruit
 
 - Renamed `Bluefruit.peerAddr()` to `Bluefruit.getPeerAddr()`
@@ -16,6 +20,7 @@
 ### BLE Service
 
 - Add BLEClientUart& reference pointer BLEClientUart's RX callback
+- Add new BLEClientCts for client Current Time Service
 
 ### BLEAdvertising
 

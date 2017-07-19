@@ -411,9 +411,8 @@ void AdafruitBluefruit::printInfo(void)
   Serial.println();
 
   Serial.printf("%-15s ", "Conn Intervals");
-  // TODO enable newlib nano float format
-  Serial.print("min = "); Serial.print( ((double) _ppcp_min_conn)*1.25, 3); Serial.print(" ms, ");
-  Serial.print("max = "); Serial.print( ((double) _ppcp_max_conn)*1.25, 3); Serial.print(" ms");
+  Serial.printf("min = %.2f ms, ", _ppcp_min_conn*1.25f);
+  Serial.printf("max = %.2f ms", _ppcp_max_conn*1.25f);
   Serial.println();
 
   Serial.printf("%-15s ", "Paired Devices");
