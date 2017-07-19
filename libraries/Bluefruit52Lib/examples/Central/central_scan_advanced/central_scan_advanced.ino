@@ -45,7 +45,7 @@ void setup()
   Bluefruit.Scanner.setRxCallback(scan_callback);
   Bluefruit.Scanner.restartOnDisconnect(true);
   Bluefruit.Scanner.filterRssi(-80);
-  Bluefruit.Scanner.filterUuid(BLEUART_UUID_SERVICE);
+  //Bluefruit.Scanner.filterUuid(BLEUART_UUID_SERVICE); // only invoke callback if detect bleuart service
   Bluefruit.Scanner.setInterval(160, 80);       // in units of 0.625 ms
   Bluefruit.Scanner.useActiveScan(true);        // Request scan response data
   Bluefruit.Scanner.start(0);                   // 0 = Don't stop scanning after n seconds
@@ -55,6 +55,7 @@ void setup()
 
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
+  uint8_t len = 0;
   uint8_t buffer[32];
   memset(buffer, 0, sizeof(buffer));
   
@@ -121,6 +122,34 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
     memset(buffer, 0, sizeof(buffer));
   }
 
+  /* Check for UUID16 Complete List */
+  len = Bluefruit.Scanner.parseReportByType(report, BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_COMPLETE, buffer, sizeof(buffer));
+  if ( len )
+  {
+    printUuid16List(buffer, len);
+  }
+
+  /* Check for UUID16 More Available List */
+  len = Bluefruit.Scanner.parseReportByType(report, BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE, buffer, sizeof(buffer));
+  if ( len )
+  {
+    printUuid16List(buffer, len);
+  }
+
+  /* Check for UUID128 Complete List */
+  len = Bluefruit.Scanner.parseReportByType(report, BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_COMPLETE, buffer, sizeof(buffer));
+  if ( len )
+  {
+    printUuid128List(buffer, len);
+  }
+
+  /* Check for UUID128 More Available List */
+  len = Bluefruit.Scanner.parseReportByType(report, BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_MORE_AVAILABLE, buffer, sizeof(buffer));
+  if ( len )
+  {
+    printUuid128List(buffer, len);
+  }  
+
   /* Check for BLE UART UUID */
   if ( Bluefruit.Scanner.checkReportForUuid(report, BLEUART_UUID_SERVICE) )
   {
@@ -134,16 +163,43 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   }
 
   /* Check for Manufacturer Specific Data */
-  uint8_t msdlen = Bluefruit.Scanner.parseReportByType(report, BLE_GAP_AD_TYPE_MANUFACTURER_SPECIFIC_DATA, buffer, sizeof(buffer));
-  if (msdlen)
+  len = Bluefruit.Scanner.parseReportByType(report, BLE_GAP_AD_TYPE_MANUFACTURER_SPECIFIC_DATA, buffer, sizeof(buffer));
+  if (len)
   {
     Serial.printf("%14s ", "MAN SPEC DATA");
-    Serial.printBuffer(buffer, msdlen, '-');
+    Serial.printBuffer(buffer, len, '-');
     Serial.println();
     memset(buffer, 0, sizeof(buffer));
   }  
 
   Serial.println();
+}
+
+void printUuid16List(uint8_t* buffer, uint8_t len)
+{
+  Serial.printf("%14s %s", "16-Bit UUID");
+  for(int i=0; i<len; i+=2)
+  {
+    uint16_t uuid16;
+    memcpy(&uuid16, buffer+i, 2);
+    Serial.printf("%04X ", uuid16);
+  }
+  Serial.println();
+}
+
+void printUuid128List(uint8_t* buffer, uint8_t len)
+{
+  (void) len;
+  Serial.printf("%14s %s", "128-Bit UUID");
+
+  // Print reversed order
+  for(int i=0; i<16; i++)
+  {
+    const char* fm = (i==4 || i==6 || i==8 || i==10) ? "-%02X" : "%02X";
+    Serial.printf(fm, buffer[15-i]);
+  }
+
+  Serial.println();  
 }
 
 void loop() 
