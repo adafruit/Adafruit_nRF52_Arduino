@@ -88,6 +88,9 @@ void loop()
   if ( !bleCTime.discovered() ) return;
 
   // Get Time from iOS one every 1 second
+  // Note it is advised to update this quickly
+  // Application should use local clock and update time after 
+  // a long period (e.g an hour or day)s
   bleCTime.getCurrentTime();
 
   printTime();
@@ -139,9 +142,11 @@ void printTime(void)
   
   Serial.printf("%04d-%02d-%02d ", bleCTime.Time.year, bleCTime.Time.month, bleCTime.Time.day);
   Serial.printf("%02d:%02d:%02d ", bleCTime.Time.hour, bleCTime.Time.minute, bleCTime.Time.second);
-  Serial.println(day_of_week_str[bleCTime.Time.weekday]);
-  Serial.printf("UTC %d min, ", bleCTime.LocalInfo.timezone*15);
-  Serial.printf("Daytime Saving +%d min", bleCTime.LocalInfo.dst_offset*15);
+  Serial.print(day_of_week_str[bleCTime.Time.weekday]);
+  
+  int utc_offset =  bleCTime.LocalInfo.timezone*15; // in 15 minutes unit
+  Serial.printf(" (UTC %+d:%02d, ", utc_offset/60, utc_offset%60);
+  Serial.printf("DST %+.1f)", ((float) bleCTime.LocalInfo.dst_offset*15)/60 );
   Serial.println();
 }
 

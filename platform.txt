@@ -30,7 +30,7 @@ compiler.warning_flags.all=-Wall -Wextra -Wno-unused-parameter -Wno-missing-fiel
 
 compiler.path={runtime.tools.gcc-arm-none-eabi-5_2-2015q4.path}/bin/
 compiler.c.cmd=arm-none-eabi-gcc
-compiler.c.flags=-mcpu={build.mcu} -mthumb -c -g {compiler.warning_flags} {build.float_flags} -std=gnu11 -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -MMD -DSOFTDEVICE_PRESENT
+compiler.c.flags=-mcpu={build.mcu} -mthumb -c -g {compiler.warning_flags} {build.float_flags} -std=gnu11 -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -MMD  -DSOFTDEVICE_PRESENT
 compiler.c.elf.cmd=arm-none-eabi-gcc
 compiler.c.elf.flags=-Os -Wl,--gc-sections -save-temps
 compiler.S.cmd=arm-none-eabi-gcc
@@ -52,7 +52,7 @@ compiler.size.cmd=arm-none-eabi-size
 build.extra_flags=
 build.lfclk_flags=-DUSE_LFXO
 build.debug_flags=-DCFG_DEBUG=0 -Os
-build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
+build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16 -u _printf_float
 build.ldscript=bluefruit52_s132_v201.ld
 
 nrf.sdk.path={build.core.path}/SDK
