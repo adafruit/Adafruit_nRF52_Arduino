@@ -42,6 +42,7 @@ void setup(void)
   Bluefruit.autoConnLed(true);
 
   Bluefruit.begin();
+  Bluefruit.setTxPower(4);          // Maximum TX power = 4 dBm
   Bluefruit.setName("Bluefruit52");
   Bluefruit.setConnectCallback(connect_callback);
   Bluefruit.setDisconnectCallback(disconnect_callback);

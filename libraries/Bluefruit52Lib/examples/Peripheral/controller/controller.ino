@@ -31,6 +31,7 @@ void setup(void)
   Serial.println(F("-------------------------------------------"));
 
   Bluefruit.begin();
+  Bluefruit.setTxPower(4);          // Maximum TX power = 4 dBm
   Bluefruit.setName("Bluefruit52");
 
   // Configure and start the BLE Uart service

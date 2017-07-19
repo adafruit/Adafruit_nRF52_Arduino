@@ -23,6 +23,7 @@ void setup()
 
   // Enable both peripheral and central
   Bluefruit.begin(true, true);
+  Bluefruit.setTxPower(4);          // Maximum TX power = 4 dBm
   Bluefruit.setName("Bluefruit52");
 
   // Start Central Scan

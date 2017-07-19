@@ -27,7 +27,7 @@ void setup()
 
   /* Enable both peripheral and central modes */
   Bluefruit.begin(true, true);
-  Bluefruit.setTxPower(4);
+  Bluefruit.setTxPower(4);          // Maximum TX power = 4 dBm
 
   /* Set the device name */
   Bluefruit.setName("Bluefruit52");

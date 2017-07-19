@@ -42,6 +42,7 @@ void setup()
   Serial.println();
 
   Bluefruit.begin();
+  Bluefruit.setTxPower(4);          // Maximum TX power = 4 dBm
   Bluefruit.setName("Bluefruit52");
 
   // Configure and start DIS (Device Information Service)

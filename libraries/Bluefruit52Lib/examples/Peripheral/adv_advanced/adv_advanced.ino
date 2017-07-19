@@ -40,6 +40,7 @@ void setup()
   blinkTimer.start();
 
   Bluefruit.begin();
+  Bluefruit.setTxPower(4);          // Maximum TX power = 4 dBm
   Bluefruit.setName("Bluefruit52");
 
   // Set up and start advertising
