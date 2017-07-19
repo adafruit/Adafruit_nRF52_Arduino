@@ -49,10 +49,8 @@ class BLEDiscovery
 {
   private:
     ble_gattc_handle_range_t _hdl_range;
-    void*             _evt_buf;
-    uint16_t          _evt_bufsize;
-
-    SemaphoreHandle_t _sem;
+    AdaMsg _adamsg;
+    bool   _begun;
 
     void  _event_handler(ble_evt_t* evt);
 
@@ -103,7 +101,7 @@ class BLEDiscovery
      * code. User should not call these directly
      *------------------------------------------------------------------*/
     bool     _discoverService(uint16_t conn_handle, BLEClientService& svc, uint16_t start_handle = 1);
-    uint16_t _discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t max_count);
+    uint16_t _discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t bufsize);
 
     friend class AdafruitBluefruit;
 };

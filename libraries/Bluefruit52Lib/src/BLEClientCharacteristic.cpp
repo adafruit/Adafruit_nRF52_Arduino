@@ -128,7 +128,7 @@ bool BLEClientCharacteristic::discoverDescriptor(uint16_t conn_handle)
     ble_gattc_desc_t descs[MAX_DESCIRPTORS];
   }disc_rsp;
 
-  uint16_t count = Bluefruit.Discovery._discoverDescriptor(conn_handle, (ble_gattc_evt_desc_disc_rsp_t*) &disc_rsp, MAX_DESCIRPTORS);
+  uint16_t count = Bluefruit.Discovery._discoverDescriptor(conn_handle, (ble_gattc_evt_desc_disc_rsp_t*) &disc_rsp, sizeof(disc_rsp));
 
   // only care CCCD for now
   for(uint16_t i=0; i<count; i++)

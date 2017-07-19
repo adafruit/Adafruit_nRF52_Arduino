@@ -67,12 +67,17 @@ void AdaMsg::prepare(void* buf, uint16_t bufsize)
   xferlen   = 0;
 }
 
+/**
+ *
+ * @param ms
+ * @return -1 if timeout
+ */
 int32_t AdaMsg::waitUntilComplete(uint32_t ms)
 {
   if (_dynamic)
   {
     _sem = xSemaphoreCreateBinary();
-    VERIFY(_sem, 0);
+    VERIFY(_sem, -1);
   }
 
   int result = -1;
