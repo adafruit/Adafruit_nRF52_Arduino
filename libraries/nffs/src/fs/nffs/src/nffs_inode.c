@@ -775,6 +775,9 @@ nffs_inode_read_filename(struct nffs_inode_entry *inode_entry, size_t max_len,
 
     out_name[read_len] = '\0';
 
+    // Adafruit fix
+    *out_full_len = (uint8_t) read_len;
+
     return 0;
 }
 

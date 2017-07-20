@@ -379,8 +379,10 @@ void AdafruitBluefruit::printInfo(void)
   // Skip if Bluefruit.begin() is not called
   if ( _ble_event_sem == NULL ) return;
 
+  const char* title_fmt = "%-15s: ";
+
   // Name
-  Serial.printf("%-15s ", "Name");
+  Serial.printf(title_fmt, "Name");
   {
     char name[32];
     memclr(name, sizeof(name));
@@ -390,13 +392,13 @@ void AdafruitBluefruit::printInfo(void)
   Serial.println();
 
   // Max Connections
-  Serial.printf("%-15s ", "Max Connection");
+  Serial.printf(title_fmt, "Max Connection");
   Serial.printf("Peripheral = %d, ", _prph_enabled ? 1 : 0);
   Serial.printf("Central = %d, ", _central_enabled ? BLE_CENTRAL_MAX_CONN : 0);
   Serial.println();
 
   // Address
-  Serial.printf("%-15s ", "Address");
+  Serial.printf(title_fmt, "Address");
   {
     const char* type_str[] = { "Public", "Static", "Private Resolvable", "Private Non Resolvable" };
     uint8_t mac[6];
@@ -406,16 +408,16 @@ void AdafruitBluefruit::printInfo(void)
   }
   Serial.println();
 
-  Serial.printf("%-15s ", "TX Power");
+  Serial.printf(title_fmt, "TX Power");
   Serial.printf("%d dBm", _tx_power);
   Serial.println();
 
-  Serial.printf("%-15s ", "Conn Intervals");
+  Serial.printf(title_fmt, "Conn Intervals");
   Serial.printf("min = %.2f ms, ", _ppcp_min_conn*1.25f);
   Serial.printf("max = %.2f ms", _ppcp_max_conn*1.25f);
   Serial.println();
 
-  Serial.printf("%-15s ", "Paired Devices");
+  Serial.printf(title_fmt, "Paired Devices");
   Serial.printf("TODO");
   Serial.println();
 

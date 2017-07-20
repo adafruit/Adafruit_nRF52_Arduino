@@ -53,6 +53,12 @@ NffsFile::NffsFile(const char* path, uint8_t flags)
   open(path, flags);
 }
 
+NffsFile::NffsFile(const char* parent_dir, NffsDirEntry& dirent, uint8_t flags)
+{
+  _init();
+  open(parent_dir, dirent, flags);
+}
+
 NffsFile::~NffsFile()
 {
   if (_file) close();
@@ -79,7 +85,7 @@ bool NffsFile::open(const char* parent_dir, NffsDirEntry& dirent, uint8_t flags)
 
   if ( dirent.getName(name+len, NFFS_FILENAME_MAX_LEN+1-len) > 0 )
   {
-    result = open(name);
+    result = open(name, flags);
   }
 
   rtos_free(name);

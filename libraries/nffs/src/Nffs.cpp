@@ -199,3 +199,39 @@ bool ApacheNffs::testFolder(const char* path)
 
   return result;
 }
+
+/*------------------------------------------------------------------*/
+/* Debug
+ *------------------------------------------------------------------*/
+void dbgPrintDir(const char* cwd)
+{
+  // Open the input folder
+  NffsDir dir(cwd);
+
+  // File Entry Information which hold file attribute and name
+  NffsDirEntry dirEntry;
+
+  Serial.println(cwd);
+
+  // Loop through the directory
+  while( dir.read(&dirEntry) )
+  {
+    Serial.print("|_ ");
+
+    char eName[64];
+    dirEntry.getName(eName, sizeof(eName));
+
+    if ( dirEntry.isDirectory() )
+    {
+      Serial.print( eName );
+      Serial.println("/");
+    }else
+    {
+      NffsFile file(cwd, dirEntry, FS_ACCESS_READ);
+      Serial.printf("%-30s %d Bytes\n", eName, file.size() );
+      file.close();
+    }
+  }
+
+  dir.close();
+}

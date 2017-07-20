@@ -49,9 +49,9 @@ public:
   int errnum;
 
   NffsFile(void);
-  virtual ~NffsFile();
-
   NffsFile(const char* path, uint8_t flags = FS_ACCESS_READ);
+  NffsFile(const char* parent_dir, NffsDirEntry& dirent, uint8_t flags = FS_ACCESS_READ);
+  virtual ~NffsFile();
 
   bool open(const char* path, uint8_t flags = FS_ACCESS_READ);
   bool open(const char* parent_dir, NffsDirEntry& dirent, uint8_t flags = FS_ACCESS_READ);
