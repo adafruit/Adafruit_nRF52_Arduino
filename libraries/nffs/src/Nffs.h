@@ -89,4 +89,6 @@ public:
 
 extern ApacheNffs Nffs;
 
+void dbgPrintDir(const char* cwd);
+
 #endif /* NFFS_H_ */

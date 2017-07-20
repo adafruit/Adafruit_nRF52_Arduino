@@ -16,10 +16,10 @@
 #define ARDUINO_MAIN
 #include "Arduino.h"
 
-#if CFG_DEBUG >= 3
-#include "SEGGER_SYSVIEW.h"
-#endif
+#define DBG_MEM_INFO              0
+#define DBG_MEM_INFO_INTERVAL     60000
 
+// DEBUG Level 1
 #if CFG_DEBUG
 // weak function to avoid compilation error with
 // non-Bluefruit library sketch such as ADC read test
@@ -27,7 +27,11 @@ void Bluefruit_printInfo() __attribute__((weak));
 void Bluefruit_printInfo() {}
 #endif
 
-#define MEMINFO_INTERVAL    60000
+// DEBUG Level 3
+#if CFG_DEBUG >= 3
+#include "SEGGER_SYSVIEW.h"
+#endif
+
 
 // Weak empty variant initialization function.
 // May be redefined by variant files.
@@ -48,7 +52,6 @@ static void loop_task(void* arg)
   // If Serial is not begin(), call it to avoid hard fault
   if ( !Serial.started() ) Serial.begin(115200);
   dbgPrintVersion();
-
   Bluefruit_printInfo();
 #endif
 
@@ -56,12 +59,12 @@ static void loop_task(void* arg)
   {
     loop();
 
-    #if CFG_DEBUG > 1 // Full Debug
+    #if CFG_DEBUG >= 2 && DBG_MEM_INFO
     static uint32_t meminfo_ms = 0;
-    if (meminfo_ms + MEMINFO_INTERVAL < millis())
+    if (meminfo_ms + DBG_MEM_INFO_INTERVAL < millis())
     {
       meminfo_ms += millis();
-      Serial.printf("Memory Info (print every %d seconds)\n", MEMINFO_INTERVAL/1000);
+      Serial.printf("Memory Info (print every %d seconds)\n", DBG_MEM_INFO_INTERVAL/1000);
       dbgMemInfo();
     }
     #endif

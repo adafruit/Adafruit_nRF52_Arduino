@@ -64,6 +64,12 @@ extern "C"
 void adafruit_ble_task(void* arg);
 void adafruit_soc_task(void* arg);
 
+#if CFG_DEBUG >= 2
+#define printBondDir()    dbgPrintDir(CFG_BOND_NFFS_DIR)
+#else
+#define printBondDir()
+#endif
+
 /*------------------------------------------------------------------*/
 /* INTERNAL FUNCTION
  *------------------------------------------------------------------*/
@@ -219,6 +225,8 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   // Initialize nffs for bonding (it is safe to call nffs_pkg_init() multiple time)
   Nffs.begin();
   (void) Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
+
+  printBondDir();
 
   return ERROR_NONE;
 }
@@ -751,6 +759,8 @@ void AdafruitBluefruit::clearBonds(void)
 
   // Create an empty one
   Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
+
+  printBondDir();
 }
 
 bool AdafruitBluefruit::_saveBondKeys(void)
@@ -758,7 +768,11 @@ bool AdafruitBluefruit::_saveBondKeys(void)
   char filename[BOND_FILENAME_LEN];
   sprintf(filename, BOND_FILENAME, _bond_data.own_enc.master_id.ediv);
 
-  return Nffs.writeFile(filename, &_bond_data, sizeof(_bond_data));
+  VERIFY( Nffs.writeFile(filename, &_bond_data, sizeof(_bond_data)) );
+
+  printBondDir();
+
+  return true;
 }
 
 bool AdafruitBluefruit::_loadBondKeys(uint16_t ediv)
@@ -832,6 +846,8 @@ void AdafruitBluefruit::_saveBondedCCCD(void)
 
     Nffs.writeFile(filename, sys_attr, len);
   }
+
+  printBondDir();
 
   rtos_free(sys_attr);
 }
