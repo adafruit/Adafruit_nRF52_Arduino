@@ -152,10 +152,10 @@ class AdafruitBluefruit
      * Although declare as public, it is meant to be invoked by internal
      * code. User should not call these directly
      *------------------------------------------------------------------*/
-    void   _startConnLed       (void);
-    void   _stopConnLed        (void);
-    void   _setConnLed         (bool on_off);
-
+    void _startConnLed       (void);
+    void _stopConnLed        (void);
+    void _setConnLed         (bool on_off);
+    void _bledfu_get_bond_data(ble_gap_addr_t* addr, ble_gap_irk_t* irk, ble_gap_enc_key_t* enc_key);
 
   private:
     /*------------- BLE para -------------*/
@@ -185,7 +185,6 @@ class AdafruitBluefruit
     BLEGap::connect_callback_t    _connect_cb;
     BLEGap::disconnect_callback_t _disconnect_cb;
 
-public: // TODO temporary for bledfu to load bonding data
     struct
     {
       // Keys
@@ -194,7 +193,6 @@ public: // TODO temporary for bledfu to load bonding data
       ble_gap_id_key_t  peer_id;
     } _bond_data;
 
-private:
     ble_gap_sec_params_t _sec_param;
 
 COMMENT_OUT(
@@ -205,8 +203,6 @@ COMMENT_OUT(
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      *------------------------------------------------------------------*/
-    bool _addToAdv(bool scan_resp, uint8_t type, const void* data, uint8_t len);
-
     bool _saveBondKeys(void);
     bool _loadBondKeys(uint16_t ediv);
 

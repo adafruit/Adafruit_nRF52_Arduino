@@ -630,7 +630,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         // return security information. Otherwise NULL
         ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
 
-        //if (_bond_data.own_enc.master_id.ediv == sec_request->master_id.ediv)
         if ( _loadBondKeys(sec_request->master_id.ediv) )
         {
           sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_bond_data.own_enc.enc_info, &_bond_data.peer_id.id_info, NULL);
@@ -769,6 +768,7 @@ bool AdafruitBluefruit::_saveBondKeys(void)
   sprintf(filename, BOND_FILENAME, _bond_data.own_enc.master_id.ediv);
 
   VERIFY( Nffs.writeFile(filename, &_bond_data, sizeof(_bond_data)) );
+  LOG_LV1(BOND, "Keys is saved to Nffs");
 
   printBondDir();
 
@@ -780,10 +780,14 @@ bool AdafruitBluefruit::_loadBondKeys(uint16_t ediv)
   char filename[BOND_FILENAME_LEN];
   sprintf(filename, BOND_FILENAME, ediv);
 
-  bool result = Nffs.readFile(filename, &_bond_data, sizeof(_bond_data)) > 0;
+  bool result = (Nffs.readFile(filename, &_bond_data, sizeof(_bond_data)) > 0);
 
-  if ( result ) {
+  if ( result )
+  {
     LOG_LV1(BOND, "Load Keys from %s", filename);
+  }else
+  {
+    LOG_LV1(BOND, "Keys not found");
   }
 
   return result;
@@ -813,6 +817,9 @@ void AdafruitBluefruit::_loadBondedCCCD(uint16_t ediv)
           loaded = true;
 
           LOG_LV1(BOND, "Load CCCD from %s", filename);
+        }else
+        {
+          LOG_LV1(BOND, "CCCD setting not found");
         }
       }
 
@@ -845,9 +852,25 @@ void AdafruitBluefruit::_saveBondedCCCD(void)
     sprintf(filename, BOND_FILENAME "_cccd", _bond_data.own_enc.master_id.ediv);
 
     Nffs.writeFile(filename, sys_attr, len);
+
+    LOG_LV1(BOND, "CCCD setting is saved to Nffs");
   }
 
   printBondDir();
 
   rtos_free(sys_attr);
+}
+
+void AdafruitBluefruit::_bledfu_get_bond_data(ble_gap_addr_t* addr, ble_gap_irk_t* irk, ble_gap_enc_key_t* enc_key)
+{
+  if (!_bonded)
+  {
+    (*addr) = getPeerAddr();
+  }else
+  {
+    (*addr)    = _bond_data.peer_id.id_addr_info;
+    (*irk)     = _bond_data.peer_id.id_info;
+
+    (*enc_key) = _bond_data.own_enc;
+  }
 }

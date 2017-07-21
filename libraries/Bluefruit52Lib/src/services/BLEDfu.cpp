@@ -126,19 +126,14 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
       peer_data_t* peer_data = (peer_data_t*) (0x20007F80UL);
       varclr(peer_data);
 
+      // Get CCCD
       uint16_t sysattr_len = sizeof(peer_data->sys_attr);
       sd_ble_gatts_sys_attr_get(Bluefruit.connHandle(), peer_data->sys_attr, &sysattr_len, BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS);
 
-      if ( !Bluefruit.connPaired() )
-      {
-        peer_data->addr  = Bluefruit.getPeerAddr();
-      }else
-      {
-        peer_data->addr    = Bluefruit._bond_data.peer_id.id_addr_info;
-        peer_data->irk     = Bluefruit._bond_data.peer_id.id_info;
+      // Get Bond Data
+      Bluefruit._bledfu_get_bond_data(&peer_data->addr, &peer_data->irk, &peer_data->enc_key);
 
-        peer_data->enc_key = Bluefruit._bond_data.own_enc;
-      }
+      // Calculate crc
       peer_data->crc16 = crc16((uint8_t*) peer_data, offsetof(peer_data_t, crc16));
 
       // Initiate DFU Sequence and reboot into DFU OTA mode
