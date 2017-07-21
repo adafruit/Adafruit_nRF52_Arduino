@@ -258,6 +258,8 @@ bool BLEAdvertising::start(uint16_t timeout)
   VERIFY_STATUS( sd_ble_gap_adv_data_set(_data, _count, Bluefruit.ScanResponse.getData(), Bluefruit.ScanResponse.count()), false );
 
   // Initially advertising in fast mode
+  // Fast mode blink 2x than slow mode
+  Bluefruit.setConnLedInterval(CFG_ADV_BLINKY_INTERVAL/2);
   VERIFY( _start(_fast_interval, _fast_timeout) );
 
   return true;
@@ -307,6 +309,9 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
       if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_ADVERTISING)
       {
         _runnning = false;
+
+        // If still advertising, it is only in slow mode --> blink normal
+        Bluefruit.setConnLedInterval(CFG_ADV_BLINKY_INTERVAL);
 
         if ( _stop_timeout == 0 )
         {

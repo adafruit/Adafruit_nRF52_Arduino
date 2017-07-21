@@ -39,6 +39,8 @@
 #include <Arduino.h>
 #include "bluefruit_common.h"
 
+#define CFG_ADV_BLINKY_INTERVAL          500
+
 // Note chaning these parameters will affect APP_RAM_BASE
 // --> need to update RAM in feather52_s132.ld linker
 #define BLE_GATTS_ATTR_TABLE_SIZE        0x0B00

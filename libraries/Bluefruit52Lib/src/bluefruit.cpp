@@ -42,7 +42,7 @@
 
 #define CFG_BLE_TX_POWER_LEVEL           0
 #define CFG_DEFAULT_NAME                 "Bluefruit52"
-#define CFG_ADV_BLINKY_INTERVAL          500
+
 
 #define CFG_BLE_TASK_STACKSIZE          (512*3)
 #define CFG_SOC_TASK_STACKSIZE          (200)
@@ -220,7 +220,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   NVIC_EnableIRQ(SD_EVT_IRQn);
 
   // Create Timer for led advertising blinky
-  _led_blink_th = xTimerCreate(NULL, ms2tick(CFG_ADV_BLINKY_INTERVAL), true, NULL, bluefruit_blinky_cb);
+  _led_blink_th = xTimerCreate(NULL, ms2tick(CFG_ADV_BLINKY_INTERVAL/2), true, NULL, bluefruit_blinky_cb);
 
   // Initialize nffs for bonding (it is safe to call nffs_pkg_init() multiple time)
   Nffs.begin();
