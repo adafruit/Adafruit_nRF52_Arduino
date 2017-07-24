@@ -56,6 +56,13 @@ typedef struct
 
 static_assert(sizeof(ada_callback_t) == 16, "Incorrect Size");
 
+/*------------- Defer -------------*/
+typedef void (*adacb_worker_0arg_t) (void);
+typedef void (*adacb_worker_1arg_t) (uint32_t);
+typedef void (*adacb_worker_2arg_t) (uint32_t, uint32_t);
+typedef void (*adacb_worker_3arg_t) (uint32_t, uint32_t, uint32_t);
+typedef void (*adacb_worker_4arg_t) (uint32_t, uint32_t, uint32_t);
+typedef void (*adacb_worker_5arg_t) (uint32_t, uint32_t, uint32_t);
 
 /*------------------------------------------------------------------*/
 /* X Macros expansion for callback function
@@ -85,6 +92,8 @@ static_assert(sizeof(ada_callback_t) == 16, "Incorrect Size");
 enum
 {
   ADA_CB_LOOKUP(ADA_CB_ENUM_XPAND)
+
+  ADA_CB_DEFERRED_FUNC,
 };
 
 ADA_CB_LOOKUP(ADA_CB_FUNC_XPAND)
@@ -103,26 +112,37 @@ ADA_CB_LOOKUP(ADA_CB_FUNC_XPAND)
 
 #define _ADA_CB_ARGS(...)  _GET_6TH_ARG(_0, ##__VA_ARGS__, _ADA_CB_ARGS_5, _ADA_CB_ARGS_4, _ADA_CB_ARGS_3, _ADA_CB_ARGS_2, _ADA_CB_ARGS_1, _ADA_CB_ARGS_0)(__VA_ARGS__)
 
+#define _ada_cb_setup(_malloced, _func, _func_type, ... )  \
+  do { \
+      uint8_t const _count = VA_ARGS_NUM(__VA_ARGS__);\
+      ada_callback_t* cb_data = (ada_callback_t*) rtos_malloc( sizeof(ada_callback_t) + (_count ? (_count-1)*4 : 0) ); \
+      cb_data->malloced_data = _malloced;\
+      cb_data->callback_func = (void*)_func;\
+      cb_data->callback_type = _func_type;\
+      cb_data->arg_count = _count;\
+      if ( _count ) {\
+        uint32_t arguments[] = { _ADA_CB_ARGS(__VA_ARGS__) };\
+        memcpy(cb_data->arguments, arguments, 4*_count);\
+      }\
+  } while(0)
+
 /**
  * Macro function is called by other module with all intended parameters.
  * The first parameter is malloced Pointer (NULL if not), so that callback could know to free memory
  */
 #define ada_callback(_malloced, _func , ... ) \
     do { \
-      uint8_t const _count = VA_ARGS_NUM(__VA_ARGS__);\
-      ada_callback_t* cb_data = (ada_callback_t*) rtos_malloc( sizeof(ada_callback_t) + (_count ? (_count-1)*4 : 0) ); \
-      cb_data->malloced_data = _malloced;\
-      cb_data->callback_func = (void*)_func;\
-      cb_data->callback_type = ada_callback_type(_func);\
-      cb_data->arg_count = _count;\
-      if ( _count ) {\
-        uint32_t arguments[] = { _ADA_CB_ARGS(__VA_ARGS__) };\
-        memcpy(cb_data->arguments, arguments, 4*_count);\
-      }\
+      _ada_cb_setup(_malloced, _func, ada_callback_type(_func), __VA_ARGS__);\
       ada_callback_queue(cb_data);\
     }while(0)
 
 void ada_callback_init(void);
 void ada_callback_queue(ada_callback_t* cb_data);
+
+#define ada_callback_defer(_malloced, _func, ...) \
+  do { \
+    _ada_cb_setup(_malloced, _func, ADA_CB_DEFERRED_FUNC, __VA_ARGS__);\
+    ada_callback_queue(cb_data);\
+  } while(0)
 
 #endif /* ADACALLBACK_H_ */
