@@ -40,6 +40,7 @@
 #include "bluefruit_common.h"
 
 #define CFG_ADV_BLINKY_INTERVAL          500
+#define CFG_MAX_DEVNAME_LEN              32
 
 // Note chaning these parameters will affect APP_RAM_BASE
 // --> need to update RAM in feather52_s132.ld linker
@@ -78,6 +79,8 @@
 #include "clients/BLEClientUart.h"
 #include "clients/BLEClientDis.h"
 #include "clients/BLEClientCts.h"
+
+#include "utility/AdaCallback.h"
 
 #define BLE_MAX_DATA_PER_MTU  (GATT_MTU_SIZE_DEFAULT - 3)
 
@@ -157,6 +160,9 @@ class AdafruitBluefruit
     void _setConnLed         (bool on_off);
     void _bledfu_get_bond_data(ble_gap_addr_t* addr, ble_gap_irk_t* irk, ble_gap_enc_key_t* enc_key);
 
+    void _saveBondKeys(void);
+    void _saveBondCCCD(void);
+
   private:
     /*------------- BLE para -------------*/
     bool _prph_enabled;
@@ -185,15 +191,17 @@ class AdafruitBluefruit
     BLEGap::connect_callback_t    _connect_cb;
     BLEGap::disconnect_callback_t _disconnect_cb;
 
+    ble_gap_sec_params_t _sec_param;
+
+    // Shared keys with bonded device, size = 80 bytes
     struct
     {
-      // Keys
       ble_gap_enc_key_t own_enc;
       ble_gap_enc_key_t peer_enc;
       ble_gap_id_key_t  peer_id;
     } _bond_data;
 
-    ble_gap_sec_params_t _sec_param;
+    enum { BOND_FILE_CCCD_OFFSET = sizeof(_bond_data) + CFG_MAX_DEVNAME_LEN };
 
 COMMENT_OUT(
     uint8_t _auth_type;
@@ -203,12 +211,8 @@ COMMENT_OUT(
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      *------------------------------------------------------------------*/
-    bool _saveBondKeys(void);
     bool _loadBondKeys(uint16_t ediv);
-
-    void _saveBondedCCCD(void);
-    void _loadBondedCCCD(uint16_t ediv);
-
+    void _loadBondCCCD(uint16_t ediv);
     void _ble_handler(ble_evt_t* evt);
 
     friend void SD_EVT_IRQHandler(void);

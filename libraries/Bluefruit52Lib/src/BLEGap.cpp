@@ -35,7 +35,6 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
-#include "utility/AdaCallback.h"
 
 BLEGap::BLEGap(void)
 {

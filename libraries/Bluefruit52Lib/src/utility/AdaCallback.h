@@ -61,8 +61,8 @@ typedef void (*adacb_worker_0arg_t) (void);
 typedef void (*adacb_worker_1arg_t) (uint32_t);
 typedef void (*adacb_worker_2arg_t) (uint32_t, uint32_t);
 typedef void (*adacb_worker_3arg_t) (uint32_t, uint32_t, uint32_t);
-typedef void (*adacb_worker_4arg_t) (uint32_t, uint32_t, uint32_t);
-typedef void (*adacb_worker_5arg_t) (uint32_t, uint32_t, uint32_t);
+typedef void (*adacb_worker_4arg_t) (uint32_t, uint32_t, uint32_t, uint32_t);
+typedef void (*adacb_worker_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 
 /*------------------------------------------------------------------*/
 /* X Macros expansion for callback function
@@ -124,25 +124,18 @@ ADA_CB_LOOKUP(ADA_CB_FUNC_XPAND)
         uint32_t arguments[] = { _ADA_CB_ARGS(__VA_ARGS__) };\
         memcpy(cb_data->arguments, arguments, 4*_count);\
       }\
+      ada_callback_queue(cb_data);\
   } while(0)
 
 /**
  * Macro function is called by other module with all intended parameters.
  * The first parameter is malloced Pointer (NULL if not), so that callback could know to free memory
  */
-#define ada_callback(_malloced, _func , ... ) \
-    do { \
-      _ada_cb_setup(_malloced, _func, ada_callback_type(_func), __VA_ARGS__);\
-      ada_callback_queue(cb_data);\
-    }while(0)
+#define ada_callback(_malloced, _func , ... )     _ada_cb_setup(_malloced, _func, ada_callback_type(_func), __VA_ARGS__)
+#define ada_callback_defer(_malloced, _func, ...) _ada_cb_setup(_malloced, _func, ADA_CB_DEFERRED_FUNC    , __VA_ARGS__)
 
 void ada_callback_init(void);
 void ada_callback_queue(ada_callback_t* cb_data);
 
-#define ada_callback_defer(_malloced, _func, ...) \
-  do { \
-    _ada_cb_setup(_malloced, _func, ADA_CB_DEFERRED_FUNC, __VA_ARGS__);\
-    ada_callback_queue(cb_data);\
-  } while(0)
 
 #endif /* ADACALLBACK_H_ */

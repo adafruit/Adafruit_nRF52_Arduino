@@ -281,10 +281,8 @@ err_t BLECharacteristic::begin(void)
     (void) ref_hdl; // not used
   }
 
-  // Currently Only register to Bluefruit if callback is installed
-  // And The Characteristic must not be temporary memory i.e local variable
-  if ( !_is_temp &&
-       (_rd_authorize_cb || _wr_authorize_cb || _wr_cb || _cccd_wr_cb) )
+  // Currently Only register to Bluefruit if The Characteristic is not temporary memory i.e local variable
+  if ( !_is_temp )
   {
     (void) Bluefruit.Gatt._addCharacteristic(this);
   }
@@ -304,11 +302,11 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
     {
       ble_gatts_evt_rw_authorize_request_t * authorize_request = &event->evt.gatts_evt.params.authorize_request;
 
-      ble_uuid_t request_uuid = (authorize_request->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE) ?
-          authorize_request->request.write.uuid : authorize_request->request.read.uuid;
+      // Handle has the same offset for read & write request
+      uint16_t req_handle = authorize_request->request.read.handle;
 
       // skip if not our event
-      if ( uuid == request_uuid )
+      if ( _handles.value_handle == req_handle )
       {
         if ( (authorize_request->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE) && (_wr_authorize_cb != NULL))
         {
@@ -334,11 +332,23 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
       }
 
       // CCCD write
-      if ( _cccd_wr_cb && (request->handle == _handles.cccd_handle) )
+      if ( request->handle == _handles.cccd_handle )
       {
-        uint16_t value;
-        memcpy(&value, request->data, 2);
-        _cccd_wr_cb(*this, value);
+        // Invoke callback if set
+        if (_cccd_wr_cb)
+        {
+          uint16_t value;
+          memcpy(&value, request->data, 2);
+          _cccd_wr_cb(*this, value);
+        }
+
+        // TODO could move later
+        // Save CCCD if bonded to file whenever changed
+        extern void _adafruit_save_bond_cccd_dfr(uint32_t conn_handle);
+        if ( Bluefruit.connPaired() )
+        {
+          ada_callback_defer(NULL, _adafruit_save_bond_cccd_dfr, event->evt.common_evt.conn_handle);
+        }
       }
     }
     break;
