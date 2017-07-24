@@ -426,6 +426,7 @@ void AdafruitBluefruit::printInfo(void)
   Serial.println();
 
   Serial.printf(title_fmt, "Paired Devices");
+
   Serial.printf("TODO");
   Serial.println();
 
@@ -791,7 +792,6 @@ void AdafruitBluefruit::_saveBondKeys(void)
 
   char devname[CFG_MAX_DEVNAME_LEN] = { 0 };
   Gap.getPeerName(_conn_hdl, devname, CFG_MAX_DEVNAME_LEN);
-  PRINT_STR(devname);
 
   NffsFile file(filename, FS_ACCESS_WRITE);
 
@@ -813,7 +813,13 @@ void AdafruitBluefruit::_saveBondKeys(void)
 
   file.close();
 
-  LOG_LV1(BOND, result ? "Keys is saved to Nffs" : "Failed to save");
+  if (result)
+  {
+    LOG_LV1(BOND, "Keys for %s is saved to \"%s\" file", devname, filename);
+  }else
+  {
+    LOG_LV1(BOND, "Failed to save keys for %s", devname);
+  }
   printBondDir();
 }
 
