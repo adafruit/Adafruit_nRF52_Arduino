@@ -226,8 +226,6 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   Nffs.begin();
   (void) Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
 
-  printBondDir();
-
   return ERROR_NONE;
 }
 
