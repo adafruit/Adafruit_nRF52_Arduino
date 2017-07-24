@@ -61,21 +61,21 @@ void setup()
   // It is better to add Pin before call .begin()
   for (int i=0; i<12; i++)
   {
-    PWMx[i/4]->addPin( pins[i] );
+    HwPWMx[i/4]->addPin( pins[i] );
   }
 
   // Enable all 3 PWM modules with 15-bit resolutions(max) but different clock div
-  PWM0.begin();
-  PWM0.setResolution(15);
-  PWM0.setClockDiv(PWM_PRESCALER_PRESCALER_DIV_1); // default : freq = 16Mhz
+  HwPWM0.begin();
+  HwPWM0.setResolution(15);
+  HwPWM0.setClockDiv(PWM_PRESCALER_PRESCALER_DIV_1); // default : freq = 16Mhz
   
-  PWM1.begin();
-  PWM1.setResolution(15);
-  PWM1.setClockDiv(PWM_PRESCALER_PRESCALER_DIV_4); // default : freq = 4Mhz
+  HwPWM1.begin();
+  HwPWM1.setResolution(15);
+  HwPWM1.setClockDiv(PWM_PRESCALER_PRESCALER_DIV_4); // default : freq = 4Mhz
   
-  PWM2.begin();
-  PWM2.setResolution(15);
-  PWM2.setClockDiv(PWM_PRESCALER_PRESCALER_DIV_16); // default : freq = 1Mhz
+  HwPWM2.begin();
+  HwPWM2.setResolution(15);
+  HwPWM2.setClockDiv(PWM_PRESCALER_PRESCALER_DIV_16); // default : freq = 1Mhz
 }
 
 /**************************************************************************/
@@ -99,7 +99,7 @@ void loop()
       // Inverted for each PWM group
       if (i%4)  inverted = !inverted; 
       
-      PWMx[i/4]->writePin( pins[i], fadeValue, inverted);
+      HwPWMx[i/4]->writePin( pins[i], fadeValue, inverted);
     }
     
     // wait for 30 milliseconds to see the dimming effect
@@ -117,7 +117,7 @@ void loop()
       // Inverted for each PWM group
       if (i%4)  inverted = !inverted; 
       
-      PWMx[i/4]->writePin( pins[i], fadeValue, inverted);
+      HwPWMx[i/4]->writePin( pins[i], fadeValue, inverted);
     }
     
     // wait for 30 milliseconds to see the dimming effect

@@ -50,9 +50,9 @@ extern "C"
  */
 void analogWriteResolution( uint8_t res )
 {
-  PWM0.setResolution(res);
-  PWM1.setResolution(res);
-  PWM2.setResolution(res);
+  HwPWM0.setResolution(res);
+  HwPWM1.setResolution(res);
+  HwPWM2.setResolution(res);
 }
 
 /**
@@ -67,9 +67,9 @@ void analogWrite( uint32_t pin, uint32_t value )
   for(int i=0; i<3; i++)
   {
     // If pin is added (already) in this group
-    if ( PWMx[i]->addPin(pin) )
+    if ( HwPWMx[i]->addPin(pin) )
     {
-      PWMx[i]->writePin(pin, value);
+      HwPWMx[i]->writePin(pin, value);
       return;
     }
   }

@@ -37,11 +37,11 @@
 #include "Arduino.h"
 #include "HardwarePWM.h"
 
-HardwarePWM PWM0(NRF_PWM0);
-HardwarePWM PWM1(NRF_PWM1);
-HardwarePWM PWM2(NRF_PWM2);
+HardwarePWM HwPWM0(NRF_PWM0);
+HardwarePWM HwPWM1(NRF_PWM1);
+HardwarePWM HwPWM2(NRF_PWM2);
 
-HardwarePWM* PWMx[3] = { &PWM0, &PWM1, &PWM2 };
+HardwarePWM* HwPWMx[3] = { &HwPWM0, &HwPWM1, &HwPWM2 };
 
 HardwarePWM::HardwarePWM(NRF_PWM_Type* pwm)
 {

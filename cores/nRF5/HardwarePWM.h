@@ -86,10 +86,10 @@ class HardwarePWM
 //    void printInfo(void);
 };
 
-extern HardwarePWM PWM0;
-extern HardwarePWM PWM1;
-extern HardwarePWM PWM2;
+extern HardwarePWM HwPWM0;
+extern HardwarePWM HwPWM1;
+extern HardwarePWM HwPWM2;
 
-extern HardwarePWM* PWMx[3];
+extern HardwarePWM* HwPWMx[3];
 
 #endif /* HARDWAREPWM_H_ */
