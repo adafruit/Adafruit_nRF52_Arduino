@@ -12,6 +12,7 @@
 - Added connection handle to the connect and disconnect callback prototypes
 - Change signature of Bluefruit.getName()
 - Add printInfo() for configuration summary
+- Change Bond Data layout to include paired Device Name. CCCD setting is also saved to the same file --> one file for each bond.
 
 ### BLEGap
 
