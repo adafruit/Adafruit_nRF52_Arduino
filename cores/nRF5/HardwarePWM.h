@@ -48,7 +48,7 @@ class HardwarePWM
     uint8_t  _count;
     uint16_t _seq0[MAX_CHANNELS];
 
-    uint8_t  _resolution;
+    uint8_t  _max_value;
     uint8_t  _clock_div;
 
     void _start(void);
@@ -57,8 +57,10 @@ class HardwarePWM
     HardwarePWM(NRF_PWM_Type* pwm);
 
     // Configure
-    void setResolution(uint8_t bitnum);
-    void setClockDiv(uint8_t div); // value is PWM_PRESCALER_PRESCALER_DIV_x, DIV1 is 16Mhz
+    void setResolution(uint8_t bitnum); // set max value by 2^bitnum - 1
+    void setMaxValue(uint16_t value);   // set max value
+
+    void setClockDiv(uint8_t div);      // value is PWM_PRESCALER_PRESCALER_DIV_x, DIV1 is 16Mhz
 
     bool addPin     (uint8_t pin);
     int  pin2channel(uint8_t pin) ATTR_ALWAYS_INLINE

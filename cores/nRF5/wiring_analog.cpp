@@ -66,7 +66,7 @@ void analogWrite( uint32_t pin, uint32_t value )
 {
   for(int i=0; i<3; i++)
   {
-    // If pin is added (already) in this group
+    // Added by if needed
     if ( HwPWMx[i]->addPin(pin) )
     {
       HwPWMx[i]->writePin(pin, value);
