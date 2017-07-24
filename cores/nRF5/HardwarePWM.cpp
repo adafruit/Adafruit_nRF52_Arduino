@@ -166,3 +166,18 @@ bool HardwarePWM::writePin(uint8_t pin, uint16_t value, bool inverted)
 
   return writeChannel(ch, value, inverted);
 }
+
+uint16_t HardwarePWM::readPin(uint8_t pin)
+{
+  int ch = pin2channel(pin);
+  VERIFY( ch >= 0, 0);
+
+  return readChannel(ch);
+}
+
+uint16_t HardwarePWM::readChannel(uint8_t ch)
+{
+  // remove inverted bit
+  return (_seq0[ch] & 0x7FFF);
+}
+

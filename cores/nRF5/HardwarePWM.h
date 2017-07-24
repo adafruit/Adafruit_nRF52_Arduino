@@ -39,6 +39,8 @@
 #include "common_inc.h"
 #include "nrf.h"
 
+#define HWPWM_MODULE_NUM    3
+
 class HardwarePWM
 {
   private:
@@ -82,10 +84,12 @@ class HardwarePWM
     void stop  (void);
 
     // Generate PWM
-    bool writePin    (uint8_t pin, uint16_t value, bool inverted = false);
-    bool writeChannel(uint8_t ch , uint16_t value, bool inverted = false);
+    bool     writePin    (uint8_t pin, uint16_t value, bool inverted = false);
+    bool     writeChannel(uint8_t ch , uint16_t value, bool inverted = false);
 
-//    void printInfo(void);
+    // Read current set value
+    uint16_t readPin     (uint8_t pin);
+    uint16_t readChannel (uint8_t ch);
 };
 
 extern HardwarePWM HwPWM0;

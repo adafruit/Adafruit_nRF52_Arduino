@@ -28,14 +28,14 @@ uint8_t ServoCount = 0;                                     // the total number 
 
 
 
-uint32_t group_pins[3][NRF_PWM_CHANNEL_COUNT]={{NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED}, {NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED}, {NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED}};
-static uint16_t seq_values[3][NRF_PWM_CHANNEL_COUNT]={{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
+//uint32_t group_pins[3][NRF_PWM_CHANNEL_COUNT]={{NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED}, {NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED}, {NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED}};
+//static uint16_t seq_values[3][NRF_PWM_CHANNEL_COUNT]={{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
 
 Servo::Servo()
 {
   if (ServoCount < MAX_SERVOS) {
-    this->servoIndex = ServoCount++;                    // assign a servo index to this instance
-  } else {                                                 
+    this->servoIndex = ServoCount++;            // assign a servo index to this instance
+  } else {
     this->servoIndex = INVALID_SERVO;  					// too many servos
   }
 
@@ -55,13 +55,26 @@ uint8_t Servo::attach(int pin, int min, int max)
     pinMode(pin, OUTPUT);                                   // set servo pin to output
     servos[this->servoIndex].Pin.nbr = pin;
 
-	if(min < servo_min) min = servo_min;
-	if (max > servo_max) max = servo_max;
-	this->min  = min;
+    if(min < servo_min) min = servo_min;
+    if (max > servo_max) max = servo_max;
+    this->min  = min;
     this->max  = max;
-	
-	servos[this->servoIndex].Pin.isActive = true;
-	
+
+    servos[this->servoIndex].Pin.isActive = true;
+
+    // Adafruit, add pin to 1 of available Hw PWM
+    for(int i=0; i<HWPWM_MODULE_NUM; i++)
+    {
+      if ( HwPWMx[i]->addPin(pin) )
+      {
+        // 20ms - 50Hz
+        HwPWMx[i]->setMaxValue(2500);
+        HwPWMx[i]->setClockDiv(PWM_PRESCALER_PRESCALER_DIV_128);
+
+        break;
+      }
+    }
+
   }
   return this->servoIndex;
 }
@@ -69,6 +82,8 @@ uint8_t Servo::attach(int pin, int min, int max)
 void Servo::detach()
 {
 	servos[this->servoIndex].Pin.isActive = false;
+
+	// TODO Adafruit remove pin from HW PWM
 }
 
 
@@ -86,6 +101,7 @@ void Servo::write(int value)
 
 void Servo::writeMicroseconds(int value)
 {
+#if 0
 	uint8_t channel, instance;
 	uint8_t pin = servos[this->servoIndex].Pin.nbr;
 	//instance of pwm module is MSB - look at VWariant.h
@@ -109,6 +125,14 @@ void Servo::writeMicroseconds(int value)
 	nrf_pwm_sequence_set(PWMInstance, 0, &seq);
 	nrf_pwm_loop_set(PWMInstance, 0UL);
 	nrf_pwm_task_trigger(PWMInstance, NRF_PWM_TASK_SEQSTART0);
+#else
+	uint8_t pin = servos[this->servoIndex].Pin.nbr;
+
+	for(int i=0; i<HWPWM_MODULE_NUM; i++)
+	{
+	  if ( HwPWMx[i]->writePin(pin, value) ) break;
+	}
+#endif
 }
 
 int Servo::read() // return the value as degrees
@@ -118,12 +142,26 @@ int Servo::read() // return the value as degrees
 
 int Servo::readMicroseconds()
 {	
+#if 0
 	uint8_t channel, instance;
 	uint8_t pin=servos[this->servoIndex].Pin.nbr;
 	instance=(g_APinDescription[pin].ulPWMChannel & 0xF0)/16;
 	channel=g_APinDescription[pin].ulPWMChannel & 0x0F;
 	// remove the 16th bit we added before
 	return seq_values[instance][channel] & 0x7FFF;
+#else
+	uint8_t pin=servos[this->servoIndex].Pin.nbr;
+
+	for(int i=0; i<HWPWM_MODULE_NUM; i++)
+	{
+	  if ( HwPWMx[i]->checkPin(pin) )
+	  {
+	    return HwPWMx[i]->readPin(pin);
+	  }
+	}
+
+	return 0;
+#endif
 }
 
 bool Servo::attached()
