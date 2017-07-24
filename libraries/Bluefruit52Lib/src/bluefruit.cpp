@@ -425,9 +425,34 @@ void AdafruitBluefruit::printInfo(void)
   Serial.printf("max = %.2f ms", _ppcp_max_conn*1.25f);
   Serial.println();
 
-  Serial.printf(title_fmt, "Paired Devices");
+  // List the paried device
+  Serial.printf(title_fmt, "Paired Devices\n");
 
-  Serial.printf("TODO");
+  NffsDir dir(CFG_BOND_NFFS_DIR);
+  NffsDirEntry dirEntry;
+  while( dir.read(&dirEntry) )
+  {
+    if ( !dirEntry.isDirectory() )
+    {
+      char name[64];
+      dirEntry.getName(name, sizeof(name));
+
+      Serial.printf("  %s : ", name);
+
+      // open file to read device name
+      NffsFile file(CFG_BOND_NFFS_DIR, dirEntry, FS_ACCESS_READ);
+
+      varclr(name);
+
+      file.seek(BOND_FILE_DEVNAME_OFFSET);
+      if ( file.read(name, CFG_MAX_DEVNAME_LEN) )
+      {
+        Serial.println(name);
+      }
+
+      file.close();
+    }
+  }
   Serial.println();
 
   Serial.println();
@@ -815,10 +840,10 @@ void AdafruitBluefruit::_saveBondKeys(void)
 
   if (result)
   {
-    LOG_LV1(BOND, "Keys for %s is saved to \"%s\" file", devname, filename);
+    LOG_LV1(BOND, "Keys for \"%s\" is saved to file %s", devname, filename);
   }else
   {
-    LOG_LV1(BOND, "Failed to save keys for %s", devname);
+    LOG_LV1(BOND, "Failed to save keys for \"%s\"", devname);
   }
   printBondDir();
 }
@@ -834,7 +859,7 @@ bool AdafruitBluefruit::_loadBondKeys(uint16_t ediv)
 
   if ( result )
   {
-    LOG_LV1(BOND, "Load Keys from %s", filename);
+    LOG_LV1(BOND, "Load Keys from file %s", filename);
   }else
   {
     LOG_LV1(BOND, "Keys not found");
@@ -861,7 +886,7 @@ void AdafruitBluefruit::_saveBondCCCD(void)
 
     if ( Nffs.writeFile(filename, sys_attr, len, BOND_FILE_CCCD_OFFSET) )
     {
-      LOG_LV1(BOND, "CCCD setting is saved to Nffs");
+      LOG_LV1(BOND, "CCCD setting is saved to file %s", filename);
     }else
     {
       LOG_LV1(BOND, "Failed to save CCCD setting");
@@ -901,7 +926,7 @@ void AdafruitBluefruit::_loadBondCCCD(uint16_t ediv)
           {
             loaded = true;
 
-            LOG_LV1(BOND, "Load CCCD from %s", filename);
+            LOG_LV1(BOND, "Load CCCD from file %s", filename);
           }else
           {
             LOG_LV1(BOND, "CCCD setting not found");

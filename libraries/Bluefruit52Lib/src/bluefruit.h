@@ -201,7 +201,11 @@ class AdafruitBluefruit
       ble_gap_id_key_t  peer_id;
     } _bond_data;
 
-    enum { BOND_FILE_CCCD_OFFSET = sizeof(_bond_data) + CFG_MAX_DEVNAME_LEN };
+    enum
+    {
+      BOND_FILE_DEVNAME_OFFSET = sizeof(_bond_data),
+      BOND_FILE_CCCD_OFFSET    = BOND_FILE_DEVNAME_OFFSET + CFG_MAX_DEVNAME_LEN
+    };
 
 COMMENT_OUT(
     uint8_t _auth_type;
