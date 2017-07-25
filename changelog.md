@@ -5,6 +5,7 @@
 ### Core
 
 - Add printf with float format aka %f
+- Add Servo library port
 
 ### Bluefruit
 
