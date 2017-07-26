@@ -48,18 +48,27 @@
 */
 /******************************************************************************/
 Adafruit_FIFO::Adafruit_FIFO(uint8_t item_size, uint16_t depth)
-  : _item_size(item_size), _depth(depth)
+  : _item_size(item_size)
 {
-  _buffer= NULL;
-  _mutex = NULL;
-  _count = _wr_idx = _rd_idx = 0;
+  _buffer       = NULL;
+  _mutex        = NULL;
+  _depth        = depth;
   _overwritable = false;
+
+  _count = _wr_idx = _rd_idx = 0;
 }
 
 void Adafruit_FIFO::begin(void)
 {
   _buffer = (uint8_t*) malloc(_item_size*_depth);
   _mutex = xSemaphoreCreateMutex();
+}
+
+void Adafruit_FIFO::begin(uint16_t depth)
+{
+  _depth  = depth;
+  _buffer = (uint8_t*) malloc(_item_size*_depth);
+  _mutex  = xSemaphoreCreateMutex();
 }
 
 void Adafruit_FIFO::overwriteIfFull(bool enable)

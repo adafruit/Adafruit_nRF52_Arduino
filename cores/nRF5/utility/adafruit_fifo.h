@@ -45,7 +45,7 @@ class Adafruit_FIFO
 {
   private:
              uint8_t* _buffer       ; ///< buffer pointer
-    const    uint16_t _depth        ; ///< max items
+             uint16_t _depth        ; ///< max items
     const    uint8_t  _item_size    ; ///< size of each item
              bool     _overwritable ; ///< Overwrite when full
     volatile uint16_t _count        ; ///< number of items in queue
@@ -59,11 +59,13 @@ class Adafruit_FIFO
 
   public:
     // Constructor
-    Adafruit_FIFO(uint8_t item_size, uint16_t depth);
+    Adafruit_FIFO(uint8_t item_size, uint16_t depth = 0);
 
     virtual ~Adafruit_FIFO();
 
     void begin(void);
+    void begin(uint16_t depth);
+
     void clear(void);
     void overwriteIfFull(bool enable);
 

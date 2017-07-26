@@ -6,6 +6,7 @@
 
 - Add printf with float format aka %f
 - Add Servo library port
+- Enhance Adafruit_FIFO, add overwriteIfFull(), begin(). change constructor's signature
 
 ### Bluefruit
 
