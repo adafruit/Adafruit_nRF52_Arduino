@@ -47,7 +47,7 @@ class Adafruit_FIFO
              uint8_t* _buffer       ; ///< buffer pointer
     const    uint16_t _depth        ; ///< max items
     const    uint8_t  _item_size    ; ///< size of each item
-    const    bool     _overwritable ; ///< Overwrite when full
+             bool     _overwritable ; ///< Overwrite when full
     volatile uint16_t _count        ; ///< number of items in queue
     volatile uint16_t _wr_idx       ; ///< write pointer
     volatile uint16_t _rd_idx       ; ///< read pointer
@@ -59,15 +59,13 @@ class Adafruit_FIFO
 
   public:
     // Constructor
-    Adafruit_FIFO(uint16_t depth, uint8_t item_size, bool overwrite = false);
+    Adafruit_FIFO(uint16_t depth, uint8_t item_size);
 
     virtual ~Adafruit_FIFO();
 
-
     void begin(void);
     void clear(void);
-    bool peek(void* buffer);
-    bool peekAt(uint16_t position, void * p_buffer);
+    void overwriteIfFull(bool enable);
 
     uint16_t write(void const* item);
     uint16_t write(void const * data, uint16_t n);
@@ -75,8 +73,8 @@ class Adafruit_FIFO
     uint16_t read(void* buffer);
     uint16_t read(void * buffer, uint16_t n);
 
-//    uint16_t read_isr(void* buffer);
-//    uint16_t read_isr(void * buffer, uint16_t n);
+    bool peek(void* buffer);
+    bool peekAt(uint16_t position, void * p_buffer);
 
     inline bool     empty(void)     { return _count == 0;      }
     inline bool     full(void)      { return _count == _depth; }

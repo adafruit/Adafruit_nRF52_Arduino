@@ -45,22 +45,26 @@
                Maximum number of items can be hold in buffer
     @param[in] item_size
                Number of bytes of each item
-    @param[in] overwrite
-               Should the buffer is overwritten to the first item when it is full
 */
 /******************************************************************************/
-Adafruit_FIFO::Adafruit_FIFO(uint16_t depth, uint8_t item_size, bool overwrite)
-  : _depth(depth), _item_size(item_size), _overwritable(overwrite)
+Adafruit_FIFO::Adafruit_FIFO(uint16_t depth, uint8_t item_size)
+  : _depth(depth), _item_size(item_size)
 {
   _buffer= NULL;
   _mutex = NULL;
   _count = _wr_idx = _rd_idx = 0;
+  _overwritable = false;
 }
 
 void Adafruit_FIFO::begin(void)
 {
   _buffer = (uint8_t*) malloc(_item_size*_depth);
   _mutex = xSemaphoreCreateMutex();
+}
+
+void Adafruit_FIFO::overwriteIfFull(bool enable)
+{
+  _overwritable = enable;
 }
 
 
