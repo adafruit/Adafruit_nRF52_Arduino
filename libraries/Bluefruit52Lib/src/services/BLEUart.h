@@ -59,6 +59,7 @@ class BLEUart : public BLEService, public Stream
     bool notifyEnabled(void);
 
     void setRxCallback( rx_callback_t fp);
+    void bufferTXD(bool enable);
 
     // Stream API
     virtual int       read       ( void );
@@ -80,7 +81,16 @@ class BLEUart : public BLEService, public Stream
     Adafruit_FIFO     _rxd_fifo;
     rx_callback_t     _rx_cb;
 
+    bool          _buffered_txd;
+    TimerHandle_t _buffered_th;
+
+    // from BLEService
+    virtual void _disconnect_cb(void);
+    virtual void _connect_cb(void);
+
     friend void bleuart_rxd_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
+    friend void bleuart_txd_cccd_cb(BLECharacteristic& chr, uint16_t value);
+    friend void bleuart_txd_buffered_handler(TimerHandle_t timer);
 };
 
 

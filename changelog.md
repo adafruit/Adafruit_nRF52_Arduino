@@ -23,6 +23,7 @@
 
 - Add BLEClientUart& reference pointer BLEClientUart's RX callback
 - Add new BLEClientCts for client Current Time Service
+- Add bufferTXD() to BLEUart service
 
 ### BLEAdvertising
 

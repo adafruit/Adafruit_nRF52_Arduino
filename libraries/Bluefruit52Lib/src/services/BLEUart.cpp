@@ -67,18 +67,53 @@ BLEUart::BLEUart(uint16_t fifo_depth)
   : BLEService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD),
     _rxd_fifo(fifo_depth, 1)
 {
-  _rx_cb = NULL;
+  _rx_cb        = NULL;
+
+  _buffered_txd = false;
+  _buffered_th  = NULL;
 }
 
+/**
+ * Callback when received new data
+ * @param chr
+ * @param data
+ * @param len
+ * @param offset
+ */
 void bleuart_rxd_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
 {
   (void) offset;
 
-  BLEUart& uart_svc = (BLEUart&) chr.parentService();
-  uart_svc._rxd_fifo.write(data, len);
+  BLEUart& svc = (BLEUart&) chr.parentService();
+  svc._rxd_fifo.write(data, len);
 
   // invoke user callback
-  if ( uart_svc._rx_cb ) uart_svc._rx_cb();
+  if ( svc._rx_cb ) svc._rx_cb();
+}
+
+/**
+ * Timer callback periodically to send TX packet (if enabled)
+ * @param timer
+ */
+void bleuart_txd_buffered_handler(TimerHandle_t timer)
+{
+//  BLEUart& svc = (BLEUart&) pvTimerGetTimerID(timer);
+}
+
+void bleuart_txd_cccd_cb(BLECharacteristic& chr, uint16_t value)
+{
+  BLEUart& svc = (BLEUart&) chr.parentService();
+
+  if ( svc._buffered_th == NULL) return;
+
+  // Enable TXD timer if configured
+  if (value & BLE_GATT_HVX_NOTIFICATION)
+  {
+    xTimerStart(svc._buffered_th, 0);
+  }else
+  {
+    xTimerStop(svc._buffered_th, 0);
+  }
 }
 
 void BLEUart::setRxCallback( rx_callback_t fp)
@@ -86,17 +121,29 @@ void BLEUart::setRxCallback( rx_callback_t fp)
   _rx_cb = fp;
 }
 
+/**
+ * Set timeout for buffered TXD packet.
+ * Note: packet is sent right away if it reach MTU bytes
+ * @param ms
+ */
+void BLEUart::bufferTXD(bool enable)
+{
+  _buffered_txd = enable;
+
+  // enable cccd callback to start timer when enabled
+  _txd.setCccdWriteCallback( enable ? bleuart_txd_cccd_cb : NULL);
+}
+
 err_t BLEUart::begin(void)
 {
-  VERIFY_STATUS( this->addToGatt() );
+  // Invoke base class begin()
+  VERIFY_STATUS( BLEService::begin() );
 
   // Add TXD Characteristic
   _txd.setProperties(CHR_PROPS_NOTIFY);
 //  _txd.setMaxLen(BLE_MAX_DATA_PER_MTU);
-
   // TODO enable encryption when bonding is enabled
- _txd.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-
+  _txd.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   _txd.setStringDescriptor("TXD");
   VERIFY_STATUS( _txd.begin() );
 
@@ -105,7 +152,7 @@ err_t BLEUart::begin(void)
   _rxd.setWriteCallback(bleuart_rxd_cb);
 
   // TODO enable encryption when bonding is enabled
-   _rxd.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
+  _rxd.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
 
   _rxd.setStringDescriptor("RXD");
   VERIFY_STATUS(_rxd.begin());
@@ -118,6 +165,27 @@ bool BLEUart::notifyEnabled(void)
   return _txd.notifyEnabled();
 }
 
+void BLEUart::_disconnect_cb(void)
+{
+  if (_buffered_th)
+  {
+    xTimerDelete(_buffered_th, 0);
+    _buffered_th = NULL;
+  }
+}
+
+void BLEUart::_connect_cb (void)
+{
+  if ( _buffered_txd)
+  {
+    // create buffered timer with interval = connection interval
+    _buffered_th = xTimerCreate(NULL, (5*ms2tick(Bluefruit.connInterval())) / 4, true, this, bleuart_txd_buffered_handler);
+  }
+}
+
+/*------------------------------------------------------------------*/
+/* STREAM API
+ *------------------------------------------------------------------*/
 int BLEUart::read (void)
 {
   uint8_t ch;
@@ -154,5 +222,7 @@ void BLEUart::flush (void)
 {
   _rxd_fifo.clear();
 }
+
+
 
 
