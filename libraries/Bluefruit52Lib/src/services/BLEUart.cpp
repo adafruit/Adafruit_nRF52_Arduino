@@ -104,12 +104,17 @@ void bleuart_rxd_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_
 }
 
 /**
- * Timer callback periodically to send TX packet (if enabled)
+ * Timer callback periodically to send TX packet (if enabled).
  * @param timer
  */
-void bleuart_txd_buffered_handler(TimerHandle_t timer)
+void bleuart_txd_buffered_hdlr(TimerHandle_t timer)
 {
   BLEUart* svc = (BLEUart*) pvTimerGetTimerID(timer);
+
+  // skip if null (unlikely)
+  if ( !svc->_tx_fifo ) return;
+
+  // flush data (send notiication)
   svc->flush_tx_buffered();
 }
 
@@ -149,7 +154,11 @@ void BLEUart::bufferTXD(bool enable)
     _txd.setCccdWriteCallback(bleuart_txd_cccd_cb);
 
     // Create FIFO for TX TODO Larger MTU Size
-    if ( _tx_fifo == NULL ) _tx_fifo = new Adafruit_FIFO(1, TXD_FIFO_SIZE);
+    if ( _tx_fifo == NULL )
+    {
+      _tx_fifo = new Adafruit_FIFO(1);
+      _tx_fifo->begin(TXD_FIFO_SIZE);
+    }
   }else
   {
     _txd.setCccdWriteCallback(NULL);
@@ -205,7 +214,7 @@ void BLEUart::_connect_cb (void)
   if ( _tx_buffered)
   {
     // create buffered timer with interval = connection interval
-    _buffered_th = xTimerCreate(NULL, (5*ms2tick(Bluefruit.connInterval())) / 4, true, this, bleuart_txd_buffered_handler);
+    _buffered_th = xTimerCreate(NULL, (5*ms2tick(Bluefruit.connInterval())) / 4, true, this, bleuart_txd_buffered_hdlr);
   }
 }
 
@@ -277,8 +286,6 @@ void BLEUart::flush (void)
 
 bool BLEUart::flush_tx_buffered(void)
 {
-  if ( _tx_fifo == NULL ) return false;
-
   uint8_t ff_data[TXD_FIFO_SIZE];
   uint16_t len = _tx_fifo->read(ff_data, sizeof(ff_data));
 
