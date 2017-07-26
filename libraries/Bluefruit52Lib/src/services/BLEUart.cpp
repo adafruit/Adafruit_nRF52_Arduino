@@ -65,12 +65,22 @@ const uint8_t BLEUART_UUID_CHR_TXD[] =
  */
 BLEUart::BLEUart(uint16_t fifo_depth)
   : BLEService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD),
-    _rxd_fifo(1, fifo_depth)
+    _rx_fifo(1, fifo_depth)
 {
   _rx_cb        = NULL;
 
-  _buffered_txd = false;
+  _tx_buffered = false;
   _buffered_th  = NULL;
+
+  _tx_fifo      = NULL;
+}
+
+/**
+ * Destructor
+ */
+BLEUart::~BLEUart()
+{
+  if ( _tx_fifo ) delete _tx_fifo;
 }
 
 /**
@@ -85,7 +95,7 @@ void bleuart_rxd_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_
   (void) offset;
 
   BLEUart& svc = (BLEUart&) chr.parentService();
-  svc._rxd_fifo.write(data, len);
+  svc._rx_fifo.write(data, len);
 
   // invoke user callback
   if ( svc._rx_cb ) svc._rx_cb();
@@ -122,21 +132,32 @@ void BLEUart::setRxCallback( rx_callback_t fp)
 }
 
 /**
- * Set timeout for buffered TXD packet.
+ * Enable packet buffered for TXD
  * Note: packet is sent right away if it reach MTU bytes
- * @param ms
+ * @param enable true or false
  */
 void BLEUart::bufferTXD(bool enable)
 {
-  _buffered_txd = enable;
+  _tx_buffered = enable;
 
-  // enable cccd callback to start timer when enabled
-  _txd.setCccdWriteCallback( enable ? bleuart_txd_cccd_cb : NULL);
+  if ( enable )
+  {
+    // enable cccd callback to start timer when enabled
+    _txd.setCccdWriteCallback(bleuart_txd_cccd_cb);
+
+    // Create FIFO for TX TODO Larger MTU Size
+    if ( _tx_fifo == NULL ) _tx_fifo = new Adafruit_FIFO(1, GATT_MTU_SIZE_DEFAULT - 3);
+  }else
+  {
+    _txd.setCccdWriteCallback(NULL);
+
+    if ( _tx_fifo ) delete _tx_fifo;
+  }
 }
 
 err_t BLEUart::begin(void)
 {
-  _rxd_fifo.begin();
+  _rx_fifo.begin();
 
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
@@ -178,7 +199,7 @@ void BLEUart::_disconnect_cb(void)
 
 void BLEUart::_connect_cb (void)
 {
-  if ( _buffered_txd)
+  if ( _tx_buffered)
   {
     // create buffered timer with interval = connection interval
     _buffered_th = xTimerCreate(NULL, (5*ms2tick(Bluefruit.connInterval())) / 4, true, this, bleuart_txd_buffered_handler);
@@ -196,7 +217,7 @@ int BLEUart::read (void)
 
 int BLEUart::read (uint8_t * buf, size_t size)
 {
-  return _rxd_fifo.read(buf, size);
+  return _rx_fifo.read(buf, size);
 }
 
 size_t BLEUart::write (uint8_t b)
@@ -206,23 +227,29 @@ size_t BLEUart::write (uint8_t b)
 
 size_t BLEUart::write (const uint8_t *content, size_t len)
 {
-  return _txd.notify(content, len) ? len : 0;
+//  if (!_tx_buffered)
+//  {
+    return _txd.notify(content, len) ? len : 0;
+//  }else
+//  {
+//
+//  }
 }
 
 int BLEUart::available (void)
 {
-  return _rxd_fifo.count();
+  return _rx_fifo.count();
 }
 
 int BLEUart::peek (void)
 {
   uint8_t ch;
-  return _rxd_fifo.peek(&ch) ? (int) ch : EOF;
+  return _rx_fifo.peek(&ch) ? (int) ch : EOF;
 }
 
 void BLEUart::flush (void)
 {
-  _rxd_fifo.clear();
+  _rx_fifo.clear();
 }
 
 

@@ -52,7 +52,9 @@ class BLEUart : public BLEService, public Stream
 {
   public:
     typedef void (*rx_callback_t) (void);
+
     BLEUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
+    virtual ~BLEUart();
 
     virtual err_t begin(void);
 
@@ -78,11 +80,13 @@ class BLEUart : public BLEService, public Stream
     BLECharacteristic _txd;
     BLECharacteristic _rxd;
 
-    Adafruit_FIFO     _rxd_fifo;
+    Adafruit_FIFO     _rx_fifo;
     rx_callback_t     _rx_cb;
 
-    bool          _buffered_txd;
-    TimerHandle_t _buffered_th;
+    bool            _tx_buffered;
+    TimerHandle_t   _buffered_th;
+
+    Adafruit_FIFO*  _tx_fifo;
 
     // from BLEService
     virtual void _disconnect_cb(void);
