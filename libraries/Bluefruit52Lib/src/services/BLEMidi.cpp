@@ -112,7 +112,7 @@ void blemidi_write_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint1
 /* IMPLEMENTATION
  *------------------------------------------------------------------*/
 BLEMidi::BLEMidi(uint16_t fifo_depth)
-  : BLEService(BLEMIDI_UUID_SERVICE), _io(BLEMIDI_UUID_CHR_IO), _rxd_fifo(fifo_depth, 1)
+  : BLEService(BLEMIDI_UUID_SERVICE), _io(BLEMIDI_UUID_CHR_IO), _rxd_fifo(1, fifo_depth)
 {
   _write_cb    = NULL;
   _midilib_obj = NULL;

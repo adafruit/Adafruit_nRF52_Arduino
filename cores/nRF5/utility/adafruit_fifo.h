@@ -59,7 +59,7 @@ class Adafruit_FIFO
 
   public:
     // Constructor
-    Adafruit_FIFO(uint16_t depth, uint8_t item_size);
+    Adafruit_FIFO(uint8_t item_size, uint16_t depth);
 
     virtual ~Adafruit_FIFO();
 

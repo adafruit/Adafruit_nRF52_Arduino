@@ -47,8 +47,8 @@
                Number of bytes of each item
 */
 /******************************************************************************/
-Adafruit_FIFO::Adafruit_FIFO(uint16_t depth, uint8_t item_size)
-  : _depth(depth), _item_size(item_size)
+Adafruit_FIFO::Adafruit_FIFO(uint8_t item_size, uint16_t depth)
+  : _item_size(item_size), _depth(depth)
 {
   _buffer= NULL;
   _mutex = NULL;

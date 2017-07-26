@@ -40,7 +40,7 @@ void bleuart_central_notify_cb(BLEClientCharacteristic& chr, uint8_t* data, uint
 
 BLEClientUart::BLEClientUart(uint16_t fifo_depth)
   : BLEClientService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD),
-    _rx_fifo(fifo_depth, 1)
+    _rx_fifo(1, fifo_depth)
 {
   _rx_cb = NULL;
 }
