@@ -44,8 +44,10 @@ class BLEService
   protected:
     uint16_t _handle;
 
-    err_t addToGatt(void);
     void  _init(void);
+
+    virtual void _disconnect_cb(void);
+    virtual void _connect_cb(void);
   
   public:
     static BLEService* lastService;

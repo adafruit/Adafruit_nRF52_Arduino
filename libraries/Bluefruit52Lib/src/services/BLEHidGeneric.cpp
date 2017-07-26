@@ -133,7 +133,8 @@ err_t BLEHidGeneric::begin(void)
 {
   VERIFY ( (_report_map != NULL) && _report_map_len, NRF_ERROR_INVALID_PARAM);
 
-  VERIFY_STATUS( this->addToGatt() );
+  // Invoke base class begin()
+  VERIFY_STATUS( BLEService::begin() );
 
   // Protocol Mode
   if ( _boot_keyboard || _boot_mouse )

@@ -44,7 +44,8 @@ BLEBas::BLEBas(void) :
 
 err_t BLEBas::begin(void)
 {
-  VERIFY_STATUS( this->addToGatt() );
+  // Invoke base class begin()
+  VERIFY_STATUS( BLEService::begin() );
 
   _battery.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY); // could support notify
   _battery.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);

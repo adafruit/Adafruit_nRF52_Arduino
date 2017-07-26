@@ -140,7 +140,8 @@ void BLEMidi::begin(int baudrate)
 
 err_t BLEMidi::begin(void)
 {
-  VERIFY_STATUS( this->addToGatt() );
+  // Invoke base class begin()
+  VERIFY_STATUS( BLEService::begin() );
 
   // IO characteristic
   _io.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP | CHR_PROPS_NOTIFY);

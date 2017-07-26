@@ -171,7 +171,8 @@ BLEDfu::BLEDfu(void) : BLEService(UUID128_SVC_DFU_OTA), _chr_control(UUID128_CHR
 
 err_t BLEDfu::begin(void)
 {
-  VERIFY_STATUS( this->addToGatt() );
+  // Invoke base class begin()
+  VERIFY_STATUS( BLEService::begin() );
 
   // No need to keep packet & revision characteristics
   BLECharacteristic chr_packet(UUID128_CHR_DFU_PACKET);

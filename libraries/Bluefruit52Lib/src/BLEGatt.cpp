@@ -141,8 +141,16 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
  *------------------------------------------------------------------*/
 bool BLEGatt::_addCharacteristic(BLECharacteristic* chr)
 {
-  if ( _server.chr_count == BLE_GATT_MAX_SERVER_CHARS ) return false;
+  if ( _server.chr_count == CFG_GATT_MAX_SERVER_CHARS ) return false;
   _server.chr_list[ _server.chr_count++ ] = chr;
+
+  return true;
+}
+
+bool BLEGatt::_addService(BLEService* svc)
+{
+  VERIFY( _server.svc_count < CFG_GATT_MAX_SERVER_SERVICE );
+  _server.svc_list[ _server.svc_count++ ] = svc;
 
   return true;
 }
@@ -173,7 +181,7 @@ void BLEGatt::_removeCharacteristic(BLEClientCharacteristic* chr)
 
 bool BLEGatt::_addCharacteristic(BLEClientCharacteristic* chr)
 {
-  VERIFY( _client.chr_count < BLE_GATT_MAX_CLIENT_CHARS );
+  VERIFY( _client.chr_count < CFG_GATT_MAX_CLIENT_CHARS );
   _client.chr_list[ _client.chr_count++ ] = chr;
 
   return true;
@@ -181,7 +189,7 @@ bool BLEGatt::_addCharacteristic(BLEClientCharacteristic* chr)
 
 bool BLEGatt::_addService(BLEClientService* svc)
 {
-  VERIFY( _client.svc_count < BLE_GATT_MAX_CLIENT_SERVICE );
+  VERIFY( _client.svc_count < CFG_GATT_MAX_CLIENT_SERVICE );
   _client.svc_list[ _client.svc_count++ ] = svc;
 
   return true;

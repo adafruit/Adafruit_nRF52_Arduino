@@ -61,7 +61,7 @@ void BLEService::setUuid(BLEUuid bleuuid)
   uuid = bleuuid;
 }
 
-err_t BLEService::addToGatt(void)
+err_t BLEService::begin(void)
 {
   // Add UUID128 if needed
   uuid.begin();
@@ -70,12 +70,18 @@ err_t BLEService::addToGatt(void)
   VERIFY_STATUS( sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &uuid._uuid, &handle) );
 
   lastService = this;
+  (void) Bluefruit.Gatt._addService(this);
 
   return ERROR_NONE;
 }
 
-err_t BLEService::begin(void)
+void BLEService::_disconnect_cb(void)
 {
-  return addToGatt();
+  // Template for inherited class
+}
+
+void BLEService::_connect_cb(void)
+{
+  // Template for inherited class
 }
 

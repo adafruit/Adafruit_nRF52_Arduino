@@ -46,10 +46,11 @@
 
 #include "BLEClientService.h"
 
-#define BLE_GATT_MAX_SERVER_CHARS        40
+#define CFG_GATT_MAX_SERVER_SERVICE      20
+#define CFG_GATT_MAX_SERVER_CHARS        40
 
-#define BLE_GATT_MAX_CLIENT_SERVICE      20
-#define BLE_GATT_MAX_CLIENT_CHARS        40
+#define CFG_GATT_MAX_CLIENT_SERVICE      20
+#define CFG_GATT_MAX_CLIENT_CHARS        40
 
 
 class BLEGatt
@@ -66,27 +67,30 @@ class BLEGatt
      *------------------------------------------------------------------*/
     // Server
     bool _addCharacteristic(BLECharacteristic* chr);
+    bool _addService(BLEService* svc);
 
     // Client
     bool _addCharacteristic(BLEClientCharacteristic* chr);
     void _removeCharacteristic(BLEClientCharacteristic* chr);
-
     bool _addService(BLEClientService* svc);
 
     void _eventHandler(ble_evt_t* evt);
 
   private:
     struct {
+      uint8_t            svc_count;
+      BLEService*        svc_list[CFG_GATT_MAX_SERVER_SERVICE];
+
       uint8_t            chr_count;
-      BLECharacteristic* chr_list[BLE_GATT_MAX_SERVER_CHARS];
+      BLECharacteristic* chr_list[CFG_GATT_MAX_SERVER_CHARS];
     } _server;
 
     struct {
       uint8_t                  svc_count;
-      BLEClientService*        svc_list[BLE_GATT_MAX_CLIENT_SERVICE];
+      BLEClientService*        svc_list[CFG_GATT_MAX_CLIENT_SERVICE];
 
       uint8_t                  chr_count;
-      BLEClientCharacteristic* chr_list[BLE_GATT_MAX_CLIENT_CHARS];
+      BLEClientCharacteristic* chr_list[CFG_GATT_MAX_CLIENT_CHARS];
     }_client;
 
     AdaMsg             _adamsg;

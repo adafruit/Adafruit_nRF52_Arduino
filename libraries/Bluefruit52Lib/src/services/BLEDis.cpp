@@ -70,7 +70,8 @@ void BLEDis::setManufacturer(const char* manufacturer)
 
 err_t BLEDis::begin(void)
 {
-  VERIFY_STATUS( this->addToGatt() );
+  // Invoke base class begin()
+  VERIFY_STATUS( BLEService::begin() );
 
   _serial = getMcuUniqueID();
   _firmware_rev = getFirmwareVersion();
