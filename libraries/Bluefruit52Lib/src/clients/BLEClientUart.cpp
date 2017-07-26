@@ -40,13 +40,15 @@ void bleuart_central_notify_cb(BLEClientCharacteristic& chr, uint8_t* data, uint
 
 BLEClientUart::BLEClientUart(uint16_t fifo_depth)
   : BLEClientService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD),
-    _fifo(fifo_depth, 1)
+    _rx_fifo(fifo_depth, 1)
 {
   _rx_cb = NULL;
 }
 
 bool BLEClientUart::begin(void)
 {
+  _rx_fifo.begin();
+
   // Invoke base class begin()
   BLEClientService::begin();
 
@@ -97,7 +99,7 @@ void BLEClientUart::disconnect(void)
 void bleuart_central_notify_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len)
 {
   BLEClientUart& uart_svc = (BLEClientUart&) chr.parentService();
-  uart_svc._fifo.write(data, len);
+  uart_svc._rx_fifo.write(data, len);
 
   // invoke callback
   if ( uart_svc._rx_cb ) uart_svc._rx_cb(uart_svc);
@@ -114,7 +116,7 @@ int BLEClientUart::read (void)
 
 int BLEClientUart::read (uint8_t * buf, size_t size)
 {
-  return _fifo.read(buf, size);
+  return _rx_fifo.read(buf, size);
 }
 
 size_t BLEClientUart::write (uint8_t b)
@@ -130,16 +132,16 @@ size_t BLEClientUart::write (const uint8_t *content, size_t len)
 
 int BLEClientUart::available (void)
 {
-  return _fifo.count();
+  return _rx_fifo.count();
 }
 
 int BLEClientUart::peek (void)
 {
   uint8_t ch;
-  return _fifo.peek(&ch) ? (int) ch : EOF;
+  return _rx_fifo.peek(&ch) ? (int) ch : EOF;
 }
 
 void BLEClientUart::flush (void)
 {
-  _fifo.clear();
+  _rx_fifo.clear();
 }

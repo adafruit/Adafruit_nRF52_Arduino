@@ -64,6 +64,7 @@ class Adafruit_FIFO
     virtual ~Adafruit_FIFO();
 
 
+    void begin(void);
     void clear(void);
     bool peek(void* buffer);
     bool peekAt(uint16_t position, void * p_buffer);

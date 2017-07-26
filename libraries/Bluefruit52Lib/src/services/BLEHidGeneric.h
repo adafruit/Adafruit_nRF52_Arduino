@@ -37,7 +37,6 @@
 #define BLEHIDGENERIC_H_
 
 #include "bluefruit_common.h"
-#include "utility/adafruit_fifo.h"
 
 #include "BLECharacteristic.h"
 #include "BLEService.h"

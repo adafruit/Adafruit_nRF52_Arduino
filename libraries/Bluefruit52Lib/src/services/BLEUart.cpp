@@ -136,6 +136,8 @@ void BLEUart::bufferTXD(bool enable)
 
 err_t BLEUart::begin(void)
 {
+  _rxd_fifo.begin();
+
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
 

@@ -140,6 +140,8 @@ void BLEMidi::begin(int baudrate)
 
 err_t BLEMidi::begin(void)
 {
+  _rxd_fifo.begin();
+
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
 
