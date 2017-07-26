@@ -41,8 +41,10 @@ BLEScanner::BLEScanner(void)
   _runnning = false;
   _start_if_disconnect = true;
 
-  _filter_rssi = INT8_MIN;
-  _filter_uuid = NULL;
+  _filter_rssi   = INT8_MIN;
+  _filter_msd_en = false;
+  _filter_msd_id = 0; // Irrelevant
+  _filter_uuid   = NULL;
 
   _rx_cb   = NULL;
   _stop_cb = NULL;
@@ -125,7 +127,7 @@ bool BLEScanner::stop(void)
   * @param type
   * @param buf
   * @param bufsize If bufsize is skipped (zero), len check will be skipped
-  * @return
+  * @return number of written bytes
   */
 uint8_t BLEScanner::parseReportByType(const uint8_t* scandata, uint8_t scanlen, uint8_t type, uint8_t* buf, uint8_t bufsize)
 {
@@ -151,8 +153,8 @@ uint8_t BLEScanner::parseReportByType(const uint8_t* scandata, uint8_t scanlen, 
   // not found return 0
   if (ptr == NULL) return 0;
 
-  // found but not enough data, skip copying
-  if ( (bufsize > 0) && (bufsize < len) ) return len;
+  // Only check len if bufsize is input
+  if (bufsize > 0) len = min8(bufsize, len);
 
   memcpy(buf, ptr, len);
   return len;
@@ -234,6 +236,12 @@ void BLEScanner::filterUuid(BLEUuid ble_uuid)
   (*_filter_uuid) = ble_uuid;
 }
 
+void BLEScanner::filterMSD(uint16_t manuf_id)
+{
+  _filter_msd_en = true;
+  _filter_msd_id = manuf_id;
+}
+
 /**
  * Event Handler
  * @param evt
@@ -251,6 +259,13 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
 
       // filter by uuid
       if ( _filter_uuid && !checkReportForUuid(evt_report, *_filter_uuid) ) break;
+
+      // filter by MSD if present
+      if ( _filter_msd_en )
+      {
+        uint16_t id;
+        if ( !(parseReportByType(evt_report, BLE_GAP_AD_TYPE_MANUFACTURER_SPECIFIC_DATA, &id, 2) && (id == _filter_msd_id)) ) break;
+      }
 
       ble_gap_evt_adv_report_t* adv_report = (ble_gap_evt_adv_report_t*) rtos_malloc( sizeof(ble_gap_evt_adv_report_t) );
       (*adv_report) = (*evt_report);

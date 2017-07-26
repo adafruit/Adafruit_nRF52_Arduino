@@ -60,6 +60,7 @@ public:
 
   void filterRssi(int8_t min_rssi);
   void filterUuid(BLEUuid ble_uuid);
+  void filterMSD(uint16_t manuf_id);
 
   bool start(uint16_t timeout = 0);
   bool stop(void);
@@ -88,6 +89,8 @@ private:
   bool     _start_if_disconnect;
 
   int8_t   _filter_rssi;
+  bool     _filter_msd_en; // since all value of manu id is value (0-FFFF)
+  uint16_t _filter_msd_id;
   BLEUuid* _filter_uuid;
 
   rx_callback_t   _rx_cb;
