@@ -291,7 +291,6 @@ err_t BLECharacteristic::begin(void)
 }
 
 /**
- * Call by Bluefruit event poll()
  * @param event
  */
 void BLECharacteristic::_eventHandler(ble_evt_t* event)

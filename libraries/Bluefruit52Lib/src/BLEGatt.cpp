@@ -72,9 +72,28 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
 {
   // conn handle has fixed offset regardless of event type
   const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
+  const uint16_t evt_id       = evt->header.evt_id;
+
+  // Server Service TODO multiple peripherals
+  if ( evt_conn_hdl == Bluefruit.connHandle() )
+  {
+    if ( evt_id == BLE_GAP_EVT_DISCONNECTED ||  evt_id == BLE_GAP_EVT_CONNECTED )
+    {
+      for(uint8_t i=0; i<_server.svc_count; i++)
+      {
+        if ( evt_id == BLE_GAP_EVT_DISCONNECTED )
+        {
+          _server.svc_list[i]->_disconnect_cb();
+        }else
+        {
+          _server.svc_list[i]->_connect_cb();
+        }
+      }
+    }
+  }
 
   // Server Characteristics
-  for(int i=0; i<_server.chr_count; i++)
+  for(uint8_t i=0; i<_server.chr_count; i++)
   {
     _server.chr_list[i]->_eventHandler(evt);
   }
@@ -86,7 +105,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
     {
       bool matched = false;
 
-      switch(evt->header.evt_id)
+      switch(evt_id)
       {
         case BLE_GATTC_EVT_HVX:
         case BLE_GATTC_EVT_WRITE_RSP:
@@ -104,9 +123,10 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
   }
 
   // disconnect Client Services & Characteristics of the disconnected handle
-  if ( evt->header.evt_id == BLE_GAP_EVT_DISCONNECTED )
+  if ( evt_id == BLE_GAP_EVT_DISCONNECTED )
   {
-    for(int i=0; i<_client.svc_count; i++)
+    // Client
+    for(uint8_t i=0; i<_client.svc_count; i++)
     {
       if ( evt_conn_hdl == _client.svc_list[i]->_conn_hdl)
       {
@@ -114,7 +134,8 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
       }
     }
 
-    for(int i=0; i<_client.chr_count; i++)
+    // TODO merge to above loop
+    for(uint8_t i=0; i<_client.chr_count; i++)
     {
       if ( evt_conn_hdl == _client.chr_list[i]->connHandle() )
       {
@@ -124,7 +145,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
   }
 
   // GATTC Read Characteristic by UUID procedure
-  if ( evt->header.evt_id == BLE_GATTC_EVT_CHAR_VAL_BY_UUID_READ_RSP )
+  if ( evt_id == BLE_GATTC_EVT_CHAR_VAL_BY_UUID_READ_RSP )
   {
     ble_gattc_evt_char_val_by_uuid_read_rsp_t* rd_rsp = &evt->evt.gattc_evt.params.char_val_by_uuid_read_rsp;
 
