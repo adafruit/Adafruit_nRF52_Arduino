@@ -88,6 +88,8 @@ class BLEUart : public BLEService, public Stream
 
     Adafruit_FIFO*  _tx_fifo;
 
+    bool flush_tx_buffered(void);
+
     // from BLEService
     virtual void _disconnect_cb(void);
     virtual void _connect_cb(void);

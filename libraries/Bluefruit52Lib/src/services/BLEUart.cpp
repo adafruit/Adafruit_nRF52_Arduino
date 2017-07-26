@@ -37,6 +37,8 @@
 #include "bluefruit.h"
 #include "utility/TimeoutTimer.h"
 
+#define TXD_FIFO_SIZE   (GATT_MTU_SIZE_DEFAULT-3)
+
 /* UART Serivce: 6E400001-B5A3-F393-E0A9-E50E24DCCA9E
  * UART RXD    : 6E400002-B5A3-F393-E0A9-E50E24DCCA9E
  * UART TXD    : 6E400003-B5A3-F393-E0A9-E50E24DCCA9E
@@ -107,7 +109,8 @@ void bleuart_rxd_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_
  */
 void bleuart_txd_buffered_handler(TimerHandle_t timer)
 {
-//  BLEUart& svc = (BLEUart&) pvTimerGetTimerID(timer);
+  BLEUart* svc = (BLEUart*) pvTimerGetTimerID(timer);
+  svc->flush_tx_buffered();
 }
 
 void bleuart_txd_cccd_cb(BLECharacteristic& chr, uint16_t value)
@@ -146,7 +149,7 @@ void BLEUart::bufferTXD(bool enable)
     _txd.setCccdWriteCallback(bleuart_txd_cccd_cb);
 
     // Create FIFO for TX TODO Larger MTU Size
-    if ( _tx_fifo == NULL ) _tx_fifo = new Adafruit_FIFO(1, GATT_MTU_SIZE_DEFAULT - 3);
+    if ( _tx_fifo == NULL ) _tx_fifo = new Adafruit_FIFO(1, TXD_FIFO_SIZE);
   }else
   {
     _txd.setCccdWriteCallback(NULL);
@@ -227,13 +230,33 @@ size_t BLEUart::write (uint8_t b)
 
 size_t BLEUart::write (const uint8_t *content, size_t len)
 {
-//  if (!_tx_buffered)
-//  {
+  // notify right away if txd buffered is not enabled
+  if ( !(_tx_buffered && _tx_fifo) )
+  {
     return _txd.notify(content, len) ? len : 0;
-//  }else
-//  {
-//
-//  }
+  }else
+  {
+    uint16_t written = _tx_fifo->write(content, len);
+
+    if ( !_tx_fifo->full() )
+    {
+      // Not full, notify will be sent later by txd timer handler
+      return len;
+    }
+    else
+    {
+      // TX fifo is full, send notify right away
+      VERIFY( flush_tx_buffered(), 0);
+
+      // still more data left, send them all
+      if ( written < len )
+      {
+        VERIFY( _txd.notify(content+written, len-written), TXD_FIFO_SIZE );
+      }
+
+      return len;
+    }
+  }
 }
 
 int BLEUart::available (void)
@@ -250,6 +273,21 @@ int BLEUart::peek (void)
 void BLEUart::flush (void)
 {
   _rx_fifo.clear();
+}
+
+bool BLEUart::flush_tx_buffered(void)
+{
+  if ( _tx_fifo == NULL ) return false;
+
+  uint8_t ff_data[TXD_FIFO_SIZE];
+  uint16_t len = _tx_fifo->read(ff_data, sizeof(ff_data));
+
+  if ( len )
+  {
+    return _txd.notify(ff_data, len);
+  }
+
+  return true;
 }
 
 
