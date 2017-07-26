@@ -730,8 +730,11 @@ void systemResetCallback()
       // turns off pullup, configures everything
       setPinModeCallback(i, PIN_MODE_ANALOG);
     } else if (IS_PIN_DIGITAL(i)) {
-      // sets the output to 0, configures portConfigInputs
-      setPinModeCallback(i, OUTPUT);
+      if ( i != LED_BLUE ) // skip connection LED
+      {
+        // sets the output to 0, configures portConfigInputs
+        setPinModeCallback(i, OUTPUT);
+      }
     }
 
     servoPinMap[i] = 255;
@@ -756,12 +759,19 @@ void systemResetCallback()
 
 void setup()
 {
+  Serial.begin(115200);                              
+  Serial.println("Bluefruit52 Standard Firmata via BLEUART Example");
+  Serial.println("---------------------------\n");
+    
   Bluefruit.begin();
   Bluefruit.setTxPower(4);          // Maximum TX power = 4 dBm
   Bluefruit.setName("Bluefruit52");
 
   // Configure and Start BLE Uart Service
+  // Firmata use several small write(1) --> buffering TXD is required to run smoothly
+  // Enable buffering TXD
   bleuart.begin();
+  bleuart.bufferTXD(true);
   
   Firmata.setFirmwareVersion(FIRMATA_FIRMWARE_MAJOR_VERSION, FIRMATA_FIRMWARE_MINOR_VERSION);
 
@@ -826,6 +836,9 @@ void startAdv(void)
  *============================================================================*/
 void loop()
 {
+  // Skip if not connected and bleuart notification is enabled
+  if (  !(Bluefruit.connected() && bleuart.notifyEnabled()) ) return;
+  
   byte pin, analogPin;
 
   /* DIGITALREAD - as fast as possible, check for changes and output them to the

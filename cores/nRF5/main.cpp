@@ -16,7 +16,7 @@
 #define ARDUINO_MAIN
 #include "Arduino.h"
 
-#define DBG_MEM_INFO              0
+#define DBG_MEM_INFO              1
 #define DBG_MEM_INFO_INTERVAL     60000
 
 // DEBUG Level 1

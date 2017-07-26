@@ -580,6 +580,8 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
           _conn_hdl      = evt->evt.gap_evt.conn_handle;
           _conn_interval = para->conn_params.min_conn_interval;
 
+          LOG_LV1(GAP, "Conn Interval= %f", _conn_interval*1.25f);
+
           // Connection interval set by Central is out of preferred range
           // Try to negotiate with Central using our preferred values
           if ( !is_within(_ppcp_min_conn, para->conn_params.min_conn_interval, _ppcp_max_conn) )
@@ -599,6 +601,8 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         // min conn = max conn = actual used interval
         ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
         _conn_interval = param->min_conn_interval;
+
+        LOG_LV1(GAP, "Conn Interval= %f", _conn_interval*1.25f);
       }
       break;
 
