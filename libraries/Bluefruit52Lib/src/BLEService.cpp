@@ -34,8 +34,7 @@
 */
 /**************************************************************************/
 
-#include <Arduino.h>
-#include "BLEService.h"
+#include "bluefruit.h"
 
 BLEService* BLEService::lastService = NULL;
 

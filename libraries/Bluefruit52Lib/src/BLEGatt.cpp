@@ -75,7 +75,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
   const uint16_t evt_id       = evt->header.evt_id;
 
   // Server Service TODO multiple peripherals
-  if ( evt_conn_hdl == Bluefruit.connHandle() )
+//  if ( evt_conn_hdl == Bluefruit.connHandle() )
   {
     if ( evt_id == BLE_GAP_EVT_DISCONNECTED ||  evt_id == BLE_GAP_EVT_CONNECTED )
     {

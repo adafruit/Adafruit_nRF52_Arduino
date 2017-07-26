@@ -264,7 +264,7 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
       if ( _filter_msd_en )
       {
         uint16_t id;
-        if ( !(parseReportByType(evt_report, BLE_GAP_AD_TYPE_MANUFACTURER_SPECIFIC_DATA, &id, 2) && (id == _filter_msd_id)) ) break;
+        if ( !(parseReportByType(evt_report, BLE_GAP_AD_TYPE_MANUFACTURER_SPECIFIC_DATA, (uint8_t*)&id, 2) && (id == _filter_msd_id)) ) break;
       }
 
       ble_gap_evt_adv_report_t* adv_report = (ble_gap_evt_adv_report_t*) rtos_malloc( sizeof(ble_gap_evt_adv_report_t) );

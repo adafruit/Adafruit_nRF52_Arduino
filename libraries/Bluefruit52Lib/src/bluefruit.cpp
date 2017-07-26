@@ -424,7 +424,8 @@ void AdafruitBluefruit::printInfo(void)
   Serial.println();
 
   // List the paried device
-  Serial.printf(title_fmt, "Paired Devices\n");
+  Serial.printf(title_fmt, "Paired Devices");
+  Serial.println();
 
   NffsDir dir(CFG_BOND_NFFS_DIR);
   NffsDirEntry dirEntry;

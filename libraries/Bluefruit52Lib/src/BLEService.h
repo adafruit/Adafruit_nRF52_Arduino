@@ -60,6 +60,8 @@ class BLEService
     void setUuid(BLEUuid bleuuid);
 
     virtual err_t begin(void);
+
+    friend class BLEGatt;
 };
 
 #endif /* BLESERVICE_H_ */
