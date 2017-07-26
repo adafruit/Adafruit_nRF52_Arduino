@@ -61,6 +61,8 @@ class BLEGap
     uint16_t       getPeerName(uint16_t conn_handle, char* buf, uint16_t bufsize);
     bool           getTxPacket(uint16_t conn_handle);
 
+    uint16_t       getMTU(uint16_t conn_handle);
+
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal
