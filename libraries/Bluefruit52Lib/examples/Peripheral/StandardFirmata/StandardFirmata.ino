@@ -785,6 +785,7 @@ void setup()
   Firmata.attach(START_SYSEX, sysexCallback);
   Firmata.attach(SYSTEM_RESET, systemResetCallback);
 
+  // use bleuart as transportation layer
   Firmata.begin(bleuart);
 
   // to use a port other than Serial, such as Serial1 on an Arduino Leonardo or Mega,
