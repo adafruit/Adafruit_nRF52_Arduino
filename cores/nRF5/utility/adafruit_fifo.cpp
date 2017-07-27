@@ -67,8 +67,7 @@ void Adafruit_FIFO::begin(void)
 void Adafruit_FIFO::begin(uint16_t depth)
 {
   _depth  = depth;
-  _buffer = (uint8_t*) malloc(_item_size*_depth);
-  _mutex  = xSemaphoreCreateMutex();
+  begin();
 }
 
 void Adafruit_FIFO::overwriteIfFull(bool enable)

@@ -71,7 +71,7 @@ BLEUart::BLEUart(uint16_t fifo_depth)
 {
   _rx_cb        = NULL;
 
-  _tx_buffered = false;
+  _tx_buffered  = 0;
   _buffered_th  = NULL;
 
   _tx_fifo      = NULL;
@@ -114,7 +114,7 @@ void bleuart_txd_buffered_hdlr(TimerHandle_t timer)
   // skip if null (unlikely)
   if ( !svc->_tx_fifo ) return;
 
-  // flush data (send notiication)
+  // flush tx data
   svc->flush_tx_buffered();
 }
 
@@ -144,7 +144,7 @@ void BLEUart::setRxCallback( rx_callback_t fp)
  * Note: packet is sent right away if it reach MTU bytes
  * @param enable true or false
  */
-void BLEUart::bufferTXD(bool enable)
+void BLEUart::bufferTXD(uint8_t enable)
 {
   _tx_buffered = enable;
 
@@ -206,6 +206,8 @@ void BLEUart::_disconnect_cb(void)
   {
     xTimerDelete(_buffered_th, 0);
     _buffered_th = NULL;
+
+    if (_tx_fifo) _tx_fifo->clear();
   }
 }
 
@@ -213,8 +215,9 @@ void BLEUart::_connect_cb (void)
 {
   if ( _tx_buffered)
   {
-    // create buffered timer with interval = connection interval
-    _buffered_th = xTimerCreate(NULL, (5*ms2tick(Bluefruit.connInterval())) / 4, true, this, bleuart_txd_buffered_hdlr);
+    // create TXD timer TODO take connInterval into account
+    // ((5*ms2tick(Bluefruit.connInterval())) / 4) / 2
+    _buffered_th = xTimerCreate(NULL, ms2tick(10), true, this, bleuart_txd_buffered_hdlr);
   }
 }
 

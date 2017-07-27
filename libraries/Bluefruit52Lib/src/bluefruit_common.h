@@ -49,7 +49,7 @@
 #define BLE_GAP_CONN_SLAVE_LATENCY              0
 
 #define BLE_GAP_CONN_MIN_INTERVAL_DFLT          MS100TO125(20)
-#define BLE_GAP_CONN_MAX_INTERVAL_DFLT          MS100TO125(40)
+#define BLE_GAP_CONN_MAX_INTERVAL_DFLT          MS100TO125(30)
 
 // Converts an integer of 1.25ms units to msecs
 #define MS100TO125(ms100) (((ms100)*4)/5)

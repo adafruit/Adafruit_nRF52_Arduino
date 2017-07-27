@@ -302,15 +302,16 @@ void setPinModeCallback(byte pin, int mode)
       }
       break;
     case INPUT:
-      if (IS_PIN_DIGITAL(pin)) {
-        pinMode(PIN_TO_DIGITAL(pin), INPUT);    // disable output driver
-#if ARDUINO <= 100
-        // deprecated since Arduino 1.0.1 - TODO: drop support in Firmata 2.6
-        digitalWrite(PIN_TO_DIGITAL(pin), LOW); // disable internal pull-ups
-#endif
-        Firmata.setPinMode(pin, INPUT);
-      }
-      break;
+// Adafruit: Input without pull up cause pin state changes randomly --> lots of transmission data     
+//      if (IS_PIN_DIGITAL(pin)) {
+//        pinMode(PIN_TO_DIGITAL(pin), INPUT);    // disable output driver
+//#if ARDUINO <= 100
+//        // deprecated since Arduino 1.0.1 - TODO: drop support in Firmata 2.6
+//        digitalWrite(PIN_TO_DIGITAL(pin), LOW); // disable internal pull-ups
+//#endif
+//        Firmata.setPinMode(pin, INPUT);
+//      }
+//      break;
     case PIN_MODE_PULLUP:
       if (IS_PIN_DIGITAL(pin)) {
         pinMode(PIN_TO_DIGITAL(pin), INPUT_PULLUP);
@@ -730,11 +731,8 @@ void systemResetCallback()
       // turns off pullup, configures everything
       setPinModeCallback(i, PIN_MODE_ANALOG);
     } else if (IS_PIN_DIGITAL(i)) {
-      if ( i != LED_BLUE ) // skip connection LED
-      {
-        // sets the output to 0, configures portConfigInputs
-        setPinModeCallback(i, OUTPUT);
-      }
+      // sets the output to 0, configures portConfigInputs
+      setPinModeCallback(i, OUTPUT);
     }
 
     servoPinMap[i] = 255;
@@ -761,12 +759,15 @@ void setup()
 {
   Serial.begin(115200);                              
   Serial.println("Bluefruit52 Standard Firmata via BLEUART Example");
-  Serial.println("---------------------------\n");
+  Serial.println("------------------------------------------------\n");
     
   Bluefruit.begin();
-  Bluefruit.setTxPower(4);          // Maximum TX power = 4 dBm
   Bluefruit.setName("Bluefruit52");
-
+  Bluefruit.setTxPower(4);          // Maximum TX power = 4 dBm
+  // try to go as fast as possible, could be rejected by some central, increase it if needed
+  // iOS won't negotitate and will mostly use 30ms
+  Bluefruit.setConnInterval(9, 16); // min = 9*1.25=11.25 ms, max = 16*1.25=20ms
+  
   // Configure and Start BLE Uart Service
   // Firmata use several small write(1) --> buffering TXD is required to run smoothly
   // Enable buffering TXD

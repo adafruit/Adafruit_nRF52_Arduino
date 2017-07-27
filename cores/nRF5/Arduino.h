@@ -97,7 +97,7 @@ uint32_t setLoopStacksize(void);
 #define lowByte(w) ((uint8_t) ((w) & 0xff))
 #define highByte(w) ((uint8_t) ((w) >> 8))
 
-#define bitRead(value, bit) (((value) >> (bit)) & 0x01)
+#define bitRead(value, bit) (((value) >> (bit)) & 0x01ul)
 #define bitSet(value, bit) ((value) |= (1UL << (bit)))
 #define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
 #define bitWrite(value, bit, bitvalue) (bitvalue ? bitSet(value, bit) : bitClear(value, bit))
@@ -110,7 +110,7 @@ uint32_t setLoopStacksize(void);
 #define portOutputRegister(port)   ( &(NRF_GPIO->OUT) )
 #define portInputRegister(port)    ( &(NRF_GPIO->IN) )
 #define portModeRegister(port)     ( &(NRF_GPIO->DIRSET) )
-#define digitalPinHasPWM(P)        ( true )
+#define digitalPinHasPWM(P)        ( (P) > 1 )
 
 void rtos_idle_callback(void) ATTR_WEAK;
 /*

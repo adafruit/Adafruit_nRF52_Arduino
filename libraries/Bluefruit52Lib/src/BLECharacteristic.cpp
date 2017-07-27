@@ -500,6 +500,7 @@ bool BLECharacteristic::notify(const void* data, uint16_t len)
           .p_data = (uint8_t*) u8data,
       };
 
+      LOG_LV2(CHR, "Notify %d bytes", packet_len);
       VERIFY_STATUS( sd_ble_gatts_hvx(Bluefruit.connHandle(), &hvx_params), false );
 
       remaining -= packet_len;
