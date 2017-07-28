@@ -161,7 +161,6 @@ void Uart::begin(unsigned long baudrate, uint16_t /*config*/)
   NVIC_EnableIRQ(IRQn);
 
   _mutex = xSemaphoreCreateMutex();
-
   _begun = true;
 }
 
