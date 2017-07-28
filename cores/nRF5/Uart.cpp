@@ -30,7 +30,6 @@ Uart::Uart(NRF_UART_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pi
   uc_hwFlow = 0;
 
   _mutex = NULL;
-
   _begun = false;
 }
 
@@ -45,8 +44,13 @@ Uart::Uart(NRF_UART_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pi
   uc_hwFlow = 1;
 
   _mutex = NULL;
-
   _begun = false;
+}
+
+void Uart::setPins(uint8_t pin_rx, uint8_t pin_tx)
+{
+  uc_pinRX = pin_rx;
+  uc_pinTX = pin_tx;
 }
 
 void Uart::begin(unsigned long baudrate)
