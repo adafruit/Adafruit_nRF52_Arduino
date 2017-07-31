@@ -442,25 +442,25 @@ int insertRecord(node_record_t *record)
    *  1.    | BUBBLE SORT |   // Put list in known state!
    *        +-------------+
    *              |
-   *             \ /
-   *            ENTRY       YES
-   *  2.    EXISTS W/THIS   ------------------+
-   *           ADDRESS?                       |
-   *              |                           |
+   *        _____\ /_____
+   *       /    ENTRY    \    YES
+   *  2. <  EXISTS W/THIS > ------------------+
+   *       \   ADDRESS?  /                    |
+   *         -----------                      |
    *              | NO                        |
    *              |                           |
-   *             \ /                          |
-   *              IS        YES               |
-   *  3.    THERE A ZERO'ED ------------------+
-   *            RECORD?                       |
-   *              |                           |
+   *       ______\ /______                    |
+   *      /      IS       \   YES             |
+   *  3. < THERE A ZERO'ED >------------------+
+   *      \    RECORD?    /                   |
+   *        -------------                     |
    *              | NO                        |
    *              |                           |
-   *             \ /                          |
-   *            IS THE      YES               |
-   *  4.   RECORD'S RSSI >= ------------------|
-   *       THE LOWEST RSSI?                   |
-   *              |                           |
+   *       ______\ /________                  |
+   *     /     IS THE       \ YES             |
+   *  4.<  RECORD'S RSSI >=  >----------------|
+   *     \ THE LOWEST RSSI? /                 |
+   *       ----------------                   |
    *              | NO                        |
    *              |                           |
    *             \ /                         \ /
@@ -476,8 +476,7 @@ int insertRecord(node_record_t *record)
 
    /* 1. Bubble Sort 
     *    This puts the lists in a known state where we can make
-    *    certain assumptions about the last record in the array.
-    */
+    *    certain assumptions about the last record in the array. */
     bubbleSort();
 
     /* 2. Check for a match on existing device address */
