@@ -35,12 +35,6 @@
  *  advertising payloads, with fully parsed data displayed in the 
  *  Serial Monitor.
  *  
- *  ENABLE_TFT
- *  ----------
- *  An ILI9341 based TFT can optionally be used to display proximity 
- *  alerts. The Adafruit TFT Feather Wing is recommended and is the only 
- *  device tested with this functionality.
- *  
  *  ARRAY_SIZE
  *  ----------
  *  The numbers of peripherals tracked and sorted can be set via the
@@ -51,6 +45,18 @@
  *  This value determines the number of milliseconds before a tracked
  *  peripheral has it's last sample 'invalidated', such as when a device
  *  is tracked and then goes out of range.
+ *  
+ *  ENABLE_TFT
+ *  ----------
+ *  An ILI9341 based TFT can optionally be used to display proximity 
+ *  alerts. The Adafruit TFT Feather Wing is recommended and is the only 
+ *  device tested with this functionality.
+ *  
+ *  ENABLE_OLED
+ *  -----------
+ *  An SSD1306 128x32 based OLED can optionally be used to display
+ *  proximity alerts. The Adafruit OLED Feather Wing is recommended and
+ *  is the only device tested with this functionality.
  */
 
 #include <string.h>
@@ -58,12 +64,16 @@
 #include <SPI.h>
 
 #define VERBOSE_OUTPUT (0)    // Set this to 1 for verbose adv packet output to the serial monitor
-#define ENABLE_TFT     (0)    // Set this to 1 to enable ILI9341 TFT display support
 #define ARRAY_SIZE     (4)    // The number of RSSI values to store and compare
 #define TIMEOUT_MS     (2500) // Number of milliseconds before a record is invalidated in the list
+#define ENABLE_TFT     (0)    // Set this to 1 to enable ILI9341 TFT display support
+#define ENABLE_OLED    (0)    // Set this to 1 to enable SSD1306 128x32 OLED display support
 
 #if (ARRAY_SIZE <= 0)
   #error "ARRAY_SIZE must be a non-zero value"
+#endif
+#if (ENABLE_TFT) && (ENABLE_OLED)
+  #error "ENABLE_TFT and ENABLE_OLED can not both be set at the same time"
 #endif
 
 // Custom UUID used to differentiate this device.
@@ -91,10 +101,28 @@ BLEUuid uuid = BLEUuid(CUSTOM_UUID);
      #define STMPE_CS 30
      #define SD_CS    27
   #else
-  #error "Unknown target. Please make sure you are using an nRF52 Feather and BSP 0.6.5 or higher!"
+    #error "Unknown target. Please make sure you are using an nRF52 Feather and BSP 0.6.5 or higher!"
   #endif
 
   Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+#endif
+
+/* 128x32 OLED setup if the OLED display is available */
+#if (ENABLE_OLED)
+  #include <Wire.h>
+  #include <Adafruit_GFX.h>
+  #include <Adafruit_SSD1306.h>
+
+  /* Pin setup for the OLED display */
+  #ifdef ARDUINO_NRF52_FEATHER
+    #define BUTTON_A 31
+    #define BUTTON_B 30
+    #define BUTTON_C 27
+  #else
+    #error "Unknown target. Please make sure you are using an nRF52 Feather and BSP 0.6.5 or higher!"
+  #endif
+
+  Adafruit_SSD1306 oled = Adafruit_SSD1306();
 #endif
 
 /* This struct is used to track detected nodes */
@@ -122,6 +150,12 @@ void setup()
   tft.setTextColor(ILI9341_WHITE);
   tft.setTextSize(2);
   tft.println("DUNKIN");
+  #endif
+
+  /* Enable the OLED display if available */
+  #if ENABLE_OLED
+  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  oled.display();
   #endif
 
   /* Clear the results list */
@@ -169,7 +203,7 @@ void setup()
   Bluefruit.Scanner.setRxCallback(scan_callback);
   Bluefruit.Scanner.restartOnDisconnect(true);
   Bluefruit.Scanner.filterRssi(-80);            // Only invoke callback for devices with RSSI >= -80 dBm
-  Bluefruit.Scanner.filterUuid(uuid);           // Only invoke callback if the target UUID was found
+  //Bluefruit.Scanner.filterUuid(uuid);           // Only invoke callback if the target UUID was found
   //Bluefruit.Scanner.filterMSD(0xFFFF);          // Only invoke callback when MSD is present with the specified Company ID
   Bluefruit.Scanner.setInterval(160, 80);       // in units of 0.625 ms
   Bluefruit.Scanner.useActiveScan(true);        // Request scan response data
@@ -180,43 +214,32 @@ void setup()
 /* This callback handler is fired every time a valid advertising packet is detected */
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
-  /* Try to insert this packet into the existing record list */
   node_record_t record;
+  
+  /* Prepare the record to try to insert it into the existing record list */
   memcpy(record.addr, report->peer_addr.addr, 6); /* Copy the 6-byte device ADDR */
   record.rssi = report->rssi;                     /* Copy the RSSI value */
   record.timestamp = millis();                    /* Set the timestamp (approximate) */
+
+  /* Attempt to insert the record into the list */
   if (insertRecord(&record) == 1)                 /* Returns 1 if the list was updated */
   {
-    /* The list was updated, print the new values */
-    printRecordList();
+    printRecordList();                            /* The list was updated, print the new values */
     Serial.println("");
+    
+    /* Display the device list on the TFT if available */
+    #if ENABLE_TFT
+    renderResultsToTFT();
+    #endif
+  
+    /* Display the device list on the OLED if available */
+    #if ENABLE_OLED
+    renderResultsToOLED();
+    #endif
   }
 
-  /* Display the device on the TFT if available */
-#if ENABLE_TFT
-  tft.fillRect(0, 0, 240, 30, ILI9341_BLACK);
-  tft.setTextSize(1);
-  tft.setCursor(0, 0);
-  tft.print("[");
-  tft.print(millis());
-  tft.print("] ");
-  tft.print(report->peer_addr.addr[0]);
-  tft.print(":");
-  tft.print(report->peer_addr.addr[1]);
-  tft.print(":");
-  tft.print(report->peer_addr.addr[2]);
-  tft.print(":");
-  tft.print(report->peer_addr.addr[3]);
-  tft.print(":");
-  tft.print(report->peer_addr.addr[4]);
-  tft.print(":");
-  tft.println(report->peer_addr.addr[5]);
-  tft.print("RSSI: ");
-  tft.print(report->rssi);
-  tft.println(" dBm");
-#endif
-
-/* Fully parse and display the advertising packet if verbose/debug output is requested */
+/* Fully parse and display the advertising packet to the Serial Monitor
+ * if verbose/debug output is requested */
 #if VERBOSE_OUTPUT
   uint8_t len = 0;
   uint8_t buffer[32];
@@ -338,6 +361,73 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   Serial.println();
 #endif
 }
+
+#if ENABLE_TFT
+void renderResultsToTFT(void)
+{
+  tft.fillRect(0, 0, 240, ARRAY_SIZE*8, ILI9341_BLACK);
+  tft.setTextSize(1);
+  tft.setCursor(0, 0);
+  
+  for (uint8_t i=0; i<ARRAY_SIZE; i++)
+  {
+    tft.print(records[i].addr[0], HEX);
+    tft.print(":");
+    tft.print(records[i].addr[1], HEX);
+    tft.print(":");
+    tft.print(records[i].addr[2], HEX);
+    tft.print(":");
+    tft.print(records[i].addr[3], HEX);
+    tft.print(":");
+    tft.print(records[i].addr[4], HEX);
+    tft.print(":");
+    tft.print(records[i].addr[5], HEX);
+    tft.print(" ");
+    tft.print(records[i].rssi);
+    tft.print(" [");
+    tft.print(records[i].timestamp);
+    tft.println("] ");
+  }
+}
+#endif
+
+#if ENABLE_OLED
+void renderResultsToOLED(void)
+{
+  oled.clearDisplay();
+  oled.setTextSize(1);
+  oled.setTextColor(WHITE);
+
+  for (uint8_t i=0; i<ARRAY_SIZE; i++)
+  {
+    if (i>=4)
+    {
+      /* We can only display four records on a 128x32 pixel display */
+      oled.display();
+      return;
+    }
+    if (records[i].rssi != -128)
+    {
+      oled.setCursor(0, i*8);
+      oled.print(records[i].addr[0], HEX);
+      oled.print(":");
+      oled.print(records[i].addr[1], HEX);
+      oled.print(":");
+      oled.print(records[i].addr[2], HEX);
+      oled.print(":");
+      oled.print(records[i].addr[3], HEX);
+      oled.print(":");
+      oled.print(records[i].addr[4], HEX);
+      oled.print(":");
+      oled.print(records[i].addr[5], HEX);
+      oled.print(" ");
+      oled.println(records[i].rssi);
+    }
+  }
+
+  oled.display();
+}
+#endif
 
 /* Prints a UUID16 list to the Serial Monitor */
 void printUuid16List(uint8_t* buffer, uint8_t len)
