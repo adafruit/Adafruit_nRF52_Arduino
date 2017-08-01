@@ -103,8 +103,9 @@ extern "C"
 #define PIN_A3               (3)
 #define PIN_A4               (4)
 #define PIN_A5               (5)
-//#define PIN_A6               (30)
-//#define PIN_A7               (31)
+
+#define PIN_A6               (-1)
+#define PIN_A7               (-1)
 
 static const uint8_t A0  = PIN_A0 ;
 static const uint8_t A1  = PIN_A1 ;
