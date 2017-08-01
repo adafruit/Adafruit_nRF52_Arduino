@@ -242,6 +242,19 @@ void BLEScanner::filterMSD(uint16_t manuf_id)
   _filter_msd_id = manuf_id;
 }
 
+void BLEScanner::clearFilters(void)
+{
+  _filter_rssi = INT8_MIN;
+  _filter_msd_en = false;
+
+  if ( _filter_uuid )
+  {
+    delete _filter_uuid;
+    _filter_uuid = NULL;
+  }
+
+}
+
 /**
  * Event Handler
  * @param evt
