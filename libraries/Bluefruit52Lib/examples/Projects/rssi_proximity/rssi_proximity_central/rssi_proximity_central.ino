@@ -59,7 +59,7 @@
 
 #define VERBOSE_OUTPUT (0)    // Set this to 1 for verbose adv packet output to the serial monitor
 #define ENABLE_TFT     (0)    // Set this to 1 to enable ILI9341 TFT display support
-#define ARRAY_SIZE     (6)    // The number of RSSI values to store and compare
+#define ARRAY_SIZE     (4)    // The number of RSSI values to store and compare
 #define TIMEOUT_MS     (2500) // Number of milliseconds before a record is invalidated in the list
 
 #if (ARRAY_SIZE <= 0)
@@ -132,12 +132,6 @@ void setup()
     // since 0 would be higher than any valid RSSI value
     records[i].rssi = -128;
   }
-  records[2].rssi = -45;
-  records[2].timestamp = millis();
-  records[1].rssi = -65;
-  records[1].timestamp = millis();
-  bubbleSort();
-  printRecordList();
 
   /* Enable both peripheral and central modes */
   err_t err = Bluefruit.begin(true, true);
@@ -175,7 +169,7 @@ void setup()
   Bluefruit.Scanner.setRxCallback(scan_callback);
   Bluefruit.Scanner.restartOnDisconnect(true);
   Bluefruit.Scanner.filterRssi(-80);            // Only invoke callback for devices with RSSI >= -80 dBm
-  //Bluefruit.Scanner.filterUuid(uuid);           // Only invoke callback if the target UUID was found
+  Bluefruit.Scanner.filterUuid(uuid);           // Only invoke callback if the target UUID was found
   //Bluefruit.Scanner.filterMSD(0xFFFF);          // Only invoke callback when MSD is present with the specified Company ID
   Bluefruit.Scanner.setInterval(160, 80);       // in units of 0.625 ms
   Bluefruit.Scanner.useActiveScan(true);        // Request scan response data
@@ -191,10 +185,11 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   memcpy(record.addr, report->peer_addr.addr, 6); /* Copy the 6-byte device ADDR */
   record.rssi = report->rssi;                     /* Copy the RSSI value */
   record.timestamp = millis();                    /* Set the timestamp (approximate) */
-  if (insertRecord(&record) == 1)                 /* Returns -1 if the list was updated */
+  if (insertRecord(&record) == 1)                 /* Returns 1 if the list was updated */
   {
     /* The list was updated, print the new values */
     printRecordList();
+    Serial.println("");
   }
 
   /* Display the device on the TFT if available */
@@ -409,20 +404,44 @@ void bubbleSort(void)
 /*  This function will check if any records in the list
  *  have expired and need to be invalidated, such as when
  *  a device goes out of range.
+ *  
+ *  Returns the number of invalidated records, or 0 if
+ *  nothing was changed.
  */
 int invalidateRecords(void)
 {
   uint8_t i;
+  int match = 0;
 
+  /* Not enough time has elapsed to avoid an underflow error */
+  if (millis() <= TIMEOUT_MS)
+  {
+    return 0;
+  }
+
+  /* Check if any records have expired */
   for (i=0; i<ARRAY_SIZE; i++)
   {
-    if (records[i].timestamp <= millis() - TIMEOUT_MS)
+    if (records[i].timestamp) // Ignore zero"ed records
     {
-      /* Record has expired, zero it out and then re-sort */
-      memset((void *)&records[i], 0, sizeof(node_record_t));
-      bubbleSort();
+      if (records[i].timestamp <= millis() - TIMEOUT_MS)
+      {
+        /* Record has expired, zero it out */
+        memset(&records[i], 0, sizeof(node_record_t));
+        records[i].rssi = -128;
+        match++;
+      }
     }
-  }  
+  }
+
+  /* Resort the list if something was zero'ed out */
+  if (match)
+  {
+    // Serial.printf("Invalidated %i records!\n", match);
+    bubbleSort();    
+  }
+
+  return match;
 }
 
 /* This function attempts to insert the record if it is larger than the smallest valid RSSI entry */
@@ -431,7 +450,8 @@ int insertRecord(node_record_t *record)
 {
   uint8_t i;
   
-  /* ToDo: Invalidate results after n milliseconds! */
+  /* Invalidate results older than n milliseconds */
+  invalidateRecords();
   
   /*  Record Insertion Workflow:
    *  
@@ -474,45 +494,45 @@ int insertRecord(node_record_t *record)
    *                                  +----------------+
    */  
 
-   /* 1. Bubble Sort 
-    *    This puts the lists in a known state where we can make
-    *    certain assumptions about the last record in the array. */
-    bubbleSort();
+  /* 1. Bubble Sort 
+   *    This puts the lists in a known state where we can make
+   *    certain assumptions about the last record in the array. */
+  bubbleSort();
 
-    /* 2. Check for a match on existing device address */
-    /*    Replace it if a match is found, then sort */
-    uint8_t match = 0;
-    for (i=0; i<ARRAY_SIZE; i++)
+  /* 2. Check for a match on existing device address */
+  /*    Replace it if a match is found, then sort */
+  uint8_t match = 0;
+  for (i=0; i<ARRAY_SIZE; i++)
+  {
+    if (memcmp(records[i].addr, record->addr, 6) == 0)
     {
-      if (memcmp((void *)&records[i].addr, (void *)&record->addr, 6) == 0)
-      {
-        match = 1;
-      }
-      if (match)
-      {
-        memcpy((void *)&records[i], (void *)&record, sizeof(node_record_t));
-        goto sort_then_exit;
-      }
+      match = 1;
     }
+    if (match)
+    {
+      memcpy(&records[i], record, sizeof(node_record_t));
+      goto sort_then_exit;
+    }
+  }
 
-    /* 3. Check for zero'ed records */
-    /*    Insert if a zero record is found, then sort */
-    for (i=0; i<ARRAY_SIZE; i++)
+  /* 3. Check for zero'ed records */
+  /*    Insert if a zero record is found, then sort */
+  for (i=0; i<ARRAY_SIZE; i++)
+  {
+    if (records[i].rssi == -128)
     {
-      if (records[i].rssi == -128)
-      {
-        memcpy((void *)&records[i], (void *)&record, sizeof(node_record_t));
-        goto sort_then_exit;
-      }
+      memcpy(&records[i], record, sizeof(node_record_t));
+      goto sort_then_exit;
     }
+  }
 
-    /* 4. Check RSSI of the lowest record */
-    /*    Replace if >=, then sort */
-    if (records[ARRAY_SIZE-1].rssi <= record->rssi)
-    {
-        memcpy((void *)&records[ARRAY_SIZE-1], (void *)&record, sizeof(node_record_t));
-        goto sort_then_exit;
-    }
+  /* 4. Check RSSI of the lowest record */
+  /*    Replace if >=, then sort */
+  if (records[ARRAY_SIZE-1].rssi <= record->rssi)
+  {
+      memcpy(&records[ARRAY_SIZE-1], record, sizeof(node_record_t));
+      goto sort_then_exit;
+  }
 
   /* Nothing to do ... RSSI is lower than the last value, exit and ignore */
   return 0;
@@ -530,4 +550,3 @@ void loop()
   
   delay(1000);
 }
-
