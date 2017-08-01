@@ -6,7 +6,11 @@
 
 - Add printf with float format aka %f
 - Add Servo library port
+- Add Firmata library over BLEUART support
+	- New example via bleuart at `Peripheral\StandardFirmata`
 - Enhance Adafruit_FIFO, add overwriteIfFull(), begin(). change constructor's signature
+- Add Serial.setPins() to remap Serial rx, tx. Must call before Serial.begin()
+- Enhance AdafruitFIFO
 
 ### Bluefruit
 
@@ -24,7 +28,7 @@
 
 - Add BLEClientUart& reference pointer BLEClientUart's RX callback
 - Add new BLEClientCts for client Current Time Service
-- Add bufferTXD() to BLEUart service
+- Add bufferTXD() to BLEUart service to handle consecutive small write()
 
 ### BLEAdvertising
 
