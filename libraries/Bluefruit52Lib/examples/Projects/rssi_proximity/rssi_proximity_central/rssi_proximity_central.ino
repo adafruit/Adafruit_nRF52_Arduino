@@ -203,7 +203,7 @@ void setup()
   Bluefruit.Scanner.setRxCallback(scan_callback);
   Bluefruit.Scanner.restartOnDisconnect(true);
   Bluefruit.Scanner.filterRssi(-80);            // Only invoke callback for devices with RSSI >= -80 dBm
-  //Bluefruit.Scanner.filterUuid(uuid);           // Only invoke callback if the target UUID was found
+  Bluefruit.Scanner.filterUuid(uuid);           // Only invoke callback if the target UUID was found
   //Bluefruit.Scanner.filterMSD(0xFFFF);          // Only invoke callback when MSD is present with the specified Company ID
   Bluefruit.Scanner.setInterval(160, 80);       // in units of 0.625 ms
   Bluefruit.Scanner.useActiveScan(true);        // Request scan response data
