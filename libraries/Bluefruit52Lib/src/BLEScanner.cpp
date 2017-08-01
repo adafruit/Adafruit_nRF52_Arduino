@@ -38,16 +38,19 @@
 
 BLEScanner::BLEScanner(void)
 {
-  _runnning = false;
+  _runnning            = false;
   _start_if_disconnect = true;
 
-  _filter_rssi   = INT8_MIN;
-  _filter_msd_en = false;
-  _filter_msd_id = 0; // Irrelevant
-  _filter_uuid   = NULL;
+  _filter_rssi         = INT8_MIN;
 
-  _rx_cb   = NULL;
-  _stop_cb = NULL;
+  _filter_msd_en       = false;
+  _filter_msd_id       = 0; // Irrelevant
+
+  _filter_uuid_count   = 0;
+  _filter_uuid         = NULL;
+
+  _rx_cb               = NULL;
+  _stop_cb             = NULL;
 
   _param  = (ble_gap_scan_params_t) {
     .active      = 0,
@@ -236,6 +239,18 @@ void BLEScanner::filterUuid(BLEUuid ble_uuid)
   (*_filter_uuid) = ble_uuid;
 }
 
+void BLEScanner::filterUuid(BLEUuid ble_uuid[], uint8_t count)
+{
+  if (_filter_uuid_count) delete[] _filter_uuid;
+
+  _filter_uuid_count = count;
+  if (count == 0) return;
+
+  _filter_uuid = new BLEUuid[count];
+
+  for(uint8_t i=0; i<count; i++) _filter_uuid[i] = ble_uuid[i];
+}
+
 void BLEScanner::filterMSD(uint16_t manuf_id)
 {
   _filter_msd_en = true;
@@ -244,13 +259,15 @@ void BLEScanner::filterMSD(uint16_t manuf_id)
 
 void BLEScanner::clearFilters(void)
 {
-  _filter_rssi = INT8_MIN;
+  _filter_rssi   = INT8_MIN;
   _filter_msd_en = false;
 
-  if ( _filter_uuid )
+  if ( _filter_uuid_count )
   {
-    delete _filter_uuid;
+    delete[] _filter_uuid;
     _filter_uuid = NULL;
+
+    _filter_uuid_count = 0;
   }
 
 }
@@ -271,7 +288,17 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
       if ( _filter_rssi > evt_report->rssi ) break;
 
       // filter by uuid
-      if ( _filter_uuid && !checkReportForUuid(evt_report, *_filter_uuid) ) break;
+      if ( _filter_uuid_count )
+      {
+        uint8_t i;
+        for(i=0; i<_filter_uuid_count; i++)
+        {
+          if ( checkReportForUuid(evt_report, _filter_uuid[i]) ) break;
+        }
+
+        // If there is no matched UUID in the list --> filter failed
+        if ( i ==  _filter_uuid_count ) break;
+      }
 
       // filter by MSD if present
       if ( _filter_msd_en )

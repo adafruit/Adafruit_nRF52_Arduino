@@ -60,7 +60,9 @@ public:
 
   void filterRssi(int8_t min_rssi);
   void filterMSD(uint16_t manuf_id);
+
   void filterUuid(BLEUuid ble_uuid);
+  void filterUuid(BLEUuid ble_uuid[], uint8_t count);
 
   void clearFilters(void);
 
@@ -93,7 +95,9 @@ private:
   int8_t   _filter_rssi;
   bool     _filter_msd_en; // since all value of manufacturer id is valid (0-FFFF)
   uint16_t _filter_msd_id;
+
   BLEUuid* _filter_uuid;
+  uint8_t  _filter_uuid_count;
 
   rx_callback_t   _rx_cb;
   stop_callback_t _stop_cb;
