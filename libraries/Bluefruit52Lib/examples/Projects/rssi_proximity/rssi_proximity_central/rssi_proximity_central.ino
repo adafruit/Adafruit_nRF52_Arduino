@@ -371,16 +371,22 @@ void renderResultsToTFT(void)
   
   for (uint8_t i=0; i<ARRAY_SIZE; i++)
   {
+    if (records[i].addr[0] <= 0xF) tft.print("0");
     tft.print(records[i].addr[0], HEX);
     tft.print(":");
+    if (records[i].addr[1] <= 0xF) tft.print("0");
     tft.print(records[i].addr[1], HEX);
     tft.print(":");
+    if (records[i].addr[2] <= 0xF) tft.print("0");
     tft.print(records[i].addr[2], HEX);
     tft.print(":");
+    if (records[i].addr[3] <= 0xF) tft.print("0");
     tft.print(records[i].addr[3], HEX);
     tft.print(":");
+    if (records[i].addr[4] <= 0xF) tft.print("0");
     tft.print(records[i].addr[4], HEX);
     tft.print(":");
+    if (records[i].addr[5] <= 0xF) tft.print("0");
     tft.print(records[i].addr[5], HEX);
     tft.print(" ");
     tft.print(records[i].rssi);
@@ -409,16 +415,22 @@ void renderResultsToOLED(void)
     if (records[i].rssi != -128)
     {
       oled.setCursor(0, i*8);
+      if (records[i].addr[0] <= 0xF) oled.print("0");
       oled.print(records[i].addr[0], HEX);
       oled.print(":");
+      if (records[i].addr[1] <= 0xF) oled.print("0");
       oled.print(records[i].addr[1], HEX);
       oled.print(":");
+      if (records[i].addr[2] <= 0xF) oled.print("0");
       oled.print(records[i].addr[2], HEX);
       oled.print(":");
+      if (records[i].addr[3] <= 0xF) oled.print("0");
       oled.print(records[i].addr[3], HEX);
       oled.print(":");
+      if (records[i].addr[4] <= 0xF) oled.print("0");
       oled.print(records[i].addr[4], HEX);
       oled.print(":");
+      if (records[i].addr[5] <= 0xF) oled.print("0");
       oled.print(records[i].addr[5], HEX);
       oled.print(" ");
       oled.println(records[i].rssi);
