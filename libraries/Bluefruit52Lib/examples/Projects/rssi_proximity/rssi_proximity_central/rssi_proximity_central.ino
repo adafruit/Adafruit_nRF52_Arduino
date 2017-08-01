@@ -649,6 +649,27 @@ void loop()
 {
   /* Toggle red LED every second */
   digitalToggle(LED_RED);
-  
+
+  /* Invalidate old results once per second in addition
+   * to the invalidation in the callback handler. */
+  /* ToDo: Update to use a mutex or semaphore since this
+   * can lead to list corruption as-is if the scann results
+   * callback is fired in the middle of the invalidation
+   * function. */
+  if (invalidateRecords())
+  {
+    /* The list was updated, print the new values */
+    printRecordList();
+    Serial.println("");
+    /* Display the device list on the TFT if available */
+    #if ENABLE_TFT
+    renderResultsToTFT();
+    #endif
+    /* Display the device list on the OLED if available */
+    #if ENABLE_OLED
+    renderResultsToOLED();
+    #endif
+  }
+ 
   delay(1000);
 }
