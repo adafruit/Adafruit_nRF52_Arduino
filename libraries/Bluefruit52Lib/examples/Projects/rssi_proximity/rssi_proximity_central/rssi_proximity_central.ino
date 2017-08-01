@@ -38,7 +38,7 @@
  *  ARRAY_SIZE
  *  ----------
  *  The numbers of peripherals tracked and sorted can be set via the
- *  ARRAY_SIZE macro.
+ *  ARRAY_SIZE macro. Must be at least 2.
  *  
  *  TIMEOUT_MS
  *  ----------
@@ -69,8 +69,8 @@
 #define ENABLE_TFT     (0)    // Set this to 1 to enable ILI9341 TFT display support
 #define ENABLE_OLED    (0)    // Set this to 1 to enable SSD1306 128x32 OLED display support
 
-#if (ARRAY_SIZE <= 0)
-  #error "ARRAY_SIZE must be a non-zero value"
+#if (ARRAY_SIZE <= 1)
+  #error "ARRAY_SIZE must be at least 2"
 #endif
 #if (ENABLE_TFT) && (ENABLE_OLED)
   #error "ENABLE_TFT and ENABLE_OLED can not both be set at the same time"
