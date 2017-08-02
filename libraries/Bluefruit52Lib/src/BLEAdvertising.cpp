@@ -281,6 +281,11 @@ bool BLEAdvertising::setBeacon(BLEBeacon& beacon)
   return beacon.start(*this);
 }
 
+bool BLEAdvertising::setBeacon(EddyStoneUrl& eddy_url)
+{
+  return eddy_url.start();
+}
+
 void BLEAdvertising::restartOnDisconnect(bool enable)
 {
   _start_if_disconnect = enable;

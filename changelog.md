@@ -29,6 +29,8 @@
 - Add BLEClientUart& reference pointer BLEClientUart's RX callback
 - Add new BLEClientCts for client Current Time Service
 - Add bufferTXD() to BLEUart service to handle consecutive small write()
+- Add EddyStoneUrl support
+	- New example `Peripheral\eddystone_url` 
 
 ### BLEAdvertising
 
