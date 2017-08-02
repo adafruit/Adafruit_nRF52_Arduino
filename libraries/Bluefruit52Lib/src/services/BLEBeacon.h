@@ -41,7 +41,7 @@
 #include "BLECharacteristic.h"
 #include "BLEService.h"
 
-class BLEAdvertising; // foward declare
+class BLEAdvertising; // forward declare
 
 class BLEBeacon
 {
