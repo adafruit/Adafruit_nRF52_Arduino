@@ -234,9 +234,25 @@ void BLEScanner::filterRssi(int8_t min_rssi)
 
 void BLEScanner::filterUuid(BLEUuid ble_uuid)
 {
-  if ( _filter_uuid == NULL ) _filter_uuid = new BLEUuid();
+  filterUuid(&ble_uuid, 1);
+}
 
-  (*_filter_uuid) = ble_uuid;
+void BLEScanner::filterUuid(BLEUuid ble_uuid1, BLEUuid ble_uuid2)
+{
+  BLEUuid bleuuid[] = {ble_uuid1, ble_uuid2};
+  filterUuid( bleuuid , 2);
+}
+
+void BLEScanner::filterUuid(BLEUuid ble_uuid1, BLEUuid ble_uuid2, BLEUuid ble_uuid3)
+{
+  BLEUuid bleuuid[] = {ble_uuid1, ble_uuid2, ble_uuid3};
+  filterUuid( bleuuid , 3);
+}
+
+void BLEScanner::filterUuid(BLEUuid ble_uuid1, BLEUuid ble_uuid2, BLEUuid ble_uuid3, BLEUuid ble_uuid4)
+{
+  BLEUuid bleuuid[] = {ble_uuid1, ble_uuid2, ble_uuid3, ble_uuid4};
+  filterUuid( bleuuid , 4);
 }
 
 void BLEScanner::filterUuid(BLEUuid ble_uuid[], uint8_t count)

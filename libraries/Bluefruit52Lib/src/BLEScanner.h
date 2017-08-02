@@ -61,7 +61,11 @@ public:
   void filterRssi(int8_t min_rssi);
   void filterMSD(uint16_t manuf_id);
 
+
   void filterUuid(BLEUuid ble_uuid);
+  void filterUuid(BLEUuid ble_uuid1, BLEUuid ble_uuid2);
+  void filterUuid(BLEUuid ble_uuid1, BLEUuid ble_uuid2, BLEUuid ble_uuid3);
+  void filterUuid(BLEUuid ble_uuid1, BLEUuid ble_uuid2, BLEUuid ble_uuid3, BLEUuid ble_uuid4);
   void filterUuid(BLEUuid ble_uuid[], uint8_t count);
 
   void clearFilters(void);
