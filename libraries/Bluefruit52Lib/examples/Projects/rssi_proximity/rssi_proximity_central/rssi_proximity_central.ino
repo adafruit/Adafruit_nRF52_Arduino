@@ -38,7 +38,7 @@
  *  ARRAY_SIZE
  *  ----------
  *  The numbers of peripherals tracked and sorted can be set via the
- *  ARRAY_SIZE macro.
+ *  ARRAY_SIZE macro. Must be at least 2.
  *  
  *  TIMEOUT_MS
  *  ----------
@@ -69,8 +69,8 @@
 #define ENABLE_TFT     (0)    // Set this to 1 to enable ILI9341 TFT display support
 #define ENABLE_OLED    (0)    // Set this to 1 to enable SSD1306 128x32 OLED display support
 
-#if (ARRAY_SIZE <= 0)
-  #error "ARRAY_SIZE must be a non-zero value"
+#if (ARRAY_SIZE <= 1)
+  #error "ARRAY_SIZE must be at least 2"
 #endif
 #if (ENABLE_TFT) && (ENABLE_OLED)
   #error "ENABLE_TFT and ENABLE_OLED can not both be set at the same time"
@@ -649,6 +649,27 @@ void loop()
 {
   /* Toggle red LED every second */
   digitalToggle(LED_RED);
-  
+
+  /* Invalidate old results once per second in addition
+   * to the invalidation in the callback handler. */
+  /* ToDo: Update to use a mutex or semaphore since this
+   * can lead to list corruption as-is if the scann results
+   * callback is fired in the middle of the invalidation
+   * function. */
+  if (invalidateRecords())
+  {
+    /* The list was updated, print the new values */
+    printRecordList();
+    Serial.println("");
+    /* Display the device list on the TFT if available */
+    #if ENABLE_TFT
+    renderResultsToTFT();
+    #endif
+    /* Display the device list on the OLED if available */
+    #if ENABLE_OLED
+    renderResultsToOLED();
+    #endif
+  }
+ 
   delay(1000);
 }
