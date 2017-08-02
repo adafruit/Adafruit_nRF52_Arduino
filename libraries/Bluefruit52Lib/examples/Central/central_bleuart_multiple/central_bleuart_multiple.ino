@@ -88,8 +88,8 @@ void setup()
   blinkTimer.begin(100, blink_timer_callback);
   blinkTimer.start();
 
-  Serial.println("Bluefruit52 Central Multiple BLEUART Example");
-  Serial.println("--------------------------------------------\n");
+  Serial.println("Bluefruit52 Central Multi BLEUART Example");
+  Serial.println("-----------------------------------------\n");
   
   // Enable both peripheral and central
   Bluefruit.begin(true, true);
