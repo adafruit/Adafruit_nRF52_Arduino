@@ -96,6 +96,7 @@ class BLEUuid
 #define UUID16_SVC_BMS                                        0x181E
 #define UUID16_SVC_CGM                                        0x181F
 #define UUID16_SVC_PLX                                        0x1822
+#define UUID16_SVC_EDDYSTONE                                  0xFEAA
 
 // Characteristic UUID
 #define UUID16_CHR_REMOVABLE                                  0x2A3A

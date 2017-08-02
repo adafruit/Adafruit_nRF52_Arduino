@@ -74,8 +74,17 @@ public:
   bool addAppearance(uint16_t appearance);
 
   bool addUuid(BLEUuid bleuuid);
+  bool addUuid(BLEUuid bleuuid1, BLEUuid bleuuid2);
+  bool addUuid(BLEUuid bleuuid1, BLEUuid bleuuid2, BLEUuid bleuuid3);
+  bool addUuid(BLEUuid bleuuid1, BLEUuid bleuuid2, BLEUuid bleuuid3, BLEUuid bleuuid4);
+
+  bool addUuid(BLEUuid bleuuid[], uint8_t count);
+
   bool addService(BLEService& service);
   bool addService(BLEClientService& service);
+
+//  bool addService(BLEService& service[], uint8_t count);
+//  bool addService(BLEClientService& service[], uint8_t count);
 
   // Custom API
   uint8_t  count(void);

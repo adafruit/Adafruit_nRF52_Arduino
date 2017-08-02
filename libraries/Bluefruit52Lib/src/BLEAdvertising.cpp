@@ -63,21 +63,81 @@ bool BLEAdvertisingData::addData(uint8_t type, const void* data, uint8_t len)
 
 bool BLEAdvertisingData::addUuid(BLEUuid bleuuid)
 {
-  switch ( bleuuid.size() )
+  return addUuid(&bleuuid, 1);
+}
+
+bool BLEAdvertisingData::addUuid(BLEUuid bleuuid1, BLEUuid bleuuid2)
+{
+  BLEUuid bleuuid[] = { bleuuid1, bleuuid2 };
+  return addUuid(bleuuid, 2);
+}
+
+bool BLEAdvertisingData::addUuid(BLEUuid bleuuid1, BLEUuid bleuuid2, BLEUuid bleuuid3)
+{
+  BLEUuid bleuuid[] = { bleuuid1, bleuuid2, bleuuid3};
+  return addUuid(bleuuid, 3);
+}
+
+bool BLEAdvertisingData::addUuid(BLEUuid bleuuid1, BLEUuid bleuuid2, BLEUuid bleuuid3, BLEUuid bleuuid4)
+{
+  BLEUuid bleuuid[] = { bleuuid1, bleuuid2, bleuuid3, bleuuid4 };
+  return addUuid(bleuuid, 4);
+}
+
+bool BLEAdvertisingData::addUuid(BLEUuid bleuuid[], uint8_t count)
+{
+  uint16_t uuid16_list[15];
+  uint8_t  uuid16_count = 0;
+
+  uint8_t const* uuid128 = NULL;
+
+  for(uint8_t i=0; i<count; i++)
   {
-    case 16:
-      return addData(BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE, &bleuuid._uuid.uuid, 2);
-    break;
+    switch ( bleuuid[i].size() )
+    {
+      case 16:
+        uuid16_list[uuid16_count++] = bleuuid[i]._uuid.uuid;
+      break;
 
-    case 128:
-      return addData(BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_MORE_AVAILABLE, bleuuid._uuid128, 16);
-    break;
+      case 128:
+        // cannot fit more than one uuid128
+        if ( uuid128 ) return false;
+        uuid128 = bleuuid[i]._uuid128;
+      break;
 
-    default: break;
+      default: break;
+    }
   }
 
-  return false;
+  if (uuid16_count)
+  {
+    VERIFY( addData(BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_COMPLETE, uuid16_list, 2*uuid16_count) );
+  }
+
+  if (uuid128)
+  {
+    VERIFY( addData(BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_COMPLETE, uuid128, 16) );
+  }
+
+  return true;
 }
+
+//bool BLEAdvertisingData::addService(BLEService& service[], uint8_t count)
+//{
+//  for(uint8_t i=0; i<count; i++)
+//  {
+//
+//  }
+//}
+//
+//bool BLEAdvertisingData::addService(BLEClientService& service[], uint8_t count)
+//{
+//  for(uint8_t i=0; i<count; i++)
+//  {
+//
+//  }
+//}
+
 
 bool BLEAdvertisingData::addService(BLEService& service)
 {
