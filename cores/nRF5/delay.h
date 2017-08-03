@@ -66,10 +66,10 @@ extern void delay( uint32_t dwMs );
 static __inline__ void delayMicroseconds( uint32_t ) __attribute__((always_inline, unused)) ;
 static __inline__ void delayMicroseconds( uint32_t usec )
 {
-  if ( usec == 0 )
-  {
-    return ;
-  }
+//  if ( usec == 0 )
+//  {
+//    return ;
+//  }
 
   nrf_delay_us(usec);
 }

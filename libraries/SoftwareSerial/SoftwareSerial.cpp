@@ -109,7 +109,7 @@ bool SoftwareSerial::stopListening()
 
 void SoftwareSerial::end()
 {
- stopListening();
+  stopListening();
 }
 
 int SoftwareSerial::read()

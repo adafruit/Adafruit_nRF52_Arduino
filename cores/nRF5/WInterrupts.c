@@ -49,8 +49,10 @@ static void __initialize()
 /*
  * \brief Specifies a named Interrupt Service Routine (ISR) to call when an interrupt occurs.
  *        Replaces any previous function that was attached to the interrupt.
+ *
+ * \return Interrupt Mask
  */
-void attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
+int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
 {
   if (!enabled) {
     __initialize();
@@ -58,7 +60,7 @@ void attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
   }
 
   if (pin >= PINS_COUNT) {
-    return;
+    return 0;
   }
 
   pin = g_ADigitalPinMap[pin];
@@ -95,9 +97,11 @@ void attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
 
       NRF_GPIOTE->INTENSET = (1 << ch);
 
-      break;
+      return (1 << ch);
     }
   }
+
+  return 0;
 }
 
 /*
