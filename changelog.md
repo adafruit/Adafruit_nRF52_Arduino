@@ -11,6 +11,7 @@
 - Enhance Adafruit_FIFO, add overwriteIfFull(), begin(). change constructor's signature
 - Add Serial.setPins() to remap Serial rx, tx. Must call before Serial.begin()
 - Enhance AdafruitFIFO
+- Add SoftwareSerial support
 
 ### Bluefruit
 

@@ -13,19 +13,19 @@
 
  The circuit:
  Two devices which communicate serially are needed.
- * First serial device's TX attached to digital pin 9, RX to pin 11
- * Second serial device's TX attached to digital pin 8, RX to pin 10
+ * First serial device's TX attached to digital pin A0, RX to pin A1
+ * Second serial device's TX attached to digital pin A2, RX to pin A3
 
  This example code is in the public domain.
 
  */
 
 #include <SoftwareSerial.h>
-// software serial #1: TX = digital pin 11, RX = digital pin 9
-SoftwareSerial portOne(9, 11);
+// software serial #1: TX = digital pin A1, RX = digital pin A0
+SoftwareSerial portOne(A0, A1);
 
-// software serial #2: TX = digital pin 10, RX = digital pin 8
-SoftwareSerial portTwo(8, 10);
+// software serial #2: TX = digital pin A3, RX = digital pin A2
+SoftwareSerial portTwo(A2, A3);
 
 void setup()
 {
