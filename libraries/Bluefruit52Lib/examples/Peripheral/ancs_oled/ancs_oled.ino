@@ -77,8 +77,6 @@ void setup()
   oled.setTextSize(1);// max is 4 line, 21 chars each
   oled.setTextColor(WHITE);
 
-  Serial.begin(115200);
-
   Bluefruit.begin();
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
   Bluefruit.setTxPower(4);

@@ -88,16 +88,13 @@ void startAdv(void)
 
 void loop()
 {
-  // Not connected, wait for a connection
-  if ( !Bluefruit.connected() ) return;
-
   // If service is not yet discovered
-  if ( !bleCTime.discovered() ) return;
+  if ( !bleCTime.discovered() && !Bluefruit.connPaired() ) return;
 
   // Get Time from iOS once per second
-  // Note it is advised to update this quickly
+  // Note it is not advised to update this quickly
   // Application should use local clock and update time after 
-  // a long period (e.g an hour or day)s
+  // a long period (e.g an hour or day)
   bleCTime.getCurrentTime();
 
   printTime();

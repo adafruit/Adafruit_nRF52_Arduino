@@ -19,6 +19,9 @@
  * Note: Currently only iOS act as a CTS server, Android does not. The
  * easiest way to test this sketch is using an iOS device.
  * 
+ * This sketch is similar to client_cts but also uses a Feather OLED Wing
+ * to display time https://www.adafruit.com/product/2900
+ *
  * Current Time Service info:
  *   https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.current_time.xml
  *   https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.current_time.xml
@@ -26,18 +29,23 @@
  */
 
 #include <bluefruit.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define OLED_RESET 4
+Adafruit_SSD1306 oled(OLED_RESET);
 
 // BLE Client Current Time Service
 BLEClientCts  bleCTime;
 
 void setup()
 {
-  Serial.begin(115200);
-  Serial.println("Bluefruit52 BLE Client Current Time Example");
-  Serial.println("-------------------------------------------\n");
+  // init with the I2C addr 0x3C (for the 128x32) and show splashscreen
+  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  oled.display();
 
-  Serial.println("Go to iOS's Bluetooth settings and connect to Bluefruit52");
-  Serial.println("It may appear up as 'Accessory' depending on your iOS version.");
+  oled.setTextSize(1);// max is 4 line, 21 chars each
+  oled.setTextColor(WHITE);
 
   Bluefruit.begin();
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
@@ -49,13 +57,16 @@ void setup()
   // Configure CTS client
   bleCTime.begin();
 
-  // Callback invoked when iOS device time changes
-  // To test this go to Setting -> Date & Time -> Toggle Time Zone "Set Automatically"
-  // Or change the time manually etc ...
-  bleCTime.setAdjustCallback(cts_adjust_callback);
-
   // Set up and start advertising
   startAdv();
+
+  // splash screen effect
+  delay(100);
+
+  oled.clearDisplay();
+  oled.setCursor(0, 0);
+  oled.println("Waiting to connect");
+  oled.display();
 }
 
 void startAdv(void)
@@ -88,17 +99,15 @@ void startAdv(void)
 
 void loop()
 {
-  // Not connected, wait for a connection
-  if ( !Bluefruit.connected() ) return;
-
   // If service is not yet discovered
-  if ( !bleCTime.discovered() ) return;
+  if ( !bleCTime.discovered() && !Bluefruit.connPaired() ) return;
 
   // Get Time from iOS once per second
-  // Note it is advised to update this quickly
+  // Note it is not advised to update this quickly
   // Application should use local clock and update time after 
-  // a long period (e.g an hour or day)s
+  // a long period (e.g an hour or day)
   bleCTime.getCurrentTime();
+  bleCTime.getLocalTimeInfo();
 
   printTime();
 
@@ -107,54 +116,59 @@ void loop()
 
 void connect_callback(uint16_t conn_handle)
 {
-  Serial.println("Connected");
-  
-  Serial.print("Discovering CTS ... ");
+  oled.clearDisplay();
+  oled.setCursor(0, 0);
+  oled.println("Connected.");
+  oled.print("Discovering ... ");
+  oled.display();
+
   if ( bleCTime.discover(conn_handle) )
   {
-    Serial.println("Discovered");
+    oled.println("OK");
+
+    // ANCS requires pairing to work
+    oled.print("Paring      ... ");
     
-    // iOS requires pairing to work, it makes sense to request security here as well
-    Serial.print("Attempting to PAIR with the iOS device, please press PAIR on your phone ... ");
+    oled.display();
+
     if ( Bluefruit.requestPairing() )
     {
-      Serial.println("Done");
-      Serial.println("Enabling Time Adjust Notify");
+      oled.println("OK");
+
       bleCTime.enableAdjust();
 
-      Serial.print("Get Current Time chars value");
+      oled.println("Receiving Time...");
       bleCTime.getCurrentTime();
-
-      Serial.print("Get Local Time Info chars value");
       bleCTime.getLocalTimeInfo();
-
-      Serial.println();
     }
-
-    Serial.println();
   }
-}
 
-void cts_adjust_callback(uint8_t reason)
-{
-  const char * reason_str[] = { "Manual", "External Reference", "Change of Time Zone", "Change of DST" };
-
-  Serial.println("iOS Device time changed due to ");
-  Serial.println( reason_str[reason] );
+  oled.display();
 }
 
 void printTime(void)
 {
   const char * day_of_week_str[] = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+  const char * month_str[] = { "na", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
   
-  Serial.printf("%04d-%02d-%02d ", bleCTime.Time.year, bleCTime.Time.month, bleCTime.Time.day);
-  Serial.printf("%02d:%02d:%02d ", bleCTime.Time.hour, bleCTime.Time.minute, bleCTime.Time.second);
-  Serial.print(day_of_week_str[bleCTime.Time.weekday]);
+  oled.clearDisplay();
+  oled.setCursor(0, 0);
+
+  oled.print(day_of_week_str[bleCTime.Time.weekday]);
+  oled.printf(" %s %02d %04d\n", month_str[bleCTime.Time.month], bleCTime.Time.day, bleCTime.Time.year);
   
+
+  oled.setTextSize(2);
+  oled.printf(" %02d:%02d:%02d\n", bleCTime.Time.hour, bleCTime.Time.minute, bleCTime.Time.second);
+
   int utc_offset =  bleCTime.LocalInfo.timezone*15; // in 15 minutes unit
-  Serial.printf(" (UTC %+d:%02d, ", utc_offset/60, utc_offset%60);
-  Serial.printf("DST %+.1f)", ((float) bleCTime.LocalInfo.dst_offset*15)/60 );
-  Serial.println();
+  
+  oled.setTextSize(1);
+  oled.printf("UTC %+d:%02d, ", utc_offset/60, utc_offset%60);
+  oled.printf("DST %+.1f", ((float) bleCTime.LocalInfo.dst_offset*15)/60 );
+  oled.println();
+
+  oled.display();
 }
 
 
@@ -162,6 +176,8 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
   (void) reason;
 
-  Serial.println();
-  Serial.println("Disconnected");
+  oled.clearDisplay();
+  oled.setCursor(0, 0);
+  oled.println("Waiting to connect");
+  oled.display();
 }
