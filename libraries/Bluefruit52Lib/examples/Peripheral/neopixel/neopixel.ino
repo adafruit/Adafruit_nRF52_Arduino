@@ -60,7 +60,8 @@ void setup()
 
   // Init Bluefruit
   Bluefruit.begin();
-  Bluefruit.setTxPower(4);          // Maximum TX power = 4 dBm
+  // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
+  Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52");
   Bluefruit.setConnectCallback(connect_callback);
 

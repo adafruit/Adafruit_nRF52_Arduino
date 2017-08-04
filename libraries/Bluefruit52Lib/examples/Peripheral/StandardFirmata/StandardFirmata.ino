@@ -763,7 +763,8 @@ void setup()
     
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
-  Bluefruit.setTxPower(4);          // Maximum TX power = 4 dBm
+  // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
+  Bluefruit.setTxPower(4);
   // try to go as fast as possible, could be rejected by some central, increase it if needed
   // iOS won't negotitate and will mostly use 30ms
   Bluefruit.setConnInterval(9, 16); // min = 9*1.25=11.25 ms, max = 16*1.25=20ms
