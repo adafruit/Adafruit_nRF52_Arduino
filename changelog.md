@@ -31,7 +31,7 @@
 - Add new BLEClientCts for client Current Time Service
 - Add bufferTXD() to BLEUart service to handle consecutive small write()
 - Add EddyStoneUrl support
-	- New example `Peripheral\eddystone_url` 
+	- New example `Peripheral\eddystone_url`
 
 ### BLEAdvertising
 
@@ -50,6 +50,8 @@
 ### BLECentral
 
 - Move scanner & report parser into new BLEScanner class
+- New example showing how to scan for multiple peripherals with a specific
+  advertising signature (`examples/Projects/rssi_proximity`).
 
 ## 0.6.5
 
