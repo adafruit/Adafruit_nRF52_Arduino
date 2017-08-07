@@ -4,14 +4,13 @@
 
 ### Core
 
-- Add printf with float format aka %f
-- Add Servo library port
-- Add Firmata library over BLEUART support
-	- New example via bleuart at `Peripheral\StandardFirmata`
-- Enhance Adafruit_FIFO, add overwriteIfFull(), begin(). change constructor's signature
-- Add Serial.setPins() to remap Serial rx, tx. Must call before Serial.begin()
-- Enhance AdafruitFIFO
-- Add SoftwareSerial support
+- Added printf with float format aka %f
+- Added Servo library port
+- Added Firmata library with BLEUART (AKA Nordic UART Service) support
+	- New example via BLEUART at `Peripheral\StandardFirmata`
+- Enhanced `Adafruit_FIFO`: added `overwriteIfFull()`, `begin()`. Changed constructor signature.
+- Added `Serial.setPins()` to remap Serial RX and TX pin location. **Must call before `Serial.begin()`!**
+- Added `SoftwareSerial` support
 
 ### Bluefruit
 
@@ -23,15 +22,14 @@
 
 ### BLEGap
 
-- Add getAddr() and setAddr()
+- Added `getAddr()` and `setAddr()`
 
 ### BLE Service
 
-- Add BLEClientUart& reference pointer BLEClientUart's RX callback
-- Add new BLEClientCts for client Current Time Service
-	- New example `Peripheral\client_cts` and `Peripheral\client_cts_oled`
-- Add bufferTXD() to BLEUart service to handle consecutive small write()
-- Add EddyStoneUrl support
+- Added `BLEClientUart&` reference pointer to `BLEClientUart` RX callback
+- Added new `BLEClientCts`class for client side Current Time Service
+- Added `bufferTXD()` to `BLEUart` service to handle consecutive small `write()`calls
+- Added `EddyStoneUrl` support
 	- New example `Peripheral\eddystone_url`
 - New hid example demonstrate how to implement an keyboard `Peripheral\hid_keyscan`
 
@@ -39,11 +37,17 @@
 
 - Separated `BLEAdvertisingData` and `BLEAdvertising`
 - Added `setStopCallback()` support to declare a callback when advertising stops
-- Add the option to advertise for a specific time. There are multiple timeouts: initial fast advertising mode, slow advertising mode, and an optional delay to stop advertising entirely. Values can be set in multiple of timeout ticks (0.625ms per unit) or in ms (approximate since it gets converted to 0.625ms units). The optional timeout to stop advertising entire is set via the `.start(timeout)` parameter.
-- Blue LED will blink 2x in fast mode than slow mode.
-- Default timeout to slow mode = 30 seconds. Default adv intervals are fast mode = 20 ms, slow = 152.5 ms
-- Expand addUuid(), addService() to take a list of UUID
-- Add new example `advance_adv`
+- Added the option to advertise for a specific time period. There are multiple
+  timeouts: initial fast advertising mode, slow advertising mode, and an optional
+  delay to stop advertising entirely. Values can be set in multiples of timeout
+  ticks (0.625ms per unit) or in ms (approximate since it gets converted to 0.625ms
+  units). The optional timeout to stop advertising entire is set via the
+  `.start(timeout)` parameter.
+- Blue LED will blink 2x faster in fast mode compared to slow mode.
+- Default advertising timeout in slow mode = 30 seconds. Default adv interval in
+  fast mode = 20 ms, slow mode = 152.5 ms
+- Expanded `addUuid()`, `addService()` to take a list of UUID
+- Added new example `advance_adv`
 
 ### BLEGAP (To support multiple connections, etc.)
 
@@ -51,7 +55,7 @@
 
 ### BLECentral
 
-- Move scanner & report parser into new BLEScanner class
+- Move scanner & report parser into new `BLEScanner` class
 - New example showing how to scan for multiple peripherals with a specific
   advertising signature (`examples/Projects/rssi_proximity`).
 
