@@ -58,6 +58,7 @@
 - Move scanner & report parser into new `BLEScanner` class
 - New example showing how to scan for multiple peripherals with a specific
   advertising signature (`examples/Projects/rssi_proximity`).
+- Added a new Dual Roles example `DualRoles\dual_bleuart`
 
 ## 0.6.5
 
