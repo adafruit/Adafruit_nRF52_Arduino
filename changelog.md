@@ -32,6 +32,7 @@
 - Add bufferTXD() to BLEUart service to handle consecutive small write()
 - Add EddyStoneUrl support
 	- New example `Peripheral\eddystone_url`
+- New hid example demonstrate how to implement an keyboard `Peripheral\hid_keyscan`
 
 ### BLEAdvertising
 
