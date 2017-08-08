@@ -99,6 +99,11 @@ void bleuart_rxd_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_
   BLEUart& svc = (BLEUart&) chr.parentService();
   svc._rx_fifo.write(data, len);
 
+#if CFG_DEBUG >= 2
+  LOG_LV2(BLEUART, "RX: ");
+  PRINT_BUFFER(data, len);
+#endif
+
   // invoke user callback
   if ( svc._rx_cb ) svc._rx_cb();
 }

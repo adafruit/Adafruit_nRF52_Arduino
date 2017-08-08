@@ -546,7 +546,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   // conn handle has fixed offset regardless of event type
   const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
 
-  LOG_LV1(BLE, "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), evt_conn_hdl);
+  LOG_LV2(BLE, "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), evt_conn_hdl);
 
   // GAP handler
   Gap._eventHandler(evt);
@@ -580,7 +580,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
           _conn_hdl      = evt->evt.gap_evt.conn_handle;
           _conn_interval = para->conn_params.min_conn_interval;
 
-          LOG_LV1(GAP, "Conn Interval= %f", _conn_interval*1.25f);
+          LOG_LV2(GAP, "Conn Interval= %f", _conn_interval*1.25f);
 
           // Connection interval set by Central is out of preferred range
           // Try to negotiate with Central using our preferred values
@@ -602,7 +602,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
         _conn_interval = param->min_conn_interval;
 
-        LOG_LV1(GAP, "Conn Interval= %f", _conn_interval*1.25f);
+        LOG_LV2(GAP, "Conn Interval= %f", _conn_interval*1.25f);
       }
       break;
 
@@ -843,7 +843,7 @@ void AdafruitBluefruit::_saveBondKeys(void)
 
   if (result)
   {
-    LOG_LV1(BOND, "Keys for \"%s\" is saved to file %s", devname, filename);
+    LOG_LV2(BOND, "Keys for \"%s\" is saved to file %s", devname, filename);
   }else
   {
     LOG_LV1(BOND, "Failed to save keys for \"%s\"", devname);
@@ -862,7 +862,7 @@ bool AdafruitBluefruit::_loadBondKeys(uint16_t ediv)
 
   if ( result )
   {
-    LOG_LV1(BOND, "Load Keys from file %s", filename);
+    LOG_LV2(BOND, "Load Keys from file %s", filename);
   }else
   {
     LOG_LV1(BOND, "Keys not found");
@@ -889,7 +889,7 @@ void AdafruitBluefruit::_saveBondCCCD(void)
 
     if ( Nffs.writeFile(filename, sys_attr, len, BOND_FILE_CCCD_OFFSET) )
     {
-      LOG_LV1(BOND, "CCCD setting is saved to file %s", filename);
+      LOG_LV2(BOND, "CCCD setting is saved to file %s", filename);
     }else
     {
       LOG_LV1(BOND, "Failed to save CCCD setting");
@@ -929,7 +929,7 @@ void AdafruitBluefruit::_loadBondCCCD(uint16_t ediv)
           {
             loaded = true;
 
-            LOG_LV1(BOND, "Load CCCD from file %s", filename);
+            LOG_LV2(BOND, "Load CCCD from file %s", filename);
           }else
           {
             LOG_LV1(BOND, "CCCD setting not found");
