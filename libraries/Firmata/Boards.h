@@ -782,7 +782,7 @@ writePort(port, value, bitmask):  Write an 8 bit port.
 #define DEFAULT_PWM_RESOLUTION  10
 
 // Adafruit nrf52 boards
-#elif defined(ARDUINO_NRF52_FEATHER)
+#elif defined(ARDUINO_NRF52_ADAFRUIT)
 #define TOTAL_ANALOG_PINS       NUM_ANALOG_INPUTS
 #define TOTAL_PINS              32
 #define VERSION_BLINK_PIN       LED_BUILTIN
