@@ -22,6 +22,9 @@
 
   Last updated October 16th, 2016
 */
+
+// August 8th, 2017 : Adafruit Tested working with Firmata 2.5.6
+
 #include <bluefruit.h>
 #include <Servo.h>
 #include <Wire.h>
