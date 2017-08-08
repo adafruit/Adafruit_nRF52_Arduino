@@ -42,6 +42,24 @@
 // the minimum interval for sampling analog input
 #define MINIMUM_SAMPLING_INTERVAL   1
 
+// Adafruit
+uint8_t ANALOG_TO_PIN(uint8_t n)
+{
+  switch (n)
+  {
+    case 0 : return PIN_A0;
+    case 1 : return PIN_A1;
+    case 2 : return PIN_A2;
+    case 3 : return PIN_A3;
+    case 4 : return PIN_A4;
+    case 5 : return PIN_A5;
+    case 6 : return PIN_A6;
+    case 7 : return PIN_A7;
+  }
+
+  return 127;
+}
+
 
 /*==============================================================================
  * GLOBAL VARIABLES
@@ -451,7 +469,7 @@ void reportAnalogCallback(byte analogPin, int value)
         // Send pin value immediately. This is helpful when connected via
         // ethernet, wi-fi or bluetooth so pin states can be known upon
         // reconnecting.
-        Firmata.sendAnalog(analogPin, analogRead(analogPin));
+        Firmata.sendAnalog(analogPin, analogRead( ANALOG_TO_PIN(analogPin) ) );
       }
     }
   }
@@ -863,7 +881,7 @@ void loop()
       if (IS_PIN_ANALOG(pin) && Firmata.getPinMode(pin) == PIN_MODE_ANALOG) {
         analogPin = PIN_TO_ANALOG(pin);
         if (analogInputsToReport & (1 << analogPin)) {
-          Firmata.sendAnalog(analogPin, analogRead(analogPin));
+          Firmata.sendAnalog(analogPin, analogRead( ANALOG_TO_PIN(analogPin) ));
         }
       }
     }
