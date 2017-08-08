@@ -7,7 +7,7 @@
 - Added printf with float format aka %f
 - Added Servo library port
 - Added Firmata library with BLEUART (AKA Nordic UART Service) support
-	- New example via BLEUART at `Peripheral\StandardFirmata`
+	- New example via BLEUART at `Peripheral\StandardFirmataBLE`
 - Enhanced `Adafruit_FIFO`: added `overwriteIfFull()`, `begin()`. Changed constructor signature.
 - Added `Serial.setPins()` to remap Serial RX and TX pin location. **Must call before `Serial.begin()`!**
 - Added `SoftwareSerial` support
