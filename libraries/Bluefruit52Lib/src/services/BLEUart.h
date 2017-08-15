@@ -58,10 +58,9 @@ class BLEUart : public BLEService, public Stream
 
     virtual err_t begin(void);
 
-    bool notifyEnabled(void);
-
-    void setRxCallback( rx_callback_t fp);
-    void bufferTXD(uint8_t enable);
+    bool notifyEnabled (void);
+    void setRxCallback (rx_callback_t fp);
+    void bufferTXD     (uint8_t enable);
 
     // Stream API
     virtual int       read       ( void );

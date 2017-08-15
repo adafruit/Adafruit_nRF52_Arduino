@@ -52,6 +52,7 @@ dbgMemInfo	KEYWORD2
 dbgPrintVersion	KEYWORD2
 
 startLoop	KEYWORD2
+setPins	KEYWORD2
 
 #######################################
 # Adafruit_FIFO Methods (KEYWORD2)
@@ -64,6 +65,7 @@ empty	KEYWORD2
 full	KEYWORD2
 count	KEYWORD2
 remaining	KEYWORD2
+remaining	KEYWORD2	KEYWORD2
 
 #######################################
 # TimeoutTimer Methods (KEYWORD2)

@@ -18,7 +18,9 @@ BLEUuid	KEYWORD1
 BLEGap	KEYWORD1
 BLEGatt	KEYWORD1
 BLEAdvertising	KEYWORD1
+BLEAdvertisingData	KEYWORD1
 BLEDiscovery	KEYWORD1
+BLEScanner	KEYWORD1
 
 # Gatt Server 
 BLEBas	KEYWORD1
@@ -29,11 +31,13 @@ BLEHidGeneric	KEYWORD1
 BLEHidAdafruit	KEYWORD1
 BLEMidi	KEYWORD1
 BLEUart	KEYWORD1
+EddyStoneUrl	KEYWORD1
 
 # Gatt Client
 BLEClientUart	KEYWORD1
 BLEAncs	KEYWORD1
 BLEClientDis	KEYWORD1
+BLEClientCts	KEYWORD1
 
 AncsNotification_t	KEYWORD3
 
@@ -59,6 +63,8 @@ connPaired	KEYWORD2
 connInterval	KEYWORD2
 requestPairing	KEYWORD2
 clearBonds	KEYWORD2
+getPeerAddr	KEYWORD2
+printInfo	KEYWORD2
 
 setConnectCallback	KEYWORD2
 setDisconnectCallback	KEYWORD2
@@ -67,12 +73,8 @@ setDisconnectCallback	KEYWORD2
 # BLECentral Methods (KEYWORD2)
 #######################################
 
-setScanCallback	KEYWORD2
-startScanning	KEYWORD2
-stopScanning	KEYWORD2
-
-extractScanData	KEYWORD2
-checkUuidInScan	KEYWORD2
+setConnInterval	KEYWORD2
+setConnIntervalMS	KEYWORD2
 
 connect	KEYWORD2
 connected	KEYWORD2
@@ -85,19 +87,25 @@ setDisconnectCallback	KEYWORD2
 # BLEGap Methods (KEYWORD2)
 #######################################
 
-getPeerName	KEYWORD2
+getAddr	KEYWORD2
+setAddr	KEYWORD2
+connected	KEYWORD2
+getRole	KEYWORD2
+
 getPeerAddr	KEYWORD2
+getPeerName	KEYWORD2
 getTxPacket	KEYWORD2
 
 #######################################
 # BLEGatt Methods (KEYWORD2)
 #######################################
 
-# no public API yet
+readCharByUuid	KEYWORD2
 
 #######################################
 # BLEService Methods (KEYWORD2)
 #######################################
+
 setUuid	KEYWORD2
 begin	KEYWORD2
 
@@ -156,11 +164,35 @@ setNotifyCallback	KEYWORD2
 useAdaCallback	KEYWORD2
 
 #######################################
+# BLEScanner Methods (KEYWORD2)
+#######################################
+
+isRunning	KEYWORD2
+useActiveScan	KEYWORD2
+setInterval	KEYWORD2
+setIntervalMS	KEYWORD2
+
+filterRssi	KEYWORD2
+filterMSD	KEYWORD2
+filterUuid	KEYWORD2
+clearFilters	KEYWORD2
+
+restartOnDisconnect	KEYWORD2
+start	KEYWORD2
+stop	KEYWORD2
+
+setRxCallback	KEYWORD2
+setStopCallback	KEYWORD2
+
+parseReportByType	KEYWORD2
+checkReportForUuid	KEYWORD2
+checkReportForService	KEYWORD2
+
+#######################################
 # BLEAdvertising Methods (KEYWORD2)
 #######################################
 
-start	KEYWORD2
-stop	KEYWORD2
+# Advertising Data
 addData	KEYWORD2
 addFlags	KEYWORD2
 addTxPower	KEYWORD2
@@ -168,12 +200,23 @@ addName	KEYWORD2
 addAppearance	KEYWORD2
 addUuid	KEYWORD2
 addService	KEYWORD2
-setBeacon	KEYWORD2
-
 count	KEYWORD2
 getData	KEYWORD2
 setData	KEYWORD2
 clearData	KEYWORD2
+
+# Advertising
+setType	KEYWORD2
+setFastTimeout	KEYWORD2
+setStopCallback	KEYWORD2
+setInterval	KEYWORD2
+setIntervalMS	KEYWORD2
+setBeacon	KEYWORD2
+isRunning	KEYWORD2
+
+restartOnDisconnect	KEYWORD2
+start	KEYWORD2
+stop	KEYWORD2
 
 #######################################
 # BLEDiscovery Methods (KEYWORD2)
@@ -194,19 +237,7 @@ size	KEYWORD2
 
 
 
-#######################################
-# BLEClientDis Methods (KEYWORD2)
-#######################################
-getModel	KEYWORD2
-getSerial	KEYWORD2
-getFirmwareRev	KEYWORD2
-getHardwareRev	KEYWORD2
-getSoftwareRev	KEYWORD2
-getManufacturer	KEYWORD2
-
-
-
-
+##### Sort by A-Z
 
 #######################################
 # BLEAncs Methods (KEYWORD2)
@@ -248,6 +279,33 @@ setManufacturer	KEYWORD2
 setUuid	KEYWORD2
 setMajorMinor	KEYWORD2
 setRssiAt1m	KEYWORD2
+
+#######################################
+# BLEClientCts Methods (KEYWORD2)
+#######################################
+
+getCurrentTime	KEYWORD2
+getLocalTimeInfo	KEYWORD2
+enableAdjust	KEYWORD2
+setAdjustCallback	KEYWORD2
+
+#######################################
+# BLEClientDis Methods (KEYWORD2)
+#######################################
+getModel	KEYWORD2
+getSerial	KEYWORD2
+getFirmwareRev	KEYWORD2
+getHardwareRev	KEYWORD2
+getSoftwareRev	KEYWORD2
+getManufacturer	KEYWORD2
+
+#######################################
+# BLEClientUart Methods (KEYWORD2)
+#######################################
+
+setRxCallback	KEYWORD2
+enableTXD	KEYWORD2
+disableTXD	KEYWORD2
 
 #######################################
 # BLEDis Methods (KEYWORD2)
@@ -311,17 +369,14 @@ autoMIDIread	KEYWORD2
 
 setRxCallback	KEYWORD2
 notifyEnabled	KEYWORD2
+bufferTXD	KEYWORD2
 
 #######################################
-# BLEClientUart Methods (KEYWORD2)
+# EddyStone Methods (KEYWORD2)
 #######################################
 
-setRxCallback	KEYWORD2
-enableTXD	KEYWORD2
-disableTXD	KEYWORD2
-
-
-
+setUrl	KEYWORD2
+setRssi	KEYWORD2
 
 
 
