@@ -16,6 +16,8 @@
  * This sketch demonstrate how to run both Central and Peripheral roles
  * at the same time. It will act as a relay between an central (mobile)
  * to another peripheral using bleuart service.
+ * 
+ * Mobile <--> DualRole <--> peripheral Ble Uart
  */
 #include <bluefruit.h>
 
