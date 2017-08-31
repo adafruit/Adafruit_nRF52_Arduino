@@ -22,34 +22,17 @@
 extern "C" {
 #endif
 
-extern void init(void);
-
-extern void enterSerialDfu(void);
-extern void enterOTADfu(void);
-
 /* Bootloader version. Assigned by init().
  * - value of 0x000500 is version 0.5.0
  */
 extern uint32_t bootloaderVersion;
 
-// Hint instruction to tell CPU go to low power mode
-#if 0
-#define waitForEvent()  __WFE()
-#else
-ATTR_ALWAYS_INLINE static inline void waitForEvent(void)
-{
-  // Set bit 7 and bits 4..0 in the mask to one (0x ...00 1001 1111)
-  enum { FPU_EXCEPTION_MASK = 0x0000009F };
+extern void init(void);
 
-  /* Clear exceptions and PendingIRQ from the FPU unit */
-  __set_FPSCR(__get_FPSCR()  & ~(FPU_EXCEPTION_MASK));
-  (void) __get_FPSCR();
-  NVIC_ClearPendingIRQ(FPU_IRQn);
-
-  /* Call SoftDevice Wait For event */
-  (void) sd_app_evt_wait();
-}
-#endif
+void enterSerialDfu(void);
+void enterOTADfu(void);
+void waitForEvent(void);
+void systemOff(uint32_t pin, uint8_t wake_logic);
 
 #ifdef __cplusplus
 }

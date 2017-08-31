@@ -20,6 +20,7 @@
 #include <nrf.h>
 
 #include "Arduino.h"
+#include "nrf.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,6 +70,56 @@ void enterOTADfu(void)
   NVIC_SystemReset();
 }
 
+void waitForEvent(void)
+{
+#if 0
+  // Set bit 7 and bits 4..0 in the mask to one (0x ...00 1001 1111)
+  enum { FPU_EXCEPTION_MASK = 0x0000009F };
+
+  /* Clear exceptions and PendingIRQ from the FPU unit */
+  __set_FPSCR(__get_FPSCR()  & ~(FPU_EXCEPTION_MASK));
+  (void) __get_FPSCR();
+  NVIC_ClearPendingIRQ(FPU_IRQn);
+#endif
+
+  uint8_t sd_en;
+  (void) sd_softdevice_is_enabled(&sd_en);
+
+  if ( sd_en )
+  {
+    (void) sd_app_evt_wait();
+  }else
+  {
+    // SoftDevice is not enabled.
+    __WFE();
+    __SEV(); // Clear Event Register.
+    __WFE();
+  }
+}
+
+
+void systemOff(uint32_t pin, uint8_t wake_logic)
+{
+//  for(int i=0; i<8; i++)
+//  {
+//    NRF_POWER->RAM[i].POWERCLR = 0x03UL;
+//  }
+
+  pinMode(pin, wake_logic ? INPUT_PULLDOWN : INPUT_PULLUP);
+  NRF_GPIO->PIN_CNF[pin] |= ((uint32_t) (wake_logic ? GPIO_PIN_CNF_SENSE_High : GPIO_PIN_CNF_SENSE_Low) << GPIO_PIN_CNF_SENSE_Pos);
+
+  uint8_t sd_en;
+  (void) sd_softdevice_is_enabled(&sd_en);
+
+  // Enter System OFF state
+  if ( sd_en )
+  {
+    sd_power_system_off();
+  }else
+  {
+    NRF_POWER->SYSTEMOFF = 1;
+  }
+}
 
 #ifdef __cplusplus
 }

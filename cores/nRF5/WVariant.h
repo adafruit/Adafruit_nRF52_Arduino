@@ -22,6 +22,7 @@
 #include <stdbool.h>
 #include "nrf.h"
 #include "nrf_soc.h"
+#include "nrf_sdm.h"
 
 #ifdef __cplusplus
 extern "C" {
