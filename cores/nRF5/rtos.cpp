@@ -89,15 +89,8 @@ void vApplicationIdleHook( void )
 {
   // Internal background task
 
-  // User callback is not defined. Go to low-power mode
-  if ( rtos_idle_callback )
-  {
-    rtos_idle_callback();
-  }else
-  {
-    // instruct CPU to enter low-power state until an event/interrupt occurred
-    waitForEvent();
-  }
+  // Call user callback if defined
+  if ( rtos_idle_callback ) rtos_idle_callback();
 }
 
 } // extern C

@@ -82,11 +82,7 @@ void waitForEvent(void)
   NVIC_ClearPendingIRQ(FPU_IRQn);
 #endif
 
-#if 1
-  (void) sd_app_evt_wait();
-#else
   uint8_t sd_en = 0;
-
   (void) sd_softdevice_is_enabled(&sd_en);
 
   if ( sd_en )
@@ -99,7 +95,6 @@ void waitForEvent(void)
     __SEV(); // Clear Event Register.
     __WFE();
   }
-#endif
 }
 
 

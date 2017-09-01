@@ -77,6 +77,7 @@
 
 #ifdef SOFTDEVICE_PRESENT
 #include "nrf_soc.h"
+#include "nrf_sdm.h"
 #endif
 
 /*-----------------------------------------------------------
@@ -244,7 +245,7 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
     do{
         uint8_t dummy = 0;
         uint32_t err_code = sd_nvic_critical_region_enter(&dummy);
-        APP_ERROR_CHECK(err_code);
+        //APP_ERROR_CHECK(err_code);
     }while (0);
 #else
     __disable_irq();
@@ -277,10 +278,12 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
         if ( xModifiableIdleTime > 0 )
         {
 #ifdef SOFTDEVICE_PRESENT // TODO
-            if (softdevice_handler_is_enabled())
+            uint8_t sd_en = 0;
+            (void) sd_softdevice_is_enabled(&sd_en);
+            if (sd_en) // (softdevice_handler_is_enabled())
             {
                 uint32_t err_code = sd_app_evt_wait();
-                APP_ERROR_CHECK(err_code);
+                //APP_ERROR_CHECK(err_code);
             }
             else
 #endif
@@ -325,7 +328,7 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
     }
 #ifdef SOFTDEVICE_PRESENT
     uint32_t err_code = sd_nvic_critical_region_exit(0);
-    APP_ERROR_CHECK(err_code);
+    //APP_ERROR_CHECK(err_code);
 #else
     __enable_irq();
 #endif

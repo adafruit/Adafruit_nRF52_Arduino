@@ -2,6 +2,10 @@
 
 ## 0.7.5
 
+### Core
+
+- Make FreeRTOS run in tickless mode
+
 ## 0.7.0
 
 ### Core
