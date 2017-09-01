@@ -222,9 +222,6 @@ void loop()
 
   // Only send update once per second
   delay(1000);
-
-  // No need to call waitForEvent() here, it will be invoked by
-  // rtos_idle_callback() caused by above delay()
 }
 
 /**
