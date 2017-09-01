@@ -70,7 +70,7 @@
 #ifdef SOFTDEVICE_PRESENT
 #include "nrf_soc.h"
 #endif
-//#include "app_util_platform.h"
+#include "app_util_platform.h"
 
 /*-----------------------------------------------------------
  * Possible configurations for system timer
@@ -175,7 +175,8 @@ function. */
 routine that makes calls to interrupt safe FreeRTOS API functions.  DO NOT CALL
 INTERRUPT SAFE FREERTOS API FUNCTIONS FROM ANY INTERRUPT THAT HAS A HIGHER
 PRIORITY THAN THIS! (higher priorities are lower numeric values. */
-#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY    1
+#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY    _PRIO_APP_HIGH
+
 
 /* Interrupt priorities used by the kernel port layer itself.  These are generic
 to all Cortex-M ports, and do not rely on any particular library functions. */
@@ -209,7 +210,7 @@ standard names - or at least those used in the unmodified vector table. */
 /* Code below should be only used by the compiler, and not the assembler. */
 #if !(defined(__ASSEMBLY__) || defined(__ASSEMBLER__))
     #include "nrf.h"
-    //#include "nrf_assert.h"
+    #include "nrf_assert.h"
 
     /* This part of definitions may be problematic in assembly - it uses definitions from files that are not assembly compatible. */
     /* Cortex-M specific definitions. */
