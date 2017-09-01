@@ -90,8 +90,7 @@
 
 /* Constants used to detect a Cortex-M7 r0p1 core, which should use the ARM_CM7
 r0p1 port. */
-#define portCORTEX_M7_r0p1_ID               ( 0x410FC271UL )
-#define portCORTEX_M7_r0p0_ID               ( 0x410FC270UL )
+#define portCORTEX_M4_r0p1_ID               ( 0x410FC241UL )
 
 /* Constants required to check the validity of an interrupt priority. */
 #define portFIRST_USER_INTERRUPT_NUMBER     ( 16 )
@@ -199,7 +198,7 @@ static void prvTaskExitError( void )
     defined, then stop here so application writers can catch the error. */
     configASSERT( uxCriticalNesting == ~0UL );
     portDISABLE_INTERRUPTS();
-    for( ;; );
+    for ( ;; );
 }
 
 
@@ -214,13 +213,10 @@ BaseType_t xPortStartScheduler( void )
     See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html */
     configASSERT( configMAX_SYSCALL_INTERRUPT_PRIORITY );
 
-    /* This port can be used on all revisions of the Cortex-M7 core other than
-    the r0p1 parts.  r0p1 parts should use the port from the
-    /source/portable/GCC/ARM_CM7/r0p1 directory. */
-    configASSERT( SCB->CPUID != portCORTEX_M7_r0p1_ID );
-    configASSERT( SCB->CPUID != portCORTEX_M7_r0p0_ID );
+    /* This port is designed for nRF52, this is Cortex-M4 r0p1. */
+    configASSERT( SCB->CPUID == portCORTEX_M4_r0p1_ID );
 
-    #if( configASSERT_DEFINED == 1 )
+    #if ( configASSERT_DEFINED == 1 )
     {
         volatile uint32_t ulOriginalPriority;
         volatile uint8_t * const pucFirstUserPriorityRegister = &NVIC->IP[0];
@@ -247,7 +243,7 @@ BaseType_t xPortStartScheduler( void )
         /* Calculate the maximum acceptable priority group value for the number
         of bits read back. */
         ulMaxPRIGROUPValue = SCB_AIRCR_PRIGROUP_Msk >> SCB_AIRCR_PRIGROUP_Pos;
-        while( ( ucMaxPriorityValue & portTOP_BIT_OF_BYTE ) == portTOP_BIT_OF_BYTE )
+        while ( ( ucMaxPriorityValue & portTOP_BIT_OF_BYTE ) == portTOP_BIT_OF_BYTE )
         {
             ulMaxPRIGROUPValue--;
             ucMaxPriorityValue <<= ( uint8_t ) 0x01;
@@ -313,7 +309,7 @@ void vPortEnterCritical( void )
     functions that end in "FromISR" can be used in an interrupt.  Only assert if
     the critical nesting count is 1 to protect against recursive calls if the
     assert function also uses a critical section. */
-    if( uxCriticalNesting == 1 )
+    if ( uxCriticalNesting == 1 )
     {
         configASSERT( ( SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk ) == 0 );
     }
@@ -324,7 +320,7 @@ void vPortExitCritical( void )
 {
     configASSERT( uxCriticalNesting );
     uxCriticalNesting--;
-    if( uxCriticalNesting == 0 )
+    if ( uxCriticalNesting == 0 )
     {
         portENABLE_INTERRUPTS();
     }
@@ -339,7 +335,7 @@ static void vPortEnableVFP( void )
 }
 /*-----------------------------------------------------------*/
 
-#if( configASSERT_DEFINED == 1 )
+#if ( configASSERT_DEFINED == 1 )
 
     void vPortValidateInterruptPriority( void )
     {
@@ -352,7 +348,7 @@ static void vPortEnableVFP( void )
         ulCurrentInterrupt = ipsr.b.ISR;
 
         /* Is the interrupt number a user defined interrupt? */
-        if( ulCurrentInterrupt >= portFIRST_USER_INTERRUPT_NUMBER )
+        if ( ulCurrentInterrupt >= portFIRST_USER_INTERRUPT_NUMBER )
         {
             /* Look up the interrupt's priority. */
             ucCurrentPriority = NVIC->IP[ ulCurrentInterrupt - portFIRST_USER_INTERRUPT_NUMBER ];
