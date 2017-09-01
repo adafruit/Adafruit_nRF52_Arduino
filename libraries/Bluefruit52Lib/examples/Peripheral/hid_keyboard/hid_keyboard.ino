@@ -127,22 +127,10 @@ void loop()
  * there is no bluetooth or hw event. This is the ideal place to handle
  * background data.
  * 
- * NOTE: It is recommended to call waitForEvent() to put MCU into low-power mode
- * at the end of this callback. You could also turn off other Peripherals such as
- * Serial/PWM and turn them back on if wanted
- *
- * e.g
- *
- * void rtos_idle_callback(void)
- * {
- *    Serial.stop(); // will lose data when sleeping
- *    waitForEvent();
- *    Serial.begin(115200);
- * }
- *
- * NOTE2: If rtos_idle_callback() is not defined at all. Bluefruit will force
- * waitForEvent() to save power. If you don't want MCU to sleep at all, define
- * an rtos_idle_callback() with empty body !
+ * NOTE: FreeRTOS is configured as tickless idle mode. After this callback
+ * is executed, if there is time, freeRTOS kernel will go into low power mode.
+ * Therefore waitForEvent() should not be called in this callback.
+ * http://www.freertos.org/low-power-tickless-rtos.html
  * 
  * WARNING: This function MUST NOT call any blocking FreeRTOS API 
  * such as delay(), xSemaphoreTake() etc ... for more information
@@ -152,7 +140,4 @@ void rtos_idle_callback(void)
 {
   // Don't call any other FreeRTOS blocking API()
   // Perform background task(s) here
-
-  // Request CPU to enter low-power mode until an event/interrupt occurs
-  waitForEvent();
 }
