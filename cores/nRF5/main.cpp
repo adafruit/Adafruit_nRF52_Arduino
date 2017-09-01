@@ -70,7 +70,7 @@ static void loop_task(void* arg)
     #endif
 
     // To compatible with most code where loop is not rtos-aware
-//    taskYIELD(); // vTaskDelay(1);
+    taskYIELD(); // vTaskDelay(1);
   }
 }
 
@@ -91,9 +91,6 @@ int main( void )
   SEGGER_SYSVIEW_Conf();
 #endif
 
-#if 1
-  loop_task(NULL);
-#else
   // Create a task for loop()
   TaskHandle_t  _loopHandle;
   xTaskCreate( loop_task, "loop", _loopStacksize, NULL, TASK_PRIO_NORMAL, &_loopHandle);
@@ -102,7 +99,6 @@ int main( void )
   vTaskStartScheduler();
 
   NVIC_SystemReset();
-#endif
 
   return 0;
 }
