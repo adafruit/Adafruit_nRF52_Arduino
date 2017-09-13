@@ -33,8 +33,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef HWROTARYENCODER_H_
-#define HWROTARYENCODER_H_
+#ifndef ROTARYENCODER_H_
+#define ROTARYENCODER_H_
 
 #include "Arduino.h"
 
@@ -82,4 +82,4 @@ class HwRotaryEncoder
 extern class HwRotaryEncoder RotaryEncoder;
 
 
-#endif /* HWROTARYENCODER_H_ */
+#endif /* ROTARYENCODER_H_ */

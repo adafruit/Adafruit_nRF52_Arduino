@@ -34,7 +34,7 @@
 */
 /**************************************************************************/
 
-#include "HwRotaryEncoder.h"
+#include "RotaryEncoder.h"
 
 class HwRotaryEncoder RotaryEncoder;
 
