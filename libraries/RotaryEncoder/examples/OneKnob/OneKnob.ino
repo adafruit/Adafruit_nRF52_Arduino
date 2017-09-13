@@ -26,9 +26,6 @@ void setup()
   // Initialize Encoder
   encoder.begin();
 
-  // Enable hardware debouncing
-  encoder.setDebounce(false);
-
   // Start encoder
   encoder.start();
 }
@@ -41,10 +38,10 @@ void loop()
   {
     if ( value > 0 )
     {
-      Serial.println("Right");
+      Serial.println("Left");
     }else
     {
-      Serial.println("Left");
+      Serial.println("Right");
     }
   }
 }

@@ -60,6 +60,9 @@ class RotaryEncoder
     void stop(void);
 
     int32_t read(void);
+    int32_t readAbs(void);
+    void    writeAbs(int32_t value);
+    void    clearAbs(void);
 
   private:
     uint8_t _pina, _pinb;

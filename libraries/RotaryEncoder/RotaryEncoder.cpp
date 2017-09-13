@@ -44,7 +44,7 @@
 void RotaryEncoder::begin(void)
 {
   // default sample period
-  NRF_QDEC->SAMPLEPER = QDEC_SAMPLEPER_SAMPLEPER_16384us;
+  NRF_QDEC->SAMPLEPER = QDEC_SAMPLEPER_SAMPLEPER_128us;
 
   pinMode(_pina, INPUT);
   pinMode(_pinb, INPUT);
@@ -128,6 +128,24 @@ int32_t RotaryEncoder::read(void)
   _abs += NRF_QDEC->ACCREAD;
 
   return NRF_QDEC->ACCREAD;
+}
+
+int32_t RotaryEncoder::readAbs(void)
+{
+  // first update the abs
+  read();
+
+  return _abs;
+}
+
+void RotaryEncoder::writeAbs(int32_t value)
+{
+  _abs = value;
+}
+
+void RotaryEncoder::clearAbs(void)
+{
+  _abs = 0;
 }
 
 void QDEC_IRQHandler(void)
