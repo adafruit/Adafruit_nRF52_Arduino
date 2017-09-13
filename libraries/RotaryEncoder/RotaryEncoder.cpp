@@ -34,7 +34,7 @@
 */
 /**************************************************************************/
 
-#include "../RotaryEncoder/RotaryEncoder.h"
+#include "RotaryEncoder.h"
 
 /**
  *
@@ -58,9 +58,6 @@ void RotaryEncoder::begin(void)
 
     NRF_QDEC->PSEL.LED = _pinled;
   }
-
-  // shortcut
-  NRF_QDEC->SHORTS |= QDEC_SHORTS_REPORTRDY_READCLRACC_Msk;
 
   // Enable debounce by default
   NRF_QDEC->DBFEN = 1;
@@ -107,6 +104,9 @@ void RotaryEncoder::setDebounce(bool enable)
 
 void RotaryEncoder::setReporter(int8_t sample_num)
 {
+  // shortcut
+//  NRF_QDEC->SHORTS |= QDEC_SHORTS_REPORTRDY_READCLRACC_Msk;
+
   // Disable
   if (sample_num < 0)
   {
