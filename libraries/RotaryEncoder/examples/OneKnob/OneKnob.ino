@@ -15,7 +15,8 @@
 #include <Arduino.h>
 #include "RotaryEncoder.h"
 
-RotaryEncoder encoder(A0, A1);
+#define PIN_A     A0
+#define PIN_B     A1
 
 void setup()
 {
@@ -24,15 +25,15 @@ void setup()
   Serial.println("--------------------------------------------\n");
 
   // Initialize Encoder
-  encoder.begin();
+  Qei.begin(PIN_A, PIN_B);
 
   // Start encoder
-  encoder.start();
+  Qei.start();
 }
 
 void loop()
 {
-  int value = encoder.read();
+  int value = Qei.read();
 
   if (value)
   {

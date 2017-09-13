@@ -41,17 +41,18 @@
 class RotaryEncoder
 {
   public:
-    RotaryEncoder(uint8_t pina, uint8_t pinb, int8_t pinled = -1)
+    typedef void (*callback_t) (int32_t step);
+
+    RotaryEncoder(void)
     {
-      _pina   = pina;
-      _pinb   = pinb;
-      _pinled = pinled;
+      _pina = _pinb = _pinled = -1;
 
       _abs  = 0;
       _step = 0;
+      _cb   = NULL;
     }
 
-    void begin(void);
+    void begin(int8_t pina, int8_t pinb, int8_t pinled = -1);
 
     void setSampler(uint8_t period);
     void setDebounce(bool enable);
@@ -65,15 +66,20 @@ class RotaryEncoder
     void    writeAbs(int32_t value);
     void    clearAbs(void);
 
+    void setCallback(callback_t fp);
+
   private:
-    uint8_t _pina, _pinb;
-    int8_t  _pinled;
+    int8_t _pina, _pinb;
+    int8_t _pinled;
 
     // Note For each turn, encoder generate 2 transitions
     int32_t _abs;   // Absolute position
-    int32_t _step;  // Moving step that take intermidiate transition in account
+    int32_t _step;  // Moving step that take intermediate transition in account
+
+    callback_t _cb;
 };
 
+extern class RotaryEncoder Qei;
 
 
 #endif /* ROTARYENCODER_H_ */

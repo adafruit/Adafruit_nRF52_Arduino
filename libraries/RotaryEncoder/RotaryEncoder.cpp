@@ -36,11 +36,17 @@
 
 #include "RotaryEncoder.h"
 
+class RotaryEncoder Qei;
+
 /**
  * Initialize Hardware Encoder
  */
-void RotaryEncoder::begin(void)
+void RotaryEncoder::begin(int8_t pina, int8_t pinb, int8_t pinled)
 {
+  _pina   = pina;
+  _pinb   = pinb;
+  _pinled = pinled;
+
   // default sample period
   NRF_QDEC->SAMPLEPER = QDEC_SAMPLEPER_SAMPLEPER_128us;
 
@@ -67,8 +73,11 @@ void RotaryEncoder::begin(void)
 void RotaryEncoder::start(void)
 {
   // Enable IRQ
-//  NVIC_ClearPendingIRQ(IRQn);
-//  NVIC_EnableIRQ(IRQn);
+  if ( NRF_QDEC->INTENSET )
+  {
+    NVIC_ClearPendingIRQ(QDEC_IRQn);
+    NVIC_EnableIRQ(QDEC_IRQn);
+  }
 
   // Enable
   NRF_QDEC->ENABLE = 1;
@@ -79,6 +88,11 @@ void RotaryEncoder::start(void)
 
 void RotaryEncoder::stop(void)
 {
+  if ( NRF_QDEC->INTENSET )
+  {
+    NVIC_DisableIRQ(QDEC_IRQn);
+  }
+
   // Stop
   NRF_QDEC->TASKS_STOP = 1;
 
@@ -115,6 +129,19 @@ void RotaryEncoder::setReporter(int8_t sample_num)
 
     // shortcut
     NRF_QDEC->SHORTS |= QDEC_SHORTS_REPORTRDY_READCLRACC_Msk;
+  }
+}
+
+void RotaryEncoder::setCallback(callback_t fp)
+{
+  _cb = fp;
+
+  if (fp)
+  {
+    NRF_QDEC->INTENSET = QDEC_INTENSET_SAMPLERDY_Msk;
+  }else
+  {
+    NRF_QDEC->INTENCLR = QDEC_INTENCLR_SAMPLERDY_Msk;
   }
 }
 
@@ -160,7 +187,17 @@ void RotaryEncoder::clearAbs(void)
   _abs = 0;
 }
 
+
 void QDEC_IRQHandler(void)
 {
+  if ( (NRF_QDEC->INTENSET & QDEC_INTENSET_SAMPLERDY_Msk) && NRF_QDEC->EVENTS_SAMPLERDY )
+  {
+    NRF_QDEC->EVENTS_SAMPLERDY = 0;
 
+//    if ( _cb )
+//    {
+//      int32_t step = read();
+//      if ( step ) _cb(step);
+//    }
+  }
 }
