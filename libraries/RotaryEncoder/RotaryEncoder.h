@@ -47,7 +47,8 @@ class RotaryEncoder
       _pinb   = pinb;
       _pinled = pinled;
 
-      _abs = 0;
+      _abs  = 0;
+      _step = 0;
     }
 
     void begin(void);
@@ -68,7 +69,9 @@ class RotaryEncoder
     uint8_t _pina, _pinb;
     int8_t  _pinled;
 
-    int32_t _abs;
+    // Note For each turn, encoder generate 2 transitions
+    int32_t _abs;   // Absolute position
+    int32_t _step;  // Moving step that take intermidiate transition in account
 };
 
 

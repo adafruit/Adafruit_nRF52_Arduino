@@ -37,9 +37,7 @@
 #include "RotaryEncoder.h"
 
 /**
- *
- * @param debounce Enable hw debouncing
-
+ * Initialize Hardware Encoder
  */
 void RotaryEncoder::begin(void)
 {
@@ -59,8 +57,8 @@ void RotaryEncoder::begin(void)
     NRF_QDEC->PSEL.LED = _pinled;
   }
 
-  // Enable debounce by default
-  NRF_QDEC->DBFEN = 1;
+  // Disable debounce by default
+  NRF_QDEC->DBFEN = 0;
 
   // Reporter is disabled by default
 
@@ -125,19 +123,31 @@ int32_t RotaryEncoder::read(void)
   // Trigger READ CLR ACC
   NRF_QDEC->TASKS_RDCLRACC = 1;
 
-  // Add to absolute value
-  int32_t accread = NRF_QDEC->ACCREAD;
-  _abs += accread;
+  int32_t val = NRF_QDEC->ACCREAD;
 
-  return accread;
+  // Add to absolute value and buffered step
+  _abs  += val;
+  _step += val;
+
+  if ( (_step > 1) || (_step < -1) )
+  {
+    val   = _step / 2;
+    _step = _step%2;
+  }else
+  {
+    // not enough to report the turn
+    val = 0;
+  }
+
+  return val;
 }
 
 int32_t RotaryEncoder::readAbs(void)
 {
-  // first update the abs
+  // first update the abs value
   read();
 
-  return _abs;
+  return _abs/2;
 }
 
 void RotaryEncoder::writeAbs(int32_t value)
