@@ -36,7 +36,24 @@
 #ifndef SWROTARYENCODER_H_
 #define SWROTARYENCODER_H_
 
+#include "Arduino.h"
 
+#define SW_ROTARY_ENCODER_MAX_INSTANCE    8
+
+class SwRotaryEncoder
+{
+  public:
+    SwRotaryEncoder(uint8_t pina, uint8_t pinb)
+    {
+      _pina = pina;
+      _pinb = pinb;
+    }
+
+    bool begin(void);
+
+  private:
+    uint8_t _pina, _pinb;
+};
 
 
 

@@ -34,5 +34,55 @@
 */
 /**************************************************************************/
 
+#include "SwRotaryEncoder.h"
+
+void _pina_irq(uint8_t id);
+
+#define _pina_irqn(n) \
+  void _pina_irqn##_##n(void) { \
+    _pina_irq(n);\
+  }
+
+extern "C"
+{
+  _pina_irqn(0)
+  _pina_irqn(1)
+  _pina_irqn(2)
+  _pina_irqn(3)
+  _pina_irqn(4)
+  _pina_irqn(5)
+  _pina_irqn(6)
+  _pina_irqn(7)
+  // add more to match SW_ROTARY_ENCODER_MAX_INSTANCE
+}
+
+static uint8_t _encoder_count = 0;
+static SwRotaryEncoder* _encoder_ptr[SW_ROTARY_ENCODER_MAX_INSTANCE] = { NULL };
+
+static voidFuncPtr _pina_irq_ptr[SW_ROTARY_ENCODER_MAX_INSTANCE] =
+{
+    _pina_irqn_0, _pina_irqn_1, _pina_irqn_2, _pina_irqn_3,
+    _pina_irqn_4, _pina_irqn_5, _pina_irqn_6, _pina_irqn_7
+};
+
+bool SwRotaryEncoder::begin(void)
+{
+  // Add to pointer array
+  VERIFY ( _encoder_count < SW_ROTARY_ENCODER_MAX_INSTANCE);
+  _encoder_ptr[_encoder_count] = this;
+
+  pinMode(_pina, INPUT);
+  pinMode(_pinb, INPUT);
+
+  attachInterrupt(_pina, _pina_irq_ptr[_encoder_count], CHANGE);
+
+  _encoder_count++;
+}
+
+void _pina_irq(uint8_t id)
+{
+  VERIFY(_encoder_ptr[id], );
+  SwRotaryEncoder& enc = *_encoder_ptr[id];
 
 
+}
