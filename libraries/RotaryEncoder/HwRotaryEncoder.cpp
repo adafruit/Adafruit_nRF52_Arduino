@@ -34,14 +34,14 @@
 */
 /**************************************************************************/
 
-#include "RotaryEncoder.h"
+#include "HwRotaryEncoder.h"
 
-class RotaryEncoder Qei;
+class HwRotaryEncoder Qei;
 
 /**
  * Initialize Hardware Encoder
  */
-void RotaryEncoder::begin(int8_t pina, int8_t pinb, int8_t pinled)
+void HwRotaryEncoder::begin(int8_t pina, int8_t pinb, int8_t pinled)
 {
   _pina   = pina;
   _pinb   = pinb;
@@ -70,7 +70,7 @@ void RotaryEncoder::begin(int8_t pina, int8_t pinb, int8_t pinled)
 
 }
 
-void RotaryEncoder::start(void)
+void HwRotaryEncoder::start(void)
 {
   // Enable IRQ
   if ( NRF_QDEC->INTENSET )
@@ -86,7 +86,7 @@ void RotaryEncoder::start(void)
   NRF_QDEC->TASKS_START = 1;
 }
 
-void RotaryEncoder::stop(void)
+void HwRotaryEncoder::stop(void)
 {
   if ( NRF_QDEC->INTENSET )
   {
@@ -105,17 +105,17 @@ void RotaryEncoder::stop(void)
  * * @param sample_period
  * @param period value is QDEC_SAMPLEPER_SAMPLEPER_xxx in nrf52_bitfields.h
  */
-void RotaryEncoder::setSampler(uint8_t period)
+void HwRotaryEncoder::setSampler(uint8_t period)
 {
   NRF_QDEC->SAMPLEPER = period;
 }
 
-void RotaryEncoder::setDebounce(bool enable)
+void HwRotaryEncoder::setDebounce(bool enable)
 {
   NRF_QDEC->DBFEN = enable;
 }
 
-void RotaryEncoder::setReporter(int8_t sample_num)
+void HwRotaryEncoder::setReporter(int8_t sample_num)
 {
   // Disable
   if (sample_num < 0)
@@ -132,7 +132,7 @@ void RotaryEncoder::setReporter(int8_t sample_num)
   }
 }
 
-void RotaryEncoder::setCallback(callback_t fp)
+void HwRotaryEncoder::setCallback(callback_t fp)
 {
   _cb = fp;
 
@@ -145,7 +145,7 @@ void RotaryEncoder::setCallback(callback_t fp)
   }
 }
 
-int32_t RotaryEncoder::read(void)
+int32_t HwRotaryEncoder::read(void)
 {
   // Trigger READ CLR ACC
   NRF_QDEC->TASKS_RDCLRACC = 1;
@@ -169,7 +169,7 @@ int32_t RotaryEncoder::read(void)
   return val;
 }
 
-int32_t RotaryEncoder::readAbs(void)
+int32_t HwRotaryEncoder::readAbs(void)
 {
   // first update the abs value
   read();
@@ -177,12 +177,12 @@ int32_t RotaryEncoder::readAbs(void)
   return _abs/2;
 }
 
-void RotaryEncoder::writeAbs(int32_t value)
+void HwRotaryEncoder::writeAbs(int32_t value)
 {
   _abs = value;
 }
 
-void RotaryEncoder::clearAbs(void)
+void HwRotaryEncoder::clearAbs(void)
 {
   _abs = 0;
 }

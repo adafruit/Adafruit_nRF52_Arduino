@@ -33,17 +33,17 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef ROTARYENCODER_H_
-#define ROTARYENCODER_H_
+#ifndef HWROTARYENCODER_H_
+#define HWROTARYENCODER_H_
 
 #include "Arduino.h"
 
-class RotaryEncoder
+class HwRotaryEncoder
 {
   public:
     typedef void (*callback_t) (int32_t step);
 
-    RotaryEncoder(void)
+    HwRotaryEncoder(void)
     {
       _pina = _pinb = _pinled = -1;
 
@@ -79,7 +79,7 @@ class RotaryEncoder
     callback_t _cb;
 };
 
-extern class RotaryEncoder Qei;
+extern class HwRotaryEncoder Qei;
 
 
-#endif /* ROTARYENCODER_H_ */
+#endif /* HWROTARYENCODER_H_ */
