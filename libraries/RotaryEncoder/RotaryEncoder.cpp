@@ -38,6 +38,11 @@
 
 class HwRotaryEncoder RotaryEncoder;
 
+extern "C"
+{
+  void QDEC_IRQHandler(void);
+}
+
 /**
  * Initialize Hardware Encoder
  */
@@ -187,17 +192,21 @@ void HwRotaryEncoder::clearAbs(void)
   _abs = 0;
 }
 
-
-void QDEC_IRQHandler(void)
+void HwRotaryEncoder::_irq_handler(void)
 {
   if ( (NRF_QDEC->INTENSET & QDEC_INTENSET_SAMPLERDY_Msk) && NRF_QDEC->EVENTS_SAMPLERDY )
   {
     NRF_QDEC->EVENTS_SAMPLERDY = 0;
 
-//    if ( _cb )
-//    {
-//      int32_t step = read();
-//      if ( step ) _cb(step);
-//    }
+    if ( _cb )
+    {
+      int32_t step = read();
+      if ( step ) _cb(step);
+    }
   }
+}
+
+void QDEC_IRQHandler(void)
+{
+  RotaryEncoder._irq_handler();
 }
