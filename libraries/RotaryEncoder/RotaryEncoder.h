@@ -33,8 +33,8 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef HARDWAREENCODER_H_
-#define HARDWAREENCODER_H_
+#ifndef ROTARYENCODER_H_
+#define ROTARYENCODER_H_
 
 #include "Arduino.h"
 
@@ -70,4 +70,4 @@ class HardwareEncoder
 
 
 
-#endif /* HARDWAREENCODER_H_ */
+#endif /* ROTARYENCODER_H_ */

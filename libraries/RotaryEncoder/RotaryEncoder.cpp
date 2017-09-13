@@ -34,7 +34,7 @@
 */
 /**************************************************************************/
 
-#include "HardwareEncoder.h"
+#include "../RotaryEncoder/RotaryEncoder.h"
 
 /**
  *
