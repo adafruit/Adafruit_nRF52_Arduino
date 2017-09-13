@@ -13,7 +13,7 @@
 *********************************************************************/
 
 #include <Arduino.h>
-#include "HwRotaryEncoder.h"
+#include "RotaryEncoder.h"
 
 #define PIN_A     A0
 #define PIN_B     A1
