@@ -79,7 +79,7 @@ class HwRotaryEncoder
     callback_t _cb;
 };
 
-extern class HwRotaryEncoder Qei;
+extern class HwRotaryEncoder RotaryEncoder;
 
 
 #endif /* HWROTARYENCODER_H_ */

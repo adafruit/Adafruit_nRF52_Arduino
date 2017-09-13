@@ -36,7 +36,7 @@
 
 #include "HwRotaryEncoder.h"
 
-class HwRotaryEncoder Qei;
+class HwRotaryEncoder RotaryEncoder;
 
 /**
  * Initialize Hardware Encoder

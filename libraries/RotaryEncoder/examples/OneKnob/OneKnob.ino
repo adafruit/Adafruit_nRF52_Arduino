@@ -25,15 +25,15 @@ void setup()
   Serial.println("--------------------------------------------\n");
 
   // Initialize Encoder
-  Qei.begin(PIN_A, PIN_B);
+  RotaryEncoder.begin(PIN_A, PIN_B);
 
   // Start encoder
-  Qei.start();
+  RotaryEncoder.start();
 }
 
 void loop()
 {
-  int value = Qei.read();
+  int value = RotaryEncoder.read();
 
   if (value)
   {
