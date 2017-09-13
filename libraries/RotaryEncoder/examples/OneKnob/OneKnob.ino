@@ -13,9 +13,9 @@
 *********************************************************************/
 
 #include <Arduino.h>
-#include "HardwareEncoder.h"
+#include "RotaryEncoder.h"
 
-HardwareEncoder encoder(A0, A1);
+RotaryEncoder encoder(A0, A1);
 
 void setup()
 {
@@ -27,7 +27,7 @@ void setup()
   encoder.begin();
 
   // Enable hardware debouncing
-  encoder.setDebounce(true);
+  encoder.setDebounce(false);
 
   // Start encoder
   encoder.start();

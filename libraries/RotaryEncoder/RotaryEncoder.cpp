@@ -41,7 +41,7 @@
  * @param debounce Enable hw debouncing
 
  */
-void HardwareEncoder::begin(void)
+void RotaryEncoder::begin(void)
 {
   // default sample period
   NRF_QDEC->SAMPLEPER = QDEC_SAMPLEPER_SAMPLEPER_16384us;
@@ -68,7 +68,7 @@ void HardwareEncoder::begin(void)
   // Reporter is disabled by default
 }
 
-void HardwareEncoder::start(void)
+void RotaryEncoder::start(void)
 {
   // Enable IRQ
 //  NVIC_ClearPendingIRQ(IRQn);
@@ -81,7 +81,7 @@ void HardwareEncoder::start(void)
   NRF_QDEC->TASKS_START = 1;
 }
 
-void HardwareEncoder::stop(void)
+void RotaryEncoder::stop(void)
 {
   // Stop
   NRF_QDEC->TASKS_STOP = 1;
@@ -95,17 +95,17 @@ void HardwareEncoder::stop(void)
  * * @param sample_period
  * @param period value is QDEC_SAMPLEPER_SAMPLEPER_xxx in nrf52_bitfields.h
  */
-void HardwareEncoder::setSampler(uint8_t period)
+void RotaryEncoder::setSampler(uint8_t period)
 {
   NRF_QDEC->SAMPLEPER = period;
 }
 
-void HardwareEncoder::setDebounce(bool enable)
+void RotaryEncoder::setDebounce(bool enable)
 {
   NRF_QDEC->DBFEN = enable;
 }
 
-void HardwareEncoder::setReporter(int8_t sample_num)
+void RotaryEncoder::setReporter(int8_t sample_num)
 {
   // Disable
   if (sample_num < 0)
@@ -119,7 +119,7 @@ void HardwareEncoder::setReporter(int8_t sample_num)
   }
 }
 
-int32_t HardwareEncoder::read(void)
+int32_t RotaryEncoder::read(void)
 {
   // Trigger READ CLR ACC
   NRF_QDEC->TASKS_RDCLRACC = 1;

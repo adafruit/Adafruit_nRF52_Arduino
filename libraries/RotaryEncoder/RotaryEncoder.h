@@ -38,10 +38,10 @@
 
 #include "Arduino.h"
 
-class HardwareEncoder
+class RotaryEncoder
 {
   public:
-    HardwareEncoder(uint8_t pina, uint8_t pinb, int8_t pinled = -1)
+    RotaryEncoder(uint8_t pina, uint8_t pinb, int8_t pinled = -1)
     {
       _pina   = pina;
       _pinb   = pinb;
