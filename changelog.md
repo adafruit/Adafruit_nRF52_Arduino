@@ -5,6 +5,8 @@
 ### Core
 
 - Make FreeRTOS run in tickless mode
+- Added systemOff() to enter hibernate mode
+- Correct waitForEvent() function with SoftDevice enabled and disabled.
 
 ## 0.7.0
 
