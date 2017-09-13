@@ -15,4 +15,36 @@
 #include <Arduino.h>
 #include "HardwareEncoder.h"
 
+HardwareEncoder encoder(A0, A1);
 
+void setup()
+{
+  Serial.begin(115200);
+  Serial.println("Bluefruit52 Hardware Encoder OneKnob Example");
+  Serial.println("--------------------------------------------\n");
+
+  // Initialize Encoder
+  encoder.begin();
+
+  // Enable hardware debouncing
+  encoder.setDebounce(true);
+
+  // Start encoder
+  encoder.start();
+}
+
+void loop()
+{
+  int value = encoder.read();
+
+  if (value)
+  {
+    if ( value > 0 )
+    {
+      Serial.println("Right");
+    }else
+    {
+      Serial.println("Left");
+    }
+  }
+}
