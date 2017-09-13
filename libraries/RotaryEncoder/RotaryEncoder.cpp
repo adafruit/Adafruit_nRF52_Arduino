@@ -63,6 +63,7 @@ void RotaryEncoder::begin(void)
   NRF_QDEC->DBFEN = 1;
 
   // Reporter is disabled by default
+
 }
 
 void RotaryEncoder::start(void)
@@ -104,18 +105,18 @@ void RotaryEncoder::setDebounce(bool enable)
 
 void RotaryEncoder::setReporter(int8_t sample_num)
 {
-  // shortcut
-//  NRF_QDEC->SHORTS |= QDEC_SHORTS_REPORTRDY_READCLRACC_Msk;
-
   // Disable
   if (sample_num < 0)
   {
     NRF_QDEC->INTENCLR = QDEC_INTENCLR_REPORTRDY_Msk;
-
+    NRF_QDEC->SHORTS  &= ~QDEC_SHORTS_REPORTRDY_READCLRACC_Msk;
   }else
   {
     NRF_QDEC->REPORTPER = sample_num;
-    NRF_QDEC->INTENSET = QDEC_INTENSET_REPORTRDY_Msk;
+    NRF_QDEC->INTENSET  = QDEC_INTENSET_REPORTRDY_Msk;
+
+    // shortcut
+    NRF_QDEC->SHORTS |= QDEC_SHORTS_REPORTRDY_READCLRACC_Msk;
   }
 }
 
@@ -125,9 +126,10 @@ int32_t RotaryEncoder::read(void)
   NRF_QDEC->TASKS_RDCLRACC = 1;
 
   // Add to absolute value
-  _abs += NRF_QDEC->ACCREAD;
+  int32_t accread = NRF_QDEC->ACCREAD;
+  _abs += accread;
 
-  return NRF_QDEC->ACCREAD;
+  return accread;
 }
 
 int32_t RotaryEncoder::readAbs(void)
