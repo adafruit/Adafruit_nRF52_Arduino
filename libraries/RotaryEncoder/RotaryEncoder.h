@@ -37,6 +37,7 @@
 #define ROTARYENCODER_H_
 
 #include "Arduino.h"
+#include "SwRotaryEncoder.h"
 
 class HwRotaryEncoder
 {
@@ -45,14 +46,12 @@ class HwRotaryEncoder
 
     HwRotaryEncoder(void)
     {
-      _pina = _pinb = _pinled = -1;
-
       _abs  = 0;
       _step = 0;
       _cb   = NULL;
     }
 
-    void begin(int8_t pina, int8_t pinb, int8_t pinled = -1);
+    void begin(uint8_t pina, uint8_t pinb, int8_t pinled = -1);
 
     void setSampler(uint8_t period);
     void setDebounce(bool enable);
@@ -72,9 +71,6 @@ class HwRotaryEncoder
     void _irq_handler(void);
 
   private:
-    int8_t _pina, _pinb;
-    int8_t _pinled;
-
     // Note For each turn, encoder generate 2 transitions
     int32_t _abs;   // Absolute position
     int32_t _step;  // Moving step that take intermediate transition in account

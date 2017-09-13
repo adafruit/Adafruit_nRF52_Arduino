@@ -46,26 +46,22 @@ extern "C"
 /**
  * Initialize Hardware Encoder
  */
-void HwRotaryEncoder::begin(int8_t pina, int8_t pinb, int8_t pinled)
+void HwRotaryEncoder::begin(uint8_t pina, uint8_t pinb, int8_t pinled)
 {
-  _pina   = pina;
-  _pinb   = pinb;
-  _pinled = pinled;
-
   // default sample period
   NRF_QDEC->SAMPLEPER = QDEC_SAMPLEPER_SAMPLEPER_128us;
 
-  pinMode(_pina, INPUT);
-  pinMode(_pinb, INPUT);
+  pinMode(pina, INPUT);
+  pinMode(pinb, INPUT);
 
-  NRF_QDEC->PSEL.A = _pina;
-  NRF_QDEC->PSEL.B = _pinb;
+  NRF_QDEC->PSEL.A = pina;
+  NRF_QDEC->PSEL.B = pinb;
 
-  if ( _pinled >= 0 )
+  if ( pinled >= 0 )
   {
-    pinMode(_pinled, INPUT);
+    pinMode(pinled, INPUT);
 
-    NRF_QDEC->PSEL.LED = _pinled;
+    NRF_QDEC->PSEL.LED = pinled;
   }
 
   // Disable debounce by default
