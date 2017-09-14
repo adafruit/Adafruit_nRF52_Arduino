@@ -159,7 +159,7 @@ void BLECentral::_event_handler(ble_evt_t* evt)
       if ( Bluefruit.Gap.getRole(evt_conn_hdl) == BLE_GAP_ROLE_CENTRAL)
       {
         // Invoke callback
-        if ( _disconnect_cb) ada_callback(NULL, _disconnect_cb, evt_conn_hdl);
+        if ( _disconnect_cb) ada_callback_defer(NULL, _disconnect_cb, evt_conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
       }
     break;
 
