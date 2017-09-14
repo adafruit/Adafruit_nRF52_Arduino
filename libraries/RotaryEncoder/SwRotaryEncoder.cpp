@@ -86,6 +86,11 @@ bool SwRotaryEncoder::begin(uint8_t pina, uint8_t pinb)
   return true;
 }
 
+void SwRotaryEncoder::setCallback(callback_t fp)
+{
+  _cb = fp;
+}
+
 void SwRotaryEncoder::stop(void)
 {
   detachInterrupt(_pina);
@@ -122,9 +127,11 @@ void SwRotaryEncoder::_irq_handler(void)
     if ( val != digitalRead(_pinb) )
     {
       _abs++;
+      if (_cb) _cb(1);
     }else
     {
       _abs--;
+      if (_cb) _cb(-1);
     }
 
     _a_last = val;

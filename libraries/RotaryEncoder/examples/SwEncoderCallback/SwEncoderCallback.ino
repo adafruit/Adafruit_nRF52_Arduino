@@ -28,20 +28,21 @@ void setup()
 
   // Initialize Encoder
   swEncoder.begin(PIN_A, PIN_B);
+  swEncoder.setCallback(encoder_callback);
 }
 
 void loop()
 {
-  int value = swEncoder.read();
+  // do nothing
+}
 
-  if (value)
+void encoder_callback(int step)
+{
+  if ( step > 0 )
   {
-    if ( value > 0 )
-    {
-      Serial.println("Right");
-    }else
-    {
-      Serial.println("Left");
-    }
+    Serial.println("Right");
+  }else
+  {
+    Serial.println("Left");
   }
 }

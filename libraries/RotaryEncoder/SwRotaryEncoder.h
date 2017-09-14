@@ -43,15 +43,20 @@
 class SwRotaryEncoder
 {
   public:
+    typedef void (*callback_t) (int step);
+
     SwRotaryEncoder(void)
     {
       _pina = _pinb = 0;
 
       _a_last = 0;
       _last_read = _abs = 0;
+
+      _cb = NULL;
     }
 
     bool begin(uint8_t pina, uint8_t pinb);
+    void setCallback(callback_t fp);
     void stop(void);
 
     int32_t read(void);
@@ -69,6 +74,8 @@ class SwRotaryEncoder
 
     int32_t _abs;
     int32_t _last_read;
+
+    callback_t _cb;
 };
 
 
