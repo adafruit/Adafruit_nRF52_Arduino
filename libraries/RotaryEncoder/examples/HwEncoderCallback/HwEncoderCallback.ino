@@ -21,7 +21,7 @@
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("Bluefruit52 Rotary Encoder Callback Example");
+  Serial.println("Bluefruit52 HW Rotary Encoder Callback Example");
   Serial.println("-------------------------------------------\n");
 
   // Initialize Encoder
