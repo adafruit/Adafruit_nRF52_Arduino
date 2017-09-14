@@ -7,6 +7,7 @@
 - Make FreeRTOS run in tickless mode
 - Added systemOff() to enter hibernate mode
 - Correct waitForEvent() function with SoftDevice enabled and disabled.
+- Added RotaryEncoder support for both Hardware and Software Encoder.
 
 ## 0.7.0
 

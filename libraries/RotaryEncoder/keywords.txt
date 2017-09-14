@@ -1,0 +1,19 @@
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+HwRotaryEncoder	KEYWORD1
+SwRotaryEncoder	KEYWORD1
+
+#######################################
+# Methods (KEYWORD2)
+#######################################
+
+setSampler	KEYWORD2      
+setDebounce	KEYWORD2
+setReporter	KEYWORD2
+setCallback	KEYWORD2
+read	KEYWORD2
+readAbs	KEYWORD2
+writeAbs	KEYWORD2
+clearAbs	KEYWORD2   
