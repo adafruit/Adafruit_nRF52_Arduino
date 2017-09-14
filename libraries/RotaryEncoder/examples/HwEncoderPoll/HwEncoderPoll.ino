@@ -21,8 +21,8 @@
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("Bluefruit52 Rotary Encoder Polling Example");
-  Serial.println("------------------------------------------\n");
+  Serial.println("Bluefruit52 HW Rotary Encoder Polling Example");
+  Serial.println("---------------------------------------------\n");
 
   // Initialize Encoder
   RotaryEncoder.begin(PIN_A, PIN_B);
