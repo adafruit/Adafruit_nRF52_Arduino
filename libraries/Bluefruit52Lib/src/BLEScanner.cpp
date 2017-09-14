@@ -365,7 +365,7 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_TIMEOUT:
       if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_SCAN)
       {
-        if (_stop_cb) ada_callback(NULL, _stop_cb);
+        if (_stop_cb) ada_callback_defer(NULL, _stop_cb);
       }
     break;
 

@@ -73,8 +73,6 @@ typedef void (*adacb_worker_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uin
     /* BLEGap  */                                  \
     XPAND(BLEGap         , connect_callback_t    ) \
     XPAND(BLEGap         , disconnect_callback_t ) \
-    XPAND(BLEAdvertising , stop_callback_t       ) \
-    /*BLEScanner::stop_callback_t is same as BLEAdvertising::stop_callback_t */\
     XPAND(BLEScanner     , rx_callback_t         ) \
     /* Bluefruit  */                               \
     /* Central */                                  \

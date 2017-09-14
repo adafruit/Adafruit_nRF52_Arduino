@@ -65,11 +65,6 @@ void adafruit_callback_task(void* arg)
           ((BLEGap::disconnect_callback_t) func) ( (uint16_t) args[0], (uint8_t) args[1]  );
         break;
 
-        case BLEAdvertising_stop_callback_t:
-//      case BLEScanner_stop_callback_t:
-          ((BLEAdvertising::stop_callback_t) func)();
-        break;
-
         case BLEScanner_rx_callback_t:
           ((BLEScanner::rx_callback_t) func)( (ble_gap_evt_adv_report_t*) args[0] );
         break;
