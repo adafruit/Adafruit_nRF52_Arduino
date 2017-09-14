@@ -65,14 +65,6 @@ void adafruit_callback_task(void* arg)
           ((BLEGap::disconnect_callback_t) func) ( (uint16_t) args[0], (uint8_t) args[1]  );
         break;
 
-        case BLEScanner_rx_callback_t:
-          ((BLEScanner::rx_callback_t) func)( (ble_gap_evt_adv_report_t*) args[0] );
-        break;
-
-        /*------------- Bluefruit -------------*/
-
-        /*------------- Central -------------*/
-
         /*------------- Client Service & Chars -------------*/
         case BLEClientCharacteristic_notify_cb_t:
           ((BLEClientCharacteristic::notify_cb_t) func) ( *((BLEClientCharacteristic*) args[0]), (uint8_t*) args[1], (uint16_t) args[2] );

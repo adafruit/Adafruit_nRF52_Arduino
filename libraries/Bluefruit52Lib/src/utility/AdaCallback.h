@@ -73,9 +73,6 @@ typedef void (*adacb_worker_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uin
     /* BLEGap  */                                  \
     XPAND(BLEGap         , connect_callback_t    ) \
     XPAND(BLEGap         , disconnect_callback_t ) \
-    XPAND(BLEScanner     , rx_callback_t         ) \
-    /* Bluefruit  */                               \
-    /* Central */                                  \
     /* Client Characteristic */                    \
     XPAND(BLEClientCharacteristic  , notify_cb_t   ) \
     /*XPAND(BLEClientCharacteristic , indicate_cb_t)*/ \

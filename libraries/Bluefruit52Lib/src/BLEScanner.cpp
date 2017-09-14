@@ -325,7 +325,7 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
 
       ble_gap_evt_adv_report_t* adv_report = (ble_gap_evt_adv_report_t*) rtos_malloc( sizeof(ble_gap_evt_adv_report_t) );
       (*adv_report) = (*evt_report);
-      if (_rx_cb) ada_callback(adv_report, _rx_cb, adv_report);
+      if (_rx_cb) ada_callback_defer(adv_report, _rx_cb, adv_report);
     }
     break;
 
