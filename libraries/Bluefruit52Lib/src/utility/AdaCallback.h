@@ -57,12 +57,12 @@ typedef struct
 static_assert(sizeof(ada_callback_t) == 16, "Incorrect Size");
 
 /*------------- Defer -------------*/
-typedef void (*adacb_worker_0arg_t) (void);
-typedef void (*adacb_worker_1arg_t) (uint32_t);
-typedef void (*adacb_worker_2arg_t) (uint32_t, uint32_t);
-typedef void (*adacb_worker_3arg_t) (uint32_t, uint32_t, uint32_t);
-typedef void (*adacb_worker_4arg_t) (uint32_t, uint32_t, uint32_t, uint32_t);
-typedef void (*adacb_worker_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
+typedef void (*adacb_0arg_t) (void);
+typedef void (*adacb_1arg_t) (uint32_t);
+typedef void (*adacb_2arg_t) (uint32_t, uint32_t);
+typedef void (*adacb_3arg_t) (uint32_t, uint32_t, uint32_t);
+typedef void (*adacb_4arg_t) (uint32_t, uint32_t, uint32_t, uint32_t);
+typedef void (*adacb_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 
 /*------------------------------------------------------------------*/
 /* X Macros expansion for callback function

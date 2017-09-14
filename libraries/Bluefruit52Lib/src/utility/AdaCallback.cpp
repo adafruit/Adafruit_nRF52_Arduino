@@ -73,12 +73,12 @@ void adafruit_callback_task(void* arg)
         case ADA_CB_DEFERRED_FUNC:
           switch (cb_data->arg_count)
           {
-            case 0: ((adacb_worker_0arg_t) func)();                                           break;
-            case 1: ((adacb_worker_1arg_t) func)(args[0]);                                     break;
-            case 2: ((adacb_worker_2arg_t) func)(args[0], args[1]);                            break;
-            case 3: ((adacb_worker_3arg_t) func)(args[0], args[1], args[2]);                   break;
-            case 4: ((adacb_worker_4arg_t) func)(args[0], args[1], args[2], args[3]);          break;
-            case 5: ((adacb_worker_5arg_t) func)(args[0], args[1], args[2], args[3], args[4]); break;
+            case 0: ((adacb_0arg_t) func)();                                            break;
+            case 1: ((adacb_1arg_t) func)(args[0]);                                     break;
+            case 2: ((adacb_2arg_t) func)(args[0], args[1]);                            break;
+            case 3: ((adacb_3arg_t) func)(args[0], args[1], args[2]);                   break;
+            case 4: ((adacb_4arg_t) func)(args[0], args[1], args[2], args[3]);          break;
+            case 5: ((adacb_5arg_t) func)(args[0], args[1], args[2], args[3], args[4]); break;
 
             default: VERIFY_MESS(NRF_ERROR_INVALID_PARAM); break;
           }
