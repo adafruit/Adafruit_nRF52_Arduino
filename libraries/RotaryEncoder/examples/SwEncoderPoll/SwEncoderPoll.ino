@@ -18,35 +18,30 @@
 #define PIN_A     A0
 #define PIN_B     A1
 
+SwRotaryEncoder swEncoder;
+
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("Bluefruit52 HW Rotary Encoder Callback Example");
-  Serial.println("-------------------------------------------\n");
+  Serial.println("Bluefruit52 SW Rotary Encoder Polling Example");
+  Serial.println("---------------------------------------------\n");
 
   // Initialize Encoder
-  RotaryEncoder.begin(PIN_A, PIN_B);
-
-  // Set callback
-  RotaryEncoder.setCallback(encoder_callback);
-
-  // Start encoder
-  RotaryEncoder.start();
+  swEncoder.begin(PIN_A, PIN_B);
 }
 
 void loop()
 {
-  // do nothing
-}
+  int value = swEncoder.read();
 
-void encoder_callback(int step)
-{
-  if ( step > 0 )
+  if (value)
   {
-    Serial.println("Right");
-  }else
-  {
-    Serial.println("Left");
-  }  
+    if ( value > 0 )
+    {
+      Serial.println("Right");
+    }else
+    {
+      Serial.println("Left");
+    }
+  }
 }
-

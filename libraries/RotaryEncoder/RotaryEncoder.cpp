@@ -151,7 +151,8 @@ int32_t HwRotaryEncoder::read(void)
   // Trigger READ CLR ACC
   NRF_QDEC->TASKS_RDCLRACC = 1;
 
-  int32_t val = NRF_QDEC->ACCREAD;
+  // Nordic QDEC CW is negative, CCW is positve --> invert
+  int32_t val = -(NRF_QDEC->ACCREAD);
 
   // Add to absolute value and buffered step
   _abs  += val;

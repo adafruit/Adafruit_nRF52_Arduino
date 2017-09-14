@@ -43,16 +43,16 @@
 class SwRotaryEncoder
 {
   public:
-    SwRotaryEncoder(uint8_t pina, uint8_t pinb)
+    SwRotaryEncoder(void)
     {
-      _pina = pina;
-      _pinb = pinb;
+      _pina = _pinb = 0;
 
       _a_last = 0;
       _last_read = _abs = 0;
     }
 
-    bool begin(void);
+    bool begin(uint8_t pina, uint8_t pinb);
+    void stop(void);
 
     int32_t read(void);
     int32_t readAbs(void);

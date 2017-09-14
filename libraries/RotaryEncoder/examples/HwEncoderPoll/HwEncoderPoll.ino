@@ -39,10 +39,10 @@ void loop()
   {
     if ( value > 0 )
     {
-      Serial.println("Left");
+      Serial.println("Right");
     }else
     {
-      Serial.println("Right");
+      Serial.println("Left");
     }
   }
 }

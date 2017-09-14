@@ -65,11 +65,14 @@ static voidFuncPtr _pina_irq_ptr[SW_ROTARY_ENCODER_MAX_INSTANCE] =
     _pina_irqn_4, _pina_irqn_5, _pina_irqn_6, _pina_irqn_7
 };
 
-bool SwRotaryEncoder::begin(void)
+bool SwRotaryEncoder::begin(uint8_t pina, uint8_t pinb)
 {
   // Add to pointer array
   VERIFY ( _encoder_count < SW_ROTARY_ENCODER_MAX_INSTANCE);
   _encoder_ptr[_encoder_count] = this;
+
+  _pina = pina;
+  _pinb = pinb;
 
   pinMode(_pina, INPUT);
   pinMode(_pinb, INPUT);
@@ -79,6 +82,11 @@ bool SwRotaryEncoder::begin(void)
   attachInterrupt(_pina, _pina_irq_ptr[_encoder_count], CHANGE);
 
   _encoder_count++;
+}
+
+void SwRotaryEncoder::stop(void)
+{
+  detachInterrupt(_pina);
 }
 
 int32_t SwRotaryEncoder::read(void)
@@ -116,6 +124,8 @@ void SwRotaryEncoder::_irq_handler(void)
     {
       _abs--;
     }
+
+    _a_last = val;
   }
 }
 
