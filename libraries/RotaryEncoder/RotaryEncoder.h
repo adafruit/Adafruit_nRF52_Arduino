@@ -56,6 +56,7 @@ class HwRotaryEncoder
     void setSampler(uint8_t period);
     void setDebounce(bool enable);
     void setReporter(int8_t sample_num);
+    void setCallback(callback_t fp);
 
     void start(void);
     void stop(void);
@@ -64,8 +65,6 @@ class HwRotaryEncoder
     int32_t readAbs(void);
     void    writeAbs(int32_t value);
     void    clearAbs(void);
-
-    void setCallback(callback_t fp);
 
     // Internal API
     void _irq_handler(void);

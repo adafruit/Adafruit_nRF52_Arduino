@@ -47,12 +47,28 @@ class SwRotaryEncoder
     {
       _pina = pina;
       _pinb = pinb;
+
+      _a_last = 0;
+      _last_read = _abs = 0;
     }
 
     bool begin(void);
 
+    int32_t read(void);
+    int32_t readAbs(void);
+    void    writeAbs(int32_t value);
+    void    clearAbs(void);
+
+    // Internal API
+    void _irq_handler(void);
+
   private:
     uint8_t _pina, _pinb;
+
+    uint8_t _a_last;
+
+    int32_t _abs;
+    int32_t _last_read;
 };
 
 

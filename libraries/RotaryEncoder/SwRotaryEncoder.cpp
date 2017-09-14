@@ -74,15 +74,53 @@ bool SwRotaryEncoder::begin(void)
   pinMode(_pina, INPUT);
   pinMode(_pinb, INPUT);
 
+  _a_last = digitalRead(_pina);
+
   attachInterrupt(_pina, _pina_irq_ptr[_encoder_count], CHANGE);
 
   _encoder_count++;
 }
 
+int32_t SwRotaryEncoder::read(void)
+{
+  int32_t ret = _abs - _last_read;
+  _last_read = _abs;
+  return ret;
+}
+
+int32_t SwRotaryEncoder::readAbs(void)
+{
+  return _abs;
+}
+
+void SwRotaryEncoder::writeAbs(int32_t value)
+{
+  _abs = value;
+}
+
+void SwRotaryEncoder::clearAbs(void)
+{
+  _abs = 0;
+}
+
+void SwRotaryEncoder::_irq_handler(void)
+{
+  uint8_t val = digitalRead(_pina);
+
+  if ( val != _a_last )
+  {
+    if ( val != digitalRead(_pinb) )
+    {
+      _abs++;
+    }else
+    {
+      _abs--;
+    }
+  }
+}
+
 void _pina_irq(uint8_t id)
 {
   VERIFY(_encoder_ptr[id], );
-  SwRotaryEncoder& enc = *_encoder_ptr[id];
-
-
+  _encoder_ptr[id]->_irq_handler();
 }
