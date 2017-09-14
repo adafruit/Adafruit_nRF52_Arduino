@@ -57,10 +57,6 @@ void adafruit_callback_task(void* arg)
       switch(cb_data->callback_type)
       {
         /*------------- BLEGap -------------*/
-        case BLEGap_connect_callback_t:
-          ((BLEGap::connect_callback_t) func) ( (uint16_t) args[0] );
-        break;
-
         case BLEGap_disconnect_callback_t:
           ((BLEGap::disconnect_callback_t) func) ( (uint16_t) args[0], (uint8_t) args[1]  );
         break;

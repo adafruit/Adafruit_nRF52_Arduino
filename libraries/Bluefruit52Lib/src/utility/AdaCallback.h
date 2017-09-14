@@ -71,7 +71,7 @@ typedef void (*adacb_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
  *------------------------------------------------------------------*/
 #define ADA_CB_LOOKUP(XPAND)  \
     /* BLEGap  */                                  \
-    XPAND(BLEGap         , connect_callback_t    ) \
+    /*XPAND(BLEGap         , connect_callback_t    ) */\
     XPAND(BLEGap         , disconnect_callback_t ) \
     /* Client Characteristic */                    \
     XPAND(BLEClientCharacteristic  , notify_cb_t   ) \
