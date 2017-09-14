@@ -38,7 +38,7 @@
 
 #include "Arduino.h"
 
-#define SW_ROTARY_ENCODER_MAX_INSTANCE    8
+#define SW_ROTARY_ENCODER_MAX_INSTANCE    4
 
 class SwRotaryEncoder
 {

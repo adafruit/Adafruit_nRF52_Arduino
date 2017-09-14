@@ -49,10 +49,10 @@ extern "C"
   _pina_irqn(1)
   _pina_irqn(2)
   _pina_irqn(3)
-  _pina_irqn(4)
-  _pina_irqn(5)
-  _pina_irqn(6)
-  _pina_irqn(7)
+//  _pina_irqn(4)
+//  _pina_irqn(5)
+//  _pina_irqn(6)
+//  _pina_irqn(7)
   // add more to match SW_ROTARY_ENCODER_MAX_INSTANCE
 }
 
@@ -62,7 +62,7 @@ static SwRotaryEncoder* _encoder_ptr[SW_ROTARY_ENCODER_MAX_INSTANCE] = { NULL };
 static voidFuncPtr _pina_irq_ptr[SW_ROTARY_ENCODER_MAX_INSTANCE] =
 {
     _pina_irqn_0, _pina_irqn_1, _pina_irqn_2, _pina_irqn_3,
-    _pina_irqn_4, _pina_irqn_5, _pina_irqn_6, _pina_irqn_7
+//    _pina_irqn_4, _pina_irqn_5, _pina_irqn_6, _pina_irqn_7
 };
 
 bool SwRotaryEncoder::begin(uint8_t pina, uint8_t pinb)
@@ -82,6 +82,8 @@ bool SwRotaryEncoder::begin(uint8_t pina, uint8_t pinb)
   attachInterrupt(_pina, _pina_irq_ptr[_encoder_count], CHANGE);
 
   _encoder_count++;
+
+  return true;
 }
 
 void SwRotaryEncoder::stop(void)
