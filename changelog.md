@@ -8,6 +8,7 @@
 - Added systemOff() to enter hibernate mode
 - Correct waitForEvent() function with SoftDevice enabled and disabled.
 - Added RotaryEncoder support for both Hardware and Software Encoder.
+- Ada Callback task is started along with loop task, used as worker thread to defer interrupt callback.
 
 ## 0.7.0
 
