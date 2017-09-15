@@ -120,13 +120,13 @@ void SwRotaryEncoder::clearAbs(void)
 
 void SwRotaryEncoder::_irq_handler(void)
 {
-  uint8_t val = digitalRead(_pina);
+  uint8_t val = (uint8_t) digitalRead(_pina);
 
   if ( val != _a_last )
   {
     int32_t step = 0;
 
-    if ( val != digitalRead(_pinb) )
+    if ( val != ((uint8_t) digitalRead(_pinb)) )
     {
       step = 1;
     }else
