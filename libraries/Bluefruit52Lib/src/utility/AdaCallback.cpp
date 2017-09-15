@@ -54,26 +54,14 @@ void adafruit_callback_task(void* arg)
       void* func = cb_data->callback_func;
       uint32_t* args = cb_data->arguments;
 
-      switch(cb_data->callback_type)
+      switch (cb_data->arg_count)
       {
-        /*------------- Client Service & Chars -------------*/
-        case BLEClientCharacteristic_notify_cb_t:
-          ((BLEClientCharacteristic::notify_cb_t) func) ( *((BLEClientCharacteristic*) args[0]), (uint8_t*) args[1], (uint16_t) args[2] );
-        break;
-
-        case ADA_CB_DEFERRED_FUNC:
-          switch (cb_data->arg_count)
-          {
-            case 0: ((adacb_0arg_t) func)();                                            break;
-            case 1: ((adacb_1arg_t) func)(args[0]);                                     break;
-            case 2: ((adacb_2arg_t) func)(args[0], args[1]);                            break;
-            case 3: ((adacb_3arg_t) func)(args[0], args[1], args[2]);                   break;
-            case 4: ((adacb_4arg_t) func)(args[0], args[1], args[2], args[3]);          break;
-            case 5: ((adacb_5arg_t) func)(args[0], args[1], args[2], args[3], args[4]); break;
-
-            default: VERIFY_MESS(NRF_ERROR_INVALID_PARAM); break;
-          }
-        break;
+        case 0: ((adacb_0arg_t) func)();                                            break;
+        case 1: ((adacb_1arg_t) func)(args[0]);                                     break;
+        case 2: ((adacb_2arg_t) func)(args[0], args[1]);                            break;
+        case 3: ((adacb_3arg_t) func)(args[0], args[1], args[2]);                   break;
+        case 4: ((adacb_4arg_t) func)(args[0], args[1], args[2], args[3]);          break;
+        case 5: ((adacb_5arg_t) func)(args[0], args[1], args[2], args[3], args[4]); break;
 
         default: VERIFY_MESS(NRF_ERROR_INVALID_PARAM); break;
       }

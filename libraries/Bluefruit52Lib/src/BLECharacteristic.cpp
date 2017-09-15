@@ -346,7 +346,7 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
         extern void _adafruit_save_bond_cccd_dfr(uint32_t conn_handle);
         if ( Bluefruit.connPaired() )
         {
-          ada_callback_defer(NULL, _adafruit_save_bond_cccd_dfr, event->evt.common_evt.conn_handle);
+          ada_callback(NULL, _adafruit_save_bond_cccd_dfr, event->evt.common_evt.conn_handle);
         }
       }
     }

@@ -590,7 +590,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
             VERIFY_STATUS( sd_ble_gap_conn_param_update(_conn_hdl, NULL), );
           }
 
-          if (_connect_cb) ada_callback_defer(NULL, _connect_cb, _conn_hdl);
+          if (_connect_cb) ada_callback(NULL, _connect_cb, _conn_hdl);
         }
       }
       break;
@@ -610,7 +610,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         // Save all configured cccd
         if (_bonded) _saveBondCCCD();
 
-        if (_disconnect_cb) ada_callback_defer(NULL, _disconnect_cb, _conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
+        if (_disconnect_cb) ada_callback(NULL, _disconnect_cb, _conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
 
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
         _bonded   = false;
@@ -709,7 +709,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
         {
           _bonded = true;
-          ada_callback_defer(NULL, _adafruit_save_bond_key_dfr, _conn_hdl);
+          ada_callback(NULL, _adafruit_save_bond_key_dfr, _conn_hdl);
         }else
         {
           PRINT_HEX(status->auth_status);

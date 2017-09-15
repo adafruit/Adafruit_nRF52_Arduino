@@ -47,8 +47,8 @@ typedef struct
   void*   malloced_data;
   void*   callback_func;
 
-  uint8_t callback_type;
   uint8_t arg_count;
+//  uint8_t callback_type;
 //  uint8_t _reserved[2];
 
   uint32_t arguments[1]; // flexible array holder
@@ -56,38 +56,13 @@ typedef struct
 
 static_assert(sizeof(ada_callback_t) == 16, "Incorrect Size");
 
-/*------------- Defer -------------*/
+/*------------- Defer callback type, determined by number of arguments -------------*/
 typedef void (*adacb_0arg_t) (void);
 typedef void (*adacb_1arg_t) (uint32_t);
 typedef void (*adacb_2arg_t) (uint32_t, uint32_t);
 typedef void (*adacb_3arg_t) (uint32_t, uint32_t, uint32_t);
 typedef void (*adacb_4arg_t) (uint32_t, uint32_t, uint32_t, uint32_t);
 typedef void (*adacb_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
-
-/*------------------------------------------------------------------*/
-/* X Macros expansion for callback function
- * If callbacks from separated classes share the same prototype, only
- * one instance is enough (mandatory)
- *------------------------------------------------------------------*/
-#define ADA_CB_LOOKUP(XPAND)  \
-    XPAND(BLEClientCharacteristic  , notify_cb_t   ) \
-    /*XPAND(BLEClientCharacteristic , indicate_cb_t)*/ \
-
-#define ADA_CB_ENUM_XPAND(_class, _cbname) \
-    _class##_##_cbname,
-
-
-#define ADA_CB_FUNC_XPAND(_class, _cbname) \
-    static inline uint8_t ada_callback_type(_class::_cbname _func) { (void) _func; return _class##_##_cbname; }
-
-enum
-{
-  ADA_CB_LOOKUP(ADA_CB_ENUM_XPAND)
-
-  ADA_CB_DEFERRED_FUNC,
-};
-
-ADA_CB_LOOKUP(ADA_CB_FUNC_XPAND)
 
 /*------------------------------------------------------------------*/
 /* Macros to force uint32_t casting to all arguments (up to 5)
@@ -103,13 +78,16 @@ ADA_CB_LOOKUP(ADA_CB_FUNC_XPAND)
 
 #define _ADA_CB_ARGS(...)  _GET_6TH_ARG(_0, ##__VA_ARGS__, _ADA_CB_ARGS_5, _ADA_CB_ARGS_4, _ADA_CB_ARGS_3, _ADA_CB_ARGS_2, _ADA_CB_ARGS_1, _ADA_CB_ARGS_0)(__VA_ARGS__)
 
-#define _ada_cb_setup(_malloced, _func, _func_type, ... )  \
+/**
+ * Macro function is called by other module with all intended parameters.
+ * The first parameter is malloced Pointer (NULL if not), so that callback could know to free memory
+ */
+#define ada_callback(_malloced, _func, ... )  \
   do { \
       uint8_t const _count = VA_ARGS_NUM(__VA_ARGS__);\
       ada_callback_t* cb_data = (ada_callback_t*) rtos_malloc( sizeof(ada_callback_t) + (_count ? (_count-1)*4 : 0) ); \
       cb_data->malloced_data = _malloced;\
       cb_data->callback_func = (void*)_func;\
-      cb_data->callback_type = _func_type;\
       cb_data->arg_count = _count;\
       if ( _count ) {\
         uint32_t arguments[] = { _ADA_CB_ARGS(__VA_ARGS__) };\
@@ -117,13 +95,6 @@ ADA_CB_LOOKUP(ADA_CB_FUNC_XPAND)
       }\
       ada_callback_queue(cb_data);\
   } while(0)
-
-/**
- * Macro function is called by other module with all intended parameters.
- * The first parameter is malloced Pointer (NULL if not), so that callback could know to free memory
- */
-#define ada_callback(_malloced, _func , ... )     _ada_cb_setup(_malloced, _func, ada_callback_type(_func), __VA_ARGS__)
-#define ada_callback_defer(_malloced, _func, ...) _ada_cb_setup(_malloced, _func, ADA_CB_DEFERRED_FUNC    , __VA_ARGS__)
 
 void ada_callback_init(void);
 void ada_callback_queue(ada_callback_t* cb_data);
