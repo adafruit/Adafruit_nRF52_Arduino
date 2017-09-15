@@ -214,8 +214,6 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   TaskHandle_t soc_task_hdl;
   xTaskCreate( adafruit_soc_task, "SD SOC", CFG_SOC_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &soc_task_hdl);
 
-  ada_callback_init();
-
   NVIC_SetPriority(SD_EVT_IRQn, 6);
   NVIC_EnableIRQ(SD_EVT_IRQn);
 

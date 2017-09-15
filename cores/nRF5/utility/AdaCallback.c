@@ -34,7 +34,7 @@
 */
 /**************************************************************************/
 
-#include "AdaCallback.h"
+#include "Arduino.h"
 
 static QueueHandle_t _cb_queue = NULL;
 
@@ -48,7 +48,6 @@ void adafruit_callback_task(void* arg)
     if ( xQueueReceive(_cb_queue, (void*) &cb_data, portMAX_DELAY) )
     {
 //      PRINT_HEX(cb_data);
-//      PRINT_INT(cb_data->callback_type);
 //      PRINT_HEX(cb_data->malloced_data);
 
       void* func = cb_data->callback_func;
@@ -75,7 +74,7 @@ void adafruit_callback_task(void* arg)
 
 void ada_callback_queue(ada_callback_t* cb_data)
 {
-  xQueueSend(_cb_queue, (void*) &cb_data, BLE_GENERIC_TIMEOUT);
+  xQueueSend(_cb_queue, (void*) &cb_data, CFG_CALLBACK_TIMEOUT);
 }
 
 void ada_callback_init(void)

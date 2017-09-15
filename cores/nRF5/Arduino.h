@@ -63,6 +63,7 @@ uint32_t setLoopStacksize(void);
 #include "debug.h"
 #include "common_inc.h"
 #include "utility/utilities.h"
+#include "utility/AdaCallback.h"
 
 #ifdef __cplusplus
   #include "Uart.h"

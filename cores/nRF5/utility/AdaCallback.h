@@ -36,11 +36,11 @@
 #ifndef ADACALLBACK_H_
 #define ADACALLBACK_H_
 
-#include <Arduino.h>
-#include "bluefruit.h"
+#include "common_inc.h"
 
 #define CFG_CALLBACK_TASK_STACKSIZE     (512*2)
 #define CFG_CALLBACK_QUEUE_LENGTH       20
+#define CFG_CALLBACK_TIMEOUT            100
 
 #ifdef __cplusplus
 extern "C"{
@@ -58,7 +58,7 @@ typedef struct
   uint32_t arguments[1]; // flexible array holder
 }ada_callback_t;
 
-static_assert(sizeof(ada_callback_t) == 16, "Incorrect Size");
+VERIFY_STATIC( sizeof(ada_callback_t) == 16 );
 
 /*------------- Defer callback type, determined by number of arguments -------------*/
 typedef void (*adacb_0arg_t) (void);
