@@ -42,6 +42,10 @@
 #define CFG_CALLBACK_TASK_STACKSIZE     (512*2)
 #define CFG_CALLBACK_QUEUE_LENGTH       20
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 typedef struct
 {
   void*   malloced_data;
@@ -99,5 +103,8 @@ typedef void (*adacb_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 void ada_callback_init(void);
 void ada_callback_queue(ada_callback_t* cb_data);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ADACALLBACK_H_ */
