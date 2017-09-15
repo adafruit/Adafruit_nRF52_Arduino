@@ -143,6 +143,5 @@ void SwRotaryEncoder::_irq_handler(void)
 
 void _pina_irq(uint8_t id)
 {
-  VERIFY(_encoder_ptr[id], );
   _encoder_ptr[id]->_irq_handler();
 }
