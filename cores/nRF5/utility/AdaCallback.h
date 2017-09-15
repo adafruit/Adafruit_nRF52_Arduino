@@ -52,6 +52,7 @@ typedef struct
   void*   callback_func;
 
   uint8_t arg_count;
+  bool    from_isr;
 //  uint8_t callback_type;
 //  uint8_t _reserved[2];
 
@@ -86,12 +87,13 @@ typedef void (*adacb_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
  * Macro function is called by other module with all intended parameters.
  * The first parameter is malloced Pointer (NULL if not), so that callback could know to free memory
  */
-#define ada_callback(_malloced, _func, ... )  \
+#define _cb_setup(_from_isr, _malloced, _func, ... )  \
   do { \
       uint8_t const _count = VA_ARGS_NUM(__VA_ARGS__);\
       ada_callback_t* cb_data = (ada_callback_t*) rtos_malloc( sizeof(ada_callback_t) + (_count ? (_count-1)*4 : 0) ); \
       cb_data->malloced_data = _malloced;\
       cb_data->callback_func = (void*)_func;\
+      cb_data->from_isr = _from_isr;\
       cb_data->arg_count = _count;\
       if ( _count ) {\
         uint32_t arguments[] = { _ADA_CB_ARGS(__VA_ARGS__) };\
@@ -99,6 +101,9 @@ typedef void (*adacb_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
       }\
       ada_callback_queue(cb_data);\
   } while(0)
+
+#define ada_callback(... )           _cb_setup(false, __VA_ARGS__)
+#define ada_callback_fromISR(... )   _cb_setup(true , __VA_ARGS__)
 
 void ada_callback_init(void);
 void ada_callback_queue(ada_callback_t* cb_data);

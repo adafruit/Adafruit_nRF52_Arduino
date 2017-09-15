@@ -93,7 +93,7 @@ int main( void )
 
   // Create a task for loop()
   TaskHandle_t  _loopHandle;
-  xTaskCreate( loop_task, "loop", _loopStacksize, NULL, TASK_PRIO_NORMAL, &_loopHandle);
+  xTaskCreate( loop_task, "loop", _loopStacksize, NULL, TASK_PRIO_LOW, &_loopHandle);
 
   // Initialize callback task
   ada_callback_init();

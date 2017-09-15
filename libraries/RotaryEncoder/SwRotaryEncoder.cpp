@@ -124,17 +124,20 @@ void SwRotaryEncoder::_irq_handler(void)
 
   if ( val != _a_last )
   {
+    int32_t step = 0;
+
     if ( val != digitalRead(_pinb) )
     {
-      _abs++;
-      if (_cb) _cb(1);
+      step = 1;
     }else
     {
-      _abs--;
-      if (_cb) _cb(-1);
+      step = -1;
     }
 
+    _abs += step;
     _a_last = val;
+
+    if (_cb) ada_callback_fromISR(NULL, _cb, step);
   }
 }
 

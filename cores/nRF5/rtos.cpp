@@ -79,7 +79,7 @@ bool SchedulerRTOS::startLoop(taskfunc_t task, uint32_t stack_size)
 bool SchedulerRTOS::startLoop(taskfunc_t task, const char* name, uint32_t stack_size)
 {
   TaskHandle_t  handle;
-  return pdPASS == xTaskCreate( _redirect_task, name, stack_size, (void*) task, TASK_PRIO_NORMAL, &handle);
+  return pdPASS == xTaskCreate( _redirect_task, name, stack_size, (void*) task, TASK_PRIO_LOW, &handle);
 }
 
 extern "C"

@@ -74,7 +74,13 @@ void adafruit_callback_task(void* arg)
 
 void ada_callback_queue(ada_callback_t* cb_data)
 {
-  xQueueSend(_cb_queue, (void*) &cb_data, CFG_CALLBACK_TIMEOUT);
+  if ( cb_data->from_isr )
+  {
+    xQueueSendFromISR(_cb_queue, (void*) &cb_data, NULL);
+  }else
+  {
+    xQueueSend(_cb_queue, (void*) &cb_data, CFG_CALLBACK_TIMEOUT);
+  }
 }
 
 void ada_callback_init(void)
