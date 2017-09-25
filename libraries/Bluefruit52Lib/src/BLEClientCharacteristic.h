@@ -57,7 +57,7 @@ class BLEClientCharacteristic
     virtual ~BLEClientCharacteristic();
 
     void assign(ble_gattc_char_t* gattc_chr);
-    bool discoverDescriptor(uint16_t conn_handle);
+    bool discoverDescriptor(uint16_t conn_handle, ble_gattc_handle_range_t hdl_range);
 
     void begin(BLEClientService* parent_svc = NULL);
 

@@ -101,7 +101,7 @@ class BLEDiscovery
      * code. User should not call these directly
      *------------------------------------------------------------------*/
     bool     _discoverService(uint16_t conn_handle, BLEClientService& svc, uint16_t start_handle = 1);
-    uint16_t _discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t bufsize);
+    uint16_t _discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t bufsize, ble_gattc_handle_range_t hdl_range);
 
     friend class AdafruitBluefruit;
 };

@@ -38,12 +38,14 @@
 
 #define BLE_ANCS_TIMEOUT   (5*BLE_GENERIC_TIMEOUT)
 
+#define DEBUG_ANCS    0
+
 void bleancs_notification_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
 void bleancs_data_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
 
 /* ANCS Service        : 7905F431-B5CE-4E99-A40F-4B1E122D00D0
- * Notification Source : 9FBF120D-6301-42D9-8C58-25E699A21DBD
  * Control Point       : 69D1D8F3-45E1-49A8-9821-9BBDFDAAD9D9
+ * Notification Source : 9FBF120D-6301-42D9-8C58-25E699A21DBD
  * Data Source         : 22EAC6E9-24D6-4BB5-BE44-B36ACE7C7BFB
  */
 
@@ -128,8 +130,8 @@ void BLEAncs::setNotificationCallback(notification_callback_t fp)
 bool BLEAncs::enableNotification(void)
 {
   // enable both Notification & Data Source
-  _data.enableNotify();
-  _notification.enableNotify();
+  VERIFY ( _data.enableNotify() );
+  VERIFY ( _notification.enableNotify() );
 
   return true;
 }
@@ -179,7 +181,7 @@ uint16_t BLEAncs::getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_
       .cmd  = ANCS_CMD_GET_NOTIFICATION_ATTR,
       .uid  = uid,
       .attr = attr,
-      .len = bufsize
+      .len  = bufsize
   };
   uint8_t cmdlen = 6;
 
@@ -190,7 +192,10 @@ uint16_t BLEAncs::getAttribute(uint32_t uid, uint8_t attr, void* buffer, uint16_
   }
 
   // Write command using write response
-//   PRINT_BUFFER(&command, cmdlen);
+#if DEBUG_ANCS
+   PRINT_BUFFER(&command, cmdlen);
+#endif
+
   _adamsg.prepare(buffer, bufsize);
   VERIFY( cmdlen == _control.write_resp(&command, cmdlen), 0);
   VERIFY( _adamsg.waitUntilComplete(BLE_ANCS_TIMEOUT) >= 0, 0);
@@ -233,7 +238,9 @@ uint16_t BLEAncs::getAppAttribute(const char* appid, uint8_t attr, void* buffer,
   strcpy( (char*) command+1, appid);
   command[cmdlen-1] = attr;
 
-//  PRINT_BUFFER(command, cmdlen);
+#if DEBUG_ANCS
+  PRINT_BUFFER(command, cmdlen);
+#endif
   _adamsg.prepare(buffer, bufsize);
 
   // Write command using write response
@@ -297,7 +304,9 @@ void BLEAncs::_handleNotification(uint8_t* data, uint16_t len)
 
 void BLEAncs::_handleData(uint8_t* data, uint16_t len)
 {
-  //PRINT_BUFFER(data, len);
+#if DEBUG_ANCS
+  PRINT_BUFFER(data, len);
+#endif
 
   _adamsg.feed(data, len);
   _adamsg.complete(); // mark as complete each time we received data

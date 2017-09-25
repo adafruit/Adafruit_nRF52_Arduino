@@ -137,12 +137,13 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
           // characteristic assign overload
           chr[i]->assign(&disc_chr->chars[d]);
 
-          // Discovery All descriptors as well
-          _hdl_range.start_handle = disc_chr->chars[d].handle_value + 1;
-          if (_hdl_range.start_handle < _hdl_range.end_handle )
+          ble_gattc_handle_range_t range = { disc_chr->chars[d].handle_value + 1, _hdl_range.end_handle };
+
+          // Discovery All descriptors if possible
+          if ( range.start_handle  <= range.start_handle  )
           {
-            // skip discovery descriptor if it is last characteristic without descriptor
-            chr[i]->discoverDescriptor(conn_handle);
+            // skip discovery descriptor
+            chr[i]->discoverDescriptor(conn_handle, range);
           }
 
           found++;
@@ -153,6 +154,10 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
     }
 
     // increase handle range for next discovery
+    // should be last descriptor +1, but that will cause missing on the next Characteristic !!!!!
+    // Reason is descriptor also include BLE_UUID_CHARACTERISTIC 0x2803 (Char declaration) in the result
+    //
+    // To be safe we use last chars + 1
     _hdl_range.start_handle = disc_chr->chars[ disc_chr->count-1  ].handle_value + 1;
   }
 
@@ -161,13 +166,13 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
   return found;
 }
 
-uint16_t BLEDiscovery::_discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t bufsize)
+uint16_t BLEDiscovery::_discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t bufsize, ble_gattc_handle_range_t hdl_range)
 {
-  LOG_LV2(Discover, "[DESC] Handle start = %d, end = %d", _hdl_range.start_handle, _hdl_range.end_handle);
+  LOG_LV2(Discover, "[DESC] Handle start = %d, end = %d", hdl_range.start_handle, hdl_range.end_handle);
 
   _adamsg.prepare(disc_desc, bufsize);
 
-  VERIFY_STATUS( sd_ble_gattc_descriptors_discover(conn_handle, &_hdl_range), 0 );
+  VERIFY_STATUS( sd_ble_gattc_descriptors_discover(conn_handle, &hdl_range), 0 );
 
   // wait for discovery event
   int32_t bytecount = _adamsg.waitUntilComplete(BLE_DISCOVERY_TIMEOUT);
@@ -179,11 +184,6 @@ uint16_t BLEDiscovery::_discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_d
   {
     LOG_LV2(Discover, "[DESC] Descriptor %d: uuid = 0x%04X, handle = %d", i, disc_desc->descs[i].uuid.uuid, disc_desc->descs[i].handle);
   }
-
-  // increase handle range for next discovery
-  // should be +1 more, but that will cause missing on the next Characteristic !!!!!
-  // Reason is descriptor also include BLE_UUID_CHARACTERISTIC 0x2803 (Char declaration) in the result
-  _hdl_range.start_handle = disc_desc->descs[ disc_desc->count-1 ].handle;
 
   return disc_desc->count;
 }
