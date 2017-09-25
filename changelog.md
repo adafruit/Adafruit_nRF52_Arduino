@@ -10,6 +10,11 @@
 - Added RotaryEncoder support for both Hardware and Software Encoder.
 - Ada Callback task is started along with loop task, used as worker thread to defer interrupt callback.
 
+### BLE
+
+- Fixed Characteristic Descriptor discovery issue with ancs
+- Fixed memory issue with discovery characteristic
+
 ## 0.7.0
 
 ### Core
