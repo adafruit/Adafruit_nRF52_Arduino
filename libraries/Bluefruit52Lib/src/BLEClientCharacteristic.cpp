@@ -36,8 +36,6 @@
 
 #include "bluefruit.h"
 
-#define MAX_DESCIRPTORS         8
-
 void BLEClientCharacteristic::_init(void)
 {
   varclr(&_chr);
@@ -122,6 +120,8 @@ BLEClientService& BLEClientCharacteristic::parentService (void)
 
 bool BLEClientCharacteristic::discoverDescriptor(uint16_t conn_handle)
 {
+  enum { MAX_DESCIRPTORS = 8 };
+
   struct {
     uint16_t count;
     ble_gattc_desc_t descs[MAX_DESCIRPTORS];
@@ -186,7 +186,7 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
     _adamsg.prepare( (void*) data, len);
     VERIFY_STATUS ( sd_ble_gattc_write(_service->connHandle(), &param) );
 
-    // len is alwasy 0 in BLE_GATTC_EVT_WRITE_RSP for BLE_GATT_OP_WRITE_REQ
+    // len is always 0 in BLE_GATTC_EVT_WRITE_RSP for BLE_GATT_OP_WRITE_REQ
     count = (_adamsg.waitUntilComplete(BLE_GENERIC_TIMEOUT) < 0 ? 0 : len);
   }
   else

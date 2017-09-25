@@ -88,9 +88,9 @@ bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLEClientService& svc,
   if ( (disc_svc.count) && (svc.uuid == disc_svc.services[0].uuid) )
   {
     _hdl_range = disc_svc.services[0].handle_range;
-    svc.setHandleRange(_hdl_range.start_handle, _hdl_range.end_handle);
+    svc.setHandleRange(_hdl_range);
 
-    LOG_LV2(Discover, "[SVC] Found 0x%04X, Handle start = %d, end = %d", disc_svc.services[0].uuid.uuid, _hdl_range.start_handle, _hdl_range.end_handle);
+    LOG_LV2(Discover, "[SVC] Found 0x%04X, Handle start = %d, end = %d\n-----------------", disc_svc.services[0].uuid.uuid, _hdl_range.start_handle, _hdl_range.end_handle);
 
     // increase for next discovery
     _hdl_range.start_handle++;
@@ -102,10 +102,13 @@ bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLEClientService& svc,
 
 uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientCharacteristic* chr[], uint8_t count)
 {
-  uint8_t found = 0;
+  // We could found more characteristic than we looking for. Buffer must be large enough
+  enum { MAX_DISC_CHARS = 4 };
 
-  uint16_t bufsize = sizeof(ble_gattc_evt_char_disc_rsp_t) + (count-1)*sizeof(ble_gattc_char_t);
+  uint16_t bufsize = sizeof(ble_gattc_evt_char_disc_rsp_t) + (MAX_DISC_CHARS-1)*sizeof(ble_gattc_char_t);
   ble_gattc_evt_char_disc_rsp_t* disc_chr = (ble_gattc_evt_char_disc_rsp_t*) rtos_malloc( bufsize );
+
+  uint8_t found = 0;
 
   while( found < count )
   {
@@ -129,7 +132,7 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
       {
         if ( chr[i]->uuid == disc_chr->chars[d].uuid )
         {
-          LOG_LV2(Discover, "[CHR] Found 0x%04X, handle = %d", disc_chr->chars[d].uuid.uuid,  disc_chr->chars[d].handle_value);
+          LOG_LV2(Discover, "[CHR] Found 0x%04X, handle = %d\n-----------------", disc_chr->chars[d].uuid.uuid,  disc_chr->chars[d].handle_value);
 
           // characteristic assign overload
           chr[i]->assign(&disc_chr->chars[d]);

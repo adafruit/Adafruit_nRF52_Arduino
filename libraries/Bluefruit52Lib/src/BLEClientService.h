@@ -63,6 +63,7 @@ class BLEClientService
 
             uint16_t connHandle(void);
             void     setHandleRange(uint16_t start_hdl, uint16_t end_hdl);
+            void     setHandleRange(ble_gattc_handle_range_t handle_range);
 
     friend class BLEGatt;
 };
