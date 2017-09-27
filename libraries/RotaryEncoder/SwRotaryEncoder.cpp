@@ -74,8 +74,8 @@ bool SwRotaryEncoder::begin(uint8_t pina, uint8_t pinb)
   _pina = pina;
   _pinb = pinb;
 
-  pinMode(_pina, INPUT);
-  pinMode(_pinb, INPUT);
+  pinMode(_pina, INPUT_PULLUP);
+  pinMode(_pinb, INPUT_PULLUP);
 
   _a_last = digitalRead(_pina);
 
@@ -120,13 +120,14 @@ void SwRotaryEncoder::clearAbs(void)
 
 void SwRotaryEncoder::_irq_handler(void)
 {
-  uint8_t val = (uint8_t) digitalRead(_pina);
+  uint32_t val = NRF_GPIO->IN;
+  uint8_t bita = bitRead(val, _pina);
 
-  if ( val != _a_last )
+  if ( bita != _a_last)
   {
-    int32_t step = 0;
+    int32_t step;
 
-    if ( val != ((uint8_t) digitalRead(_pinb)) )
+    if ( bita != bitRead(val, _pinb) )
     {
       step = 1;
     }else
@@ -135,7 +136,7 @@ void SwRotaryEncoder::_irq_handler(void)
     }
 
     _abs += step;
-    _a_last = val;
+    _a_last = bita;
 
     if (_cb) ada_callback_fromISR(NULL, _cb, step);
   }

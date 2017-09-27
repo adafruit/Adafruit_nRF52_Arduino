@@ -73,7 +73,7 @@ class SwRotaryEncoder
     uint8_t _a_last;
 
     int32_t _abs;
-    int32_t _last_read;
+    int32_t _last_read; // debouncing
 
     callback_t _cb;
 };
