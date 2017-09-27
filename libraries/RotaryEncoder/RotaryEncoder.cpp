@@ -51,8 +51,8 @@ void HwRotaryEncoder::begin(uint8_t pina, uint8_t pinb, int8_t pinled)
   // default sample period
   NRF_QDEC->SAMPLEPER = QDEC_SAMPLEPER_SAMPLEPER_128us;
 
-  pinMode(pina, INPUT);
-  pinMode(pinb, INPUT);
+  pinMode(pina, INPUT_PULLUP);
+  pinMode(pinb, INPUT_PULLUP);
 
   NRF_QDEC->PSEL.A = pina;
   NRF_QDEC->PSEL.B = pinb;
@@ -151,24 +151,21 @@ int32_t HwRotaryEncoder::read(void)
   // Trigger READ CLR ACC
   NRF_QDEC->TASKS_RDCLRACC = 1;
 
-  // Nordic QDEC CW is negative, CCW is positve --> invert
+  // Nordic QDEC CW is negative, CCW is positive --> invert
   int32_t val = -(NRF_QDEC->ACCREAD);
 
   // Add to absolute value and buffered step
-  _abs  += val;
-  _step += val;
+  _abs += val;
 
-  if ( (_step > 1) || (_step < -1) )
-  {
-    val   = _step / 2;
-    _step = _step%2;
-  }else
-  {
-    // not enough to report the turn
-    val = 0;
-  }
+  int32_t diff = (_abs - _last) / 2;
 
-  return val;
+  if ( diff ) _last = _abs;
+  return diff;
+}
+
+int32_t HwRotaryEncoder::readDebug(void)
+{
+  return _abs;
 }
 
 int32_t HwRotaryEncoder::readAbs(void)

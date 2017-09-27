@@ -46,9 +46,8 @@ class HwRotaryEncoder
 
     HwRotaryEncoder(void)
     {
-      _abs  = 0;
-      _step = 0;
-      _cb   = NULL;
+      _abs = _last = 0;
+      _cb  = NULL;
     }
 
     void begin(uint8_t pina, uint8_t pinb, int8_t pinled = -1);
@@ -66,13 +65,16 @@ class HwRotaryEncoder
     void    writeAbs(int32_t value);
     void    clearAbs(void);
 
+
+    int32_t readDebug(void);
+
     // Internal API
     void _irq_handler(void);
 
   private:
     // Note For each turn, encoder generate 2 transitions
     int32_t _abs;   // Absolute position
-    int32_t _step;  // Moving step that take intermediate transition in account
+    int32_t _last;
 
     callback_t _cb;
 };
