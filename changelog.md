@@ -14,6 +14,7 @@
 
 - Fixed Characteristic Descriptor discovery issue with ancs
 - Fixed memory issue with discovery characteristic
+- Increased BLE_VENDOR_UUID_MAX from 10 to 20
 
 ## 0.7.0
 
