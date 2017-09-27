@@ -32,6 +32,8 @@ void Bluefruit_printInfo() {}
 #include "SEGGER_SYSVIEW.h"
 #endif
 
+static TaskHandle_t  _loopHandle;
+
 
 // Weak empty variant initialization function.
 // May be redefined by variant files.
@@ -92,7 +94,6 @@ int main( void )
 #endif
 
   // Create a task for loop()
-  TaskHandle_t  _loopHandle;
   xTaskCreate( loop_task, "loop", _loopStacksize, NULL, TASK_PRIO_LOW, &_loopHandle);
 
   // Initialize callback task
@@ -104,4 +105,9 @@ int main( void )
   NVIC_SystemReset();
 
   return 0;
+}
+
+void suspendLoop(void)
+{
+  vTaskSuspend(_loopHandle);
 }

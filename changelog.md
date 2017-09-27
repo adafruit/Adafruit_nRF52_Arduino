@@ -5,7 +5,8 @@
 ### Core
 
 - Make FreeRTOS run in tickless mode
-- Added systemOff() to enter hibernate mode
+- Added systemOff() to enter System Off mode
+- Added suspendLoop() to disable loop() task to further save power
 - Correct waitForEvent() function with SoftDevice enabled and disabled.
 - Added RotaryEncoder support for both Hardware and Software Encoder.
 - Ada Callback task is started along with loop task, used as worker thread to defer interrupt callback.

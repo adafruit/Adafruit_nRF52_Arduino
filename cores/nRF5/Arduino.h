@@ -35,6 +35,7 @@ void yield( void ) ;
 void setup( void ) ;
 void loop( void ) ;
 
+void suspendLoop(void);
 uint32_t setLoopStacksize(void);
 
 #include "WVariant.h"
