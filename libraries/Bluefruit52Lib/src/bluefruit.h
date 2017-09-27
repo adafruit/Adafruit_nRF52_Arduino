@@ -42,10 +42,10 @@
 #define CFG_ADV_BLINKY_INTERVAL          500
 #define CFG_MAX_DEVNAME_LEN              32
 
-// Note chaning these parameters will affect APP_RAM_BASE
+// Note changing these parameters will affect APP_RAM_BASE
 // --> need to update RAM in feather52_s132.ld linker
 #define BLE_GATTS_ATTR_TABLE_SIZE        0x0B00
-#define BLE_VENDOR_UUID_MAX              10
+#define BLE_VENDOR_UUID_MAX              20
 #define BLE_PRPH_MAX_CONN                1
 #define BLE_CENTRAL_MAX_CONN             4
 #define BLE_CENTRAL_MAX_SECURE_CONN      1 // should be enough
