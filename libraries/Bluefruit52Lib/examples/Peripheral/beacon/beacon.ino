@@ -40,7 +40,8 @@ void setup()
 
   Bluefruit.begin();
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
-  Bluefruit.setTxPower(4);
+  Bluefruit.autoConnLed(false);
+  Bluefruit.setTxPower(0);
   Bluefruit.setName("Bluefruit52");
 
   // Manufacturer ID is required for Manufacturer Specific Data
@@ -50,6 +51,9 @@ void setup()
   startAdv();
 
   Serial.println("Broadcasting beacon, open your beacon app to test");
+
+  // Suspend Loop() to save power, since we didn't have any code there
+  suspendLoop();
 }
 
 void startAdv(void)
@@ -81,8 +85,6 @@ void startAdv(void)
 
 void loop() 
 {
-  // Toggle both LEDs every second
-  digitalToggle(LED_RED);
-  delay(1000);
+  // loop is already suspended, CPU will not run loop() at all
 }
 
