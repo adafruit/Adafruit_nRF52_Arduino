@@ -31,7 +31,7 @@ extern "C" {
 static uint32_t saadcReference = SAADC_CH_CONFIG_REFSEL_Internal;
 static uint32_t saadcGain      = SAADC_CH_CONFIG_GAIN_Gain1_6;
 
-#if 0
+#if 0 // Note: Adafruit use seperated HardwarePWM class
 #define PWM_COUNT 3
 
 static NRF_PWM_Type* pwms[PWM_COUNT] = {
