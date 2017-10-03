@@ -26,7 +26,7 @@ extern "C" {
 
 // Adafruit
 #define NFFS_SECTOR_NUM               7
-#define NFFS_START_ADDR               0x6D000
+#define NFFS_START_ADDR               0x6F000
 
 #define FLASH_AREA_NFFS               0
 
