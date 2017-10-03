@@ -519,7 +519,7 @@ void adafruit_ble_task(void* arg)
       // Until no pending events
       while( NRF_ERROR_NOT_FOUND != err )
       {
-        uint32_t ev_buf[BLE_STACK_EVT_MSG_BUF_SIZE/4 + 4];
+        uint32_t ev_buf[BLE_STACK_EVT_MSG_BUF_SIZE/4 + 1];
         uint16_t ev_len = sizeof(ev_buf);
 
         // Get BLE Event
