@@ -23,7 +23,7 @@ menu.debug=Debug Mode
 # Feather nrf52 Board
 #**********************************************
 feather52.name=Adafruit Bluefruit nRF52 Feather
-feather52.bootloader.tool=nrfjprog
+feather52.bootloader.tool=bootburn
 
 # Upload
 feather52.upload.tool=nrfutil
@@ -54,7 +54,7 @@ feather52.menu.softdevice.s132v500=S132 v5.0.0
 feather52.menu.softdevice.s132v500.build.sd_flags=-DS132 -DSD_VER=500
 feather52.menu.softdevice.s132v500.build.sd_name=s132_v500
 feather52.menu.softdevice.s132v500.build.bootloader=bootloader_v055
-feather52.menu.softdevice.s132v500.upload.maximum_size=155648
+feather52.menu.softdevice.s132v500.upload.maximum_size=151552
 feather52.menu.softdevice.s132v500.upload.maximum_data_size=51072
 
 # Debug Menu

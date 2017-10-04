@@ -5,7 +5,7 @@ GROUP(-lgcc -lc -lnosys)
 
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x23000, LENGTH = 0x26000 /* Max 152 KB for dual banks */
+  FLASH (rx) : ORIGIN = 0x23000, LENGTH = 0x25000 /* Max 148 KB for dual banks */
   
   /* SRAM required by S132 depend on
    * - Attribute Table Size
