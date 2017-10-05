@@ -45,8 +45,8 @@
 #ifndef BLE_GATT_H__
 #define BLE_GATT_H__
 
-#include "../../s132_v500/headers/ble_ranges.h"
-#include "../../s132_v500/headers/ble_types.h"
+#include "ble_types.h"
+#include "ble_ranges.h"
 
 #ifdef __cplusplus
 extern "C" {

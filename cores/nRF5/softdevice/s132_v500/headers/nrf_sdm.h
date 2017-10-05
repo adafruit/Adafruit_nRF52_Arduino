@@ -47,10 +47,10 @@
 #ifndef NRF_SDM_H__
 #define NRF_SDM_H__
 
-#include "../../s132_v500/headers/nrf_error_sdm.h"
-#include "../../s132_v500/headers/nrf_soc.h"
-#include "../../s132_v500/headers/nrf_svc.h"
+#include "nrf_svc.h"
 #include "nrf.h"
+#include "nrf_soc.h"
+#include "nrf_error_sdm.h"
 
 #ifdef __cplusplus
 extern "C" {

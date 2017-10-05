@@ -56,10 +56,9 @@
 #define NRF_NVIC_H__
 
 #include <stdint.h>
-
-#include "../../s132_v500/headers/nrf_error_soc.h"
 #include "nrf.h"
 
+#include "nrf_error_soc.h"
 
 #ifdef __cplusplus
 extern "C" {

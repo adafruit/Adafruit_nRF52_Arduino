@@ -46,9 +46,9 @@
 #define BLE_GAP_H__
 
 
-#include "../../s132_v500/headers/ble_ranges.h"
-#include "../../s132_v500/headers/ble_types.h"
-#include "../../s132_v500/headers/nrf_svc.h"
+#include "ble_types.h"
+#include "ble_ranges.h"
+#include "nrf_svc.h"
 
 #ifdef __cplusplus
 extern "C" {

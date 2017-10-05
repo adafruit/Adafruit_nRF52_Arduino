@@ -45,11 +45,11 @@
 #ifndef BLE_GATTC_H__
 #define BLE_GATTC_H__
 
-#include "../../s132_v500/headers/ble_gatt.h"
-#include "../../s132_v500/headers/ble_ranges.h"
-#include "../../s132_v500/headers/ble_types.h"
-#include "../../s132_v500/headers/nrf_error.h"
-#include "../../s132_v500/headers/nrf_svc.h"
+#include "ble_gatt.h"
+#include "ble_types.h"
+#include "ble_ranges.h"
+#include "nrf_svc.h"
+#include "nrf_error.h"
 #include "nrf.h"
 
 #ifdef __cplusplus

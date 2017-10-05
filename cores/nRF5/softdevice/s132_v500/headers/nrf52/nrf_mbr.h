@@ -47,8 +47,8 @@
 #ifndef NRF_MBR_H__
 #define NRF_MBR_H__
 
+#include "nrf_svc.h"
 #include <stdint.h>
-#include "../../../s132_v500/headers/nrf_svc.h"
 
 #ifdef __cplusplus
 extern "C" {

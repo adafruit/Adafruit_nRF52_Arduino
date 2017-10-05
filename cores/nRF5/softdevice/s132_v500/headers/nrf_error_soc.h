@@ -50,7 +50,7 @@
 #ifndef NRF_ERROR_SOC_H__
 #define NRF_ERROR_SOC_H__
 
-#include "../../s132_v500/headers/nrf_error.h"
+#include "nrf_error.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

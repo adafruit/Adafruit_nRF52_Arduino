@@ -49,11 +49,10 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
-#include "../../s132_v500/headers/nrf_error_soc.h"
-#include "../../s132_v500/headers/nrf_svc.h"
+#include "nrf_svc.h"
 #include "nrf.h"
 
+#include "nrf_error_soc.h"
 
 #ifdef __cplusplus
 extern "C" {

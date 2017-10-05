@@ -49,13 +49,13 @@
 #ifndef BLE_H__
 #define BLE_H__
 
-#include "../../s132_v500/headers/ble_gap.h"
-#include "../../s132_v500/headers/ble_gatt.h"
-#include "../../s132_v500/headers/ble_gattc.h"
-#include "../../s132_v500/headers/ble_gatts.h"
-#include "../../s132_v500/headers/ble_l2cap.h"
-#include "../../s132_v500/headers/ble_ranges.h"
-#include "../../s132_v500/headers/ble_types.h"
+#include "ble_ranges.h"
+#include "ble_types.h"
+#include "ble_gap.h"
+#include "ble_l2cap.h"
+#include "ble_gatt.h"
+#include "ble_gattc.h"
+#include "ble_gatts.h"
 
 #ifdef __cplusplus
 extern "C" {
