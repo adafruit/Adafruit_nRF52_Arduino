@@ -156,6 +156,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
       #else
         _adamsg.feed(rd_rsp->handle_value, rd_rsp->value_len);
       #endif
+
       _adamsg.complete();
     }
   }

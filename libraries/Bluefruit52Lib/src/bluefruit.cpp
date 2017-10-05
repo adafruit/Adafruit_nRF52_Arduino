@@ -143,13 +143,17 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
       .source        = NRF_CLOCK_LF_SRC_XTAL,
       .rc_ctiv       = 0,
       .rc_temp_ctiv  = 0,
+      #if SD_VER < 500
       .xtal_accuracy = NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM
+      #else
+      .accuracy      = NRF_CLOCK_LF_ACCURACY_20_PPM
+      #endif
 #else
       // LFRC
       .source        = NRF_CLOCK_LF_SRC_RC,
       .rc_ctiv       = 16,
       .rc_temp_ctiv  = 2,
-      .xtal_accuracy = NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM
+      .accuracy = NRF_CLOCK_LF_ACCURACY_20_PPM
 #endif
   };
 

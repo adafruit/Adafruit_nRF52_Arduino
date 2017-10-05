@@ -54,8 +54,13 @@ BLEScanner::BLEScanner(void)
 
   _param  = (ble_gap_scan_params_t) {
     .active      = 0,
+#if SD_VER < 500
     .selective   = 0,
     .p_whitelist = NULL,
+#else
+    .use_whitelist  = 0,
+    .adv_dir_report = 0,
+#endif
     .interval    = BLE_SCAN_INTERVAL_DFLT,
     .window      = BLE_SCAN_WINDOW_DFLT,
     .timeout     = 0, // no timeout
