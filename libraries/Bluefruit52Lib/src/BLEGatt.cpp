@@ -151,7 +151,11 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
 
     if (rd_rsp->count)
     {
-      _adamsg.feed(rd_rsp->handle_value[0].p_value, rd_rsp->value_len);
+      #if SD_VER < 500
+        _adamsg.feed(rd_rsp->handle_value[0].p_value, rd_rsp->value_len);
+      #else
+        _adamsg.feed(rd_rsp->handle_value, rd_rsp->value_len);
+      #endif
       _adamsg.complete();
     }
   }
