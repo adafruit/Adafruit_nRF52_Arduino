@@ -155,6 +155,12 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 
   VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, NULL) );
 
+  /*------------- Configure BLE params  -------------*/
+  // Fetch the start address of the application RAM.
+  extern uint32_t  __data_start__[]; // defined in linker
+  uint32_t ram_start = (uint32_t) __data_start__;
+
+#if SD_VER < 500
   // Configure BLE params & ATTR Size
   ble_enable_params_t params =
   {
@@ -170,10 +176,17 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
       }
   };
 
-  extern uint32_t __data_start__[]; // defined in linker
-  uint32_t app_ram_base = (uint32_t) __data_start__;
+  VERIFY_STATUS( sd_ble_enable(&params, &ram_start) );
+#else
+  ble_cfg_t blecfg;
 
-  VERIFY_STATUS( sd_ble_enable(&params, &app_ram_base) );
+  // HVN queue size
+  varclr(&blecfg);
+  blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_DEFAULT;
+  blecfg.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = BLEGAP_HVN_TX_QUEUE_SIZE;
+  sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &blecfg, ram_start);
+
+#endif
 
   /*------------- Configure GAP  -------------*/
 
