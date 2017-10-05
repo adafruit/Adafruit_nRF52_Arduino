@@ -226,7 +226,8 @@ uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
   while( remaining )
   {
     // Write CMD consume a TX buffer
-    if ( !Bluefruit.Gap.getTxPacket(_service->connHandle()) )  return BLE_ERROR_NO_TX_PACKETS;
+    // TODO BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE
+    if ( !Bluefruit.Gap.getTxPacket(_service->connHandle()) )  return NRF_ERROR_RESOURCES; //BLE_ERROR_NO_TX_PACKETS;
 
     uint16_t packet_len = min16(MTU_MPS, remaining);
 
@@ -269,7 +270,8 @@ bool BLEClientCharacteristic::writeCCCD(uint16_t value)
   };
 
   // Write consume a TX buffer
-  if ( !Bluefruit.Gap.getTxPacket(conn_handle) )  return BLE_ERROR_NO_TX_PACKETS;
+  // TODO BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE
+  if ( !Bluefruit.Gap.getTxPacket(conn_handle) )  return NRF_ERROR_RESOURCES; //BLE_ERROR_NO_TX_PACKETS;
 
   VERIFY_STATUS( sd_ble_gattc_write(conn_handle, &param), false );
 
