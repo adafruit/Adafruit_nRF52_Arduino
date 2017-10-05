@@ -50,6 +50,7 @@ class BLEGap
 
     uint8_t getAddr(uint8_t mac[6]);
     bool    setAddr(uint8_t mac[6], uint8_t type);
+//    bool    setPrivacy()
 
     bool connected(uint16_t conn_handle);
 
