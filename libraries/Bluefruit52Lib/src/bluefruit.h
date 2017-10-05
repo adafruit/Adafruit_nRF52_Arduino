@@ -83,7 +83,7 @@
 
 #include "utility/AdaCallback.h"
 
-#define BLE_MAX_DATA_PER_MTU  (GATT_MTU_SIZE_DEFAULT - 3)
+#define BLE_MAX_DATA_PER_MTU  (BLE_GATT_ATT_MTU_DEFAULT - 3)
 
 extern "C"
 {

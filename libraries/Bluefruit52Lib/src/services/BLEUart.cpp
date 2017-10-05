@@ -37,7 +37,7 @@
 #include "bluefruit.h"
 #include "utility/TimeoutTimer.h"
 
-#define TXD_FIFO_SIZE   (GATT_MTU_SIZE_DEFAULT-3)
+#define TXD_FIFO_SIZE   (BLE_GATT_ATT_MTU_DEFAULT-3)
 
 /* UART Serivce: 6E400001-B5A3-F393-E0A9-E50E24DCCA9E
  * UART RXD    : 6E400002-B5A3-F393-E0A9-E50E24DCCA9E
