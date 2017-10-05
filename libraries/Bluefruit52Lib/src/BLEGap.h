@@ -40,6 +40,9 @@
 #include "bluefruit_common.h"
 #include "BLEUuid.h"
 
+#define BLEGAP_HVN_TX_QUEUE_SIZE        7 // BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT
+#define BLEGAP_WRITECMD_TX_QUEUE_SIZE   BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT
+
 class BLEGap
 {
   public:

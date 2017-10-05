@@ -144,9 +144,14 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       peer->addr      = para->peer_addr;
 
       // Init transmission buffer for notification
+      #if SD_VER < 500
       uint8_t txbuf_max;
       (void) sd_ble_tx_packet_count_get(conn_handle, &txbuf_max);
       peer->txpacket_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
+      #else
+      peer->txpacket_sem = xSemaphoreCreateCounting(BLEGAP_HVN_TX_QUEUE_SIZE, BLEGAP_HVN_TX_QUEUE_SIZE);
+      // TODO BLEGAP_WRITECMD_TX_QUEUE_SIZE
+      #endif
     }
     break;
 
@@ -162,6 +167,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     }
     break;
 
+    #if SD_VER < 500
     case BLE_EVT_TX_COMPLETE:
       if ( peer->txpacket_sem )
       {
@@ -171,6 +177,29 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
         }
       }
     break;
+
+    #else
+    case BLE_GATTS_EVT_HVN_TX_COMPLETE:
+      if ( peer->txpacket_sem )
+      {
+        for(uint8_t i=0; i<evt->evt.gatts_evt.params.hvn_tx_complete.count; i++)
+        {
+          xSemaphoreGive(peer->txpacket_sem);
+        }
+      }
+    break;
+
+    case BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE:
+      if ( peer->txpacket_sem )
+      {
+        for(uint8_t i=0; i<evt->evt.gattc_evt.params.write_cmd_tx_complete.count; i++)
+        {
+          // TODO BLEGAP_WRITECMD_TX_QUEUE_SIZE
+          xSemaphoreGive(peer->txpacket_sem);
+        }
+      }
+    break;
+    #endif
 
     default: break;
   }
