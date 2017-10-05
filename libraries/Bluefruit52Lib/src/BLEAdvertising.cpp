@@ -296,15 +296,15 @@ bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
   // ADV Params
   ble_gap_adv_params_t adv_para =
   {
-      .type        = _type              ,
-      .p_peer_addr = NULL               , // Undirected advertisement
-      .fp          = BLE_GAP_ADV_FP_ANY ,
-      .p_whitelist = NULL               ,
-      .interval    = interval           , // advertising interval (in units of 0.625 ms)
-      .timeout     = timeout            ,
+      .type         = _type              ,
+      .p_peer_addr  = NULL               , // Undirected advertisement
+      .fp           = BLE_GAP_ADV_FP_ANY ,
+      .interval     = interval           , // advertising interval (in units of 0.625 ms)
+      .timeout      = timeout            ,
+      .channel_mask = { 0, 0, 0 }        , // Enable all 3 adv channels
   };
 
-  VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para), false );
+  VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para, BLE_CONN_CFG_TAG_DEFAULT), false );
 
   Bluefruit._startConnLed(); // start blinking
   _runnning = true;
