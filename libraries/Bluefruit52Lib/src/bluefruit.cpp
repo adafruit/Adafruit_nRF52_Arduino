@@ -80,6 +80,14 @@ static void bluefruit_blinky_cb( TimerHandle_t xTimer )
   ledToggle(LED_BLUE);
 }
 
+
+static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
+{
+  PRINT_INT(id);
+  PRINT_HEX(pc);
+  PRINT_HEX(info);
+}
+
 /**
  * Constructor
  */
@@ -151,7 +159,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   };
 #endif
 
-  VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, NULL) );
+  VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, nrf_error_cb) );
 
   /*------------- Configure BLE params  -------------*/
   // Fetch the start address of the application RAM.
@@ -174,24 +182,61 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
       }
   };
 
+  // Enable BLE stack
   VERIFY_STATUS( sd_ble_enable(&params, &ram_start) );
 #else
   ble_cfg_t blecfg;
+
+  // ATTR Table Size
+  varclr(&blecfg);
+  blecfg.gatts_cfg.attr_tab_size.attr_tab_size = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT; // BLE_GATTS_ATTR_TABLE_SIZE
+  VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_ATTR_TAB_SIZE, &blecfg, ram_start) );
+
+  // TODO Service Changed
+//  varclr(&blecfg);
+//  blecfg.gatts_cfg.service_changed.service_changed = 1;
+//  VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_SERVICE_CHANGED, &blecfg, ram_start) );
+
+#if 0
+  // TODO ATT MTU
+  varclr(&blecfg);
+  blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_DEFAULT;
+  blecfg.conn_cfg.params.gatt_conn_cfg.att_mtu = BLE_GATT_ATT_MTU_DEFAULT;
+  VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATT, &blecfg, ram_start) );
+
+  // Event Length + HVN queue + WRITE CMD queue setting affecting bandwidth
+  // TODO high/normal bandwidth configuration
+
+  varclr(&blecfg);
+  blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_DEFAULT;
+  blecfg.conn_cfg.params.gap_conn_cfg.conn_count = 1; // BLE_GAP_CONN_COUNT_DEFAULT
+  blecfg.conn_cfg.params.gap_conn_cfg.event_length = BLEGAP_HVN_TX_QUEUE_SIZE; // BLE_GAP_EVENT_LENGTH_DEFAULT
+  VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GAP, &blecfg, ram_start) );
 
   // HVN queue size
   varclr(&blecfg);
   blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_DEFAULT;
   blecfg.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = BLEGAP_HVN_TX_QUEUE_SIZE;
-  sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &blecfg, ram_start);
+  VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &blecfg, ram_start) );
 
   // WRITE COMMAND queue size
   varclr(&blecfg);
   blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_DEFAULT;
   blecfg.conn_cfg.params.gattc_conn_cfg.write_cmd_tx_queue_size = BLEGAP_WRITECMD_TX_QUEUE_SIZE;
-  sd_ble_cfg_set(BLE_CONN_CFG_GATTC, &blecfg, ram_start);
-
-
+  VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTC, &blecfg, ram_start) );
 #endif
+
+  // Enable BLE stack
+  // TODO update linker SRAM usage
+  // The memory requirement for a specific configuration will not increase
+  // between SoftDevices with the same major version number
+  PRINT_HEX(ram_start);
+
+  VERIFY_STATUS( sd_ble_enable(&ram_start) );
+
+  PRINT_HEX(ram_start);
+#endif
+
 
   /*------------- Configure GAP  -------------*/
 
