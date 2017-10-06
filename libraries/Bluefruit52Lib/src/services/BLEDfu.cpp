@@ -142,8 +142,13 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
 
       // Set GPReset to DFU OTA
       enum { DFU_OTA_MAGIC = 0xB1 };
+#if SD_VER < 500
+      sd_power_gpregret_clr(0xFF);
+      VERIFY_STATUS( sd_power_gpregret_set(DFU_OTA_MAGIC), RETURN_VOID);
+#else
       sd_power_gpregret_clr(0, 0xFF);
       VERIFY_STATUS( sd_power_gpregret_set(0, DFU_OTA_MAGIC), RETURN_VOID);
+#endif
       VERIFY_STATUS( sd_softdevice_disable(), RETURN_VOID );
 
       // Disable Systick to prevent Interrupt happens after changing vector table

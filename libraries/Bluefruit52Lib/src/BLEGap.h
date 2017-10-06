@@ -41,7 +41,7 @@
 #include "BLEUuid.h"
 
 #define BLEGAP_HVN_TX_QUEUE_SIZE        7 // BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT
-#define BLEGAP_WRITECMD_TX_QUEUE_SIZE   BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT
+#define BLEGAP_WRITECMD_TX_QUEUE_SIZE   1 // BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT
 
 class BLEGap
 {
@@ -63,7 +63,8 @@ class BLEGap
     ble_gap_addr_t getPeerAddr(uint16_t conn_handle);
 
     uint16_t       getPeerName(uint16_t conn_handle, char* buf, uint16_t bufsize);
-    bool           getTxPacket(uint16_t conn_handle);
+    bool           getHvnPacket(uint16_t conn_handle);
+    bool           getWriteCmdPacket(uint16_t conn_handle);
 
     uint16_t       getMTU(uint16_t conn_handle);
 
@@ -83,7 +84,8 @@ class BLEGap
 
       ble_gap_addr_t addr;
 
-      SemaphoreHandle_t txpacket_sem;
+      SemaphoreHandle_t hvn_tx_sem;
+      SemaphoreHandle_t wrcmd_tx_sem;
     } gap_peer_t;
 
     gap_peer_t _peers[BLE_MAX_CONN];

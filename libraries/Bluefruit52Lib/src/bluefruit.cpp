@@ -136,9 +136,9 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   _central_enabled = central_enable;
 
   // Configure Clock
+#if defined( USE_LFXO )
   nrf_clock_lf_cfg_t clock_cfg =
   {
-#if defined( USE_LFXO )
       // LFXO
       .source        = NRF_CLOCK_LF_SRC_XTAL,
       .rc_ctiv       = 0,
@@ -148,14 +148,8 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
       #else
       .accuracy      = NRF_CLOCK_LF_ACCURACY_20_PPM
       #endif
-#else
-      // LFRC
-      .source        = NRF_CLOCK_LF_SRC_RC,
-      .rc_ctiv       = 16,
-      .rc_temp_ctiv  = 2,
-      .accuracy = NRF_CLOCK_LF_ACCURACY_20_PPM
-#endif
   };
+#endif
 
   VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, NULL) );
 
@@ -189,6 +183,13 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_DEFAULT;
   blecfg.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = BLEGAP_HVN_TX_QUEUE_SIZE;
   sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &blecfg, ram_start);
+
+  // WRITE COMMAND queue size
+  varclr(&blecfg);
+  blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_DEFAULT;
+  blecfg.conn_cfg.params.gattc_conn_cfg.write_cmd_tx_queue_size = BLEGAP_WRITECMD_TX_QUEUE_SIZE;
+  sd_ble_cfg_set(BLE_CONN_CFG_GATTC, &blecfg, ram_start);
+
 
 #endif
 

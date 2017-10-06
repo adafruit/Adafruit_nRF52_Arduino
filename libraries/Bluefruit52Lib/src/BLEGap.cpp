@@ -105,11 +105,21 @@ ble_gap_addr_t BLEGap::getPeerAddr(uint16_t conn_handle)
   return _peers[conn_handle].addr;
 }
 
-bool BLEGap::getTxPacket(uint16_t conn_handle)
+bool BLEGap::getHvnPacket(uint16_t conn_handle)
 {
-  VERIFY( (conn_handle < BLE_MAX_CONN) && (_peers[conn_handle].txpacket_sem != NULL) );
+  VERIFY( (conn_handle < BLE_MAX_CONN) && (_peers[conn_handle].hvn_tx_sem != NULL) );
 
-  return xSemaphoreTake(_peers[conn_handle].txpacket_sem, ms2tick(BLE_GENERIC_TIMEOUT));
+  return xSemaphoreTake(_peers[conn_handle].hvn_tx_sem, ms2tick(BLE_GENERIC_TIMEOUT));
+}
+
+bool BLEGap::getWriteCmdPacket(uint16_t conn_handle)
+{
+#if SD_VER < 500
+  return getHvnPacket(conn_handle);
+#else
+  VERIFY( (conn_handle < BLE_MAX_CONN) && (_peers[conn_handle].wrcmd_tx_sem != NULL) );
+  return xSemaphoreTake(_peers[conn_handle].wrcmd_tx_sem, ms2tick(BLE_GENERIC_TIMEOUT));
+#endif
 }
 
 uint16_t BLEGap::getMTU (uint16_t conn_handle)
@@ -147,11 +157,12 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       #if SD_VER < 500
       uint8_t txbuf_max;
       (void) sd_ble_tx_packet_count_get(conn_handle, &txbuf_max);
-      peer->txpacket_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
+      peer->hvn_tx_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
       #else
-      peer->txpacket_sem = xSemaphoreCreateCounting(BLEGAP_HVN_TX_QUEUE_SIZE, BLEGAP_HVN_TX_QUEUE_SIZE);
-      // TODO BLEGAP_WRITECMD_TX_QUEUE_SIZE
+      peer->hvn_tx_sem   = xSemaphoreCreateCounting(BLEGAP_HVN_TX_QUEUE_SIZE, BLEGAP_HVN_TX_QUEUE_SIZE);
       #endif
+
+      peer->wrcmd_tx_sem = xSemaphoreCreateCounting(BLEGAP_WRITECMD_TX_QUEUE_SIZE, BLEGAP_WRITECMD_TX_QUEUE_SIZE);
     }
     break;
 
@@ -162,40 +173,42 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       // mark as disconnected, but keep the role for sub sequence event handler
       peer->connected = false;
 
-      vSemaphoreDelete( peer->txpacket_sem );
-      peer->txpacket_sem = NULL;
+      vSemaphoreDelete( peer->hvn_tx_sem );
+      peer->hvn_tx_sem = NULL;
+
+      vSemaphoreDelete( peer->wrcmd_tx_sem );
+      peer->wrcmd_tx_sem = NULL;
     }
     break;
 
     #if SD_VER < 500
     case BLE_EVT_TX_COMPLETE:
-      if ( peer->txpacket_sem )
+      if ( peer->hvn_tx_sem )
       {
         for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
         {
-          xSemaphoreGive(peer->txpacket_sem);
+          xSemaphoreGive(peer->hvn_tx_sem);
         }
       }
     break;
 
     #else
     case BLE_GATTS_EVT_HVN_TX_COMPLETE:
-      if ( peer->txpacket_sem )
+      if ( peer->hvn_tx_sem )
       {
         for(uint8_t i=0; i<evt->evt.gatts_evt.params.hvn_tx_complete.count; i++)
         {
-          xSemaphoreGive(peer->txpacket_sem);
+          xSemaphoreGive(peer->hvn_tx_sem);
         }
       }
     break;
 
     case BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE:
-      if ( peer->txpacket_sem )
+      if ( peer->wrcmd_tx_sem )
       {
         for(uint8_t i=0; i<evt->evt.gattc_evt.params.write_cmd_tx_complete.count; i++)
         {
-          // TODO BLEGAP_WRITECMD_TX_QUEUE_SIZE
-          xSemaphoreGive(peer->txpacket_sem);
+          xSemaphoreGive(peer->wrcmd_tx_sem);
         }
       }
     break;
