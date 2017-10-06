@@ -92,7 +92,7 @@ void app_util_critical_region_exit(uint8_t nested)
 
 uint8_t privilege_level_get(void)
 {
-#if __CORTEX_M == (0x00U) || defined(_WIN32) || defined(__unix) || defined(__APPLE__)
+#if __CORTEX_M == (0x00U) || defined(_WIN32) /*|| defined(__unix)*/ || defined(__APPLE__)
     /* the Cortex-M0 has no concept of privilege */
     return APP_LEVEL_PRIVILEGED;
 #elif __CORTEX_M == (0x04U)

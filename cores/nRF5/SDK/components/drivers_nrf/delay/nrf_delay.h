@@ -154,7 +154,7 @@ cond:
     }
 }
 
-#elif defined ( _WIN32 ) || defined ( __unix ) || defined( __APPLE__ )
+#elif defined ( _WIN32 ) /*|| defined ( __unix )*/ || defined( __APPLE__ )
 
 
 #ifndef CUSTOM_NRF_DELAY_US
