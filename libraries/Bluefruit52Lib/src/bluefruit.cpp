@@ -214,13 +214,11 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   blecfg.gatts_cfg.attr_tab_size.attr_tab_size = BLE_GATTS_ATTR_TABLE_SIZE;
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_ATTR_TAB_SIZE, &blecfg, ram_start) );
 
-#if 0
   // TODO ATT MTU
   varclr(&blecfg);
-  blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_DEFAULT;
+  blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_HIGH_BANDWIDTH;
   blecfg.conn_cfg.params.gatt_conn_cfg.att_mtu = BLE_GATT_ATT_MTU_DEFAULT;
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATT, &blecfg, ram_start) );
-#endif
 
   // Event Length + HVN queue + WRITE CMD queue setting affecting bandwidth
   varclr(&blecfg);

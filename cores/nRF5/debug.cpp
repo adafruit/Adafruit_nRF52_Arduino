@@ -189,23 +189,29 @@ static const char* _base_evt_str[] =
 
 static const char* _gap_evt_str[] =
 {
-    "BLE_GAP_EVT_CONNECTED"                   ,
-    "BLE_GAP_EVT_DISCONNECTED"                ,
-    "BLE_GAP_EVT_CONN_PARAM_UPDATE"           ,
-    "BLE_GAP_EVT_SEC_PARAMS_REQUEST"          ,
-    "BLE_GAP_EVT_SEC_INFO_REQUEST"            ,
-    "BLE_GAP_EVT_PASSKEY_DISPLAY"             ,
-    "BLE_GAP_EVT_KEY_PRESSED"                 ,
-    "BLE_GAP_EVT_AUTH_KEY_REQUEST"            ,
-    "BLE_GAP_EVT_LESC_DHKEY_REQUEST"          ,
-    "BLE_GAP_EVT_AUTH_STATUS"                 ,
-    "BLE_GAP_EVT_CONN_SEC_UPDATE"             ,
-    "BLE_GAP_EVT_TIMEOUT"                     ,
-    "BLE_GAP_EVT_RSSI_CHANGED"                ,
-    "BLE_GAP_EVT_ADV_REPORT"                  ,
-    "BLE_GAP_EVT_SEC_REQUEST"                 ,
-    "BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST"   ,
-    "BLE_GAP_EVT_SCAN_REQ_REPORT"             ,
+    "BLE_GAP_EVT_CONNECTED"                  ,
+    "BLE_GAP_EVT_DISCONNECTED"               ,
+    "BLE_GAP_EVT_CONN_PARAM_UPDATE"          ,
+    "BLE_GAP_EVT_SEC_PARAMS_REQUEST"         ,
+    "BLE_GAP_EVT_SEC_INFO_REQUEST"           ,
+    "BLE_GAP_EVT_PASSKEY_DISPLAY"            ,
+    "BLE_GAP_EVT_KEY_PRESSED"                ,
+    "BLE_GAP_EVT_AUTH_KEY_REQUEST"           ,
+    "BLE_GAP_EVT_LESC_DHKEY_REQUEST"         ,
+    "BLE_GAP_EVT_AUTH_STATUS"                ,
+    "BLE_GAP_EVT_CONN_SEC_UPDATE"            ,
+    "BLE_GAP_EVT_TIMEOUT"                    ,
+    "BLE_GAP_EVT_RSSI_CHANGED"               ,
+    "BLE_GAP_EVT_ADV_REPORT"                 ,
+    "BLE_GAP_EVT_SEC_REQUEST"                ,
+    "BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST"  ,
+    "BLE_GAP_EVT_SCAN_REQ_REPORT"            ,
+    "BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST"  ,
+    "BLE_GAP_EVT_SCAN_REQ_REPORT"            ,
+    "BLE_GAP_EVT_PHY_UPDATE_REQUEST"         ,
+    "BLE_GAP_EVT_PHY_UPDATE"                 ,
+    "BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST" ,
+    "BLE_GAP_EVT_DATA_LENGTH_UPDATE"         ,
 };
 
 // GATTC Event
@@ -221,7 +227,13 @@ static const char* _gattc_evt_str[] =
     "BLE_GATTC_EVT_CHAR_VALS_READ_RSP"        ,
     "BLE_GATTC_EVT_WRITE_RSP"                 ,
     "BLE_GATTC_EVT_HVX"                       ,
-    "BLE_GATTC_EVT_TIMEOUT"
+#if SD_VER < 500
+    "BLE_GATTC_EVT_TIMEOUT"                   ,
+#else
+    "BLE_GATTC_EVT_EXCHANGE_MTU_RSP"          ,
+    "BLE_GATTC_EVT_TIMEOUT"                   ,
+    "BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE"     ,
+#endif
 };
 
 // GATTS Event
@@ -232,7 +244,13 @@ static const char* _gatts_evt_str[] =
     "BLE_GATTS_EVT_SYS_ATTR_MISSING"          ,
     "BLE_GATTS_EVT_HVC"                       ,
     "BLE_GATTS_EVT_SC_CONFIRM"                ,
+#if SD_VER < 500
+    "BLE_GATTC_EVT_TIMEOUT"                   ,
+#else
+    "BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST"      ,
     "BLE_GATTS_EVT_TIMEOUT"                   ,
+    "BLE_GATTS_EVT_HVN_TX_COMPLETE"           ,
+#endif
 };
 
 const char* dbg_ble_event_str(uint16_t evt_id)
