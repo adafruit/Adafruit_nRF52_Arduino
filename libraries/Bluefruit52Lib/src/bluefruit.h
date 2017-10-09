@@ -85,6 +85,11 @@
 
 #define BLE_MAX_DATA_PER_MTU  (BLE_GATT_ATT_MTU_DEFAULT - 3)
 
+enum
+{
+  BLE_CONN_CFG_HIGH_BANDWIDTH = 1
+};
+
 extern "C"
 {
   void SD_EVT_IRQHandler(void);

@@ -220,28 +220,26 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_DEFAULT;
   blecfg.conn_cfg.params.gatt_conn_cfg.att_mtu = BLE_GATT_ATT_MTU_DEFAULT;
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATT, &blecfg, ram_start) );
+#endif
 
   // Event Length + HVN queue + WRITE CMD queue setting affecting bandwidth
-  // TODO high/normal bandwidth configuration
-
   varclr(&blecfg);
-  blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_DEFAULT;
-  blecfg.conn_cfg.params.gap_conn_cfg.conn_count = 1; // BLE_GAP_CONN_COUNT_DEFAULT
-  blecfg.conn_cfg.params.gap_conn_cfg.event_length = BLEGAP_HVN_TX_QUEUE_SIZE; // BLE_GAP_EVENT_LENGTH_DEFAULT
+  blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_HIGH_BANDWIDTH;
+  blecfg.conn_cfg.params.gap_conn_cfg.conn_count   = 1; // BLE_GAP_CONN_COUNT_DEFAULT
+  blecfg.conn_cfg.params.gap_conn_cfg.event_length = BLEGAP_EVENT_LENGTH; // BLE_GAP_EVENT_LENGTH_DEFAULT
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GAP, &blecfg, ram_start) );
 
   // HVN queue size
   varclr(&blecfg);
-  blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_DEFAULT;
+  blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_HIGH_BANDWIDTH;
   blecfg.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = BLEGAP_HVN_TX_QUEUE_SIZE;
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &blecfg, ram_start) );
 
   // WRITE COMMAND queue size
   varclr(&blecfg);
-  blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_TAG_DEFAULT;
+  blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_HIGH_BANDWIDTH;
   blecfg.conn_cfg.params.gattc_conn_cfg.write_cmd_tx_queue_size = BLEGAP_WRITECMD_TX_QUEUE_SIZE;
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTC, &blecfg, ram_start) );
-#endif
 
   // Enable BLE stack
   // TODO update linker SRAM usage

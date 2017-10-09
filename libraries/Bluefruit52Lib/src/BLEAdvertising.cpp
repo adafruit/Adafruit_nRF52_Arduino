@@ -310,7 +310,7 @@ bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
 #if SD_VER < 500
   VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para), false );
 #else
-  VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para, BLE_CONN_CFG_TAG_DEFAULT), false );
+  VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para, BLE_CONN_CFG_HIGH_BANDWIDTH), false );
 #endif
 
   Bluefruit._startConnLed(); // start blinking
