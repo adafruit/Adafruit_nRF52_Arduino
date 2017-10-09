@@ -38,7 +38,7 @@
 
 BLEGap::BLEGap(void)
 {
-  varclr(&_peers);
+  memclr(_peers, sizeof(_peers));
 }
 
 /**
