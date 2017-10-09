@@ -137,13 +137,16 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
           // characteristic assign overload
           chr[i]->assign(&disc_chr->chars[d]);
 
-          ble_gattc_handle_range_t range = { disc_chr->chars[d].handle_value + 1, _hdl_range.end_handle };
-
-          // Discovery All descriptors if possible
-          if ( range.start_handle  <= range.end_handle  )
+          // only discover CCCD descriptor
+          if (disc_chr->chars[d].char_props.notify || disc_chr->chars[d].char_props.indicate )
           {
-            // skip discovery descriptor
-            chr[i]->discoverDescriptor(conn_handle, range);
+            ble_gattc_handle_range_t range = { disc_chr->chars[d].handle_value + 1, _hdl_range.end_handle };
+
+            if ( range.start_handle <= range.end_handle  )
+            {
+              // skip if reaching end of range (last char has no descriptor)p
+              chr[i]->discoverDescriptor(conn_handle, range);
+            }
           }
 
           found++;
