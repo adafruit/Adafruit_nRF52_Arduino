@@ -212,6 +212,12 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
         }
       }
     break;
+
+    case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
+      // TODO MTU exchange
+      VERIFY_STATUS( sd_ble_gatts_exchange_mtu_reply(conn_handle, BLE_GATT_ATT_MTU_DEFAULT), );
+    break;
+
     #endif
 
     default: break;
