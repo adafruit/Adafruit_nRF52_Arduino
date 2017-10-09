@@ -182,7 +182,9 @@ void dbgPrintVersion(void)
 // Common BLE Event base
 static const char* _base_evt_str[] =
 {
+#if SD_VER < 500
     "BLE_EVT_TX_COMPLETE"                     ,
+#endif
     "BLE_EVT_USER_MEM_REQUEST"                ,
     "BLE_EVT_USER_MEM_RELEASE"                ,
 };
@@ -257,13 +259,13 @@ const char* dbg_ble_event_str(uint16_t evt_id)
 {
   static char unknown_evt[7] = {0};
 
-  if      ( is_within(BLE_EVT_BASE, evt_id, BLE_EVT_LAST) )
+  if      ( is_within(BLE_EVT_BASE, evt_id, BLE_EVT_BASE+arrcount(_base_evt_str)) )
     return _base_evt_str[evt_id-BLE_EVT_BASE];
-  else if ( is_within(BLE_GAP_EVT_BASE, evt_id, BLE_GAP_EVT_LAST) )
+  else if ( is_within(BLE_GAP_EVT_BASE, evt_id, BLE_GAP_EVT_BASE+arrcount(_gap_evt_str)) )
     return _gap_evt_str[evt_id-BLE_GAP_EVT_BASE];
-  else if ( is_within(BLE_GATTC_EVT_BASE, evt_id, BLE_GATTC_EVT_LAST) )
+  else if ( is_within(BLE_GATTC_EVT_BASE, evt_id, BLE_GATTC_EVT_BASE+arrcount(_gattc_evt_str) ) )
     return _gattc_evt_str[evt_id-BLE_GATTC_EVT_BASE];
-  else if ( is_within(BLE_GATTS_EVT_BASE, evt_id, BLE_GATTS_EVT_LAST) )
+  else if ( is_within(BLE_GATTS_EVT_BASE, evt_id, BLE_GATTS_EVT_BASE+arrcount(_gatts_evt_str)) )
     return _gatts_evt_str[evt_id-BLE_GATTS_EVT_BASE];
   else
   {
