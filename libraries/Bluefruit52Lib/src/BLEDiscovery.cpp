@@ -140,7 +140,7 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
           ble_gattc_handle_range_t range = { disc_chr->chars[d].handle_value + 1, _hdl_range.end_handle };
 
           // Discovery All descriptors if possible
-          if ( range.start_handle  <= range.start_handle  )
+          if ( range.start_handle  <= range.end_handle  )
           {
             // skip discovery descriptor
             chr[i]->discoverDescriptor(conn_handle, range);
