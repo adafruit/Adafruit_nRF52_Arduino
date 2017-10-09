@@ -187,15 +187,32 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 #else
   ble_cfg_t blecfg;
 
-  // ATTR Table Size
+  // Vendor UUID count
   varclr(&blecfg);
-  blecfg.gatts_cfg.attr_tab_size.attr_tab_size = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT; // BLE_GATTS_ATTR_TABLE_SIZE
-  VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_ATTR_TAB_SIZE, &blecfg, ram_start) );
+  blecfg.common_cfg.vs_uuid_cfg.vs_uuid_count = BLE_VENDOR_UUID_MAX;
+  VERIFY_STATUS ( sd_ble_cfg_set(BLE_COMMON_CFG_VS_UUID, &blecfg, ram_start) );
+
+  // Roles
+  varclr(&blecfg);
+  blecfg.gap_cfg.role_count_cfg.periph_role_count  = (_prph_enabled    ? 1 : 0);
+  blecfg.gap_cfg.role_count_cfg.central_role_count = (_central_enabled ? BLE_CENTRAL_MAX_CONN : 0);
+  blecfg.gap_cfg.role_count_cfg.central_sec_count  = (_central_enabled ? BLE_CENTRAL_MAX_SECURE_CONN : 0);
+  VERIFY_STATUS( sd_ble_cfg_set(BLE_GAP_CFG_ROLE_COUNT, &blecfg, ram_start) );
+
+  // Device Name
+//  varclr(&blecfg);
+//  blecfg.gap_cfg.device_name_cfg =
+//  VERIFY_STATUS( sd_ble_cfg_set(BLE_GAP_CFG_DEVICE_NAME, &blecfg, ram_start) );
 
   // TODO Service Changed
 //  varclr(&blecfg);
 //  blecfg.gatts_cfg.service_changed.service_changed = 1;
 //  VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_SERVICE_CHANGED, &blecfg, ram_start) );
+
+  // ATTR Table Size
+  varclr(&blecfg);
+  blecfg.gatts_cfg.attr_tab_size.attr_tab_size = BLE_GATTS_ATTR_TABLE_SIZE;
+  VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_ATTR_TAB_SIZE, &blecfg, ram_start) );
 
 #if 0
   // TODO ATT MTU
@@ -232,9 +249,10 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   // between SoftDevices with the same major version number
   PRINT_HEX(ram_start);
 
-  VERIFY_STATUS( sd_ble_enable(&ram_start) );
-
+  uint32_t err = sd_ble_enable(&ram_start);
   PRINT_HEX(ram_start);
+
+  VERIFY_STATUS(err);
 #endif
 
 

@@ -119,19 +119,20 @@ static void printMemRegion(const char* name, uint32_t top, uint32_t bottom, uint
   char buffer[30];
   if ( used )
   {
-    sprintf(buffer, "%lu / %lu (%02lu%%)", used, top-bottom, (used*100)/ (top-bottom));
+    sprintf(buffer, "%5lu / %5lu (%02lu%%)", used, top-bottom, (used*100)/ (top-bottom));
   }else
   {
     sprintf(buffer, "%lu", top-bottom);
   }
 
-  Serial.printf("| %-10s: %-19s |\n", name, buffer);
+  Serial.printf("| %-5s| 0x%04X - 0x%04X | %-19s |\n", name, (uint16_t) bottom, (uint16_t) (top-1), buffer);
 }
 
 void dbgMemInfo(void)
 {
-  Serial.printf (" _________________________________\n");
-  Serial.println("|                                 |");
+  Serial.println(" ______________________________________________");
+  Serial.println("| Name | Addr 0x2000xxxx | Usage               |");
+  Serial.println("| ---------------------------------------------|");
 
   // Pritn SRAM used for Stack executed by S132 and ISR
   printMemRegion("Stack", ((uint32_t) __StackTop), ((uint32_t) __StackLimit), dbgStackUsed() );
@@ -140,12 +141,12 @@ void dbgMemInfo(void)
   printMemRegion("Heap", ((uint32_t) __HeapLimit), ((uint32_t) __HeapBase), dbgHeapUsed() );
 
   // DATA + BSS
-  printMemRegion("Data & Bss", ((uint32_t) __bss_end__), ((uint32_t) __data_start__), 0);
+  printMemRegion("Bss", ((uint32_t) __bss_end__), ((uint32_t) __data_start__), 0);
 
   // Print SRAM Used by SoftDevice
   printMemRegion("S132", (uint32_t) __data_start__, 0x20000000, 0);
 
-  Serial.printf("|_________________________________|\n");
+  Serial.printf("|______________________________________________|\n");
   Serial.println();
 
   // Print Task list

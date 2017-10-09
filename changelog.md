@@ -1,6 +1,6 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-## 0.8.0
+## 0.9.0
 
 ## 0.7.5
 
