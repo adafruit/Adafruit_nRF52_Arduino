@@ -154,7 +154,12 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
       #if SD_VER < 500
         _adamsg.feed(rd_rsp->handle_value[0].p_value, rd_rsp->value_len);
       #else
-        _adamsg.feed(rd_rsp->handle_value, rd_rsp->value_len);
+        ble_gattc_handle_value_t hdl_value;
+
+        if ( ERROR_NONE == sd_ble_gattc_evt_char_val_by_uuid_read_rsp_iter(&evt->evt.gattc_evt, &hdl_value) )
+        {
+          _adamsg.feed(hdl_value.p_value, rd_rsp->value_len);
+        }
       #endif
 
       _adamsg.complete();
