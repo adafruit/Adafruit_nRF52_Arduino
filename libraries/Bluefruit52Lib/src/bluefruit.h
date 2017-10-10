@@ -42,15 +42,28 @@
 #define CFG_ADV_BLINKY_INTERVAL          500
 #define CFG_MAX_DEVNAME_LEN              32
 
-// Note changing these parameters will affect APP_RAM_BASE
-// --> need to update RAM in linker file
-#define BLE_GATTS_ATTR_TABLE_SIZE        0x800 //0x0B00 default is 0x580
-#define BLE_VENDOR_UUID_MAX              20
-#define BLE_PRPH_MAX_CONN                1
-#define BLE_CENTRAL_MAX_CONN             4
-#define BLE_CENTRAL_MAX_SECURE_CONN      1 // should be enough
+/* Note changing these parameters will affect APP_RAM_BASE
+ * --> need to update RAM region in linker file
+ *
+ * default value are
+ * - BLE_GATTS_ATTR_TABLE_SIZE 0x580
+ * - BLE_GAP_EVENT_LENGTH_DEFAULT = 3
+ * - BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT = 1
+ * - BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT = 1
+ * - BLEGATT_ATT_MTU_MAX from 23 (default) to 247
+ */
+#define BLE_GATTS_ATTR_TABLE_SIZE       0x800 //0x0B00 default is 0x580
+#define BLE_VENDOR_UUID_MAX             20
+#define BLEGAP_EVENT_LENGTH             BLE_GAP_EVENT_LENGTH_DEFAULT
+#define BLEGAP_HVN_TX_QUEUE_SIZE        3
+#define BLEGAP_WRITECMD_TX_QUEUE_SIZE   3
+#define BLEGATT_ATT_MTU_MAX             247
 
-#define BLE_MAX_CONN                     (BLE_CENTRAL_MAX_CONN+BLE_PRPH_MAX_CONN)
+#define BLE_PRPH_MAX_CONN               1
+#define BLE_CENTRAL_MAX_CONN            4
+#define BLE_CENTRAL_MAX_SECURE_CONN     1 // should be enough
+
+#define BLE_MAX_CONN                    (BLE_CENTRAL_MAX_CONN+BLE_PRPH_MAX_CONN)
 
 #include "BLEUuid.h"
 #include "BLEAdvertising.h"
@@ -82,8 +95,6 @@
 #include "clients/BLEClientCts.h"
 
 #include "utility/AdaCallback.h"
-
-#define BLE_MAX_DATA_PER_MTU  (BLE_GATT_ATT_MTU_DEFAULT - 3)
 
 enum
 {

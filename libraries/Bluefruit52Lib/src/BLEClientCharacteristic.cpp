@@ -150,9 +150,11 @@ uint16_t BLEClientCharacteristic::read(void* buffer, uint16_t bufsize)
 {
   VERIFY( _chr.char_props.read, 0 );
 
+  uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+
   _adamsg.prepare(buffer, bufsize);
   VERIFY_STATUS( sd_ble_gattc_read(_service->connHandle(), _chr.handle_value, 0), 0);
-  int32_t rxlen = _adamsg.waitUntilComplete( (bufsize/(MTU_MPS-2)+1) * BLE_GENERIC_TIMEOUT );
+  int32_t rxlen = _adamsg.waitUntilComplete( (bufsize/(max_payload-2) + 1) * BLE_GENERIC_TIMEOUT );
 
   return (rxlen < 0) ? 0 : rxlen;
 }
@@ -164,10 +166,9 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
 {
   VERIFY( _chr.char_props.write, 0 );
 
-  // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
-  // SD132 v3.0 could negotiate MTU to higher number
-  // For BLE_GATT_OP_PREP_WRITE_REQ, max data is 18 ( 2 byte is used for offset)
-  const bool long_write = (len > MTU_MPS);
+  uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+
+  const bool long_write = (len > max_payload);
   int32_t count = 0;
 
   // CMD WRITE_REQUEST for single transaction
@@ -192,19 +193,21 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
   else
   {
     /*------------- Long Write Sequence -------------*/
+    // For BLE_GATT_OP_PREP_WRITE_REQ, 2 bytes are used for offset
+
     ble_gattc_write_params_t param =
     {
         .write_op = BLE_GATT_OP_PREP_WRITE_REQ,
         .flags    = 0,
         .handle   = _chr.handle_value,
         .offset   = 0,
-        .len      = min16(len, MTU_MPS-2),
+        .len      = min16(len, max_payload-2),
         .p_value  = (uint8_t*) data
     };
 
     _adamsg.prepare( (void*) data, len);
     VERIFY_STATUS ( sd_ble_gattc_write(_service->connHandle(), &param) );
-    count = _adamsg.waitUntilComplete( (len/(MTU_MPS-2)+1) * BLE_GENERIC_TIMEOUT );
+    count = _adamsg.waitUntilComplete( (len/(max_payload-2) + 1) * BLE_GENERIC_TIMEOUT );
 
     // delay to swallow last WRITE RESPONSE
     // delay(20);
@@ -217,18 +220,17 @@ uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
 {
 //  VERIFY( _chr.char_props.write_wo_resp, 0 );
 
-  // Break into multiple MTU-3 packet
-  // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
-  // SD132 v3.0 could negotiate MTU to higher number
+  uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
   const uint8_t* u8data = (const uint8_t*) data;
 
+  // Break into multiple packet if needed
   uint16_t remaining = len;
   while( remaining )
   {
     // TODO only Write without response consume a TX buffer
     if ( !Bluefruit.Gap.getWriteCmdPacket(_service->connHandle()) )  return NRF_ERROR_RESOURCES; //BLE_ERROR_NO_TX_PACKETS;
 
-    uint16_t packet_len = min16(MTU_MPS, remaining);
+    uint16_t packet_len = min16(max_payload, remaining);
 
     ble_gattc_write_params_t param =
     {
@@ -353,7 +355,8 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
         _adamsg.complete();
       }else if ( wr_rsp->write_op == BLE_GATT_OP_PREP_WRITE_REQ)
       {
-        uint16_t packet_len = min16(_adamsg.remaining, MTU_MPS-2);
+        uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+        uint16_t packet_len = min16(_adamsg.remaining, max_payload-2);
 
         // still has data, continue to prepare
         if ( packet_len )
@@ -400,6 +403,7 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
 
     case BLE_GATTC_EVT_READ_RSP:
     {
+      uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
       ble_gattc_evt_read_rsp_t* rd_rsp = (ble_gattc_evt_read_rsp_t*) &evt->evt.gattc_evt.params.read_rsp;
 
       // Give up if failed (BLE_GATT_STATUS_ATTERR_INVALID_OFFSET usually)
@@ -413,11 +417,11 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
 
       /* Complete condition is one of follows
        * - Running out of buffer
-       * - Receive data less than MPS - 1 (19)
+       * - Receive data less than MPS - 1
        * - Couldn't perform GATTC Read
        */
       if (( _adamsg.remaining == 0)    ||
-          (rd_rsp->len < (MTU_MPS-1) ) ||
+          (rd_rsp->len < (max_payload-1) ) ||
           (ERROR_NONE != sd_ble_gattc_read(_service->connHandle(), _chr.handle_value, _adamsg.xferlen)) )
       {
         _adamsg.complete();

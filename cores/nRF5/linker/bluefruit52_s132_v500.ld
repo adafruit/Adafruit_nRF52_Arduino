@@ -6,14 +6,26 @@ GROUP(-lgcc -lc -lnosys)
 MEMORY
 {
   FLASH (rx) : ORIGIN = 0x23000, LENGTH = 0x25000 /* Max 148 KB for dual banks */
-  RAM (rwx) :  ORIGIN = 0x20002000 + 0x800, LENGTH = 0xE000 - 0x800
 
   /* SRAM required by S132 depend on
    * - Attribute Table Size 0x800
    * - Vendor UUID count    20
    * - Role concurrent connection central + peripherl + secure links
-   * - 
+   * - Max ATT MTU is 247
+   * - Event Len = 3, HVN queue = 3, Write CMD queue =3
    */ 
+  RAM (rwx) :  ORIGIN = 0x20003000, LENGTH = 0xC000
+  
+  /* Reference configuration
+     - MTU = 247, hvn = 7, wrcmd = 3 , evt len = 3
+          ram_start = 0x20003310
+
+     - MTU = 247, hvn = 3, wrcmd = 3, evt len = 3
+          ram_start = 0x20002F10
+
+     - MTU = 23, hvn = 7, wrcmd = 3, evt len = 3
+        ram_start = 0x200025A0
+  */
 }
 
 SECTIONS

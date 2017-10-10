@@ -477,11 +477,7 @@ bool BLECharacteristic::notify(const void* data, uint16_t len)
 
   if ( notifyEnabled() )
   {
-    // Break into multiple MTU-3 packet
-    // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
-    // SD132 v3.0 could negotiate MTU to higher number
-    const uint16_t MTU_MPS = 20;
-
+    uint16_t const max_payload = Bluefruit.Gap.getMTU( Bluefruit.connHandle() ) - 3;
     const uint8_t* u8data = (const uint8_t*) data;
 
     while ( remaining )
@@ -489,7 +485,7 @@ bool BLECharacteristic::notify(const void* data, uint16_t len)
       // TODO multiple connection support
       if ( !Bluefruit.Gap.getHvnPacket( Bluefruit.connHandle() ) )  return NRF_ERROR_RESOURCES; //BLE_ERROR_NO_TX_PACKETS;
 
-      uint16_t packet_len = min16(MTU_MPS, remaining);
+      uint16_t packet_len = min16(max_payload, remaining);
 
       ble_gatts_hvx_params_t hvx_params =
       {

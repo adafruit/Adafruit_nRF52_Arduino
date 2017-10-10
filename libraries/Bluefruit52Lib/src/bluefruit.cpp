@@ -217,7 +217,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   // TODO ATT MTU
   varclr(&blecfg);
   blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_HIGH_BANDWIDTH;
-  blecfg.conn_cfg.params.gatt_conn_cfg.att_mtu = BLE_GATT_ATT_MTU_DEFAULT;
+  blecfg.conn_cfg.params.gatt_conn_cfg.att_mtu = BLEGATT_ATT_MTU_MAX;
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATT, &blecfg, ram_start) );
 
   // Event Length + HVN queue + WRITE CMD queue setting affecting bandwidth
@@ -240,14 +240,17 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTC, &blecfg, ram_start) );
 
   // Enable BLE stack
-  // TODO update linker SRAM usage
   // The memory requirement for a specific configuration will not increase
   // between SoftDevices with the same major version number
-  PRINT_HEX(ram_start);
-
   uint32_t err = sd_ble_enable(&ram_start);
-  PRINT_HEX(ram_start);
+  if ( err )
+  {
+    LOG_LV1(CFG, "SoftDevice config require more SRAM than provided by linker.\n"
+                 "App Ram Start must be at least 0x%08X (provided 0x%08X)\n"
+                 "Please update linker file or re-config SoftDevice", ram_start, (uint32_t) __data_start__);
+  }
 
+  PRINT_HEX(ram_start);
   VERIFY_STATUS(err);
 #endif
 
@@ -597,7 +600,7 @@ void adafruit_ble_task(void* arg)
         #if SD_VER < 500
         __ALIGN(4) uint8_t ev_buf[ sizeof(ble_evt_t) + (BLE_GATT_ATT_MTU_DEFAULT) ];
         #else
-        __ALIGN(4) uint8_t ev_buf[ BLE_EVT_LEN_MAX(BLE_GATT_ATT_MTU_DEFAULT) ];
+        __ALIGN(4) uint8_t ev_buf[ BLE_EVT_LEN_MAX(BLEGATT_ATT_MTU_MAX) ];
         #endif
 
         uint16_t ev_len = sizeof(ev_buf);
@@ -624,7 +627,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   // conn handle has fixed offset regardless of event type
   const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
 
-  LOG_LV2(BLE, "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), evt_conn_hdl);
+  LOG_LV1(BLE, "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), evt_conn_hdl);
 
   // GAP handler
   Gap._eventHandler(evt);

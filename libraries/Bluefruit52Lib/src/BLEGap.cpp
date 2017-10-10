@@ -124,7 +124,7 @@ bool BLEGap::getWriteCmdPacket(uint16_t conn_handle)
 
 uint16_t BLEGap::getMTU (uint16_t conn_handle)
 {
-  return BLE_GATT_ATT_MTU_DEFAULT;
+  return _peers[conn_handle].att_mtu;
 }
 
 uint16_t BLEGap::getPeerName(uint16_t conn_handle, char* buf, uint16_t bufsize)
@@ -152,6 +152,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       peer->connected = true;
       peer->role      = para->role;
       peer->addr      = para->peer_addr;
+      peer->att_mtu   = BLE_GATT_ATT_MTU_DEFAULT;
 
       // Init transmission buffer for notification
       #if SD_VER < 500
@@ -214,8 +215,12 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     break;
 
     case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
-      // TODO MTU exchange
-      VERIFY_STATUS( sd_ble_gatts_exchange_mtu_reply(conn_handle, BLE_GATT_ATT_MTU_DEFAULT), );
+    {
+      peer->att_mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, BLEGATT_ATT_MTU_MAX);
+      VERIFY_STATUS( sd_ble_gatts_exchange_mtu_reply(conn_handle, peer->att_mtu), );
+
+      LOG_LV1(BLE, "ATT MTU is changed to %d", peer->att_mtu);
+    }
     break;
 
     #endif

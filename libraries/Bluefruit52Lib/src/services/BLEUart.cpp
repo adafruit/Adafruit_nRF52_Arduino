@@ -37,6 +37,7 @@
 #include "bluefruit.h"
 #include "utility/TimeoutTimer.h"
 
+// TODO larger ATT MTU
 #define TXD_FIFO_SIZE   (BLE_GATT_ATT_MTU_DEFAULT-3)
 
 /* UART Serivce: 6E400001-B5A3-F393-E0A9-E50E24DCCA9E
@@ -181,7 +182,6 @@ err_t BLEUart::begin(void)
 
   // Add TXD Characteristic
   _txd.setProperties(CHR_PROPS_NOTIFY);
-//  _txd.setMaxLen(BLE_MAX_DATA_PER_MTU);
   // TODO enable encryption when bonding is enabled
   _txd.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   _txd.setStringDescriptor("TXD");

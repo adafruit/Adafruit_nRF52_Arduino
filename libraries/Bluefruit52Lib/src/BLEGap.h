@@ -40,10 +40,6 @@
 #include "bluefruit_common.h"
 #include "BLEUuid.h"
 
-#define BLEGAP_EVENT_LENGTH             BLE_GAP_EVENT_LENGTH_DEFAULT  // BLE_GAP_EVENT_LENGTH_DEFAULT (3)
-#define BLEGAP_HVN_TX_QUEUE_SIZE        7 // BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT (1)
-#define BLEGAP_WRITECMD_TX_QUEUE_SIZE   3 // BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT (1)
-
 class BLEGap
 {
   public:
@@ -80,8 +76,9 @@ class BLEGap
     // Array of TX Packet semaphore, indexed by connection handle
     // Peer info where conn_handle serves as index
     typedef struct {
-      bool    connected;
-      uint8_t role;
+      bool     connected;
+      uint8_t  role;
+      uint16_t att_mtu;
 
       ble_gap_addr_t addr;
 
