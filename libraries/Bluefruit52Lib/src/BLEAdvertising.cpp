@@ -61,6 +61,9 @@ bool BLEAdvertisingData::addData(uint8_t type, const void* data, uint8_t len)
   return true;
 }
 
+/*------------------------------------------------------------------*/
+/* Adding UUID
+ *------------------------------------------------------------------*/
 bool BLEAdvertisingData::addUuid(BLEUuid bleuuid)
 {
   return addUuid(&bleuuid, 1);
@@ -122,26 +125,27 @@ bool BLEAdvertisingData::addUuid(BLEUuid bleuuid[], uint8_t count)
   return true;
 }
 
-//bool BLEAdvertisingData::addService(BLEService& service[], uint8_t count)
-//{
-//  for(uint8_t i=0; i<count; i++)
-//  {
-//
-//  }
-//}
-//
-//bool BLEAdvertisingData::addService(BLEClientService& service[], uint8_t count)
-//{
-//  for(uint8_t i=0; i<count; i++)
-//  {
-//
-//  }
-//}
-
-
+/*------------------------------------------------------------------*/
+/* Adding Service's UUID
+ *------------------------------------------------------------------*/
 bool BLEAdvertisingData::addService(BLEService& service)
 {
   return addUuid(service.uuid);
+}
+
+bool BLEAdvertisingData::addService(BLEService& service1, BLEService& service2)
+{
+  return addUuid(service1.uuid, service2.uuid);
+}
+
+bool BLEAdvertisingData::addService(BLEService& service1, BLEService& service2, BLEService& service3)
+{
+  return addUuid(service1.uuid, service2.uuid, service3.uuid);
+}
+
+bool BLEAdvertisingData::addService(BLEService& service1, BLEService& service2, BLEService& service3, BLEService& service4)
+{
+  return addUuid(service1.uuid, service2.uuid, service3.uuid, service4.uuid);
 }
 
 bool BLEAdvertisingData::addService(BLEClientService& service)
@@ -163,7 +167,14 @@ bool BLEAdvertisingData::addService(BLEClientService& service)
   return false;
 }
 
-// Add Name to Adv packet, use setName() to set
+/*------------------------------------------------------------------*/
+/* Adding Others
+ *------------------------------------------------------------------*/
+
+/**
+ * Add Name to Adv packet, use setName() to set
+ * @return true if success
+ */
 bool BLEAdvertisingData::addName(void)
 {
   char name[BLE_GAP_ADV_MAX_SIZE+1];

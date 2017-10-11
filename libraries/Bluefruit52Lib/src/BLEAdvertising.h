@@ -59,6 +59,16 @@
 #define BLE_ADV_INTERVAL_SLOW_DFLT       244 // 152.5 ms (in 0.625 ms unit)
 #define BLE_ADV_FAST_TIMEOUT_DFLT        30  // in seconds
 
+// forward declaration
+class BLEAdvertisingData;
+
+// Abstract Class to set Adv Data
+class Advertisable
+{
+  public:
+    virtual bool setAdv(BLEAdvertisingData& adv) = 0;
+};
+
 class BLEAdvertisingData
 {
 protected:
@@ -75,6 +85,7 @@ public:
   bool addName(void);
   bool addAppearance(uint16_t appearance);
 
+  /*------------- UUID -------------*/
   bool addUuid(BLEUuid bleuuid);
   bool addUuid(BLEUuid bleuuid1, BLEUuid bleuuid2);
   bool addUuid(BLEUuid bleuuid1, BLEUuid bleuuid2, BLEUuid bleuuid3);
@@ -82,19 +93,23 @@ public:
 
   bool addUuid(BLEUuid bleuuid[], uint8_t count);
 
+  /*------------- Service -------------*/
   bool addService(BLEService& service);
-  bool addService(BLEClientService& service);
+  bool addService(BLEService& service1, BLEService& service2);
+  bool addService(BLEService& service1, BLEService& service2, BLEService& service3);
+  bool addService(BLEService& service1, BLEService& service2, BLEService& service3, BLEService& service4);
 
-//  bool addService(BLEService& service[], uint8_t count);
-//  bool addService(BLEClientService& service[], uint8_t count);
+  /*------------- Client Service -------------*/
+  bool addService(BLEClientService& service);
 
   // Custom API
   uint8_t  count(void);
   uint8_t* getData(void);
   bool     setData(const uint8_t* data, uint8_t count);
   void     clearData(void);
-};
 
+  bool     setData(Advertisable& adv_able) { return adv_able.setAdv(*this); }
+};
 
 class BLEAdvertising : public BLEAdvertisingData
 {

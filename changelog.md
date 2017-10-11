@@ -2,6 +2,17 @@
 
 ## 0.9.0
 
+## Core
+
+- Add IDE programmer option to upgrade bootloader from IDE
+
+## BLE
+
+- Upgrade Bluetooth 5 with Softdevice to S132 v5.0.0
+- Support max ATT MTU up to 247 (negotiable with peer)
+- Added BLEAdvertising multiple services addition API
+- Fixed an discovery bug introduced in 0.7.5
+
 ## 0.7.5
 
 ### Core
