@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLEHomekit.h
+    @file     BLEHomekit.cpp
     @author   hathach
 
     @section LICENSE
@@ -33,43 +33,57 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLEHOMEKIT_H_
-#define BLEHOMEKIT_H_
 
-#include "HapUuid.h"
-#include "HapAccessoryInfo.h"
+#include <bluefruit.h>
+#include "BLEHomekit.h"
 
-enum
+bool BLEHomekit::setAdv(BLEAdvertisingData& adv_ref)
 {
-  HAP_CAT_OTHER = 1           ,
-  HAP_CAT_BRIDGE              ,
-  HAP_CAT_FAN                 ,
-  HAP_CAT_GARAGE              ,
-  HAP_CAT_LIGHTBULB           ,
-  HAP_CAT_DOOR_LOCK           ,
-  HAP_CAT_OUTLET              ,
-  HAP_CAT_SWITCH              ,
-  HAP_CAT_THERMOSTAT          ,
-  HAP_CAT_SENSOR              ,
-  HAP_CAT_SECURITY_SYSTEM     ,
-  HAP_CAT_DOOR                ,
-  HAP_CAT_WINDOWS             ,
-  HAP_CAT_WINDOWS_COVERING    ,
-  HAP_CAT_PROGRAMMABLE_SWITCH ,
-  HAP_CAT_RANGE_EXTENDER      ,
-  HAP_CAT_IP_CAMERA           ,
-  HAP_CAT_VIDEO_DOOR_BELL     ,
-  HAP_CAT_AIR_PURFIER         ,
-};
+  VERIFY(&Bluefruit.Advertising == &adv_ref);
+  BLEAdvertising& adv = (BLEAdvertising&) adv_ref;
 
-#define HOMEKIT_PROTOCOL_VERION   2
+  // Calculate AIL field
+  uint16_t interval_ms = MS625TO1000( adv.getInterval() );
+  uint8_t ail;
 
-class BLEHomekit : public Advertisable
-{
-  public:
-    virtual bool setAdv(BLEAdvertisingData& adv);
+  if      ( interval_ms > 2500 ) ail = 0xE0;
+  else if ( interval_ms > 1250 ) ail = 0xC0;
 
-  private:
-};
+  else if ( interval_ms > 500  ) ail = 0xA0;
+  else if ( interval_ms > 300  ) ail = 0x80;
+  else if ( interval_ms > 100  ) ail = 0x60;
+  else if ( interval_ms > 25   ) ail = 0x40;
+  else                           ail = 0x20;
 
-#endif /* BLEHOMEKIT_H_ */
+  ail |= 0x0D;
+
+  struct ATTR_PACKED
+  {
+    uint16_t company_id;
+    uint8_t  type;
+    uint8_t  adv_int_len;
+    uint8_t  status_flag;
+    uint8_t  dev_id[6];
+    uint16_t category;
+    uint16_t gsn;
+    uint8_t  config_num;
+    uint8_t  compatible_verion;
+  }data =
+  {
+      .company_id        = UUID16_COMPANY_ID_APPLE,
+      .type              = 0x06,
+      .adv_int_len       = ail,
+      .status_flag       = 1, // bit0 = HAP Pairing Status Flag (1 not paired)
+      .dev_id            = { 0x0a, 0xbc, 0x12, 0x33, 0x56, 0x98 },
+      .category          = HAP_CAT_LIGHTBULB,
+      .gsn               = 1,
+      .config_num        = 1,
+      .compatible_verion = HOMEKIT_PROTOCOL_VERION
+  };
+
+  VERIFY_STATIC( sizeof(data) == 17);
+
+  adv.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  return adv.addManufacturerData(&data, sizeof(data));
+}
+

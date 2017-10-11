@@ -38,7 +38,7 @@
 
 void BLEBeacon::_init(void)
 {
-  _manufacturer_id = 0x004C; // default Apple --> iBeacon
+  _manufacturer_id = UUID16_COMPANY_ID_APPLE; // default is Apple
   _uuid128 = NULL;
 
   _major_be = _minor_be = 0;

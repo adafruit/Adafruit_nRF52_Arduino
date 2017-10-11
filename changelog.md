@@ -10,7 +10,7 @@
 
 - Upgrade Bluetooth 5 with Softdevice to S132 v5.0.0
 - Support max ATT MTU up to 247 (negotiable with peer)
-- Added BLEAdvertising multiple services addition API
+- Added BLEAdvertising multiple services aaddition and addManufacturerData() API
 - Fixed an discovery bug introduced in 0.7.5
 
 ## 0.7.5

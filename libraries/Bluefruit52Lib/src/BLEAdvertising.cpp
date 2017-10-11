@@ -209,6 +209,11 @@ bool BLEAdvertisingData::addAppearance(uint16_t appearance)
   return addData(BLE_GAP_AD_TYPE_APPEARANCE, &appearance, 2);
 }
 
+bool BLEAdvertisingData::addManufacturerData(const void* data, uint8_t count)
+{
+  return addData(BLE_GAP_AD_TYPE_MANUFACTURER_SPECIFIC_DATA, data, count);
+}
+
 /*------------------------------------------------------------------*/
 /* CUSTOM API
  *------------------------------------------------------------------*/
@@ -247,12 +252,13 @@ BLEAdvertising::BLEAdvertising(void)
   _start_if_disconnect = true;
   _runnning            = false;
 
-  _fast_interval = BLE_ADV_INTERVAL_FAST_DFLT;
-  _slow_interval = BLE_ADV_INTERVAL_SLOW_DFLT;
+  _fast_interval       = BLE_ADV_INTERVAL_FAST_DFLT;
+  _slow_interval       = BLE_ADV_INTERVAL_SLOW_DFLT;
+  _active_interval     = _fast_interval;
 
-  _fast_timeout  = BLE_ADV_FAST_TIMEOUT_DFLT;
-  _stop_timeout  = _left_timeout = 0;
-  _stop_cb       = NULL;
+  _fast_timeout        = BLE_ADV_FAST_TIMEOUT_DFLT;
+  _stop_timeout        = _left_timeout = 0;
+  _stop_cb             = NULL;
 }
 
 void BLEAdvertising::setFastTimeout(uint16_t sec)
@@ -265,16 +271,32 @@ void BLEAdvertising::setType(uint8_t adv_type)
   _type = adv_type;
 }
 
+/**
+ * Set Interval in unit of 0.625 ms
+ * @param fast  Interval that is used in the first n seconds (configurable)
+ * @param slow  Interval that is used after fast timeout
+ */
 void BLEAdvertising::setInterval(uint16_t fast, uint16_t slow)
 {
-  _fast_interval = fast;
-  _slow_interval = slow;
+  _fast_interval   = fast;
+  _slow_interval   = slow;
+
+  // default is fast since it will be advertising first
+  _active_interval = _fast_interval;
 }
 
 void BLEAdvertising::setIntervalMS(uint16_t fast, uint16_t slow)
 {
-  _fast_interval = MS1000TO625(fast);
-  _slow_interval = MS1000TO625(slow);
+  setInterval(MS1000TO625(fast), MS1000TO625(slow));
+}
+
+/**
+ * Get current active interval
+ * @return Either slow or fast interval in unit of 0.625 ms
+ */
+uint16_t BLEAdvertising::getInterval(void)
+{
+  return _active_interval;
 }
 
 void BLEAdvertising::setStopCallback(stop_callback_t fp)
@@ -325,7 +347,8 @@ bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
 #endif
 
   Bluefruit._startConnLed(); // start blinking
-  _runnning = true;
+  _runnning        = true;
+  _active_interval = interval;
 
   _left_timeout -= min16(_left_timeout, timeout);
 

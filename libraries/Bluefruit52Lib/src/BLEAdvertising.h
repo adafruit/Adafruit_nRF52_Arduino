@@ -84,6 +84,7 @@ public:
   bool addTxPower(void);
   bool addName(void);
   bool addAppearance(uint16_t appearance);
+  bool addManufacturerData(const void* data, uint8_t count);
 
   /*------------- UUID -------------*/
   bool addUuid(BLEUuid bleuuid);
@@ -124,6 +125,8 @@ public:
   void setInterval  (uint16_t fast, uint16_t slow);
   void setIntervalMS(uint16_t fast, uint16_t slow);
 
+  uint16_t getInterval(void);
+
   bool setBeacon(BLEBeacon& beacon);
   bool setBeacon(EddyStoneUrl& eddy_url);
 
@@ -145,8 +148,9 @@ private:
   bool     _start_if_disconnect;
   bool     _runnning;
 
-  uint16_t _fast_interval; // in 0.625 ms
-  uint16_t _slow_interval; // in 0.625 ms
+  uint16_t _fast_interval;   // in 0.625 ms
+  uint16_t _slow_interval;   // in 0.625 ms
+  uint16_t _active_interval; // in 0.625 ms
 
   uint16_t _fast_timeout; // in second
   uint16_t _stop_timeout; // in second

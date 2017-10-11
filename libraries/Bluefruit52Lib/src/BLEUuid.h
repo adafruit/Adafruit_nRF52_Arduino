@@ -72,7 +72,9 @@ class BLEUuid
     BLEUuid& operator=(ble_uuid_t uuid);
 };
 
-// Service UUID
+/*------------------------------------------------------------------*/
+/* Service UUID
+ *------------------------------------------------------------------*/
 #define UUID16_SVC_ALERT_NOTIFICATION                         0x1811
 #define UUID16_SVC_BATTERY                                    0x180F
 #define UUID16_SVC_BLOOD_PRESSURE                             0x1810
@@ -98,7 +100,9 @@ class BLEUuid
 #define UUID16_SVC_PLX                                        0x1822
 #define UUID16_SVC_EDDYSTONE                                  0xFEAA
 
-// Characteristic UUID
+/*------------------------------------------------------------------*/
+/* Characteristic UUID
+ *------------------------------------------------------------------*/
 #define UUID16_CHR_REMOVABLE                                  0x2A3A
 #define UUID16_CHR_SERVICE_REQUIRED                           0x2A3B
 #define UUID16_CHR_ALERT_CATEGORY_ID                          0x2A43
@@ -185,6 +189,11 @@ class BLEUuid
 #define UUID16_PLX_SPOT_CHECK_MEAS                            0x2A5E
 #define UUID16_PLX_CONTINUOUS_MEAS                            0x2A5F
 #define UUID16_PLX_FEATURES                                   0x2A60
+
+/*------------------------------------------------------------------*/
+/* Company UUID
+ *------------------------------------------------------------------*/
+#define UUID16_COMPANY_ID_APPLE         0x004C
 
 
 #endif /* BLEUUID_H_ */
