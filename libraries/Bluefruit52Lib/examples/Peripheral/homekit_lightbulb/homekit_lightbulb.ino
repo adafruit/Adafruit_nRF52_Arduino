@@ -44,21 +44,41 @@ void startAdv(void)
    * - Enable auto advertising if disconnected
    * - Interval:  fast mode = 20 ms, slow mode = 152.5 ms
    * - Timeout for fast mode is 30 seconds
-   * - Start(timeout) with timeout = 0 will advertise forever (until connected)
+   * - Start(timeout) with timeout = 30
    * 
    * For recommended advertising interval
    * https://developer.apple.com/library/content/qa/qa1931/_index.html   
    */
   Bluefruit.Advertising.restartOnDisconnect(true);
-  Bluefruit.Advertising.setInterval(32, 32);    // in unit of 0.625 ms
+  Bluefruit.Advertising.setInterval(32, 244);    // in unit of 0.625 ms
   Bluefruit.Advertising.setFastTimeout(30);      // number of seconds in fast mode
+  Bluefruit.Advertising.setStopCallback(adv_stop_callback); // callback when adv is stopped
 
-  // Homekit include advertising interval as part of its data
-  // Therefor setData(homekit) must be after setInterval()
+  /* Homekit include advertising interval as part of its adv data
+   * - Therefore setInterval() must be call before setData(homekit).
+   * - Furthermore since Adverting Data (for homekit) changes when adv interval change
+   * from fast to slow. We do either way to stay consistence
+   *    1. Advertise with fixed interval (fast = slow)
+   *    2. Register stop callback for adv stop, then re-set the Advertising data to match
+   *    the changed interval. Which is what this sketch does.
+   */
   Bluefruit.Advertising.setData(homekit);
 
-  
-  Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds  
+  // Stop after 30 secconds
+  Bluefruit.Advertising.start(30);
+}
+
+void adv_stop_callback(void)
+{
+  // change interval to only slow since we alredy passed first 30 seconds
+  Bluefruit.Advertising.setInterval(244, 244);
+
+  // Reset advertising data for homekit.
+  Bluefruit.Advertising.clearData();
+  Bluefruit.Advertising.setData(homekit);
+
+  // Advertising indefintely.
+  Bluefruit.Advertising.start(0);
 }
 
 void loop() 

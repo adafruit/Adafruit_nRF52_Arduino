@@ -259,6 +259,7 @@ BLEAdvertising::BLEAdvertising(void)
   _fast_timeout        = BLE_ADV_FAST_TIMEOUT_DFLT;
   _stop_timeout        = _left_timeout = 0;
   _stop_cb             = NULL;
+  _slow_cb             = NULL;
 }
 
 void BLEAdvertising::setFastTimeout(uint16_t sec)
@@ -297,6 +298,11 @@ void BLEAdvertising::setIntervalMS(uint16_t fast, uint16_t slow)
 uint16_t BLEAdvertising::getInterval(void)
 {
   return _active_interval;
+}
+
+void BLEAdvertising::setSlowCallback(slow_callback_t fp)
+{
+  _slow_cb = fp;
 }
 
 void BLEAdvertising::setStopCallback(stop_callback_t fp)
@@ -420,6 +426,9 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
 
         if ( _stop_timeout == 0 )
         {
+          // Call slow callback if available
+          if (_slow_cb) _slow_cb();
+
           // if stop_timeout is 0 --> no timeout
           _start(_slow_interval, 0);
         }else
@@ -427,6 +436,9 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
           // Advertising if there is still time left, otherwise stop it
           if ( _left_timeout )
           {
+            // Call slow callback if available
+            if (_slow_cb) _slow_cb();
+
             _start(_slow_interval, _left_timeout);
           }else
           {

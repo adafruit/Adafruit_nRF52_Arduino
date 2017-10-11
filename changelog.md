@@ -10,7 +10,11 @@
 
 - Upgrade Bluetooth 5 with Softdevice to S132 v5.0.0
 - Support max ATT MTU up to 247 (negotiable with peer)
-- Added BLEAdvertising multiple services aaddition and addManufacturerData() API
+- BLEAdvertising 
+  - Added multiple services aaddition API
+  - Added addManufacturerData()
+  - Added getInterval() to retrieve current active interval
+  - Added Slow interval callback support via setSlowCallback()
 - Fixed an discovery bug introduced in 0.7.5
 
 ## 0.7.5

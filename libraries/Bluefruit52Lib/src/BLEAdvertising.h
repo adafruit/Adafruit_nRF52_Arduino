@@ -116,10 +116,14 @@ class BLEAdvertising : public BLEAdvertisingData
 {
 public:
   typedef void (*stop_callback_t) (void);
+  typedef void (*slow_callback_t) (void);
+
   BLEAdvertising(void);
 
   void setType(uint8_t adv_type);
   void setFastTimeout(uint16_t sec);
+
+  void setSlowCallback(slow_callback_t fp);
   void setStopCallback(stop_callback_t fp);
 
   void setInterval  (uint16_t fast, uint16_t slow);
@@ -157,6 +161,7 @@ private:
   uint16_t _left_timeout;
 
   stop_callback_t _stop_cb;
+  slow_callback_t _slow_cb;
 
   // Internal function
   bool _start(uint16_t interval, uint16_t timeout);
