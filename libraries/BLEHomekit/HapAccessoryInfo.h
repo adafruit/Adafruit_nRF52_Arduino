@@ -41,8 +41,10 @@ class HAPAccessoryInfo : public BLEService
   public:
     HAPAccessoryInfo(void);
 
-  private:
+    virtual err_t begin(void);
 
+  private:
+    BLECharacteristic _identify;
 };
 
 

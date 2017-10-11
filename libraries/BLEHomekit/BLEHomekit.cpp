@@ -37,6 +37,37 @@
 #include <bluefruit.h>
 #include "BLEHomekit.h"
 
+#define HOMEKIT_PROTOCOL_VERION           2
+#define HOMEKIT_PROTOCOL_VERSION_STR      "02.01.00"
+
+BLEHomekit::BLEHomekit()
+ : _protocol_info(HAP_UUID_SVC_PROTOCOL_INFO), AccessoryInfo()
+{
+
+}
+
+err_t BLEHomekit::begin()
+{
+  /*------------- Protocol Info Service -------------*/
+  VERIFY_STATUS( _protocol_info.begin() );
+  {
+    BLECharacteristic chr(HAP_UUID_CHR_VERSION);
+
+    chr.setTempMemory(); // ready-only, not included in Gatt list
+    chr.setProperties(CHR_PROPS_READ);
+    chr.setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    chr.setFixedLen(strlen(HOMEKIT_PROTOCOL_VERSION_STR));
+
+    VERIFY_STATUS( chr.begin() );
+    chr.write(HOMEKIT_PROTOCOL_VERSION_STR);
+  }
+
+  /*------------- Accessory Info Service -------------*/
+  VERIFY_STATUS ( AccessoryInfo.begin() );
+
+  return true;
+}
+
 bool BLEHomekit::setAdv(BLEAdvertisingData& adv_ref)
 {
   VERIFY(&Bluefruit.Advertising == &adv_ref);

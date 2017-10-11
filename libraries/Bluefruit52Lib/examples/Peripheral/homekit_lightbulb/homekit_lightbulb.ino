@@ -16,7 +16,6 @@
 #include <BLEHomekit.h>
 
 BLEHomekit homekit;
-HAPAccessoryInfo hap_info;
 
 void setup() 
 {
@@ -30,7 +29,7 @@ void setup()
   Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52");
 
-  hap_info.begin();
+  homekit.begin();
 
   // Set up and start advertising
   startAdv();

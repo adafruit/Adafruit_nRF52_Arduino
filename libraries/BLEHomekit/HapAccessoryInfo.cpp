@@ -39,8 +39,55 @@
 #include "HapAccessoryInfo.h"
 
 HAPAccessoryInfo::HAPAccessoryInfo(void)
-  : BLEService(HAP_UUID_SVC_ACCESSORY_INFO)
+  : BLEService(HAP_UUID_SVC_ACCESSORY_INFO), _identify(HAP_UUID_CHR_IDENTIFY)
 {
 
+}
+
+err_t HAPAccessoryInfo::begin(void)
+{
+  VERIFY_STATUS( BLEService::begin() ); // Invoke base class begin()
+
+  // Identify
+  _identify.setProperties(CHR_PROPS_WRITE);
+  _identify.setPermission(SECMODE_NO_ACCESS, SECMODE_ENC_NO_MITM);
+  _identify.setFixedLen(1);
+  VERIFY_STATUS( _identify.begin() );
+
+  BLECharacteristic* chr;
+
+
+  const uint8_t* uuids[] =
+  {
+      HAP_UUID_CHR_MANUFACTURER,
+      HAP_UUID_CHR_MODEL,
+      HAP_UUID_CHR_NAME,
+      HAP_UUID_CHR_SERIAL_NUMBER,
+      HAP_UUID_CHR_FIRMWARE_REV
+  };
+
+  const char* strvals[] =
+  {
+      "Adafruit Industrial",
+      "Adafruit Bluefruit nrf52",
+      "Bluefruit52",
+      getMcuUniqueID(),
+      "0.9.0"
+  };
+
+  for(uint8_t i=0; i<arrcount(strvals); i++)
+  {
+    BLECharacteristic chr(uuids[i]);
+    chr.setTempMemory();
+
+    chr.setProperties(CHR_PROPS_READ);
+    chr.setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    chr.setFixedLen( strlen(strvals[i]) );
+
+    VERIFY_STATUS( chr.begin() );
+    chr.write(strvals[i]);
+  }
+
+  return ERROR_NONE;
 }
 

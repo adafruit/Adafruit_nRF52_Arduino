@@ -62,14 +62,18 @@ enum
   HAP_CAT_AIR_PURFIER         ,
 };
 
-#define HOMEKIT_PROTOCOL_VERION   2
-
 class BLEHomekit : public Advertisable
 {
   public:
     virtual bool setAdv(BLEAdvertisingData& adv);
+    BLEHomekit();
+    err_t begin();
+
+    HAPAccessoryInfo AccessoryInfo;
 
   private:
+    // Mandatory services
+    BLEService _protocol_info;
 };
 
 #endif /* BLEHOMEKIT_H_ */
