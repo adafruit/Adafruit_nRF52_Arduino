@@ -120,7 +120,7 @@ setProperties	KEYWORD2
 setPermission	KEYWORD2
 setMaxLen	KEYWORD2
 setFixedLen	KEYWORD2
-setStringDescriptor	KEYWORD2
+setUserDescriptor	KEYWORD2
 setReportRefDescriptor	KEYWORD2
 
 setWriteCallback	KEYWORD2

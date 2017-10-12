@@ -82,7 +82,7 @@ class BLECharacteristic
     bool _is_temp;
 
     ble_gatt_char_props_t _properties;
-    const char* _descriptor;
+    const char* _usr_descriptor;
     uint16_t _max_len;
 
     struct ATTR_PACKED {
@@ -128,7 +128,7 @@ class BLECharacteristic
     void setPermission(BleSecurityMode read_perm, BleSecurityMode write_perm);
     void setMaxLen(uint16_t max_len);
     void setFixedLen(uint16_t fixed_len);
-    void setStringDescriptor(const char* descriptor); // aka user descriptor
+    void setUserDescriptor(const char* descriptor); // aka user descriptor
     void setReportRefDescriptor(uint8_t id, uint8_t type);
 
     /*------------- Callbacks -------------*/

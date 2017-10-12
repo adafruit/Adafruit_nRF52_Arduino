@@ -41,8 +41,8 @@ void BLECharacteristic::_init(void)
   _is_temp    = false;
 
   varclr(&_properties);
-  _descriptor = NULL;
-  _max_len    = BLE_GATTS_VAR_ATTR_LEN_MAX;
+  _usr_descriptor = NULL;
+  _max_len    = BLE_GATT_ATT_MTU_DEFAULT-3;
 
   varclr(&_report_ref_desc);
 
@@ -157,9 +157,9 @@ void BLECharacteristic::setWriteAuthorizeCallbak(write_authorize_cb_t fp)
   _wr_authorize_cb = fp;
 }
 
-void BLECharacteristic::setStringDescriptor(const char* descriptor)
+void BLECharacteristic::setUserDescriptor(const char* descriptor)
 {
-  _descriptor = descriptor;
+  _usr_descriptor = descriptor;
 }
 
 void BLECharacteristic::setReportRefDescriptor(uint8_t id, uint8_t type)
@@ -223,10 +223,10 @@ err_t BLECharacteristic::begin(void)
       .vloc       = BLE_GATTS_VLOC_STACK,
   };
 
-  if (_descriptor != NULL && _descriptor[0] != 0)
+  if (_usr_descriptor != NULL && _usr_descriptor[0] != 0)
   {
-    char_md.p_char_user_desc    = (uint8_t*) _descriptor;
-    char_md.char_user_desc_size = char_md.char_user_desc_max_size = strlen(_descriptor);
+    char_md.p_char_user_desc    = (uint8_t*) _usr_descriptor;
+    char_md.char_user_desc_size = char_md.char_user_desc_max_size = strlen(_usr_descriptor);
     char_md.p_user_desc_md      = &desc_md;
     //char_md.char_ext_props    = ext_props,
   }
