@@ -43,10 +43,8 @@ class HAPService : public BLEService
   public:
     static uint16_t _g_svc_id;
 
-    //HAPService(BLEUuid bleuuid) : BLEService(bleuuid) {}
-
+    HAPService(BLEUuid bleuuid) : BLEService(bleuuid) {}
     virtual err_t begin(void);
-
 
   private:
     uint16_t _sid;

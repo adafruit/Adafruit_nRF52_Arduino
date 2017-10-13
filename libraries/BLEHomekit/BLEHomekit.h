@@ -73,7 +73,13 @@ class BLEHomekit : public Advertisable
 
   private:
     // Mandatory services
-    BLEService _protocol_info;
+    HAPService _protocol_info;
+
+    BLEService _pairing;
+    BLECharacteristic _pair_setup, _pair_verify, _pair_features, _pair_pairing;
+
+    BLEService _lightbulb;
+    BLECharacteristic _on;
 };
 
 #endif /* BLEHOMEKIT_H_ */

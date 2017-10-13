@@ -39,23 +39,20 @@
 #include "HapAccessoryInfo.h"
 
 HAPAccessoryInfo::HAPAccessoryInfo(void)
-  : BLEService(HAP_UUID_SVC_ACCESSORY_INFO), _identify(HAP_UUID_CHR_IDENTIFY)
+  : HAPService(HAP_UUID_SVC_ACCESSORY_INFO), _identify(HAP_UUID_CHR_IDENTIFY)
 {
 
 }
 
 err_t HAPAccessoryInfo::begin(void)
 {
-  VERIFY_STATUS( BLEService::begin() ); // Invoke base class begin()
+  VERIFY_STATUS( HAPService::begin() ); // Invoke base class begin()
 
   // Identify
   _identify.setProperties(CHR_PROPS_WRITE);
-  _identify.setPermission(SECMODE_NO_ACCESS, SECMODE_ENC_NO_MITM);
+  _identify.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN/*SECMODE_ENC_NO_MITM*/);
   _identify.setFixedLen(1);
   VERIFY_STATUS( _identify.begin() );
-
-  BLECharacteristic* chr;
-
 
   const uint8_t* uuids[] =
   {
@@ -81,7 +78,7 @@ err_t HAPAccessoryInfo::begin(void)
     chr.setTempMemory();
 
     chr.setProperties(CHR_PROPS_READ);
-    chr.setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    chr.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
     chr.setFixedLen( strlen(strvals[i]) );
 
     VERIFY_STATUS( chr.begin() );

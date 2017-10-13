@@ -34,18 +34,17 @@
 */
 /**************************************************************************/
 
-#include "HAPService.h"
-
 #include <Arduino.h>
 #include <bluefruit.h>
 #include "BLEHomekit.h"
+#include "HAPService.h"
 
 // Starting from 1 for Accessory Info
-HAPService HAPService::_g_svc_id = 1;
+uint16_t HAPService::_g_svc_id = 1;
 
 err_t HAPService::begin(void)
 {
-  VERIFY_STATUS( BLEService.begin() );
+  VERIFY_STATUS( BLEService::begin() );
 
   return _addSvcID();
 }

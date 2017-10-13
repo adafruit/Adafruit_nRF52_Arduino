@@ -36,7 +36,9 @@
 #ifndef HAPACCESSORYINFO_H_
 #define HAPACCESSORYINFO_H_
 
-class HAPAccessoryInfo : public BLEService
+#include "HAPService.h"
+
+class HAPAccessoryInfo : public HAPService
 {
   public:
     HAPAccessoryInfo(void);
