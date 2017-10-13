@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     HapService.h
+    @file     HAPService.h
     @author   hathach
 
     @section LICENSE
@@ -36,7 +36,25 @@
 #ifndef HAPSERVICE_H_
 #define HAPSERVICE_H_
 
+#include <BLEService.h>
 
+class HAPService : public BLEService
+{
+  public:
+    static uint16_t _g_svc_id;
+
+    //HAPService(BLEUuid bleuuid) : BLEService(bleuuid) {}
+
+    virtual err_t begin(void);
+
+
+  private:
+    uint16_t _sid;
+
+    // Service Instance ID
+    err_t _addSvcID(void);
+
+};
 
 
 
