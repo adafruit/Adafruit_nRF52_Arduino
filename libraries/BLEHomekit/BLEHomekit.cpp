@@ -40,6 +40,8 @@
 #define HOMEKIT_PROTOCOL_VERION           2
 #define HOMEKIT_PROTOCOL_VERSION_STR      "02.01.00"
 
+uint16_t BLEHomekit::_gInstanceID = 1;
+
 BLEHomekit::BLEHomekit()
  : _protocol_info(HAP_UUID_SVC_PROTOCOL_INFO), AccessoryInfo(),
    _pairing(HAP_UUID_SVC_PAIRING), _pair_setup(HAP_UUID_CHR_PAIR_SETUP), _pair_verify(HAP_UUID_CHR_PAIR_VERIFY),
@@ -49,7 +51,7 @@ BLEHomekit::BLEHomekit()
 
 }
 
-err_t addServiceInstanceID(uint16_t id)
+err_t addServiceInstanceID(void)
 {
   BLECharacteristic chr(HAP_UUID_CHR_SERVICE_ID);
   chr.setTempMemory();
@@ -59,7 +61,7 @@ err_t addServiceInstanceID(uint16_t id)
   chr.setFixedLen(2);
   VERIFY_STATUS( chr.begin() );
 
-  chr.write( id );
+  chr.write( BLEHomekit::_gInstanceID++ );
 
   return ERROR_NONE;
 }
@@ -89,7 +91,7 @@ err_t BLEHomekit::begin()
   /*------------- Pairing Service -------------*/
   VERIFY_STATUS( _pairing.begin() );
   {
-    addServiceInstanceID(3);
+    addServiceInstanceID();
 
     // TODO read, write using auth
     _pair_setup.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
@@ -117,7 +119,7 @@ err_t BLEHomekit::begin()
   /*------------- LightBulb Service -------------*/
   VERIFY_STATUS( _lightbulb.begin() ) ;
   {
-    addServiceInstanceID(4);
+    addServiceInstanceID();
 
     // Name chr
     BLECharacteristic chr(HAP_UUID_CHR_VERSION);

@@ -65,9 +65,12 @@ enum
 class BLEHomekit : public Advertisable
 {
   public:
+    static uint16_t _gInstanceID;
+
     virtual bool setAdv(BLEAdvertisingData& adv);
     BLEHomekit();
     err_t begin();
+
 
     HAPAccessoryInfo AccessoryInfo;
 

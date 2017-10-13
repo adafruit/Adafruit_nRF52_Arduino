@@ -39,9 +39,6 @@
 #include "BLEHomekit.h"
 #include "HAPService.h"
 
-// Starting from 1 for Accessory Info
-uint16_t HAPService::_g_svc_id = 1;
-
 err_t HAPService::begin(void)
 {
   VERIFY_STATUS( BLEService::begin() );
@@ -59,8 +56,8 @@ err_t HAPService::_addSvcID(void)
   chr.setFixedLen(2);
   VERIFY_STATUS( chr.begin() );
 
-  _sid = _g_svc_id++;
-  chr.write( _sid );
+  _svc_id = BLEHomekit::_gInstanceID++;
+  chr.write( _svc_id );
 
   return ERROR_NONE;
 }
