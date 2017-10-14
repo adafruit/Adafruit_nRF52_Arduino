@@ -38,26 +38,25 @@
 
 void BLECharacteristic::_init(void)
 {
-  _is_temp    = false;
+  _is_temp = false;
+  _max_len = BLE_GATT_ATT_MTU_DEFAULT-3;
+  _service = NULL;
+
+  _usr_descriptor = NULL;
+  varclr(&_report_ref_desc);
+  varclr(&_format_desc);
 
   varclr(&_properties);
-  _usr_descriptor = NULL;
-  _max_len    = BLE_GATT_ATT_MTU_DEFAULT-3;
 
-  varclr(&_report_ref_desc);
-
-  _service = NULL;
+  varclr(&_attr_meta);
+  _attr_meta.read_perm = _attr_meta.write_perm = BLE_SECMODE_OPEN;
+  _attr_meta.vlen = 1;
+  _attr_meta.vloc = BLE_GATTS_VLOC_STACK;
 
   _handles.value_handle     = BLE_GATT_HANDLE_INVALID;
   _handles.user_desc_handle = BLE_GATT_HANDLE_INVALID;
   _handles.sccd_handle      = BLE_GATT_HANDLE_INVALID;
   _handles.cccd_handle      = BLE_GATT_HANDLE_INVALID;
-
-  varclr(&_attr_meta);
-  // default permission is OPEN
-  _attr_meta.read_perm = _attr_meta.write_perm = BLE_SECMODE_OPEN;
-  _attr_meta.vlen = 1;
-  _attr_meta.vloc = BLE_GATTS_VLOC_STACK;
 
   _rd_authorize_cb = NULL;
   _wr_authorize_cb = NULL;
@@ -168,6 +167,21 @@ void BLECharacteristic::setReportRefDescriptor(uint8_t id, uint8_t type)
   _report_ref_desc.type = type;
 }
 
+/**
+ * https://developer.bluetooth.org/gatt/descriptors/Pages/DescriptorViewer.aspx?u=org.bluetooth.descriptor.gatt.characteristic_presentation_format.xml
+ * @param type      BLE_GATT_CPF_FORMAT_x value, see ble_gatt.h
+ * @param exponent  exponent
+ * @param unit      UUID16_UNIT_x, see BLEUuid.h
+ */
+void BLECharacteristic::setPresentationFormatDescriptor(uint8_t type, int8_t exponent, uint16_t unit, uint8_t name_space, uint16_t descritpor)
+{
+  _format_desc.format     = type;
+  _format_desc.exponent   = exponent;
+  _format_desc.unit       = unit;
+  _format_desc.name_space = name_space;
+  _format_desc.desc       = descritpor;
+}
+
 ble_gatts_char_handles_t BLECharacteristic::handles(void)
 {
   return _handles;
@@ -231,13 +245,11 @@ err_t BLECharacteristic::begin(void)
     //char_md.char_ext_props    = ext_props,
   }
 
-  /* Presentation format
-   * https://developer.bluetooth.org/gatt/descriptors/Pages/DescriptorViewer.aspx?u=org.bluetooth.descriptor.gatt.characteristic_presentation_format.xml
-   */
-//   if ( p_char_def->presentation.format )
-//   {
-//     char_md.p_char_pf = &p_char_def->presentation;
-//   }
+  /* Presentation Format Descriptor */
+  if ( _format_desc.format != 0 )
+  {
+    char_md.p_char_pf = &_format_desc;
+  }
 
   /* GATT attribute declaration */
   ble_gatts_attr_t attr_char_value =

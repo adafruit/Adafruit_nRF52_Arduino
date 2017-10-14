@@ -16,6 +16,7 @@
   - Added getInterval() to retrieve current active interval
   - Added Slow interval callback support via setSlowCallback()
 - Fixed an discovery bug introduced in 0.7.5
+- Add setPresentationFormatDescriptor() support
 
 ## 0.7.5
 

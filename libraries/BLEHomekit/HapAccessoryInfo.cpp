@@ -74,7 +74,7 @@ err_t HAPAccessoryInfo::begin(void)
 
   for(uint8_t i=0; i<arrcount(strvals); i++)
   {
-    BLECharacteristic chr(uuids[i]);
+    HAPCharacteristic chr(uuids[i]);
     chr.setTempMemory();
 
     chr.setProperties(CHR_PROPS_READ);

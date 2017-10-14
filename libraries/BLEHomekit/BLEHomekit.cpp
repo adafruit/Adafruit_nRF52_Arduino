@@ -66,8 +66,6 @@ err_t addServiceInstanceID(void)
   return ERROR_NONE;
 }
 
-//err_t addChrInstance()
-
 err_t BLEHomekit::begin()
 {
   /*------------- Accessory Info Service -------------*/
@@ -76,7 +74,7 @@ err_t BLEHomekit::begin()
   /*------------- Protocol Info Service -------------*/
   VERIFY_STATUS( _protocol_info.begin() );
   {
-    BLECharacteristic chr(HAP_UUID_CHR_VERSION);
+    HAPCharacteristic chr(HAP_UUID_CHR_VERSION);
 
     chr.setTempMemory(); // ready-only, not included in Gatt list
     chr.setProperties(CHR_PROPS_READ);
@@ -87,12 +85,9 @@ err_t BLEHomekit::begin()
     chr.write(HOMEKIT_PROTOCOL_VERSION_STR);
   }
 
-
   /*------------- Pairing Service -------------*/
   VERIFY_STATUS( _pairing.begin() );
   {
-    addServiceInstanceID();
-
     // TODO read, write using auth
     _pair_setup.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
     _pair_setup.setPermission(SECMODE_OPEN, SECMODE_OPEN);
@@ -119,21 +114,8 @@ err_t BLEHomekit::begin()
   /*------------- LightBulb Service -------------*/
   VERIFY_STATUS( _lightbulb.begin() ) ;
   {
-    addServiceInstanceID();
-
-    // Name chr
-    BLECharacteristic chr(HAP_UUID_CHR_VERSION);
-
-    chr.setTempMemory(); // ready-only, not included in Gatt list
-    chr.setProperties(CHR_PROPS_READ);
-    chr.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
-    chr.setFixedLen(strlen(HOMEKIT_PROTOCOL_VERSION_STR));
-
-    VERIFY_STATUS( chr.begin() );
-    chr.write(HOMEKIT_PROTOCOL_VERSION_STR);
-
     // ON char
-    _on.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_NOTIFY );
+    _on.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_INDICATE );
     _on.setPermission(SECMODE_OPEN, SECMODE_OPEN);
     _on.setFixedLen(1);
     VERIFY_STATUS( _on.begin() );

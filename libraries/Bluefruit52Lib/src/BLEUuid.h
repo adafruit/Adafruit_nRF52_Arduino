@@ -74,6 +74,7 @@ class BLEUuid
 
 /*------------------------------------------------------------------*/
 /* Service UUID
+ * https://www.bluetooth.com/specifications/gatt/services
  *------------------------------------------------------------------*/
 #define UUID16_SVC_ALERT_NOTIFICATION                         0x1811
 #define UUID16_SVC_BATTERY                                    0x180F
@@ -98,10 +99,12 @@ class BLEUuid
 #define UUID16_SVC_BMS                                        0x181E
 #define UUID16_SVC_CGM                                        0x181F
 #define UUID16_SVC_PLX                                        0x1822
+
 #define UUID16_SVC_EDDYSTONE                                  0xFEAA
 
 /*------------------------------------------------------------------*/
 /* Characteristic UUID
+ * https://www.bluetooth.com/specifications/gatt/characteristics
  *------------------------------------------------------------------*/
 #define UUID16_CHR_REMOVABLE                                  0x2A3A
 #define UUID16_CHR_SERVICE_REQUIRED                           0x2A3B
@@ -192,8 +195,123 @@ class BLEUuid
 
 /*------------------------------------------------------------------*/
 /* Company UUID
+ * https://www.bluetooth.com/specifications/assigned-numbers/company-identifiers
  *------------------------------------------------------------------*/
 #define UUID16_COMPANY_ID_APPLE         0x004C
 
+
+/*------------------------------------------------------------------*/
+/* Unit values ( used in Characteristic Presentation Format )
+ * https://developer.bluetooth.org/gatt/units/Pages/default.aspx
+ *------------------------------------------------------------------*/
+#define UUID16_UNIT_NONE                                                    0x2700
+#define UUID16_UNIT_LENGTH_METRE                                            0x2701
+#define UUID16_UNIT_MASS_KILOGRAM                                           0x2702
+#define UUID16_UNIT_TIME_SECOND                                             0x2703
+#define UUID16_UNIT_ELECTRIC_CURRENT_AMPERE                                 0x2704
+#define UUID16_UNIT_THERMODYNAMIC_TEMPERATURE_KELVIN                        0x2705
+#define UUID16_UNIT_AMOUNT_OF_SUBSTANCE_MOLE                                0x2706
+#define UUID16_UNIT_LUMINOUS_INTENSITY_CANDELA                              0x2707
+#define UUID16_UNIT_AREA_SQUARE_METRES                                      0x2710
+#define UUID16_UNIT_VOLUME_CUBIC_METRES                                     0x2711
+#define UUID16_UNIT_VELOCITY_METRES_PER_SECOND                              0x2712
+#define UUID16_UNIT_ACCELERATION_METRES_PER_SECOND_SQUARED                  0x2713
+#define UUID16_UNIT_WAVENUMBER_RECIPROCAL_METRE                             0x2714
+#define UUID16_UNIT_DENSITY_KILOGRAM_PER_CUBIC_METRE                        0x2715
+#define UUID16_UNIT_SURFACE_DENSITY_KILOGRAM_PER_SQUARE_METRE               0x2716
+#define UUID16_UNIT_SPECIFIC_VOLUME_CUBIC_METRE_PER_KILOGRAM                0x2717
+#define UUID16_UNIT_CURRENT_DENSITY_AMPERE_PER_SQUARE_METRE                 0x2718
+#define UUID16_UNIT_MAGNETIC_FIELD_STRENGTH_AMPERE_PER_METRE                0x2719
+#define UUID16_UNIT_AMOUNT_CONCENTRATION_MOLE_PER_CUBIC_METRE               0x271A
+#define UUID16_UNIT_MASS_CONCENTRATION_KILOGRAM_PER_CUBIC_METRE             0x271B
+#define UUID16_UNIT_LUMINANCE_CANDELA_PER_SQUARE_METRE                      0x271C
+#define UUID16_UNIT_REFRACTIVE_INDEX                                        0x271D
+#define UUID16_UNIT_RELATIVE_PERMEABILITY                                   0x271E
+#define UUID16_UNIT_PLANE_ANGLE_RADIAN                                      0x2720
+#define UUID16_UNIT_SOLID_ANGLE_STERADIAN                                   0x2721
+#define UUID16_UNIT_FREQUENCY_HERTZ                                         0x2722
+#define UUID16_UNIT_FORCE_NEWTON                                            0x2723
+#define UUID16_UNIT_PRESSURE_PASCAL                                         0x2724
+#define UUID16_UNIT_ENERGY_JOULE                                            0x2725
+#define UUID16_UNIT_POWER_WATT                                              0x2726
+#define UUID16_UNIT_ELECTRIC_CHARGE_COULOMB                                 0x2727
+#define UUID16_UNIT_ELECTRIC_POTENTIAL_DIFFERENCE_VOLT                      0x2728
+#define UUID16_UNIT_CAPACITANCE_FARAD                                       0x2729
+#define UUID16_UNIT_ELECTRIC_RESISTANCE_OHM                                 0x272A
+#define UUID16_UNIT_ELECTRIC_CONDUCTANCE_SIEMENS                            0x272B
+#define UUID16_UNIT_MAGNETIC_FLEX_WEBER                                     0x272C
+#define UUID16_UNIT_MAGNETIC_FLEX_DENSITY_TESLA                             0x272D
+#define UUID16_UNIT_INDUCTANCE_HENRY                                        0x272E
+#define UUID16_UNIT_THERMODYNAMIC_TEMPERATURE_DEGREE_CELSIUS                0x272F
+#define UUID16_UNIT_LUMINOUS_FLUX_LUMEN                                     0x2730
+#define UUID16_UNIT_ILLUMINANCE_LUX                                         0x2731
+#define UUID16_UNIT_ACTIVITY_REFERRED_TO_A_RADIONUCLIDE_BECQUEREL           0x2732
+#define UUID16_UNIT_ABSORBED_DOSE_GRAY                                      0x2733
+#define UUID16_UNIT_DOSE_EQUIVALENT_SIEVERT                                 0x2734
+#define UUID16_UNIT_CATALYTIC_ACTIVITY_KATAL                                0x2735
+#define UUID16_UNIT_DYNAMIC_VISCOSITY_PASCAL_SECOND                         0x2740
+#define UUID16_UNIT_MOMENT_OF_FORCE_NEWTON_METRE                            0x2741
+#define UUID16_UNIT_SURFACE_TENSION_NEWTON_PER_METRE                        0x2742
+#define UUID16_UNIT_ANGULAR_VELOCITY_RADIAN_PER_SECOND                      0x2743
+#define UUID16_UNIT_ANGULAR_ACCELERATION_RADIAN_PER_SECOND_SQUARED          0x2744
+#define UUID16_UNIT_HEAT_FLUX_DENSITY_WATT_PER_SQUARE_METRE                 0x2745
+#define UUID16_UNIT_HEAT_CAPACITY_JOULE_PER_KELVIN                          0x2746
+#define UUID16_UNIT_SPECIFIC_HEAT_CAPACITY_JOULE_PER_KILOGRAM_KELVIN        0x2747
+#define UUID16_UNIT_SPECIFIC_ENERGY_JOULE_PER_KILOGRAM                      0x2748
+#define UUID16_UNIT_THERMAL_CONDUCTIVITY_WATT_PER_METRE_KELVIN              0x2749
+#define UUID16_UNIT_ENERGY_DENSITY_JOULE_PER_CUBIC_METRE                    0x274A
+#define UUID16_UNIT_ELECTRIC_FIELD_STRENGTH_VOLT_PER_METRE                  0x274B
+#define UUID16_UNIT_ELECTRIC_CHARGE_DENSITY_COULOMB_PER_CUBIC_METRE         0x274C
+#define UUID16_UNIT_SURFACE_CHARGE_DENSITY_COULOMB_PER_SQUARE_METRE         0x274D
+#define UUID16_UNIT_ELECTRIC_FLUX_DENSITY_COULOMB_PER_SQUARE_METRE          0x274E
+#define UUID16_UNIT_PERMITTIVITY_FARAD_PER_METRE                            0x274F
+#define UUID16_UNIT_PERMEABILITY_HENRY_PER_METRE                            0x2750
+#define UUID16_UNIT_MOLAR_ENERGY_JOULE_PER_MOLE                             0x2751
+#define UUID16_UNIT_MOLAR_ENTROPY_JOULE_PER_MOLE_KELVIN                     0x2752
+#define UUID16_UNIT_EXPOSURE_COULOMB_PER_KILOGRAM                           0x2753
+#define UUID16_UNIT_ABSORBED_DOSE_RATE_GRAY_PER_SECOND                      0x2754
+#define UUID16_UNIT_RADIANT_INTENSITY_WATT_PER_STERADIAN                    0x2755
+#define UUID16_UNIT_RADIANCE_WATT_PER_SQUARE_METRE_STERADIAN                0x2756
+#define UUID16_UNIT_CATALYTIC_ACTIVITY_CONCENTRATION_KATAL_PER_CUBIC_METRE  0x2757
+#define UUID16_UNIT_TIME_MINUTE                                             0x2760
+#define UUID16_UNIT_TIME_HOUR                                               0x2761
+#define UUID16_UNIT_TIME_DAY                                                0x2762
+#define UUID16_UNIT_PLANE_ANGLE_DEGREE                                      0x2763
+#define UUID16_UNIT_PLANE_ANGLE_MINUTE                                      0x2764
+#define UUID16_UNIT_PLANE_ANGLE_SECOND                                      0x2765
+#define UUID16_UNIT_AREA_HECTARE                                            0x2766
+#define UUID16_UNIT_VOLUME_LITRE                                            0x2767
+#define UUID16_UNIT_MASS_TONNE                                              0x2768
+#define UUID16_UNIT_PRESSURE_BAR                                            0x2780
+#define UUID16_UNIT_PRESSURE_MILLIMETRE_OF_MERCURY                          0x2781
+#define UUID16_UNIT_LENGTH_ANGSTROM                                         0x2782
+#define UUID16_UNIT_LENGTH_NAUTICAL_MILE                                    0x2783
+#define UUID16_UNIT_AREA_BARN                                               0x2784
+#define UUID16_UNIT_VELOCITY_KNOT                                           0x2785
+#define UUID16_UNIT_LOGARITHMIC_RADIO_QUANTITY_NEPER                        0x2786
+#define UUID16_UNIT_LOGARITHMIC_RADIO_QUANTITY_BEL                          0x2787
+#define UUID16_UNIT_LENGTH_YARD                                             0x27A0
+#define UUID16_UNIT_LENGTH_PARSEC                                           0x27A1
+#define UUID16_UNIT_LENGTH_INCH                                             0x27A2
+#define UUID16_UNIT_LENGTH_FOOT                                             0x27A3
+#define UUID16_UNIT_LENGTH_MILE                                             0x27A4
+#define UUID16_UNIT_PRESSURE_POUND_FORCE_PER_SQUARE_INCH                    0x27A5
+#define UUID16_UNIT_VELOCITY_KILOMETRE_PER_HOUR                             0x27A6
+#define UUID16_UNIT_VELOCITY_MILE_PER_HOUR                                  0x27A7
+#define UUID16_UNIT_ANGULAR_VELOCITY_REVOLUTION_PER_MINUTE                  0x27A8
+#define UUID16_UNIT_ENERGY_GRAM_CALORIE                                     0x27A9
+#define UUID16_UNIT_ENERGY_KILOGRAM_CALORIE                                 0x27AA
+#define UUID16_UNIT_ENERGY_KILOWATT_HOUR                                    0x27AB
+#define UUID16_UNIT_THERMODYNAMIC_TEMPERATURE_DEGREE_FAHRENHEIT             0x27AC
+#define UUID16_UNIT_PERCENTAGE                                              0x27AD
+#define UUID16_UNIT_PER_MILLE                                               0x27AE
+#define UUID16_UNIT_PERIOD_BEATS_PER_MINUTE                                 0x27AF
+#define UUID16_UNIT_ELECTRIC_CHARGE_AMPERE_HOURS                            0x27B0
+#define UUID16_UNIT_MASS_DENSITY_MILLIGRAM_PER_DECILITRE                    0x27B1
+#define UUID16_UNIT_MASS_DENSITY_MILLIMOLE_PER_LITRE                        0x27B2
+#define UUID16_UNIT_TIME_YEAR                                               0x27B3
+#define UUID16_UNIT_TIME_MONTH                                              0x27B4
+#define UUID16_UNIT_CONCENTRATION_COUNT_PER_CUBIC_METRE                     0x27B5
+#define UUID16_UNIT_IRRADIANCE_WATT_PER_SQUARE_METRE                        0x27B6
 
 #endif /* BLEUUID_H_ */

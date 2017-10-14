@@ -36,6 +36,7 @@
 #ifndef HAPACCESSORYINFO_H_
 #define HAPACCESSORYINFO_H_
 
+#include "HAPCharacteristic.h"
 #include "HAPService.h"
 
 class HAPAccessoryInfo : public HAPService
@@ -46,7 +47,7 @@ class HAPAccessoryInfo : public HAPService
     virtual err_t begin(void);
 
   private:
-    BLECharacteristic _identify;
+    HAPCharacteristic _identify;
 };
 
 

@@ -81,11 +81,11 @@ class BLEHomekit : public Advertisable
     // Mandatory services
     HAPService _protocol_info;
 
-    BLEService _pairing;
-    BLECharacteristic _pair_setup, _pair_verify, _pair_features, _pair_pairing;
+    HAPService _pairing;
+    HAPCharacteristic _pair_setup, _pair_verify, _pair_features, _pair_pairing;
 
-    BLEService _lightbulb;
-    BLECharacteristic _on;
+    HAPService _lightbulb;
+    HAPCharacteristic _on;
 };
 
 #endif /* BLEHOMEKIT_H_ */
