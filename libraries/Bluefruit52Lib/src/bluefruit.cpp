@@ -487,6 +487,15 @@ void AdafruitBluefruit::printInfo(void)
     const char* type_str[] = { "Public", "Static", "Private Resolvable", "Private Non Resolvable" };
     uint8_t mac[6];
     uint8_t type = Gap.getAddr(mac);
+
+    // MAC is in little endian --> reverse
+    for(int i=0; i < 3; i++)
+    {
+      uint8_t temp = mac[i];
+      mac[i] = mac[5-i];
+      mac[5-i] = temp;
+    }
+
     Serial.printBuffer(mac, 6, ':');
     Serial.printf(" (%s)", type_str[type]);
   }
