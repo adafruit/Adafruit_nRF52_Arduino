@@ -37,6 +37,9 @@
 #define BLEHOMEKIT_H_
 
 #include "HAPUuid.h"
+#include "HAPCharacteristic.h"
+#include "HAPService.h"
+
 #include "HapAccessoryInfo.h"
 
 enum

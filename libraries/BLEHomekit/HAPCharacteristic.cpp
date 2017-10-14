@@ -34,5 +34,53 @@
 */
 /**************************************************************************/
 
+#include <Arduino.h>
+#include <bluefruit.h>
+#include "BLEHomekit.h"
 
+BLEUuid HAPCharacteristic::_g_uuid_cid(HAP_UUID_CHR_CHARACTERISTIC_ID);
+
+err_t HAPCharacteristic::begin(void)
+{
+  VERIFY_STATUS( BLECharacteristic::begin() );
+  return _addChrID();
+}
+
+/**
+ * Add Characteristic Instance ID descriptor
+ * @return status code
+ */
+err_t HAPCharacteristic::_addChrID(void)
+{
+  // Add Descriptor UUID if not yet added
+  if (_g_uuid_cid._uuid.type == BLE_UUID_TYPE_UNKNOWN)
+  {
+    _g_uuid_cid.begin();
+  }
+
+  _cid = BLEHomekit::_gInstanceID++;
+
+  ble_gatts_attr_md_t cid_md =
+  {
+      .read_perm  = BLE_SECMODE_OPEN,
+      .write_perm = BLE_SECMODE_NO_ACCESS,
+      .vlen       = 0,
+      .vloc       = BLE_GATTS_VLOC_STACK
+  };
+
+  ble_gatts_attr_t cid_desc =
+  {
+      .p_uuid    = &_g_uuid_cid._uuid,
+      .p_attr_md = &cid_md,
+      .init_len  = 2,
+      .init_offs = 0,
+      .max_len   = 2,
+      .p_value   = (uint8_t*) &_cid
+  };
+
+  uint16_t ref_hdl;
+  VERIFY_STATUS ( sd_ble_gatts_descriptor_add(BLE_GATT_HANDLE_INVALID, &cid_desc, &ref_hdl) );
+
+  return ERROR_NONE;
+}
 

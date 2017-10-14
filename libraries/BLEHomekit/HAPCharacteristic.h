@@ -38,6 +38,20 @@
 
 #include <BLECharacteristic.h>
 
-class HAPCharacteristic
+class HAPCharacteristic : public BLECharacteristic
+{
+  public:
+    static BLEUuid _g_uuid_cid;
+
+    HAPCharacteristic(BLEUuid bleuuid) : BLECharacteristic(bleuuid) { _cid = 0; }
+
+    virtual err_t begin(void);
+
+  private:
+    uint16_t _cid;
+
+    err_t _addChrID(void);
+
+};
 
 #endif /* HAPCHARACTERISTIC_H_ */

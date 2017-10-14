@@ -37,7 +37,6 @@
 #include <Arduino.h>
 #include <bluefruit.h>
 #include "BLEHomekit.h"
-#include "HAPService.h"
 
 err_t HAPService::begin(void)
 {
@@ -46,6 +45,10 @@ err_t HAPService::begin(void)
   return _addSvcID();
 }
 
+/**
+ * Add HAP Service Instance Characteristic
+ * @return status code
+ */
 err_t HAPService::_addSvcID(void)
 {
   BLECharacteristic chr(HAP_UUID_CHR_SERVICE_ID);
