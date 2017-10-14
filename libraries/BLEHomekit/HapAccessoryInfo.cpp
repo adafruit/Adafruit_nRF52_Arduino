@@ -35,7 +35,7 @@
 /**************************************************************************/
 
 #include <bluefruit.h>
-#include "HapUuid.h"
+#include "HAPUuid.h"
 #include "HapAccessoryInfo.h"
 
 HAPAccessoryInfo::HAPAccessoryInfo(void)

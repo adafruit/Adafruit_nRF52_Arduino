@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     HapUuid.h
+    @file     HAPUuid.h
     @author   hathach
 
     @section LICENSE

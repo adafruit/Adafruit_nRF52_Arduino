@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLEHomekit.h
+    @file     HAPCharacteristic.h
     @author   hathach
 
     @section LICENSE
@@ -33,56 +33,11 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLEHOMEKIT_H_
-#define BLEHOMEKIT_H_
+#ifndef HAPCHARACTERISTIC_H_
+#define HAPCHARACTERISTIC_H_
 
-#include "HAPUuid.h"
-#include "HapAccessoryInfo.h"
+#include <BLECharacteristic.h>
 
-enum
-{
-  HAP_CAT_OTHER = 1           ,
-  HAP_CAT_BRIDGE              ,
-  HAP_CAT_FAN                 ,
-  HAP_CAT_GARAGE              ,
-  HAP_CAT_LIGHTBULB           ,
-  HAP_CAT_DOOR_LOCK           ,
-  HAP_CAT_OUTLET              ,
-  HAP_CAT_SWITCH              ,
-  HAP_CAT_THERMOSTAT          ,
-  HAP_CAT_SENSOR              ,
-  HAP_CAT_SECURITY_SYSTEM     ,
-  HAP_CAT_DOOR                ,
-  HAP_CAT_WINDOWS             ,
-  HAP_CAT_WINDOWS_COVERING    ,
-  HAP_CAT_PROGRAMMABLE_SWITCH ,
-  HAP_CAT_RANGE_EXTENDER      ,
-  HAP_CAT_IP_CAMERA           ,
-  HAP_CAT_VIDEO_DOOR_BELL     ,
-  HAP_CAT_AIR_PURFIER         ,
-};
+class HAPCharacteristic
 
-class BLEHomekit : public Advertisable
-{
-  public:
-    static uint16_t _gInstanceID;
-
-    virtual bool setAdv(BLEAdvertisingData& adv);
-    BLEHomekit();
-    err_t begin();
-
-
-    HAPAccessoryInfo AccessoryInfo;
-
-  private:
-    // Mandatory services
-    HAPService _protocol_info;
-
-    BLEService _pairing;
-    BLECharacteristic _pair_setup, _pair_verify, _pair_features, _pair_pairing;
-
-    BLEService _lightbulb;
-    BLECharacteristic _on;
-};
-
-#endif /* BLEHOMEKIT_H_ */
+#endif /* HAPCHARACTERISTIC_H_ */
