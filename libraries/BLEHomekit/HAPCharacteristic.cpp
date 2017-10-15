@@ -40,11 +40,19 @@
 
 BLEUuid HAPCharacteristic::_g_uuid_cid(HAP_UUID_CHR_CHARACTERISTIC_ID);
 
+HAPCharacteristic::HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t unit)
+ : BLECharacteristic(bleuuid)
+{
+  _cid = 0;
+
+  setPresentationFormatDescriptor(format, 0, unit, 1, 0);
+}
+
 err_t HAPCharacteristic::begin(void)
 {
   VERIFY_STATUS( BLECharacteristic::begin() );
   VERIFY_STATUS( _addChrIdDescriptor() );
-  VERIFY_STATUS( _addFormatDescriptor() );
+  VERIFY_STATUS( _addHapDescriptor() );
 
   return ERROR_NONE;
 }
@@ -61,7 +69,7 @@ err_t HAPCharacteristic::_addChrIdDescriptor(void)
   return addDescriptor(_g_uuid_cid, &_cid, sizeof(_cid), SECMODE_OPEN, SECMODE_NO_ACCESS);
 }
 
-err_t HAPCharacteristic::_addFormatDescriptor(void)
+err_t HAPCharacteristic::_addHapDescriptor(void)
 {
 
 

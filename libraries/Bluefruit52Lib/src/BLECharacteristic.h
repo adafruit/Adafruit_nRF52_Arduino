@@ -100,7 +100,7 @@ class BLECharacteristic
 
     /*------------- Descriptors -------------*/
     void setUserDescriptor(const char* descriptor); // aka user descriptor
-    void setReportRefDescriptor(uint8_t id, uint8_t type);
+    void setReportRefDescriptor(uint8_t id, uint8_t type); // TODO refactor to use addDescriptor()
     void setPresentationFormatDescriptor(uint8_t type, int8_t exponent, uint16_t unit, uint8_t name_space = 1, uint16_t descritpor = 0);
 
     /*------------- Callbacks -------------*/
