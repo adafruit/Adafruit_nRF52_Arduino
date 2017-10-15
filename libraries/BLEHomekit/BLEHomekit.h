@@ -40,7 +40,7 @@
 #include "HAPCharacteristic.h"
 #include "HAPService.h"
 
-#include "HapAccessoryInfo.h"
+#include "HAPAccessoryInfo.h"
 
 enum
 {

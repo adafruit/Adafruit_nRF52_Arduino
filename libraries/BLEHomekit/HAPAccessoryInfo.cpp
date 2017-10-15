@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     HapAccessoryInfo.cpp
+    @file     HAPAccessoryInfo.cpp
     @author   hathach
 
     @section LICENSE
@@ -36,7 +36,7 @@
 
 #include <bluefruit.h>
 #include "HAPUuid.h"
-#include "HapAccessoryInfo.h"
+#include "HAPAccessoryInfo.h"
 
 HAPAccessoryInfo::HAPAccessoryInfo(void)
   : HAPService(HAP_UUID_SVC_ACCESSORY_INFO), _identify(HAP_UUID_CHR_IDENTIFY)

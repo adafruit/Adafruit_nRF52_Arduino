@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     HapAccessoryInfo.h
+    @file     HAPAccessoryInfo.h
     @author   hathach
 
     @section LICENSE
