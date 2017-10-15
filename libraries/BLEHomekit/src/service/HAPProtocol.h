@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLEHomekit.h
+    @file     HAPProtocol.h
     @author   hathach
 
     @section LICENSE
@@ -33,58 +33,23 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLEHOMEKIT_H_
-#define BLEHOMEKIT_H_
+#ifndef HAPPROTOCOL_H_
+#define HAPPROTOCOL_H_
 
-#include "HAPUuid.h"
 #include "HAPCharacteristic.h"
 #include "HAPService.h"
 
-#include "service/HAPAccessoryInfo.h"
-#include "service/HAPProtocol.h"
-#include "service/HAPPairing.h"
-#include "service/HAPLightBulb.h"
+#define HOMEKIT_PROTOCOL_VERSION_STR      "02.01.00"
 
-enum
-{
-  HAP_CAT_OTHER = 1           ,
-  HAP_CAT_BRIDGE              ,
-  HAP_CAT_FAN                 ,
-  HAP_CAT_GARAGE              ,
-  HAP_CAT_LIGHTBULB           ,
-  HAP_CAT_DOOR_LOCK           ,
-  HAP_CAT_OUTLET              ,
-  HAP_CAT_SWITCH              ,
-  HAP_CAT_THERMOSTAT          ,
-  HAP_CAT_SENSOR              ,
-  HAP_CAT_SECURITY_SYSTEM     ,
-  HAP_CAT_DOOR                ,
-  HAP_CAT_WINDOWS             ,
-  HAP_CAT_WINDOWS_COVERING    ,
-  HAP_CAT_PROGRAMMABLE_SWITCH ,
-  HAP_CAT_RANGE_EXTENDER      ,
-  HAP_CAT_IP_CAMERA           ,
-  HAP_CAT_VIDEO_DOOR_BELL     ,
-  HAP_CAT_AIR_PURFIER         ,
-};
-
-class BLEHomekit : public Advertisable
+class HAPProtocol : public HAPService
 {
   public:
-    static uint16_t _gInstanceID;
-
-    virtual bool setAdv(BLEAdvertisingData& adv);
-    BLEHomekit();
-    err_t begin(void);
-
-    HAPAccessoryInfo AccessoryInfo;
+    HAPProtocol(void);
+    virtual err_t begin(void);
 
   private:
-    // Mandatory services
-    HAPProtocol _protocol;
-    HAPPairing  _pairing;
-
-    HAPLightBulb _lightbulb;
 };
 
-#endif /* BLEHOMEKIT_H_ */
+
+
+#endif /* HAPPROTOCOL_H_ */

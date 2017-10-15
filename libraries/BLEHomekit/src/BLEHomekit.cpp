@@ -38,13 +38,11 @@
 #include "BLEHomekit.h"
 
 #define HOMEKIT_PROTOCOL_VERION           2
-#define HOMEKIT_PROTOCOL_VERSION_STR      "02.01.00"
 
 uint16_t BLEHomekit::_gInstanceID = 1;
 
 BLEHomekit::BLEHomekit()
- : _protocol_info(HAP_UUID_SVC_PROTOCOL_INFO),
-   AccessoryInfo(), _pairing(),
+ :  AccessoryInfo(), _protocol(), _pairing(),
    _lightbulb()
 {
 
@@ -56,18 +54,7 @@ err_t BLEHomekit::begin(void)
   VERIFY_STATUS ( AccessoryInfo.begin() );
 
   /*------------- Protocol Info Service -------------*/
-  VERIFY_STATUS( _protocol_info.begin() );
-  {
-    HAPCharacteristic chr(HAP_UUID_CHR_VERSION, BLE_GATT_CPF_FORMAT_UTF8S);
-
-    chr.setTempMemory(); // ready-only, not included in Gatt list
-    chr.setProperties(CHR_PROPS_READ);
-    chr.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
-    chr.setFixedLen(strlen(HOMEKIT_PROTOCOL_VERSION_STR));
-
-    VERIFY_STATUS( chr.begin() );
-    chr.write(HOMEKIT_PROTOCOL_VERSION_STR);
-  }
+  VERIFY_STATUS( _protocol.begin() );
 
   /*------------- Pairing Service -------------*/
   VERIFY_STATUS ( _pairing.begin() );

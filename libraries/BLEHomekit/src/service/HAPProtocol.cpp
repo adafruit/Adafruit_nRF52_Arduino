@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     BLEHomekit.h
+    @file     HAPProtocol.cpp
     @author   hathach
 
     @section LICENSE
@@ -33,58 +33,31 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLEHOMEKIT_H_
-#define BLEHOMEKIT_H_
 
+#include <bluefruit.h>
 #include "HAPUuid.h"
-#include "HAPCharacteristic.h"
-#include "HAPService.h"
+#include "HAPProtocol.h"
 
-#include "service/HAPAccessoryInfo.h"
-#include "service/HAPProtocol.h"
-#include "service/HAPPairing.h"
-#include "service/HAPLightBulb.h"
-
-enum
+HAPProtocol::HAPProtocol(void)
+  : HAPService(HAP_UUID_SVC_PROTOCOL_INFO)
 {
-  HAP_CAT_OTHER = 1           ,
-  HAP_CAT_BRIDGE              ,
-  HAP_CAT_FAN                 ,
-  HAP_CAT_GARAGE              ,
-  HAP_CAT_LIGHTBULB           ,
-  HAP_CAT_DOOR_LOCK           ,
-  HAP_CAT_OUTLET              ,
-  HAP_CAT_SWITCH              ,
-  HAP_CAT_THERMOSTAT          ,
-  HAP_CAT_SENSOR              ,
-  HAP_CAT_SECURITY_SYSTEM     ,
-  HAP_CAT_DOOR                ,
-  HAP_CAT_WINDOWS             ,
-  HAP_CAT_WINDOWS_COVERING    ,
-  HAP_CAT_PROGRAMMABLE_SWITCH ,
-  HAP_CAT_RANGE_EXTENDER      ,
-  HAP_CAT_IP_CAMERA           ,
-  HAP_CAT_VIDEO_DOOR_BELL     ,
-  HAP_CAT_AIR_PURFIER         ,
-};
 
-class BLEHomekit : public Advertisable
+}
+
+err_t HAPProtocol::begin(void)
 {
-  public:
-    static uint16_t _gInstanceID;
+  VERIFY_STATUS( HAPService::begin() ); // Invoke base class begin()
 
-    virtual bool setAdv(BLEAdvertisingData& adv);
-    BLEHomekit();
-    err_t begin(void);
+  HAPCharacteristic chr(HAP_UUID_CHR_VERSION, BLE_GATT_CPF_FORMAT_UTF8S);
 
-    HAPAccessoryInfo AccessoryInfo;
+  chr.setTempMemory(); // ready-only, not included in Gatt list
+  chr.setProperties(CHR_PROPS_READ);
+  chr.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  chr.setFixedLen(strlen(HOMEKIT_PROTOCOL_VERSION_STR));
 
-  private:
-    // Mandatory services
-    HAPProtocol _protocol;
-    HAPPairing  _pairing;
+  VERIFY_STATUS( chr.begin() );
+  chr.write(HOMEKIT_PROTOCOL_VERSION_STR);
 
-    HAPLightBulb _lightbulb;
-};
+  return ERROR_NONE;
+}
 
-#endif /* BLEHOMEKIT_H_ */
