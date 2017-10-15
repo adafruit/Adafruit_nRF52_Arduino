@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     HAPCharacteristic.h
+    @file     HAPLightBulb.cpp
     @author   hathach
 
     @section LICENSE
@@ -33,25 +33,27 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef HAPCHARACTERISTIC_H_
-#define HAPCHARACTERISTIC_H_
 
-#include <BLECharacteristic.h>
+#include <bluefruit.h>
+#include "HAPUuid.h"
+#include "HAPLightBulb.h"
 
-class HAPCharacteristic : public BLECharacteristic
+HAPLightBulb::HAPLightBulb(void)
+  : HAPService(HAP_UUID_SVC_LIGHT_BULB), _on(HAP_UUID_CHR_ON)
 {
-  public:
-    static BLEUuid _g_uuid_cid;
 
-    HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t unit = UUID16_UNIT_UNITLESS);
-    virtual err_t begin(void);
+}
 
-  private:
-    uint16_t _cid;
+err_t HAPLightBulb::begin(void)
+{
+  VERIFY_STATUS( HAPService::begin() ); // Invoke base class begin()
 
-    err_t _addChrIdDescriptor (void);
-    err_t _addHapDescriptor(void);
+  // ON char
+  _on.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_INDICATE );
+  _on.setPermission(SECMODE_OPEN, SECMODE_OPEN);
+  _on.setFixedLen(1);
+  VERIFY_STATUS( _on.begin() );
+  _on.write( (uint8_t) 0x00 );
 
-};
-
-#endif /* HAPCHARACTERISTIC_H_ */
+  return ERROR_NONE;
+}

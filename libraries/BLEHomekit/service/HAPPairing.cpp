@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     HAPCharacteristic.h
+    @file     HAPPairing.cpp
     @author   hathach
 
     @section LICENSE
@@ -33,25 +33,46 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef HAPCHARACTERISTIC_H_
-#define HAPCHARACTERISTIC_H_
 
-#include <BLECharacteristic.h>
+#include <bluefruit.h>
+#include "HAPUuid.h"
+#include "HAPPairing.h"
 
-class HAPCharacteristic : public BLECharacteristic
+HAPPairing::HAPPairing(void)
+  : HAPService(HAP_UUID_SVC_PAIRING),
+    _setup    (HAP_UUID_CHR_PAIR_SETUP   , BLE_GATT_CPF_FORMAT_STRUCT),
+    _verify   (HAP_UUID_CHR_PAIR_VERIFY  , BLE_GATT_CPF_FORMAT_STRUCT),
+    _features (HAP_UUID_SVC_PAIR_FEATURE , BLE_GATT_CPF_FORMAT_STRUCT),
+    _pairing  (HAP_UUID_SVC_PAIR_PAIRING , BLE_GATT_CPF_FORMAT_STRUCT)
 {
-  public:
-    static BLEUuid _g_uuid_cid;
 
-    HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t unit = UUID16_UNIT_UNITLESS);
-    virtual err_t begin(void);
+}
 
-  private:
-    uint16_t _cid;
+err_t HAPPairing::begin(void)
+{
+  VERIFY_STATUS( HAPService::begin() ); // Invoke base class begin()
 
-    err_t _addChrIdDescriptor (void);
-    err_t _addHapDescriptor(void);
+  // TODO read, write using auth
+  _setup.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
+  _setup.setPermission(SECMODE_OPEN, SECMODE_OPEN);
+  _setup.setMaxLen(100);
+  VERIFY_STATUS( _setup.begin() );
 
-};
+  _verify.setProperties(CHR_PROPS_READ);
+  _verify.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  _verify.setMaxLen(100);
+  VERIFY_STATUS( _verify.begin() );
 
-#endif /* HAPCHARACTERISTIC_H_ */
+  _features.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
+  _features.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  _features.setFixedLen(1);
+  VERIFY_STATUS( _features.begin() );
+  _features.write( (uint8_t) 0x01); // support HAP pairing
+
+  _pairing.setProperties(CHR_PROPS_READ);
+  _pairing.setPermission(SECMODE_OPEN, SECMODE_OPEN);
+  _pairing.setMaxLen(100);
+  VERIFY_STATUS( _pairing.begin() );
+
+  return ERROR_NONE;
+}

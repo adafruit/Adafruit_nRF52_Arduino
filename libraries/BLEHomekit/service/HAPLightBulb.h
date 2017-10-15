@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     HAPCharacteristic.h
+    @file     HAPLightBulb.h
     @author   hathach
 
     @section LICENSE
@@ -33,25 +33,24 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef HAPCHARACTERISTIC_H_
-#define HAPCHARACTERISTIC_H_
+#ifndef HAPLIGHTBULB_H_
+#define HAPLIGHTBULB_H_
 
-#include <BLECharacteristic.h>
+#include "HAPCharacteristic.h"
+#include "HAPService.h"
 
-class HAPCharacteristic : public BLECharacteristic
+class HAPLightBulb : public HAPService
 {
   public:
-    static BLEUuid _g_uuid_cid;
+    HAPLightBulb(void);
 
-    HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t unit = UUID16_UNIT_UNITLESS);
     virtual err_t begin(void);
 
   private:
-    uint16_t _cid;
-
-    err_t _addChrIdDescriptor (void);
-    err_t _addHapDescriptor(void);
-
+    HAPCharacteristic _on;
 };
 
-#endif /* HAPCHARACTERISTIC_H_ */
+
+
+
+#endif /* HAPLIGHTBULB_H_ */

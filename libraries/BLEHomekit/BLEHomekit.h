@@ -41,6 +41,7 @@
 #include "HAPService.h"
 
 #include "service/HAPAccessoryInfo.h"
+#include "service/HAPPairing.h"
 
 enum
 {
@@ -74,18 +75,14 @@ class BLEHomekit : public Advertisable
     BLEHomekit();
     err_t begin();
 
-
     HAPAccessoryInfo AccessoryInfo;
 
   private:
     // Mandatory services
     HAPService _protocol_info;
-
-    HAPService _pairing;
-    HAPCharacteristic _pair_setup, _pair_verify, _pair_features, _pair_pairing;
+    HAPPairing _pairing;
 
     HAPService _lightbulb;
-    HAPCharacteristic _on;
 };
 
 #endif /* BLEHOMEKIT_H_ */
