@@ -59,7 +59,7 @@ class BLEUuid
     size_t size (void) const;
 
     // Add UUID128 if needed, in case of UUID16, no actions is required
-    void begin(void);
+    err_t begin(void);
 
     bool operator==(const BLEUuid&   uuid) const;
     bool operator!=(const BLEUuid&   uuid) const;
@@ -204,7 +204,7 @@ class BLEUuid
 /* Unit values ( used in Characteristic Presentation Format )
  * https://developer.bluetooth.org/gatt/units/Pages/default.aspx
  *------------------------------------------------------------------*/
-#define UUID16_UNIT_NONE                                                    0x2700
+#define UUID16_UNIT_UNITLESS                                                0x2700
 #define UUID16_UNIT_LENGTH_METRE                                            0x2701
 #define UUID16_UNIT_MASS_KILOGRAM                                           0x2702
 #define UUID16_UNIT_TIME_SECOND                                             0x2703

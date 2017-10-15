@@ -111,6 +111,9 @@ class BLECharacteristic
 
     virtual err_t begin(void);
 
+    // Add Descriptor function must be called right after begin()
+    err_t addDescriptor(BLEUuid bleuuid, void const * content, uint16_t len, BleSecurityMode read_perm = SECMODE_OPEN, BleSecurityMode write_perm = SECMODE_NO_ACCESS);
+
     ble_gatts_char_handles_t handles(void);
 
     /*------------- Write -------------*/

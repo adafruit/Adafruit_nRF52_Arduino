@@ -50,7 +50,8 @@ class HAPCharacteristic : public BLECharacteristic
   private:
     uint16_t _cid;
 
-    err_t _addChrID(void);
+    err_t _addChrIdDescriptor (void);
+    err_t _addFormatDescriptor(void);
 
 };
 

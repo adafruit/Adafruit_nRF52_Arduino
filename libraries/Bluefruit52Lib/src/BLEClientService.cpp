@@ -63,7 +63,7 @@ BLEClientService::BLEClientService(BLEUuid bleuuid)
 bool BLEClientService::begin(void)
 {
   // Add UUID128 if needed
-  uuid.begin();
+  (void) uuid.begin();
 
   lastService = this;
   (void) Bluefruit.Gatt._addService(this);

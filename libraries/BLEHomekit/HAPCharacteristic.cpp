@@ -43,14 +43,17 @@ BLEUuid HAPCharacteristic::_g_uuid_cid(HAP_UUID_CHR_CHARACTERISTIC_ID);
 err_t HAPCharacteristic::begin(void)
 {
   VERIFY_STATUS( BLECharacteristic::begin() );
-  return _addChrID();
+  VERIFY_STATUS( _addChrIdDescriptor() );
+  VERIFY_STATUS( _addFormatDescriptor() );
+
+  return ERROR_NONE;
 }
 
 /**
  * Add Characteristic Instance ID descriptor
  * @return status code
  */
-err_t HAPCharacteristic::_addChrID(void)
+err_t HAPCharacteristic::_addChrIdDescriptor(void)
 {
   // Add Descriptor UUID if not yet added
   if (_g_uuid_cid._uuid.type == BLE_UUID_TYPE_UNKNOWN)
@@ -80,6 +83,13 @@ err_t HAPCharacteristic::_addChrID(void)
 
   uint16_t ref_hdl;
   VERIFY_STATUS ( sd_ble_gatts_descriptor_add(BLE_GATT_HANDLE_INVALID, &cid_desc, &ref_hdl) );
+
+  return ERROR_NONE;
+}
+
+err_t HAPCharacteristic::_addFormatDescriptor(void)
+{
+
 
   return ERROR_NONE;
 }

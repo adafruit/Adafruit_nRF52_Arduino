@@ -192,7 +192,7 @@ err_t BLECharacteristic::begin(void)
   _service = BLEService::lastService;
 
   // Add UUID128 if needed
-  uuid.begin();
+  (void) uuid.begin();
 
   // Permission is OPEN if passkey is disabled.
 //  if (!nvm_data.core.passkey_enable) BLE_GAP_CONN_SEC_MODE_SET_OPEN(&p_char_def->permission);
@@ -298,6 +298,36 @@ err_t BLECharacteristic::begin(void)
   {
     (void) Bluefruit.Gatt._addCharacteristic(this);
   }
+
+  return ERROR_NONE;
+}
+
+err_t BLECharacteristic::addDescriptor(BLEUuid bleuuid, void const * content, uint16_t len, BleSecurityMode read_perm, BleSecurityMode write_perm)
+{
+  // Meta Data
+  ble_gatts_attr_md_t meta;
+  varclr(&meta);
+
+  memcpy(&meta.read_perm , &read_perm , 1);
+  memcpy(&meta.write_perm, &write_perm, 1);
+  meta.vlen = 0;
+  meta.vloc = BLE_GATTS_VLOC_STACK;
+
+  // Descriptor
+  (void) bleuuid.begin();
+
+  ble_gatts_attr_t desc =
+  {
+      .p_uuid    = &bleuuid._uuid,
+      .p_attr_md = &meta,
+      .init_len  = len,
+      .init_offs = 0,
+      .max_len   = len,
+      .p_value   = (uint8_t*) content
+  };
+
+  uint16_t hdl;
+  VERIFY_STATUS ( sd_ble_gatts_descriptor_add(BLE_GATT_HANDLE_INVALID, &desc, &hdl) );
 
   return ERROR_NONE;
 }

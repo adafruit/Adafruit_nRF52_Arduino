@@ -70,7 +70,7 @@ BLEClientCharacteristic::~BLEClientCharacteristic()
 void BLEClientCharacteristic::begin(BLEClientService* parent_svc)
 {
   // Add UUID128 if needed
-  uuid.begin();
+  (void) uuid.begin();
 
   // Use the last (discovered) service as parent if not provided
   _service = ( parent_svc == NULL ) ? BLEClientService::lastService : parent_svc;
