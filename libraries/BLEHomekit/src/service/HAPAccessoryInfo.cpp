@@ -39,7 +39,7 @@
 #include "HAPAccessoryInfo.h"
 
 HAPAccessoryInfo::HAPAccessoryInfo(void)
-  : HAPService(HAP_UUID_SVC_ACCESSORY_INFO), _identify(HAP_UUID_CHR_IDENTIFY)
+  : HAPService(HAP_UUID_SVC_ACCESSORY_INFO), _identify(HAP_UUID_CHR_IDENTIFY, BLE_GATT_CPF_FORMAT_UTF8S)
 {
 
 }
