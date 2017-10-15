@@ -34,7 +34,6 @@
 */
 /**************************************************************************/
 
-#include <Arduino.h>
 #include <bluefruit.h>
 #include "BLEHomekit.h"
 

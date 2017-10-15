@@ -74,7 +74,7 @@ class BLEHomekit : public Advertisable
 
     virtual bool setAdv(BLEAdvertisingData& adv);
     BLEHomekit();
-    err_t begin();
+    err_t begin(void);
 
     HAPAccessoryInfo AccessoryInfo;
 

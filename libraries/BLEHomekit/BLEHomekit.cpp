@@ -43,28 +43,14 @@
 uint16_t BLEHomekit::_gInstanceID = 1;
 
 BLEHomekit::BLEHomekit()
- : _protocol_info(HAP_UUID_SVC_PROTOCOL_INFO), AccessoryInfo(), _pairing(),
+ : _protocol_info(HAP_UUID_SVC_PROTOCOL_INFO),
+   AccessoryInfo(), _pairing(),
    _lightbulb()
 {
 
 }
 
-err_t addServiceInstanceID(void)
-{
-  BLECharacteristic chr(HAP_UUID_CHR_SERVICE_ID);
-  chr.setTempMemory();
-
-  chr.setProperties(CHR_PROPS_READ);
-  chr.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  chr.setFixedLen(2);
-  VERIFY_STATUS( chr.begin() );
-
-  chr.write( BLEHomekit::_gInstanceID++ );
-
-  return ERROR_NONE;
-}
-
-err_t BLEHomekit::begin()
+err_t BLEHomekit::begin(void)
 {
   /*------------- Accessory Info Service -------------*/
   VERIFY_STATUS ( AccessoryInfo.begin() );
