@@ -55,36 +55,10 @@ err_t HAPCharacteristic::begin(void)
  */
 err_t HAPCharacteristic::_addChrIdDescriptor(void)
 {
-  // Add Descriptor UUID if not yet added
-  if (_g_uuid_cid._uuid.type == BLE_UUID_TYPE_UNKNOWN)
-  {
-    _g_uuid_cid.begin();
-  }
-
+  // Save Characteristic Instance ID
   _cid = BLEHomekit::_gInstanceID++;
 
-  ble_gatts_attr_md_t cid_md =
-  {
-      .read_perm  = BLE_SECMODE_OPEN,
-      .write_perm = BLE_SECMODE_NO_ACCESS,
-      .vlen       = 0,
-      .vloc       = BLE_GATTS_VLOC_STACK
-  };
-
-  ble_gatts_attr_t cid_desc =
-  {
-      .p_uuid    = &_g_uuid_cid._uuid,
-      .p_attr_md = &cid_md,
-      .init_len  = 2,
-      .init_offs = 0,
-      .max_len   = 2,
-      .p_value   = (uint8_t*) &_cid
-  };
-
-  uint16_t ref_hdl;
-  VERIFY_STATUS ( sd_ble_gatts_descriptor_add(BLE_GATT_HANDLE_INVALID, &cid_desc, &ref_hdl) );
-
-  return ERROR_NONE;
+  return addDescriptor(_g_uuid_cid, &_cid, sizeof(_cid), SECMODE_OPEN, SECMODE_NO_ACCESS);
 }
 
 err_t HAPCharacteristic::_addFormatDescriptor(void)
