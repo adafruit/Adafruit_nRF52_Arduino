@@ -42,6 +42,7 @@
 
 #include "service/HAPAccessoryInfo.h"
 #include "service/HAPPairing.h"
+#include "service/HAPLightBulb.h"
 
 enum
 {
@@ -82,7 +83,7 @@ class BLEHomekit : public Advertisable
     HAPService _protocol_info;
     HAPPairing _pairing;
 
-    HAPService _lightbulb;
+    HAPLightBulb _lightbulb;
 };
 
 #endif /* BLEHOMEKIT_H_ */

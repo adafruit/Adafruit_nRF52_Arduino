@@ -39,7 +39,7 @@
 #include "HAPLightBulb.h"
 
 HAPLightBulb::HAPLightBulb(void)
-  : HAPService(HAP_UUID_SVC_LIGHT_BULB), _on(HAP_UUID_CHR_ON)
+  : HAPService(HAP_UUID_SVC_LIGHT_BULB), _on(HAP_UUID_CHR_ON, BLE_GATT_CPF_FORMAT_BOOLEAN)
 {
 
 }
