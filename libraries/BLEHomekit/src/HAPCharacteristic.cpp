@@ -125,25 +125,19 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
     {
       ble_gatts_evt_rw_authorize_request_t * request = &event->evt.gatts_evt.params.authorize_request;
 
+      ble_gatts_rw_authorize_reply_params_t reply =
+      {
+          .type = request->type,
+          // BLE_GATT_STATUS_SUCCESS
+      };
+
       // Handle HAP Request
       if (request->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE)
       {
         HAPRequest_t* hap_req = (HAPRequest_t*) request->request.write.data;
-        VERIFY(hap_req->control.type == HAP_PDU_REQUEST, );
+        VERIFY(hap_req->header.control.type == HAP_PDU_REQUEST, );
 
-//        ble_gatts_rw_authorize_reply_params_t reply =
-//        {
-//            .type = request->type,
-//            .params.write =
-//            {
-//                .gatt_status = BLE_GATT_STATUS_SUCCESS,
-//                .
-//            };
-//        };
-
-//      sd_ble_gatts_rw_authorize_reply(Bluefruit.connHandle(), &reply);
-
-        switch(hap_req->opcode)
+        switch(hap_req->header.opcode)
         {
           /* Return <Chr Type, Svc Type, Svc ID, Meta Descriptors>
            * Where descriptors are:
@@ -156,8 +150,12 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
           }
           break;
 
-          default: break;
+          default:
+            reply.params.write.gatt_status = BLE_GATT_STATUS_UNKNOWN;
+          break;
         }
+
+        sd_ble_gatts_rw_authorize_reply(Bluefruit.connHandle(), &reply);
       }
 
       // Handle HAP Response

@@ -115,6 +115,12 @@ enum TLVType_t
   TLV_TYPE_SEPARATOR
 };
 
+typedef struct ATTR_PACKED
+{
+  uint8_t type; // TLVType_t
+  uint8_t length;
+  uint8_t value[];
+}TLV8_t;
 
 typedef struct ATTR_PACKED
 {
@@ -132,24 +138,38 @@ typedef struct ATTR_PACKED
   uint8_t  opcode      ;
   uint8_t  tid         ; // Transaction ID
   uint16_t instance_id ; // Service or Characteristic Instance ID
-} HAPRequest_t;
+} HAPRequestHeader_t;
 
-VERIFY_STATIC(sizeof (HAPRequest_t) == 5);
+VERIFY_STATIC(sizeof (HAPRequestHeader_t) == 5);
+
+typedef struct ATTR_PACKED
+{
+  HAPRequestHeader_t header;
+
+  // Optional
+  uint16_t len;
+  uint8_t  tlvdata[1];
+} HAPRequest_t;
 
 typedef struct ATTR_PACKED
 {
   HAPControl_t control;
   uint8_t tid;
   uint8_t status;
-}HAPResponse_t;
+}HAPResponseHeader_t;
 
-VERIFY_STATIC(sizeof (HAPResponse_t) == 3);
+VERIFY_STATIC(sizeof (HAPResponseHeader_t) == 3);
+
 
 typedef struct ATTR_PACKED
 {
-  uint8_t type; // TLVType_t
-  uint8_t length;
-  uint8_t value[];
-}TLV8_t;
+  HAPResponseHeader_t header;
+
+  // Optional
+  uint16_t len;
+  uint8_t  tlvdata[1];
+} HAPResponse_t;
+
+
 
 #endif /* HAPPROCEDURE_H_ */
