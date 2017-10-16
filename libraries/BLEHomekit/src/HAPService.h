@@ -37,15 +37,20 @@
 #define HAPSERVICE_H_
 
 #include <BLEService.h>
+#include "HAPCharacteristic.h"
 
 class HAPService : public BLEService
 {
   public:
-    HAPService(BLEUuid bleuuid) : BLEService(bleuuid) { _svc_id = 0; }
+    HAPService(BLEUuid bleuuid) : BLEService(bleuuid) { _svc_id = 0; /*_signature = NULL;*/ }
     virtual err_t begin(void);
+
+    err_t addSignatureChr(void);
 
   private:
     uint16_t _svc_id;
+
+//    HAPCharacteristic* _signature;
 
     // Service Instance ID
     err_t _addSvcID(void);

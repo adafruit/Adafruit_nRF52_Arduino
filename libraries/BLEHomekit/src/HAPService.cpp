@@ -64,4 +64,11 @@ err_t HAPService::_addSvcID(void)
   return ERROR_NONE;
 }
 
-
+//err_t HAPService::addSignatureChr(void)
+//{
+//  _signature = new HAPCharacteristic(HAP_UUID_CHR_SERVICE_SIGNATURE, BLE_GATT_CPF_FORMAT_STRUCT);
+//  VERIFY( _signature, NRF_ERROR_NO_MEM);
+//
+//  _signature->setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
+//
+//}

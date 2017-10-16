@@ -37,8 +37,14 @@
 #include <bluefruit.h>
 #include "BLEHomekit.h"
 
-BLEUuid HAPCharacteristic::_g_uuid_cid(HAP_UUID_CHR_CHARACTERISTIC_ID);
+BLEUuid HAPCharacteristic::_g_uuid_cid(HAP_UUID_DSC_CHARACTERISTIC_ID);
 
+/**
+ *
+ * @param bleuuid   Uuid of the characteristic
+ * @param format    BLE_GATT_CPF_FORMAT_x value, see ble_gatt.h
+ * @param unit      UUID16_UNIT_x, see BLEUuid.h
+ */
 HAPCharacteristic::HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t unit)
  : BLECharacteristic(bleuuid)
 {
@@ -80,7 +86,7 @@ err_t HAPCharacteristic::_addChrIdDescriptor(void)
 
 err_t HAPCharacteristic::_addHapDescriptor(void)
 {
-
+  HAPCharacteristic
 
   return ERROR_NONE;
 }
