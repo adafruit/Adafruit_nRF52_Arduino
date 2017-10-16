@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     HAPCharacteristic.cpp
+    @file     HAPProcedure.h
     @author   hathach
 
     @section LICENSE
@@ -33,55 +33,65 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
+#ifndef HAPPROCEDURE_H_
+#define HAPPROCEDURE_H_
 
-#include <bluefruit.h>
-#include "BLEHomekit.h"
-
-BLEUuid HAPCharacteristic::_g_uuid_cid(HAP_UUID_CHR_CHARACTERISTIC_ID);
-
-HAPCharacteristic::HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t unit)
- : BLECharacteristic(bleuuid)
+enum HAPOpcode
 {
-  _cid = 0;
+  HAP_OPCODE_CHR_SIGNATURE_READ = 0x01 ,
+  HAP_OPCODE_CHR_WRITE                 ,
+  HAP_OPCODE_CHR_READ                  ,
+  HAP_OPCODE_CHR_TIMED_WRITE           ,
+  HAP_OPCODE_CHR_EXECUTE_WRITE         ,
+  HAP_OPCODE_SVC_SIGNATURE_READ
+};
 
-  setPresentationFormatDescriptor(format, 0, unit, 1, 0);
-}
-
-/**
- * GATT Descriptor includes: Instance ID
- * HAP  Descriptor includes: HAP Properties, User String, Presentation Format,
- *                           Valid Range (GATT), Step Value, Valid Values, Valid Values Range
- * @return
- */
-err_t HAPCharacteristic::begin(void)
+enum HAPParamType
 {
-  uint8_t temp = _format_desc.format;
-  _format_desc.format = 0; // invalid to prevent adding presentation format
+  HAP_PARAM_VALUE = 1                     ,
+  HAP_PARAM_ADDITIONAL_AUTHORIZATION_DATA ,
+  HAP_PARAM_ORIGIN                        , // local vs remote
+  HAP_PARAM_CHR_TYPE                      ,
+  HAP_PARAM_CHR_ID                        ,
+  HAP_PARAM_SVC_TYPE                      ,
+  HAP_PARAM_SVC_ID                        ,
+  HAP_PARAM_TTL                           ,
+  HAP_PARAM_RETURN_RESP                   ,
+  HAP_PARAM_HAP_CHR_PROPERTIES_DESC       ,
+  HAP_PARAM_GATT_USR_DESC                 ,
+  HAP_PARAM_GATT_FORMAT_DESC              ,
+  HAP_PARAM_GATT_VALID_RANGE              ,
+  HAP_PARAM_HAP_STEP_VALUE_DESC           ,
+  HAP_PARAM_HAP_SVC_PROPERTIES            ,
+  HAP_PARAM_HAP_LINKED_SVC                ,
+  HAP_PARAM_HAP_VALID_VALUES_DESC         ,
+  HAP_PARAM_HAP_VALID_VALUES_RANGE_DESC
+};
 
-  VERIFY_STATUS( BLECharacteristic::begin() );
-  _format_desc.format = temp;
-
-  VERIFY_STATUS( _addChrIdDescriptor() );
-
-  return ERROR_NONE;
-}
-
-/**
- * Add Characteristic Instance ID descriptor
- * @return status code
- */
-err_t HAPCharacteristic::_addChrIdDescriptor(void)
+struct ATTR_PACKED
 {
-  // Save Characteristic Instance ID
-  _cid = BLEHomekit::_gInstanceID++;
+  uint8_t fragment : 1; // 0 : first Fragment (or no fragment), 1 : Continuation of Fragment
+  uint8_t          : 3; // reserved
+  uint8_t type     : 3; // 0b000 : request, 0b001 : response
+  uint8_t lenext   : 1;
+} HAPControl_t;
 
-  return addDescriptor(_g_uuid_cid, &_cid, sizeof(_cid), SECMODE_OPEN, SECMODE_NO_ACCESS);
-}
+VERIFY_STATIC(sizeof (HAPControl_t) == 1);
 
-err_t HAPCharacteristic::_addHapDescriptor(void)
+struct ATTR_PACKED
 {
+  HAPControl_t control ;
+  uint8_t opcode       ;
+  uint8_t tid          ; // Transaction ID
+  uint8_t instance_id  ; // Service or Characteristic Instance ID
+} HAPRequest_t;
+
+struct ATTR_PACKED
+{
+  HAPControl_t control;
+  uint8_t tid;
+  uint8_t status;
+};
 
 
-  return ERROR_NONE;
-}
-
+#endif /* HAPPROCEDURE_H_ */
