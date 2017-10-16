@@ -53,23 +53,23 @@ err_t HAPPairing::begin(void)
   VERIFY_STATUS( HAPService::begin() ); // Invoke base class begin()
 
   // TODO read, write using auth
-  _setup.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
+  _setup.setHapProperties(HAP_CHR_PROPS_READ | HAP_CHR_PROPS_WRITE);
   _setup.setPermission(SECMODE_OPEN, SECMODE_OPEN);
   _setup.setMaxLen(100);
   VERIFY_STATUS( _setup.begin() );
 
-  _verify.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
+  _verify.setHapProperties(HAP_CHR_PROPS_READ | HAP_CHR_PROPS_WRITE);
   _verify.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   _verify.setMaxLen(100);
   VERIFY_STATUS( _verify.begin() );
 
-  _features.setProperties(CHR_PROPS_READ);
+  _features.setHapProperties(HAP_CHR_PROPS_READ);
   _features.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   _features.setFixedLen(1);
   VERIFY_STATUS( _features.begin() );
   _features.write( (uint8_t) 0x01); // support HAP pairing
 
-  _pairing.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
+  _pairing.setHapProperties(HAP_CHR_PROPS_READ | HAP_CHR_PROPS_WRITE);
   _pairing.setPermission(SECMODE_OPEN, SECMODE_OPEN);
   _pairing.setMaxLen(100);
   VERIFY_STATUS( _pairing.begin() );

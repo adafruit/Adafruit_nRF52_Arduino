@@ -39,6 +39,7 @@
 
 BLEUuid HAPCharacteristic::_g_uuid_cid(HAP_UUID_DSC_CHARACTERISTIC_ID);
 
+
 /**
  *
  * @param bleuuid   Uuid of the characteristic
@@ -49,8 +50,22 @@ HAPCharacteristic::HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t u
  : BLECharacteristic(bleuuid)
 {
   _cid = 0;
+  _hap_props = 0;
 
   setPresentationFormatDescriptor(format, 0, unit, 1, 0);
+}
+
+void HAPCharacteristic::setHapProperties(uint16_t prop)
+{
+  _hap_props = prop;
+
+  uint8_t chrprop = 0;
+
+  if ((prop & HAP_CHR_PROPS_READ  ) || (prop & HAP_CHR_PROPS_SECURE_READ        )) chrprop |= CHR_PROPS_READ;
+  if ((prop & HAP_CHR_PROPS_WRITE ) || (prop & HAP_CHR_PROPS_SECURE_WRITE       )) chrprop |= CHR_PROPS_WRITE;
+  if ((prop & HAP_CHR_PROPS_NOTIFY) || (prop & HAP_CHR_PROPS_NOTIFY_DISCONNECTED)) chrprop |= CHR_PROPS_INDICATE;
+
+  setProperties(chrprop);
 }
 
 /**
@@ -61,13 +76,24 @@ HAPCharacteristic::HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t u
  */
 err_t HAPCharacteristic::begin(void)
 {
-  uint8_t temp = _format_desc.format;
+  // Needed to response to HAP Procedure
+  _attr_meta.rd_auth = _attr_meta.wr_auth = 1;
+
+  // Descriptors are not included in Gatt Table, only returned in
+  // HAP Characteristic Signature Read procedure.
+  // Including: User String, Presentation Format
+  uint8_t temp_format = _format_desc.format;
   _format_desc.format = 0; // invalid to prevent adding presentation format
 
-  VERIFY_STATUS( BLECharacteristic::begin() );
-  _format_desc.format = temp;
+  const char* temp_usr = _usr_descriptor;
+  _usr_descriptor = NULL;
 
+  VERIFY_STATUS( BLECharacteristic::begin() );
   VERIFY_STATUS( _addChrIdDescriptor() );
+
+  // Restore configured setting
+  _format_desc.format = temp_format;
+  _usr_descriptor = temp_usr;
 
   return ERROR_NONE;
 }
@@ -86,8 +112,63 @@ err_t HAPCharacteristic::_addChrIdDescriptor(void)
 
 err_t HAPCharacteristic::_addHapDescriptor(void)
 {
-  HAPCharacteristic
+//  HAPCharacteristic
 
   return ERROR_NONE;
+}
+
+void HAPCharacteristic::_eventHandler(ble_evt_t* event)
+{
+  switch(event->header.evt_id)
+  {
+    case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
+    {
+      ble_gatts_evt_rw_authorize_request_t * request = &event->evt.gatts_evt.params.authorize_request;
+
+      // Handle HAP Request
+      if (request->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE)
+      {
+        HAPRequest_t* hap_req = (HAPRequest_t*) request->request.write.data;
+        VERIFY(hap_req->control.type == HAP_PDU_REQUEST, );
+
+//        ble_gatts_rw_authorize_reply_params_t reply =
+//        {
+//            .type = request->type,
+//            .params.write =
+//            {
+//                .gatt_status = BLE_GATT_STATUS_SUCCESS,
+//                .
+//            };
+//        };
+
+//      sd_ble_gatts_rw_authorize_reply(Bluefruit.connHandle(), &reply);
+
+        switch(hap_req->opcode)
+        {
+          /* Return <Chr Type, Svc Type, Svc ID, Meta Descriptors>
+           * Where descriptors are:
+           * - Gatt Usr String, Gatt Format Desc, Gatt Valid Range
+           * - Hap Properties, Hap step value, Hap valid values, Hap valid Range
+           */
+          case HAP_OPCODE_CHR_SIGNATURE_READ:
+          {
+
+          }
+          break;
+
+          default: break;
+        }
+      }
+
+      // Handle HAP Response
+      if (request->type == BLE_GATTS_AUTHORIZE_TYPE_READ)
+      {
+        _rd_authorize_cb(*this, &request->request.read);
+      }
+    }
+    break;
+
+    default: break;
+  }
 }
 

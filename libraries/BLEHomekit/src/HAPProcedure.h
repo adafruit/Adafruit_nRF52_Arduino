@@ -79,7 +79,44 @@ enum HAPStatusCode_t
   HAP_STATUS_INVALID_REQUEST
 };
 
-struct ATTR_PACKED
+enum HAPPduType_t
+{
+  HAP_PDU_REQUEST = 0,
+  HAP_PDU_RESPONSE,
+};
+
+enum TLVError_t
+{
+  TLV_ERROR_UNKNOWN = 1    ,
+  TLV_ERROR_AUTHENTICATION ,
+  TLV_ERROR_BACKOFF        ,
+  TLV_ERROR_MAX_PEERS      ,
+  TLV_ERROR_MAX_TRIES      ,
+  TLV_ERROR_UNAVAILABLE    ,
+  TLV_ERROR_BUSY
+};
+
+enum TLVType_t
+{
+  TLV_TYPE_METHOD = 0     ,
+  TLV_TYPE_IDENTIFIER     ,
+  TLV_TYPE_SALT           ,
+  TLV_TYPE_PUBLIC_KEY     ,
+  TLV_TYPE_PROOF          ,
+  TLV_TYPE_ENCRYPTED_DATA ,
+  TLV_TYPE_STATE          ,
+  TLV_TYPE_ERROR          ,
+  TLV_TYPE_RETRY_DELAY    ,
+  TLV_TYPE_CERTIFICATE    ,
+  TLV_TYPE_SIGNATURE      ,
+  TLV_TYPE_PERMISSIONS    ,
+  TLV_TYPE_FRAGMENT_DATA  ,
+  TLV_TYPE_FRAGMENT_LAST  ,
+  TLV_TYPE_SEPARATOR
+};
+
+
+typedef struct ATTR_PACKED
 {
   uint8_t fragment : 1; // 0 : first Fragment (or no fragment), 1 : Continuation of Fragment
   uint8_t          : 3; // reserved
@@ -89,20 +126,30 @@ struct ATTR_PACKED
 
 VERIFY_STATIC(sizeof (HAPControl_t) == 1);
 
-struct ATTR_PACKED
+typedef struct ATTR_PACKED
 {
   HAPControl_t control ;
-  uint8_t opcode       ;
-  uint8_t tid          ; // Transaction ID
-  uint8_t instance_id  ; // Service or Characteristic Instance ID
+  uint8_t  opcode      ;
+  uint8_t  tid         ; // Transaction ID
+  uint16_t instance_id ; // Service or Characteristic Instance ID
 } HAPRequest_t;
 
-struct ATTR_PACKED
+VERIFY_STATIC(sizeof (HAPRequest_t) == 5);
+
+typedef struct ATTR_PACKED
 {
   HAPControl_t control;
   uint8_t tid;
   uint8_t status;
-};
+}HAPResponse_t;
 
+VERIFY_STATIC(sizeof (HAPResponse_t) == 3);
+
+typedef struct ATTR_PACKED
+{
+  uint8_t type; // TLVType_t
+  uint8_t length;
+  uint8_t value[];
+}TLV8_t;
 
 #endif /* HAPPROCEDURE_H_ */

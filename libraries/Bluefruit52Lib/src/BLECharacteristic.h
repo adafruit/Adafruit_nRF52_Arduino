@@ -166,7 +166,7 @@ class BLECharacteristic
 
     /*------------- Internal Functions -------------*/
     void _init(void);
-    void _eventHandler(ble_evt_t* event);
+    virtual void _eventHandler(ble_evt_t* event);
 
     friend class BLEGatt;
 };

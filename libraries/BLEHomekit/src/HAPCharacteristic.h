@@ -38,6 +38,19 @@
 
 #include <BLECharacteristic.h>
 
+enum HAPChrProperties_t
+{
+  HAP_CHR_PROPS_READ                  = bit(0),
+  HAP_CHR_PROPS_WRITE                 = bit(1),
+  HAP_CHR_PROPS_ADDITIONAL_AUTH_DATA  = bit(2),
+  HAP_CHR_PROPS_TIMED_WRITE_PROCEDURE = bit(3),
+  HAP_CHR_PROPS_SECURE_READ           = bit(4),
+  HAP_CHR_PROPS_SECURE_WRITE          = bit(5),
+  HAP_CHR_PROPS_HIDDEN                = bit(6), // from user
+  HAP_CHR_PROPS_NOTIFY                = bit(7),
+  HAP_CHR_PROPS_NOTIFY_DISCONNECTED   = bit(8),
+};
+
 class HAPCharacteristic : public BLECharacteristic
 {
   public:
@@ -46,11 +59,16 @@ class HAPCharacteristic : public BLECharacteristic
     HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t unit = UUID16_UNIT_UNITLESS);
     virtual err_t begin(void);
 
+    void setHapProperties(uint16_t prop);
+
   private:
     uint16_t _cid;
+    uint16_t _hap_props;
 
     err_t _addChrIdDescriptor (void);
     err_t _addHapDescriptor(void);
+
+    virtual void _eventHandler(ble_evt_t* event);
 
 };
 

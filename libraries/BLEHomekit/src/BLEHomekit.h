@@ -37,6 +37,7 @@
 #define BLEHOMEKIT_H_
 
 #include "HAPUuid.h"
+#include "HAPProcedure.h"
 #include "HAPCharacteristic.h"
 #include "HAPService.h"
 
