@@ -58,18 +58,18 @@ err_t HAPPairing::begin(void)
   _setup.setMaxLen(100);
   VERIFY_STATUS( _setup.begin() );
 
-  _verify.setProperties(CHR_PROPS_READ);
+  _verify.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
   _verify.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   _verify.setMaxLen(100);
   VERIFY_STATUS( _verify.begin() );
 
-  _features.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
+  _features.setProperties(CHR_PROPS_READ);
   _features.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   _features.setFixedLen(1);
   VERIFY_STATUS( _features.begin() );
   _features.write( (uint8_t) 0x01); // support HAP pairing
 
-  _pairing.setProperties(CHR_PROPS_READ);
+  _pairing.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
   _pairing.setPermission(SECMODE_OPEN, SECMODE_OPEN);
   _pairing.setMaxLen(100);
   VERIFY_STATUS( _pairing.begin() );

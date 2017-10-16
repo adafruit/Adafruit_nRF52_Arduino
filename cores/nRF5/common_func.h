@@ -129,9 +129,11 @@ int cprintf(const char * format, ...);
 #endif
 
 #if CFG_DEBUG >= 2
-#define LOG_LV2(...)    ADALOG(__VA_ARGS__)
+#define LOG_LV2(...)        ADALOG(__VA_ARGS__)
+#define PRINT2_BUFFER       PRINT_BUFFER
 #else
 #define LOG_LV2(...)
+#define PRINT2_BUFFER(...)
 #endif
 
 #if CFG_DEBUG
@@ -164,7 +166,6 @@ int cprintf(const char * format, ...);
     cprintf(__VA_ARGS__);\
     cprintf("\n");\
   }while(0)
-
 
 #else
 

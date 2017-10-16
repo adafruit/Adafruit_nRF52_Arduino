@@ -341,40 +341,40 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
   {
     case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
     {
-      ble_gatts_evt_rw_authorize_request_t * authorize_request = &event->evt.gatts_evt.params.authorize_request;
+      ble_gatts_evt_rw_authorize_request_t * request = &event->evt.gatts_evt.params.authorize_request;
 
-      // Handle has the same offset for read & write request
-      uint16_t req_handle = authorize_request->request.read.handle;
-
-      // skip if not our event
-      if ( _handles.value_handle == req_handle )
+      if ( (request->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE) && (_wr_authorize_cb != NULL))
       {
-        if ( (authorize_request->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE) && (_wr_authorize_cb != NULL))
-        {
-          this->_wr_authorize_cb(*this, &authorize_request->request.write);
-        }
+        _wr_authorize_cb(*this, &request->request.write);
+      }
 
-        if ( (authorize_request->type == BLE_GATTS_AUTHORIZE_TYPE_READ) && (_rd_authorize_cb != NULL))
-        {
-          _rd_authorize_cb(*this, &authorize_request->request.read);
-        }
+      if ( (request->type == BLE_GATTS_AUTHORIZE_TYPE_READ) && (_rd_authorize_cb != NULL))
+      {
+        _rd_authorize_cb(*this, &request->request.read);
       }
     }
     break;
 
     case BLE_GATTS_EVT_WRITE:
     {
-      ble_gatts_evt_write_t* request = (ble_gatts_evt_write_t*) &event->evt.gatts_evt.params.write;
+      ble_gatts_evt_write_t* request = &event->evt.gatts_evt.params.write;
 
       // Value write
-      if ( _wr_cb && (request->handle == _handles.value_handle))
+      if (request->handle == _handles.value_handle)
       {
-        _wr_cb(*this, request->data, request->len, request->offset);
+        LOG_LV2(GATTS, "attr's value, uuid = 0x%04X", request->uuid.uuid);
+        PRINT2_BUFFER(request->data, request->len);
+
+        // TODO Ada callback
+        if (_wr_cb) _wr_cb(*this, request->data, request->len, request->offset);
       }
 
       // CCCD write
       if ( request->handle == _handles.cccd_handle )
       {
+        LOG_LV2(GATTS, "attr's cccd");
+        PRINT2_BUFFER(request->data, request->len);
+
         // Invoke callback if set
         if (_cccd_wr_cb)
         {
