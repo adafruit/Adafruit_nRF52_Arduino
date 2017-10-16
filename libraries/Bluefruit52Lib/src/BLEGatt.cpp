@@ -95,7 +95,29 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
   // Server Characteristics
   for(uint8_t i=0; i<_server.chr_count; i++)
   {
-    _server.chr_list[i]->_eventHandler(evt);
+    // TODO multiple prph connection
+    BLECharacteristic* chr = _server.chr_list[i];
+    uint16_t req_handle = BLE_GATT_HANDLE_INVALID;
+
+    switch (evt_id)
+    {
+      case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
+        // Handle has the same offset for read & write request
+        req_handle = evt->evt.gatts_evt.params.authorize_request.request.read.handle;
+      break;
+
+      case BLE_GATTS_EVT_WRITE:
+        req_handle = evt->evt.gatts_evt.params.write.handle;
+      break;
+
+      default: break;
+    }
+
+    // invoke characteristic handler if matched
+    if (req_handle == chr->handles().value_handle || req_handle == chr->handles().cccd_handle )
+    {
+      chr->_eventHandler(evt);
+    }
   }
 
   // Client Characteristics
@@ -103,22 +125,31 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
   {
     if ( evt_conn_hdl == _client.chr_list[i]->connHandle() )
     {
-      bool matched = false;
+      BLEClientCharacteristic* chr = _client.chr_list[i];
+      uint16_t req_handle = BLE_GATT_HANDLE_INVALID;
 
       switch(evt_id)
       {
         case BLE_GATTC_EVT_HVX:
+          req_handle = evt->evt.gattc_evt.params.hvx.handle;
+        break;
+
         case BLE_GATTC_EVT_WRITE_RSP:
+          req_handle = evt->evt.gattc_evt.params.write_rsp.handle;
+        break;
+
         case BLE_GATTC_EVT_READ_RSP:
-          // write & read & hvc response's handle has same offset from the struct
-          matched = (_client.chr_list[i]->_chr.handle_value == evt->evt.gattc_evt.params.write_rsp.handle);
-          break;
+          req_handle = evt->evt.gattc_evt.params.read_rsp.handle;
+        break;
 
         default: break;
       }
 
-      // invoke charactersistic handler if matched
-      if ( matched ) _client.chr_list[i]->_eventHandler(evt);
+      // invoke characteristic handler if matched
+      if ( chr->valueHandle() == req_handle )
+      {
+        chr->_eventHandler(evt);
+      }
     }
   }
 
