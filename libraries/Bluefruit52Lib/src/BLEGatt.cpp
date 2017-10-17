@@ -93,30 +93,33 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
   }
 
   // Server Characteristics
-  for(uint8_t i=0; i<_server.chr_count; i++)
+  // TODO multiple prph connection
+  if ( evt_conn_hdl == Bluefruit.connHandle() )
   {
-    // TODO multiple prph connection
-    BLECharacteristic* chr = _server.chr_list[i];
-    uint16_t req_handle = BLE_GATT_HANDLE_INVALID;
-
-    switch (evt_id)
+    for(uint8_t i=0; i<_server.chr_count; i++)
     {
-      case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
-        // Handle has the same offset for read & write request
-        req_handle = evt->evt.gatts_evt.params.authorize_request.request.read.handle;
-      break;
+      BLECharacteristic* chr = _server.chr_list[i];
+      uint16_t req_handle = BLE_GATT_HANDLE_INVALID;
 
-      case BLE_GATTS_EVT_WRITE:
-        req_handle = evt->evt.gatts_evt.params.write.handle;
-      break;
+      switch (evt_id)
+      {
+        case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
+          // Handle has the same offset for read & write request
+          req_handle = evt->evt.gatts_evt.params.authorize_request.request.read.handle;
+          break;
 
-      default: break;
-    }
+        case BLE_GATTS_EVT_WRITE:
+          req_handle = evt->evt.gatts_evt.params.write.handle;
+          break;
 
-    // invoke characteristic handler if matched
-    if (req_handle == chr->handles().value_handle || req_handle == chr->handles().cccd_handle )
-    {
-      chr->_eventHandler(evt);
+        default: break;
+      }
+
+      // invoke characteristic handler if matched
+      if ((req_handle != BLE_GATT_HANDLE_INVALID) && (req_handle == chr->handles().value_handle || req_handle == chr->handles().cccd_handle ))
+      {
+        chr->_eventHandler(evt);
+      }
     }
   }
 
@@ -146,7 +149,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
       }
 
       // invoke characteristic handler if matched
-      if ( chr->valueHandle() == req_handle )
+      if ( (req_handle != BLE_GATT_HANDLE_INVALID) && (chr->valueHandle() == req_handle) )
       {
         chr->_eventHandler(evt);
       }
