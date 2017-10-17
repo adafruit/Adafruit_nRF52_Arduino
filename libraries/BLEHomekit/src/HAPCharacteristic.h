@@ -37,6 +37,7 @@
 #define HAPCHARACTERISTIC_H_
 
 #include <BLECharacteristic.h>
+#include "HAPProcedure.h"
 
 enum HAPChrProperties_t
 {
@@ -67,6 +68,8 @@ class HAPCharacteristic : public BLECharacteristic
   private:
     uint16_t _cid;
     uint16_t _hap_props;
+
+    HAPResponse_t* _hap_resp;
 
     err_t _addChrIdDescriptor(void);
     err_t _addHapDescriptor  (void);
