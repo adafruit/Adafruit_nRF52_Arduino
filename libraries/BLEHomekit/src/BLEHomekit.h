@@ -36,6 +36,7 @@
 #ifndef BLEHOMEKIT_H_
 #define BLEHOMEKIT_H_
 
+#include <Arduino.h>
 #include "HAPUuid.h"
 #include "HAPProcedure.h"
 #include "HAPCharacteristic.h"

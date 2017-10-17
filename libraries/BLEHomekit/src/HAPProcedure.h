@@ -117,9 +117,9 @@ enum TLVType_t
 
 typedef struct ATTR_PACKED
 {
-  uint8_t type; // TLVType_t
-  uint8_t length;
-  uint8_t value[];
+  uint8_t type;
+  uint8_t len;
+  const void* value; // need serialization, not reflect physical layout
 }TLV8_t;
 
 typedef struct ATTR_PACKED
@@ -127,10 +127,12 @@ typedef struct ATTR_PACKED
   uint8_t fragment : 1; // 0 : first Fragment (or no fragment), 1 : Continuation of Fragment
   uint8_t          : 3; // reserved
   uint8_t type     : 3; // 0b000 : request, 0b001 : response
-  uint8_t lenext   : 1;
+  uint8_t lenext   : 1; // not used
 } HAPControl_t;
 
 VERIFY_STATIC(sizeof (HAPControl_t) == 1);
+
+/*-------------  Request -------------*/
 
 typedef struct ATTR_PACKED
 {
@@ -146,10 +148,12 @@ typedef struct ATTR_PACKED
 {
   HAPRequestHeader_t header;
 
-  // Optional
-  uint16_t len;
-  uint8_t  tlvdata[1];
+  // Body (optional)
+  uint16_t body_len;
+  uint8_t  body_data[1];
 } HAPRequest_t;
+
+/*------------- Response -------------*/
 
 typedef struct ATTR_PACKED
 {
@@ -160,14 +164,13 @@ typedef struct ATTR_PACKED
 
 VERIFY_STATIC(sizeof (HAPResponseHeader_t) == 3);
 
-
 typedef struct ATTR_PACKED
 {
   HAPResponseHeader_t header;
 
-  // Optional
-  uint16_t len;
-  uint8_t  tlvdata[1];
+  // Body (optional)
+  uint16_t body_len;
+  uint8_t  body_data[1];
 } HAPResponse_t;
 
 

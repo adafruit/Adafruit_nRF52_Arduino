@@ -61,15 +61,15 @@ class HAPCharacteristic : public BLECharacteristic
 
     void setHapProperties(uint16_t prop);
 
+    /*------------- Internal Functions -------------*/
+    virtual void _eventHandler(ble_evt_t* event);
+
   private:
     uint16_t _cid;
     uint16_t _hap_props;
 
-    err_t _addChrIdDescriptor (void);
-    err_t _addHapDescriptor(void);
-
-    virtual void _eventHandler(ble_evt_t* event);
-
+    err_t _addChrIdDescriptor(void);
+    err_t _addHapDescriptor  (void);
 };
 
 #endif /* HAPCHARACTERISTIC_H_ */

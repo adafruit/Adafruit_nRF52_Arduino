@@ -140,6 +140,9 @@ class BLECharacteristic
     bool notify(uint16_t num);
     bool notify(uint8_t  num);
 
+    /*------------- Internal Functions -------------*/
+    virtual void _eventHandler(ble_evt_t* event);
+
   protected:
     bool _is_temp;
     uint16_t _max_len;
@@ -166,9 +169,6 @@ class BLECharacteristic
 
     /*------------- Internal Functions -------------*/
     void _init(void);
-    virtual void _eventHandler(ble_evt_t* event);
-
-    friend class BLEGatt;
 };
 
 #endif /* BLECHARACTERISTIC_H_ */

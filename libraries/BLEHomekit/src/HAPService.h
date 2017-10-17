@@ -46,6 +46,7 @@ class HAPService : public BLEService
     virtual err_t begin(void);
 
     err_t addSignatureChr(void);
+    uint16_t getSvcId(void) { return _svc_id; }
 
   private:
     uint16_t _svc_id;
