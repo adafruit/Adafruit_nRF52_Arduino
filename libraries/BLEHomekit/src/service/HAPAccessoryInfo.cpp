@@ -49,7 +49,7 @@ err_t HAPAccessoryInfo::begin(void)
   VERIFY_STATUS( HAPService::begin() ); // Invoke base class begin()
 
   // Identify
-  _identify.setProperties(CHR_PROPS_WRITE);
+  _identify.setHapProperties(HAP_CHR_PROPS_WRITE);
   _identify.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN/*SECMODE_ENC_NO_MITM*/);
   _identify.setFixedLen(1);
   VERIFY_STATUS( _identify.begin() );
@@ -77,7 +77,7 @@ err_t HAPAccessoryInfo::begin(void)
     HAPCharacteristic chr(uuids[i], BLE_GATT_CPF_FORMAT_UTF8S);
     chr.setTempMemory();
 
-    chr.setProperties(CHR_PROPS_READ);
+    chr.setHapProperties(HAP_CHR_PROPS_READ);
     chr.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
     chr.setFixedLen( strlen(strvals[i]) );
 

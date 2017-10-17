@@ -51,7 +51,7 @@ err_t HAPProtocol::begin(void)
   HAPCharacteristic chr(HAP_UUID_CHR_VERSION, BLE_GATT_CPF_FORMAT_UTF8S);
 
   chr.setTempMemory(); // ready-only, not included in Gatt list
-  chr.setProperties(CHR_PROPS_READ);
+  chr.setHapProperties(HAP_CHR_PROPS_READ);
   chr.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   chr.setFixedLen(strlen(HOMEKIT_PROTOCOL_VERSION_STR));
 
