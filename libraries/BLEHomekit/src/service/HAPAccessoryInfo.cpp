@@ -39,7 +39,13 @@
 #include "HAPAccessoryInfo.h"
 
 HAPAccessoryInfo::HAPAccessoryInfo(void)
-  : HAPService(HAP_UUID_SVC_ACCESSORY_INFO), _identify(HAP_UUID_CHR_IDENTIFY, BLE_GATT_CPF_FORMAT_UTF8S)
+  : HAPService (HAP_UUID_SVC_ACCESSORY_INFO),
+    _identify  (HAP_UUID_CHR_IDENTIFY      , BLE_GATT_CPF_FORMAT_UTF8S),
+    _mfr       (HAP_UUID_CHR_MANUFACTURER  , BLE_GATT_CPF_FORMAT_UTF8S),
+    _model     (HAP_UUID_CHR_MODEL         , BLE_GATT_CPF_FORMAT_UTF8S),
+    _name      (HAP_UUID_CHR_NAME          , BLE_GATT_CPF_FORMAT_UTF8S),
+    _serial    (HAP_UUID_CHR_SERIAL_NUMBER , BLE_GATT_CPF_FORMAT_UTF8S),
+    _fw_rev    (HAP_UUID_CHR_FIRMWARE_REV  , BLE_GATT_CPF_FORMAT_UTF8S)
 {
 
 }
@@ -51,17 +57,8 @@ err_t HAPAccessoryInfo::begin(void)
   // Identify
   _identify.setHapProperties(HAP_CHR_PROPS_WRITE);
   _identify.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN/*SECMODE_ENC_NO_MITM*/);
-  _identify.setFixedLen(1);
+//  _identify.setFixedLen(1);
   VERIFY_STATUS( _identify.begin() );
-
-  const uint8_t* uuids[] =
-  {
-      HAP_UUID_CHR_MANUFACTURER,
-      HAP_UUID_CHR_MODEL,
-      HAP_UUID_CHR_NAME,
-      HAP_UUID_CHR_SERIAL_NUMBER,
-      HAP_UUID_CHR_FIRMWARE_REV
-  };
 
   const char* strvals[] =
   {
@@ -72,18 +69,30 @@ err_t HAPAccessoryInfo::begin(void)
       "0.9.0"
   };
 
-  for(uint8_t i=0; i<arrcount(strvals); i++)
-  {
-    HAPCharacteristic chr(uuids[i], BLE_GATT_CPF_FORMAT_UTF8S);
-    chr.setTempMemory();
+  // Manufacturer
+  _mfr.setHapProperties(HAP_CHR_PROPS_READ);
+  _mfr.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
+  VERIFY_STATUS( _mfr.begin() );
 
-    chr.setHapProperties(HAP_CHR_PROPS_READ);
-    chr.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
-    chr.setFixedLen( strlen(strvals[i]) );
+  // Model
+  _model.setHapProperties(HAP_CHR_PROPS_READ);
+  _model.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
+  VERIFY_STATUS( _model.begin() );
 
-    VERIFY_STATUS( chr.begin() );
-    chr.write(strvals[i]);
-  }
+  // Name
+  _mfr.setHapProperties(HAP_CHR_PROPS_READ);
+  _name.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
+  VERIFY_STATUS( _name.begin() );
+
+  // Serial
+  _serial.setHapProperties(HAP_CHR_PROPS_READ);
+  _serial.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
+  VERIFY_STATUS( _serial.begin() );
+
+  // Firmware Revision
+  _fw_rev.setHapProperties(HAP_CHR_PROPS_READ);
+  _fw_rev.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
+  VERIFY_STATUS( _fw_rev.begin() );
 
   return ERROR_NONE;
 }

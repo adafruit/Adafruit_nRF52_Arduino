@@ -39,7 +39,7 @@
 #include "HAPProtocol.h"
 
 HAPProtocol::HAPProtocol(void)
-  : HAPService(HAP_UUID_SVC_PROTOCOL_INFO)
+  : HAPService(HAP_UUID_SVC_PROTOCOL_INFO), _version(HAP_UUID_CHR_VERSION, BLE_GATT_CPF_FORMAT_UTF8S)
 {
 
 }
@@ -48,15 +48,12 @@ err_t HAPProtocol::begin(void)
 {
   VERIFY_STATUS( HAPService::begin() ); // Invoke base class begin()
 
-  HAPCharacteristic chr(HAP_UUID_CHR_VERSION, BLE_GATT_CPF_FORMAT_UTF8S);
+  _version.setHapProperties(HAP_CHR_PROPS_READ);
+  _version.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+//  _version.setFixedLen(strlen(HOMEKIT_PROTOCOL_VERSION_STR));
 
-  chr.setTempMemory(); // ready-only, not included in Gatt list
-  chr.setHapProperties(HAP_CHR_PROPS_READ);
-  chr.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  chr.setFixedLen(strlen(HOMEKIT_PROTOCOL_VERSION_STR));
-
-  VERIFY_STATUS( chr.begin() );
-  chr.write(HOMEKIT_PROTOCOL_VERSION_STR);
+  VERIFY_STATUS( _version.begin() );
+//  _version.write(HOMEKIT_PROTOCOL_VERSION_STR);
 
   return ERROR_NONE;
 }

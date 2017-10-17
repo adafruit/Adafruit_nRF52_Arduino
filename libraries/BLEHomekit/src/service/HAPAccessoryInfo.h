@@ -48,6 +48,12 @@ class HAPAccessoryInfo : public HAPService
 
   private:
     HAPCharacteristic _identify;
+
+    HAPCharacteristic _mfr;
+    HAPCharacteristic _model;
+    HAPCharacteristic _name;
+    HAPCharacteristic _serial;
+    HAPCharacteristic _fw_rev;
 };
 
 

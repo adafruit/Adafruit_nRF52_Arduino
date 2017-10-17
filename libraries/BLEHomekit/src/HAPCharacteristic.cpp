@@ -184,6 +184,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
             TLV8_t tlv_para[] =
             {
                 { .type  = HAP_PARAM_CHR_TYPE, .len = 16, .value = uuid._uuid128           },
+                { .type  = HAP_PARAM_CHR_ID  , .len = 2 , .value = &_cid                   },
                 { .type  = HAP_PARAM_SVC_TYPE, .len = 16, .value = _service->uuid._uuid128 },
                 { .type  = HAP_PARAM_SVC_ID  , .len = 2 , .value = &svc_id                 },
                 // Descriptors
@@ -246,7 +247,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
             .type = BLE_GATTS_AUTHORIZE_TYPE_READ,
             .params = {
                 .read = {
-                    .gatt_status = BLE_GATT_STATUS_UNKNOWN,
+                    .gatt_status = BLE_GATT_STATUS_ATTERR_READ_NOT_PERMITTED,
                     .update      = 0,
                     .offset      = 0,
                     .len         = 0,

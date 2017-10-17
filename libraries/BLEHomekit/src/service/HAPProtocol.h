@@ -48,6 +48,7 @@ class HAPProtocol : public HAPService
     virtual err_t begin(void);
 
   private:
+    HAPCharacteristic _version;
 };
 
 
