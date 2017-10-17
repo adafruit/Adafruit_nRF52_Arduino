@@ -124,10 +124,10 @@ typedef struct ATTR_PACKED
 
 typedef struct ATTR_PACKED
 {
-  uint8_t fragment : 1; // 0 : first Fragment (or no fragment), 1 : Continuation of Fragment
-  uint8_t          : 3; // reserved
-  uint8_t type     : 3; // 0b000 : request, 0b001 : response
   uint8_t lenext   : 1; // not used
+  uint8_t type     : 3; // 0b000 : request, 0b001 : response
+  uint8_t          : 3; // reserved
+  uint8_t fragment : 1; // 0 : first Fragment (or no fragment), 1 : Continuation of Fragment
 } HAPControl_t;
 
 VERIFY_STATIC(sizeof (HAPControl_t) == 1);
