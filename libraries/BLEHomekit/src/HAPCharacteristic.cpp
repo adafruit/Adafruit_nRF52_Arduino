@@ -266,7 +266,6 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
           _resp_len -= min16(_resp_len, Bluefruit.Gap.getMTU(conn_hdl)-2);
         }
 
-        // currently accept all read request
         VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply), );
       }
     }
