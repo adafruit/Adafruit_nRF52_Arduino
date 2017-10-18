@@ -64,7 +64,7 @@ err_t HAPPairing::begin(void)
   _features.setHapProperties(HAP_CHR_PROPS_READ);
   _verify.setMaxLen(100);
   VERIFY_STATUS( _features.begin() );
-  _features.write( (uint8_t) 0x01); // support HAP pairing
+  //_features.write( (uint8_t) 0x01); // support HAP pairing
 
   _pairing.setHapProperties(HAP_CHR_PROPS_SECURE_READ | HAP_CHR_PROPS_SECURE_WRITE);
   _pairing.setMaxLen(100);
