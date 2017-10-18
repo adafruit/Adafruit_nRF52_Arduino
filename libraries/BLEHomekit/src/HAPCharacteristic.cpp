@@ -52,6 +52,8 @@ HAPCharacteristic::HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t u
   _cid = 0;
   _hap_props = 0;
 
+  _resp_len = 0;
+
   setPresentationFormatDescriptor(format, 0, unit, 1, 0);
 }
 
@@ -86,6 +88,9 @@ err_t HAPCharacteristic::begin(void)
 
   const char* temp_usr = _usr_descriptor;
   _usr_descriptor = NULL;
+
+  // FIXME temporary
+  _max_len = minof(_max_len, 100);
 
   VERIFY_STATUS( BLECharacteristic::begin() );
   VERIFY_STATUS( _addChrIdDescriptor() );
@@ -127,6 +132,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
 
         HAPRequest_t* hap_req = (HAPRequest_t*) gatt_req->data;
         VERIFY(hap_req->header.control.type == HAP_PDU_REQUEST, );
+        VERIFY(hap_req->header.instance_id == _cid, );
 
 //        PRINT_INT(hap_req->header.opcode);
 
@@ -213,14 +219,15 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
               pdata += tlv_para[i].len;
             }
 
-            reply.params.write.len = sizeof(HAPResponseHeader_t) + body_len;
+            _resp_len = sizeof(HAPResponseHeader_t) + body_len;
+            reply.params.write.len    = _resp_len;
             reply.params.write.p_data = (uint8_t*) hap_resp;
+
+            PRINT2_BUFFER(hap_resp, reply.params.write.len);
 
             err_t err = sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
 
             rtos_free(hap_resp);
-            hap_resp = NULL;
-
             VERIFY_STATUS( err, );
           }
           break;
@@ -236,14 +243,14 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
       {
         ble_gatts_evt_read_t * gatt_req = &event->evt.gatts_evt.params.authorize_request.request.read;
 
-        LOG_LV2(GATTS, "Read uuid = 0x%04X", gatt_req->uuid.uuid);
+        LOG_LV2(GATTS, "Read uuid = 0x%04X, offset = %d", gatt_req->uuid.uuid, gatt_req->offset);
 
         ble_gatts_rw_authorize_reply_params_t reply =
         {
             .type = BLE_GATTS_AUTHORIZE_TYPE_READ,
             .params = {
                 .read = {
-                    .gatt_status = BLE_GATT_STATUS_SUCCESS, //BLE_GATT_STATUS_ATTERR_READ_NOT_PERMITTED,
+                    .gatt_status = BLE_GATT_STATUS_ATTERR_READ_NOT_PERMITTED,
                     .update      = 0,
                     .offset      = 0,
                     .len         = 0,
@@ -251,6 +258,13 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
                 }
             }
         };
+
+        if (_resp_len)
+        {
+          reply.params.read.gatt_status = BLE_GATT_STATUS_SUCCESS;
+
+          _resp_len -= min16(_resp_len, Bluefruit.Gap.getMTU(conn_hdl)-2);
+        }
 
         // currently accept all read request
         VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply), );
@@ -261,16 +275,6 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
     case BLE_GATTS_EVT_WRITE:
     {
       ble_gatts_evt_write_t* request = &event->evt.gatts_evt.params.write;
-
-      // Value write
-      if (request->handle == _handles.value_handle)
-      {
-        LOG_LV2(GATTS, "attr's value, uuid = 0x%04X", request->uuid.uuid);
-        PRINT2_BUFFER(request->data, request->len);
-
-        // TODO Ada callback
-        if (_wr_cb) _wr_cb(*this, request->data, request->len, request->offset);
-      }
 
       // CCCD write
       if ( request->handle == _handles.cccd_handle )
