@@ -62,6 +62,8 @@ void HAPCharacteristic::setHapProperties(uint16_t prop)
   uint8_t chrprop = CHR_PROPS_READ | CHR_PROPS_WRITE;
   if ((prop & HAP_CHR_PROPS_NOTIFY) || (prop & HAP_CHR_PROPS_NOTIFY_DISCONNECTED)) chrprop |= CHR_PROPS_INDICATE;
   setProperties(chrprop);
+
+  setPermission(SECMODE_OPEN, SECMODE_OPEN);
 }
 
 /**
@@ -224,7 +226,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
           break;
 
           default:
-//            reply.params.write.gatt_status = BLE_GATT_STATUS_UNKNOWN;
+            reply.params.write.gatt_status = BLE_GATT_STATUS_UNKNOWN;
           break;
         }
       }

@@ -56,7 +56,6 @@ err_t HAPAccessoryInfo::begin(void)
 
   // Identify
   _identify.setHapProperties(HAP_CHR_PROPS_SECURE_WRITE);
-  _identify.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN/*SECMODE_ENC_NO_MITM*/);
 //  _identify.setFixedLen(1);
   VERIFY_STATUS( _identify.begin() );
 
@@ -71,27 +70,22 @@ err_t HAPAccessoryInfo::begin(void)
 
   // Manufacturer
   _mfr.setHapProperties(HAP_CHR_PROPS_SECURE_READ);
-  _mfr.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
   VERIFY_STATUS( _mfr.begin() );
 
   // Model
   _model.setHapProperties(HAP_CHR_PROPS_SECURE_READ);
-  _model.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
   VERIFY_STATUS( _model.begin() );
 
   // Name
   _name.setHapProperties(HAP_CHR_PROPS_SECURE_READ);
-  _name.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
   VERIFY_STATUS( _name.begin() );
 
   // Serial
   _serial.setHapProperties(HAP_CHR_PROPS_SECURE_READ);
-  _serial.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
   VERIFY_STATUS( _serial.begin() );
 
   // Firmware Revision
   _fw_rev.setHapProperties(HAP_CHR_PROPS_SECURE_READ);
-  _fw_rev.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
   VERIFY_STATUS( _fw_rev.begin() );
 
   return ERROR_NONE;

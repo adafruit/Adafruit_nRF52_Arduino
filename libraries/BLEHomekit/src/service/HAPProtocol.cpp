@@ -49,7 +49,6 @@ err_t HAPProtocol::begin(void)
   VERIFY_STATUS( HAPService::begin() ); // Invoke base class begin()
 
   _version.setHapProperties(HAP_CHR_PROPS_SECURE_READ);
-  _version.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
 //  _version.setFixedLen(strlen(HOMEKIT_PROTOCOL_VERSION_STR));
 
   VERIFY_STATUS( _version.begin() );

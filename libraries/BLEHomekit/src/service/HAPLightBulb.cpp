@@ -50,7 +50,6 @@ err_t HAPLightBulb::begin(void)
 
   // ON char
   _on.setHapProperties(HAP_CHR_PROPS_SECURE_READ | HAP_CHR_PROPS_SECURE_WRITE | HAP_CHR_PROPS_NOTIFY );
-  _on.setPermission(SECMODE_OPEN, SECMODE_OPEN);
   _on.setFixedLen(1);
   VERIFY_STATUS( _on.begin() );
   _on.write( (uint8_t) 0x00 );
