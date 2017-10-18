@@ -49,7 +49,7 @@ err_t HAPLightBulb::begin(void)
   VERIFY_STATUS( HAPService::begin() ); // Invoke base class begin()
 
   // ON char
-  _on.setHapProperties(HAP_CHR_PROPS_READ | HAP_CHR_PROPS_WRITE | HAP_CHR_PROPS_NOTIFY );
+  _on.setHapProperties(HAP_CHR_PROPS_SECURE_READ | HAP_CHR_PROPS_SECURE_WRITE | HAP_CHR_PROPS_NOTIFY );
   _on.setPermission(SECMODE_OPEN, SECMODE_OPEN);
   _on.setFixedLen(1);
   VERIFY_STATUS( _on.begin() );
