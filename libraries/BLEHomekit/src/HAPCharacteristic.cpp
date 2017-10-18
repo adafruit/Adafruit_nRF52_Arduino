@@ -61,12 +61,8 @@ void HAPCharacteristic::setHapProperties(uint16_t prop)
 {
   _hap_props = prop;
 
-  uint8_t chrprop = 0;
-
-  if ((prop & HAP_CHR_PROPS_READ  ) || (prop & HAP_CHR_PROPS_SECURE_READ        )) chrprop |= CHR_PROPS_READ;
-  if ((prop & HAP_CHR_PROPS_WRITE ) || (prop & HAP_CHR_PROPS_SECURE_WRITE       )) chrprop |= CHR_PROPS_WRITE;
+  uint8_t chrprop = CHR_PROPS_READ | CHR_PROPS_WRITE;
   if ((prop & HAP_CHR_PROPS_NOTIFY) || (prop & HAP_CHR_PROPS_NOTIFY_DISCONNECTED)) chrprop |= CHR_PROPS_INDICATE;
-
   setProperties(chrprop);
 }
 
@@ -111,13 +107,6 @@ err_t HAPCharacteristic::_addChrIdDescriptor(void)
   _cid = BLEHomekit::_gInstanceID++;
 
   return addDescriptor(_g_uuid_cid, &_cid, sizeof(_cid), SECMODE_OPEN, SECMODE_NO_ACCESS);
-}
-
-err_t HAPCharacteristic::_addHapDescriptor(void)
-{
-//  HAPCharacteristic
-
-  return ERROR_NONE;
 }
 
 void HAPCharacteristic::_eventHandler(ble_evt_t* event)
@@ -267,11 +256,11 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
 
         VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(Bluefruit.connHandle(), &reply), );
 
-//        if ( _hap_resp )
-//        {
-//          rtos_free(_hap_resp);
-//          _hap_resp = NULL;
-//        }
+        if ( _hap_resp )
+        {
+          rtos_free(_hap_resp);
+          _hap_resp = NULL;
+        }
       }
     }
     break;

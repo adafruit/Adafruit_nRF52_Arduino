@@ -72,7 +72,6 @@ class HAPCharacteristic : public BLECharacteristic
     HAPResponse_t* _hap_resp;
 
     err_t _addChrIdDescriptor(void);
-    err_t _addHapDescriptor  (void);
 };
 
 #endif /* HAPCHARACTERISTIC_H_ */

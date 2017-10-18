@@ -80,7 +80,7 @@ err_t HAPAccessoryInfo::begin(void)
   VERIFY_STATUS( _model.begin() );
 
   // Name
-  _mfr.setHapProperties(HAP_CHR_PROPS_READ);
+  _name.setHapProperties(HAP_CHR_PROPS_READ);
   _name.setPermission(/*SECMODE_ENC_NO_MITM*/SECMODE_OPEN, SECMODE_NO_ACCESS);
   VERIFY_STATUS( _name.begin() );
 
