@@ -72,6 +72,8 @@ class HAPCharacteristic : public BLECharacteristic
     uint16_t _resp_len;
 
     err_t _addChrIdDescriptor(void);
+
+    HAPResponse_t* createHapResponse(uint8_t tid, uint8_t status, TLV8_t tlv_para[], uint8_t count);
 };
 
 #endif /* HAPCHARACTERISTIC_H_ */

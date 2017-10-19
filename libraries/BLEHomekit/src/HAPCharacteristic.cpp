@@ -114,6 +114,43 @@ err_t HAPCharacteristic::_addChrIdDescriptor(void)
   return addDescriptor(_g_uuid_cid, &_cid, sizeof(_cid), SECMODE_OPEN, SECMODE_NO_ACCESS);
 }
 
+HAPResponse_t* HAPCharacteristic::createHapResponse(uint8_t tid, uint8_t status, TLV8_t tlv_para[], uint8_t count)
+{
+  // Determine body len, including the len's bytes
+  uint8_t body_len = 2;
+  for(uint8_t i=0; i <count ; i++)
+  {
+    body_len += tlv_para[i].len + 2;
+  }
+
+  HAPResponse_t* hap_resp = (HAPResponse_t*) rtos_malloc(sizeof(HAPResponseHeader_t) + body_len);
+  VERIFY( hap_resp != NULL, NULL );
+
+  /*------------- Header -------------*/
+  varclr(&hap_resp->header.control);
+  hap_resp->header.control.fragment = 0;
+  hap_resp->header.control.type     = HAP_PDU_RESPONSE;
+  hap_resp->header.tid              = tid;
+  hap_resp->header.status           = HAP_STATUS_SUCCESS;
+
+  hap_resp->body_len                = (count ? body_len : 0);
+
+  /*------------- Serialize Data -------------*/
+  uint8_t* pdata = hap_resp->body_data;
+  for(uint8_t i=0; i < arrcount(tlv_para); i++)
+  {
+    memcpy(pdata, &tlv_para[i], 2); // type + len
+    pdata += 2;
+
+    memcpy(pdata, tlv_para[i].value, tlv_para[i].len);
+    pdata += tlv_para[i].len;
+  }
+
+  _resp_len = sizeof(HAPResponseHeader_t) + hap_resp->body_len;
+
+  return hap_resp;
+}
+
 void HAPCharacteristic::_eventHandler(ble_evt_t* event)
 {
   const uint16_t conn_hdl = event->evt.common_evt.conn_handle;
@@ -131,10 +168,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
         PRINT2_BUFFER(gatt_req->data, gatt_req->len);
 
         HAPRequest_t* hap_req = (HAPRequest_t*) gatt_req->data;
-        VERIFY(hap_req->header.control.type == HAP_PDU_REQUEST, );
-        VERIFY(hap_req->header.instance_id == _cid, );
-
-//        PRINT_INT(hap_req->header.opcode);
+        HAPResponse_t* hap_resp = NULL;
 
         ble_gatts_rw_authorize_reply_params_t reply =
         {
@@ -150,92 +184,75 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
             }
         };
 
-        switch(hap_req->header.opcode)
+        if ( (hap_req->header.control.type != HAP_PDU_REQUEST) || (hap_req->header.instance_id != _cid) )
         {
-          /* Return <Chr Type, Svc Type, Svc ID, Meta Descriptors>
-           * Where descriptors are:
-           * - Gatt Usr String, Gatt Format Desc, Gatt Valid Range
-           * - Hap Properties, Hap step value, Hap valid values, Hap valid Range
-           */
-          case HAP_OPCODE_CHR_SIGNATURE_READ:
+          hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_INVALID_REQUEST, NULL, 0);
+        }else
+        {
+          PRINT_INT(hap_req->header.opcode);
+          switch(hap_req->header.opcode)
           {
-            uint16_t svc_id = ((HAPService*)_service)->getSvcId();
+            /* Return <Chr Type, Svc Type, Svc ID, Meta Descriptors>
+             * Where descriptors are:
+             * - Gatt Usr String, Gatt Format Desc, Gatt Valid Range
+             * - Hap Properties, Hap step value, Hap valid values, Hap valid Range
+             */
+            case HAP_OPCODE_CHR_SIGNATURE_READ:
+            {
+              uint16_t svc_id = ((HAPService*)_service)->getSvcId();
 
-            // ble_gatts_char_pf_t is not packed struct
-            struct ATTR_PACKED
-            {
-              uint8_t          format;
-              int8_t           exponent;
-              uint16_t         unit;
-              uint8_t          name_space;
-              uint16_t         desc;
-            }fmt_desc =
-            {
-                .format     = _format_desc.format,
-                .exponent   = _format_desc.exponent,
-                .unit       = _format_desc.unit,
-                .name_space = _format_desc.name_space,
-                .desc       = _format_desc.desc
-            };
+              // ble_gatts_char_pf_t is not packed struct
+              struct ATTR_PACKED
+              {
+                uint8_t          format;
+                int8_t           exponent;
+                uint16_t         unit;
+                uint8_t          name_space;
+                uint16_t         desc;
+              }fmt_desc =
+              {
+                  .format     = _format_desc.format,
+                  .exponent   = _format_desc.exponent,
+                  .unit       = _format_desc.unit,
+                  .name_space = _format_desc.name_space,
+                  .desc       = _format_desc.desc
+              };
 
-            TLV8_t tlv_para[] =
-            {
-                { .type  = HAP_PARAM_CHR_TYPE, .len = 16, .value = uuid._uuid128           },
-                { .type  = HAP_PARAM_CHR_ID  , .len = 2 , .value = &_cid                   },
-                { .type  = HAP_PARAM_SVC_TYPE, .len = 16, .value = _service->uuid._uuid128 },
-                { .type  = HAP_PARAM_SVC_ID  , .len = 2 , .value = &svc_id                 },
-                // Descriptors
-                { .type  = HAP_PARAM_HAP_CHR_PROPERTIES_DESC, .len = 2 , .value = &_hap_props  },
-                { .type  = HAP_PARAM_GATT_FORMAT_DESC       , .len = sizeof(fmt_desc) , .value = &fmt_desc  },
-            };
+              TLV8_t tlv_para[] =
+              {
+                  { .type  = HAP_PARAM_CHR_TYPE, .len = 16, .value = uuid._uuid128           },
+                  { .type  = HAP_PARAM_CHR_ID  , .len = 2 , .value = &_cid                   },
+                  { .type  = HAP_PARAM_SVC_TYPE, .len = 16, .value = _service->uuid._uuid128 },
+                  { .type  = HAP_PARAM_SVC_ID  , .len = 2 , .value = &svc_id                 },
+                  // Descriptors
+                  { .type  = HAP_PARAM_HAP_CHR_PROPERTIES_DESC, .len = 2 , .value = &_hap_props  },
+                  { .type  = HAP_PARAM_GATT_FORMAT_DESC       , .len = sizeof(fmt_desc) , .value = &fmt_desc  },
+              };
 
-            // Determine body len
-            uint8_t body_len = 2;
-            for(uint8_t i=0; i < arrcount(tlv_para); i++)
-            {
-              body_len += tlv_para[i].len + 2;
+              hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
             }
+            break;
 
-            HAPResponse_t* hap_resp = (HAPResponse_t*) rtos_malloc(sizeof(HAPResponseHeader_t) + body_len);
-            VERIFY( hap_resp != NULL, );
-
-            /*------------- Header -------------*/
-            varclr(&hap_resp->header.control);
-            hap_resp->header.control.fragment = 0;
-            hap_resp->header.control.type     = HAP_PDU_RESPONSE;
-
-            hap_resp->header.tid    = hap_req->header.tid;
-            hap_resp->header.status = HAP_STATUS_SUCCESS;
-            hap_resp->body_len      = body_len;
-
-            /*------------- Serialize Data -------------*/
-            uint8_t* pdata = hap_resp->body_data;
-            for(uint8_t i=0; i < arrcount(tlv_para); i++)
-            {
-              memcpy(pdata, &tlv_para[i], 2); // type + len
-              pdata += 2;
-
-              memcpy(pdata, tlv_para[i].value, tlv_para[i].len);
-              pdata += tlv_para[i].len;
-            }
-
-            _resp_len = sizeof(HAPResponseHeader_t) + body_len;
-            reply.params.write.len    = _resp_len;
-            reply.params.write.p_data = (uint8_t*) hap_resp;
-
-            PRINT2_BUFFER(hap_resp, reply.params.write.len);
-
-            err_t err = sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
-
-            rtos_free(hap_resp);
-            VERIFY_STATUS( err, );
+            default:
+              hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_INVALID_REQUEST, NULL, 0);
+            break;
           }
-          break;
-
-          default:
-            reply.params.write.gatt_status = BLE_GATT_STATUS_UNKNOWN;
-          break;
         }
+
+        if ( hap_resp )
+        {
+          reply.params.write.len    = _resp_len; // sizeof(HAPResponseHeader_t) + hap_resp->body_len;
+          reply.params.write.p_data = (uint8_t*) hap_resp;
+        }else
+        {
+          reply.params.write.gatt_status = BLE_GATT_STATUS_ATTERR_INSUF_RESOURCES;
+        }
+
+        PRINT2_BUFFER(hap_resp, reply.params.write.len);
+        err_t err = sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
+
+        rtos_free(hap_resp);
+        VERIFY_STATUS( err, );
       }
 
       /*------------- Handle HAP Response -------------*/
