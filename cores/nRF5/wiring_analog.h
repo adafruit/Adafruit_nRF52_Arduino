@@ -62,6 +62,13 @@ typedef enum _eAnalogReference
 extern void analogReference( eAnalogReference ulMode ) ;
 
 /*
+* \brief Configures the oversampling amount used to sample analog input.
+*
+* \param ulOversampling Should be set to 1, 2, 4, 8, 16, 32, 64, 128 or 256.
+*/
+extern void analogOversampling( uint32_t ulOversampling );
+
+/*
  * \brief Writes an analog value (PWM wave) to a pin.
  *
  * \param ulPin
