@@ -31,7 +31,6 @@ extern "C" {
 static uint32_t saadcReference = SAADC_CH_CONFIG_REFSEL_Internal;
 static uint32_t saadcGain      = SAADC_CH_CONFIG_GAIN_Gain1_6;
 
-static uint32_t saadcOversampling = SAADC_OVERSAMPLE_OVERSAMPLE_Bypass;
 static bool saadcBurst = SAADC_CH_CONFIG_BURST_Disabled;
 
 #if 0 // Note: Adafruit use seperated HardwarePWM class
@@ -129,8 +128,7 @@ void analogReference( eAnalogReference ulMode )
 
 void analogOversampling( uint32_t ulOversampling )
 {
-	if(ulOversampling > 0) saadcBurst = SAADC_CH_CONFIG_BURST_Enabled; // burst mode has to be enable to use oversampling
-	else saadcBurst = SAADC_CH_CONFIG_BURST_Disabled;
+	saadcBurst = SAADC_CH_CONFIG_BURST_Enabled;
 
 	switch (ulOversampling) {
 		case 0:
@@ -164,8 +162,6 @@ void analogOversampling( uint32_t ulOversampling )
 			NRF_SAADC->OVERSAMPLE = SAADC_OVERSAMPLE_OVERSAMPLE_Over256x;
 			break;
 	}
-
-	saadcBurst = SAADC_CH_CONFIG_BURST_Enabled;
 }
 
 uint32_t analogRead( uint32_t ulPin )
