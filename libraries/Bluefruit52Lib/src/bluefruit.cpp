@@ -223,8 +223,8 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   // Event Length + HVN queue + WRITE CMD queue setting affecting bandwidth
   varclr(&blecfg);
   blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_HIGH_BANDWIDTH;
-  blecfg.conn_cfg.params.gap_conn_cfg.conn_count   = 1; // BLE_GAP_CONN_COUNT_DEFAULT
-  blecfg.conn_cfg.params.gap_conn_cfg.event_length = BLEGAP_EVENT_LENGTH; // BLE_GAP_EVENT_LENGTH_DEFAULT
+  blecfg.conn_cfg.params.gap_conn_cfg.conn_count   = 1;
+  blecfg.conn_cfg.params.gap_conn_cfg.event_length = BLEGAP_EVENT_LENGTH;
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GAP, &blecfg, ram_start) );
 
   // HVN queue size
@@ -276,7 +276,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   VERIFY_STATUS( sd_ble_gap_tx_power_set( CFG_BLE_TX_POWER_LEVEL ) );
 
   /*------------- DFU OTA as built-in service -------------*/
-  _dfu_svc.begin();
+//  _dfu_svc.begin();
 
   if (_central_enabled)  Central.begin(); // Init Central
 
@@ -701,6 +701,8 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         if (_bonded) _saveBondCCCD();
 
         if (_disconnect_cb) ada_callback(NULL, _disconnect_cb, _conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
+
+        LOG_LV2(GAP, "Disconnect Reason 0x%02X", evt->evt.gap_evt.params.disconnected.reason);
 
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
         _bonded   = false;

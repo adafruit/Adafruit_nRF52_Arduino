@@ -58,7 +58,7 @@ err_t HAPPairing::begin(void)
   VERIFY_STATUS( _setup.begin() );
 
   _verify.setHapProperties(HAP_CHR_PROPS_READ | HAP_CHR_PROPS_WRITE);
-  _verify.setMaxLen(100);
+  _verify.setMaxLen(BLE_GATTS_VAR_ATTR_LEN_MAX);
   VERIFY_STATUS( _verify.begin() );
 
   _features.setHapProperties(HAP_CHR_PROPS_READ);

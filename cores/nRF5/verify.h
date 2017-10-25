@@ -122,6 +122,8 @@ extern "C"
  */
 #define VERIFY(...)  VERIFY_GETARGS(__VA_ARGS__, VERIFY_2ARGS, VERIFY_1ARGS)(__VA_ARGS__)
 
+// TODO VERIFY with final statement
+
 #ifdef __cplusplus
 }
 #endif

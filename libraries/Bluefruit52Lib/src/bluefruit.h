@@ -52,9 +52,9 @@
  * - BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT = 1
  * - BLEGATT_ATT_MTU_MAX from 23 (default) to 247
  */
-#define BLE_GATTS_ATTR_TABLE_SIZE       0x800 //0x0B00 default is 0x580
+#define BLE_GATTS_ATTR_TABLE_SIZE       0xB00 //0x0B00 default is 0x580
 #define BLE_VENDOR_UUID_MAX             20
-#define BLEGAP_EVENT_LENGTH             BLE_GAP_EVENT_LENGTH_DEFAULT
+#define BLEGAP_EVENT_LENGTH             6
 #define BLEGAP_HVN_TX_QUEUE_SIZE        3
 #define BLEGAP_WRITECMD_TX_QUEUE_SIZE   3
 #define BLEGATT_ATT_MTU_MAX             247

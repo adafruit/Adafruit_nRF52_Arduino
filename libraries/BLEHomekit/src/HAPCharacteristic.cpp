@@ -49,10 +49,11 @@ BLEUuid HAPCharacteristic::_g_uuid_cid(HAP_UUID_DSC_CHARACTERISTIC_ID);
 HAPCharacteristic::HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t unit)
  : BLECharacteristic(bleuuid)
 {
-  _cid = 0;
+  _cid       = 0;
   _hap_props = 0;
 
-  _resp_len = 0;
+  _resp_len  = 0;
+  _tid       = 0;
 
   setPresentationFormatDescriptor(format, 0, unit, 1, 0);
 }
@@ -131,13 +132,13 @@ HAPResponse_t* HAPCharacteristic::createHapResponse(uint8_t tid, uint8_t status,
   hap_resp->header.control.fragment = 0;
   hap_resp->header.control.type     = HAP_PDU_RESPONSE;
   hap_resp->header.tid              = tid;
-  hap_resp->header.status           = HAP_STATUS_SUCCESS;
+  hap_resp->header.status           = status;
 
   hap_resp->body_len                = (count ? body_len : 0);
 
   /*------------- Serialize Data -------------*/
   uint8_t* pdata = hap_resp->body_data;
-  for(uint8_t i=0; i < arrcount(tlv_para); i++)
+  for(uint8_t i=0; i < count; i++)
   {
     memcpy(pdata, &tlv_para[i], 2); // type + len
     pdata += 2;
@@ -146,9 +147,15 @@ HAPResponse_t* HAPCharacteristic::createHapResponse(uint8_t tid, uint8_t status,
     pdata += tlv_para[i].len;
   }
 
-  _resp_len = sizeof(HAPResponseHeader_t) + hap_resp->body_len;
-
   return hap_resp;
+}
+
+void reverse_uuid128(uint8_t const in[16], uint8_t out[16])
+{
+  for(uint8_t i=0; i<16; i++)
+  {
+    out[i] = in[15-i];
+  }
 }
 
 void HAPCharacteristic::_eventHandler(ble_evt_t* event)
@@ -184,12 +191,18 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
             }
         };
 
-        if ( (hap_req->header.control.type != HAP_PDU_REQUEST) || (hap_req->header.instance_id != _cid) )
+        _tid = hap_req->header.tid;
+
+        if (hap_req->header.control.type != HAP_PDU_REQUEST)
         {
-          hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_INVALID_REQUEST, NULL, 0);
+          hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU, NULL, 0);
+        }
+        else if (hap_req->header.instance_id != _cid)
+        {
+          hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_INVALID_INSTANCE_ID, NULL, 0);
         }else
         {
-          PRINT_INT(hap_req->header.opcode);
+          LOG_LV2(HAP, "Opcode = %d", hap_req->header.opcode);
           switch(hap_req->header.opcode)
           {
             /* Return <Chr Type, Svc Type, Svc ID, Meta Descriptors>
@@ -221,7 +234,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
               TLV8_t tlv_para[] =
               {
                   { .type  = HAP_PARAM_CHR_TYPE, .len = 16, .value = uuid._uuid128           },
-                  { .type  = HAP_PARAM_CHR_ID  , .len = 2 , .value = &_cid                   },
+//                  { .type  = HAP_PARAM_CHR_ID  , .len = 2 , .value = &_cid                   },
                   { .type  = HAP_PARAM_SVC_TYPE, .len = 16, .value = _service->uuid._uuid128 },
                   { .type  = HAP_PARAM_SVC_ID  , .len = 2 , .value = &svc_id                 },
                   // Descriptors
@@ -234,17 +247,18 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
             break;
 
             default:
-              hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_INVALID_REQUEST, NULL, 0);
+              hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU, NULL, 0);
             break;
           }
         }
 
         if ( hap_resp )
         {
-          reply.params.write.len    = _resp_len; // sizeof(HAPResponseHeader_t) + hap_resp->body_len;
+          reply.params.write.len    = _resp_len = sizeof(HAPResponseHeader_t) + hap_resp->body_len;
           reply.params.write.p_data = (uint8_t*) hap_resp;
         }else
         {
+          _resp_len = 0;
           reply.params.write.gatt_status = BLE_GATT_STATUS_ATTERR_INSUF_RESOURCES;
         }
 
@@ -267,7 +281,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
             .type = BLE_GATTS_AUTHORIZE_TYPE_READ,
             .params = {
                 .read = {
-                    .gatt_status = BLE_GATT_STATUS_ATTERR_READ_NOT_PERMITTED,
+                    .gatt_status = BLE_GATT_STATUS_SUCCESS,
                     .update      = 0,
                     .offset      = 0,
                     .len         = 0,
@@ -278,12 +292,32 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
 
         if (_resp_len)
         {
-          reply.params.read.gatt_status = BLE_GATT_STATUS_SUCCESS;
-
           _resp_len -= min16(_resp_len, Bluefruit.Gap.getMTU(conn_hdl)-2);
-        }
+          VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply), );
+        }else
+        {
+#if 1
+          reply.params.read.gatt_status = BLE_GATT_STATUS_ATTERR_READ_NOT_PERMITTED;
+          VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply), );
+#elif 0
+          HAPResponse_t* hap_resp = createHapResponse(_tid, HAP_STATUS_INVALID_REQUEST, NULL, 0);
 
-        VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply), );
+          reply.params.read.update = 1;
+          reply.params.read.len    = sizeof(HAPResponseHeader_t) + hap_resp->body_len;
+          reply.params.read.p_data = (uint8_t*) hap_resp;
+
+          err_t err = sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
+
+          rtos_free(hap_resp);
+          VERIFY_STATUS( err, );
+#else
+          reply.params.read.update = 1;
+          reply.params.read.len    = 0;
+          reply.params.read.p_data = NULL;
+
+          err_t err = sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
+#endif
+        }
       }
     }
     break;

@@ -70,6 +70,7 @@ class HAPCharacteristic : public BLECharacteristic
     uint16_t _hap_props;
 
     uint16_t _resp_len;
+    uint8_t  _tid;
 
     err_t _addChrIdDescriptor(void);
 

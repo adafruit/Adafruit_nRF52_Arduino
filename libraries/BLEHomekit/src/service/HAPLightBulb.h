@@ -48,6 +48,7 @@ class HAPLightBulb : public HAPService
 
   private:
     HAPCharacteristic _on;
+    HAPCharacteristic _name;
 };
 
 

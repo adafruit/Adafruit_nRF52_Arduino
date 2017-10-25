@@ -102,12 +102,14 @@ bool BLEHomekit::setAdv(BLEAdvertisingData& adv_ref)
       .type              = 0x06,
       .adv_int_len       = ail,
       .status_flag       = 1, // bit0 = HAP Pairing Status Flag (1 not paired)
-      .dev_id            = { 0x0a, 0xbc, 0x12, 0x33, 0x56, 0x98 },
+      .dev_id            = { 0x00},
       .category          = HAP_CAT_LIGHTBULB,
       .gsn               = 1,
       .config_num        = 1,
       .compatible_verion = HOMEKIT_PROTOCOL_VERION
   };
+
+  Bluefruit.Gap.getAddr(data.dev_id);
 
   VERIFY_STATIC( sizeof(data) == 17);
 

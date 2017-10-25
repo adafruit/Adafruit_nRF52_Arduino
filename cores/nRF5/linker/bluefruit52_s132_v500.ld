@@ -14,7 +14,8 @@ MEMORY
    * - Max ATT MTU is 247
    * - Event Len = 3, HVN queue = 3, Write CMD queue =3
    */ 
-  RAM (rwx) :  ORIGIN = 0x20003000, LENGTH = 0xC000
+  /* RAM (rwx) :  ORIGIN = 0x20003000, LENGTH = 0x20010000 - 0x20003000  */
+  RAM (rwx) :  ORIGIN = 0x20003800, LENGTH = 0x20010000 - 0x20003800
   
   /* Reference configuration
      - MTU = 247, hvn = 7, wrcmd = 3 , evt len = 3
