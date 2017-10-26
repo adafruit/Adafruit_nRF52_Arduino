@@ -104,8 +104,8 @@ class BLECharacteristic
     void setPresentationFormatDescriptor(uint8_t type, int8_t exponent, uint16_t unit, uint8_t name_space = 1, uint16_t descritpor = 0);
 
     /*------------- Callbacks -------------*/
-    void setWriteCallback(write_cb_t fp);
-    void setCccdWriteCallback(write_cccd_cb_t fp);
+    void setWriteCallback        (write_cb_t fp);
+    void setCccdWriteCallback    (write_cccd_cb_t fp);
     void setReadAuthorizeCallback(read_authorize_cb_t fp);
     void setWriteAuthorizeCallbak(write_authorize_cb_t fp);
 
@@ -118,7 +118,7 @@ class BLECharacteristic
 
     /*------------- Write -------------*/
     uint16_t write(const void* data, uint16_t len);
-    uint16_t write(const char   * str);
+    uint16_t write(const char* str);
 
     uint16_t write(int      num);
     uint16_t write(uint32_t num);
@@ -134,7 +134,7 @@ class BLECharacteristic
     /*------------- Notify -------------*/
     bool notifyEnabled(void);
     bool notify(const void* data, uint16_t len);
-    bool notify(const char   * str);
+    bool notify(const char* str);
     bool notify(int      num);
     bool notify(uint32_t num);
     bool notify(uint16_t num);
