@@ -36,6 +36,14 @@
 
 #include "BLEUuid.h"
 
+//void reverse_uuid128(uint8_t const in[16], uint8_t out[16])
+//{
+//  for(uint8_t i=0; i<16; i++)
+//  {
+//    out[i] = in[15-i];
+//  }
+//}
+
 void BLEUuid::set(uint16_t uuid16)
 {
   _uuid.type = BLE_UUID_TYPE_BLE;

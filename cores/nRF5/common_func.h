@@ -162,7 +162,7 @@ int cprintf(const char * format, ...);
 
 #define ADALOG(tag, ...) \
   do { \
-    cprintf("[" #tag "] ");\
+    cprintf("[%-5s] ", #tag);\
     cprintf(__VA_ARGS__);\
     cprintf("\n");\
   }while(0)
