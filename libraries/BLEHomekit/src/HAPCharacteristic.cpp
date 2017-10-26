@@ -64,6 +64,8 @@ HAPCharacteristic::HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t u
 
   _resp_len  = 0;
 
+  _hap_wr_cb = NULL;
+
   // Need at least decent length for HAP Procedure
   _max_len = 100;
 
@@ -79,6 +81,11 @@ void HAPCharacteristic::setHapProperties(uint16_t prop)
   setProperties(chrprop);
 
   setPermission(SECMODE_OPEN, SECMODE_OPEN);
+}
+
+void HAPCharacteristic::setHapWriteCallback(hap_write_cb_t fp)
+{
+  _hap_wr_cb = fp;
 }
 
 /**
@@ -270,7 +277,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
         LOG_LV2("GATTS", "Write Op = %d, uuid = 0x%04X", gatt_req->op, gatt_req->uuid.uuid);
         LOG_LV2_BUFFER(NULL, gatt_req->data, gatt_req->len);
 
-        HAPRequest_t* hap_req = (HAPRequest_t*) gatt_req->data;
+        HAPRequest_t*  hap_req = (HAPRequest_t*) gatt_req->data;
         HAPResponse_t* hap_resp = NULL;
 
         ble_gatts_rw_authorize_reply_params_t reply =
@@ -296,7 +303,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
           hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_INVALID_INSTANCE_ID, NULL, 0);
         }else
         {
-          LOG_LV2("HAP", "%s request", hap_opcode_str[hap_req->header.opcode]);
+          LOG_LV2("HAP", "Recv %s request", hap_opcode_str[hap_req->header.opcode]);
           switch(hap_req->header.opcode)
           {
             case HAP_OPCODE_CHR_SIGNATURE_READ:
@@ -304,6 +311,10 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
             break;
 
             case HAP_OPCODE_CHR_WRITE:
+              if (_hap_wr_cb)
+              {
+                hap_resp = _hap_wr_cb(*this, hap_req, gatt_req->op, gatt_req->offset);
+              }
             break;
 
             case HAP_OPCODE_CHR_READ:
@@ -316,8 +327,8 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
             case HAP_OPCODE_CHR_EXECUTE_WRITE:
             break;
 
-            case HAP_OPCODE_SVC_SIGNATURE_READ:
-            break;
+            // need seperated chr for service
+//            case HAP_OPCODE_SVC_SIGNATURE_READ: break;
 
             default:
               hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU, NULL, 0);
@@ -335,7 +346,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
           reply.params.write.gatt_status = BLE_GATT_STATUS_ATTERR_INSUF_RESOURCES;
         }
 
-        LOG_LV2("HAP", "Response");
+        LOG_LV2("HAP", "Response Data");
         LOG_LV2_BUFFER(NULL, hap_resp, reply.params.write.len);
         err_t err = sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
 

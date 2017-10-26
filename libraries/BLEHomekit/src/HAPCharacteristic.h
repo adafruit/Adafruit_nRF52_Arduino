@@ -55,6 +55,7 @@ enum HAPChrProperties_t
 class HAPCharacteristic : public BLECharacteristic
 {
   public:
+    typedef HAPResponse_t* (*hap_write_cb_t) (HAPCharacteristic& chr, HAPRequest_t* hap_req, uint8_t write_op, uint16_t offset);
     static BLEUuid _g_uuid_cid;
 
     HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t unit = UUID16_UNIT_UNITLESS);
@@ -66,6 +67,9 @@ class HAPCharacteristic : public BLECharacteristic
     uint16_t writeHapValue(const void* data, uint16_t len);
     uint16_t writeHapValue(const char* str);
     uint16_t writeHapValue(uint32_t num);
+
+    // Callbacks
+    void setHapWriteCallback(hap_write_cb_t fp);
 
     /*------------- Internal Functions -------------*/
     virtual void _eventHandler(ble_evt_t* event);
@@ -79,6 +83,9 @@ class HAPCharacteristic : public BLECharacteristic
     // Char value is read by HAP procedure, not exposed via GATT
     void*    _value;
     uint16_t _vallen;
+
+    // Callbacks
+    hap_write_cb_t _hap_wr_cb;
 
     err_t _addChrIdDescriptor(void);
 
