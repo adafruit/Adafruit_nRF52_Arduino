@@ -55,7 +55,7 @@ static inline int dbgHeapFree(void)
 }
 
 void dbgMemInfo(void);
-
 void dbgPrintVersion(void);
+void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffset);
 
 #endif

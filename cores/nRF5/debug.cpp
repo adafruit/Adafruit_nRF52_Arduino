@@ -170,6 +170,54 @@ void dbgPrintVersion(void)
   Serial.println();
 }
 
+/******************************************************************************/
+/*!
+    @brief  Helper function to display memory contents in a friendly format
+*/
+/******************************************************************************/
+void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffset)
+{
+  uint8_t const *buf8 = (uint8_t const *) buf;
+
+  char format[] = "%00lX";
+  format[2] += 2*size;
+
+  char offset_fmt[] = "%02lX: ";
+
+  if ( count*size > UINT8_MAX  ) format[2] *= 2;
+  if ( count*size > UINT16_MAX ) format[2] *= 2;
+
+  const uint8_t item_per_line = 16 / size;
+
+  for(int i=0; i<count; i++)
+  {
+    uint32_t value=0;
+
+    // Print address
+    if ( i%item_per_line == 0 )
+    {
+      if ( i != 0 ) Serial.println();
+
+      // print offset or absolute address
+      if (printOffset)
+      {
+        Serial.printf(offset_fmt, 16*i/item_per_line);
+      }else
+      {
+        Serial.printf("%08lX:", (uint32_t) buf8);
+      }
+    }
+
+    memcpy(&value, buf8, size);
+    buf8 += size;
+
+    Serial.print(' ');
+    Serial.printf(format, value);
+  }
+
+  Serial.println();
+}
+
 /*------------------------------------------------------------------*/
 /*
  *------------------------------------------------------------------*/

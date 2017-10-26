@@ -362,8 +362,8 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
       // Value write
       if (request->handle == _handles.value_handle)
       {
-        LOG_LV2(GATTS, "attr's value, uuid = 0x%04X", request->uuid.uuid);
-        PRINT2_BUFFER(request->data, request->len);
+        LOG_LV2("GATTS", "attr's value, uuid = 0x%04X", request->uuid.uuid);
+        LOG_LV2_BUFFER(NULL, request->data, request->len);
 
         // TODO Ada callback
         if (_wr_cb) _wr_cb(*this, request->data, request->len, request->offset);
@@ -372,8 +372,8 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
       // CCCD write
       if ( request->handle == _handles.cccd_handle )
       {
-        LOG_LV2(GATTS, "attr's cccd");
-        PRINT2_BUFFER(request->data, request->len);
+        LOG_LV2("GATTS", "attr's cccd");
+        LOG_LV2_BUFFER(NULL, request->data, request->len);
 
         // Invoke callback if set
         if (_cccd_wr_cb)
@@ -538,7 +538,7 @@ bool BLECharacteristic::notify(const void* data, uint16_t len)
           .p_data = (uint8_t*) u8data,
       };
 
-      LOG_LV2(CHR, "Notify %d bytes", packet_len);
+      LOG_LV2("CHR", "Notify %d bytes", packet_len);
       VERIFY_STATUS( sd_ble_gatts_hvx(Bluefruit.connHandle(), &hvx_params), false );
 
       remaining -= packet_len;

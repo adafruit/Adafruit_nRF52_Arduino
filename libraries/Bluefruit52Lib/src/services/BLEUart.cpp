@@ -101,7 +101,7 @@ void bleuart_rxd_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_
   svc._rx_fifo.write(data, len);
 
 #if CFG_DEBUG >= 2
-  LOG_LV2(BLEUART, "RX: ");
+  LOG_LV2("BLEUART", "RX: ");
   PRINT_BUFFER(data, len);
 #endif
 

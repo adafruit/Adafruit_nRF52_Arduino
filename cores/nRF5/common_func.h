@@ -115,7 +115,7 @@
 // DEBUG HELPER
 //--------------------------------------------------------------------+
 #if CFG_DEBUG == 2
-  #define malloc_named( name, size )            ({ printf("[malloc] %s : %d\r\n", name, size); malloc(size); })
+  #define malloc_named( name, size )            ({ cprintf("[malloc] %s : %d\r\n", name, size); malloc(size); })
 #else
   #define malloc_named( name, size )            malloc ( size )
 #endif
@@ -123,17 +123,19 @@
 int cprintf(const char * format, ...);
 
 #if CFG_DEBUG
-#define LOG_LV1(...)    ADALOG(__VA_ARGS__)
+#define LOG_LV1(...)          ADALOG(__VA_ARGS__)
+#define LOG_LV1_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
 #else
 #define LOG_LV1(...)
+#define LOG_LV1_BUFFER(...)
 #endif
 
 #if CFG_DEBUG >= 2
-#define LOG_LV2(...)        ADALOG(__VA_ARGS__)
-#define PRINT2_BUFFER       PRINT_BUFFER
+#define LOG_LV2(...)          ADALOG(__VA_ARGS__)
+#define LOG_LV2_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
 #else
 #define LOG_LV2(...)
-#define PRINT2_BUFFER(...)
+#define LOG_LV2_BUFFER(...)
 #endif
 
 #if CFG_DEBUG
@@ -162,9 +164,15 @@ int cprintf(const char * format, ...);
 
 #define ADALOG(tag, ...) \
   do { \
-    cprintf("[%-5s] ", #tag);\
+    if ( tag ) cprintf("[%-6s] ", tag);\
     cprintf(__VA_ARGS__);\
     cprintf("\n");\
+  }while(0)
+
+#define ADALOG_BUFFER(_tag, _buf, _n) \
+  do {\
+    if ( _tag ) cprintf("[%-6s] ", _tag);\
+    dbgDumpMemory(_buf, 1, _n, true);\
   }while(0)
 
 #else

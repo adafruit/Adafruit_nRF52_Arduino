@@ -223,7 +223,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_DATA_LENGTH_UPDATE:
     {
       ble_gap_data_length_params_t* datalen =  &evt->evt.gap_evt.params.data_length_update.effective_params;
-      LOG_LV1(GAP, "Data Length is (tx, rx) octets = (%d, %d), (tx, rx) time = (%d, %d) us",
+      LOG_LV1("GAP", "Data Length is (tx, rx) octets = (%d, %d), (tx, rx) time = (%d, %d) us",
                    datalen->max_tx_octets, datalen->max_rx_octets, datalen->max_tx_time_us, datalen->max_rx_time_us);
     }
     break;
@@ -233,7 +233,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       peer->att_mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, BLEGATT_ATT_MTU_MAX);
       VERIFY_STATUS( sd_ble_gatts_exchange_mtu_reply(conn_handle, peer->att_mtu), );
 
-      LOG_LV1(GAP, "ATT MTU is changed to %d", peer->att_mtu);
+      LOG_LV1("GAP", "ATT MTU is changed to %d", peer->att_mtu);
     }
     break;
 

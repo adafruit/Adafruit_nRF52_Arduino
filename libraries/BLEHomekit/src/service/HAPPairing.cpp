@@ -42,7 +42,7 @@ HAPPairing::HAPPairing(void)
   : HAPService(HAP_UUID_SVC_PAIRING),
     _setup    (HAP_UUID_CHR_PAIR_SETUP   , BLE_GATT_CPF_FORMAT_STRUCT),
     _verify   (HAP_UUID_CHR_PAIR_VERIFY  , BLE_GATT_CPF_FORMAT_STRUCT),
-    _features (HAP_UUID_SVC_PAIR_FEATURE , BLE_GATT_CPF_FORMAT_STRUCT),
+    _features (HAP_UUID_SVC_PAIR_FEATURE , BLE_GATT_CPF_FORMAT_UINT8 ),
     _pairing  (HAP_UUID_SVC_PAIR_PAIRING , BLE_GATT_CPF_FORMAT_STRUCT)
 {
 
@@ -62,12 +62,10 @@ err_t HAPPairing::begin(void)
   VERIFY_STATUS( _verify.begin() );
 
   _features.setHapProperties(HAP_CHR_PROPS_READ);
-  _features.setMaxLen(100);
   VERIFY_STATUS( _features.begin() );
-  //_features.write( (uint8_t) 0x01); // support HAP pairing
+  _features.writeHapValue(0x01); // support HAP pairing
 
   _pairing.setHapProperties(HAP_CHR_PROPS_SECURE_READ | HAP_CHR_PROPS_SECURE_WRITE);
-  _pairing.setMaxLen(100);
   VERIFY_STATUS( _pairing.begin() );
 
   return ERROR_NONE;

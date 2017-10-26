@@ -73,7 +73,7 @@ bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLEClientService& svc,
 {
   ble_gattc_evt_prim_srvc_disc_rsp_t disc_svc;
 
-  LOG_LV2(DISC, "[SVC] Handle start = %d", start_handle);
+  LOG_LV2("DISC", "[SVC] Handle start = %d", start_handle);
 
   _adamsg.prepare(&disc_svc, sizeof(disc_svc));
   VERIFY_STATUS( sd_ble_gattc_primary_services_discover(conn_handle, start_handle, &svc.uuid._uuid), false );
@@ -90,7 +90,7 @@ bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLEClientService& svc,
     _hdl_range = disc_svc.services[0].handle_range;
     svc.setHandleRange(_hdl_range);
 
-    LOG_LV2(DISC, "[SVC] Found 0x%04X, Handle start = %d, end = %d\n-----------------", disc_svc.services[0].uuid.uuid, _hdl_range.start_handle, _hdl_range.end_handle);
+    LOG_LV2("DISC", "[SVC] Found 0x%04X, Handle start = %d, end = %d\n-----------------", disc_svc.services[0].uuid.uuid, _hdl_range.start_handle, _hdl_range.end_handle);
 
     // increase for next discovery
     _hdl_range.start_handle++;
@@ -112,7 +112,7 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
 
   while( found < count )
   {
-    LOG_LV2(DISC, "[CHR] Handle start = %d, end = %d", _hdl_range.start_handle, _hdl_range.end_handle);
+    LOG_LV2("DISC", "[CHR] Handle start = %d, end = %d", _hdl_range.start_handle, _hdl_range.end_handle);
 
     memclr(disc_chr, bufsize);
     _adamsg.prepare(disc_chr, bufsize);
@@ -132,7 +132,7 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
       {
         if ( chr[i]->uuid == disc_chr->chars[d].uuid )
         {
-          LOG_LV2(DISC, "[CHR] Found 0x%04X, handle = %d\n-----------------", disc_chr->chars[d].uuid.uuid,  disc_chr->chars[d].handle_value);
+          LOG_LV2("DISC", "[CHR] Found 0x%04X, handle = %d\n-----------------", disc_chr->chars[d].uuid.uuid,  disc_chr->chars[d].handle_value);
 
           // characteristic assign overload
           chr[i]->assign(&disc_chr->chars[d]);
@@ -171,7 +171,7 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
 
 uint16_t BLEDiscovery::_discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_desc_disc_rsp_t* disc_desc, uint16_t bufsize, ble_gattc_handle_range_t hdl_range)
 {
-  LOG_LV2(DISC, "[DESC] Handle start = %d, end = %d", hdl_range.start_handle, hdl_range.end_handle);
+  LOG_LV2("DISC", "[DESC] Handle start = %d, end = %d", hdl_range.start_handle, hdl_range.end_handle);
 
   _adamsg.prepare(disc_desc, bufsize);
 
@@ -185,7 +185,7 @@ uint16_t BLEDiscovery::_discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_d
 
   for(uint16_t i=0; i<disc_desc->count; i++)
   {
-    LOG_LV2(DISC, "[DESC] Descriptor %d: uuid = 0x%04X, handle = %d", i, disc_desc->descs[i].uuid.uuid, disc_desc->descs[i].handle);
+    LOG_LV2("DISC", "[DESC] Descriptor %d: uuid = 0x%04X, handle = %d", i, disc_desc->descs[i].uuid.uuid, disc_desc->descs[i].handle);
   }
 
   return disc_desc->count;
@@ -202,7 +202,7 @@ void BLEDiscovery::_event_handler(ble_evt_t* evt)
     {
       ble_gattc_evt_prim_srvc_disc_rsp_t* svc_rsp = &gattc->params.prim_srvc_disc_rsp;
 
-      LOG_LV2(DISC, "[SVC] Service Count: %d", svc_rsp->count);
+      LOG_LV2("DISC", "[SVC] Service Count: %d", svc_rsp->count);
 
       if (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS)
       {
@@ -213,7 +213,7 @@ void BLEDiscovery::_event_handler(ble_evt_t* evt)
         }
       }else
       {
-        LOG_LV1(DISC, "[SVC] Gatt Status = 0x%04X", gattc->gatt_status);
+        LOG_LV1("DISC", "[SVC] Gatt Status = 0x%04X", gattc->gatt_status);
       }
 
       _adamsg.complete();
@@ -224,7 +224,7 @@ void BLEDiscovery::_event_handler(ble_evt_t* evt)
     {
       ble_gattc_evt_char_disc_rsp_t* chr_rsp = &gattc->params.char_disc_rsp;
 
-      LOG_LV2(DISC, "[CHR] Characteristic Count: %d", chr_rsp->count);
+      LOG_LV2("DISC", "[CHR] Characteristic Count: %d", chr_rsp->count);
 
       if (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS)
       {
@@ -235,7 +235,7 @@ void BLEDiscovery::_event_handler(ble_evt_t* evt)
         }
       }else
       {
-        LOG_LV1(DISC, "[CHR] Gatt Status = 0x%04X", gattc->gatt_status);
+        LOG_LV1("DISC", "[CHR] Gatt Status = 0x%04X", gattc->gatt_status);
       }
 
       _adamsg.complete();
@@ -246,7 +246,7 @@ void BLEDiscovery::_event_handler(ble_evt_t* evt)
     {
       ble_gattc_evt_desc_disc_rsp_t* desc_rsp = &gattc->params.desc_disc_rsp;
 
-      LOG_LV2(DISC, "[DESC] Descriptor Count: %d", desc_rsp->count);
+      LOG_LV2("DISC", "[DESC] Descriptor Count: %d", desc_rsp->count);
 
       if (gattc->gatt_status == BLE_GATT_STATUS_SUCCESS)
       {
@@ -257,7 +257,7 @@ void BLEDiscovery::_event_handler(ble_evt_t* evt)
         }
       }else
       {
-        LOG_LV1(DISC, "[DESC] Gatt Status = 0x%04X", gattc->gatt_status);
+        LOG_LV1("DISC", "[DESC] Gatt Status = 0x%04X", gattc->gatt_status);
       }
 
       _adamsg.complete();

@@ -37,6 +37,13 @@
 #include <bluefruit.h>
 #include "BLEHomekit.h"
 
+#if CFG_DEBUG >= 2
+static const char* hap_opcode_str[] =
+{
+    "", "Signature Read", "Write", "Read", "Timed Write", "Execute Write", "Service Signature Read"
+};
+#endif
+
 BLEUuid HAPCharacteristic::_g_uuid_cid(HAP_UUID_DSC_CHARACTERISTIC_ID);
 
 
@@ -52,8 +59,13 @@ HAPCharacteristic::HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t u
   _cid       = 0;
   _hap_props = 0;
 
+  _value     = NULL;
+  _vallen    = 0;
+
   _resp_len  = 0;
-  _tid       = 0;
+
+  // Need at least decent length for HAP Procedure
+  _max_len = 100;
 
   setPresentationFormatDescriptor(format, 0, unit, 1, 0);
 }
@@ -115,16 +127,62 @@ err_t HAPCharacteristic::_addChrIdDescriptor(void)
   return addDescriptor(_g_uuid_cid, &_cid, sizeof(_cid), SECMODE_OPEN, SECMODE_NO_ACCESS);
 }
 
+uint16_t HAPCharacteristic::writeHapValue(const void* data, uint16_t len)
+{
+  free(_value);
+
+  _vallen = len;
+  _value  = rtos_malloc(len);
+  VERIFY(_value, 0);
+
+  memcpy(_value, data, len);
+
+  return len;
+}
+
+uint16_t HAPCharacteristic::writeHapValue(const char* str)
+{
+  return writeHapValue((const void*) str, strlen(str));
+}
+
+uint16_t HAPCharacteristic::writeHapValue(uint32_t num)
+{
+  uint8_t len;
+
+  // determine len by format type
+  switch ( _format_desc.format )
+  {
+    case BLE_GATT_CPF_FORMAT_UINT8:
+    case BLE_GATT_CPF_FORMAT_BOOLEAN:
+      len = 1;
+    break;
+
+    case BLE_GATT_CPF_FORMAT_UINT16:
+      len = 2;
+    break;
+
+    case BLE_GATT_CPF_FORMAT_UINT32:
+      len = 4;
+    break;
+
+    default: len = 0; break;
+  }
+
+  VERIFY(len, 0);
+
+  return writeHapValue(&num, len);
+}
+
 HAPResponse_t* HAPCharacteristic::createHapResponse(uint8_t tid, uint8_t status, TLV8_t tlv_para[], uint8_t count)
 {
-  // Determine body len, including the len's bytes
-  uint8_t body_len = 2;
+  // Determine body len, does not to include 2 byte length itself
+  uint8_t body_len = 0;
   for(uint8_t i=0; i <count ; i++)
   {
     body_len += tlv_para[i].len + 2;
   }
 
-  HAPResponse_t* hap_resp = (HAPResponse_t*) rtos_malloc(sizeof(HAPResponseHeader_t) + body_len);
+  HAPResponse_t* hap_resp = (HAPResponse_t*) rtos_malloc(sizeof(HAPResponseHeader_t) + 2 + body_len);
   VERIFY( hap_resp != NULL, NULL );
 
   /*------------- Header -------------*/
@@ -133,8 +191,7 @@ HAPResponse_t* HAPCharacteristic::createHapResponse(uint8_t tid, uint8_t status,
   hap_resp->header.control.type     = HAP_PDU_RESPONSE;
   hap_resp->header.tid              = tid;
   hap_resp->header.status           = status;
-
-  hap_resp->body_len                = (count ? body_len : 0);
+  hap_resp->body_len                = body_len;
 
   /*------------- Serialize Data -------------*/
   uint8_t* pdata = hap_resp->body_data;
@@ -150,12 +207,51 @@ HAPResponse_t* HAPCharacteristic::createHapResponse(uint8_t tid, uint8_t status,
   return hap_resp;
 }
 
-void reverse_uuid128(uint8_t const in[16], uint8_t out[16])
+HAPResponse_t* HAPCharacteristic::processChrSignatureRead(HAPRequest_t* hap_req)
 {
-  for(uint8_t i=0; i<16; i++)
+  uint16_t svc_id = ((HAPService*)_service)->getSvcId();
+
+  // ble_gatts_char_pf_t is not packed struct
+  struct ATTR_PACKED
   {
-    out[i] = in[15-i];
-  }
+    uint8_t          format;
+    int8_t           exponent;
+    uint16_t         unit;
+    uint8_t          name_space;
+    uint16_t         desc;
+  }fmt_desc =
+  {
+      .format     = _format_desc.format,
+      .exponent   = _format_desc.exponent,
+      .unit       = _format_desc.unit,
+      .name_space = _format_desc.name_space,
+      .desc       = _format_desc.desc
+  };
+
+  /* Return <Chr Type, Chr ID, Svc Type, Svc ID, Meta Descriptors>
+   * Where descriptors are:
+   * - Gatt Usr String, Gatt Format Desc, Gatt Valid Range
+   * - Hap Properties, Hap step value, Hap valid values, Hap valid Range
+   */
+  TLV8_t tlv_para[] =
+  {
+      { .type  = HAP_PARAM_CHR_TYPE, .len = 16, .value = uuid._uuid128           },
+      { .type  = HAP_PARAM_CHR_ID  , .len = 2 , .value = &_cid                   },
+      { .type  = HAP_PARAM_SVC_TYPE, .len = 16, .value = _service->uuid._uuid128 },
+      { .type  = HAP_PARAM_SVC_ID  , .len = 2 , .value = &svc_id                 },
+      // Descriptors
+      { .type  = HAP_PARAM_HAP_CHR_PROPERTIES_DESC, .len = 2 , .value = &_hap_props  },
+      { .type  = HAP_PARAM_GATT_FORMAT_DESC       , .len = sizeof(fmt_desc) , .value = &fmt_desc  },
+  };
+
+  return createHapResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+}
+
+HAPResponse_t* HAPCharacteristic::processChrRead(HAPRequest_t* hap_req)
+{
+  TLV8_t tlv_para = { .type = HAP_PARAM_VALUE, .len = _vallen, .value = _value };
+
+  return createHapResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, &tlv_para, 1);
 }
 
 void HAPCharacteristic::_eventHandler(ble_evt_t* event)
@@ -171,8 +267,8 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
       {
         ble_gatts_evt_write_t * gatt_req = &event->evt.gatts_evt.params.authorize_request.request.write;
 
-        LOG_LV2(GATTS, "Write Op = %d, uuid = 0x%04X", gatt_req->op, gatt_req->uuid.uuid);
-        PRINT2_BUFFER(gatt_req->data, gatt_req->len);
+        LOG_LV2("GATTS", "Write Op = %d, uuid = 0x%04X", gatt_req->op, gatt_req->uuid.uuid);
+        LOG_LV2_BUFFER(NULL, gatt_req->data, gatt_req->len);
 
         HAPRequest_t* hap_req = (HAPRequest_t*) gatt_req->data;
         HAPResponse_t* hap_resp = NULL;
@@ -191,8 +287,6 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
             }
         };
 
-        _tid = hap_req->header.tid;
-
         if (hap_req->header.control.type != HAP_PDU_REQUEST)
         {
           hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU, NULL, 0);
@@ -202,48 +296,27 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
           hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_INVALID_INSTANCE_ID, NULL, 0);
         }else
         {
-          LOG_LV2(HAP, "Opcode = %d", hap_req->header.opcode);
+          LOG_LV2("HAP", "%s request", hap_opcode_str[hap_req->header.opcode]);
           switch(hap_req->header.opcode)
           {
-            /* Return <Chr Type, Svc Type, Svc ID, Meta Descriptors>
-             * Where descriptors are:
-             * - Gatt Usr String, Gatt Format Desc, Gatt Valid Range
-             * - Hap Properties, Hap step value, Hap valid values, Hap valid Range
-             */
             case HAP_OPCODE_CHR_SIGNATURE_READ:
-            {
-              uint16_t svc_id = ((HAPService*)_service)->getSvcId();
+              hap_resp = processChrSignatureRead(hap_req);
+            break;
 
-              // ble_gatts_char_pf_t is not packed struct
-              struct ATTR_PACKED
-              {
-                uint8_t          format;
-                int8_t           exponent;
-                uint16_t         unit;
-                uint8_t          name_space;
-                uint16_t         desc;
-              }fmt_desc =
-              {
-                  .format     = _format_desc.format,
-                  .exponent   = _format_desc.exponent,
-                  .unit       = _format_desc.unit,
-                  .name_space = _format_desc.name_space,
-                  .desc       = _format_desc.desc
-              };
+            case HAP_OPCODE_CHR_WRITE:
+            break;
 
-              TLV8_t tlv_para[] =
-              {
-                  { .type  = HAP_PARAM_CHR_TYPE, .len = 16, .value = uuid._uuid128           },
-//                  { .type  = HAP_PARAM_CHR_ID  , .len = 2 , .value = &_cid                   },
-                  { .type  = HAP_PARAM_SVC_TYPE, .len = 16, .value = _service->uuid._uuid128 },
-                  { .type  = HAP_PARAM_SVC_ID  , .len = 2 , .value = &svc_id                 },
-                  // Descriptors
-                  { .type  = HAP_PARAM_HAP_CHR_PROPERTIES_DESC, .len = 2 , .value = &_hap_props  },
-                  { .type  = HAP_PARAM_GATT_FORMAT_DESC       , .len = sizeof(fmt_desc) , .value = &fmt_desc  },
-              };
+            case HAP_OPCODE_CHR_READ:
+              hap_resp = processChrRead(hap_req);
+            break;
 
-              hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
-            }
+            case HAP_OPCODE_CHR_TIMED_WRITE:
+            break;
+
+            case HAP_OPCODE_CHR_EXECUTE_WRITE:
+            break;
+
+            case HAP_OPCODE_SVC_SIGNATURE_READ:
             break;
 
             default:
@@ -254,7 +327,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
 
         if ( hap_resp )
         {
-          reply.params.write.len    = _resp_len = sizeof(HAPResponseHeader_t) + hap_resp->body_len;
+          reply.params.write.len    = _resp_len = sizeof(HAPResponseHeader_t) + 2 + hap_resp->body_len;
           reply.params.write.p_data = (uint8_t*) hap_resp;
         }else
         {
@@ -262,7 +335,8 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
           reply.params.write.gatt_status = BLE_GATT_STATUS_ATTERR_INSUF_RESOURCES;
         }
 
-        PRINT2_BUFFER(hap_resp, reply.params.write.len);
+        LOG_LV2("HAP", "Response");
+        LOG_LV2_BUFFER(NULL, hap_resp, reply.params.write.len);
         err_t err = sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
 
         rtos_free(hap_resp);
@@ -274,7 +348,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
       {
         ble_gatts_evt_read_t * gatt_req = &event->evt.gatts_evt.params.authorize_request.request.read;
 
-        LOG_LV2(GATTS, "Read uuid = 0x%04X, offset = %d", gatt_req->uuid.uuid, gatt_req->offset);
+        LOG_LV2("GATTS", "Read uuid = 0x%04X, offset = %d", gatt_req->uuid.uuid, gatt_req->offset);
 
         ble_gatts_rw_authorize_reply_params_t reply =
         {
@@ -296,27 +370,9 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
           VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply), );
         }else
         {
-#if 1
+          // reject read attempt
           reply.params.read.gatt_status = BLE_GATT_STATUS_ATTERR_READ_NOT_PERMITTED;
           VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply), );
-#elif 0
-          HAPResponse_t* hap_resp = createHapResponse(_tid, HAP_STATUS_INVALID_REQUEST, NULL, 0);
-
-          reply.params.read.update = 1;
-          reply.params.read.len    = sizeof(HAPResponseHeader_t) + hap_resp->body_len;
-          reply.params.read.p_data = (uint8_t*) hap_resp;
-
-          err_t err = sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
-
-          rtos_free(hap_resp);
-          VERIFY_STATUS( err, );
-#else
-          reply.params.read.update = 1;
-          reply.params.read.len    = 0;
-          reply.params.read.p_data = NULL;
-
-          err_t err = sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
-#endif
         }
       }
     }
@@ -329,8 +385,8 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
       // CCCD write
       if ( request->handle == _handles.cccd_handle )
       {
-        LOG_LV2(GATTS, "attr's cccd");
-        PRINT2_BUFFER(request->data, request->len);
+        LOG_LV2("GATTS", "attr's cccd");
+        LOG_LV2_BUFFER(NULL, request->data, request->len);
 
         // Invoke callback if set
         if (_cccd_wr_cb)
