@@ -296,11 +296,11 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
 
         if (hap_req->header.control.type != HAP_PDU_REQUEST)
         {
-          hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU, NULL, 0);
+          hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
         }
         else if (hap_req->header.instance_id != _cid)
         {
-          hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_INVALID_INSTANCE_ID, NULL, 0);
+          hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_INVALID_INSTANCE_ID);
         }else
         {
           LOG_LV2("HAP", "Recv %s request", hap_opcode_str[hap_req->header.opcode]);
@@ -313,7 +313,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
             case HAP_OPCODE_CHR_WRITE:
               if (_hap_wr_cb)
               {
-                hap_resp = _hap_wr_cb(*this, hap_req, gatt_req->op, gatt_req->offset);
+                hap_resp = _hap_wr_cb(*this, gatt_req, hap_req);
               }
             break;
 
@@ -331,7 +331,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
 //            case HAP_OPCODE_SVC_SIGNATURE_READ: break;
 
             default:
-              hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU, NULL, 0);
+              hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
             break;
           }
         }

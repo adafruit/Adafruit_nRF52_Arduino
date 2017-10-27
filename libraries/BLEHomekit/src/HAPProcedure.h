@@ -85,35 +85,6 @@ enum HAPPduType_t
   HAP_PDU_RESPONSE,
 };
 
-enum TLVError_t
-{
-  TLV_ERROR_UNKNOWN = 1    ,
-  TLV_ERROR_AUTHENTICATION ,
-  TLV_ERROR_BACKOFF        ,
-  TLV_ERROR_MAX_PEERS      ,
-  TLV_ERROR_MAX_TRIES      ,
-  TLV_ERROR_UNAVAILABLE    ,
-  TLV_ERROR_BUSY
-};
-
-enum TLVType_t
-{
-  TLV_TYPE_METHOD = 0     ,
-  TLV_TYPE_IDENTIFIER     ,
-  TLV_TYPE_SALT           ,
-  TLV_TYPE_PUBLIC_KEY     ,
-  TLV_TYPE_PROOF          ,
-  TLV_TYPE_ENCRYPTED_DATA ,
-  TLV_TYPE_STATE          ,
-  TLV_TYPE_ERROR          ,
-  TLV_TYPE_RETRY_DELAY    ,
-  TLV_TYPE_CERTIFICATE    ,
-  TLV_TYPE_SIGNATURE      ,
-  TLV_TYPE_PERMISSIONS    ,
-  TLV_TYPE_FRAGMENT_DATA  ,
-  TLV_TYPE_FRAGMENT_LAST  ,
-  TLV_TYPE_SEPARATOR
-};
 
 typedef struct ATTR_PACKED
 {
@@ -121,6 +92,8 @@ typedef struct ATTR_PACKED
   uint8_t len;
   const void* value; // need serialization, not reflect physical layout
 }TLV8_t;
+
+
 
 typedef struct ATTR_PACKED
 {
@@ -174,5 +147,7 @@ typedef struct ATTR_PACKED
 } HAPResponse_t;
 
 
+
+TLV8_t tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len);
 
 #endif /* HAPPROCEDURE_H_ */
