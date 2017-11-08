@@ -73,7 +73,7 @@ err_t BLEDis::begin(void)
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
 
-  _serial = getMcuUniqueID();
+  _serial       = getMcuUniqueID();
   _firmware_rev = getFirmwareVersion();
 
   for(uint8_t i=0; i<arrcount(_strarr); i++)

@@ -73,11 +73,13 @@ void const * lookup_find(lookup_table_t const* p_table, uint32_t key)
  * Format: SDname SDverion, bootloader version
  * e.g
  *    "S132 2.0.1, 0.5.0"
+ *    "S132 5.0.0, 5.0.0 single bank"
+ *    "S132 5.0.0, 5.0.0 dual banks"
  * @return
  */
 const char* getFirmwareVersion(void)
 {
-  static char fw_str[20+1] = { 0 };
+  static char fw_str[30+1] = { 0 };
 
   // Skip if already created
   if ( fw_str[0] == 0 )
@@ -85,16 +87,31 @@ const char* getFirmwareVersion(void)
     uint32_t sd_id = SD_FWID_GET(MBR_SIZE) & 0x0000ffff;
     char const* p_lookup = (char const*) lookup_find(&sd_lookup_table, sd_id);
 
+#if SD_VER < 500
     if (p_lookup)
     {
-      sprintf(fw_str, "%s, %d.%d.%d", p_lookup,
+      sprintf(fw_str, "%s, %d.%d.%d dual banks", p_lookup,
               U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion), U32_BYTE4(bootloaderVersion));
     }else
     {
       // Unknown SD ID --> display ID
-      sprintf(fw_str, "0x%04X, %d.%d.%d", (uint16_t) sd_id,
+      sprintf(fw_str, "0x%04X, %d.%d.%d dual banks", (uint16_t) sd_id,
               U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion), U32_BYTE4(bootloaderVersion));
     }
+#else
+    if (p_lookup)
+    {
+      sprintf(fw_str, "%s, %d.%d.%d %s", p_lookup,
+              U32_BYTE1(bootloaderVersion), U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion),
+              U32_BYTE4(bootloaderVersion) ? "single bank" : "dual banks");
+    }else
+    {
+      // Unknown SD ID --> display ID
+      sprintf(fw_str, "0x%04X, %d.%d.%d %s", (uint16_t) sd_id,
+              U32_BYTE1(bootloaderVersion), U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion),
+              U32_BYTE4(bootloaderVersion) ? "single bank" : "dual banks");
+    }
+#endif
   }
 
   return fw_str;
@@ -118,7 +135,6 @@ const char* getMcuUniqueID(void)
  *
   SoftDevice          |  FWID  | memory address |
   --------------------|--------|----------------
-  S132 v2.0.0         | 0x0081 |   0x0000300C   |
   S132 v2.0.1         | 0x0088 |   0x0000300C   |
   S132 v5.0.0         | 0x009D |                |
   Development/any     | 0xFFFE |                |

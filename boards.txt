@@ -16,7 +16,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-menu.softdevice=Soft Device
+menu.softdevice=Bootloader
 menu.debug=Debug Mode
 
 #**********************************************
@@ -29,11 +29,6 @@ feather52.bootloader.tool=bootburn
 feather52.upload.tool=nrfutil
 feather52.upload.protocol=nrfutil
 
-# required if using native usb ( for reference )
-#feather52.upload.use_1200bps_touch=false
-#feather52.upload.wait_for_upload_port=false
-#feather52.upload.native_usb=false
-
 # Build
 feather52.build.mcu=cortex-m4
 feather52.build.f_cpu=64000000
@@ -43,14 +38,14 @@ feather52.build.variant=feather52
 
 # SofDevice Menu
 # Ram & ROM size varies depending on S132 (check linker script)
-feather52.menu.softdevice.s132v201=S132 v2.0.1
+feather52.menu.softdevice.s132v201=0.5.0 dual, S132 2.0.1
 feather52.menu.softdevice.s132v201.build.sd_flags=-DS132 -DSD_VER=201
 feather52.menu.softdevice.s132v201.build.sd_name=s132_v201
 feather52.menu.softdevice.s132v201.build.bootloader=bootloader_v050
 feather52.menu.softdevice.s132v201.upload.maximum_size=165888
 feather52.menu.softdevice.s132v201.upload.maximum_data_size=51072
 
-feather52.menu.softdevice.s132v500=S132 v5.0.0
+feather52.menu.softdevice.s132v500=5.0.0 dual, S132 5.0.0
 feather52.menu.softdevice.s132v500.build.sd_flags=-DS132 -DSD_VER=500
 feather52.menu.softdevice.s132v500.build.sd_name=s132_v500
 feather52.menu.softdevice.s132v500.build.bootloader=bootloader_v055
@@ -66,6 +61,11 @@ feather52.menu.debug.l2=Level 2 (Full Debug)
 feather52.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
 feather52.menu.debug.l3=Level 3 (Segger SystemView)
 feather52.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
+
+# required if using native usb ( for reference )
+#feather52.upload.use_1200bps_touch=false
+#feather52.upload.wait_for_upload_port=false
+#feather52.upload.native_usb=false
 
 #**********************************************
 # Metro nrf52 Board

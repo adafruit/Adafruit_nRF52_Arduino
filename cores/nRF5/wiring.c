@@ -35,6 +35,9 @@ uint32_t bootloaderVersion = 0;
 
 void init( void )
 {
+  // Retrieve bootloader version
+  bootloaderVersion = BOOTLOADER_VERSION_REGISTER;
+
 #if defined( USE_LFXO )
   // 32Khz XTAL
   NRF_CLOCK->LFCLKSRC = (uint32_t)((CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);
@@ -46,9 +49,6 @@ void init( void )
 #endif
 
   NRF_CLOCK->TASKS_LFCLKSTART = 1UL;
-
-  // Retrieve bootloader version
-  bootloaderVersion = BOOTLOADER_VERSION_REGISTER;
 
   // RTC1 could be enabled by bootloader. Disable it
   NVIC_DisableIRQ(RTC1_IRQn);
