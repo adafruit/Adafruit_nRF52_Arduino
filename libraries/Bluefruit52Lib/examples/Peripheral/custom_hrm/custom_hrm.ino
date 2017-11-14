@@ -32,9 +32,6 @@ void startAdv(void);
 void setupHRM(void);
 void connect_callback(uint16_t conn_handle);
 void disconnect_callback(uint16_t conn_handle, uint8_t reason);
-void cccd_callback(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
-
-void blink_timer_callback(TimerHandle_t xTimerID);
 
 void setup()
 {
