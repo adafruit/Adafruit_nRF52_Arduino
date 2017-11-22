@@ -69,7 +69,8 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   {
     Serial.printf("[ADV%9d] Packet received from ", millis());
   }
-  Serial.printBuffer(report->peer_addr.addr, 6, ':');
+  // MAC is in little endian --> print reverse
+  Serial.printBufferReverse(report->peer_addr.addr, 6, ':');
   Serial.print("\n");
 
   /* Raw buffer contents */
