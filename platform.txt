@@ -55,7 +55,6 @@ build.sd_flags=-DS132 -DSD_VER=201
 build.sd_name=s132_v201
 build.debug_flags=-DCFG_DEBUG=0 -Os
 
-build.bootloader=bootloader_v050
 build.ldscript=bluefruit52_{build.sd_name}.ld
 
 # compatiable with other lib only, would remove in the future
