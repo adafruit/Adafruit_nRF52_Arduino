@@ -81,13 +81,13 @@ enum NRF_MBR_SVCS
 /**@brief Possible values for ::sd_mbr_command_t.command */
 enum NRF_MBR_COMMANDS
 {
-  SD_MBR_COMMAND_COPY_BL,                 /**< Copy a new BootLoader. @see sd_mbr_command_copy_bl_t*/
+  SD_MBR_COMMAND_COPY_BL,                 /**< Copy a new BootLoader. @see ::sd_mbr_command_copy_bl_t*/
   SD_MBR_COMMAND_COPY_SD,                 /**< Copy a new SoftDevice. @see ::sd_mbr_command_copy_sd_t*/
-  SD_MBR_COMMAND_INIT_SD,                 /**< Initialize forwarding interrupts to SD, and run reset function in SD*/
+  SD_MBR_COMMAND_INIT_SD,                 /**< Initialize forwarding interrupts to SD, and run reset function in SD. Does not require any parameters in ::sd_mbr_command_t params.*/
   SD_MBR_COMMAND_COMPARE,                 /**< This command works like memcmp. @see ::sd_mbr_command_compare_t*/
-  SD_MBR_COMMAND_VECTOR_TABLE_BASE_SET,   /**< Change the address the MBR starts after a reset @see ::sd_mbr_command_vector_table_base_set_t*/
+  SD_MBR_COMMAND_VECTOR_TABLE_BASE_SET,   /**< Change the address the MBR starts after a reset. @see ::sd_mbr_command_vector_table_base_set_t*/
   SD_MBR_COMMAND_RESERVED,
-  SD_MBR_COMMAND_IRQ_FORWARD_ADDRESS_SET, /**< Start forwarding all interrupts to this address @see ::sd_mbr_command_irq_forward_address_set_t*/
+  SD_MBR_COMMAND_IRQ_FORWARD_ADDRESS_SET, /**< Start forwarding all interrupts to this address. @see ::sd_mbr_command_irq_forward_address_set_t*/
 };
 
 /** @} */
@@ -96,6 +96,7 @@ enum NRF_MBR_COMMANDS
  * @{ */
 
 /**@brief This command copies part of a new SoftDevice
+ *
  * The destination area is erased before copying.
  * If dst is in the middle of a flash page, that whole flash page will be erased.
  * If (dst+len) is in the middle of a flash page, that whole flash page will be erased.
@@ -127,14 +128,16 @@ typedef struct
 
 
 /**@brief This command copies a new BootLoader.
- *  With this command, destination of BootLoader is always the address written in NRF_UICR->BOOTADDR.
  *
- *  Destination is erased by this function.
- *  If (destination+bl_len) is in the middle of a flash page, that whole flash page will be erased.
+ * With this command, destination of BootLoader is always the address written in
+ * NRF_UICR->BOOTADDR.
  *
- *  This function will use PROTENSET to protect the flash that is not intended to be written.
+ * Destination is erased by this function.
+ * If (destination+bl_len) is in the middle of a flash page, that whole flash page will be erased.
  *
- *  On success, this function will not return. It will start the new BootLoader from reset-vector as normal.
+ * This function will use PROTENSET to protect the flash that is not intended to be written.
+ *
+ * On success, this function will not return. It will start the new BootLoader from reset-vector as normal.
  *
  * @retval ::NRF_ERROR_INTERNAL indicates an internal error that should not happen.
  * @retval ::NRF_ERROR_FORBIDDEN if NRF_UICR->BOOTADDR is not set.
@@ -149,10 +152,12 @@ typedef struct
 
 /**@brief Change the address the MBR starts after a reset
  *
- * Once this function has been called, this address is where the MBR will start to forward interrupts to after a reset.
+ * Once this function has been called, this address is where the MBR will start to forward
+ * interrupts to after a reset.
  *
- * To restore default forwarding this function should be called with @param address set to 0.
- * The MBR will then start forwarding to interrupts to the address in NFR_UICR->BOOTADDR or to the SoftDevice if the BOOTADDR is not set.
+ * To restore default forwarding this function should be called with @ref address set to 0. The
+ * MBR will then start forwarding interrupts to the address in NFR_UICR->BOOTADDR or to the
+ * SoftDevice if the BOOTADDR is not set.
  *
  * On success, this function will not return. It will reset the device.
  *
@@ -166,6 +171,7 @@ typedef struct
 } sd_mbr_command_vector_table_base_set_t;
 
 /**@brief Sets the base address of the interrupt vector table for interrupts forwarded from the MBR
+ *
  * Unlike sd_mbr_command_vector_table_base_set_t, this function does not reset, and it does not
  * change where the MBR starts after reset.
  *
@@ -176,9 +182,15 @@ typedef struct
   uint32_t address; /**< The base address of the interrupt vector table for forwarded interrupts.*/
 } sd_mbr_command_irq_forward_address_set_t;
 
+/**@brief Input structure containing data used when calling ::sd_mbr_command
+ *
+ * Depending on what command value that is set, the corresponding params value type must also be
+ * set. See @ref NRF_MBR_COMMANDS for command types and corresponding params value type. If command
+ * @ref SD_MBR_COMMAND_INIT_SD is set, it is not necessary to set any values under params.
+ */
 typedef struct
 {
-  uint32_t command;  /**< type of command to be issued see @ref NRF_MBR_COMMANDS. */
+  uint32_t command;  /**< Type of command to be issued. See @ref NRF_MBR_COMMANDS. */
   union
   {
     sd_mbr_command_copy_sd_t copy_sd;  /**< Parameters for copy SoftDevice.*/
@@ -186,7 +198,7 @@ typedef struct
     sd_mbr_command_copy_bl_t copy_bl;  /**< Parameters for copy BootLoader. Requires parameter page. */
     sd_mbr_command_vector_table_base_set_t base_set; /**< Parameters for vector table base set. Requires parameter page.*/
     sd_mbr_command_irq_forward_address_set_t irq_forward_address_set; /**< Parameters for irq forward address set*/
-  } params;
+  } params; /**< Command parameters. */
 } sd_mbr_command_t;
 
 /** @} */
@@ -198,21 +210,22 @@ typedef struct
  *
  * Commands used when updating a SoftDevice and bootloader.
  *
- * The SD_MBR_COMMAND_COPY_BL and SD_MBR_COMMAND_VECTOR_TABLE_BASE_SET requires parameters to be
- * retained by the MBR when resetting the IC. This is done in a separate flash page
- * provided by the application. The UICR register UICR.NRFFW[1] must be set
- * to an address corresponding to a page in the application flash space. This page will be cleared
- * by the MBR and used to store the command before reset. When the UICR.NRFFW[1] field is set
- * the page it refers to must not be used by the application. If the UICR.NRFFW[1] is set to
- * 0xFFFFFFFF (the default) MBR commands which use flash will be unavailable and return
- * NRF_ERROR_NO_MEM.
+ * The @ref SD_MBR_COMMAND_COPY_BL and @ref SD_MBR_COMMAND_VECTOR_TABLE_BASE_SET requires
+ * parameters to be retained by the MBR when resetting the IC. This is done in a separate flash
+ * page provided by the application. The UICR register UICR.NRFFW[1] must be set to an address
+ * corresponding to a page in the application flash space. This page will be cleared by the MBR and
+ * used to store the command before reset. When the UICR.NRFFW[1] field is set the page it refers
+ * to must not be used by the application. If the UICR.NRFFW[1] is set to 0xFFFFFFFF (the default)
+ * MBR commands which use flash will be unavailable and return @ref NRF_ERROR_NO_MEM.
  *
  * @param[in]  param Pointer to a struct describing the command.
  *
- * @note For return values, see ::sd_mbr_command_copy_sd_t ::sd_mbr_command_copy_bl_t ::sd_mbr_command_compare_t ::sd_mbr_command_vector_table_base_set_t ::sd_mbr_command_irq_forward_address_set_t
+ * @note For return values, see ::sd_mbr_command_copy_sd_t, ::sd_mbr_command_copy_bl_t,
+ *       ::sd_mbr_command_compare_t, ::sd_mbr_command_vector_table_base_set_t,
+ *       ::sd_mbr_command_irq_forward_address_set_t
  *
- * @retval NRF_ERROR_NO_MEM if UICR.NRFFW[1] is not set (i.e. is 0xFFFFFFFF).
- * @retval NRF_ERROR_INVALID_PARAM if an invalid command is given.
+ * @retval ::NRF_ERROR_NO_MEM if UICR.NRFFW[1] is not set (i.e. is 0xFFFFFFFF).
+ * @retval ::NRF_ERROR_INVALID_PARAM if an invalid command is given.
 */
 SVCALL(SD_MBR_COMMAND, uint32_t, sd_mbr_command(sd_mbr_command_t* param));
 
