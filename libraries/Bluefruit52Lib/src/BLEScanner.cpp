@@ -94,6 +94,11 @@ void BLEScanner::setRxCallback(rx_callback_t fp)
   _rx_cb = fp;
 }
 
+void BLEScanner::setStopCallback(stop_callback_t fp)
+{
+  _stop_cb = fp;
+}
+
 void BLEScanner::restartOnDisconnect(bool enable)
 {
   _start_if_disconnect = enable;
