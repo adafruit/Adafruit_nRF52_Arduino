@@ -51,11 +51,9 @@ compiler.size.cmd=arm-none-eabi-size
 
 # this can be overriden in boards.txt
 build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16 -u _printf_float
-build.sd_flags=-DS132 -DSD_VER=201
-build.sd_name=s132_v201
 build.debug_flags=-DCFG_DEBUG=0 -Os
 
-build.ldscript=bluefruit52_{build.sd_name}.ld
+build.ldscript=bluefruit52_{build.sd_name}_{build.sd_version}.ld
 
 # compatiable with other lib only, would remove in the future
 build.extra_flags=-DARDUINO_FEATHER52
@@ -67,7 +65,7 @@ nffs.path={runtime.platform.path}/libraries/nffs/src
 
 nffs.includes="-I{nffs.path}/fs/nffs/include" "-I{nffs.path}/fs/fs/include"  "-I{nffs.path}/fs/disk/include" "-I{nffs.path}/util/crc/include" "-I{nffs.path}/kernel/os/include" "-I{nffs.path}/kernel/os/include/os/arch/cortex_m4" "-I{nffs.path}/hw/hal/include" "-I{nffs.path}/sys/flash_map/include" "-I{nffs.path}/sys/defs/include"
 
-compiler.nrf.flags=-DARDUINO_NRF52_ADAFRUIT -DNRF5 -DNRF52 -DNRF52832_XXAA -DUSE_LFXO {build.sd_flags} {build.debug_flags} "-I{nrf.sdk.path}/components/toolchain/" "-I{nrf.sdk.path}/components/toolchain/cmsis/include" "-I{nrf.sdk.path}/components/toolchain/gcc/" "-I{nrf.sdk.path}/components/device/" "-I{nrf.sdk.path}/components/drivers_nrf/delay/" "-I{nrf.sdk.path}/components/drivers_nrf/hal/" "-I{nrf.sdk.path}/components/libraries/util/" "-I{build.core.path}/softdevice/{build.sd_name}/headers/" "-I{rtos.path}/source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" {nffs.includes}
+compiler.nrf.flags=-DARDUINO_NRF52_ADAFRUIT -DNRF5 -DNRF52 -DNRF52832_XXAA -DUSE_LFXO {build.sd_flags} {build.debug_flags} "-I{nrf.sdk.path}/components/toolchain/" "-I{nrf.sdk.path}/components/toolchain/cmsis/include" "-I{nrf.sdk.path}/components/toolchain/gcc/" "-I{nrf.sdk.path}/components/device/" "-I{nrf.sdk.path}/components/drivers_nrf/delay/" "-I{nrf.sdk.path}/components/drivers_nrf/hal/" "-I{nrf.sdk.path}/components/libraries/util/" "-I{build.core.path}/softdevice/{build.sd_name}/{build.sd_version}/headers/" "-I{rtos.path}/source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" {nffs.includes}
 
 # These can be overridden in platform.local.txt
 compiler.c.extra_flags=
