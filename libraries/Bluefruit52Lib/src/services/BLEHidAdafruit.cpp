@@ -70,9 +70,9 @@ uint8_t const hid_report_descriptor[] =
     // 6-byte Keycodes
     HID_USAGE_PAGE (HID_USAGE_PAGE_KEYBOARD),
       HID_USAGE_MIN    ( 0                                   ),
-      HID_USAGE_MAX    ( 101                                 ),
+      HID_USAGE_MAX    ( 255                                 ),
       HID_LOGICAL_MIN  ( 0                                   ),
-      HID_LOGICAL_MAX  ( 101                                 ),
+      HID_LOGICAL_MAX  ( 255                                 ),
 
       HID_REPORT_COUNT ( 6                                   ),
       HID_REPORT_SIZE  ( 8                                   ),
