@@ -162,7 +162,6 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, nrf_error_cb) );
 
   /*------------- Configure BLE params  -------------*/
-  // Fetch the start address of the application RAM.
   extern uint32_t  __data_start__[]; // defined in linker
   uint32_t ram_start = (uint32_t) __data_start__;
 
@@ -214,7 +213,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   blecfg.gatts_cfg.attr_tab_size.attr_tab_size = BLE_GATTS_ATTR_TABLE_SIZE;
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_ATTR_TAB_SIZE, &blecfg, ram_start) );
 
-  // TODO ATT MTU
+  // ATT MTU
   varclr(&blecfg);
   blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_HIGH_BANDWIDTH;
   blecfg.conn_cfg.params.gatt_conn_cfg.att_mtu = BLEGATT_ATT_MTU_MAX;

@@ -22,7 +22,7 @@ void setup()
   Serial.begin(115200);
 
   Serial.println("Bluefruit52 Homekit Light Bulb Example");
-  Serial.println("--------------------------\n");
+  Serial.println("--------------------------------------\n");
 
   Bluefruit.begin();
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
