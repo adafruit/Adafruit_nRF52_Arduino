@@ -249,7 +249,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
                  "Please update linker file or re-config SoftDevice", ram_start, (uint32_t) __data_start__);
   }
 
-  PRINT_HEX(ram_start);
+  LOG_LV1("CFG", "SoftDevice's RAM requires: 0x%08X", ram_start);
   VERIFY_STATUS(err);
 #endif
 
