@@ -67,15 +67,15 @@ const uint8_t BLEUART_UUID_CHR_TXD[] =
  * Constructor
  */
 BLEUart::BLEUart(uint16_t fifo_depth)
-  : BLEService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD),
-    _rx_fifo(1, fifo_depth)
+  : BLEService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD)
 {
-  _rx_cb        = NULL;
+  _rx_fifo       = NULL;
+  _rx_cb         = NULL;
+  _rx_fifo_depth = fifo_depth;
 
-  _tx_buffered  = 0;
-  _buffered_th  = NULL;
-
-  _tx_fifo      = NULL;
+  _tx_fifo       = NULL;
+  _tx_buffered   = 0;
+  _buffered_th   = NULL;
 }
 
 /**
@@ -98,7 +98,7 @@ void bleuart_rxd_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_
   (void) offset;
 
   BLEUart& svc = (BLEUart&) chr.parentService();
-  svc._rx_fifo.write(data, len);
+  svc._rx_fifo->write(data, len);
 
 #if CFG_DEBUG >= 2
   LOG_LV2("BLEUART", "RX: ");
@@ -175,7 +175,8 @@ void BLEUart::bufferTXD(uint8_t enable)
 
 err_t BLEUart::begin(void)
 {
-  _rx_fifo.begin();
+  _rx_fifo = new Adafruit_FIFO(1);
+  _rx_fifo->begin(_rx_fifo_depth);
 
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
@@ -238,7 +239,7 @@ int BLEUart::read (void)
 
 int BLEUart::read (uint8_t * buf, size_t size)
 {
-  return _rx_fifo.read(buf, size);
+  return _rx_fifo->read(buf, size);
 }
 
 size_t BLEUart::write (uint8_t b)
@@ -279,18 +280,18 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
 
 int BLEUart::available (void)
 {
-  return _rx_fifo.count();
+  return _rx_fifo->count();
 }
 
 int BLEUart::peek (void)
 {
   uint8_t ch;
-  return _rx_fifo.peek(&ch) ? (int) ch : EOF;
+  return _rx_fifo->peek(&ch) ? (int) ch : EOF;
 }
 
 void BLEUart::flush (void)
 {
-  _rx_fifo.clear();
+  _rx_fifo->clear();
 }
 
 bool BLEUart::flush_tx_buffered(void)
