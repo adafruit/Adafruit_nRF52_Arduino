@@ -251,6 +251,14 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 
   LOG_LV1("CFG", "SoftDevice's RAM requires: 0x%08X", ram_start);
   VERIFY_STATUS(err);
+
+  /*------------- Configure BLE Option -------------*/
+  ble_opt_t  opt;
+
+  varclr(&opt);
+  opt.common_opt.conn_evt_ext.enable = 1; // enable Data Length Extension
+
+  VERIFY_STATUS( sd_ble_opt_set(BLE_COMMON_OPT_CONN_EVT_EXT, &opt) );
 #endif
 
 

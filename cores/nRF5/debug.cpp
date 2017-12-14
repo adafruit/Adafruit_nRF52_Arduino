@@ -227,6 +227,8 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
 #include "ble.h"
 #include "ble_hci.h"
 
+// TODO require update when upgrading SoftDevice
+
 // Common BLE Event base
 static const char* _base_evt_str[] =
 {
@@ -254,8 +256,6 @@ static const char* _gap_evt_str[] =
     "BLE_GAP_EVT_RSSI_CHANGED"               ,
     "BLE_GAP_EVT_ADV_REPORT"                 ,
     "BLE_GAP_EVT_SEC_REQUEST"                ,
-    "BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST"  ,
-    "BLE_GAP_EVT_SCAN_REQ_REPORT"            ,
     "BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST"  ,
     "BLE_GAP_EVT_SCAN_REQ_REPORT"            ,
     "BLE_GAP_EVT_PHY_UPDATE_REQUEST"         ,
