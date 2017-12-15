@@ -117,8 +117,6 @@ class AdafruitBluefruit
     // Constructor
     AdafruitBluefruit(void);
 
-    err_t begin(bool prph_enable = true, bool central_enable = false);
-
     /*------------------------------------------------------------------*/
     /* Lower Level Classes (Bluefruit.Advertising.*, etc.)
      *------------------------------------------------------------------*/
@@ -130,6 +128,24 @@ class AdafruitBluefruit
     BLEScanner         Scanner;
     BLECentral         Central;
     BLEDiscovery       Discovery;
+
+    /*------------------------------------------------------------------*/
+    /* SoftDevice Configure Functions, must call before begin().
+     * These function affect the SRAM consumed by SoftDevice. Should the
+     * required SRAM exceed numbered allocated by default linker, choose
+     * another linker in the IDE menu
+     *------------------------------------------------------------------*/
+    void configServiceChanged(bool changed);
+    void configUuid128Count(uint8_t  uuid128_max); // default BLE_VENDOR_UUID_MAX
+    void configAttrTableSize(uint32_t attr_table_size); // BLE_GATTS_ATTR_TABLE_SIZE
+    void configMaxMtu(uint16_t mtu_max);
+
+    // Bandwidth affection function
+    void configGapEventLen(uint8_t event_length);
+    void configHvnTxQueue(uint8_t hvn_tx_qsize);
+    void configWriteCmdQueue(uint8_t wr_cmd_qsize);
+
+    err_t begin(bool prph_enable = true, bool central_enable = false);
 
     /*------------------------------------------------------------------*/
     /* General Purpose Functions
@@ -186,7 +202,18 @@ class AdafruitBluefruit
     void _saveBondCCCD(void);
 
   private:
-    /*------------- BLE para -------------*/
+    /*------------- SoftDevice Configuration -------------*/
+    struct {
+      uint32_t attr_table_size;
+      uint16_t mtu_max;
+      uint8_t  service_changed;
+      uint8_t  uuid128_max;
+
+      uint8_t  event_len;
+      uint8_t  hvn_tx_qsize;
+      uint8_t  wr_cmd_qsize;
+    }_sd_cfg;
+
     bool _prph_enabled;
     bool _central_enabled;
 

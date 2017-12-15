@@ -94,6 +94,15 @@ static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
 AdafruitBluefruit::AdafruitBluefruit(void)
   : Central()
 {
+  _sd_cfg.attr_table_size = BLE_GATTS_ATTR_TABLE_SIZE;
+  _sd_cfg.mtu_max         = BLEGATT_ATT_MTU_MAX;
+  _sd_cfg.service_changed = 0;
+  _sd_cfg.uuid128_max     = BLE_VENDOR_UUID_MAX;
+
+  _sd_cfg.event_len       = BLEGAP_EVENT_LENGTH;
+  _sd_cfg.hvn_tx_qsize    = BLEGAP_HVN_TX_QUEUE_SIZE;
+  _sd_cfg.wr_cmd_qsize    = BLEGAP_WRITECMD_TX_QUEUE_SIZE;
+
   _prph_enabled    = true;
   _central_enabled = false;
 
@@ -137,6 +146,42 @@ COMMENT_OUT(
                 .kdist_peer   = { .enc = 1, .id = 1},
               };
 }
+
+void AdafruitBluefruit::configServiceChanged(bool changed)
+{
+  _sd_cfg.service_changed = (changed ? 1 : 0);
+}
+
+void AdafruitBluefruit::configUuid128Count(uint8_t  uuid128_max)
+{
+  _sd_cfg.uuid128_max = uuid128_max;
+}
+
+void AdafruitBluefruit::configAttrTableSize(uint32_t attr_table_size)
+{
+  _sd_cfg.attr_table_size = maxof(attr_table_size, BLE_GATTS_ATTR_TAB_SIZE_MIN);
+}
+
+void AdafruitBluefruit::configMaxMtu(uint16_t mtu_max)
+{
+  _sd_cfg.mtu_max = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);
+}
+
+void AdafruitBluefruit::configGapEventLen(uint8_t event_length)
+{
+  _sd_cfg.event_len = maxof(event_length, BLE_GAP_EVENT_LENGTH_MIN);
+}
+
+void AdafruitBluefruit::configHvnTxQueue(uint8_t hvn_tx_qsize)
+{
+  _sd_cfg.hvn_tx_qsize = hvn_tx_qsize;
+}
+
+void AdafruitBluefruit::configWriteCmdQueue(uint8_t wr_cmd_qsize)
+{
+  _sd_cfg.wr_cmd_qsize = wr_cmd_qsize;
+}
+
 
 err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 {
@@ -203,39 +248,38 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 //  blecfg.gap_cfg.device_name_cfg =
 //  VERIFY_STATUS( sd_ble_cfg_set(BLE_GAP_CFG_DEVICE_NAME, &blecfg, ram_start) );
 
-  // TODO Service Changed
-//  varclr(&blecfg);
-//  blecfg.gatts_cfg.service_changed.service_changed = 1;
-//  VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_SERVICE_CHANGED, &blecfg, ram_start) );
+  varclr(&blecfg);
+  blecfg.gatts_cfg.service_changed.service_changed = _sd_cfg.service_changed;
+  VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_SERVICE_CHANGED, &blecfg, ram_start) );
 
   // ATTR Table Size
   varclr(&blecfg);
-  blecfg.gatts_cfg.attr_tab_size.attr_tab_size = BLE_GATTS_ATTR_TABLE_SIZE;
+  blecfg.gatts_cfg.attr_tab_size.attr_tab_size = _sd_cfg.attr_table_size;
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_ATTR_TAB_SIZE, &blecfg, ram_start) );
 
   // ATT MTU
   varclr(&blecfg);
   blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_HIGH_BANDWIDTH;
-  blecfg.conn_cfg.params.gatt_conn_cfg.att_mtu = BLEGATT_ATT_MTU_MAX;
+  blecfg.conn_cfg.params.gatt_conn_cfg.att_mtu = _sd_cfg.mtu_max;
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATT, &blecfg, ram_start) );
 
   // Event Length + HVN queue + WRITE CMD queue setting affecting bandwidth
   varclr(&blecfg);
   blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_HIGH_BANDWIDTH;
   blecfg.conn_cfg.params.gap_conn_cfg.conn_count   = 1;
-  blecfg.conn_cfg.params.gap_conn_cfg.event_length = BLEGAP_EVENT_LENGTH;
+  blecfg.conn_cfg.params.gap_conn_cfg.event_length = _sd_cfg.event_len;
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GAP, &blecfg, ram_start) );
 
   // HVN queue size
   varclr(&blecfg);
   blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_HIGH_BANDWIDTH;
-  blecfg.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = BLEGAP_HVN_TX_QUEUE_SIZE;
+  blecfg.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = _sd_cfg.hvn_tx_qsize;
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &blecfg, ram_start) );
 
   // WRITE COMMAND queue size
   varclr(&blecfg);
   blecfg.conn_cfg.conn_cfg_tag = BLE_CONN_CFG_HIGH_BANDWIDTH;
-  blecfg.conn_cfg.params.gattc_conn_cfg.write_cmd_tx_queue_size = BLEGAP_WRITECMD_TX_QUEUE_SIZE;
+  blecfg.conn_cfg.params.gattc_conn_cfg.write_cmd_tx_queue_size = _sd_cfg.wr_cmd_qsize;
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTC, &blecfg, ram_start) );
 
   // Enable BLE stack
