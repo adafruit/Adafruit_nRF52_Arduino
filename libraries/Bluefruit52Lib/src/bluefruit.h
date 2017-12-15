@@ -143,16 +143,19 @@ class AdafruitBluefruit
 
 
     /*------------------------------------------------------------------*/
-    /* General Purpose Functions
+    /* General Functions
      *------------------------------------------------------------------*/
-    void    autoConnLed         (bool enabled);
-    void    setConnLedInterval  (uint32_t ms);
+    void     setName            (const char* str);
+    uint8_t  getName            (char* name, uint16_t bufsize);
 
-    void    setName             (const char* str);
-    uint8_t getName             (char* name, uint16_t bufsize);
+    bool     setTxPower         (int8_t power);
+    int8_t   getTxPower         (void);
 
-    bool    setTxPower          (int8_t power);
-    int8_t  getTxPower          (void);
+    bool     setApperance       (uint16_t appear);
+    uint16_t getApperance       (void);
+
+    void     autoConnLed        (bool enabled);
+    void     setConnLedInterval (uint32_t ms);
 
     /*------------------------------------------------------------------*/
     /* GAP, Connections and Bonding
@@ -170,8 +173,8 @@ class AdafruitBluefruit
     bool     requestPairing    (void);
     void     clearBonds        (void);
 
-    ble_gap_addr_t getPeerAddr(void);
-    uint8_t        getPeerAddr(uint8_t addr[6]);
+    ble_gap_addr_t getPeerAddr (void);
+    uint8_t        getPeerAddr (uint8_t addr[6]);
 
     void      printInfo(void);
 

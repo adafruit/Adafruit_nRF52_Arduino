@@ -386,30 +386,9 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   return ERROR_NONE;
 }
 
-bool AdafruitBluefruit::setConnInterval(uint16_t min, uint16_t max)
-{
-  _ppcp_min_conn = min;
-  _ppcp_max_conn = max;
-
-  ble_gap_conn_params_t   gap_conn_params =
-  {
-      .min_conn_interval = _ppcp_min_conn, // in 1.25ms unit
-      .max_conn_interval = _ppcp_max_conn, // in 1.25ms unit
-      .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
-      .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
-  };
-
-  VERIFY_STATUS( sd_ble_gap_ppcp_set(&gap_conn_params), false);
-
-  return true;
-}
-
-bool AdafruitBluefruit::setConnIntervalMS(uint16_t min_ms, uint16_t max_ms)
-{
-  return setConnInterval( MS100TO125(min_ms), MS100TO125(max_ms) );
-}
-
-
+/*------------------------------------------------------------------*/
+/* General Functions
+ *------------------------------------------------------------------*/
 void AdafruitBluefruit::setName(const char* str)
 {
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
@@ -460,6 +439,22 @@ void AdafruitBluefruit::setConnLedInterval(uint32_t ms)
   if ( !active ) xTimerStop(_led_blink_th, 0);
 }
 
+bool AdafruitBluefruit::setApperance(uint16_t appear)
+{
+  return ERROR_NONE == sd_ble_gap_appearance_set(appear);
+}
+
+uint16_t AdafruitBluefruit::getApperance(void)
+{
+  uint16_t appear = 0;
+  (void) sd_ble_gap_appearance_get(&appear);
+  return appear;
+}
+
+/*------------------------------------------------------------------*/
+/* GAP, Connections and Bonding
+ *------------------------------------------------------------------*/
+
 bool AdafruitBluefruit::connected(void)
 {
   return ( _conn_hdl != BLE_CONN_HANDLE_INVALID );
@@ -475,6 +470,30 @@ bool AdafruitBluefruit::disconnect(void)
 
   return true; // not connected still return true
 }
+
+bool AdafruitBluefruit::setConnInterval(uint16_t min, uint16_t max)
+{
+  _ppcp_min_conn = min;
+  _ppcp_max_conn = max;
+
+  ble_gap_conn_params_t   gap_conn_params =
+  {
+      .min_conn_interval = _ppcp_min_conn, // in 1.25ms unit
+      .max_conn_interval = _ppcp_max_conn, // in 1.25ms unit
+      .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
+      .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
+  };
+
+  VERIFY_STATUS( sd_ble_gap_ppcp_set(&gap_conn_params), false);
+
+  return true;
+}
+
+bool AdafruitBluefruit::setConnIntervalMS(uint16_t min_ms, uint16_t max_ms)
+{
+  return setConnInterval( MS100TO125(min_ms), MS100TO125(max_ms) );
+}
+
 
 void AdafruitBluefruit::setConnectCallback( BLEGap::connect_callback_t fp )
 {
