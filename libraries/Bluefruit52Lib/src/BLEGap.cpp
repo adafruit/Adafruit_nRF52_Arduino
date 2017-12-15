@@ -267,7 +267,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
     case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
     {
-      peer->att_mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, BLEGATT_ATT_MTU_MAX);
+      peer->att_mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, Bluefruit.getMaxMtu());
       VERIFY_STATUS( sd_ble_gatts_exchange_mtu_reply(conn_handle, peer->att_mtu), );
 
       LOG_LV1("GAP", "ATT MTU is changed to %d", peer->att_mtu);

@@ -44,8 +44,6 @@
 
 /* Note changing these parameters will affect APP_RAM_BASE
  * --> need to update RAM region in linker file
- *
- * default value are
  * - BLEGATT_ATT_MTU_MAX from 23 (default) to 247
  */
 

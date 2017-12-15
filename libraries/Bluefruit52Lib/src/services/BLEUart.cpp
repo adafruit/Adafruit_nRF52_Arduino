@@ -160,7 +160,7 @@ void BLEUart::bufferTXD(uint8_t enable)
     if ( _tx_fifo == NULL )
     {
       _tx_fifo = new Adafruit_FIFO(1);
-      _tx_fifo->begin(BLEGATT_ATT_MTU_MAX);
+      _tx_fifo->begin( Bluefruit.getMaxMtu() );
     }
   }else
   {
@@ -182,7 +182,7 @@ err_t BLEUart::begin(void)
   _txd.setProperties(CHR_PROPS_NOTIFY);
   // TODO enable encryption when bonding is enabled
   _txd.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  _txd.setMaxLen(BLEGATT_ATT_MTU_MAX);
+  _txd.setMaxLen( Bluefruit.getMaxMtu() );
   _txd.setUserDescriptor("TXD");
   VERIFY_STATUS( _txd.begin() );
 
@@ -192,7 +192,7 @@ err_t BLEUart::begin(void)
 
   // TODO enable encryption when bonding is enabled
   _rxd.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
-  _rxd.setMaxLen(BLEGATT_ATT_MTU_MAX);
+  _rxd.setMaxLen( Bluefruit.getMaxMtu() );
   _rxd.setUserDescriptor("RXD");
   VERIFY_STATUS(_rxd.begin());
 
