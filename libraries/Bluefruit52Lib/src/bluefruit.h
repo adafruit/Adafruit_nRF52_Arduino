@@ -52,11 +52,11 @@
  * - BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT = 1
  * - BLEGATT_ATT_MTU_MAX from 23 (default) to 247
  */
-#define BLE_GATTS_ATTR_TABLE_SIZE       0xB00 //0x0B00 default is 0x580
-#define BLE_VENDOR_UUID_MAX             20
-#define BLEGAP_EVENT_LENGTH             6
-#define BLEGAP_HVN_TX_QUEUE_SIZE        3
-#define BLEGAP_WRITECMD_TX_QUEUE_SIZE   3
+#define CFG_ATTR_TABLE_SIZE               0xB00
+#define CFG_UUID128_MAX                   10
+#define CFG_GAP_EVENT_LENGTH              BLE_GAP_EVENT_LENGTH_DEFAULT
+#define CFG_GAP_HVN_TX_QUEUE_SIZE         3
+#define CFG_GAP_WRITECMD_TX_QUEUE_SIZE    BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT
 
 #if SD_VER < 500
 #define BLEGATT_ATT_MTU_MAX             BLE_GATT_ATT_MTU_DEFAULT
@@ -135,15 +135,15 @@ class AdafruitBluefruit
      * required SRAM exceed numbered allocated by default linker, choose
      * another linker in the IDE menu
      *------------------------------------------------------------------*/
-    void configServiceChanged(bool changed);
-    void configUuid128Count(uint8_t  uuid128_max); // default BLE_VENDOR_UUID_MAX
-    void configAttrTableSize(uint32_t attr_table_size); // BLE_GATTS_ATTR_TABLE_SIZE
-    void configMaxMtu(uint16_t mtu_max);
+    void configServiceChanged (bool     changed);
+    void configUuid128Count   (uint8_t  uuid128_max);
+    void configAttrTableSize  (uint32_t attr_table_size);
+    void configMaxMtu         (uint16_t mtu_max);
 
     // Bandwidth affection function
-    void configGapEventLen(uint8_t event_length);
-    void configHvnTxQueue(uint8_t hvn_tx_qsize);
-    void configWriteCmdQueue(uint8_t wr_cmd_qsize);
+    void configGapEventLen    (uint8_t event_length);
+    void configHvnTxQueue     (uint8_t hvn_tx_qsize);
+    void configWriteCmdQueue  (uint8_t wr_cmd_qsize);
 
     err_t begin(bool prph_enable = true, bool central_enable = false);
 

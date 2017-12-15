@@ -160,10 +160,10 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       (void) sd_ble_tx_packet_count_get(conn_handle, &txbuf_max);
       peer->hvn_tx_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
       #else
-      peer->hvn_tx_sem   = xSemaphoreCreateCounting(BLEGAP_HVN_TX_QUEUE_SIZE, BLEGAP_HVN_TX_QUEUE_SIZE);
+      peer->hvn_tx_sem   = xSemaphoreCreateCounting(CFG_GAP_HVN_TX_QUEUE_SIZE, CFG_GAP_HVN_TX_QUEUE_SIZE);
       #endif
 
-      peer->wrcmd_tx_sem = xSemaphoreCreateCounting(BLEGAP_WRITECMD_TX_QUEUE_SIZE, BLEGAP_WRITECMD_TX_QUEUE_SIZE);
+      peer->wrcmd_tx_sem = xSemaphoreCreateCounting(CFG_GAP_WRITECMD_TX_QUEUE_SIZE, CFG_GAP_WRITECMD_TX_QUEUE_SIZE);
     }
     break;
 
