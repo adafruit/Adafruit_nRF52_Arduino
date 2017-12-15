@@ -48,15 +48,10 @@
  * default value are
  * - BLE_GATTS_ATTR_TABLE_SIZE 0x580
  * - BLE_GAP_EVENT_LENGTH_DEFAULT = 3
- * - BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT = 1
- * - BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT = 1
  * - BLEGATT_ATT_MTU_MAX from 23 (default) to 247
  */
-#define CFG_ATTR_TABLE_SIZE               0xB00
-#define CFG_UUID128_MAX                   10
+#define CFG_ATTR_TABLE_SIZE               0xB00 //
 #define CFG_GAP_EVENT_LENGTH              BLE_GAP_EVENT_LENGTH_DEFAULT
-#define CFG_GAP_HVN_TX_QUEUE_SIZE         3
-#define CFG_GAP_WRITECMD_TX_QUEUE_SIZE    BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT
 
 #if SD_VER < 500
 #define BLEGATT_ATT_MTU_MAX             BLE_GATT_ATT_MTU_DEFAULT
@@ -146,6 +141,12 @@ class AdafruitBluefruit
     void configWriteCmdQueue  (uint8_t wr_cmd_qsize);
 
     err_t begin(bool prph_enable = true, bool central_enable = false);
+
+    /*------------- Config Retrieval -------------*/
+    uint16_t getMaxMtu(void);
+    uint8_t  getHvnTxQueue (void);
+    uint8_t  getWriteCmdQueue(void);
+
 
     /*------------------------------------------------------------------*/
     /* General Purpose Functions

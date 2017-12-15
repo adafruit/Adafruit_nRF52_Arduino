@@ -94,14 +94,15 @@ static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
 AdafruitBluefruit::AdafruitBluefruit(void)
   : Central()
 {
+  /*-------------  -------------*/
   _sd_cfg.attr_table_size = CFG_ATTR_TABLE_SIZE;
   _sd_cfg.mtu_max         = BLEGATT_ATT_MTU_MAX;
   _sd_cfg.service_changed = 0;
-  _sd_cfg.uuid128_max     = CFG_UUID128_MAX;
+  _sd_cfg.uuid128_max     = BLE_UUID_VS_COUNT_DEFAULT;
 
   _sd_cfg.event_len       = CFG_GAP_EVENT_LENGTH;
-  _sd_cfg.hvn_tx_qsize    = CFG_GAP_HVN_TX_QUEUE_SIZE;
-  _sd_cfg.wr_cmd_qsize    = CFG_GAP_WRITECMD_TX_QUEUE_SIZE;
+  _sd_cfg.hvn_tx_qsize    = 3; // instead of BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT(1) to increase throughput for most user
+  _sd_cfg.wr_cmd_qsize    = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
 
   _prph_enabled    = true;
   _central_enabled = false;
@@ -183,6 +184,22 @@ void AdafruitBluefruit::configWriteCmdQueue(uint8_t wr_cmd_qsize)
 }
 
 
+uint16_t AdafruitBluefruit::getMaxMtu(void)
+{
+  return _sd_cfg.mtu_max;
+}
+
+uint8_t AdafruitBluefruit::getHvnTxQueue(void)
+{
+  return _sd_cfg.hvn_tx_qsize;
+}
+
+uint8_t AdafruitBluefruit::getWriteCmdQueue(void)
+{
+  return _sd_cfg.wr_cmd_qsize;
+}
+
+
 err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 {
   _prph_enabled    = prph_enable;
@@ -233,7 +250,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 
   // Vendor UUID count
   varclr(&blecfg);
-  blecfg.common_cfg.vs_uuid_cfg.vs_uuid_count = CFG_UUID128_MAX;
+  blecfg.common_cfg.vs_uuid_cfg.vs_uuid_count = _sd_cfg.uuid128_max;
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_COMMON_CFG_VS_UUID, &blecfg, ram_start) );
 
   // Roles
