@@ -57,7 +57,12 @@
 #define BLEGAP_EVENT_LENGTH             6
 #define BLEGAP_HVN_TX_QUEUE_SIZE        3
 #define BLEGAP_WRITECMD_TX_QUEUE_SIZE   3
+
+#if SD_VER < 500
+#define BLEGATT_ATT_MTU_MAX             BLE_GATT_ATT_MTU_DEFAULT
+#else
 #define BLEGATT_ATT_MTU_MAX             247
+#endif
 
 #define BLE_PRPH_MAX_CONN               1
 #define BLE_CENTRAL_MAX_CONN            4
