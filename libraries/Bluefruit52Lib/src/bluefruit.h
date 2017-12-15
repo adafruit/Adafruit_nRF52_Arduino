@@ -46,12 +46,8 @@
  * --> need to update RAM region in linker file
  *
  * default value are
- * - BLE_GATTS_ATTR_TABLE_SIZE 0x580
- * - BLE_GAP_EVENT_LENGTH_DEFAULT = 3
  * - BLEGATT_ATT_MTU_MAX from 23 (default) to 247
  */
-#define CFG_ATTR_TABLE_SIZE               0xB00 //
-#define CFG_GAP_EVENT_LENGTH              BLE_GAP_EVENT_LENGTH_DEFAULT
 
 #if SD_VER < 500
 #define BLEGATT_ATT_MTU_MAX             BLE_GATT_ATT_MTU_DEFAULT

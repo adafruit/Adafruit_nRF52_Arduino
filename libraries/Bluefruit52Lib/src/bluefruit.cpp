@@ -94,15 +94,24 @@ static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
 AdafruitBluefruit::AdafruitBluefruit(void)
   : Central()
 {
-  /*-------------  -------------*/
-  _sd_cfg.attr_table_size = CFG_ATTR_TABLE_SIZE;
+  /*------------------------------------------------------------------*/
+  /*  SoftDevice Default Configuration
+   *  Most config use Nordic default value, except the follows:
+   *  - ATTR Table Size  : set to 0xB00 instead of BLE_GATTS_ATTR_TABLE_SIZE (0x580)
+   *  - HVN TX Queue Size: set to 3 instead of BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT (1)
+   *  to increase throughput for most user
+   */
+  /*------------------------------------------------------------------*/
+  _sd_cfg.attr_table_size = 0xB00;
   _sd_cfg.mtu_max         = BLEGATT_ATT_MTU_MAX;
   _sd_cfg.service_changed = 0;
   _sd_cfg.uuid128_max     = BLE_UUID_VS_COUNT_DEFAULT;
 
-  _sd_cfg.event_len       = CFG_GAP_EVENT_LENGTH;
-  _sd_cfg.hvn_tx_qsize    = 3; // instead of BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT(1) to increase throughput for most user
+#if SD_VER >= 500
+  _sd_cfg.event_len       = BLE_GAP_EVENT_LENGTH_DEFAULT;
+  _sd_cfg.hvn_tx_qsize    = 3;
   _sd_cfg.wr_cmd_qsize    = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
+#endif
 
   _prph_enabled    = true;
   _central_enabled = false;
@@ -170,7 +179,9 @@ void AdafruitBluefruit::configMaxMtu(uint16_t mtu_max)
 
 void AdafruitBluefruit::configGapEventLen(uint8_t event_length)
 {
+#if SD_VER >= 500
   _sd_cfg.event_len = maxof(event_length, BLE_GAP_EVENT_LENGTH_MIN);
+#endif
 }
 
 void AdafruitBluefruit::configHvnTxQueue(uint8_t hvn_tx_qsize)
@@ -231,7 +242,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   // Configure BLE params & ATTR Size
   ble_enable_params_t params =
   {
-      .common_enable_params = { .vs_uuid_count = CFG_UUID128_MAX },
+      .common_enable_params = { .vs_uuid_count = _sd_cfg.uuid128_max },
       .gap_enable_params = {
           .periph_conn_count  = (uint8_t) (_prph_enabled    ? 1 : 0),
           .central_conn_count = (uint8_t) (_central_enabled ? BLE_CENTRAL_MAX_CONN : 0),
@@ -239,7 +250,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
       },
       .gatts_enable_params = {
           .service_changed = 1,
-          .attr_tab_size   = CFG_ATTR_TABLE_SIZE
+          .attr_tab_size   = _sd_cfg.attr_table_size
       }
   };
 
