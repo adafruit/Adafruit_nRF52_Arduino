@@ -56,6 +56,9 @@ void init( void )
   NRF_RTC1->INTENCLR    = RTC_INTENSET_COMPARE0_Msk;
   NRF_RTC1->TASKS_STOP  = 1;
   NRF_RTC1->TASKS_CLEAR = 1;
+
+  // Make sure all pin is set HIGH when pinmode() is called
+  NRF_GPIO->OUTSET = UINT32_MAX;
 }
 
 void enterSerialDfu(void)

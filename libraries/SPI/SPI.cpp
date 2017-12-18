@@ -118,6 +118,7 @@ void SPIClass::beginTransaction(SPISettings settings)
 
 void SPIClass::endTransaction(void)
 {
+  _p_spi->ENABLE = (SPI_ENABLE_ENABLE_Disabled << SPI_ENABLE_ENABLE_Pos);
 }
 
 void SPIClass::setBitOrder(BitOrder order)
