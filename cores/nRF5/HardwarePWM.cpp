@@ -78,12 +78,18 @@ void HardwarePWM::setClockDiv(uint8_t div)
  */
 bool HardwarePWM::addPin(uint8_t pin)
 {
-  VERIFY( isPinValid(pin) && (_count < MAX_CHANNELS) );
+  VERIFY( isPinValid(pin) && (_count <= MAX_CHANNELS) );
 
   // Check if pin is already configured
   for(uint8_t i=0; i<_count; i++)
   {
     if (_pwm->PSEL.OUT[i] == pin) return true;
+  }
+
+  if ((_count >= MAX_CHANNELS))
+  {
+    //Pin not already configured, but this HardwarePWM is full
+    return false;
   }
 
   pinMode(pin, OUTPUT);
