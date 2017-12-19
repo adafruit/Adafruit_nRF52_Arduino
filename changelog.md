@@ -1,22 +1,39 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-## 0.9.0
+## 0.8.0
 
 ## Core
 
-- Add IDE programmer option to upgrade bootloader from IDE
+- Added IDE programmer and DFU option to upgrade bootloader from IDE.
+- Added IDE option to choose either old & new bootloader (Softdevice 2.0.1 and 5.1.0)
+- Added printBufferReverse() for Print class 
+- Fixed issue #108 with GPIO output when reset.
 
 ## BLE
 
 - Upgrade Bluetooth 5 with Softdevice to S132 v5.0.0
 - Support max ATT MTU up to 247 (negotiable with peer)
+- Added SoftDevice configuration that affect SRAM used by SD
+  - configServiceChanged()
+  - configUuid128Count()
+  - configAttrTableSize()
+  - configMaxMtu() / getMaxMtu()
+  - configGapEventLen()
+  - configHvnTxQueue() / getHvnTxQueue()
+  - configWriteCmdQueue() / getWriteCmdQueue()
 - BLEAdvertising 
   - Added multiple services aaddition API
   - Added addManufacturerData()
   - Added getInterval() to retrieve current active interval
   - Added Slow interval callback support via setSlowCallback()
 - Fixed an discovery bug introduced in 0.7.5
-- Add setPresentationFormatDescriptor() support
+- Added setPresentationFormatDescriptor() support
+- Added addDescriptor() for BLECharacteritsic
+- Added set/get apperance
+- Added experimental (work in progress) BLE Homekit
+- Fixed #99 setStopCallback() for BLEScanner is not implemented
+- Enhanced bleuart to work with larger MTU
+- Partially support data length extension
 
 ## 0.7.5
 
