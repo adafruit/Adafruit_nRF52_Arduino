@@ -102,7 +102,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
    *  to increase throughput for most user
    */
   /*------------------------------------------------------------------*/
-  _sd_cfg.attr_table_size = 0xB00;
+  _sd_cfg.attr_table_size = 0x800;
   _sd_cfg.mtu_max         = BLEGATT_ATT_MTU_MAX;
   _sd_cfg.service_changed = 0;
   _sd_cfg.uuid128_max     = BLE_UUID_VS_COUNT_DEFAULT;
@@ -688,6 +688,10 @@ void adafruit_ble_task(void* arg)
 {
   (void) arg;
 
+#if SD_VER >= 500
+  uint8_t * ev_buf = (uint8_t*) rtos_malloc(BLE_EVT_LEN_MAX(BLEGATT_ATT_MTU_MAX));
+#endif
+
   while (1)
   {
     if ( xSemaphoreTake(Bluefruit._ble_event_sem, portMAX_DELAY) )
@@ -697,13 +701,12 @@ void adafruit_ble_task(void* arg)
       // Until no pending events
       while( NRF_ERROR_NOT_FOUND != err )
       {
-        #if SD_VER < 500
+#if SD_VER < 500
         __ALIGN(4) uint8_t ev_buf[ sizeof(ble_evt_t) + (BLE_GATT_ATT_MTU_DEFAULT) ];
-        #else
-        __ALIGN(4) uint8_t ev_buf[ BLE_EVT_LEN_MAX(BLEGATT_ATT_MTU_MAX) ];
-        #endif
-
         uint16_t ev_len = sizeof(ev_buf);
+#else
+        uint16_t ev_len = BLE_EVT_LEN_MAX(BLEGATT_ATT_MTU_MAX);
+#endif
 
         // Get BLE Event
         err = sd_ble_evt_get(ev_buf, &ev_len);
