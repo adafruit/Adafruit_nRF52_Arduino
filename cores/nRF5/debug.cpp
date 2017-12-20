@@ -163,9 +163,9 @@ void dbgMemInfo(void)
 void dbgPrintVersion(void)
 {
   Serial.println();
-  Serial.println("BSP Library    : " ARDUINO_BSP_VERSION);
-  Serial.printf ("Firmware       : %s\n", getFirmwareVersion());
-  Serial.printf ("Serial No      : %s\n", getMcuUniqueID());
+  Serial.println("BSP Library     : " ARDUINO_BSP_VERSION);
+  Serial.printf ("Firmware        : %s\n", getFirmwareVersion());
+  Serial.printf ("Serial No       : %s\n", getMcuUniqueID());
   Serial.println();
 }
 
