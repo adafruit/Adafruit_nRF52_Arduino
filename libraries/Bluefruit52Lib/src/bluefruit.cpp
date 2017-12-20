@@ -561,8 +561,43 @@ void AdafruitBluefruit::printInfo(void)
   // Skip if Bluefruit.begin() is not called
   if ( _ble_event_sem == NULL ) return;
 
-  const char* title_fmt = "%-15s: ";
+  Serial.println("--------- SoftDevice Config ---------");
 
+  const char* title_fmt = "%-16s: ";
+
+  /*------------- SoftDevice Config -------------*/
+  // Max uuid128
+  Serial.printf(title_fmt, "Max UUID128");
+  Serial.println(_sd_cfg.uuid128_max);
+
+  // ATTR Table Size
+  Serial.printf(title_fmt, "ATTR Table Size");
+  Serial.println(_sd_cfg.attr_table_size);
+
+  // Service Changed
+  Serial.printf(title_fmt, "Service Changed");
+  Serial.println(_sd_cfg.service_changed);
+
+#if SD_VER >= 500
+  // Max MTU
+  Serial.printf(title_fmt, "Max MTU");
+  Serial.println(_sd_cfg.mtu_max);
+
+  // Event Length
+  Serial.printf(title_fmt, "Event Length");
+  Serial.println(_sd_cfg.event_len);
+
+  // HVN Queue Size
+  Serial.printf(title_fmt, "HVN Queue Size");
+  Serial.println(_sd_cfg.hvn_tx_qsize);
+
+  // Write Command Queue Size
+  Serial.printf(title_fmt, "WrCmd Queue Size");
+  Serial.println(_sd_cfg.wr_cmd_qsize);
+#endif
+
+  /*------------- Settings -------------*/
+  Serial.println("\n--------- BLE Settings ---------");
   // Name
   Serial.printf(title_fmt, "Name");
   {
@@ -574,9 +609,9 @@ void AdafruitBluefruit::printInfo(void)
   Serial.println();
 
   // Max Connections
-  Serial.printf(title_fmt, "Max Connection");
+  Serial.printf(title_fmt, "Max Connections");
   Serial.printf("Peripheral = %d, ", _prph_enabled ? 1 : 0);
-  Serial.printf("Central = %d, ", _central_enabled ? BLE_CENTRAL_MAX_CONN : 0);
+  Serial.printf("Central = %d ", _central_enabled ? BLE_CENTRAL_MAX_CONN : 0);
   Serial.println();
 
   // Address
@@ -592,16 +627,18 @@ void AdafruitBluefruit::printInfo(void)
   }
   Serial.println();
 
+  // Tx Power
   Serial.printf(title_fmt, "TX Power");
   Serial.printf("%d dBm", _tx_power);
   Serial.println();
 
+  // Connection Intervals
   Serial.printf(title_fmt, "Conn Intervals");
   Serial.printf("min = %.2f ms, ", _ppcp_min_conn*1.25f);
   Serial.printf("max = %.2f ms", _ppcp_max_conn*1.25f);
   Serial.println();
 
-  // List the paried device
+  /*------------- List the paried device -------------*/
   Serial.printf(title_fmt, "Paired Devices");
   Serial.println();
 
