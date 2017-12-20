@@ -21,7 +21,8 @@ void setup()
   Serial.println("Bluefruit52 Central Scan Example");
   Serial.println("--------------------------------\n");
 
-  // Init Bluefruit with Number of Peripheral = 0, Central = 1
+  // Initialize Bluefruit with maximum connections as Peripheral = 0, Central = 1
+  // SRAM usage required by SoftDevice will increase dramatically with number of connections
   Bluefruit.begin(0, 1);
   
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
