@@ -9,10 +9,10 @@ MEMORY
 
   /* SRAM required by S132 depend on
    * - Attribute Table Size 0x800
-   * - Vendor UUID count    20
-   * - Role concurrent connection central + peripherl + secure links
+   * - Vendor UUID count    10
    * - Max ATT MTU is 247
-   * - Event Len = 3, HVN queue = 3, Write CMD queue =3
+   * - Role concurrent connection peripherl (1) + central (0) + secure links (1)
+   * - Event Len = 3, HVN queue = 3, Write CMD queue = 0
    */ 
   /* RAM (rwx) :  ORIGIN = 0x20003000, LENGTH = 0x20010000 - 0x20003000  */
   RAM (rwx) :  ORIGIN = 0x20003800, LENGTH = 0x20010000 - 0x20003800
