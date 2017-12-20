@@ -24,7 +24,13 @@ void setup()
   Serial.println("Bluefruit52 Homekit Light Bulb Example");
   Serial.println("--------------------------------------\n");
 
+  // Homekit uses a lot of characteristics so that default Attr Table size
+  // is not enough. Therefore we need to incresae the ATTR Table Size
+  // All .config***() functions must be called before .begin()
+  Bluefruit.configAttrTableSize(3000);
+  
   Bluefruit.begin();
+  
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
   Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52");
