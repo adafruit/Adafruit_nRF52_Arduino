@@ -97,24 +97,24 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   /*------------------------------------------------------------------*/
   /*  SoftDevice Default Configuration
    *  Most config use Nordic default value, except the follows:
-   *  - ATTR Table Size  : set to 0xB00 instead of BLE_GATTS_ATTR_TABLE_SIZE (0x580)
-   *  - HVN TX Queue Size: set to 3 instead of BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT (1)
-   *  to increase throughput for most user
+   *  - Max MTU : up to 247 for maximum throughput
+   *
+   *  Attr Table Size, HVN queue size, Write Command queue size is
+   *  determined later in begin() depending on number of peripherals
+   *  and central connections for optimum SRAM usage.
    */
   /*------------------------------------------------------------------*/
-  _sd_cfg.attr_table_size = 0x800;
-  _sd_cfg.mtu_max         = BLEGATT_ATT_MTU_MAX;
-  _sd_cfg.service_changed = 0;
+  varclr(&_sd_cfg);
   _sd_cfg.uuid128_max     = BLE_UUID_VS_COUNT_DEFAULT;
+  _sd_cfg.service_changed = 0;
+  _sd_cfg.mtu_max         = BLEGATT_ATT_MTU_MAX;
 
 #if SD_VER >= 500
   _sd_cfg.event_len       = BLE_GAP_EVENT_LENGTH_DEFAULT;
-  _sd_cfg.hvn_tx_qsize    = 3;
-  _sd_cfg.wr_cmd_qsize    = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
 #endif
 
-  _prph_enabled    = true;
-  _central_enabled = false;
+  _prph_count    = 0;
+  _central_count = 0;
 
   _ble_event_sem    = NULL;
   _soc_event_sem    = NULL;
@@ -211,10 +211,10 @@ uint8_t AdafruitBluefruit::getWriteCmdQueue(void)
 }
 
 
-err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
+err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 {
-  _prph_enabled    = prph_enable;
-  _central_enabled = central_enable;
+  _prph_count    = prph_count;
+  _central_count = central_count;
 
   // Configure Clock
 #if defined( USE_LFXO )
@@ -234,6 +234,48 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 
   VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, nrf_error_cb) );
 
+  /*------------------------------------------------------------------*/
+  /*  SoftDevice Default Configuration depending on the number of
+   * prph and central connections for optimal SRAM usage.
+   *
+   * - If Peripheral mode is enabled
+   *   - ATTR Table Size          = 0x800.
+   *   - HVN TX Queue Size        = 3
+   *
+   * - If Central mode is enabled
+   *   - Write Command Queue Size = 3
+   *
+   * Otherwise value will have default as follows:
+   *  - ATTR Table Size           = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT (0x580)
+   *  - HVN TX Queue Size         = 1
+   *  - Write Command Queue Size  = 1
+   *
+   *  Note: Value is left as it is if already configured by user.
+   */
+  /*------------------------------------------------------------------*/
+  if ( _prph_count )
+  {
+    // If not configured by user, set Attr Table Size large enough for
+    // most peripheral applications
+    if ( _sd_cfg.attr_table_size == 0 ) _sd_cfg.attr_table_size = 0x800;
+
+    // Increase HVN queue size with prph connections if not configured
+    if ( _sd_cfg.hvn_tx_qsize == 0 ) _sd_cfg.hvn_tx_qsize = 3;
+  }
+
+  if ( _central_count)
+  {
+    // Increase Write Command queue size with central connections if not configured
+    if ( _sd_cfg.wr_cmd_qsize == 0) _sd_cfg.wr_cmd_qsize = 3;
+  }
+
+  // Not configure, default value are used
+  if ( _sd_cfg.attr_table_size == 0 ) _sd_cfg.attr_table_size = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT;
+#if SD_VER >= 500
+  if ( _sd_cfg.hvn_tx_qsize    == 0 ) _sd_cfg.hvn_tx_qsize    = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
+  if ( _sd_cfg.wr_cmd_qsize    == 0 ) _sd_cfg.wr_cmd_qsize    = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
+#endif
+
   /*------------- Configure BLE params  -------------*/
   extern uint32_t  __data_start__[]; // defined in linker
   uint32_t ram_start = (uint32_t) __data_start__;
@@ -244,9 +286,9 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   {
       .common_enable_params = { .vs_uuid_count = _sd_cfg.uuid128_max },
       .gap_enable_params = {
-          .periph_conn_count  = (uint8_t) (_prph_enabled    ? 1 : 0),
-          .central_conn_count = (uint8_t) (_central_enabled ? BLE_CENTRAL_MAX_CONN : 0),
-          .central_sec_count  = (uint8_t) (_central_enabled ? BLE_CENTRAL_MAX_SECURE_CONN : 0),
+          .periph_conn_count  = (uint8_t) (_prph_count    ? 1 : 0),
+          .central_conn_count = (uint8_t) (_central_count ? BLE_CENTRAL_MAX_CONN : 0),
+          .central_sec_count  = (uint8_t) (_central_count ? BLE_CENTRAL_MAX_SECURE_CONN : 0),
       },
       .gatts_enable_params = {
           .service_changed = 1,
@@ -257,6 +299,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   // Enable BLE stack
   VERIFY_STATUS( sd_ble_enable(&params, &ram_start) );
 #else
+
   ble_cfg_t blecfg;
 
   // Vendor UUID count
@@ -266,9 +309,9 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
 
   // Roles
   varclr(&blecfg);
-  blecfg.gap_cfg.role_count_cfg.periph_role_count  = (_prph_enabled    ? 1 : 0);
-  blecfg.gap_cfg.role_count_cfg.central_role_count = (_central_enabled ? BLE_CENTRAL_MAX_CONN : 0);
-  blecfg.gap_cfg.role_count_cfg.central_sec_count  = (_central_enabled ? BLE_CENTRAL_MAX_SECURE_CONN : 0);
+  blecfg.gap_cfg.role_count_cfg.periph_role_count  = _prph_count;
+  blecfg.gap_cfg.role_count_cfg.central_role_count = _central_count; // ? BLE_CENTRAL_MAX_CONN : 0);
+  blecfg.gap_cfg.role_count_cfg.central_sec_count  = (_central_count ? 1 : 0); // should be enough
   VERIFY_STATUS( sd_ble_cfg_set(BLE_GAP_CFG_ROLE_COUNT, &blecfg, ram_start) );
 
   // Device Name
@@ -357,7 +400,7 @@ err_t AdafruitBluefruit::begin(bool prph_enable, bool central_enable)
   /*------------- DFU OTA as built-in service -------------*/
   _dfu_svc.begin();
 
-  if (_central_enabled)  Central.begin(); // Init Central
+  if (_central_count)  Central.begin(); // Init Central
 
   // Create RTOS Semaphore & Task for BLE Event
   _ble_event_sem = xSemaphoreCreateBinary();
@@ -610,8 +653,8 @@ void AdafruitBluefruit::printInfo(void)
 
   // Max Connections
   Serial.printf(title_fmt, "Max Connections");
-  Serial.printf("Peripheral = %d, ", _prph_enabled ? 1 : 0);
-  Serial.printf("Central = %d ", _central_enabled ? BLE_CENTRAL_MAX_CONN : 0);
+  Serial.printf("Peripheral = %d, ", _prph_count ? 1 : 0);
+  Serial.printf("Central = %d ", _central_count ? BLE_CENTRAL_MAX_CONN : 0);
   Serial.println();
 
   // Address
@@ -949,7 +992,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   }
 
   // Central Event Handler
-  if (_central_enabled)
+  if (_central_count)
   {
     // Skip if not central connection
     if (evt_conn_hdl != _conn_hdl ||

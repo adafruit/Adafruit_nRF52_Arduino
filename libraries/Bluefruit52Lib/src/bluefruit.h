@@ -134,7 +134,7 @@ class AdafruitBluefruit
     void configHvnTxQueue     (uint8_t hvn_tx_qsize);
     void configWriteCmdQueue  (uint8_t wr_cmd_qsize);
 
-    err_t begin(bool prph_enable = true, bool central_enable = false);
+    err_t begin(uint8_t prph_count = 1, uint8_t central_count = 0);
 
     /*------------- Config Retrieval -------------*/
     uint16_t getMaxMtu(void);
@@ -212,8 +212,8 @@ class AdafruitBluefruit
       uint8_t  wr_cmd_qsize;
     }_sd_cfg;
 
-    bool _prph_enabled;
-    bool _central_enabled;
+    bool _prph_count;
+    bool _central_count;
 
     // Peripheral Preferred Connection Parameters (PPCP)
     uint16_t _ppcp_min_conn;

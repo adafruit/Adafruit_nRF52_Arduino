@@ -26,7 +26,7 @@ void setup()
   Serial.println("------------------------------------\n");
 
   /* Enable both peripheral and central modes */
-  Bluefruit.begin(true, true);
+  Bluefruit.begin(0, 1);
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
   Bluefruit.setTxPower(4);
 

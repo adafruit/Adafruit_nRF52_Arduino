@@ -21,8 +21,9 @@ void setup()
   Serial.println("Bluefruit52 Central Scan Example");
   Serial.println("--------------------------------\n");
 
-  // Enable both peripheral and central
-  Bluefruit.begin(true, true);
+  // Init Bluefruit with Number of Peripheral = 0, Central = 1
+  Bluefruit.begin(0, 1);
+  
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
   Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52");
