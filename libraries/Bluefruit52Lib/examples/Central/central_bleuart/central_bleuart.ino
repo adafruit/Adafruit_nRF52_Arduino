@@ -29,7 +29,7 @@ void setup()
   Serial.println("-----------------------------------\n");
   
   // Enable both peripheral and central
-  Bluefruit.begin(true, true);
+  Bluefruit.begin(0, 1);
   Bluefruit.setName("Bluefruit52 Central");
 
   // Configure DIS client
