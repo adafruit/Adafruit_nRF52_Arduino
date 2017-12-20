@@ -121,6 +121,7 @@
 #endif
 
 int cprintf(const char * format, ...);
+const char* dbg_err_str(uint32_t err_id); // TODO move to other place
 
 #if CFG_DEBUG
 #define LOG_LV1(...)          ADALOG(__VA_ARGS__)

@@ -37,8 +37,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <malloc.h>
-#include "debug.h"
-#include "utility/utilities.h"
+#include <Arduino.h>
 
 // defined in linker script
 extern uint32_t __data_start__[];
