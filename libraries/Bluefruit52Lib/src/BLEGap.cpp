@@ -39,7 +39,64 @@
 BLEGap::BLEGap(void)
 {
   memclr(_peers, sizeof(_peers));
+
+#if SD_VER >= 500
+  _cfg_prph.mtu_max    = BLE_GATT_ATT_MTU_DEFAULT;
+  _cfg_prph.event_len    = BLE_GAP_EVENT_LENGTH_DEFAULT;
+  _cfg_prph.hvn_tx_qsize = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
+  _cfg_prph.wr_cmd_qsize = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
+
+  _cfg_central.mtu_max = BLE_GATT_ATT_MTU_DEFAULT;
+  _cfg_central.event_len    = BLE_GAP_EVENT_LENGTH_DEFAULT;
+  _cfg_central.hvn_tx_qsize = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
+  _cfg_central.wr_cmd_qsize = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
+#endif
+
+
 }
+
+
+void BLEGap::configPrphConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
+{
+  _cfg_prph.mtu_max = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);
+#if SD_VER >= 500
+  _cfg_prph.event_len = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
+#endif
+  _cfg_prph.hvn_tx_qsize = hvn_qsize;
+  _cfg_prph.wr_cmd_qsize = wrcmd_qsize;
+}
+
+void BLEGap::configCentralConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
+{
+  _cfg_central.mtu_max = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);
+#if SD_VER >= 500
+  _cfg_central.event_len = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
+#endif
+  _cfg_central.hvn_tx_qsize = hvn_qsize;
+  _cfg_central.wr_cmd_qsize = wrcmd_qsize;
+}
+
+
+uint16_t BLEGap::getMaxMtuByConnCfg(uint8_t conn_cfg)
+{
+  return (conn_cfg == CONN_CFG_PERIPHERAL) ? _cfg_prph.mtu_max : _cfg_central.mtu_max;
+}
+
+uint16_t BLEGap::getMaxMtu (uint8_t conn_handle)
+{
+  return (getRole(conn_handle) == BLE_GAP_ROLE_PERIPH) ? _cfg_prph.mtu_max : _cfg_central.mtu_max;
+}
+
+uint8_t BLEGap::getHvnQueueSize (uint8_t conn_handle)
+{
+  return (getRole(conn_handle) == BLE_GAP_ROLE_PERIPH) ? _cfg_prph.hvn_tx_qsize : _cfg_central.hvn_tx_qsize;
+}
+
+uint8_t BLEGap::getWriteCmdQueueSize (uint8_t conn_handle)
+{
+  return (getRole(conn_handle) == BLE_GAP_ROLE_PERIPH) ? _cfg_prph.wr_cmd_qsize : _cfg_central.wr_cmd_qsize;
+}
+
 
 /**
  * Get current Mac address and its type
@@ -160,10 +217,10 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       (void) sd_ble_tx_packet_count_get(conn_handle, &txbuf_max);
       peer->hvn_tx_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
       #else
-      peer->hvn_tx_sem   = xSemaphoreCreateCounting(Bluefruit.getHvnTxQueue(), Bluefruit.getHvnTxQueue());
+      peer->hvn_tx_sem   = xSemaphoreCreateCounting(getHvnQueueSize(conn_handle), getHvnQueueSize(conn_handle));
       #endif
 
-      peer->wrcmd_tx_sem = xSemaphoreCreateCounting(Bluefruit.getWriteCmdQueue(), Bluefruit.getWriteCmdQueue());
+      peer->wrcmd_tx_sem = xSemaphoreCreateCounting(getWriteCmdQueueSize(conn_handle), getWriteCmdQueueSize(conn_handle));
     }
     break;
 
@@ -267,7 +324,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
     case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
     {
-      peer->att_mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, Bluefruit.getMaxMtu());
+      peer->att_mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, getMaxMtu(conn_handle));
       VERIFY_STATUS( sd_ble_gatts_exchange_mtu_reply(conn_handle, peer->att_mtu), );
 
       LOG_LV1("GAP", "ATT MTU is changed to %d", peer->att_mtu);

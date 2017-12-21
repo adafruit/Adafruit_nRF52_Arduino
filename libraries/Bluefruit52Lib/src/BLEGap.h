@@ -48,22 +48,30 @@ class BLEGap
 
     BLEGap(void);
 
-    uint8_t getAddr(uint8_t mac[6]);
-    bool    setAddr(uint8_t mac[6], uint8_t type);
-//    bool    setPrivacy();  sd_ble_gap_privacy_set()
+    uint8_t       getAddr               (uint8_t mac[6]);
+    bool          setAddr               (uint8_t mac[6], uint8_t type);
+//    bool    setPrivacy                ();  sd_ble_gap_privacy_set()
 
-    bool connected(uint16_t conn_handle);
+    bool           connected            (uint16_t conn_handle);
 
-    uint8_t        getRole(uint16_t conn_handle);
+    uint8_t        getRole              (uint16_t conn_handle);
 
-    uint8_t        getPeerAddr(uint16_t conn_handle, uint8_t addr[6]);
-    ble_gap_addr_t getPeerAddr(uint16_t conn_handle);
+    uint8_t        getPeerAddr          (uint16_t conn_handle, uint8_t addr[6]);
+    ble_gap_addr_t getPeerAddr          (uint16_t conn_handle);
+    uint16_t       getPeerName          (uint16_t conn_handle, char* buf, uint16_t bufsize);
 
-    uint16_t       getPeerName(uint16_t conn_handle, char* buf, uint16_t bufsize);
-    bool           getHvnPacket(uint16_t conn_handle);
-    bool           getWriteCmdPacket(uint16_t conn_handle);
+    void           configPrphConn       (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    void           configCentralConn    (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
 
-    uint16_t       getMTU(uint16_t conn_handle);
+    uint16_t       getMaxMtuByConnCfg   (uint8_t conn_cfg);
+    uint16_t       getMaxMtu            (uint8_t conn_handle);
+    uint8_t        getHvnQueueSize      (uint8_t conn_handle);
+    uint8_t        getWriteCmdQueueSize (uint8_t conn_handle);
+
+    uint16_t       getMTU               (uint16_t conn_handle);
+
+    bool           getHvnPacket         (uint16_t conn_handle);
+    bool           getWriteCmdPacket    (uint16_t conn_handle);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
@@ -73,6 +81,13 @@ class BLEGap
     void _eventHandler(ble_evt_t* evt);
 
   private:
+    struct {
+        uint16_t mtu_max;
+        uint8_t  event_len;
+        uint8_t  hvn_tx_qsize;
+        uint8_t  wr_cmd_qsize;
+    } _cfg_prph, _cfg_central;
+
     // Array of TX Packet semaphore, indexed by connection handle
     // Peer info where conn_handle serves as index
     typedef struct {
@@ -87,6 +102,8 @@ class BLEGap
     } gap_peer_t;
 
     gap_peer_t _peers[BLE_MAX_CONN];
+
+    friend class AdafruitBluefruit;
 };
 
 #endif /* BLEGAP_H_ */

@@ -160,7 +160,7 @@ void BLEUart::bufferTXD(uint8_t enable)
     if ( _tx_fifo == NULL )
     {
       _tx_fifo = new Adafruit_FIFO(1);
-      _tx_fifo->begin( Bluefruit.getMaxMtu() );
+      _tx_fifo->begin( Bluefruit.Gap.getMaxMtuByConnCfg(CONN_CFG_PERIPHERAL) );
     }
   }else
   {
@@ -178,11 +178,13 @@ err_t BLEUart::begin(void)
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
 
+  uint16_t max_mtu = Bluefruit.Gap.getMaxMtuByConnCfg(CONN_CFG_PERIPHERAL);
+
   // Add TXD Characteristic
   _txd.setProperties(CHR_PROPS_NOTIFY);
   // TODO enable encryption when bonding is enabled
   _txd.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  _txd.setMaxLen( Bluefruit.getMaxMtu() );
+  _txd.setMaxLen( max_mtu );
   _txd.setUserDescriptor("TXD");
   VERIFY_STATUS( _txd.begin() );
 
@@ -192,7 +194,7 @@ err_t BLEUart::begin(void)
 
   // TODO enable encryption when bonding is enabled
   _rxd.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
-  _rxd.setMaxLen( Bluefruit.getMaxMtu() );
+  _rxd.setMaxLen( max_mtu );
   _rxd.setUserDescriptor("RXD");
   VERIFY_STATUS(_rxd.begin());
 
