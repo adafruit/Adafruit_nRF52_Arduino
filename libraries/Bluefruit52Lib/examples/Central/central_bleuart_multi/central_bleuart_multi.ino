@@ -91,8 +91,11 @@ void setup()
   Serial.println("Bluefruit52 Central Multi BLEUART Example");
   Serial.println("-----------------------------------------\n");
   
-  // Enable both peripheral and central
-  Bluefruit.begin(true, true);
+  // Initialize Bluefruit with maximum connections as Peripheral = 0, Central = 1
+  // SRAM usage required by SoftDevice will increase dramatically with number of connections
+  Bluefruit.begin(0, BLE_CENTRAL_MAX_CONN);
+
+  // Set Name
   Bluefruit.setName("Bluefruit52 Central");
   
   // Init peripheral pool

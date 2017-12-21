@@ -92,7 +92,8 @@
 
 enum
 {
-  BLE_CONN_CFG_HIGH_BANDWIDTH = 1
+  CONN_CFG_PERIPHERAL = 1,
+  CONN_CFG_CENTRAL = 2,
 };
 
 extern "C"
@@ -127,12 +128,10 @@ class AdafruitBluefruit
     void configServiceChanged (bool     changed);
     void configUuid128Count   (uint8_t  uuid128_max);
     void configAttrTableSize  (uint32_t attr_table_size);
-    void configMaxMtu         (uint16_t mtu_max);
 
     // Bandwidth affection function
-    void configGapEventLen    (uint8_t event_length);
-    void configHvnTxQueue     (uint8_t hvn_tx_qsize);
-    void configWriteCmdQueue  (uint8_t wr_cmd_qsize);
+    void configPrphConn       (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    void configCentralConn    (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
 
     err_t begin(uint8_t prph_count = 1, uint8_t central_count = 0);
 
@@ -203,17 +202,19 @@ class AdafruitBluefruit
     /*------------- SoftDevice Configuration -------------*/
     struct {
       uint32_t attr_table_size;
-      uint16_t mtu_max;
       uint8_t  service_changed;
       uint8_t  uuid128_max;
 
-      uint8_t  event_len;
-      uint8_t  hvn_tx_qsize;
-      uint8_t  wr_cmd_qsize;
+      struct {
+        uint16_t mtu_max;
+        uint8_t  event_len;
+        uint8_t  hvn_tx_qsize;
+        uint8_t  wr_cmd_qsize;
+      }prph, central;
     }_sd_cfg;
 
-    bool _prph_count;
-    bool _central_count;
+    uint8_t _prph_count;
+    uint8_t _central_count;
 
     // Peripheral Preferred Connection Parameters (PPCP)
     uint16_t _ppcp_min_conn;

@@ -83,7 +83,7 @@ bool BLECentral::connect(const ble_gap_addr_t* peer_addr)
 #if SD_VER < 500
   VERIFY_STATUS( sd_ble_gap_connect(peer_addr, Bluefruit.Scanner.getParams(), &gap_conn_params), false );
 #else
-  VERIFY_STATUS( sd_ble_gap_connect(peer_addr, Bluefruit.Scanner.getParams(), &gap_conn_params, BLE_CONN_CFG_HIGH_BANDWIDTH), false );
+  VERIFY_STATUS( sd_ble_gap_connect(peer_addr, Bluefruit.Scanner.getParams(), &gap_conn_params, CONN_CFG_CENTRAL), false );
 #endif
   return true;
 }
