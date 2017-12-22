@@ -31,6 +31,8 @@ extern "C" {
 static uint32_t saadcReference = SAADC_CH_CONFIG_REFSEL_Internal;
 static uint32_t saadcGain      = SAADC_CH_CONFIG_GAIN_Gain1_6;
 
+static bool saadcBurst = SAADC_CH_CONFIG_BURST_Disabled;
+
 #if 0 // Note: Adafruit use seperated HardwarePWM class
 #define PWM_COUNT 3
 
@@ -124,6 +126,44 @@ void analogReference( eAnalogReference ulMode )
   }
 }
 
+void analogOversampling( uint32_t ulOversampling )
+{
+	saadcBurst = SAADC_CH_CONFIG_BURST_Enabled;
+
+	switch (ulOversampling) {
+		case 0:
+		case 1:
+			saadcBurst = SAADC_CH_CONFIG_BURST_Disabled;
+			NRF_SAADC->OVERSAMPLE = SAADC_OVERSAMPLE_OVERSAMPLE_Bypass;
+			return;
+			break;
+		case 2:
+			NRF_SAADC->OVERSAMPLE = SAADC_OVERSAMPLE_OVERSAMPLE_Over2x;
+			break;
+		case 4:
+			NRF_SAADC->OVERSAMPLE = SAADC_OVERSAMPLE_OVERSAMPLE_Over4x;
+			break;
+		case 8:
+			NRF_SAADC->OVERSAMPLE = SAADC_OVERSAMPLE_OVERSAMPLE_Over8x;
+			break;
+		case 16:
+			NRF_SAADC->OVERSAMPLE = SAADC_OVERSAMPLE_OVERSAMPLE_Over16x;
+			break;
+		case 32:
+			NRF_SAADC->OVERSAMPLE = SAADC_OVERSAMPLE_OVERSAMPLE_Over32x;
+			break;
+		case 64:
+			NRF_SAADC->OVERSAMPLE = SAADC_OVERSAMPLE_OVERSAMPLE_Over64x;
+			break;
+		case 128:
+			NRF_SAADC->OVERSAMPLE = SAADC_OVERSAMPLE_OVERSAMPLE_Over128x;
+			break;
+		case 256:
+			NRF_SAADC->OVERSAMPLE = SAADC_OVERSAMPLE_OVERSAMPLE_Over256x;
+			break;
+	}
+}
+
 uint32_t analogRead( uint32_t ulPin )
 {
   uint32_t pin = SAADC_CH_PSELP_PSELP_NC;
@@ -200,7 +240,8 @@ uint32_t analogRead( uint32_t ulPin )
                             | ((saadcGain                     << SAADC_CH_CONFIG_GAIN_Pos)   & SAADC_CH_CONFIG_GAIN_Msk)
                             | ((saadcReference                << SAADC_CH_CONFIG_REFSEL_Pos) & SAADC_CH_CONFIG_REFSEL_Msk)
                             | ((SAADC_CH_CONFIG_TACQ_3us      << SAADC_CH_CONFIG_TACQ_Pos)   & SAADC_CH_CONFIG_TACQ_Msk)
-                            | ((SAADC_CH_CONFIG_MODE_SE       << SAADC_CH_CONFIG_MODE_Pos)   & SAADC_CH_CONFIG_MODE_Msk);
+                            | ((SAADC_CH_CONFIG_MODE_SE       << SAADC_CH_CONFIG_MODE_Pos)   & SAADC_CH_CONFIG_MODE_Msk)
+							| ((saadcBurst					  << SAADC_CH_CONFIG_BURST_Pos)   & SAADC_CH_CONFIG_BURST_Msk);
   NRF_SAADC->CH[0].PSELN = pin;
   NRF_SAADC->CH[0].PSELP = pin;
 
