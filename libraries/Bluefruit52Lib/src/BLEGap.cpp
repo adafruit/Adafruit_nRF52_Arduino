@@ -41,12 +41,12 @@ BLEGap::BLEGap(void)
   memclr(_peers, sizeof(_peers));
 
 #if SD_VER >= 500
-  _cfg_prph.mtu_max    = BLE_GATT_ATT_MTU_DEFAULT;
-  _cfg_prph.event_len    = BLE_GAP_EVENT_LENGTH_DEFAULT;
-  _cfg_prph.hvn_tx_qsize = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
-  _cfg_prph.wr_cmd_qsize = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
+  _cfg_prph.mtu_max         = BLE_GATT_ATT_MTU_DEFAULT;
+  _cfg_prph.event_len       = BLE_GAP_EVENT_LENGTH_DEFAULT;
+  _cfg_prph.hvn_tx_qsize    = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
+  _cfg_prph.wr_cmd_qsize    = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
 
-  _cfg_central.mtu_max = BLE_GATT_ATT_MTU_DEFAULT;
+  _cfg_central.mtu_max      = BLE_GATT_ATT_MTU_DEFAULT;
   _cfg_central.event_len    = BLE_GAP_EVENT_LENGTH_DEFAULT;
   _cfg_central.hvn_tx_qsize = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
   _cfg_central.wr_cmd_qsize = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;

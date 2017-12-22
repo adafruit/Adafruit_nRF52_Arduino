@@ -92,8 +92,11 @@
 
 enum
 {
-  CONN_CFG_PERIPHERAL = 1,
-  CONN_CFG_CENTRAL = 2,
+  BANDWIDTH_AUTO = 0,
+  BANDWIDTH_LOW,
+  BANDWIDTH_NORMAL,
+  BANDWIDTH_HIGH,
+  BANDWIDTH_MAX,
 };
 
 extern "C"
@@ -129,9 +132,12 @@ class AdafruitBluefruit
     void configUuid128Count   (uint8_t  uuid128_max);
     void configAttrTableSize  (uint32_t attr_table_size);
 
-    // Bandwidth config for connections
-    void configPrphConn       (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
-    void configCentralConn    (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    // Config Bandwidth for connections
+    void configPrphConn        (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    void configCentralConn     (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    // Convenient function to config connection
+    void configPrphBandwidth   (uint8_t bw);
+    void configCentralBandwidth(uint8_t bw);
 
     err_t begin(uint8_t prph_count = 1, uint8_t central_count = 0);
 

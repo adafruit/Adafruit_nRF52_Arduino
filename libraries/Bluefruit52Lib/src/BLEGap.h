@@ -40,6 +40,12 @@
 #include "bluefruit_common.h"
 #include "BLEUuid.h"
 
+enum
+{
+  CONN_CFG_PERIPHERAL = 1,
+  CONN_CFG_CENTRAL = 2,
+};
+
 class BLEGap
 {
   public:

@@ -91,9 +91,9 @@ void setup()
   Serial.println("Bluefruit52 Central Multi BLEUART Example");
   Serial.println("-----------------------------------------\n");
   
-  // Initialize Bluefruit with maximum connections as Peripheral = 0, Central = 1
-  // SRAM usage required by SoftDevice will increase dramatically with number of connections
-  Bluefruit.begin(0, BLE_CENTRAL_MAX_CONN);
+  // Initialize Bluefruit with max concurrent connections as Peripheral = 1, Central = 1
+  // SRAM usage required by SoftDevice will increase with number of connections
+  Bluefruit.begin(0, 4);
 
   // Set Name
   Bluefruit.setName("Bluefruit52 Central");

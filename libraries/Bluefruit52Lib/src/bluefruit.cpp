@@ -92,7 +92,7 @@ static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
  * Constructor
  */
 AdafruitBluefruit::AdafruitBluefruit(void)
-  : Central()
+  : Central(), Gap()
 {
   /*------------------------------------------------------------------*/
   /*  SoftDevice Default Configuration
@@ -167,7 +167,7 @@ void AdafruitBluefruit::configUuid128Count(uint8_t  uuid128_max)
 
 void AdafruitBluefruit::configAttrTableSize(uint32_t attr_table_size)
 {
-  _sd_cfg.attr_table_size = maxof(attr_table_size, BLE_GATTS_ATTR_TAB_SIZE_MIN);
+  _sd_cfg.attr_table_size = align4( maxof(attr_table_size, BLE_GATTS_ATTR_TAB_SIZE_MIN) );
 }
 
 void AdafruitBluefruit::configPrphConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
@@ -178,6 +178,64 @@ void AdafruitBluefruit::configPrphConn(uint16_t mtu_max, uint8_t event_len, uint
 void AdafruitBluefruit::configCentralConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
 {
   Gap.configCentralConn(mtu_max, event_len, hvn_qsize, wrcmd_qsize);
+}
+
+void AdafruitBluefruit::configPrphBandwidth(uint8_t bw)
+{
+  /* Note default value from SoftDevice are
+   * MTU = 23, Event Len = 3, HVN QSize = 1, WrCMD QSize =1
+   */
+  switch (bw)
+  {
+    case BANDWIDTH_LOW:
+      configPrphConn(BLE_GATT_ATT_MTU_DEFAULT, BLE_GAP_EVENT_LENGTH_MIN, BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
+    break;
+
+    // TODO Bandwidth auto
+    case BANDWIDTH_AUTO:
+    case BANDWIDTH_NORMAL:
+      configPrphConn(BLE_GATT_ATT_MTU_DEFAULT, BLE_GAP_EVENT_LENGTH_DEFAULT, BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
+    break;
+
+    case BANDWIDTH_HIGH:
+      configPrphConn(128, 6, 2, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
+    break;
+
+    case BANDWIDTH_MAX:
+      configPrphConn(247, 6, 3, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
+    break;
+
+    default: break;
+  }
+}
+
+void AdafruitBluefruit::configCentralBandwidth(uint8_t bw)
+{
+  /* Note default value from SoftDevice are
+   * MTU = 23, Event Len = 3, HVN QSize = 1, WrCMD QSize =1
+   */
+  switch (bw)
+  {
+    case BANDWIDTH_LOW:
+      configCentralConn(BLE_GATT_ATT_MTU_DEFAULT, BLE_GAP_EVENT_LENGTH_MIN, BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
+    break;
+
+    // TODO Bandwidth auto
+    case BANDWIDTH_AUTO:
+    case BANDWIDTH_NORMAL:
+      configCentralConn(BLE_GATT_ATT_MTU_DEFAULT, BLE_GAP_EVENT_LENGTH_DEFAULT, BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
+    break;
+
+    case BANDWIDTH_HIGH:
+      configCentralConn(128, 6, 2, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
+    break;
+
+    case BANDWIDTH_MAX:
+      configCentralConn(247, 6, 3, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
+    break;
+
+    default: break;
+  }
 }
 
 

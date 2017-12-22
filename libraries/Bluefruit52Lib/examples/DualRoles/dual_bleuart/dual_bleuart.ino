@@ -34,8 +34,9 @@ void setup()
   Serial.println("Bluefruit52 Dual Role BLEUART Example");
   Serial.println("-------------------------------------\n");
   
-  // Enable both peripheral and central
-  Bluefruit.begin(true, true);
+  // Initialize Bluefruit with max concurrent connections as Peripheral = 1, Central = 1
+  // SRAM usage required by SoftDevice will increase with number of connections
+  Bluefruit.begin(1, 1);
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
   Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52 duo");
