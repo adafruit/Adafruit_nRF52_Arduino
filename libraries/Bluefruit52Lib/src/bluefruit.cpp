@@ -182,6 +182,7 @@ void AdafruitBluefruit::configCentralConn(uint16_t mtu_max, uint8_t event_len, u
 
 void AdafruitBluefruit::configPrphBandwidth(uint8_t bw)
 {
+#if SD_VER >= 500
   /* Note default value from SoftDevice are
    * MTU = 23, Event Len = 3, HVN QSize = 1, WrCMD QSize =1
    */
@@ -207,10 +208,12 @@ void AdafruitBluefruit::configPrphBandwidth(uint8_t bw)
 
     default: break;
   }
+#endif
 }
 
 void AdafruitBluefruit::configCentralBandwidth(uint8_t bw)
 {
+#if SD_VER >= 500
   /* Note default value from SoftDevice are
    * MTU = 23, Event Len = 3, HVN QSize = 1, WrCMD QSize =1
    */
@@ -236,6 +239,7 @@ void AdafruitBluefruit::configCentralBandwidth(uint8_t bw)
 
     default: break;
   }
+#endif
 }
 
 
