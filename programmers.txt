@@ -1,7 +1,7 @@
 #**********************************************
 # Jlink with nrfjprog to burn bootloader
 #**********************************************
-nrfjprog.name=J-Link for Bluefruit nrf52
+nrfjprog.name=J-Link for Bluefruit nRF52
 nrfjprog.program.tool=bootburn
 #nrfjprog.program.path={runtime.tools.nrfjprog.path}/
 nrfjprog.program.path=
@@ -13,7 +13,7 @@ nrfjprog.program.pattern="{program.path}{program.cmd}" --program "{runtime.platf
 #**********************************************
 # nrfutil to upgrade bootloader
 #**********************************************
-nrfutil_boot.name=Bootloader DFU for Bluefruit nrf52
+nrfutil_boot.name=Bootloader DFU for Bluefruit nRF52
 nrfutil_boot.program.tool=bootburn
 nrfutil_boot.program.cmd=nrfutil
 nrfutil_boot.program.cmd.windows={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/win32/nrfutil.exe
