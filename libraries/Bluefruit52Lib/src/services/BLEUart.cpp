@@ -219,7 +219,7 @@ void BLEUart::_disconnect_cb(void)
 
 void BLEUart::_connect_cb (void)
 {
-  if ( _tx_buffered)
+  if ( _tx_buffered )
   {
     // create TXD timer TODO take connInterval into account
     // ((5*ms2tick(Bluefruit.connInterval())) / 4) / 2
@@ -257,6 +257,9 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
     return _txd.notify(content, len) ? len : 0;
   }else
   {
+    // skip if not enabled
+    if ( !notifyEnabled() ) return 0;
+
     uint16_t written = _tx_fifo->write(content, len);
 
     // TODO multiple prph connections
