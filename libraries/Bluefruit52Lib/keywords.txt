@@ -45,6 +45,14 @@ AncsNotification_t	KEYWORD3
 # AdafruitBluefruit Methods (KEYWORD2)
 #######################################
 
+configServiceChanged	KEYWORD2
+configUuid128Count	KEYWORD2
+configAttrTableSize	KEYWORD2
+configPrphConn	KEYWORD2
+configCentralConn	KEYWORD2   
+configPrphBandwidth	KEYWORD2      
+configCentralBandwidth	KEYWORD2
+
 autoConnLed	KEYWORD2
 setConnLedInterval	KEYWORD2
 startConnLed	KEYWORD2
@@ -53,6 +61,8 @@ setName	KEYWORD2
 getName	KEYWORD2      
 setTxPower	KEYWORD2
 getTxPower	KEYWORD2
+setApperance	KEYWORD2
+getApperance	KEYWORD2
 
 connected	KEYWORD2
 disconnect	KEYWORD2
@@ -94,7 +104,17 @@ getRole	KEYWORD2
 
 getPeerAddr	KEYWORD2
 getPeerName	KEYWORD2
-getTxPacket	KEYWORD2
+
+configPrphConn	KEYWORD2
+configCentralConn	KEYWORD2
+getMaxMtuByConnCfg	KEYWORD2
+getMaxMtu	KEYWORD2
+getHvnQueueSize	KEYWORD2
+getWriteCmdQueueSize	KEYWORD2
+getMTU	KEYWORD2
+
+getHvnPacket	KEYWORD2
+getWriteCmdPacket	KEYWORD2
 
 #######################################
 # BLEGatt Methods (KEYWORD2)
@@ -120,8 +140,10 @@ setProperties	KEYWORD2
 setPermission	KEYWORD2
 setMaxLen	KEYWORD2
 setFixedLen	KEYWORD2
+addDescriptor	KEYWORD2
 setUserDescriptor	KEYWORD2
 setReportRefDescriptor	KEYWORD2
+setPresentationFormatDescriptor	KEYWORD2
 
 setWriteCallback	KEYWORD2
 setCccdWriteCallback	KEYWORD2
