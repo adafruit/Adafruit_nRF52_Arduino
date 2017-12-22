@@ -6,22 +6,21 @@
 
 - Added IDE programmer and DFU option to upgrade bootloader from IDE.
 - Added IDE option to choose either old & new bootloader (Softdevice 2.0.1 and 5.1.0)
-- Added printBufferReverse() for Print class 
+- Added printBufferReverse() for Print class.
 - Fixed issue #108 with GPIO output when reset.
+- Added Error String for easier debugging.
 
 ## BLE
 
 - Upgrade Bluetooth 5 with Softdevice to S132 v5.0.0
-- Support max ATT MTU up to 247 (negotiable with peer)
-- Added SoftDevice configuration that affect SRAM used by SD
-  - configServiceChanged()
-  - configUuid128Count()
-  - configAttrTableSize()
-  - configMaxMtu() / getMaxMtu()
-  - configGapEventLen()
-  - configHvnTxQueue() / getHvnTxQueue()
-  - configWriteCmdQueue() / getWriteCmdQueue()
-- BLEAdvertising 
+- Support max ATT MTU up to 247 (configurable)
+- Added SoftDevice configuration that affects SRAM used by SD. These function must be called before Bluefruit.begin()
+  - configServiceChanged() add service changed characteristic
+  - configUuid128Count() set the number of max uuid128 base
+  - configAttrTableSize() set the size of buffer for GATT table
+  - configPrphConn(), configPrphBandwidth() set the connection bandwidth setting for peripheral connections
+  - configCentralConn(), configCentralBandwidth() set the connection bandwidth setting for central connections
+- BLEAdvertising
   - Added multiple services aaddition API
   - Added addManufacturerData()
   - Added getInterval() to retrieve current active interval
