@@ -7,8 +7,8 @@
 - Added IDE programmer and DFU option to upgrade bootloader from IDE.
 - Added IDE option to choose either old & new bootloader (Softdevice 2.0.1 and 5.1.0)
 - Added printBufferReverse() for Print class.
-- Fixed issue #108 with GPIO output when reset.
 - Added Error String for easier debugging.
+- Added analog oversampling #89 thanks to @Ureloc.
 
 ## BLE
 
@@ -25,14 +25,20 @@
   - Added addManufacturerData()
   - Added getInterval() to retrieve current active interval
   - Added Slow interval callback support via setSlowCallback()
-- Fixed an discovery bug introduced in 0.7.5
 - Added setPresentationFormatDescriptor() support
 - Added addDescriptor() for BLECharacteritsic
 - Added set/get apperance
 - Added experimental (work in progress) BLE Homekit
-- Fixed #99 setStopCallback() for BLEScanner is not implemented
 - Enhanced bleuart to work with larger MTU
 - Partially support data length extension
+
+## Bug Fixs
+
+- Fixed #92 PWM incorrect logic check, thanks to @burbankb 
+- Fixed issue #108 with GPIO output when reset.
+- Fixed an discovery bug introduced in 0.7.5
+- Fixed #99 setStopCallback() for BLEScanner is not implemented
+- Fixed #104 non-English keyboard BLE Hid, thanks to @ogatatsu
 
 ## 0.7.5
 
