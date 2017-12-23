@@ -784,6 +784,7 @@ void setup()
 
   // Config the peripheral connection with maximum bandwidth 
   // more SRAM required by SoftDevice
+  // Note: All config***() function must be called before begin()
   Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
   
   Bluefruit.begin();

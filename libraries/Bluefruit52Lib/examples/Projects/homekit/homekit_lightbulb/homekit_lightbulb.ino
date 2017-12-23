@@ -26,7 +26,7 @@ void setup()
 
   // Homekit uses a lot of characteristics so that default Attr Table size
   // is not enough. Therefore we need to incresae the ATTR Table Size
-  // All .config***() functions must be called before .begin()
+  // Note: All config***() function must be called before begin()
   Bluefruit.configAttrTableSize(3000);
   
   Bluefruit.begin();
