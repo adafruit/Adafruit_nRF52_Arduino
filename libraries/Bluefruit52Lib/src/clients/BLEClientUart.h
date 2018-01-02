@@ -47,6 +47,7 @@
 class BLEClientUart : public BLEClientService, public Stream
 {
   public:
+    // Callback Signatures
     typedef void (*rx_callback_t) (BLEClientUart& svc);
 
     BLEClientUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);

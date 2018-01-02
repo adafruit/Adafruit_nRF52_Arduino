@@ -52,9 +52,11 @@ class BLEClientCharacteristic
 
     BLEUuid uuid;
 
+    // Constructors
     BLEClientCharacteristic(void);
     BLEClientCharacteristic(BLEUuid bleuuid);
 
+    // Destructor
     virtual ~BLEClientCharacteristic();
 
     void assign(ble_gattc_char_t* gattc_chr);

@@ -73,7 +73,7 @@ enum CharsProperties
 class BLECharacteristic
 {
   public:
-    /*------------- Callback Signatures -------------*/
+    /*--------- Callback Signatures ----------*/
     typedef void (*read_authorize_cb_t)  (BLECharacteristic& chr, ble_gatts_evt_read_t * request);
     typedef void (*write_authorize_cb_t) (BLECharacteristic& chr, ble_gatts_evt_write_t* request);
     typedef void (*write_cb_t)           (BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);

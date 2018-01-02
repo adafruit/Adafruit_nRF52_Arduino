@@ -148,7 +148,7 @@ void connect_callback(uint16_t conn_handle)
 
 void printTime(void)
 {
-  const char * day_of_week_str[] = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+  const char * day_of_week_str[] = { "n/a", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
   const char * month_str[] = { "na", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
   
   oled.clearDisplay();
