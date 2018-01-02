@@ -59,7 +59,7 @@ class BLECentral
     void begin(void);
 
     /*------------------------------------------------------------------*/
-    /*
+    /* GAP
      *------------------------------------------------------------------*/
     bool     setConnInterval(uint16_t min, uint16_t max);
     bool     setConnIntervalMS (uint16_t min_ms, uint16_t max_ms);

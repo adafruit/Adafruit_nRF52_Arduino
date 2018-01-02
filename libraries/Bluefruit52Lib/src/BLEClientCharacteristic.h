@@ -46,6 +46,7 @@ class BLEClientService;
 class BLEClientCharacteristic
 {
   public:
+    /*--------- Callback Signatures ----------*/
     typedef void (*notify_cb_t  ) (BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
     typedef void (*indicate_cb_t) (BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
 

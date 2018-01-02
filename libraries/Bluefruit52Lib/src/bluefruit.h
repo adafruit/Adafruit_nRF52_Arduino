@@ -107,8 +107,7 @@ extern "C"
 class AdafruitBluefruit
 {
   public:
-    // Constructor
-    AdafruitBluefruit(void);
+    AdafruitBluefruit(void); // Constructor
 
     /*------------------------------------------------------------------*/
     /* Lower Level Classes (Bluefruit.Advertising.*, etc.)
@@ -124,22 +123,21 @@ class AdafruitBluefruit
 
     /*------------------------------------------------------------------*/
     /* SoftDevice Configure Functions, must call before begin().
-     * These function affect the SRAM consumed by SoftDevice. Should the
-     * required SRAM exceed numbered allocated by default linker, choose
-     * another linker in the IDE menu
+     * These function affect the SRAM consumed by SoftDevice.
      *------------------------------------------------------------------*/
-    void configServiceChanged (bool     changed);
-    void configUuid128Count   (uint8_t  uuid128_max);
-    void configAttrTableSize  (uint32_t attr_table_size);
+    void     configServiceChanged (bool     changed);
+    void     configUuid128Count   (uint8_t  uuid128_max);
+    void     configAttrTableSize  (uint32_t attr_table_size);
 
     // Config Bandwidth for connections
-    void configPrphConn        (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
-    void configCentralConn     (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
-    // Convenient function to config connection
-    void configPrphBandwidth   (uint8_t bw);
-    void configCentralBandwidth(uint8_t bw);
+    void     configPrphConn        (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    void     configCentralConn     (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
 
-    err_t begin(uint8_t prph_count = 1, uint8_t central_count = 0);
+    // Convenient function to config connection
+    void     configPrphBandwidth   (uint8_t bw);
+    void     configCentralBandwidth(uint8_t bw);
+
+    err_t    begin(uint8_t prph_count = 1, uint8_t central_count = 0);
 
     /*------------------------------------------------------------------*/
     /* General Functions
@@ -175,7 +173,7 @@ class AdafruitBluefruit
     ble_gap_addr_t getPeerAddr (void);
     uint8_t        getPeerAddr (uint8_t addr[6]);
 
-    void      printInfo(void);
+    void     printInfo(void);
 
     /*------------------------------------------------------------------*/
     /* Callbacks

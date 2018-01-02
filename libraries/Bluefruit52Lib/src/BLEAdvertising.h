@@ -103,7 +103,7 @@ public:
   /*------------- Client Service -------------*/
   bool addService(BLEClientService& service);
 
-  // Custom API
+  // Functions to work with the raw advertising packet
   uint8_t  count(void);
   uint8_t* getData(void);
   bool     setData(const uint8_t* data, uint8_t count);

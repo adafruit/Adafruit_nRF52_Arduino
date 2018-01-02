@@ -73,6 +73,7 @@ enum CharsProperties
 class BLECharacteristic
 {
   public:
+    /*------------- Callback Signatures -------------*/
     typedef void (*read_authorize_cb_t)  (BLECharacteristic& chr, ble_gatts_evt_read_t * request);
     typedef void (*write_authorize_cb_t) (BLECharacteristic& chr, ble_gatts_evt_write_t* request);
     typedef void (*write_cb_t)           (BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
@@ -80,11 +81,11 @@ class BLECharacteristic
 
     BLEUuid uuid;
 
-    typedef void (*chars_cb_t) (void);
-
+    // Constructors
     BLECharacteristic(void);
     BLECharacteristic(BLEUuid bleuuid);
 
+    // Destructor
     virtual ~BLECharacteristic();
 
     BLEService& parentService(void);
@@ -133,8 +134,10 @@ class BLECharacteristic
 
     /*------------- Notify -------------*/
     bool notifyEnabled(void);
+
     bool notify(const void* data, uint16_t len);
     bool notify(const char* str);
+
     bool notify(int      num);
     bool notify(uint32_t num);
     bool notify(uint16_t num);
