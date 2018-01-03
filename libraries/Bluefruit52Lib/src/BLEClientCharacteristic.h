@@ -59,35 +59,41 @@ class BLEClientCharacteristic
     // Destructor
     virtual ~BLEClientCharacteristic();
 
-    void assign(ble_gattc_char_t* gattc_chr);
-    bool discoverDescriptor(uint16_t conn_handle, ble_gattc_handle_range_t hdl_range);
+    void     assign(ble_gattc_char_t* gattc_chr);
+    bool     discoverDescriptor(uint16_t conn_handle, ble_gattc_handle_range_t hdl_range);
 
-    void begin(BLEClientService* parent_svc = NULL);
+    void     begin(BLEClientService* parent_svc = NULL);
 
     uint16_t connHandle(void);
     uint16_t valueHandle(void);
+    bool     isValid(void);
     uint8_t  properties(void);
+
+
     BLEClientService& parentService(void);
 
     /*------------- Read -------------*/
     uint16_t read(void* buffer, uint16_t bufsize);
+    uint16_t read(uint32_t* num);
+    uint16_t read(uint16_t* num);
+    uint16_t read(uint8_t*  num);
 
     /*------------- Write -------------*/
     uint16_t write     (const void* data, uint16_t len);
     uint16_t write_resp(const void* data, uint16_t len);
 
     /*------------- Notify -------------*/
-    bool writeCCCD       (uint16_t value);
+    bool     writeCCCD       (uint16_t value);
 
-    bool enableNotify    (void);
-    bool disableNotify   (void);
+    bool     enableNotify    (void);
+    bool     disableNotify   (void);
 
-    bool enableIndicate  (void);
-    bool disableIndicate (void);
+    bool     enableIndicate  (void);
+    bool     disableIndicate (void);
 
     /*------------- Callbacks -------------*/
-    void setNotifyCallback(notify_cb_t fp);
-    void useAdaCallback(bool enabled);
+    void     setNotifyCallback(notify_cb_t fp);
+    void     useAdaCallback(bool enabled);
 
   private:
     ble_gattc_char_t   _chr;

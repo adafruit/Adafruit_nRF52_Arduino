@@ -106,6 +106,11 @@ uint16_t BLEClientCharacteristic::valueHandle(void)
   return _chr.handle_value;
 }
 
+bool BLEClientCharacteristic::isValid(void)
+{
+  return _chr.handle_value != BLE_GATT_HANDLE_INVALID;
+}
+
 uint8_t BLEClientCharacteristic::properties(void)
 {
   uint8_t u8;
@@ -157,6 +162,21 @@ uint16_t BLEClientCharacteristic::read(void* buffer, uint16_t bufsize)
   int32_t rxlen = _adamsg.waitUntilComplete( (bufsize/(max_payload-2) + 1) * BLE_GENERIC_TIMEOUT );
 
   return (rxlen < 0) ? 0 : rxlen;
+}
+
+uint16_t BLEClientCharacteristic::read(uint32_t* num)
+{
+  return read(num, 4);
+}
+
+uint16_t BLEClientCharacteristic::read(uint16_t* num)
+{
+  return read(num, 2);
+}
+
+uint16_t BLEClientCharacteristic::read(uint8_t*  num)
+{
+  return read(num, 1);
 }
 
 /*------------------------------------------------------------------*/

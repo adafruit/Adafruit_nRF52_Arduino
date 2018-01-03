@@ -31,6 +31,8 @@
 - Added experimental (work in progress) BLE Homekit
 - Enhanced bleuart to work with larger MTU
 - Partially support data length extension
+- Added BLECLientCharacteristic isValid() and read 8,16, 32 bit
+- Added cental_custom_hrm example for how to use client service and characteristic
 
 ## Bug Fixs
 
