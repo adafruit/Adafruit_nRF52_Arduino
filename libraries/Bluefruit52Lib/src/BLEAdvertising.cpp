@@ -380,6 +380,7 @@ bool BLEAdvertising::stop(void)
 {
   VERIFY_STATUS( sd_ble_gap_adv_stop(), false);
 
+  _runnning = false;
   Bluefruit._stopConnLed(); // stop blinking
 
   return true;

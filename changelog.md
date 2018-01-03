@@ -39,6 +39,8 @@
 - Fixed an discovery bug introduced in 0.7.5
 - Fixed #99 setStopCallback() for BLEScanner is not implemented
 - Fixed #104 non-English keyboard BLE Hid, thanks to @ogatatsu
+- Fixed weekday for client_cts example
+- Fixed #110 Advertising.isRunning() returns true if stopped manually
 
 ## 0.7.5
 
