@@ -91,6 +91,27 @@ void BLEClientCharacteristic::disconnect(void)
   _chr.handle_value = BLE_GATT_HANDLE_INVALID;
 }
 
+
+bool BLEClientCharacteristic::discover(void)
+{
+  ble_gattc_handle_range_t bck_range = Bluefruit.Discovery.getHandleRange();
+
+  // Set discovery handle to parent's service
+  Bluefruit.Discovery.setHandleRange( _service->getHandleRange() );
+
+  bool result = Bluefruit.Discovery.discoverCharacteristic( _service->connHandle(), *this) > 0;
+
+  // Set back to previous
+  Bluefruit.Discovery.setHandleRange(bck_range);
+
+  return result;
+}
+
+bool BLEClientCharacteristic::discovered(void)
+{
+  return _chr.handle_value != BLE_GATT_HANDLE_INVALID;
+}
+
 void BLEClientCharacteristic::useAdaCallback(bool enabled)
 {
   _use_AdaCallback = enabled;
@@ -106,10 +127,7 @@ uint16_t BLEClientCharacteristic::valueHandle(void)
   return _chr.handle_value;
 }
 
-bool BLEClientCharacteristic::discovered(void)
-{
-  return _chr.handle_value != BLE_GATT_HANDLE_INVALID;
-}
+
 
 uint8_t BLEClientCharacteristic::properties(void)
 {

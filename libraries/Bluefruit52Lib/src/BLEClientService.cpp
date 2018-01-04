@@ -96,10 +96,9 @@ void BLEClientService::setHandleRange(ble_gattc_handle_range_t handle_range)
   _hdl_range = handle_range;
 }
 
-void BLEClientService::setHandleRange(uint16_t start_hdl, uint16_t end_hdl)
+ble_gattc_handle_range_t BLEClientService::getHandleRange(void)
 {
-  _hdl_range.start_handle = start_hdl;
-  _hdl_range.end_handle   = end_hdl;
+  return _hdl_range;
 }
 
 void BLEClientService::disconnect(void)

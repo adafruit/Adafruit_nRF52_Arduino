@@ -64,9 +64,11 @@ class BLEClientCharacteristic
 
     void     begin(BLEClientService* parent_svc = NULL);
 
+    bool     discover(void);
+    bool     discovered(void);
+
     uint16_t connHandle(void);
     uint16_t valueHandle(void);
-    bool     discovered(void);
     uint8_t  properties(void);
 
 
