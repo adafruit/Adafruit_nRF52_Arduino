@@ -53,6 +53,7 @@ class BLEClientService
 
     BLEUuid uuid;
 
+    // Constructors
     BLEClientService(void);
     BLEClientService(BLEUuid bleuuid);
 

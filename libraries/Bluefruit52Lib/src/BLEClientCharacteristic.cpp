@@ -127,8 +127,6 @@ uint16_t BLEClientCharacteristic::valueHandle(void)
   return _chr.handle_value;
 }
 
-
-
 uint8_t BLEClientCharacteristic::properties(void)
 {
   uint8_t u8;

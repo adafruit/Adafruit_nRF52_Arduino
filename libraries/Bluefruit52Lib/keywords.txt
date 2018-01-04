@@ -174,8 +174,19 @@ valueHandle	KEYWORD2
 discovered	KEYWORD2
 
 read	KEYWORD2
+read8	KEYWORD2
+read16	KEYWORD2
+read32	KEYWORD2
+
 write	KEYWORD2
+write8	KEYWORD2
+write16	KEYWORD2
+write32	KEYWORD2
+
 write_resp	KEYWORD2
+write8_resp	KEYWORD2
+write16_resp	KEYWORD2
+write32_resp	KEYWORD2
 
 writeCCCD	KEYWORD2
 enableNotify	KEYWORD2

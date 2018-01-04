@@ -88,7 +88,6 @@ class BLEClientCharacteristic
     uint16_t write16_resp   (uint16_t value);
     uint16_t write32_resp   (uint32_t value);
 
-
     /*------------- Notify -------------*/
     bool     writeCCCD       (uint16_t value);
 
