@@ -182,19 +182,22 @@ uint16_t BLEClientCharacteristic::read(void* buffer, uint16_t bufsize)
   return (rxlen < 0) ? 0 : rxlen;
 }
 
-uint16_t BLEClientCharacteristic::read(uint32_t* num)
+uint8_t BLEClientCharacteristic::read8 (void)
 {
-  return read(num, 4);
+  uint8_t num;
+  return read(&num, sizeof(num)) ? num : 0;
 }
 
-uint16_t BLEClientCharacteristic::read(uint16_t* num)
+uint16_t BLEClientCharacteristic::read16(void)
 {
-  return read(num, 2);
+  uint16_t num;
+  return read(&num, sizeof(num)) ? num : 0;
 }
 
-uint16_t BLEClientCharacteristic::read(uint8_t*  num)
+uint32_t BLEClientCharacteristic::read32(void)
 {
-  return read(num, 1);
+  uint32_t num;
+  return read(&num, sizeof(num)) ? num : 0;
 }
 
 /*------------------------------------------------------------------*/
@@ -254,6 +257,21 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
   return (count < 0) ? 0 : count;
 }
 
+uint16_t BLEClientCharacteristic::write8_resp(uint8_t value)
+{
+  return write_resp(&value, sizeof(value));
+}
+
+uint16_t BLEClientCharacteristic::write16_resp(uint16_t value)
+{
+  return write_resp(&value, sizeof(value));
+}
+
+uint16_t BLEClientCharacteristic::write32_resp(uint32_t value)
+{
+  return write_resp(&value, sizeof(value));
+}
+
 uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
 {
 //  VERIFY( _chr.char_props.write_wo_resp, 0 );
@@ -288,6 +306,22 @@ uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
 
   return len;
 }
+
+uint16_t BLEClientCharacteristic::write8(uint8_t value)
+{
+  return write(&value, sizeof(value));
+}
+
+uint16_t BLEClientCharacteristic::write16(uint16_t value)
+{
+  return write(&value, sizeof(value));
+}
+
+uint16_t BLEClientCharacteristic::write32(uint32_t value)
+{
+  return write(&value, sizeof(value));
+}
+
 
 void BLEClientCharacteristic::setNotifyCallback(notify_cb_t fp)
 {

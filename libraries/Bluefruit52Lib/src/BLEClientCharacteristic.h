@@ -68,18 +68,26 @@ class BLEClientCharacteristic
     uint16_t valueHandle(void);
     uint8_t  properties(void);
 
-
     BLEClientService& parentService(void);
 
     /*------------- Read -------------*/
     uint16_t read(void* buffer, uint16_t bufsize);
-    uint16_t read(uint32_t* num);
-    uint16_t read(uint16_t* num);
-    uint16_t read(uint8_t*  num);
+    uint8_t  read8 (void);
+    uint16_t read16(void);
+    uint32_t read32(void);
 
-    /*------------- Write -------------*/
+    /*------------- Write without Response-------------*/
     uint16_t write     (const void* data, uint16_t len);
+    uint16_t write8    (uint8_t value);
+    uint16_t write16   (uint16_t value);
+    uint16_t write32   (uint32_t value);
+
+    /*------------- Write with Response-------------*/
     uint16_t write_resp(const void* data, uint16_t len);
+    uint16_t write8_resp    (uint8_t value);
+    uint16_t write16_resp   (uint16_t value);
+    uint16_t write32_resp   (uint32_t value);
+
 
     /*------------- Notify -------------*/
     bool     writeCCCD       (uint16_t value);

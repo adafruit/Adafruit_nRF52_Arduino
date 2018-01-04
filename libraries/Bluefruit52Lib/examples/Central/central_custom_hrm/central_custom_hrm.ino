@@ -139,12 +139,11 @@ void connect_callback(uint16_t conn_handle)
     // Body sensor location value is 8 bit
     const char* body_str[] = { "Other", "Chest", "Wrist", "Finger", "Hand", "Ear Lobe", "Foot" };
 
-    uint8_t loc_value = 0;
-    if ( bslc.read(&loc_value) )
-    {
-      Serial.print("Body Location Sensor: ");
-      Serial.println(body_str[loc_value]);
-    }
+    // Read 8-bit BSLC value from peripheral
+    uint8_t loc_value = bslc.read8();
+    
+    Serial.print("Body Location Sensor: ");
+    Serial.println(body_str[loc_value]);
   }else
   {
     Serial.println("Found NONE");
