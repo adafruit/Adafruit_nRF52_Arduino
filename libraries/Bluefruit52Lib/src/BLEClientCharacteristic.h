@@ -66,7 +66,7 @@ class BLEClientCharacteristic
 
     uint16_t connHandle(void);
     uint16_t valueHandle(void);
-    bool     isValid(void);
+    bool     discovered(void);
     uint8_t  properties(void);
 
 

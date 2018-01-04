@@ -124,7 +124,7 @@ void connect_callback(uint16_t conn_handle)
   Serial.println("Characteristics");
 
   // Measurement chr is mandatory, if it is not found (valid), then disconnect
-  if ( !hrmc.isValid() )
+  if ( !hrmc.discovered() )
   {
     Serial.println("Measurement characteristic not found");
     Bluefruit.Central.disconnect(conn_handle);
@@ -134,7 +134,7 @@ void connect_callback(uint16_t conn_handle)
 
   // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.body_sensor_location.xml
   // Body Sensor Location is optional, print its location (in text) if present
-  if ( bslc.isValid() )
+  if ( bslc.discovered() )
   {
     // Body sensor location value is 8 bit
     const char* body_str[] = { "Other", "Chest", "Wrist", "Finger", "Hand", "Ear Lobe", "Foot" };

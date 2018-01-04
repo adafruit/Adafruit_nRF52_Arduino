@@ -171,7 +171,7 @@ parentService	KEYWORD2
 assign	KEYWORD2
 discoverDescriptor	KEYWORD2
 valueHandle	KEYWORD2
-isValid	KEYWORD2
+discovered	KEYWORD2
 
 read	KEYWORD2
 write	KEYWORD2

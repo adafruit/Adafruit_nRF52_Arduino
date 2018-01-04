@@ -106,7 +106,7 @@ uint16_t BLEClientCharacteristic::valueHandle(void)
   return _chr.handle_value;
 }
 
-bool BLEClientCharacteristic::isValid(void)
+bool BLEClientCharacteristic::discovered(void)
 {
   return _chr.handle_value != BLE_GATT_HANDLE_INVALID;
 }
