@@ -81,7 +81,7 @@ void BLEClientCharacteristic::begin(BLEClientService* parent_svc)
   _adamsg.begin(true);
 }
 
-void BLEClientCharacteristic::assign(ble_gattc_char_t* gattc_chr)
+void BLEClientCharacteristic::_assign(ble_gattc_char_t* gattc_chr)
 {
   _chr = *gattc_chr;
 }
@@ -141,7 +141,7 @@ BLEClientService& BLEClientCharacteristic::parentService (void)
   return *_service;
 }
 
-bool BLEClientCharacteristic::discoverDescriptor(uint16_t conn_handle, ble_gattc_handle_range_t hdl_range)
+bool BLEClientCharacteristic::_discoverDescriptor(uint16_t conn_handle, ble_gattc_handle_range_t hdl_range)
 {
   enum { MAX_DESCIRPTORS = 8 };
 

@@ -59,9 +59,6 @@ class BLEClientCharacteristic
     // Destructor
     virtual ~BLEClientCharacteristic();
 
-    void     assign(ble_gattc_char_t* gattc_chr);
-    bool     discoverDescriptor(uint16_t conn_handle, ble_gattc_handle_range_t hdl_range);
-
     void     begin(BLEClientService* parent_svc = NULL);
 
     bool     discover(void);
@@ -96,6 +93,10 @@ class BLEClientCharacteristic
     /*------------- Callbacks -------------*/
     void     setNotifyCallback(notify_cb_t fp);
     void     useAdaCallback(bool enabled);
+
+    /*------------- Internal usage -------------*/
+    void     _assign(ble_gattc_char_t* gattc_chr);
+    bool     _discoverDescriptor(uint16_t conn_handle, ble_gattc_handle_range_t hdl_range);
 
   private:
     ble_gattc_char_t   _chr;
