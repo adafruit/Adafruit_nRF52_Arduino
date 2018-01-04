@@ -115,27 +115,27 @@ void connect_callback(uint16_t conn_handle)
 
   // Once HRM service is found, we continue to discover its characteristic
   Serial.println("Found it");
-  Serial.println("Discovering Measurement and Body location characteristic ... ");
 
-  uint8_t num_found_chr = Bluefruit.Discovery.discoverCharacteristic(conn_handle, hrmc, bslc);
-
-  Serial.print("Found ");
-  Serial.print(num_found_chr);
-  Serial.println("Characteristics");
-
-  // Measurement chr is mandatory, if it is not found (valid), then disconnect
-  if ( !hrmc.discovered() )
+  
+  Serial.print("Discovering Measurement characteristic ... ");
+  if ( !hrmc.discover() )
   {
-    Serial.println("Measurement characteristic not found");
+    // Measurement chr is mandatory, if it is not found (valid), then disconnect
+    Serial.println("not found !!!");  
+    Serial.println("Measurement characteristic is mandatory but not found");
     Bluefruit.Central.disconnect(conn_handle);
-
     return;
   }
+  Serial.println("Found it");
 
+  // Measurement is found, continue to look for option Body Sensor Location
   // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.body_sensor_location.xml
-  // Body Sensor Location is optional, print its location (in text) if present
-  if ( bslc.discovered() )
+  // Body Sensor Location is optional, print out the location in text if present
+  Serial.print("Discovering Body Sensor Location characteristic ... ");
+  if ( bslc.discover() )
   {
+    Serial.println("Found it");
+    
     // Body sensor location value is 8 bit
     const char* body_str[] = { "Other", "Chest", "Wrist", "Finger", "Hand", "Ear Lobe", "Foot" };
 
@@ -145,6 +145,9 @@ void connect_callback(uint16_t conn_handle)
       Serial.print("Body Location Sensor: ");
       Serial.println(body_str[loc_value]);
     }
+  }else
+  {
+    Serial.println("Found NONE");
   }
 
   // Reaching here means we are ready to go, let's enable notification on measurement chr
