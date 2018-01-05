@@ -421,28 +421,6 @@ uint16_t BLECharacteristic::write(const void* data, uint16_t len)
   return value.len;
 }
 
-uint16_t BLECharacteristic::write(int num)
-{
-  return write( (uint8_t*) &num, sizeof(num));
-}
-
-uint16_t BLECharacteristic::write(uint32_t num)
-{
-  return write( (uint8_t*) &num, sizeof(num));
-}
-
-uint16_t BLECharacteristic::write(uint16_t num)
-{
-  return write( (uint8_t*) &num, sizeof(num));
-}
-
-uint16_t BLECharacteristic::write(uint8_t  num)
-{
-  return write( (uint8_t*) &num, sizeof(num));
-}
-
-
-
 uint16_t BLECharacteristic::write8(uint8_t num)
 {
   return write( (uint8_t*) &num, sizeof(num));
@@ -486,21 +464,6 @@ uint16_t BLECharacteristic::read(void* buffer, uint16_t bufsize)
   VERIFY_STATUS(sd_ble_gatts_value_get(BLE_CONN_HANDLE_INVALID, _handles.value_handle, &value), 0);
 
   return value.len;
-}
-
-uint16_t BLECharacteristic::read(uint32_t* num)
-{
-  return read(num, 4);
-}
-
-uint16_t BLECharacteristic::read(uint16_t* num)
-{
-  return read(num, 2);
-}
-
-uint16_t BLECharacteristic::read(uint8_t*  num)
-{
-  return read(num, 1);
 }
 
 uint8_t BLECharacteristic::read8(void)
@@ -617,25 +580,4 @@ bool BLECharacteristic::notify32(uint32_t num)
 bool BLECharacteristic::notify32(int num)
 {
   return notify32( (uint32_t) num);
-}
-
-
-bool BLECharacteristic::notify(int num)
-{
-  return notify( (uint8_t*) &num, sizeof(num));
-}
-
-bool BLECharacteristic::notify(uint32_t num)
-{
-  return notify( (uint8_t*) &num, sizeof(num));
-}
-
-bool BLECharacteristic::notify(uint16_t num)
-{
-  return notify( (uint8_t*) &num, sizeof(num));
-}
-
-bool BLECharacteristic::notify(uint8_t  num)
-{
-  return notify( (uint8_t*) &num, sizeof(num));
 }

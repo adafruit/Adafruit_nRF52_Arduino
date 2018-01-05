@@ -27,12 +27,17 @@
   - Added Slow interval callback support via setSlowCallback()
 - Added setPresentationFormatDescriptor() support
 - Added addDescriptor() for BLECharacteritsic
-- Added set/get apperance
+- Added set/get appearance
 - Added experimental (work in progress) BLE Homekit
 - Enhanced bleuart to work with larger MTU
 - Partially support data length extension
 - Added BLECLientCharacteristic isValid() and read 8,16, 32 bit
 - Added cental_custom_hrm example for how to use client service and characteristic
+- BLECharacteristic
+  - Added read8(), read16(), read32(), write8(), write16(), write32(), notify8(), notify16(), notify32()
+  - Remove read(), write(), notify() with different uint8_t, uint16_t, uint32_t, int variant to prevent confusion
+- Added discover(), discovered() to BLEClientCharacteristic
+- Added getHandleRange() to BLEClientService
 
 ## Bug Fixs
 
