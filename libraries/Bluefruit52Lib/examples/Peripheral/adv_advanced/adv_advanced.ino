@@ -32,8 +32,8 @@ void setup()
   pinMode(PIN_ADV, INPUT_PULLUP);
   
   Serial.begin(115200);
-  Serial.println("Bluefruit52 Blinky Example");
-  Serial.println("--------------------------\n");
+  Serial.println("Bluefruit52 Advanced Advertising Example");
+  Serial.println("----------------------------------------\n");
 
   // Initialize blinkTimer for 1000 ms and start it
   blinkTimer.begin(1000, blink_timer_callback);
