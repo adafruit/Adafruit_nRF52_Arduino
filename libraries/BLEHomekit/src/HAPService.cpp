@@ -59,7 +59,7 @@ err_t HAPService::_addSvcID(void)
   VERIFY_STATUS( chr.begin() );
 
   _svc_id = BLEHomekit::_gInstanceID++;
-  chr.write( _svc_id );
+  chr.write16( _svc_id );
 
   return ERROR_NONE;
 }
