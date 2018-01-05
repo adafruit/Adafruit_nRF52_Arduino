@@ -366,7 +366,19 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
         LOG_LV2_BUFFER(NULL, request->data, request->len);
 
         // TODO Ada callback
-        if (_wr_cb) _wr_cb(*this, request->data, request->len, request->offset);
+        if (_wr_cb)
+        {
+//          uint8_t* data = (uint8_t*) rtos_malloc(request->len);
+//
+//          if (data)
+//          {
+//            ada_callback(data, _wr_cb, *this, data, request->len, request->offset);
+//          }else
+          {
+            // invoke directly if cannot allocate memory for data
+            _wr_cb(*this, request->data, request->len, request->offset);
+          }
+        }
       }
 
       // CCCD write
