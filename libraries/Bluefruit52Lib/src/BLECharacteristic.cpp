@@ -441,6 +441,28 @@ uint16_t BLECharacteristic::write(uint8_t  num)
   return write( (uint8_t*) &num, sizeof(num));
 }
 
+
+
+uint16_t BLECharacteristic::write8(uint8_t num)
+{
+  return write( (uint8_t*) &num, sizeof(num));
+}
+
+uint16_t BLECharacteristic::write16(uint16_t num)
+{
+  return write( (uint8_t*) &num, sizeof(num));
+}
+
+uint16_t BLECharacteristic::write32(uint32_t num)
+{
+  return write( (uint8_t*) &num, sizeof(num));
+}
+
+uint16_t BLECharacteristic::write32(int num)
+{
+  return write32( (uint32_t) num );
+}
+
 /*------------------------------------------------------------------*/
 /* READ
  *------------------------------------------------------------------*/
@@ -479,6 +501,24 @@ uint16_t BLECharacteristic::read(uint16_t* num)
 uint16_t BLECharacteristic::read(uint8_t*  num)
 {
   return read(num, 1);
+}
+
+uint8_t BLECharacteristic::read8(void)
+{
+  uint8_t num;
+  return read(&num, sizeof(num)) ? num : 0;
+}
+
+uint16_t BLECharacteristic::read16(void)
+{
+  uint16_t num;
+  return read(&num, sizeof(num)) ? num : 0;
+}
+
+uint32_t BLECharacteristic::read32(void)
+{
+  uint16_t num;
+  return read(&num, sizeof(num)) ? num : 0;
 }
 
 /*------------------------------------------------------------------*/
@@ -558,6 +598,27 @@ bool BLECharacteristic::notify(const char * str)
 {
   return notify( (const uint8_t*) str, strlen(str) );
 }
+
+bool BLECharacteristic::notify8(uint8_t num)
+{
+  return notify( (uint8_t*) &num, sizeof(num));
+}
+
+bool BLECharacteristic::notify16(uint16_t num)
+{
+  return notify( (uint8_t*) &num, sizeof(num));
+}
+
+bool BLECharacteristic::notify32(uint32_t num)
+{
+  return notify( (uint8_t*) &num, sizeof(num));
+}
+
+bool BLECharacteristic::notify32(int num)
+{
+  return notify32( (uint32_t) num);
+}
+
 
 bool BLECharacteristic::notify(int num)
 {

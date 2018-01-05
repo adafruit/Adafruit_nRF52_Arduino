@@ -152,8 +152,14 @@ setWriteAuthorizeCallbak	KEYWORD2
 handles	KEYWORD2
 
 write	KEYWORD2
+
 notifyEnabled	KEYWORD2
+
 notify	KEYWORD2
+notify8	KEYWORD2
+notify16	KEYWORD2
+notify32	KEYWORD2
+
 
 #######################################
 # BLEClientService Methods (KEYWORD2)

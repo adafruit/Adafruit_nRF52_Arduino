@@ -126,17 +126,32 @@ class BLECharacteristic
     uint16_t write(uint16_t num);
     uint16_t write(uint8_t  num);
 
+    uint16_t write8    (uint8_t  num);
+    uint16_t write16   (uint16_t num);
+    uint16_t write32   (uint32_t num);
+    uint16_t write32   (int      num);
+
+
     /*------------- Read -------------*/
     uint16_t read(void* buffer, uint16_t bufsize);
     uint16_t read(uint32_t* num);
     uint16_t read(uint16_t* num);
     uint16_t read(uint8_t*  num);
 
+    uint8_t  read8 (void);
+    uint16_t read16(void);
+    uint32_t read32(void);
+
     /*------------- Notify -------------*/
     bool notifyEnabled(void);
 
     bool notify(const void* data, uint16_t len);
     bool notify(const char* str);
+
+    bool notify8    (uint8_t  num);
+    bool notify16   (uint16_t num);
+    bool notify32   (uint32_t num);
+    bool notify32   (int      num);
 
     bool notify(int      num);
     bool notify(uint32_t num);

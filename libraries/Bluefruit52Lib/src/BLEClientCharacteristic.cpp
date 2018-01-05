@@ -270,6 +270,11 @@ uint16_t BLEClientCharacteristic::write32_resp(uint32_t value)
   return write_resp(&value, sizeof(value));
 }
 
+uint16_t BLEClientCharacteristic::write32_resp(int value)
+{
+  return write32_resp((uint32_t) value);
+}
+
 uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
 {
 //  VERIFY( _chr.char_props.write_wo_resp, 0 );
@@ -318,6 +323,11 @@ uint16_t BLEClientCharacteristic::write16(uint16_t value)
 uint16_t BLEClientCharacteristic::write32(uint32_t value)
 {
   return write(&value, sizeof(value));
+}
+
+uint16_t BLEClientCharacteristic::write32(int value)
+{
+  return write32( (uint32_t) value);
 }
 
 
