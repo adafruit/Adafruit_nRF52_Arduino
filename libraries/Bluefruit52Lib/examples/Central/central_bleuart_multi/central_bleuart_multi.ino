@@ -310,7 +310,8 @@ void blink_timer_callback(TimerHandle_t xTimerID)
   // Where n = number of connection
   static uint8_t count = 0;
 
-  if ( count < 2*connection_num) digitalToggle(LED_RED);
+  if ( count < 2*connection_num ) digitalToggle(LED_RED);
+  if ( count % 2 && digitalRead(LED_RED)) digitalWrite(LED_RED, LOW); // issue #98
 
   count++;
   if (count >= 10) count = 0;
