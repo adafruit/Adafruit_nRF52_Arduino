@@ -160,7 +160,7 @@ void setupHRM(void)
   bslc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   bslc.setFixedLen(1);
   bslc.begin();
-  bslc.write(2);    // Set the characteristic to 'Wrist' (2)
+  bslc.write8(2);    // Set the characteristic to 'Wrist' (2)
 }
 
 void connect_callback(uint16_t conn_handle)

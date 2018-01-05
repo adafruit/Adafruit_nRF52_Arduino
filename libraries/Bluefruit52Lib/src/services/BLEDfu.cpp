@@ -196,7 +196,7 @@ err_t BLEDfu::begin(void)
   chr_revision.setProperties(CHR_PROPS_READ);
   chr_revision.setFixedLen(2);
   VERIFY_STATUS( chr_revision.begin());
-  chr_revision.write( (uint16_t) DFU_REV_APPMODE);
+  chr_revision.write16(DFU_REV_APPMODE);
 
   return ERROR_NONE;
 }

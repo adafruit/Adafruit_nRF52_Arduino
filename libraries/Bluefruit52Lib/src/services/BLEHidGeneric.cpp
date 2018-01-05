@@ -145,7 +145,7 @@ err_t BLEHidGeneric::begin(void)
     _chr_protocol->setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE_WO_RESP);
     _chr_protocol->setFixedLen(1);
     VERIFY_STATUS( _chr_protocol->begin() );
-    _chr_protocol->write( (uint8_t) 1);
+    _chr_protocol->write8(1);
   }
 
   // Input reports
@@ -179,7 +179,7 @@ err_t BLEHidGeneric::begin(void)
 
     VERIFY_STATUS( _chr_outputs[i].begin() );
 
-    _chr_outputs[i].write( (uint8_t) 0 );
+    _chr_outputs[i].write8(0);
   }
 
   // Report Map (HID Report Descriptor)
@@ -205,7 +205,7 @@ err_t BLEHidGeneric::begin(void)
     _chr_boot_keyboard_output->setFixedLen(1); // boot keyboard is 1 byte
     _chr_boot_keyboard_output->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
     VERIFY_STATUS(_chr_boot_keyboard_output->begin());
-    _chr_boot_keyboard_output->write((uint8_t) 0);
+    _chr_boot_keyboard_output->write8(0);
   }
 
   // Boot Mouse Input Report
