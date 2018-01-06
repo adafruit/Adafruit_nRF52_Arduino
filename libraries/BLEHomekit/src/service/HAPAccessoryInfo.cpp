@@ -65,7 +65,7 @@ err_t HAPAccessoryInfo::begin(void)
       "Adafruit Bluefruit nrf52",
       "Bluefruit52",
       getMcuUniqueID(),
-      "0.8.0"
+      "0.9.0"
   };
 
   // Manufacturer
