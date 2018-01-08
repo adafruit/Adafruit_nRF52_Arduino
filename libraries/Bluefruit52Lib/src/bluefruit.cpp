@@ -182,7 +182,6 @@ void AdafruitBluefruit::configCentralConn(uint16_t mtu_max, uint8_t event_len, u
 
 void AdafruitBluefruit::configPrphBandwidth(uint8_t bw)
 {
-#if SD_VER >= 500
   /* Note default value from SoftDevice are
    * MTU = 23, Event Len = 3, HVN QSize = 1, WrCMD QSize =1
    */
@@ -208,12 +207,10 @@ void AdafruitBluefruit::configPrphBandwidth(uint8_t bw)
 
     default: break;
   }
-#endif
 }
 
 void AdafruitBluefruit::configCentralBandwidth(uint8_t bw)
 {
-#if SD_VER >= 500
   /* Note default value from SoftDevice are
    * MTU = 23, Event Len = 3, HVN QSize = 1, WrCMD QSize =1
    */
@@ -239,7 +236,6 @@ void AdafruitBluefruit::configCentralBandwidth(uint8_t bw)
 
     default: break;
   }
-#endif
 }
 
 
@@ -256,11 +252,7 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
       .source        = NRF_CLOCK_LF_SRC_XTAL,
       .rc_ctiv       = 0,
       .rc_temp_ctiv  = 0,
-      #if SD_VER < 500
-      .xtal_accuracy = NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM
-      #else
       .accuracy      = NRF_CLOCK_LF_ACCURACY_20_PPM
-      #endif
   };
 #endif
 
@@ -303,26 +295,6 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   /*------------- Configure BLE params  -------------*/
   extern uint32_t  __data_start__[]; // defined in linker
   uint32_t ram_start = (uint32_t) __data_start__;
-
-#if SD_VER < 500
-  // Configure BLE params & ATTR Size
-  ble_enable_params_t params =
-  {
-      .common_enable_params = { .vs_uuid_count = _sd_cfg.uuid128_max },
-      .gap_enable_params = {
-          .periph_conn_count  = (uint8_t) (_prph_count    ? 1 : 0),
-          .central_conn_count = (uint8_t) (_central_count ? BLE_CENTRAL_MAX_CONN : 0),
-          .central_sec_count  = (uint8_t) (_central_count ? BLE_CENTRAL_MAX_SECURE_CONN : 0),
-      },
-      .gatts_enable_params = {
-          .service_changed = 1,
-          .attr_tab_size   = _sd_cfg.attr_table_size
-      }
-  };
-
-  // Enable BLE stack
-  VERIFY_STATUS( sd_ble_enable(&params, &ram_start) );
-#else
 
   ble_cfg_t blecfg;
 
@@ -425,13 +397,10 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 
   /*------------- Configure BLE Option -------------*/
   ble_opt_t  opt;
-
   varclr(&opt);
+
   opt.common_opt.conn_evt_ext.enable = 1; // enable Data Length Extension
-
   VERIFY_STATUS( sd_ble_opt_set(BLE_COMMON_OPT_CONN_EVT_EXT, &opt) );
-#endif
-
 
   /*------------- Configure GAP  -------------*/
 
@@ -677,7 +646,6 @@ void AdafruitBluefruit::printInfo(void)
   Serial.printf(title_fmt, "Service Changed");
   Serial.println(_sd_cfg.service_changed);
 
-#if SD_VER >= 500
   if ( _prph_count )
   {
     Serial.println("Peripheral Connect Setting");
@@ -719,7 +687,6 @@ void AdafruitBluefruit::printInfo(void)
     Serial.printf(title_fmt, "WrCmd Queue Size");
     Serial.println(Gap._cfg_central.wr_cmd_qsize);
   }
-#endif
 
   /*------------- Settings -------------*/
   Serial.println("\n--------- BLE Settings ---------");
@@ -850,9 +817,7 @@ void adafruit_ble_task(void* arg)
 {
   (void) arg;
 
-#if SD_VER >= 500
   uint8_t * ev_buf = (uint8_t*) rtos_malloc(BLE_EVT_LEN_MAX(BLEGATT_ATT_MTU_MAX));
-#endif
 
   while (1)
   {
@@ -863,12 +828,7 @@ void adafruit_ble_task(void* arg)
       // Until no pending events
       while( NRF_ERROR_NOT_FOUND != err )
       {
-#if SD_VER < 500
-        __ALIGN(4) uint8_t ev_buf[ sizeof(ble_evt_t) + (BLE_GATT_ATT_MTU_DEFAULT) ];
-        uint16_t ev_len = sizeof(ev_buf);
-#else
         uint16_t ev_len = BLE_EVT_LEN_MAX(BLEGATT_ATT_MTU_MAX);
-#endif
 
         // Get BLE Event
         err = sd_ble_evt_get(ev_buf, &ev_len);

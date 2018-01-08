@@ -231,9 +231,6 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
 // Common BLE Event base
 static const char* _evt_base_str[] =
 {
-#if SD_VER < 500
-    "BLE_EVT_TX_COMPLETE"                     ,
-#endif
     "BLE_EVT_USER_MEM_REQUEST"                ,
     "BLE_EVT_USER_MEM_RELEASE"                ,
 };
@@ -276,13 +273,9 @@ static const char* _evt_gattc_str[] =
     "BLE_GATTC_EVT_CHAR_VALS_READ_RSP"        ,
     "BLE_GATTC_EVT_WRITE_RSP"                 ,
     "BLE_GATTC_EVT_HVX"                       ,
-#if SD_VER < 500
-    "BLE_GATTC_EVT_TIMEOUT"                   ,
-#else
     "BLE_GATTC_EVT_EXCHANGE_MTU_RSP"          ,
     "BLE_GATTC_EVT_TIMEOUT"                   ,
     "BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE"     ,
-#endif
 };
 
 // GATTS Event
@@ -293,13 +286,9 @@ static const char* _evt_gatts_str[] =
     "BLE_GATTS_EVT_SYS_ATTR_MISSING"          ,
     "BLE_GATTS_EVT_HVC"                       ,
     "BLE_GATTS_EVT_SC_CONFIRM"                ,
-#if SD_VER < 500
-    "BLE_GATTC_EVT_TIMEOUT"                   ,
-#else
     "BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST"      ,
     "BLE_GATTS_EVT_TIMEOUT"                   ,
     "BLE_GATTS_EVT_HVN_TX_COMPLETE"           ,
-#endif
 };
 
 const char* dbg_ble_event_str(uint16_t evt_id)
@@ -375,10 +364,8 @@ static lookup_entry_t const _err_lookup_items[] =
     { .key = BLE_ERROR_GAP_DISCOVERABLE_WITH_WHITELIST         , .data = "BLE_ERROR_GAP_DISCOVERABLE_WITH_WHITELIST" },
     { .key = BLE_ERROR_GAP_INVALID_BLE_ADDR                    , .data = "BLE_ERROR_GAP_INVALID_BLE_ADDR" },
     { .key = BLE_ERROR_GAP_WHITELIST_IN_USE                    , .data = "BLE_ERROR_GAP_WHITELIST_IN_USE" },
-#if SD_VER >= 500
     { .key = BLE_ERROR_GAP_DEVICE_IDENTITIES_IN_USE            , .data = "BLE_ERROR_GAP_DEVICE_IDENTITIES_IN_USE" },
     { .key = BLE_ERROR_GAP_DEVICE_IDENTITIES_DUPLICATE         , .data = "BLE_ERROR_GAP_DEVICE_IDENTITIES_DUPLICATE" },
-#endif
 
     // BLE GATTC
     { .key = BLE_ERROR_GATTC_PROC_NOT_PERMITTED                , .data = "BLE_ERROR_GATTC_PROC_NOT_PERMITTED" },

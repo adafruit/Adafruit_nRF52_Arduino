@@ -88,18 +88,6 @@ const char* getFirmwareVersion(void)
     uint32_t sd_id = SD_FWID_GET(MBR_SIZE) & 0x0000ffff;
     char const* p_lookup = (char const*) lookup_find(&sd_lookup_table, sd_id);
 
-#if SD_VER < 500
-    if (p_lookup)
-    {
-      sprintf(fw_str, "%s, %d.%d.%d dual banks", p_lookup,
-              U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion), U32_BYTE4(bootloaderVersion));
-    }else
-    {
-      // Unknown SD ID --> display ID
-      sprintf(fw_str, "0x%04X, %d.%d.%d dual banks", (uint16_t) sd_id,
-              U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion), U32_BYTE4(bootloaderVersion));
-    }
-#else
     if (p_lookup)
     {
       sprintf(fw_str, "%s, %d.%d.%d %s", p_lookup,
@@ -112,7 +100,6 @@ const char* getFirmwareVersion(void)
               U32_BYTE1(bootloaderVersion), U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion),
               U32_BYTE4(bootloaderVersion) ? "single bank" : "dual banks");
     }
-#endif
   }
 
   return fw_str;

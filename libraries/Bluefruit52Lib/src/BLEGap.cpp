@@ -43,7 +43,6 @@ BLEGap::BLEGap(void)
   _cfg_prph.mtu_max         = BLE_GATT_ATT_MTU_DEFAULT;
   _cfg_central.mtu_max      = BLE_GATT_ATT_MTU_DEFAULT;
 
-#if SD_VER >= 500
   _cfg_prph.event_len       = BLE_GAP_EVENT_LENGTH_DEFAULT;
   _cfg_prph.hvn_tx_qsize    = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
   _cfg_prph.wr_cmd_qsize    = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
@@ -51,28 +50,21 @@ BLEGap::BLEGap(void)
   _cfg_central.event_len    = BLE_GAP_EVENT_LENGTH_DEFAULT;
   _cfg_central.hvn_tx_qsize = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
   _cfg_central.wr_cmd_qsize = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
-#endif
-
-
 }
 
 
 void BLEGap::configPrphConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
 {
-  _cfg_prph.mtu_max = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);
-#if SD_VER >= 500
-  _cfg_prph.event_len = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
-#endif
+  _cfg_prph.mtu_max      = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);
+  _cfg_prph.event_len    = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
   _cfg_prph.hvn_tx_qsize = hvn_qsize;
   _cfg_prph.wr_cmd_qsize = wrcmd_qsize;
 }
 
 void BLEGap::configCentralConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
 {
-  _cfg_central.mtu_max = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);
-#if SD_VER >= 500
-  _cfg_central.event_len = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
-#endif
+  _cfg_central.mtu_max      = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);
+  _cfg_central.event_len    = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
   _cfg_central.hvn_tx_qsize = hvn_qsize;
   _cfg_central.wr_cmd_qsize = wrcmd_qsize;
 }
@@ -108,12 +100,7 @@ uint8_t BLEGap::getAddr(uint8_t mac[6])
 {
   ble_gap_addr_t addr;
 
-#if SD_VER < 500
-  sd_ble_gap_address_get(&addr);
-#else
   sd_ble_gap_addr_get(&addr);
-#endif
-
   memcpy(mac, addr.addr, 6);
 
   return addr.addr_type;
@@ -139,6 +126,7 @@ bool BLEGap::setAddr(uint8_t mac[6], uint8_t type)
 #else
   VERIFY_STATUS( sd_ble_gap_addr_set(&addr), false );
 #endif
+
   return true;
 }
 
@@ -172,12 +160,8 @@ bool BLEGap::getHvnPacket(uint16_t conn_handle)
 
 bool BLEGap::getWriteCmdPacket(uint16_t conn_handle)
 {
-#if SD_VER < 500
-  return getHvnPacket(conn_handle);
-#else
   VERIFY( (conn_handle < BLE_MAX_CONN) && (_peers[conn_handle].wrcmd_tx_sem != NULL) );
   return xSemaphoreTake(_peers[conn_handle].wrcmd_tx_sem, ms2tick(BLE_GENERIC_TIMEOUT));
-#endif
 }
 
 uint16_t BLEGap::getMTU (uint16_t conn_handle)
@@ -213,14 +197,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       peer->att_mtu   = BLE_GATT_ATT_MTU_DEFAULT;
 
       // Init transmission buffer for notification
-      #if SD_VER < 500
-      uint8_t txbuf_max;
-      (void) sd_ble_tx_packet_count_get(conn_handle, &txbuf_max);
-      peer->hvn_tx_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
-      #else
       peer->hvn_tx_sem   = xSemaphoreCreateCounting(getHvnQueueSize(conn_handle), getHvnQueueSize(conn_handle));
-      #endif
-
       peer->wrcmd_tx_sem = xSemaphoreCreateCounting(getWriteCmdQueueSize(conn_handle), getWriteCmdQueueSize(conn_handle));
     }
     break;
@@ -240,18 +217,6 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     }
     break;
 
-#if SD_VER < 500
-    case BLE_EVT_TX_COMPLETE:
-      if ( peer->hvn_tx_sem )
-      {
-        for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
-        {
-          xSemaphoreGive(peer->hvn_tx_sem);
-        }
-      }
-    break;
-
-#else
     case BLE_GATTS_EVT_HVN_TX_COMPLETE:
       if ( peer->hvn_tx_sem )
       {
@@ -331,8 +296,6 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       LOG_LV1("GAP", "ATT MTU is changed to %d", peer->att_mtu);
     }
     break;
-
-#endif
 
     default: break;
   }

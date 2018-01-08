@@ -46,13 +46,7 @@
  * --> need to update RAM region in linker file
  * - BLEGATT_ATT_MTU_MAX from 23 (default) to 247
  */
-
-#if SD_VER < 500
-#define BLEGATT_ATT_MTU_MAX             BLE_GATT_ATT_MTU_DEFAULT
-#else
 #define BLEGATT_ATT_MTU_MAX             247
-#endif
-
 #define BLE_PRPH_MAX_CONN               1
 #define BLE_CENTRAL_MAX_CONN            4
 #define BLE_CENTRAL_MAX_SECURE_CONN     1 // should be enough
