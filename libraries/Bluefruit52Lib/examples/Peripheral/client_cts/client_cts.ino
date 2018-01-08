@@ -39,6 +39,11 @@ void setup()
   Serial.println("Go to iOS's Bluetooth settings and connect to Bluefruit52");
   Serial.println("It may appear up as 'Accessory' depending on your iOS version.");
 
+  // Config the peripheral connection with maximum bandwidth
+  // more SRAM required by SoftDevice
+  // Note: All config***() function must be called before begin()
+  Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
+
   Bluefruit.begin();
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
   Bluefruit.setTxPower(4);
