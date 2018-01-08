@@ -53,8 +53,6 @@ compiler.size.cmd=arm-none-eabi-size
 build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16 -u _printf_float
 build.debug_flags=-DCFG_DEBUG=0 -Os
 
-build.ldscript=bluefruit52_{build.sd_name}_{build.sd_version}.ld
-
 # compatiable with other lib only, would remove in the future
 build.extra_flags=-DARDUINO_FEATHER52
 
