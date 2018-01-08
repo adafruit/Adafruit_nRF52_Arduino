@@ -117,15 +117,8 @@ bool BLEGap::setAddr(uint8_t mac[6], uint8_t type)
   ble_gap_addr_t addr;
   addr.addr_type = type;
 
-  VERIFY (type == BLE_GAP_ADDR_TYPE_PUBLIC || type == BLE_GAP_ADDR_TYPE_RANDOM_STATIC);
-
   memcpy(addr.addr, mac, 6);
-
-#if SD_VER < 500
-  VERIFY_STATUS( sd_ble_gap_address_set(BLE_GAP_ADDR_CYCLE_MODE_NONE, &addr), false );
-#else
   VERIFY_STATUS( sd_ble_gap_addr_set(&addr), false );
-#endif
 
   return true;
 }
