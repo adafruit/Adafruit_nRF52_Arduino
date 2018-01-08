@@ -38,21 +38,22 @@ feather52.build.variant=feather52
 
 # SofDevice Menu
 # Ram & ROM size varies depending on S132 (check linker script)
-feather52.menu.softdevice.s132v201=0.5.0 dual, S132 2.0.1
-feather52.menu.softdevice.s132v201.build.sd_flags=-DS132 -DSD_VER=201
-feather52.menu.softdevice.s132v201.build.sd_name=s132
-feather52.menu.softdevice.s132v201.build.sd_version=2.0.1
-feather52.menu.softdevice.s132v201.build.bootfile=0.5.0/dual/feather52_bootloader_v050_s132_v201
-feather52.menu.softdevice.s132v201.upload.maximum_size=165888
-feather52.menu.softdevice.s132v201.upload.maximum_data_size=51072
 
-feather52.menu.softdevice.s132v510=5.1.0 dual, S132 5.1.0
-feather52.menu.softdevice.s132v510.build.sd_flags=-DS132 -DSD_VER=510
-feather52.menu.softdevice.s132v510.build.sd_name=s132
-feather52.menu.softdevice.s132v510.build.sd_version=5.1.0
-feather52.menu.softdevice.s132v510.build.bootfile={build.sd_version}/dual/feather52_bootloader_5.1.0_s132_dual
-feather52.menu.softdevice.s132v510.upload.maximum_size=151552
-feather52.menu.softdevice.s132v510.upload.maximum_data_size=51072
+feather52.menu.softdevice.s132v510dual=5.1.0 Dual, S132 5.1.0
+feather52.menu.softdevice.s132v510dual.build.sd_flags=-DS132 -DSD_VER=510
+feather52.menu.softdevice.s132v510dual.build.sd_name=s132
+feather52.menu.softdevice.s132v510dual.build.sd_version=5.1.0
+feather52.menu.softdevice.s132v510dual.build.bootfile=dual/feather52_bootloader_5.1.0_s132_dual
+feather52.menu.softdevice.s132v510dual.upload.maximum_size=151552
+feather52.menu.softdevice.s132v510dual.upload.maximum_data_size=51072
+
+feather52.menu.softdevice.s132v510single=5.1.0 Single, S132 5.1.0
+feather52.menu.softdevice.s132v510single.build.sd_flags=-DS132 -DSD_VER=510
+feather52.menu.softdevice.s132v510single.build.sd_name=s132
+feather52.menu.softdevice.s132v510single.build.sd_version=5.1.0
+feather52.menu.softdevice.s132v510single.build.bootfile=single/feather52_bootloader_5.1.0_s132_single
+feather52.menu.softdevice.s132v510single.upload.maximum_size=303104
+feather52.menu.softdevice.s132v510single.upload.maximum_data_size=51072
 
 # Debug Menu
 feather52.menu.debug.l0=Level 0 (Release)
