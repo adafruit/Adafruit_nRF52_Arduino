@@ -7,8 +7,10 @@
 
 //#include <softdevice_handler.h>
 
+#include "nrf_soc.h"
 #include "random.h"
 
+#define APP_ERROR_CHECK(_err)   if (_err != NRF_SUCCESS)  return
 
 void random_create(uint8_t* p_result, uint8_t length)
 {

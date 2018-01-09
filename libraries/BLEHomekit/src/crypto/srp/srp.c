@@ -24,6 +24,8 @@
 #include "../tweetnacl-modified/tweetnacl.h"
 //#include "homekit/pairing.h"
 
+#include "common_inc.h"
+
 #define E(V)  (((V) << 24) | ((V) >> 24) | (((V) >> 8) & 0x0000FF00) | (((V) << 8) & 0x00FF0000))
 static const uint32_t srp_N[] =
 {
@@ -61,17 +63,21 @@ static const uint8_t srp_N_hash_srp_G_hash[] =
     0x68, 0x3C, 0x9E, 0x78, 0x32, 0x96, 0xDD, 0x16, 0x93, 0xEB, 0xC7, 0x1C, 0xF5, 0xA5, 0x3D, 0xA3
 };
 
+#define HOMEKIT_CONFIG_PINCODE  "112-23-344"
+
 static const uint8_t pincode[21] = "Pair-Setup:" HOMEKIT_CONFIG_PINCODE;
 
 srp_keys_t srp;
 
-static void MPI_ERROR_CHECK(int CODE)
-{
-  if (CODE != 0)
-  {
-    APP_ERROR_CHECK(NRF_ERROR_INTERNAL);
-  }
-}
+//static void MPI_ERROR_CHECK(int CODE)
+//{
+//  if (CODE != 0)
+//  {
+//    APP_ERROR_CHECK(NRF_ERROR_INTERNAL);
+//  }
+//}
+
+#define MPI_ERROR_CHECK(_code)     VERIFY_STATUS(_code, )
 
 
 void srp_init(void)

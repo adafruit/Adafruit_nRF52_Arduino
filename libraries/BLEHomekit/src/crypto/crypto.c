@@ -13,7 +13,7 @@
 //#include <pstorage.h>
 //#include <app_scheduler.h>
 #include <nrf_soc.h>
-#include <Nffs.h>
+#include "nffs/nffs.h"
 
 #include "crypto.h"
 
@@ -86,12 +86,10 @@ static uint8_t crypto_loadKeys(void)
 //  err_code = pstorage_load((uint8_t*)&keys, &handle, sizeof(keys), 0);
 //  APP_ERROR_CHECK(err_code);
 
-  NffsFile file(CRYPTO_KEYFILE, FS_ACCESS_WRITE | FS_ACCESS_READ);
-
-  if ( !file.exists() ) return 0;
-
   crypto_persistent_keys_t keys = {};
-  file.read(&keys, sizeof(keys));
+
+  uint32_t keylen = sizeof(keys);
+  fsutil_read_file(CRYPTO_KEYFILE, 0, keylen, &keys, &keylen);
 
   if (keys.valid0 == 0x55 && keys.valid1 == 0xAA && keys.instance == CRYPTO_INSTANCE)
   {
@@ -139,7 +137,7 @@ void crypto_storeKeys(void)
     keys.valid0 = 0x55;
     keys.valid1 = 0xAA;
 
-    Nffs.writeFile(CRYPTO_KEYFILE, &keys, sizeof(keys));
+    fsutil_write_file(CRYPTO_KEYFILE, &keys, sizeof(keys));
 
 //    err_code = pstorage_update(&handle, (uint8_t*)&keys, sizeof(keys), 0);
 //    APP_ERROR_CHECK(err_code);

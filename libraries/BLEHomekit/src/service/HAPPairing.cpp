@@ -181,7 +181,20 @@ static HAPResponse_t* pairing_setup_write_cb (HAPCharacteristic& chr, ble_gatts_
       break;
 
       case PAIRING_TYPE_STATE:
-        LOG_LV2("HAP", "State = M%d", *((uint8_t const*)ktlv.value));
+      {
+        uint8_t state = *((uint8_t const*)ktlv.value);
+        LOG_LV2("HAP", "State = M%d", state);
+        switch (state)
+        {
+          case 1: // M1
+            // if paired return PAIRING_ERROR_UNAVAILABLE
+            // tries more than 100 time return PAIRING_ERROR_MAX_TRIES
+            // pairing with other iOS return PAIRING_ERROR_BUSY
+
+          break;
+
+        }
+      }
       break;
 
       // ignore other type

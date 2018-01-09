@@ -119,6 +119,8 @@ err_t HAPCharacteristic::begin(void)
   _format_desc.format = temp_format;
   _usr_descriptor = temp_usr;
 
+  LOG_LV2("HAP", "Added Char UUID=0x%04X, CID=0x%04X", uuid._uuid.uuid, _cid);
+
   return ERROR_NONE;
 }
 
