@@ -73,13 +73,7 @@ public:
   virtual int       peek       ( void );
   virtual void      flush      ( void );
   virtual int       read       ( void );
-
-          size_t    read       ( uint8_t * buf, size_t size );
-          size_t    read       ( char    * buf, size_t size )
-          {
-            return read( (uint8_t*) buf, size);
-          }
-
+          size_t    read       ( void* buf, size_t size );
 
   // pull in write(str) and write(buf, size) from Print
   using Print::write;

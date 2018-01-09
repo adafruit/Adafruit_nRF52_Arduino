@@ -149,7 +149,7 @@ int NffsFile::read( void )
   return (this->read(&data, 1) == 1) ? data : EOF;
 }
 
-size_t NffsFile::read(uint8_t * buf, size_t size)
+size_t NffsFile::read(void* buf, size_t size )
 {
   size_t readlen = 0;
   errnum = fs_read(_file, (uint32_t) size, buf, (uint32_t*) &readlen);
