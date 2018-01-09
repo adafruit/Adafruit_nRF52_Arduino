@@ -28,7 +28,10 @@ void setup()
   // is not enough. Therefore we need to incresae the ATTR Table Size
   // Note: All config***() function must be called before begin()
   Bluefruit.configAttrTableSize(3000);
-  
+
+  // Config the peripheral connection with maximum bandwidth
+  Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
+
   Bluefruit.begin();
   
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
@@ -40,7 +43,7 @@ void setup()
   // Set up and start advertising
   startAdv();
   
-  dbgMemInfo();
+  //dbgMemInfo();
 }
 
 void startAdv(void)
