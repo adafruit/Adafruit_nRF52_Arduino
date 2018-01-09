@@ -66,7 +66,7 @@ void crypto_init(void)
   {
     srp_init();
 
-    crypto_sign_keypair(crypto_keys.sign.public, crypto_keys.sign.secret);
+    crypto_sign_keypair(crypto_keys.sign.pub, crypto_keys.sign.secret);
 
     // Store for reuse
     crypto_scheduleStoreKeys();

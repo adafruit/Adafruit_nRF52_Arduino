@@ -18,6 +18,11 @@
 #include "srp/srp.h"
 #include "random.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef struct
 {
   struct
@@ -29,7 +34,7 @@ typedef struct
       struct
       {
         uint8_t __ignore__[32];
-        uint8_t public[32];
+        uint8_t pub[32];
       };
     };
   } sign;
@@ -55,5 +60,9 @@ extern void crypto_hkdf(uint8_t* target, uint8_t* salt, uint8_t salt_length, uin
 extern void crypto_transportEncrypt(uint8_t* key, uint8_t* nonce, uint8_t* plaintext, uint16_t plength, uint8_t* ciphertext, uint16_t* clength);
 extern uint8_t crypto_transportDecrypt(uint8_t* key, uint8_t* nonce, uint8_t* ciphertext, uint16_t clength, uint8_t* plaintext, uint16_t* plength);
 extern uint8_t crypto_advertise(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* HOMEKIT_CRYPTO_H_ */
