@@ -45,7 +45,6 @@
 static lookup_entry_t const sd_lookup_items[] =
 {
     { .key = 0x0088, .data = "S132 2.0.1" },
-    { .key = 0x009D, .data = "S132 5.0.0" },
     { .key = 0x00A5, .data = "S132 5.1.0" },
 };
 

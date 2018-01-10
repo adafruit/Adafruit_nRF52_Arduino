@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 name=Adafruit nRF52 Boards
-version=0.8.0
+version=0.8.1
 
 # Compile variables
 # -----------------
@@ -102,7 +102,7 @@ recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}"
 recipe.objcopy.hex.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} {compiler.elf2hex.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.hex"
 
 ## Creat dfu package zip file
-recipe.objcopy.zip.pattern="{tools.nrfutil.cmd}" dfu genpkg --dev-type 0x0052 --application "{build.path}/{build.project_name}.hex" "{build.path}/{build.project_name}.zip"
+recipe.objcopy.zip.pattern="{tools.nrfutil.cmd}" dfu genpkg --dev-type 0x0052 --sd-req {build.sd_fwid} --application "{build.path}/{build.project_name}.hex" "{build.path}/{build.project_name}.zip"
 
 ## Save bin
 recipe.output.tmp_file_bin={build.project_name}.bin
