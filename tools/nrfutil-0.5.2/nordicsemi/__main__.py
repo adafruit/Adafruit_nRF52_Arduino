@@ -287,8 +287,8 @@ def serial(package, port, baudrate, flowcontrol):
         click.echo("Failed to upgrade target. Error is: {0}".format(e.message))
         click.echo("")
         click.echo("Possible causes:")
-        click.echo("- Selected bootloader version does not match the one on Bluefruit device.")
-        click.echo("    Upgrade the bootloader or select correct version in Tools->Bootloader.")
+        click.echo("- Selected Bootloader version does not match the one on Bluefruit device.")
+        click.echo("    Please upgrade the Bootloader or select correct version in Tools->Bootloader.")
         click.echo("- Baud rate must be 115200, Flow control must be off.")
         click.echo("- Target is not in DFU mode. Ground DFU pin and RESET and release both to enter DFU mode.")
 
