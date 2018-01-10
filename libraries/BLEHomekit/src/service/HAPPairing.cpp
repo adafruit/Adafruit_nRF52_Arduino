@@ -38,6 +38,8 @@
 #include "HAPUuid.h"
 #include "HAPPairing.h"
 
+#include "crypto/crypto.h"
+
 // kTLV type for pairing
 enum {
   PAIRING_TYPE_METHOD = 0,
@@ -127,6 +129,9 @@ err_t HAPPairing::begin(void)
 
   _pairing.setHapProperties(HAP_CHR_PROPS_SECURE_READ | HAP_CHR_PROPS_SECURE_WRITE);
   VERIFY_STATUS( _pairing.begin() );
+
+  // Init cryptography
+  crypto_init();
 
   return ERROR_NONE;
 }
