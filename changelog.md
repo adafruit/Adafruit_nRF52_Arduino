@@ -2,6 +2,10 @@
 
 ## 0.9.0
 
+## 0.8.1
+
+- Prevent sketch compiled with S132 v2 upload to device running S132 v5 and vice versa.
+
 ## 0.8.0
 
 ## Core

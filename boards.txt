@@ -43,6 +43,7 @@ feather52.menu.softdevice.s132v510dual=5.1.0 Dual, S132 5.1.0
 feather52.menu.softdevice.s132v510dual.build.sd_flags=-DS132 -DSD_VER=510
 feather52.menu.softdevice.s132v510dual.build.sd_name=s132
 feather52.menu.softdevice.s132v510dual.build.sd_version=5.1.0
+feather52.menu.softdevice.s132v510dual.build.sd_fwid=0x00A5
 feather52.menu.softdevice.s132v510dual.build.ldscript=bluefruit52_s132_5.1.0_dual.ld
 feather52.menu.softdevice.s132v510dual.build.bootfile=dual/feather52_bootloader_5.1.0_s132_dual
 feather52.menu.softdevice.s132v510dual.upload.maximum_size=151552
@@ -52,6 +53,7 @@ feather52.menu.softdevice.s132v510single=5.1.0 Single, S132 5.1.0
 feather52.menu.softdevice.s132v510single.build.sd_flags=-DS132 -DSD_VER=510
 feather52.menu.softdevice.s132v510single.build.sd_name=s132
 feather52.menu.softdevice.s132v510single.build.sd_version=5.1.0
+feather52.menu.softdevice.s132v510single.build.sd_fwid=0x00A5
 feather52.menu.softdevice.s132v510single.build.ldscript=bluefruit52_s132_5.1.0_single.ld
 feather52.menu.softdevice.s132v510single.build.bootfile=single/feather52_bootloader_5.1.0_s132_single
 feather52.menu.softdevice.s132v510single.upload.maximum_size=303104
