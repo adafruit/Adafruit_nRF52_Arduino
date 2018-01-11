@@ -55,7 +55,7 @@ enum HAPChrProperties_t
 class HAPCharacteristic : public BLECharacteristic
 {
   public:
-    typedef HAPResponse_t* (*hap_write_cb_t) (HAPCharacteristic& chr, ble_gatts_evt_write_t const* gatt_req, HAPRequest_t const* hap_req);
+    typedef HAPResponse_t* (*hap_write_cb_t) (HAPCharacteristic* chr, ble_gatts_evt_write_t const* gatt_req, HAPRequest_t const* hap_req);
     static BLEUuid _g_uuid_cid;
 
     HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t unit = UUID16_UNIT_UNITLESS);

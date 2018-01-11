@@ -315,7 +315,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
             case HAP_OPCODE_CHR_WRITE:
               if (_hap_wr_cb)
               {
-                hap_resp = _hap_wr_cb(*this, gatt_req, hap_req);
+                hap_resp = _hap_wr_cb(this, gatt_req, hap_req);
               }
             break;
 

@@ -98,7 +98,7 @@ static const char* pairing_method_str[] =
 
 #endif
 
-static HAPResponse_t* pairing_setup_write_cb (HAPCharacteristic& chr, ble_gatts_evt_write_t const* gatt_req, HAPRequest_t const* hap_req);
+static HAPResponse_t* pairing_setup_write_cb (HAPCharacteristic* chr, ble_gatts_evt_write_t const* gatt_req, HAPRequest_t const* hap_req);
 
 HAPPairing::HAPPairing(void)
   : HAPService(HAP_UUID_SVC_PAIRING),
@@ -137,7 +137,7 @@ err_t HAPPairing::begin(void)
 }
 
 
-static HAPResponse_t* pairing_setup_write_cb (HAPCharacteristic& chr, ble_gatts_evt_write_t const* gatt_req, HAPRequest_t const* hap_req)
+static HAPResponse_t* pairing_setup_write_cb (HAPCharacteristic* chr, ble_gatts_evt_write_t const* gatt_req, HAPRequest_t const* hap_req)
 {
   VERIFY(gatt_req->len > 3, NULL);
 
