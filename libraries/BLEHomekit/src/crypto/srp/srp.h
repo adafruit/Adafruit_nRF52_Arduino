@@ -26,6 +26,11 @@ typedef struct
   uint8_t serverM1:1;
 } srp_keys_t;
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 extern srp_keys_t srp;
 
 typedef void (*moretime_t)(void);
@@ -38,5 +43,9 @@ extern uint8_t* srp_getSalt(void);
 extern uint8_t* srp_getB(void);
 extern uint8_t* srp_getM2(void);
 extern uint8_t* srp_getK(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* HOMEKIT_SRP_SRP_H_ */

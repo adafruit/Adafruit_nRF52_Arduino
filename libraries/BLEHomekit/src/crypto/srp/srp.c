@@ -25,6 +25,7 @@
 //#include "homekit/pairing.h"
 
 #include "common_inc.h"
+#include "rtos.h"
 
 #define E(V)  (((V) << 24) | ((V) >> 24) | (((V) >> 8) & 0x0000FF00) | (((V) << 8) & 0x00FF0000))
 static const uint32_t srp_N[] =
@@ -86,7 +87,10 @@ void srp_init(void)
 
   // The MPI library uses a ridiculous amount of memory. We use the stack allocator
   // so we don't tie this memory up except when we absolutely need to.
-  uint8_t memory[11 * 1024];
+//  uint8_t memory[11 * 1024];
+  uint8_t* memory = (uint8_t*) rtos_malloc(11*1024);
+  VERIFY(memory, );
+
   memory_buffer_alloc_init(memory, sizeof(memory));
 
   // Generate salt
@@ -163,6 +167,8 @@ void srp_init(void)
   mpi_free(&x);
 
   memory_buffer_alloc_free();
+
+  rtos_free(memory);
 }
 
 void srp_start(void)
