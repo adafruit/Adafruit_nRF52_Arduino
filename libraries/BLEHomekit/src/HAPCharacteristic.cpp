@@ -186,12 +186,7 @@ HAPResponse_t* HAPCharacteristic::createHapResponse(uint8_t tid, uint8_t status,
 {
   // Determine body len, does not to include 2 byte length itself
   // FIXME multiple fragment len
-  uint16_t body_len = 0;
-  for(uint8_t i=0; i <count ; i++)
-  {
-    body_len += tlv_para[i].len + 2;
-  }
-
+  uint16_t body_len = tlv8_calculate_encode_len(tlv_para, count);
   HAPResponse_t* hap_resp = (HAPResponse_t*) rtos_malloc(sizeof(HAPResponseHeader_t) + 2 + body_len);
   VERIFY( hap_resp != NULL, NULL );
 

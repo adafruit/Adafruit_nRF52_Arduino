@@ -96,6 +96,19 @@ TLV8_t tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len, void* buf, uin
   return tlv;
 }
 
+uint16_t tlv8_calculate_encode_len(TLV8_t tlv_para[], uint8_t count)
+{
+  uint16_t total_len = 0;
+  for(uint8_t i=0; i <count ; i++)
+  {
+    total_len += tlv_para[i].len + 2 + (tlv_para[i].len/255)*2;
+
+    if ( tlv_para[i].len % 255 == 0 ) total_len -= 2;
+  }
+
+  return total_len;
+}
+
 bool tlv8_encode_next(uint8_t** pp_buf, uint16_t* p_buflen, TLV8_t tlv)
 {
   while ( tlv.len )
