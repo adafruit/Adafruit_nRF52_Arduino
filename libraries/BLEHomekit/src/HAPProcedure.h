@@ -149,6 +149,6 @@ typedef struct ATTR_PACKED
 
 
 TLV8_t tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len, void* buf = NULL, uint16_t bufsize = 0);
-bool   tlv8_encode_next(uint8_t** pp_buf, uint16_t* buflen, TLV8_t tlv);
+bool   tlv8_encode_next(uint8_t** pp_buf, uint16_t* p_buflen, TLV8_t tlv);
 
 #endif /* HAPPROCEDURE_H_ */

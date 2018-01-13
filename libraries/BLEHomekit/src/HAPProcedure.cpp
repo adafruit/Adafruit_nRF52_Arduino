@@ -53,10 +53,10 @@ TLV8_t tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len, void* buf, uin
   TLV8_t tlv;
   varclr(&tlv);
 
-//  if ( buf && bufsize ) tlv.value = buf;
-
   if ( (*p_len) )
   {
+    if ( buf && bufsize ) tlv.value = buf;
+
     tlv.type = (**pp_data);
 
     uint8_t fraqlen;
@@ -70,7 +70,21 @@ TLV8_t tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len, void* buf, uin
 
       tlv.len += fraqlen;
 
-      tlv.value = data+2;
+      if ( buf )
+      {
+        uint16_t cp = min16(bufsize, fraqlen);
+
+        if ( cp )
+        {
+          memcpy(buf, data+2, cp);
+
+          buf     += cp;
+          bufsize -= cp;
+        }
+      } else
+      {
+        tlv.value = data+2;
+      }
 
       // next item
       (*p_len)   -= fraqlen+2;
@@ -82,14 +96,25 @@ TLV8_t tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len, void* buf, uin
   return tlv;
 }
 
-bool tlv8_encode_next(uint8_t** pp_buf, uint16_t* buflen, TLV8_t tlv)
+bool tlv8_encode_next(uint8_t** pp_buf, uint16_t* p_buflen, TLV8_t tlv)
 {
-  VERIFY( (*buflen) >= tlv.len + 2 );
+  while ( tlv.len )
+  {
+    uint8_t* buf = *pp_buf;
+    uint8_t const fraqlen = (uint8_t) min16(tlv.len, 255);
 
-  uint8_t* buf = *pp_buf;
+    buf[0] = tlv.type;
+    buf[1] = fraqlen;
 
-  buf[0] = tlv.type;
-  buf[1] = tlv.len;
+    VERIFY( (*p_buflen) >= fraqlen + 2 );
+    memcpy(buf+2, tlv.value, fraqlen);
+
+    tlv.len     -= fraqlen;
+    tlv.value   += fraqlen;
+
+    (*p_buflen) -= fraqlen+2;
+    (*pp_buf)   += fraqlen+2;
+  }
 
   return true;
 }
