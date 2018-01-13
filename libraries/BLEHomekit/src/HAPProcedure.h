@@ -86,11 +86,11 @@ enum HAPPduType_t
 };
 
 
-typedef struct ATTR_PACKED
+typedef struct
 {
-  uint8_t type;
-  uint8_t len;
-  const void* value; // need serialization, not reflect physical layout
+  uint8_t  type;
+  uint16_t len;
+  const void* value;
 }TLV8_t;
 
 
@@ -148,6 +148,7 @@ typedef struct ATTR_PACKED
 
 
 
-TLV8_t tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len);
+TLV8_t tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len, void* buf = NULL, uint16_t bufsize = 0);
+bool   tlv8_encode_next(uint8_t** pp_buf, uint16_t* buflen, TLV8_t tlv);
 
 #endif /* HAPPROCEDURE_H_ */

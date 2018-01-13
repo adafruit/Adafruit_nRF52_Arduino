@@ -185,7 +185,8 @@ uint16_t HAPCharacteristic::writeHapValue(uint32_t num)
 HAPResponse_t* HAPCharacteristic::createHapResponse(uint8_t tid, uint8_t status, TLV8_t tlv_para[], uint8_t count)
 {
   // Determine body len, does not to include 2 byte length itself
-  uint8_t body_len = 0;
+  // FIXME multiple fragment len
+  uint16_t body_len = 0;
   for(uint8_t i=0; i <count ; i++)
   {
     body_len += tlv_para[i].len + 2;
@@ -206,7 +207,9 @@ HAPResponse_t* HAPCharacteristic::createHapResponse(uint8_t tid, uint8_t status,
   uint8_t* pdata = hap_resp->body_data;
   for(uint8_t i=0; i < count; i++)
   {
-    memcpy(pdata, &tlv_para[i], 2); // type + len
+    pdata[0] = tlv_para[i].type;
+    pdata[1] = (uint8_t) tlv_para[i].len; // FIXME > 256 tlv
+
     pdata += 2;
 
     memcpy(pdata, tlv_para[i].value, tlv_para[i].len);

@@ -38,23 +38,58 @@
 #include "HAPUuid.h"
 #include "HAPProcedure.h"
 
-TLV8_t tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len)
+/**
+ * Decode a TLV8 item
+ * @param pp_data   payload pointer, got update to next item when done
+ * @param p_len     len of payload, got updated to remaining item when done
+ * @param buf       optional buffer, required if the decoded payload > 255
+ *                  to assembly data into continuous buffer
+ * @param bufsize   size of buffer (optional)
+ *
+ * @return  TLV8 item
+ */
+TLV8_t tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len, void* buf, uint16_t bufsize)
 {
   TLV8_t tlv;
   varclr(&tlv);
 
+//  if ( buf && bufsize ) tlv.value = buf;
+
   if ( (*p_len) )
   {
-    uint8_t const* data = *pp_data;
+    tlv.type = (**pp_data);
 
-    tlv.type  = data[0];
-    tlv.len   = data[1];
-    tlv.value = data+2;
+    uint8_t fraqlen;
+    do {
+      uint8_t const* data = *pp_data;
 
-    // next item
-    (*p_len)   -= tlv.len+2;
-    (*pp_data) += tlv.len+2;
+      // different item type
+      if ( tlv.type != data[0] ) break;
+
+      fraqlen  = data[1];
+
+      tlv.len += fraqlen;
+
+      tlv.value = data+2;
+
+      // next item
+      (*p_len)   -= fraqlen+2;
+      (*pp_data) += fraqlen+2;
+
+    }while( (fraqlen == 255) && (*p_len) );
   }
 
   return tlv;
+}
+
+bool tlv8_encode_next(uint8_t** pp_buf, uint16_t* buflen, TLV8_t tlv)
+{
+  VERIFY( (*buflen) >= tlv.len + 2 );
+
+  uint8_t* buf = *pp_buf;
+
+  buf[0] = tlv.type;
+  buf[1] = tlv.len;
+
+  return true;
 }
