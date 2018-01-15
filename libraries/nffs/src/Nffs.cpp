@@ -200,10 +200,7 @@ bool ApacheNffs::testFolder(const char* path)
   return result;
 }
 
-/*------------------------------------------------------------------*/
-/* Debug
- *------------------------------------------------------------------*/
-void dbgPrintDir(const char* cwd)
+void ApacheNffs::listDir(const char* cwd)
 {
   // Open the input folder
   NffsDir dir(cwd);

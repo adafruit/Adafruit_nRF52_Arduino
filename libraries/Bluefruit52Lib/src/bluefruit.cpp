@@ -66,7 +66,7 @@ void adafruit_soc_task(void* arg);
 void _adafruit_save_bond_key_dfr(uint32_t conn_handle);
 
 #if CFG_DEBUG >= 2
-#define printBondDir()    dbgPrintDir(CFG_BOND_NFFS_DIR)
+#define printBondDir()    Nffs.listDir(CFG_BOND_NFFS_DIR)
 #else
 #define printBondDir()
 #endif

@@ -54,30 +54,30 @@ extern uint32_t __StackLimit[];
 
 extern "C"
 {
-  int cprintf(const char * format, ...)
-  {
-    char buf[256];
-    int len;
 
-    va_list ap;
-    va_start(ap, format);
+int cprintf(const char * format, ...)
+{
+  char buf[256];
+  int len;
 
-    len = vsnprintf(buf, 256, format, ap);
-    Serial.write(buf, len);
+  va_list ap;
+  va_start(ap, format);
 
-    va_end(ap);
-    return len;
-  }
+  len = vsnprintf(buf, 256, format, ap);
+  Serial.write(buf, len);
 
-  void vApplicationMallocFailedHook(void)
-  {
-    Serial.println("Failed to Malloc");
-  }
+  va_end(ap);
+  return len;
+}
 
-  void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
-  {
-    Serial.printf("%s Stack Overflow !!!", pcTaskName);
-  }
+void vApplicationMallocFailedHook(void)
+{
+  cprintf("Failed to Malloc");
+}
+
+void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
+{
+  cprintf("%s Stack Overflow !!!", pcTaskName);
 }
 
 int dbgHeapTotal(void)
@@ -124,14 +124,14 @@ static void printMemRegion(const char* name, uint32_t top, uint32_t bottom, uint
     sprintf(buffer, "%lu", top-bottom);
   }
 
-  Serial.printf("| %-5s| 0x%04X - 0x%04X | %-19s |\n", name, (uint16_t) bottom, (uint16_t) (top-1), buffer);
+  cprintf("| %-5s| 0x%04X - 0x%04X | %-19s |\n", name, (uint16_t) bottom, (uint16_t) (top-1), buffer);
 }
 
 void dbgMemInfo(void)
 {
-  Serial.println(" ______________________________________________");
-  Serial.println("| Name | Addr 0x2000xxxx | Usage               |");
-  Serial.println("| ---------------------------------------------|");
+  cprintf(" ______________________________________________\n");
+  cprintf("| Name | Addr 0x2000xxxx | Usage               |\n");
+  cprintf("| ---------------------------------------------|\n");
 
   // Pritn SRAM used for Stack executed by S132 and ISR
   printMemRegion("Stack", ((uint32_t) __StackTop), ((uint32_t) __StackLimit), dbgStackUsed() );
@@ -145,8 +145,8 @@ void dbgMemInfo(void)
   // Print SRAM Used by SoftDevice
   printMemRegion("S132", (uint32_t) __data_start__, 0x20000000, 0);
 
-  Serial.printf("|______________________________________________|\n");
-  Serial.println();
+  cprintf("|______________________________________________|\n");
+  cprintf("\n");
 
   // Print Task list
   uint32_t tasknum = uxTaskGetNumberOfTasks();
@@ -154,19 +154,20 @@ void dbgMemInfo(void)
 
   vTaskList(buf);
 
-  Serial.println("Task    State   Prio  StackLeft Num");
-  Serial.println("-----------------------------------");
-  Serial.println(buf);
+  cprintf("Task    State   Prio  StackLeft Num\n");
+  cprintf("-----------------------------------\n");
+  cprintf(buf);
+  cprintf("\n");
   rtos_free(buf);
 }
 
 void dbgPrintVersion(void)
 {
-  Serial.println();
-  Serial.println("BSP Library     : " ARDUINO_BSP_VERSION);
-  Serial.printf ("Firmware        : %s\n", getFirmwareVersion());
-  Serial.printf ("Serial No       : %s\n", getMcuUniqueID());
-  Serial.println();
+  cprintf("\n");
+  cprintf("BSP Library     : " ARDUINO_BSP_VERSION "\n");
+  cprintf("Firmware        : %s\n", getFirmwareVersion());
+  cprintf("Serial No       : %s\n", getMcuUniqueID());
+  cprintf("\n");
 }
 
 /******************************************************************************/
@@ -195,26 +196,26 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
     // Print address
     if ( i%item_per_line == 0 )
     {
-      if ( i != 0 ) Serial.println();
+      if ( i != 0 ) cprintf("\n");
 
       // print offset or absolute address
       if (printOffset)
       {
-        Serial.printf(offset_fmt, 16*i/item_per_line);
+        cprintf(offset_fmt, 16*i/item_per_line);
       }else
       {
-        Serial.printf("%08lX:", (uint32_t) buf8);
+        cprintf("%08lX:", (uint32_t) buf8);
       }
     }
 
     memcpy(&value, buf8, size);
     buf8 += size;
 
-    Serial.print(' ');
-    Serial.printf(format, value);
+    cprintf(" ");
+    cprintf(format, value);
   }
 
-  Serial.println();
+  cprintf("\n");
 }
 
 #if CFG_DEBUG
@@ -393,6 +394,8 @@ const char* dbg_err_str(uint32_t err_id)
   }
 
   return str;
+}
+
 }
 
 #endif

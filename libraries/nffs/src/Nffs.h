@@ -84,11 +84,11 @@ public:
   {
     return writeFile(filename, str, strlen(str), offset);
   }
+
+  void     listDir(const char* cwd);
 };
 
 
 extern ApacheNffs Nffs;
-
-void dbgPrintDir(const char* cwd);
 
 #endif /* NFFS_H_ */
