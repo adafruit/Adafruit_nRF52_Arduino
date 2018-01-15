@@ -25,7 +25,7 @@
 //#include "homekit/pairing.h"
 
 #include "common_inc.h"
-#include "rtos.h"
+#include "nrf_error.h"
 
 #define E(V)  (((V) << 24) | ((V) >> 24) | (((V) >> 8) & 0x0000FF00) | (((V) << 8) & 0x00FF0000))
 static const uint32_t srp_N[] =
@@ -80,7 +80,9 @@ srp_keys_t srp;
 
 #define MPI_ERROR_CHECK(_code)     VERIFY_STATUS(_code, )
 
-
+/**
+ * Adafruit: re-calculate x if p changes (setup code)
+ */
 void srp_init(void)
 {
   int err_code;
@@ -88,10 +90,10 @@ void srp_init(void)
   // The MPI library uses a ridiculous amount of memory. We use the stack allocator
   // so we don't tie this memory up except when we absolutely need to.
 //  uint8_t memory[11 * 1024];
-  uint8_t* memory = (uint8_t*) rtos_malloc(11*1024);
-  VERIFY(memory, );
-
-  memory_buffer_alloc_init(memory, sizeof(memory));
+//  uint8_t* memory = (uint8_t*) rtos_malloc(11*1024);
+//  VERIFY(memory, );
+//
+//  memory_buffer_alloc_init(memory, sizeof(memory));
 
   // Generate salt
   random_create(srp.salt, sizeof(srp.salt));
@@ -166,8 +168,8 @@ void srp_init(void)
   mpi_free(&g);
   mpi_free(&x);
 
-  memory_buffer_alloc_free();
-  rtos_free(memory);
+//  memory_buffer_alloc_free();
+//  rtos_free(memory);
 }
 
 void srp_start(void)
@@ -183,10 +185,10 @@ uint8_t srp_setA(uint8_t* abuf, uint16_t length, moretime_t moretime)
   // The MPI library uses a ridiculous amount of memory. We use the stack allocator
   // so we don't tie this memory up except when we absolutely need to.
 //  uint8_t memory[11 * 1024];
-  uint8_t* memory = (uint8_t*) rtos_malloc(11*1024);
-  VERIFY(memory, NRF_ERROR_NO_MEM);
-
-  memory_buffer_alloc_init(memory, sizeof(memory));
+//  uint8_t* memory = (uint8_t*) rtos_malloc(11*1024);
+//  VERIFY(memory, NRF_ERROR_NO_MEM);
+//
+//  memory_buffer_alloc_init(memory, sizeof(memory));
 
   // getK
   {
@@ -261,8 +263,8 @@ uint8_t srp_setA(uint8_t* abuf, uint16_t length, moretime_t moretime)
     crypto_hash_sha512(srp.K, sbuf, sizeof(sbuf));
   }
 
-  memory_buffer_alloc_free();
-  rtos_free(memory);
+//  memory_buffer_alloc_free();
+//  rtos_free(memory);
 
   // getM1 - username s abuf srp.B K
   {

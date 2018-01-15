@@ -163,7 +163,7 @@
  * Uncomment to prevent default assignment of standard functions in the
  * platform layer.
  */
-//#define POLARSSL_PLATFORM_NO_STD_FUNCTIONS
+#define POLARSSL_PLATFORM_NO_STD_FUNCTIONS
 
 /**
  * \def POLARSSL_PLATFORM_XXX_ALT
@@ -2305,9 +2305,9 @@
 //#define POLARSSL_MEMORY_ALIGN_MULTIPLE      4 /**< Align on multiples of this value */
 
 /* Platform options */
-//#define POLARSSL_PLATFORM_STD_MEM_HDR   <stdlib.h> /**< Header to include if POLARSSL_PLATFORM_NO_STD_FUNCTIONS is defined. Don't define if no header is needed. */
-//#define POLARSSL_PLATFORM_STD_MALLOC        malloc /**< Default allocator to use, can be undefined */
-//#define POLARSSL_PLATFORM_STD_FREE            free /**< Default free to use, can be undefined */
+#define POLARSSL_PLATFORM_STD_MEM_HDR       "rtos.h"/**< Header to include if POLARSSL_PLATFORM_NO_STD_FUNCTIONS is defined. Don't define if no header is needed. */
+#define POLARSSL_PLATFORM_STD_MALLOC        rtos_malloc /**< Default allocator to use, can be undefined */
+#define POLARSSL_PLATFORM_STD_FREE          rtos_free /**< Default free to use, can be undefined */
 //#define POLARSSL_PLATFORM_STD_EXIT            exit /**< Default exit to use, can be undefined */
 //#define POLARSSL_PLATFORM_STD_FPRINTF      fprintf /**< Default fprintf to use, can be undefined */
 //#define POLARSSL_PLATFORM_STD_PRINTF        printf /**< Default printf to use, can be undefined */
