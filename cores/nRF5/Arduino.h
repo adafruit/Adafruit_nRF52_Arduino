@@ -61,8 +61,8 @@ uint32_t setLoopStacksize(void);
 
 #include "delay.h"
 #include "binary.h"
-#include "debug.h"
 #include "common_inc.h"
+#include "utility/debug.h"
 #include "utility/utilities.h"
 #include "utility/AdaCallback.h"
 
