@@ -286,27 +286,31 @@ size_t Print::printFloat(double number, uint8_t digits)
 #endif
 
 
-size_t Print::printBuffer(uint8_t const buffer[], int len, char delim)
+size_t Print::printBuffer(uint8_t const buffer[], int len, char delim, int byteline)
 {
   if (buffer == NULL || len == 0) return 0;
 
   for(int i=0; i<len; i++)
   {
-    if (i != 0) print(delim);
-    printf("%02X", buffer[i]);
+    if ( i != 0 ) print(delim);
+    if ( byteline && (i%byteline == 0) ) println();
+
+    this->printf("%02X", buffer[i]);
   }
 
   return (len*3 - 1);
 }
 
-size_t Print::printBufferReverse(uint8_t const buffer[], int len, char delim)
+size_t Print::printBufferReverse(uint8_t const buffer[], int len, char delim, int byteline)
 {
   if (buffer == NULL || len == 0) return 0;
 
   for(int i=0; i<len; i++)
   {
     if (i != 0) print(delim);
-    printf("%02X", buffer[len-1-i]);
+    if ( byteline && (i%byteline == 0) ) println();
+
+    this->printf("%02X", buffer[len-1-i]);
   }
 
   return (len*3 - 1);

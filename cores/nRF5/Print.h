@@ -81,16 +81,16 @@ class Print
 
     size_t printf(const char * format, ...);
 
-    size_t printBuffer(uint8_t const buffer[], int len, char delim=' ');
-    size_t printBuffer(char const buffer[], int size, char delim=' ')
+    size_t printBuffer(uint8_t const buffer[], int len, char delim=' ', int byteline = 0);
+    size_t printBuffer(char const buffer[], int size, char delim=' ', int byteline = 0)
     {
-      return printBuffer((uint8_t const*) buffer, size, delim);
+      return printBuffer((uint8_t const*) buffer, size, delim, byteline);
     }
 
-    size_t printBufferReverse(uint8_t const buffer[], int len, char delim=' ');
-    size_t printBufferReverse(char const buffer[], int size, char delim=' ')
+    size_t printBufferReverse(uint8_t const buffer[], int len, char delim=' ', int byteline = 0);
+    size_t printBufferReverse(char const buffer[], int size, char delim=' ', int byteline = 0)
     {
-      return printBufferReverse((uint8_t const*) buffer, size, delim);
+      return printBufferReverse((uint8_t const*) buffer, size, delim, byteline);
     }
 };
 
