@@ -71,8 +71,6 @@ class HAPCharacteristic : public BLECharacteristic
     // Callbacks
     void setHapWriteCallback(hap_write_cb_t fp);
 
-    HAPResponse_t* createHapResponse(uint8_t tid, uint8_t status, TLV8_t tlv_para[] = NULL, uint8_t count = 0);
-
     /*------------- Internal Functions -------------*/
     virtual void _eventHandler(ble_evt_t* event);
 
