@@ -131,3 +131,15 @@ bool tlv8_encode_next(uint8_t** pp_buf, uint16_t* p_buflen, TLV8_t tlv)
 
   return true;
 }
+
+uint16_t tlv8_encode_n(uint8_t* buf, uint16_t bufsize, TLV8_t tlv[], uint8_t count)
+{
+  uint16_t len = bufsize;
+
+  for(uint8_t i=0; i < count; i++)
+  {
+    if( !tlv8_encode_next(&buf, &bufsize, tlv[i]) ) break;
+  }
+
+  return len - bufsize;
+}

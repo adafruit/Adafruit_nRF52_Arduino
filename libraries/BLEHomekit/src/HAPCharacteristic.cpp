@@ -198,11 +198,7 @@ HAPResponse_t* HAPCharacteristic::createHapResponse(uint8_t tid, uint8_t status,
   hap_resp->body_len                = body_len;
 
   /*------------- Serialize Data -------------*/
-  uint8_t* pdata = hap_resp->body_data;
-  for(uint8_t i=0; i < count; i++)
-  {
-    if ( !tlv8_encode_next(&pdata, &body_len, tlv_para[i]) ) break;
-  }
+  tlv8_encode_n(hap_resp->body_data, body_len, tlv_para, count);
 
   return hap_resp;
 }
