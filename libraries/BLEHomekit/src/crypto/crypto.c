@@ -14,6 +14,7 @@
 //#include <app_scheduler.h>
 #include <nrf_soc.h>
 #include "nffs/nffs.h"
+#include "utility/debug.h"
 
 #include "crypto.h"
 
@@ -27,7 +28,8 @@ static const uint8_t zeros64[64];
 static uint8_t crypto_loadKeys(void);
 //static void crypto_pstorage_callback(pstorage_handle_t *p_handle, uint8_t op_code, uint32_t result, uint8_t *p_data, uint32_t data_len);
 
-#define CRYPTO_KEYFILE   "/adafruit/homekit/key"
+#define CRYPTO_KEYDIR    "/adafruit/homekit"
+#define CRYPTO_KEYFILE   CRYPTO_KEYDIR "/key"
 
 typedef struct
 {
