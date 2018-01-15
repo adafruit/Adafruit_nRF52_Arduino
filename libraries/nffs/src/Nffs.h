@@ -86,6 +86,7 @@ public:
   }
 
   void     listDir(const char* cwd);
+  void     catFile(const char* fpath, bool isText = false);
 };
 
 

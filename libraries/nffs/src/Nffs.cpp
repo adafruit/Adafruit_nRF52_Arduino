@@ -204,6 +204,7 @@ void ApacheNffs::listDir(const char* cwd)
 {
   // Open the input folder
   NffsDir dir(cwd);
+  VERIFY ( dir.exists(), );
 
   // File Entry Information which hold file attribute and name
   NffsDirEntry dirEntry;
@@ -231,4 +232,26 @@ void ApacheNffs::listDir(const char* cwd)
   }
 
   dir.close();
+}
+
+void ApacheNffs::catFile(const char* fpath, bool isText)
+{
+  NffsFile f(fpath, FS_ACCESS_READ);
+  VERIFY ( f.exists(), );
+
+  uint8_t buffer[128];
+  uint32_t count;
+
+  while ( (count = f.read(buffer, sizeof(buffer))) > 0 )
+  {
+    if ( isText )
+    {
+      Serial.write(buffer, count);
+    }else
+    {
+      dbgDumpMemory(buffer, 1, count, true);
+    }
+  }
+
+  f.close();
 }
