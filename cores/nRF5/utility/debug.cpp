@@ -183,9 +183,8 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
   format[2] += 2*size;
 
   char offset_fmt[] = "%02lX: ";
-
-  if ( count*size > UINT8_MAX  ) format[2] *= 2;
-  if ( count*size > UINT16_MAX ) format[2] *= 2;
+  if      ( count*size > UINT16_MAX ) offset_fmt[2] = '8';
+  else if ( count*size > UINT8_MAX  ) offset_fmt[2] = '4';
 
   const uint8_t item_per_line = 16 / size;
 
@@ -217,6 +216,7 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
 
   cprintf("\n");
 }
+
 
 #if CFG_DEBUG
 
@@ -396,7 +396,6 @@ const char* dbg_err_str(uint32_t err_id)
   return str;
 }
 
-}
-
 #endif
 
+}
