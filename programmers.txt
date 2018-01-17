@@ -7,15 +7,17 @@ nrfjprog.program.tool=bootburn
 nrfjprog.program.path=
 nrfjprog.program.cmd=nrfjprog
 nrfjprog.program.cmd.windows=nrfjprog.exe
-#nrfjprog.program.pattern="{program.path}{program.cmd}" --program "{runtime.platform.path}/bin/bootloader/{build.variant}/{build.sd_version}/{build.bootfile}.hex" -f nrf52 --chiperase --reset
+
 nrfjprog.program.pattern="{program.path}{program.cmd}" --program "{runtime.platform.path}/bin/bootloader/{build.variant}/{build.bootfile}.hex" -f nrf52 --chiperase --reset
 
 #**********************************************
 # nrfutil to upgrade bootloader
+# # Note : For MacOS, make a symlink to /usr/local/bin/nrfutil if installed to other location
 #**********************************************
 nrfutil_boot.name=Bootloader DFU for Bluefruit nRF52
 nrfutil_boot.program.tool=bootburn
 nrfutil_boot.program.cmd=nrfutil
 nrfutil_boot.program.cmd.windows={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/win32/nrfutil.exe
-#nrfutil_boot.program.pattern={program.cmd} --verbose dfu serial -pkg "{runtime.platform.path}/bin/bootloader/{build.variant}/{build.sd_version}/{build.bootfile}.zip" -p {serial.port} -b 115200
+nrfutil_boot.program.cmd.macosx=/usr/local/bin/nrfutil
+
 nrfutil_boot.program.pattern={program.cmd} --verbose dfu serial -pkg "{runtime.platform.path}/bin/bootloader/{build.variant}/{build.bootfile}.zip" -p {serial.port} -b 115200

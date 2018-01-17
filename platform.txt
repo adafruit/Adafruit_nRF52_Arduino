@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 name=Adafruit nRF52 Boards
-version=0.8.1
+version=0.8.2
 
 # Compile variables
 # -----------------
@@ -81,7 +81,7 @@ compiler.elf2hex.extra_flags=
 # ----------------
 
 ## Compile c files
-recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} {compiler.c.extra_flags} {build.extra_flags} {compiler.nrf.flags} {includes} "{source_file}" -o "{object_file}"
+recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} -DARDUINO_BSP_VERSION="{version}" {compiler.c.extra_flags} {build.extra_flags} {compiler.nrf.flags} {includes} "{source_file}" -o "{object_file}"
 
 ## Compile c++ files
 recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} -DARDUINO_BSP_VERSION="{version}" {compiler.cpp.extra_flags} {build.extra_flags} {compiler.nrf.flags} {includes} "{source_file}" -o "{object_file}"
@@ -123,11 +123,11 @@ recipe.output.save_file={build.project_name}.{build.variant}.hex
 
 #**********************************************
 # nrfutil for uploading
+# Note : For MacOS, make a symlink to /usr/local/bin/nrfutil if installed to other location
 #**********************************************
 
 tools.nrfutil.cmd=nrfutil
 tools.nrfutil.cmd.windows={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/win32/nrfutil.exe
-# MacOS nrfutil location, make a symlink if installed to other location
 tools.nrfutil.cmd.macosx=/usr/local/bin/nrfutil
 
 tools.nrfutil.upload.params.verbose=--verbose

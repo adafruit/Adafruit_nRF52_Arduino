@@ -1,5 +1,10 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.8.2
+
+- Fixed burning bootloader issue with MacOS
+- 
+
 ## 0.8.1
 
 - Prevent sketch compiled with S132 v2 upload to device running S132 v5 and vice versa.
