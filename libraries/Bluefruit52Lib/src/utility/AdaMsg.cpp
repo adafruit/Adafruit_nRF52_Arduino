@@ -36,13 +36,19 @@
 
 #include "AdaMsg.h"
 
-AdaMsg::AdaMsg(void)
+void AdaMsg::_init(void)
 {
   _dynamic = true;
+  _waiting = false;
   _sem     = NULL;
 
   buffer  = NULL;
   remaining = xferlen = 0;
+}
+
+AdaMsg::AdaMsg(void)
+{
+  _init();
 }
 
 // dynamic mean semaphore is malloced and freed only when in action
@@ -58,6 +64,7 @@ void AdaMsg::begin(bool dynamic)
 void AdaMsg::stop(void)
 {
   if (!_dynamic) vSemaphoreDelete(_sem);
+  _init();
 }
 
 void AdaMsg::prepare(void* buf, uint16_t bufsize)
@@ -82,10 +89,12 @@ int32_t AdaMsg::waitUntilComplete(uint32_t ms)
 
   int result = -1;
 
+  _waiting = true;
   if ( xSemaphoreTake(_sem, ms2tick(ms) ) )
   {
     result = xferlen;
   }
+  _waiting = false;
 
   if (_dynamic)
   {
@@ -94,6 +103,11 @@ int32_t AdaMsg::waitUntilComplete(uint32_t ms)
   }
 
   return result;
+}
+
+bool AdaMsg::isWaiting(void)
+{
+  return _waiting;
 }
 
 uint16_t AdaMsg::feed(void* data, uint16_t len)

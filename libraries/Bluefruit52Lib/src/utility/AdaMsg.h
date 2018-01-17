@@ -42,7 +42,10 @@ class AdaMsg
 {
   private:
     bool              _dynamic;
+    volatile bool     _waiting;
     SemaphoreHandle_t _sem;
+
+    void              _init(void);
 
   public:
     uint8_t*          buffer;
@@ -57,6 +60,7 @@ class AdaMsg
 
     void     prepare(void* buf, uint16_t bufsize);
     int32_t  waitUntilComplete(uint32_t ms);
+    bool     isWaiting(void);
 
     uint16_t feed(void* data, uint16_t len);
     void     complete(void);
