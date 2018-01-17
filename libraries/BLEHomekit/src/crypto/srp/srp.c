@@ -64,9 +64,10 @@ static const uint8_t srp_N_hash_srp_G_hash[] =
     0x68, 0x3C, 0x9E, 0x78, 0x32, 0x96, 0xDD, 0x16, 0x93, 0xEB, 0xC7, 0x1C, 0xF5, 0xA5, 0x3D, 0xA3
 };
 
-#define HOMEKIT_CONFIG_PINCODE  "112-23-344"
-
+#define HOMEKIT_CONFIG_PINCODE  "111-22-333"
 static const uint8_t pincode[21] = "Pair-Setup:" HOMEKIT_CONFIG_PINCODE;
+
+//#define HOMEKIT_CONFIG_PINCODE  "password123"
 
 srp_keys_t srp;
 

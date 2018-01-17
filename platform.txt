@@ -121,11 +121,11 @@ recipe.output.save_file={build.project_name}.{build.variant}.hex
 
 #**********************************************
 # nrfutil for uploading
+# Note : For MacOS, make a symlink to /usr/local/bin/nrfutil if installed to other location
 #**********************************************
 
 tools.nrfutil.cmd=nrfutil
 tools.nrfutil.cmd.windows={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/win32/nrfutil.exe
-# MacOS nrfutil location, make a symlink if installed to other location
 tools.nrfutil.cmd.macosx=/usr/local/bin/nrfutil
 
 tools.nrfutil.upload.params.verbose=--verbose

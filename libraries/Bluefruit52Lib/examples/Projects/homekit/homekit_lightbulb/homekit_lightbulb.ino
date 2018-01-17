@@ -12,6 +12,7 @@
  any redistribution
 *********************************************************************/
 
+#include <Nffs.h>
 #include <bluefruit.h>
 #include <BLEHomekit.h>
 
@@ -38,12 +39,11 @@ void setup()
   Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52");
 
+  Nffs.listDir("/adafruit/homekit");  
   homekit.begin();
 
   // Set up and start advertising
   startAdv();
-  
-  //dbgMemInfo();
 }
 
 void startAdv(void)

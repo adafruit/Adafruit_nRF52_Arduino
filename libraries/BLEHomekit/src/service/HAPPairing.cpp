@@ -37,8 +37,51 @@
 #include <bluefruit.h>
 #include "HAPUuid.h"
 #include "HAPPairing.h"
+#include <Nffs.h>
 
 #include "crypto/crypto.h"
+
+/*
+The following is a description of SRP-6 and 6a, the latest versions of SRP:
+
+  N    A large safe prime (N = 2q+1, where q is prime)
+       All arithmetic is done modulo N.
+  g    A generator modulo N
+  k    Multiplier parameter (k = H(N, g) in SRP-6a, k = 3 for legacy SRP-6)
+  s    User's salt
+  I    Username
+  p    Cleartext Password
+  H()  One-way hash function
+  ^    (Modular) Exponentiation
+  u    Random scrambling parameter
+  a,b  Secret ephemeral values
+  A,B  Public ephemeral values
+  x    Private key (derived from p and s)
+  v    Password verifier
+
+The host stores passwords using the following formula:
+  x = H(s, p)               (s is chosen randomly)
+  v = g^x                   (computes password verifier)
+The host then keeps {I, s, v} in its password database. The authentication protocol itself goes as follows:
+User -> Host:  I, A = g^a                  (identifies self, a = random number)
+Host -> User:  s, B = kv + g^b             (sends salt, b = random number)
+
+        Both:  u = H(A, B)
+
+        User:  x = H(s, p)                 (user enters password)
+        User:  S = (B - kg^x) ^ (a + ux)   (computes session key)
+        User:  K = H(S)
+
+        Host:  S = (Av^u) ^ b              (computes session key)
+        Host:  K = H(S)
+Now the two parties have a shared, strong session key K. To complete authentication, they need to prove to each other that their keys match. One possible way:
+User -> Host:  M = H(H(N) xor H(g), H(I), s, A, B, K)
+Host -> User:  H(A, M, K)
+The two parties also employ the following safeguards:
+The user will abort if he receives B == 0 (mod N) or u == 0.
+The host will abort if it detects that A == 0 (mod N).
+The user must show his proof of K first. If the server detects that the user's proof is incorrect, it must abort without showing its own proof of K.
+ */
 
 // kTLV type for pairing
 enum {
@@ -131,9 +174,31 @@ err_t HAPPairing::begin(void)
   VERIFY_STATUS( _pairing.begin() );
 
   // Init cryptography
+  Nffs.mkdir_p("/adafruit/homekit");
   crypto_init();
 
   return ERROR_NONE;
+}
+
+HAPResponse_t* createSrpResponse(uint8_t tid, uint8_t status, TLV8_t ktlv[], uint8_t count)
+{
+  HAPResponse_t* hap_resp = NULL;
+
+  uint16_t srplen = tlv8_calculate_encode_len(ktlv, count);
+  uint8_t* srpbuf = (uint8_t*) rtos_malloc(srplen);
+  VERIFY( srpbuf != NULL, NULL );
+
+  if( srplen == tlv8_encode_n(srpbuf, srplen, ktlv, count) )
+  {
+    LOG_LV2_BUFFER("PAIR-SETUP", srpbuf, srplen);
+    TLV8_t tlv = { .type = HAP_PARAM_VALUE, .len = srplen, .value = srpbuf };
+    hap_resp = createHapResponse(tid, status, &tlv, 1);
+  }
+
+//  LOG_LV2_BUFFER("PAIR-SETUP", hap_resp, hap_resp->body_len + sizeof(HAPResponseHeader_t) + 2);
+
+  rtos_free(srpbuf);
+  return hap_resp;
 }
 
 
@@ -185,10 +250,12 @@ static HAPResponse_t* pairing_setup_write_cb (HAPCharacteristic* chr, ble_gatts_
         LOG_LV2("HAP", "Method %s", pairing_method_str[ *((uint8_t const*)ktlv.value) ]);
       break;
 
+      // TODO multiple pairing support
       case PAIRING_TYPE_STATE:
       {
         uint8_t state = *((uint8_t const*)ktlv.value);
         LOG_LV2("HAP", "State = M%d", state);
+
         switch (state)
         {
           case 1: // M1
@@ -196,8 +263,25 @@ static HAPResponse_t* pairing_setup_write_cb (HAPCharacteristic* chr, ble_gatts_
             // tries more than 100 time return PAIRING_ERROR_MAX_TRIES
             // pairing with other iOS return PAIRING_ERROR_BUSY
 
-          break;
+            // step 4
+            srp_start();
 
+            // step 5 : username (I = "Pair-Setup"
+            // step 6 : 16 bytes salt already created in srp_init()
+            // step 7,8 : password (p = setup code) done in srp_init()
+            // step 9 : public key (B) done in srp_init()
+
+            uint8_t mstate = 2;
+
+            TLV8_t tlv_para[] =
+            {
+                { .type  = PAIRING_TYPE_STATE      , .len = 1  , .value = &mstate       },
+                { .type  = PAIRING_TYPE_PUBLIC_KEY , .len = 384, .value = srp_getB()    },
+                { .type  = PAIRING_TYPE_SALT       , .len = 16 , .value = srp_getSalt() },
+            };
+
+            hap_resp = createSrpResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+          break;
         }
       }
       break;
