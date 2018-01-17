@@ -49,6 +49,12 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
   int32_t count = 0;
   ble_gattc_handle_range_t hdl_range = { .start_handle = start_hdl, .end_handle = end_hdl };
 
+  while( _adamsg.isWaiting() )
+  {
+    // TODO multiple peripherals
+    delay( Bluefruit.connInterval() );
+  }
+
   _adamsg.begin(true);
   _adamsg.prepare(buffer, bufsize);
 
@@ -67,6 +73,25 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
 
   return (count < 0) ? 0 : count;
 }
+
+//bool BLEGatt::waitForIndicateConfirm(uint16_t conn_hdl)
+//{
+//  while( _adamsg.isWaiting() )
+//  {
+//    // TODO multiple peripherals
+//    delay( Bluefruit.connInterval() );
+//  }
+//
+//  _adamsg.begin(true);
+//  _adamsg.prepare(NULL, 0);
+//
+//  // Wait for HVC event
+//  int32_t result = _adamsg.waitUntilComplete(BLE_GENERIC_TIMEOUT);
+//
+//  _adamsg.stop();
+//
+//  return (result == 0);
+//}
 
 void BLEGatt::_eventHandler(ble_evt_t* evt)
 {

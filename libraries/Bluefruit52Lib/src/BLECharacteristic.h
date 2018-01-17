@@ -135,6 +135,8 @@ class BLECharacteristic
     uint32_t read32(void);
 
     /*------------- Notify -------------*/
+    uint16_t getCccd(void);
+
     bool notifyEnabled(void);
 
     bool notify(const void* data, uint16_t len);
@@ -144,6 +146,17 @@ class BLECharacteristic
     bool notify16   (uint16_t num);
     bool notify32   (uint32_t num);
     bool notify32   (int      num);
+
+    /*------------- Indicate -------------*/
+    bool indicateEnabled(void);
+
+    bool indicate(const void* data, uint16_t len);
+    bool indicate(const char* str);
+
+    bool indicate8    (uint8_t  num);
+    bool indicate16   (uint16_t num);
+    bool indicate32   (uint32_t num);
+    bool indicate32   (int      num);
 
     /*------------- Internal Functions -------------*/
     virtual void _eventHandler(ble_evt_t* event);
