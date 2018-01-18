@@ -388,6 +388,7 @@ bool BLEClientCharacteristic::disableIndicate (void)
 
 void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
 {
+  const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
   uint16_t gatt_status = evt->evt.gattc_evt.gatt_status;
 
   switch(evt->header.evt_id)
@@ -433,6 +434,9 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
             {
               _indicate_cb(this, hvx->data, hvx->len);
             }
+
+            // Send confirmation to server
+            VERIFY_STATUS( sd_ble_gattc_hv_confirm(evt_conn_hdl, hvx->handle), );
           }
         break;
 
