@@ -175,12 +175,12 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 
 /**
  * Hooked callback that triggered when a measurement value is sent from peripheral
- * @param chr   Reference to client characteristic that even occurred,
+ * @param chr   Pointer client characteristic that even occurred,
  *              in this example it should be hrmc
  * @param data  Pointer to received data
  * @param len   Length of received data
  */
-void hrm_notify_callback(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len)
+void hrm_notify_callback(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len)
 {
   // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.heart_rate_measurement.xml
   // Measurement contains of control byte0 and measurement (8 or 16 bit) + optional field

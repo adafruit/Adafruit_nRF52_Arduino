@@ -83,7 +83,7 @@ class BLEClientUart : public BLEClientService, public Stream
     Adafruit_FIFO     _rx_fifo;
     rx_callback_t     _rx_cb;
 
-    friend void bleuart_central_notify_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
+    friend void bleuart_central_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
 };
 
 #endif /* BLECLIENTUART_H_ */

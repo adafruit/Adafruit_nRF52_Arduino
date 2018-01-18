@@ -5,7 +5,11 @@
 - Fixed burning bootloader issue with MacOS
 - Added gpstest_swuart example sketch
 - Added indicate API for BLECharacteristic
-- Added useAdaCallback option to setNotifyCallback(), setIndicateCallback() for BLEClientCharacteristic
+- BLEClientCharacteristic
+  - Added setIndicateCallback(), issue #113
+  - Added useAdaCallback option to setNotifyCallback(), setIndicateCallback()
+  - Change notify callback signature from 
+notify_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len) to notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len)
 
 ## 0.8.1
 

@@ -408,10 +408,11 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
               if (!data) return;
               memcpy(data, hvx->data, hvx->len);
 
+              // data is free by callback
               ada_callback(data, _notify_cb, this, data, hvx->len);
             }else
             {
-              _notify_cb(*this, hvx->data, hvx->len);
+              _notify_cb(this, hvx->data, hvx->len);
             }
           }
         break;
@@ -426,10 +427,11 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
               if (!data) return;
               memcpy(data, hvx->data, hvx->len);
 
-              ada_callback(data, _notify_cb, this, data, hvx->len);
+              // data is free by callback
+              ada_callback(data, _indicate_cb, this, data, hvx->len);
             }else
             {
-              _notify_cb(*this, hvx->data, hvx->len);
+              _indicate_cb(this, hvx->data, hvx->len);
             }
           }
         break;
