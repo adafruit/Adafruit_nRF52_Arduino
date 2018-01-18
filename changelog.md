@@ -3,7 +3,9 @@
 ## 0.8.2
 
 - Fixed burning bootloader issue with MacOS
-- 
+- Added gpstest_swuart example sketch
+- Added indicate API for BLECharacteristic
+- Added useAdaCallback option to setNotifyCallback(), setIndicateCallback() for BLEClientCharacteristic
 
 ## 0.8.1
 

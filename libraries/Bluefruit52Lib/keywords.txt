@@ -201,7 +201,6 @@ enableIndicate	KEYWORD2
 disableIndicate	KEYWORD2
 
 setNotifyCallback	KEYWORD2
-useAdaCallback	KEYWORD2
 
 #######################################
 # BLEScanner Methods (KEYWORD2)

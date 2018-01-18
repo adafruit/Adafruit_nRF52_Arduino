@@ -94,10 +94,9 @@ bool BLEAncs::begin(void)
 
   _notification.setNotifyCallback(bleancs_notification_cb);
 
-  // Data Attribute is likely requested in notification callback
+  // Data Attribute is most likely requested in notification callback
   // let's call data's callback in the ble task
-  _data.useAdaCallback(false);
-  _data.setNotifyCallback(bleancs_data_cb);
+  _data.setNotifyCallback(bleancs_data_cb, false);
 
   return true;
 }
