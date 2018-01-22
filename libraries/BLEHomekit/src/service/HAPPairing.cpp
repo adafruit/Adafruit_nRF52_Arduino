@@ -41,6 +41,8 @@
 
 #include "crypto/crypto.h"
 
+#define DEBUG_HAP_PAIRING   0
+
 /*
 The following is a description of SRP-6 and 6a, the latest versions of SRP:
 
@@ -190,12 +192,13 @@ HAPResponse_t* createSrpResponse(uint8_t tid, uint8_t status, TLV8_t ktlv[], uin
 
   if( srplen == tlv8_encode_n(srpbuf, srplen, ktlv, count) )
   {
-    LOG_LV2_BUFFER("PAIR-SETUP", srpbuf, srplen);
+    #if DEBUG_HAP_PAIRING
+    LOG_LV2_BUFFER("M1 Response", srpbuf, srplen);
+    #endif
+
     TLV8_t tlv = { .type = HAP_PARAM_VALUE, .len = srplen, .value = srpbuf };
     hap_resp = createHapResponse(tid, status, &tlv, 1);
   }
-
-//  LOG_LV2_BUFFER("PAIR-SETUP", hap_resp, hap_resp->body_len + sizeof(HAPResponseHeader_t) + 2);
 
   rtos_free(srpbuf);
   return hap_resp;
@@ -276,9 +279,15 @@ static HAPResponse_t* pairing_setup_write_cb (HAPCharacteristic* chr, ble_gatts_
             TLV8_t tlv_para[] =
             {
                 { .type  = PAIRING_TYPE_STATE      , .len = 1  , .value = &mstate       },
-                { .type  = PAIRING_TYPE_PUBLIC_KEY , .len = 384, .value = srp_getB()    },
                 { .type  = PAIRING_TYPE_SALT       , .len = 16 , .value = srp_getSalt() },
+                { .type  = PAIRING_TYPE_PUBLIC_KEY , .len = 384, .value = srp_getB()    },
             };
+
+            #if DEBUG_HAP_PAIRING
+            LOG_LV2_BUFFER("SRP State"  , tlv_para[0].value, tlv_para[0].len);
+            LOG_LV2_BUFFER("SRP Salt"   , tlv_para[1].value, tlv_para[1].len);
+            LOG_LV2_BUFFER("SRP Pub Key", tlv_para[2].value, tlv_para[2].len);
+            #endif
 
             hap_resp = createSrpResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
           break;

@@ -48,24 +48,24 @@ enum HAPOpcode_t
 
 enum HAPParamType_t
 {
-  HAP_PARAM_VALUE = 1                     ,
-  HAP_PARAM_ADDITIONAL_AUTHORIZATION_DATA ,
-  HAP_PARAM_ORIGIN                        , // local vs remote
-  HAP_PARAM_CHR_TYPE                      ,
-  HAP_PARAM_CHR_ID                        ,
-  HAP_PARAM_SVC_TYPE                      ,
-  HAP_PARAM_SVC_ID                        ,
-  HAP_PARAM_TTL                           ,
-  HAP_PARAM_RETURN_RESP                   ,
-  HAP_PARAM_HAP_CHR_PROPERTIES_DESC       ,
-  HAP_PARAM_GATT_USR_DESC                 ,
-  HAP_PARAM_GATT_FORMAT_DESC              ,
-  HAP_PARAM_GATT_VALID_RANGE              ,
-  HAP_PARAM_HAP_STEP_VALUE_DESC           ,
-  HAP_PARAM_HAP_SVC_PROPERTIES            ,
-  HAP_PARAM_HAP_LINKED_SVC                ,
-  HAP_PARAM_HAP_VALID_VALUES_DESC         ,
-  HAP_PARAM_HAP_VALID_VALUES_RANGE_DESC
+  HAP_PARAM_VALUE = 1                     , // 1
+  HAP_PARAM_ADDITIONAL_AUTHORIZATION_DATA , // 2
+  HAP_PARAM_ORIGIN                        , // 3 local vs remote
+  HAP_PARAM_CHR_TYPE                      , // 4
+  HAP_PARAM_CHR_ID                        , // 5
+  HAP_PARAM_SVC_TYPE                      , // 6
+  HAP_PARAM_SVC_ID                        , // 7
+  HAP_PARAM_TTL                           , // 8
+  HAP_PARAM_RETURN_RESP                   , // 9
+  HAP_PARAM_HAP_CHR_PROPERTIES_DESC       , // 10
+  HAP_PARAM_GATT_USR_DESC                 , // 11
+  HAP_PARAM_GATT_FORMAT_DESC              , // 12
+  HAP_PARAM_GATT_VALID_RANGE              , // 13
+  HAP_PARAM_HAP_STEP_VALUE_DESC           , // 14
+  HAP_PARAM_HAP_SVC_PROPERTIES            , // 15
+  HAP_PARAM_HAP_LINKED_SVC                , // 16
+  HAP_PARAM_HAP_VALID_VALUES_DESC         , // 17
+  HAP_PARAM_HAP_VALID_VALUES_RANGE_DESC     // 18
 };
 
 enum HAPStatusCode_t

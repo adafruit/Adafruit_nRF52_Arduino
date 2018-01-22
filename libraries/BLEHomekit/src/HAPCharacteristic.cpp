@@ -76,7 +76,9 @@ void HAPCharacteristic::setHapProperties(uint16_t prop)
 {
   _hap_props = prop;
 
+  // HAP always require read and write
   uint8_t chrprop = CHR_PROPS_READ | CHR_PROPS_WRITE;
+
   if ((prop & HAP_CHR_PROPS_NOTIFY) || (prop & HAP_CHR_PROPS_NOTIFY_DISCONNECTED)) chrprop |= CHR_PROPS_INDICATE;
   setProperties(chrprop);
 
@@ -271,7 +273,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
           hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_INVALID_INSTANCE_ID);
         }else
         {
-          LOG_LV2("HAP", "Recv %s request, TID = %02X, CS_ID = %04X", hap_opcode_str[hap_req->header.opcode], hap_req->header.tid, hap_req->header.instance_id);
+          LOG_LV2("HAP", "Recv %s request, TID = 0x%02X, CS_ID = 0x%04X", hap_opcode_str[hap_req->header.opcode], hap_req->header.tid, hap_req->header.instance_id);
           switch(hap_req->header.opcode)
           {
             case HAP_OPCODE_CHR_SIGNATURE_READ:
@@ -314,8 +316,8 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
           reply.params.write.gatt_status = BLE_GATT_STATUS_ATTERR_INSUF_RESOURCES;
         }
 
-        LOG_LV2("HAP", "Response: Control = %02X, TID = %02X, Status = %02X", hap_resp->header.control, hap_resp->header.tid, hap_resp->header.status);
-        LOG_LV2_BUFFER(NULL, hap_resp, reply.params.write.len);
+        LOG_LV2("HAP", "Response: Control = 0x%02X, TID = 0x%02X, Status = %d", hap_resp->header.control, hap_resp->header.tid, hap_resp->header.status);
+//        LOG_LV2_BUFFER(NULL, hap_resp, reply.params.write.len);
         err_t err = sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
 
         rtos_free(hap_resp);
