@@ -602,7 +602,7 @@ bool BLECharacteristic::notify32(int num)
 }
 
 /*------------------------------------------------------------------*/
-/* NOTIFY
+/* INDICATE
  *------------------------------------------------------------------*/
 bool BLECharacteristic::indicateEnabled(void)
 {
