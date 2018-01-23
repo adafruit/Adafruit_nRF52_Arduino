@@ -67,7 +67,7 @@ HAPCharacteristic::HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t u
   _hap_wr_cb = NULL;
 
   // Need at least decent length for HAP Procedure
-  _max_len = 100;
+  _max_len = 64;
 
   setPresentationFormatDescriptor(format, 0, unit, 1, 0);
 }
@@ -110,9 +110,6 @@ err_t HAPCharacteristic::begin(void)
 
   const char* temp_usr = _usr_descriptor;
   _usr_descriptor = NULL;
-
-  // FIXME temporary
-  _max_len = minof(_max_len, 100);
 
   VERIFY_STATUS( BLECharacteristic::begin() );
   VERIFY_STATUS( _addChrIdDescriptor() );
@@ -317,7 +314,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
         }
 
         LOG_LV2("HAP", "Response: Control = 0x%02X, TID = 0x%02X, Status = %d", hap_resp->header.control, hap_resp->header.tid, hap_resp->header.status);
-//        LOG_LV2_BUFFER(NULL, hap_resp, reply.params.write.len);
+        LOG_LV2_BUFFER(NULL, hap_resp, reply.params.write.len);
         err_t err = sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
 
         rtos_free(hap_resp);

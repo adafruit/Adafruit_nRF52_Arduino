@@ -165,7 +165,7 @@ err_t HAPPairing::begin(void)
   VERIFY_STATUS( _setup.begin() );
 
   _verify.setHapProperties(HAP_CHR_PROPS_READ | HAP_CHR_PROPS_WRITE);
-  _verify.setMaxLen(BLE_GATTS_VAR_ATTR_LEN_MAX);
+  _verify.setMaxLen(100/*BLE_GATTS_VAR_ATTR_LEN_MAX*/); // FIXME change later
   VERIFY_STATUS( _verify.begin() );
 
   _features.setHapProperties(HAP_CHR_PROPS_READ);
@@ -219,7 +219,7 @@ static HAPResponse_t* pairing_setup_write_cb (HAPCharacteristic* chr, ble_gatts_
 
   bool is_write_resp = false;
 
-  // TODO HAP Fragmentation
+  // TODO HAP Fragmentation for packet > 512
 
   // Parse TLV data
   while (body_len)
