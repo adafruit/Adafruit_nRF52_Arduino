@@ -186,7 +186,7 @@ HAPResponse_t* createSrpResponse(uint8_t tid, uint8_t status, TLV8_t ktlv[], uin
 {
   HAPResponse_t* hap_resp = NULL;
 
-  uint16_t srplen = tlv8_calculate_encode_len(ktlv, count);
+  uint16_t srplen = tlv8_encode_calculate_len(ktlv, count);
   uint8_t* srpbuf = (uint8_t*) rtos_malloc(srplen);
   VERIFY( srpbuf != NULL, NULL );
 

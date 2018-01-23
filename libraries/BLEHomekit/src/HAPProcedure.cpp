@@ -96,7 +96,7 @@ TLV8_t tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len, void* buf, uin
   return tlv;
 }
 
-uint16_t tlv8_calculate_encode_len(TLV8_t tlv_para[], uint8_t count)
+uint16_t tlv8_encode_calculate_len(TLV8_t tlv_para[], uint8_t count)
 {
   uint16_t total_len = 0;
   for(uint8_t i=0; i <count ; i++)
@@ -147,7 +147,7 @@ uint16_t tlv8_encode_n(uint8_t* buf, uint16_t bufsize, TLV8_t tlv[], uint8_t cou
 HAPResponse_t* createHapResponse(uint8_t tid, uint8_t status, TLV8_t tlv_para[], uint8_t count)
 {
   // Determine body len, does not to include 2 byte length itself
-  uint16_t body_len = tlv8_calculate_encode_len(tlv_para, count);
+  uint16_t body_len = tlv8_encode_calculate_len(tlv_para, count);
   HAPResponse_t* hap_resp = (HAPResponse_t*) rtos_malloc(sizeof(HAPResponseHeader_t) + 2 + body_len);
   VERIFY( hap_resp != NULL, NULL );
 
