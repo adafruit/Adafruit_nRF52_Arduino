@@ -52,6 +52,7 @@ class HAPPairing : public HAPService
     HAPCharacteristic _pairing;
 
     HAPResponse_t* pair_setup_m1(HAPRequest_t const* hap_req);
+    HAPResponse_t* pair_setup_m3(HAPRequest_t const* hap_req, TLV8_t pubkey, TLV8_t proof);
 
     friend HAPResponse_t* _pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t const* hap_req);
 };

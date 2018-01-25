@@ -87,20 +87,20 @@ The user must show his proof of K first. If the server detects that the user's p
 
 // kTLV type for pairing
 enum {
-  PAIRING_TYPE_METHOD = 0,
-  PAIRING_TYPE_IDENTIFIER,
-  PAIRING_TYPE_SALT,
-  PAIRING_TYPE_PUBLIC_KEY,
-  PAIRING_TYPE_PROOF,
-  PAIRING_TYPE_ENCRYPTED_DATA,
-  PAIRING_TYPE_STATE,
-  PAIRING_TYPE_ERROR,
-  PAIRING_TYPE_RETRY_DELAY,
-  PAIRING_TYPE_CERTIFICATE,
-  PAIRING_TYPE_SIGNATURE,
-  PAIRING_TYPE_PERMISSIONS,
-  PAIRING_TYPE_FRAGMENT_DATA,
-  PAIRING_TYPE_FRAGMENT_LAST,
+  PAIRING_TYPE_METHOD = 0     , // 0
+  PAIRING_TYPE_IDENTIFIER     , // 1
+  PAIRING_TYPE_SALT           , // 2
+  PAIRING_TYPE_PUBLIC_KEY     , // 3
+  PAIRING_TYPE_PROOF          , // 4
+  PAIRING_TYPE_ENCRYPTED_DATA , // 5
+  PAIRING_TYPE_STATE          , // 6
+  PAIRING_TYPE_ERROR          , // 7
+  PAIRING_TYPE_RETRY_DELAY    , // 8
+  PAIRING_TYPE_CERTIFICATE    , // 9
+  PAIRING_TYPE_SIGNATURE      , // 10
+  PAIRING_TYPE_PERMISSIONS    , // 11
+  PAIRING_TYPE_FRAGMENT_DATA  , // 12
+  PAIRING_TYPE_FRAGMENT_LAST  , // 13
   PAIRING_TYPE_SEPARATOR = 0xff
 };
 
@@ -204,8 +204,6 @@ static HAPResponse_t* createSrpResponse(uint8_t tid, uint8_t status, TLV8_t ktlv
 
 HAPResponse_t* HAPPairing::pair_setup_m1(HAPRequest_t const* hap_req)
 {
-  HAPResponse_t* hap_resp = NULL;
-
   // if paired return PAIRING_ERROR_UNAVAILABLE
   // tries more than 100 time return PAIRING_ERROR_MAX_TRIES
   // pairing with other iOS return PAIRING_ERROR_BUSY
@@ -233,9 +231,43 @@ HAPResponse_t* HAPPairing::pair_setup_m1(HAPRequest_t const* hap_req)
   LOG_LV2_BUFFER("SRP Pub Key", tlv_para[2].value, tlv_para[2].len);
   #endif
 
-  hap_resp = createSrpResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+  return createSrpResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+}
 
-  return hap_resp;
+HAPResponse_t* HAPPairing::pair_setup_m3(HAPRequest_t const* hap_req, TLV8_t pubkey, TLV8_t proof)
+{
+  uint8_t mstate = 4;
+  uint8_t pair_error = PAIRING_ERROR_AUTHENTICATION;
+
+  TLV8_t tlv_para[2] =
+  {
+      { .type  = PAIRING_TYPE_STATE, .len = 1, .value = &mstate },
+  };
+
+  // Set iOS public key
+  srp_setA( (uint8_t*) pubkey.value, pubkey.len, NULL);
+
+  // Check proof
+  if ( srp_checkM1( (uint8_t*) proof.value, proof.len) )
+  {
+    tlv_para[1].type  = PAIRING_TYPE_PROOF;
+    tlv_para[1].len   = 64;
+    tlv_para[1].value = srp_getM2();
+  }else
+  {
+    tlv_para[1].type  = PAIRING_TYPE_ERROR;
+    tlv_para[1].len   = 1;
+    tlv_para[1].value = &pair_error;
+
+    LOG_LV2("SRP", "M3 proof check failed");
+  }
+
+  #if DEBUG_HAP_PAIRING || 1
+  LOG_LV2_BUFFER("SRP State", tlv_para[0].value, tlv_para[0].len);
+  LOG_LV2_BUFFER("SRP Proof/Error", tlv_para[1].value, tlv_para[1].len);
+  #endif
+
+  return createSrpResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
 }
 
 HAPResponse_t* _pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t const* hap_req)
@@ -262,14 +294,20 @@ HAPResponse_t* _pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t con
 
       case HAP_PARAM_VALUE:
       {
-        uint8_t  const* param_val = (uint8_t  const*) tlv.value;
-        uint16_t        param_len = tlv.len;
+        uint8_t  mstate = 0;
+
+        // M1 parameters
+        uint8_t  method = 0;
+
+        // M3 parameters
+        TLV8_t ipubkey = { 0 }; // (A) 384 bytes
+        TLV8_t iproof  = { 0 }; // 64 bytes
 
         // Parse sub TLV (kTLV) data
+        uint8_t  const* param_val = (uint8_t  const*) tlv.value;
+        uint16_t        param_len = tlv.len;
         while(param_len)
         {
-          uint8_t state = 0;
-
           TLV8_t ktlv = tlv8_decode_next(&param_val, &param_len);
 
           LOG_LV2("PAIRSETUP", "type = %s", ktlv.type == PAIRING_TYPE_SEPARATOR ? "Separator" : pairing_type_str[ktlv.type]);
@@ -278,39 +316,49 @@ HAPResponse_t* _pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t con
           switch (ktlv.type)
           {
             case PAIRING_TYPE_METHOD:
-              LOG_LV2("HAP", "Method %s", pairing_method_str[ *((uint8_t const*)ktlv.value) ]);
+              memcpy(&method, ktlv.value, 1);
+              LOG_LV2("HAP", "Method %s", pairing_method_str[method]);
             break;
 
             // TODO multiple pairing support
             case PAIRING_TYPE_STATE:
-            {
-              state = *((uint8_t const*)ktlv.value);
-              LOG_LV2("HAP", "State = M%d", state);
-
-              switch (state)
-              {
-                case 1: // M1
-                  hap_resp = ((HAPPairing&) chr->parentService()).pair_setup_m1(hap_req);
-                break;
-
-                case 3: break;
-
-                // invalid state
-                default: break;
-              }
-            }
+              memcpy(&mstate, ktlv.value, 1);
+              LOG_LV2("HAP", "State = M%d", mstate);
             break;
 
-
-            case PAIRING_TYPE_SALT:
-
+            case PAIRING_TYPE_PUBLIC_KEY:
+              ipubkey = ktlv;
             break;
 
-            // ignore other type
-            default: break;
+            case PAIRING_TYPE_PROOF:
+              iproof = ktlv;
+            break;
+
+            // ignore other type and clean up
+            default:
+              tlv8_decode_cleanup(ktlv);
+            break;
           }
 
-          tlv8_decode_cleanup(ktlv);
+          // Purposely skip tlv8_decode_cleanup() --> need to manually
+          // free all the pointer > 255 after done processing
+        }
+
+        HAPPairing& svc = (HAPPairing&) chr->parentService();
+        switch (mstate)
+        {
+          case 1:
+            hap_resp = svc.pair_setup_m1(hap_req);
+          break;
+
+          case 3:
+            hap_resp = svc.pair_setup_m3(hap_req, ipubkey, iproof);
+
+            tlv8_decode_cleanup(ipubkey);
+            tlv8_decode_cleanup(iproof);
+          break;
+
+          default: break;
         }
       }
       break;
