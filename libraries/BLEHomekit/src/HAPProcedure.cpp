@@ -38,63 +38,103 @@
 #include "HAPUuid.h"
 #include "HAPProcedure.h"
 
+static uint16_t determine_next_len(uint8_t const* data, uint16_t bufsize)
+{
+  uint16_t len = 0;
+  uint8_t  type = data[0];
+
+  while (bufsize)
+  {
+    if ( type != data[0] ) break; // different item type
+
+    uint8_t fraqlen = data[1];
+
+    len     += fraqlen;
+
+    // next fragment/item
+    bufsize -= minof(fraqlen+2, bufsize); // in case data is corruption or missing.
+    data    += fraqlen+2;
+
+    if (fraqlen < 255) break;
+  }
+
+  return len;
+}
+
 /**
  * Decode a TLV8 item
+ *
  * @param pp_data   payload pointer, got update to next item when done
  * @param p_len     len of payload, got updated to remaining item when done
- * @param buf       optional buffer, required if the decoded payload > 255
- *                  to assembly data into continuous buffer
- * @param bufsize   size of buffer (optional)
  *
- * @return  TLV8 item
+ * @return  TLV8 item.
+ *
+ * @note If the decoded payload > 255, function will automatically malloced
+ * a continuous buffer to assembly data. User should not change the tlv.value
+ * pointer and call tlv8_decode_cleanup(tlv) when done processing the tlv.
  */
-TLV8_t tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len, void* buf, uint16_t bufsize)
+TLV8_t tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len)
 {
   TLV8_t tlv;
   varclr(&tlv);
 
-  if ( (*p_len) )
+  uint8_t const* data = *pp_data;
+  uint16_t       dlen = *p_len;
+
+  if ( dlen )
   {
-    if ( buf && bufsize ) tlv.value = buf;
+    uint8_t* mbuf = NULL;
 
-    tlv.type = (**pp_data);
+    tlv.len = determine_next_len(data, dlen);
 
-    uint8_t fraqlen;
-    do {
-      uint8_t const* data = *pp_data;
+    // malloc to assembly fragments in continuous buffer
+    if ( tlv.len > 0xff )
+    {
+      mbuf = (uint8_t*) rtos_malloc( tlv.len );
+      VERIFY(mbuf, tlv);
 
+      tlv.value = mbuf;
+    }else
+    {
+      tlv.value = data+2;
+    }
+
+    tlv.type = data[0];
+
+    while(dlen)
+    {
       // different item type
       if ( tlv.type != data[0] ) break;
 
-      fraqlen  = data[1];
+      uint8_t fraqlen  = data[1];
 
-      tlv.len += fraqlen;
-
-      if ( buf )
+      if ( mbuf )
       {
-        uint16_t cp = min16(bufsize, fraqlen);
-
-        if ( cp )
-        {
-          memcpy(buf, data+2, cp);
-
-          buf     += cp;
-          bufsize -= cp;
-        }
-      } else
-      {
-        tlv.value = data+2;
+        memcpy(mbuf, data+2, fraqlen);
+        mbuf += fraqlen;
       }
 
-      // next item
-      (*p_len)   -= fraqlen+2;
-      (*pp_data) += fraqlen+2;
+      // next fragment/item
+      dlen -= minof(fraqlen+2, dlen); // in case data is corruption or missing.
+      data += fraqlen+2;
 
-    }while( (fraqlen == 255) && (*p_len) );
+      if ( fraqlen < 0xff ) break;
+    }
   }
+
+  // update buffer and len
+  *p_len   = dlen;
+  *pp_data = data;
 
   return tlv;
 }
+
+void tlv8_decode_cleanup(TLV8_t tlv)
+{
+  if (tlv.len > 0xff) rtos_free( (void*) tlv.value);
+}
+
+
 
 uint16_t tlv8_encode_calculate_len(TLV8_t tlv_para[], uint8_t count)
 {
