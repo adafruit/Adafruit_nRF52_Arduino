@@ -300,8 +300,8 @@ HAPResponse_t* _pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t con
         uint8_t  method = 0;
 
         // M3 parameters
-        TLV8_t ipubkey = { 0 }; // (A) 384 bytes
-        TLV8_t iproof  = { 0 }; // 64 bytes
+        TLV8_t ipubkey = { 0 }; // (A ) 384 bytes
+        TLV8_t iproof  = { 0 }; // (M1) 64 bytes
 
         // Parse sub TLV (kTLV) data
         uint8_t  const* param_val = (uint8_t  const*) tlv.value;
