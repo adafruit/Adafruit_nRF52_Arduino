@@ -177,6 +177,12 @@ void dbgPrintVersion(void)
 /******************************************************************************/
 void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffset)
 {
+  if ( !buf )
+  {
+    cprintf("NULL\n");
+    return;
+  }
+
   uint8_t const *buf8 = (uint8_t const *) buf;
 
   char format[] = "%00lX";

@@ -67,11 +67,11 @@ class BLEGap
     uint16_t       getPeerName          (uint16_t conn_handle, char* buf, uint16_t bufsize);
 
     uint16_t       getMTU               (uint16_t conn_handle);
-    uint16_t       getMaxMtuByConnCfg   (uint8_t conn_cfg);
-    uint16_t       getMaxMtu            (uint8_t conn_handle);
+    uint16_t       getMaxMtuByConnCfg   (uint8_t  conn_cfg);
+    uint16_t       getMaxMtu            (uint8_t  conn_handle);
 
-    uint8_t        getHvnQueueSize      (uint8_t conn_handle);
-    uint8_t        getWriteCmdQueueSize (uint8_t conn_handle);
+    uint8_t        getHvnQueueSize      (uint8_t  conn_handle);
+    uint8_t        getWriteCmdQueueSize (uint8_t  conn_handle);
 
     bool           getHvnPacket         (uint16_t conn_handle);
     bool           getWriteCmdPacket    (uint16_t conn_handle);
