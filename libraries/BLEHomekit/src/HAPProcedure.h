@@ -149,6 +149,7 @@ typedef struct ATTR_PACKED
 
 TLV8_t   tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len);
 void     tlv8_decode_cleanup(TLV8_t tlv);
+uint8_t  tlv8_decode_n(uint8_t const* buf, uint16_t bufsize, TLV8_t tlv[], uint8_t count);
 
 bool     tlv8_encode_next(uint8_t** pp_buf, uint16_t* p_buflen, TLV8_t tlv);
 uint16_t tlv8_encode_n(uint8_t* buf, uint16_t bufsize, TLV8_t tlv[], uint8_t count);

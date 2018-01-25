@@ -38,6 +38,9 @@
 #include "HAPUuid.h"
 #include "HAPProcedure.h"
 
+/*------------------------------------------------------------------*/
+/* Decode
+ *------------------------------------------------------------------*/
 static uint16_t determine_next_len(uint8_t const* data, uint16_t bufsize)
 {
   uint16_t len = 0;
@@ -129,13 +132,25 @@ TLV8_t tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len)
   return tlv;
 }
 
+uint8_t tlv8_decode_n(uint8_t const* buf, uint16_t bufsize, TLV8_t tlv[], uint8_t count)
+{
+  uint8_t i;
+  for(i=0; i<count && bufsize; i++)
+  {
+    tlv[i] = tlv8_decode_next(&buf, &bufsize);
+  }
+
+  return i;
+}
+
 void tlv8_decode_cleanup(TLV8_t tlv)
 {
   if (tlv.len > 0xff) rtos_free( (void*) tlv.value);
 }
 
-
-
+/*------------------------------------------------------------------*/
+/* Encode
+ *------------------------------------------------------------------*/
 uint16_t tlv8_encode_calculate_len(TLV8_t tlv_para[], uint8_t count)
 {
   uint16_t total_len = 0;
