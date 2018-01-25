@@ -43,7 +43,6 @@ class HAPPairing : public HAPService
 {
   public:
     HAPPairing(void);
-
     virtual err_t begin(void);
 
   private:
@@ -51,6 +50,10 @@ class HAPPairing : public HAPService
     HAPCharacteristic _verify;
     HAPCharacteristic _features;
     HAPCharacteristic _pairing;
+
+    HAPResponse_t* pair_setup_m1(HAPRequest_t const* hap_req);
+
+    friend HAPResponse_t* _pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t const* hap_req);
 };
 
 
