@@ -62,7 +62,10 @@ HAPCharacteristic::HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t u
   _value     = NULL;
   _vallen    = 0;
 
-  _resp_len  = 0;
+  _hap_req    = NULL;
+  _hap_reqlen = 0;
+
+  _resp_len   = 0;
 
   _hap_wr_cb = NULL;
 
@@ -228,6 +231,88 @@ HAPResponse_t* HAPCharacteristic::processChrRead(HAPRequest_t* hap_req)
   return createHapResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, &tlv_para, 1);
 }
 
+void HAPCharacteristic::processHapRequest(uint16_t conn_hdl, HAPRequest_t* hap_req)
+{
+  HAPResponse_t* hap_resp = NULL;
+
+  ble_gatts_rw_authorize_reply_params_t reply =
+  {
+      .type = BLE_GATTS_AUTHORIZE_TYPE_WRITE,
+      .params = {
+          .write = {
+              .gatt_status = BLE_GATT_STATUS_SUCCESS,
+              .update      = 1,
+              .offset      = 0,
+              .len         = 0,
+              .p_data      = NULL
+          }
+      }
+  };
+
+  if (hap_req->header.control.type != HAP_PDU_REQUEST)
+  {
+    hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
+  }
+  else if (hap_req->header.instance_id != _cid)
+  {
+    hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_INVALID_INSTANCE_ID);
+  }else
+  {
+    LOG_LV2("HAP", "Recv %s request, TID = 0x%02X, CS_ID = 0x%04X", hap_opcode_str[hap_req->header.opcode], hap_req->header.tid, hap_req->header.instance_id);
+    switch(hap_req->header.opcode)
+    {
+      case HAP_OPCODE_CHR_SIGNATURE_READ:
+        hap_resp = processChrSignatureRead(hap_req);
+      break;
+
+      case HAP_OPCODE_CHR_WRITE:
+        if ( _hap_wr_cb )
+        {
+          hap_resp = _hap_wr_cb(this, hap_req);
+        }else
+        {
+          hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
+        }
+      break;
+
+      case HAP_OPCODE_CHR_READ:
+        hap_resp = processChrRead(hap_req);
+      break;
+
+      case HAP_OPCODE_CHR_TIMED_WRITE:
+      break;
+
+      case HAP_OPCODE_CHR_EXECUTE_WRITE:
+      break;
+
+      // need seperated chr for service
+      //            case HAP_OPCODE_SVC_SIGNATURE_READ: break;
+
+      default:
+        hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
+      break;
+    }
+  }
+
+  if ( hap_resp )
+  {
+    reply.params.write.len    = _resp_len = sizeof(HAPResponseHeader_t) + 2 + hap_resp->body_len;
+    reply.params.write.p_data = (uint8_t*) hap_resp;
+  }else
+  {
+    _resp_len = 0;
+    reply.params.write.gatt_status = BLE_GATT_STATUS_ATTERR_INSUF_RESOURCES;
+  }
+
+  LOG_LV2("HAP", "Response: Control = 0x%02X, TID = 0x%02X, Status = %d", hap_resp->header.control, hap_resp->header.tid, hap_resp->header.status);
+  LOG_LV2_BUFFER(NULL, hap_resp, reply.params.write.len);
+
+  err_t err = sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
+
+  rtos_free(hap_resp);
+  VERIFY_STATUS(err, );
+}
+
 void HAPCharacteristic::_eventHandler(ble_evt_t* event)
 {
   const uint16_t conn_hdl = event->evt.common_evt.conn_handle;
@@ -241,84 +326,110 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
       {
         ble_gatts_evt_write_t * gatt_req = &event->evt.gatts_evt.params.authorize_request.request.write;
 
-        LOG_LV2("GATTS", "Write Op = %d, uuid = 0x%04X", gatt_req->op, gatt_req->uuid.uuid);
+        LOG_LV2("GATTS", "Write Op = %d, len = %d, offset = %d, uuid = 0x%04X", gatt_req->op, gatt_req->len, gatt_req->offset, gatt_req->uuid.uuid);
         LOG_LV2_BUFFER(NULL, gatt_req->data, gatt_req->len);
 
-        HAPRequest_t*  hap_req = (HAPRequest_t*) gatt_req->data;
-        HAPResponse_t* hap_resp = NULL;
+        // new request
+        if ( _hap_req == NULL )
+        {
+          uint16_t reqlen = sizeof(HAPRequestHeader_t);
 
-        ble_gatts_rw_authorize_reply_params_t reply =
-        {
-            .type = BLE_GATTS_AUTHORIZE_TYPE_WRITE,
-            .params = {
-                .write = {
-                    .gatt_status = BLE_GATT_STATUS_SUCCESS,
-                    .update      = 1,
-                    .offset      = 0,
-                    .len         = 0,
-                    .p_data      = NULL
-                }
-            }
-        };
-
-        if (hap_req->header.control.type != HAP_PDU_REQUEST)
-        {
-          hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
-        }
-        else if (hap_req->header.instance_id != _cid)
-        {
-          hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_INVALID_INSTANCE_ID);
-        }else
-        {
-          LOG_LV2("HAP", "Recv %s request, TID = 0x%02X, CS_ID = 0x%04X", hap_opcode_str[hap_req->header.opcode], hap_req->header.tid, hap_req->header.instance_id);
-          switch(hap_req->header.opcode)
+          // if body is present
+          if ( gatt_req->len > reqlen )
           {
-            case HAP_OPCODE_CHR_SIGNATURE_READ:
-              hap_resp = processChrSignatureRead(hap_req);
-            break;
+            reqlen += 2 + ((HAPRequest_t*) gatt_req->data)->body_len;
+          }
 
-            case HAP_OPCODE_CHR_WRITE:
-              if (_hap_wr_cb)
-              {
-                hap_resp = _hap_wr_cb(this, gatt_req, hap_req);
-              }
-            break;
-
-            case HAP_OPCODE_CHR_READ:
-              hap_resp = processChrRead(hap_req);
-            break;
-
-            case HAP_OPCODE_CHR_TIMED_WRITE:
-            break;
-
-            case HAP_OPCODE_CHR_EXECUTE_WRITE:
-            break;
-
-            // need seperated chr for service
-//            case HAP_OPCODE_SVC_SIGNATURE_READ: break;
-
-            default:
-              hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
-            break;
+          // request len is larger than ATT MTU --> buffer assembly required
+          if ( reqlen > (Bluefruit.Gap.getMTU(conn_hdl) - 3) )
+          {
+            _hap_req = (HAPRequest_t*) rtos_malloc( reqlen );
           }
         }
 
-        if ( hap_resp )
+        // Assembly fragmentation request if needed
+        if ( !_hap_req )
         {
-          reply.params.write.len    = _resp_len = sizeof(HAPResponseHeader_t) + 2 + hap_resp->body_len;
-          reply.params.write.p_data = (uint8_t*) hap_resp;
-        }else
+          // no fragment
+          _hap_req = (HAPRequest_t*) gatt_req->data;
+        } else
         {
-          _resp_len = 0;
-          reply.params.write.gatt_status = BLE_GATT_STATUS_ATTERR_INSUF_RESOURCES;
+          uint8_t* dst = ((uint8_t*)_hap_req) +_hap_reqlen;
+
+          if ( !(gatt_req->data[0] & 0x80) )
+          {
+            // First Fragment
+            memcpy(dst, gatt_req->data, gatt_req->len);
+          } else
+          {
+            // 2nd and later Fragment
+
+            // match TID
+            if ( _hap_req->header.tid == gatt_req->data[1] )
+            {
+              // copy data sip control & tid
+              memcpy(dst, gatt_req->data+2, gatt_req->len-2);
+            }else
+            {
+              // Data corruption
+
+              // clean up
+              if ( _hap_reqlen > (Bluefruit.Gap.getMTU(conn_hdl)-3) ) rtos_free(_hap_req);
+              _hap_req    = NULL;
+              _hap_reqlen = 0;
+
+              // reject write request
+              ble_gatts_rw_authorize_reply_params_t reply =
+              {
+                  .type = BLE_GATTS_AUTHORIZE_TYPE_WRITE,
+                  .params = {
+                      .write = {
+                          .gatt_status = BLE_GATT_STATUS_ATTERR_UNLIKELY_ERROR,
+                          .update      = 1,
+                          .offset      = 0,
+                          .len         = 0,
+                          .p_data      = NULL
+                      }
+                  }
+              };
+
+              VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply), );
+            }
+          }
         }
 
-        LOG_LV2("HAP", "Response: Control = 0x%02X, TID = 0x%02X, Status = %d", hap_resp->header.control, hap_resp->header.tid, hap_resp->header.status);
-        LOG_LV2_BUFFER(NULL, hap_resp, reply.params.write.len);
-        err_t err = sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
+        _hap_reqlen += gatt_req->len;
 
-        rtos_free(hap_resp);
-        VERIFY_STATUS( err, );
+        if ( (_hap_reqlen != sizeof(HAPRequestHeader_t)) &&  (_hap_reqlen < _hap_req->body_len + sizeof(HAPRequestHeader_t) + 2) )
+        {
+          // full request not yet received, response without processing
+          ble_gatts_rw_authorize_reply_params_t reply =
+          {
+              .type = BLE_GATTS_AUTHORIZE_TYPE_WRITE,
+              .params = {
+                  .write = {
+                      .gatt_status = BLE_GATT_STATUS_SUCCESS,
+                      .update      = 1,
+                      .offset      = 0,
+                      .len         = 0,
+                      .p_data      = NULL
+                  }
+              }
+          };
+
+          VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply), );
+        }else
+        {
+          LOG_LV2_BUFFER("HAP Request", _hap_req, _hap_reqlen);
+
+          // full request --> process it
+          processHapRequest(conn_hdl, _hap_req);
+
+          // Free if needed
+          if ( _hap_reqlen > (Bluefruit.Gap.getMTU(conn_hdl)-3) ) rtos_free(_hap_req);
+          _hap_req    = NULL;
+          _hap_reqlen = 0;
+        }
       }
 
       /*------------- Handle HAP Response -------------*/
@@ -332,13 +443,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
         {
             .type = BLE_GATTS_AUTHORIZE_TYPE_READ,
             .params = {
-                .read = {
-                    .gatt_status = BLE_GATT_STATUS_SUCCESS,
-                    .update      = 0,
-                    .offset      = 0,
-                    .len         = 0,
-                    .p_data      = NULL
-                }
+                .read = { .gatt_status = BLE_GATT_STATUS_SUCCESS, }
             }
         };
 
