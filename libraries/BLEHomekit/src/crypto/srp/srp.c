@@ -91,9 +91,6 @@ void srp_init(void)
   // The MPI library uses a ridiculous amount of memory. We use the stack allocator
   // so we don't tie this memory up except when we absolutely need to.
 //  uint8_t memory[11 * 1024];
-//  uint8_t* memory = (uint8_t*) rtos_malloc(11*1024);
-//  VERIFY(memory, );
-//
 //  memory_buffer_alloc_init(memory, sizeof(memory));
 
   // Generate salt
@@ -170,7 +167,6 @@ void srp_init(void)
   mpi_free(&x);
 
 //  memory_buffer_alloc_free();
-//  rtos_free(memory);
 }
 
 void srp_start(void)
@@ -186,9 +182,6 @@ uint8_t srp_setA(uint8_t* abuf, uint16_t length, moretime_t moretime)
   // The MPI library uses a ridiculous amount of memory. We use the stack allocator
   // so we don't tie this memory up except when we absolutely need to.
 //  uint8_t memory[11 * 1024];
-//  uint8_t* memory = (uint8_t*) rtos_malloc(11*1024);
-//  VERIFY(memory, NRF_ERROR_NO_MEM);
-//
 //  memory_buffer_alloc_init(memory, sizeof(memory));
 
   // getK
@@ -265,7 +258,6 @@ uint8_t srp_setA(uint8_t* abuf, uint16_t length, moretime_t moretime)
   }
 
 //  memory_buffer_alloc_free();
-//  rtos_free(memory);
 
   // getM1 - username s abuf srp.B K
   {
