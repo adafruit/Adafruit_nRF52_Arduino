@@ -126,24 +126,22 @@ enum
   PAIRING_ERROR_BUSY
 };
 
-// kTLV value for state
-enum
-{
-  PAIRING_STATE_M1 = 1,
-  PAIRING_STATE_M2,
-  PAIRING_STATE_M3,
-  PAIRING_STATE_M4,
-};
-
 #if CFG_DEBUG >= 2
 static const char* pairing_method_str[] =
 {
     "", "Pair Setup", "Pair Verify", "Add Pairing", "Remove Pairing", "List Pairings"
 };
 
+static const char* pairing_type_str[] =
+{
+    "Method", "Identifier", "Salt", "Public Key", "Proof",
+    "Encrypted Data", "State", "Error", "Retry Delay", "Certificate",
+    "Signature", "Permissions", "Fragment Data", "Fragment Last",
+};
+
 #endif
 
-static HAPResponse_t* pairing_setup_write_cb (HAPCharacteristic* chr, ble_gatts_evt_write_t const* gatt_req, HAPRequest_t const* hap_req);
+static HAPResponse_t* pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t const* hap_req);
 
 HAPPairing::HAPPairing(void)
   : HAPService(HAP_UUID_SVC_PAIRING),
@@ -205,17 +203,12 @@ HAPResponse_t* createSrpResponse(uint8_t tid, uint8_t status, TLV8_t ktlv[], uin
 }
 
 
-static HAPResponse_t* pairing_setup_write_cb (HAPCharacteristic* chr, ble_gatts_evt_write_t const* gatt_req, HAPRequest_t const* hap_req)
+static HAPResponse_t* pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t const* hap_req)
 {
-  VERIFY(gatt_req->len > 3, NULL);
-
   HAPResponse_t* hap_resp = NULL;
 
   uint16_t       body_len  = hap_req->body_len;
   uint8_t const* body_data = hap_req->body_data;
-
-  uint8_t  const* param_val = NULL;
-  uint16_t        param_len = 0;
 
   bool is_write_resp = false;
 
@@ -226,71 +219,92 @@ static HAPResponse_t* pairing_setup_write_cb (HAPCharacteristic* chr, ble_gatts_
   {
     TLV8_t tlv = tlv8_decode_next(&body_data, &body_len);
 
+    LOG_LV2_BUFFER("Decoded HAP", tlv.value, tlv.len);
+
     switch (tlv.type)
     {
-      case HAP_PARAM_VALUE:
-        param_val = (uint8_t  const*) tlv.value;
-        param_len = (uint16_t) tlv.len;
-      break;
-
       case HAP_PARAM_RETURN_RESP:
         memcpy(&is_write_resp, tlv.value, 1);
       break;
 
-      // ignore other type
-      default: break;
-    }
-  }
-
-  // Parse sub TLV (kTLV) data
-  while(param_len)
-  {
-    TLV8_t ktlv = tlv8_decode_next(&param_val, &param_len);
-
-    switch (ktlv.type)
-    {
-      case PAIRING_TYPE_METHOD:
-        LOG_LV2("HAP", "Method %s", pairing_method_str[ *((uint8_t const*)ktlv.value) ]);
-      break;
-
-      // TODO multiple pairing support
-      case PAIRING_TYPE_STATE:
+      case HAP_PARAM_VALUE:
       {
-        uint8_t state = *((uint8_t const*)ktlv.value);
-        LOG_LV2("HAP", "State = M%d", state);
+        uint8_t  const* param_val = (uint8_t  const*) tlv.value;
+        uint16_t        param_len = tlv.len;
 
-        switch (state)
+        // Parse sub TLV (kTLV) data
+        while(param_len)
         {
-          case 1: // M1
-            // if paired return PAIRING_ERROR_UNAVAILABLE
-            // tries more than 100 time return PAIRING_ERROR_MAX_TRIES
-            // pairing with other iOS return PAIRING_ERROR_BUSY
+          TLV8_t ktlv = tlv8_decode_next(&param_val, &param_len);
 
-            // step 4
-            srp_start();
+          LOG_LV2("PAIRSETUP", "type = %s", ktlv.type == PAIRING_TYPE_SEPARATOR ? "Separator" : pairing_type_str[ktlv.type]);
+          LOG_LV2_BUFFER(NULL, ktlv.value, ktlv.len);
 
-            // step 5 : username (I = "Pair-Setup"
-            // step 6 : 16 bytes salt already created in srp_init()
-            // step 7,8 : password (p = setup code) done in srp_init()
-            // step 9 : public key (B) done in srp_init()
+          switch (ktlv.type)
+          {
+            case PAIRING_TYPE_METHOD:
+              LOG_LV2("HAP", "Method %s", pairing_method_str[ *((uint8_t const*)ktlv.value) ]);
+            break;
 
-            uint8_t mstate = 2;
-
-            TLV8_t tlv_para[] =
+            // TODO multiple pairing support
+            case PAIRING_TYPE_STATE:
             {
-                { .type  = PAIRING_TYPE_STATE      , .len = 1  , .value = &mstate       },
-                { .type  = PAIRING_TYPE_SALT       , .len = 16 , .value = srp_getSalt() },
-                { .type  = PAIRING_TYPE_PUBLIC_KEY , .len = 384, .value = srp_getB()    },
-            };
+              uint8_t state = *((uint8_t const*)ktlv.value);
+              LOG_LV2("HAP", "State = M%d", state);
 
-            #if DEBUG_HAP_PAIRING
-            LOG_LV2_BUFFER("SRP State"  , tlv_para[0].value, tlv_para[0].len);
-            LOG_LV2_BUFFER("SRP Salt"   , tlv_para[1].value, tlv_para[1].len);
-            LOG_LV2_BUFFER("SRP Pub Key", tlv_para[2].value, tlv_para[2].len);
-            #endif
+              switch (state)
+              {
+                case 1: // M1
+                {
+                  // if paired return PAIRING_ERROR_UNAVAILABLE
+                  // tries more than 100 time return PAIRING_ERROR_MAX_TRIES
+                  // pairing with other iOS return PAIRING_ERROR_BUSY
 
-            hap_resp = createSrpResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
-          break;
+                  // step 4
+                  srp_start();
+
+                  // step 5 : username (I = "Pair-Setup"
+                  // step 6 : 16 bytes salt already created in srp_init()
+                  // step 7,8 : password (p = setup code) done in srp_init()
+                  // step 9 : public key (B) done in srp_init()
+
+                  uint8_t mstate = 2;
+
+                  TLV8_t tlv_para[] =
+                  {
+                      { .type  = PAIRING_TYPE_STATE      , .len = 1  , .value = &mstate       },
+                      { .type  = PAIRING_TYPE_SALT       , .len = 16 , .value = srp_getSalt() },
+                      { .type  = PAIRING_TYPE_PUBLIC_KEY , .len = 384, .value = srp_getB()    },
+                  };
+
+                  #if DEBUG_HAP_PAIRING
+                  LOG_LV2_BUFFER("SRP State"  , tlv_para[0].value, tlv_para[0].len);
+                  LOG_LV2_BUFFER("SRP Salt"   , tlv_para[1].value, tlv_para[1].len);
+                  LOG_LV2_BUFFER("SRP Pub Key", tlv_para[2].value, tlv_para[2].len);
+                  #endif
+
+                  hap_resp = createSrpResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+                }
+                break;
+
+                case 3: break;
+
+                // invalid state
+                default: break;
+              }
+            }
+            break;
+
+
+            case PAIRING_TYPE_SALT:
+
+            break;
+
+            // ignore other type
+            default: break;
+          }
+
+          tlv8_decode_cleanup(ktlv);
         }
       }
       break;
@@ -298,6 +312,8 @@ static HAPResponse_t* pairing_setup_write_cb (HAPCharacteristic* chr, ble_gatts_
       // ignore other type
       default: break;
     }
+
+    tlv8_decode_cleanup(tlv);
   }
 
   return hap_resp;

@@ -351,27 +351,26 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
         if ( !_hap_req )
         {
           // no fragment
-          _hap_req = (HAPRequest_t*) gatt_req->data;
+          _hap_req    = (HAPRequest_t*) gatt_req->data;
+          _hap_reqlen = gatt_req->len;
         } else
         {
-          uint8_t* dst = ((uint8_t*)_hap_req) +_hap_reqlen;
+          // default to 1st fragment
+          uint8_t* fragdata = gatt_req->data;
+          uint16_t fraglen  = gatt_req->len;
 
-          if ( !(gatt_req->data[0] & 0x80) )
+          // 2nd and later Fragment
+          if (gatt_req->data[0] & 0x80)
           {
-            // First Fragment
-            memcpy(dst, gatt_req->data, gatt_req->len);
-          } else
-          {
-            // 2nd and later Fragment
-
             // match TID
             if ( _hap_req->header.tid == gatt_req->data[1] )
             {
               // copy data sip control & tid
-              memcpy(dst, gatt_req->data+2, gatt_req->len-2);
+              fragdata = gatt_req->data+2;
+              fraglen  = gatt_req->len-2;
             }else
             {
-              // Data corruption
+              // Data corruption, unlikely to happen
 
               // clean up
               if ( _hap_reqlen > (Bluefruit.Gap.getMTU(conn_hdl)-3) ) rtos_free(_hap_req);
@@ -394,11 +393,15 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
               };
 
               VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply), );
+
+              return;
             }
           }
-        }
 
-        _hap_reqlen += gatt_req->len;
+          // Copy data
+          memcpy(((uint8_t*)_hap_req) +_hap_reqlen, fragdata, fraglen);
+          _hap_reqlen += fraglen;
+        }
 
         if ( (_hap_reqlen != sizeof(HAPRequestHeader_t)) &&  (_hap_reqlen < _hap_req->body_len + sizeof(HAPRequestHeader_t) + 2) )
         {
