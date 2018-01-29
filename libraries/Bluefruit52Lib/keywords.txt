@@ -154,11 +154,16 @@ handles	KEYWORD2
 write	KEYWORD2
 
 notifyEnabled	KEYWORD2
-
 notify	KEYWORD2
 notify8	KEYWORD2
 notify16	KEYWORD2
 notify32	KEYWORD2
+
+indicateEnabled	KEYWORD2
+indicate	KEYWORD2
+indicate8	KEYWORD2
+indicate16	KEYWORD2
+indicate32	KEYWORD2
 
 
 #######################################
@@ -201,6 +206,7 @@ enableIndicate	KEYWORD2
 disableIndicate	KEYWORD2
 
 setNotifyCallback	KEYWORD2
+setIndicateCallback	KEYWORD2
 
 #######################################
 # BLEScanner Methods (KEYWORD2)
