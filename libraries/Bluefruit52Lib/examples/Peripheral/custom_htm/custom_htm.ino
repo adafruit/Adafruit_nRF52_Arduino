@@ -17,11 +17,9 @@
 /* Health Thermometer Service Definitions
  * Health Thermometer Service:  0x1809
  * Temperature Measurement Char: 0x2A1C
- * Temperature Type Char:   0x2A1D
  */
 BLEService        htms = BLEService(UUID16_SVC_HEALTH_THERMOMETER);
 BLECharacteristic htmc = BLECharacteristic(UUID16_CHR_TEMPERATURE_MEASUREMENT);
-BLECharacteristic ttype = BLECharacteristic(UUID16_CHR_TEMPERATURE_TYPE);
 
 BLEDis bledis;    // DIS (Device Information Service) helper class instance
 
@@ -102,8 +100,8 @@ void setupHTM(void)
   // Name                         UUID    Requirement Properties
   // ---------------------------- ------  ----------- ----------
   // Temperature Measurement      0x2A1C  Mandatory   Indicate
-  // Temperature Type             0x2A1D  Optional    Read
-  // 
+  //
+  // Temperature Type             0x2A1D  Optional    Read                  <-- Not used here
   // Intermediate Temperature     0x2A1E  Optional    Read, Notify          <-- Not used here
   // Measurement Interval         0x2A21  Optional    Read, Write, Indicate <-- Not used here
   htms.begin();
@@ -116,27 +114,25 @@ void setupHTM(void)
   // Configure the Temperature Measurement characteristic
   // See:https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.temperature_measurement.xml
   // Properties = Indicte
-  // Min Len    = 5
-  // Max Len    = 5
+  // Min Len    = 6
+  // Max Len    = 6
   //    B0      = UINT8  - Flag (MANDATORY)
   //      b3:7  = Reserved
   //      b2    = Temperature Type Flag (0 = Not present, 1 = Present)
   //      b1    = Timestamp Flag (0 = Not present, 1 = Present)
   //      b0    = Unit Flag (0 = Celsius, 1 = Fahrenheit)
   //    B4:1    = FLOAT  - IEEE-11073 32-bit FLOAT measurement value
+  //    B5      = Temperature Type
   htmc.setProperties(CHR_PROPS_INDICATE);
   htmc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  htmc.setFixedLen(5);
+  htmc.setFixedLen(6);
   htmc.setCccdWriteCallback(cccd_callback);  // Optionally capture CCCD updates
   htmc.begin();
-  uint8_t htmdata[5] = { 0b00000001, 0 }; // Set the characteristic to use Fahrenheit, without type, timestamp field
-  htmc.write(htmdata, 5);                    // Use .write for init data
+  uint8_t htmdata[6] = { 0b00000101, 0, 0 ,0 ,0, 2 }; // Set the characteristic to use Fahrenheit, with type (body) but no timestamp field
+  htmc.write(htmdata, sizeof(htmdata));                    // Use .write for init data
 
-  // Configure the Temperature Type characteristic
+  // Temperature Type Value
   // See: https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.temperature_type.xml
-  // Properties = Read
-  // Min Len    = 1
-  // Max Len    = 1
   //    B0      = UINT8 - Temperature Type
   //      0     = Reserved
   //      1     = Armpit
@@ -149,11 +145,6 @@ void setupHTM(void)
   //      8     = Toe
   //      9     = Tympanum (ear drum)
   //     10:255 = Reserved
-  ttype.setProperties(CHR_PROPS_READ);
-  ttype.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  ttype.setFixedLen(1);
-  ttype.begin();
-  ttype.write8(2);    // Set the characteristic to 'Body' (2)
 }
 
 void connect_callback(uint16_t conn_handle)
@@ -198,7 +189,7 @@ void loop()
   digitalToggle(LED_RED);
   
   if ( Bluefruit.connected() ) {
-    uint8_t htmdata[5] = { 0b00000001 };           // Fahrenheit unit
+    uint8_t htmdata[6] = { 0b00000101, 0,0,0,0, 2 }; // Fahrenheit unit, temperature type = body (2)
 
     float2IEEE11073(tempvalue, &htmdata[1]);
     
