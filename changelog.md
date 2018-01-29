@@ -5,6 +5,7 @@
 - Fixed burning bootloader issue with MacOS
 - Added gpstest_swuart example sketch
 - Added indicate API for BLECharacteristic
+- Added custom_htm as usage example for indicate API.
 - BLEClientCharacteristic
   - Added setIndicateCallback(), issue #113
   - Added useAdaCallback option to setNotifyCallback(), setIndicateCallback()

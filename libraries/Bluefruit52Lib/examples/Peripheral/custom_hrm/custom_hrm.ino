@@ -121,7 +121,7 @@ void setupHRM(void)
 
   // Configure the Heart Rate Measurement characteristic
   // See: https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.heart_rate_measurement.xml
-  // Permission = Notify
+  // Properties = Notify
   // Min Len    = 1
   // Max Len    = 8
   //    B0      = UINT8  - Flag (MANDATORY)
@@ -144,7 +144,7 @@ void setupHRM(void)
 
   // Configure the Body Sensor Location characteristic
   // See: https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.body_sensor_location.xml
-  // Permission = Read
+  // Properties = Read
   // Min Len    = 1
   // Max Len    = 1
   //    B0      = UINT8 - Body Sensor Location
