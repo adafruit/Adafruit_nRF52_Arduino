@@ -74,24 +74,20 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
   return (count < 0) ? 0 : count;
 }
 
-//bool BLEGatt::waitForIndicateConfirm(uint16_t conn_hdl)
-//{
-//  while( _adamsg.isWaiting() )
-//  {
-//    // TODO multiple peripherals
-//    delay( Bluefruit.connInterval() );
-//  }
-//
-//  _adamsg.begin(true);
-//  _adamsg.prepare(NULL, 0);
-//
-//  // Wait for HVC event
-//  int32_t result = _adamsg.waitUntilComplete(BLE_GENERIC_TIMEOUT);
-//
-//  _adamsg.stop();
-//
-//  return (result == 0);
-//}
+bool BLEGatt::waitForIndicateConfirm(uint16_t conn_hdl)
+{
+  BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(conn_hdl);
+
+  // hvi confirm semaphore is created on the fly
+  peer->indicate_confirm_sem = xSemaphoreCreateBinary();
+
+  xSemaphoreTake(peer->indicate_confirm_sem, portMAX_DELAY);
+
+  vSemaphoreDelete(peer->indicate_confirm_sem);
+  peer->indicate_confirm_sem = NULL;
+
+  return peer->hvc_received;
+}
 
 void BLEGatt::_eventHandler(ble_evt_t* evt)
 {
@@ -204,25 +200,51 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
   }
 
   // GATTC Read Characteristic by UUID procedure
-  if ( evt_id == BLE_GATTC_EVT_CHAR_VAL_BY_UUID_READ_RSP )
+  switch ( evt_id )
   {
-    ble_gattc_evt_char_val_by_uuid_read_rsp_t* rd_rsp = &evt->evt.gattc_evt.params.char_val_by_uuid_read_rsp;
-
-    if (rd_rsp->count)
+    case BLE_GATTC_EVT_CHAR_VAL_BY_UUID_READ_RSP:
     {
-      #if SD_VER < 500
-        _adamsg.feed(rd_rsp->handle_value[0].p_value, rd_rsp->value_len);
-      #else
-        ble_gattc_handle_value_t hdl_value;
+      ble_gattc_evt_char_val_by_uuid_read_rsp_t* rd_rsp = &evt->evt.gattc_evt.params.char_val_by_uuid_read_rsp;
 
-        if ( ERROR_NONE == sd_ble_gattc_evt_char_val_by_uuid_read_rsp_iter(&evt->evt.gattc_evt, &hdl_value) )
-        {
-          _adamsg.feed(hdl_value.p_value, rd_rsp->value_len);
-        }
-      #endif
+      if (rd_rsp->count)
+      {
+        #if SD_VER < 500
+          _adamsg.feed(rd_rsp->handle_value[0].p_value, rd_rsp->value_len);
+        #else
+          ble_gattc_handle_value_t hdl_value;
 
-      _adamsg.complete();
+          if ( ERROR_NONE == sd_ble_gattc_evt_char_val_by_uuid_read_rsp_iter(&evt->evt.gattc_evt, &hdl_value) )
+          {
+            _adamsg.feed(hdl_value.p_value, rd_rsp->value_len);
+          }
+        #endif
+
+        _adamsg.complete();
+      }
     }
+
+    case BLE_GATTS_EVT_HVC:
+    {
+      LOG_LV2("GATTS", "Confirm received handle = 0x%04X", evt->evt.gatts_evt.params.hvc.handle);
+      BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(evt_conn_hdl);
+
+      if ( peer->indicate_confirm_sem ) xSemaphoreGive(peer->indicate_confirm_sem);
+      peer->hvc_received = true;
+    }
+    break;
+
+    case BLE_GATTS_EVT_TIMEOUT:
+    {
+      LOG_LV2("GATTS", "Timeout Source = %d", evt->evt.gatts_evt.params.timeout.src);
+
+      BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(evt_conn_hdl);
+
+      if ( peer->indicate_confirm_sem ) xSemaphoreGive(peer->indicate_confirm_sem);
+      peer->hvc_received = false;
+    }
+    break;
+
+    default: break;
   }
 }
 

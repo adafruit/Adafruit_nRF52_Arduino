@@ -105,11 +105,17 @@ class BLEGap
 
       SemaphoreHandle_t hvn_tx_sem;
       SemaphoreHandle_t wrcmd_tx_sem;
+
+      SemaphoreHandle_t indicate_confirm_sem;
+      bool              hvc_received;
     } gap_peer_t;
 
     gap_peer_t _peers[BLE_MAX_CONN];
 
+    gap_peer_t* _get_peer(uint16_t conn_hdl) { return &_peers[conn_hdl]; }
+
     friend class AdafruitBluefruit;
+    friend class BLEGatt;
 };
 
 #endif /* BLEGAP_H_ */
