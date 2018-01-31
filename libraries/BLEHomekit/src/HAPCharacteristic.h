@@ -74,6 +74,8 @@ class HAPCharacteristic : public BLECharacteristic
     /*------------- Internal Functions -------------*/
     virtual void _eventHandler(ble_evt_t* event);
 
+    HAPResponse_t* createHapResponse(uint8_t tid, uint8_t status, TLV8_t tlv_para[] = NULL, uint8_t count = 0);
+
   private:
     uint16_t _cid;
     uint16_t _hap_props;
@@ -82,7 +84,9 @@ class HAPCharacteristic : public BLECharacteristic
     HAPRequest_t* _hap_req;
     uint16_t      _hap_reqlen;
 
-    uint16_t _resp_len;
+    HAPResponse_t* _hap_resp;
+    uint16_t       _hap_resplen;
+    uint16_t       _hap_resplen_sent;
 
     // Char value is read by HAP procedure, not exposed via GATT
     void*    _value;
@@ -93,7 +97,10 @@ class HAPCharacteristic : public BLECharacteristic
 
     err_t _addChrIdDescriptor(void);
 
-    void processHapRequest(uint16_t conn_hdl, HAPRequest_t* hap_req);
+    void processGattWrite(uint16_t conn_hdl, ble_gatts_evt_write_t* gatt_req);
+    void processGattRead(uint16_t conn_hdl, ble_gatts_evt_read_t* gatt_req);
+
+    HAPResponse_t* processHapRequest(uint16_t conn_hdl, HAPRequest_t* hap_req);
     HAPResponse_t* processChrSignatureRead(HAPRequest_t* hap_req);
     HAPResponse_t* processChrRead(HAPRequest_t* hap_req);
 

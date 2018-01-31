@@ -168,7 +168,8 @@ err_t HAPPairing::begin(void)
 
   _features.setHapProperties(HAP_CHR_PROPS_READ);
   VERIFY_STATUS( _features.begin() );
-  _features.writeHapValue(0x01); // support HAP pairing
+  // Must be 0x00, 0x01 (support HAP pairing) is for MFi license, iOS will reject pairing attempt without MFi
+  _features.writeHapValue( (uint32_t) 0x00);
 
   _pairing.setHapProperties(HAP_CHR_PROPS_SECURE_READ | HAP_CHR_PROPS_SECURE_WRITE);
   VERIFY_STATUS( _pairing.begin() );
@@ -180,7 +181,7 @@ err_t HAPPairing::begin(void)
   return ERROR_NONE;
 }
 
-static HAPResponse_t* createSrpResponse(uint8_t tid, uint8_t status, TLV8_t ktlv[], uint8_t count)
+HAPResponse_t* HAPPairing::createSrpResponse(uint8_t tid, uint8_t status, TLV8_t ktlv[], uint8_t count)
 {
   HAPResponse_t* hap_resp = NULL;
 
@@ -190,12 +191,12 @@ static HAPResponse_t* createSrpResponse(uint8_t tid, uint8_t status, TLV8_t ktlv
 
   if( srplen == tlv8_encode_n(srpbuf, srplen, ktlv, count) )
   {
-    #if DEBUG_HAP_PAIRING
-    LOG_LV2_BUFFER("M1 Response", srpbuf, srplen);
-    #endif
+#if DEBUG_HAP_PAIRING
+    LOG_LV2_BUFFER("srpbuf", srpbuf, srplen);
+#endif
 
     TLV8_t tlv = { .type = HAP_PARAM_VALUE, .len = srplen, .value = srpbuf };
-    hap_resp = createHapResponse(tid, status, &tlv, 1);
+    hap_resp = _setup.createHapResponse(tid, status, &tlv, 1);
   }
 
   rtos_free(srpbuf);
@@ -211,7 +212,7 @@ HAPResponse_t* HAPPairing::pair_setup_m1(HAPRequest_t const* hap_req)
   // step 4
   srp_start();
 
-  // step 5 : username (I = "Pair-Setup"
+  // step 5 : username (I) = "Pair-Setup"
   // step 6 : 16 bytes salt already created in srp_init()
   // step 7,8 : password (p = setup code) done in srp_init()
   // step 9 : public key (B) done in srp_init()
@@ -242,7 +243,12 @@ HAPResponse_t* HAPPairing::pair_setup_m3(HAPRequest_t const* hap_req, TLV8_t pub
   TLV8_t tlv_para[2] =
   {
       { .type  = PAIRING_TYPE_STATE, .len = 1, .value = &mstate },
+      { 0 }
   };
+
+  #if DEBUG_HAP_PAIRING
+  LOG_LV2_BUFFER("SRP State", tlv_para[0].value, tlv_para[0].len);
+  #endif
 
   // Set iOS public key
   srp_setA( (uint8_t*) pubkey.value, pubkey.len, NULL);
@@ -253,19 +259,20 @@ HAPResponse_t* HAPPairing::pair_setup_m3(HAPRequest_t const* hap_req, TLV8_t pub
     tlv_para[1].type  = PAIRING_TYPE_PROOF;
     tlv_para[1].len   = 64;
     tlv_para[1].value = srp_getM2();
+
+    #if DEBUG_HAP_PAIRING
+    LOG_LV2_BUFFER("SRP Proof", tlv_para[1].value, tlv_para[1].len);
+    #endif
   }else
   {
     tlv_para[1].type  = PAIRING_TYPE_ERROR;
     tlv_para[1].len   = 1;
     tlv_para[1].value = &pair_error;
 
-    LOG_LV2("SRP", "M3 proof check failed");
+    #if DEBUG_HAP_PAIRING
+    LOG_LV2_BUFFER("SRP Error", tlv_para[1].value, tlv_para[1].len);
+    #endif
   }
-
-  #if DEBUG_HAP_PAIRING || 1
-  LOG_LV2_BUFFER("SRP State", tlv_para[0].value, tlv_para[0].len);
-  LOG_LV2_BUFFER("SRP Proof/Error", tlv_para[1].value, tlv_para[1].len);
-  #endif
 
   return createSrpResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
 }
@@ -277,8 +284,6 @@ HAPResponse_t* _pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t con
   uint16_t       body_len  = hap_req->body_len;
   uint8_t const* body_data = hap_req->body_data;
 
-  bool is_write_resp = false;
-
   // Parse TLV data
   while (body_len)
   {
@@ -289,7 +294,7 @@ HAPResponse_t* _pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t con
     switch (tlv.type)
     {
       case HAP_PARAM_RETURN_RESP:
-        memcpy(&is_write_resp, tlv.value, 1);
+        // ignore, it should always been 1 for pair setup sequence
       break;
 
       case HAP_PARAM_VALUE:
@@ -340,8 +345,7 @@ HAPResponse_t* _pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t con
             break;
           }
 
-          // Purposely skip tlv8_decode_cleanup() --> need to manually
-          // free all the pointer > 255 after done processing
+          // Purposely skip tlv8_decode_cleanup() here, will call it after done
         }
 
         HAPPairing& svc = (HAPPairing&) chr->parentService();

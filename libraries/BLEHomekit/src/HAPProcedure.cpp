@@ -199,23 +199,3 @@ uint16_t tlv8_encode_n(uint8_t* buf, uint16_t bufsize, TLV8_t tlv[], uint8_t cou
   return len - bufsize;
 }
 
-HAPResponse_t* createHapResponse(uint8_t tid, uint8_t status, TLV8_t tlv_para[], uint8_t count)
-{
-  // Determine body len, does not to include 2 byte length itself
-  uint16_t body_len = tlv8_encode_calculate_len(tlv_para, count);
-  HAPResponse_t* hap_resp = (HAPResponse_t*) rtos_malloc(sizeof(HAPResponseHeader_t) + 2 + body_len);
-  VERIFY( hap_resp != NULL, NULL );
-
-  /*------------- Header -------------*/
-  varclr(&hap_resp->header.control);
-  hap_resp->header.control.fragment = 0;
-  hap_resp->header.control.type     = HAP_PDU_RESPONSE;
-  hap_resp->header.tid              = tid;
-  hap_resp->header.status           = status;
-  hap_resp->body_len                = body_len;
-
-  /*------------- Serialize Data -------------*/
-  tlv8_encode_n(hap_resp->body_data, body_len, tlv_para, count);
-
-  return hap_resp;
-}
