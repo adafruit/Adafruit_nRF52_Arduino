@@ -463,12 +463,12 @@ uint16_t BLECharacteristic::write32(int num)
  * @param offset  offset of value (dfeault is 0)
  * @return  number of read bytes
  */
-uint16_t BLECharacteristic::read(void* buffer, uint16_t bufsize)
+uint16_t BLECharacteristic::read(void* buffer, uint16_t bufsize, uint16_t offset)
 {
   ble_gatts_value_t value =
   {
       .len     = bufsize,
-      .offset  = 0, // TODO gatts long read
+      .offset  = offset,
       .p_value = (uint8_t*) buffer
   };
 

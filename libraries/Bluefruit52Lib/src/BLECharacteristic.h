@@ -128,7 +128,7 @@ class BLECharacteristic
 
 
     /*------------- Read -------------*/
-    uint16_t read(void* buffer, uint16_t bufsize);
+    uint16_t read(void* buffer, uint16_t bufsize, uint16_t offset = 0);
 
     uint8_t  read8 (void);
     uint16_t read16(void);
