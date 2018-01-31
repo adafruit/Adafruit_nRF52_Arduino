@@ -55,7 +55,7 @@ enum HAPChrProperties_t
 class HAPCharacteristic : public BLECharacteristic
 {
   public:
-    typedef HAPResponse_t* (*hap_write_cb_t) (HAPCharacteristic* chr, HAPRequest_t const* hap_req);
+    typedef void (*hap_write_cb_t) (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req);
     static BLEUuid _g_uuid_cid;
 
     HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t unit = UUID16_UNIT_UNITLESS);
@@ -74,7 +74,7 @@ class HAPCharacteristic : public BLECharacteristic
     /*------------- Internal Functions -------------*/
     virtual void _eventHandler(ble_evt_t* event);
 
-    HAPResponse_t* createHapResponse(uint8_t tid, uint8_t status, TLV8_t tlv_para[] = NULL, uint8_t count = 0);
+    void createHapResponse(uint16_t conn_hdl, uint8_t tid, uint8_t status, TLV8_t tlv_para[] = NULL, uint8_t count = 0);
 
   private:
     uint16_t _cid;
@@ -100,9 +100,9 @@ class HAPCharacteristic : public BLECharacteristic
     void processGattWrite(uint16_t conn_hdl, ble_gatts_evt_write_t* gatt_req);
     void processGattRead(uint16_t conn_hdl, ble_gatts_evt_read_t* gatt_req);
 
-    HAPResponse_t* processHapRequest(uint16_t conn_hdl, HAPRequest_t* hap_req);
-    HAPResponse_t* processChrSignatureRead(HAPRequest_t* hap_req);
-    HAPResponse_t* processChrRead(HAPRequest_t* hap_req);
+    void processHapRequest(uint16_t conn_hdl, HAPRequest_t* hap_req);
+    void processChrSignatureRead(uint16_t conn_hdl, HAPRequest_t* hap_req);
+    void processChrRead(uint16_t conn_hdl, HAPRequest_t* hap_req);
 
 };
 

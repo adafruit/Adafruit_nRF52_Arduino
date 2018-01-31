@@ -51,12 +51,12 @@ class HAPPairing : public HAPService
     HAPCharacteristic _features;
     HAPCharacteristic _pairing;
 
-    HAPResponse_t* pair_setup_m1(HAPRequest_t const* hap_req);
-    HAPResponse_t* pair_setup_m3(HAPRequest_t const* hap_req, TLV8_t pubkey, TLV8_t proof);
+    void pair_setup_m1(uint16_t conn_hdl, HAPRequest_t const* hap_req);
+    void pair_setup_m3(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t pubkey, TLV8_t proof);
 
-    HAPResponse_t* createSrpResponse(uint8_t tid, uint8_t status, TLV8_t ktlv[], uint8_t count);
+    void createSrpResponse(uint16_t conn_hdl, uint8_t tid, uint8_t status, TLV8_t ktlv[], uint8_t count);
 
-    friend HAPResponse_t* _pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t const* hap_req);
+    friend void _pairing_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req);
 };
 
 

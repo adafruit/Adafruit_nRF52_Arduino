@@ -141,7 +141,7 @@ static const char* pairing_type_str[] =
 
 #endif
 
-HAPResponse_t* _pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t const* hap_req);
+void _pairing_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req);
 
 HAPPairing::HAPPairing(void)
   : HAPService(HAP_UUID_SVC_PAIRING),
@@ -181,13 +181,11 @@ err_t HAPPairing::begin(void)
   return ERROR_NONE;
 }
 
-HAPResponse_t* HAPPairing::createSrpResponse(uint8_t tid, uint8_t status, TLV8_t ktlv[], uint8_t count)
+void HAPPairing::createSrpResponse(uint16_t conn_hdl, uint8_t tid, uint8_t status, TLV8_t ktlv[], uint8_t count)
 {
-  HAPResponse_t* hap_resp = NULL;
-
   uint16_t srplen = tlv8_encode_calculate_len(ktlv, count);
   uint8_t* srpbuf = (uint8_t*) rtos_malloc(srplen);
-  VERIFY( srpbuf != NULL, NULL );
+  VERIFY( srpbuf != NULL, );
 
   if( srplen == tlv8_encode_n(srpbuf, srplen, ktlv, count) )
   {
@@ -196,14 +194,13 @@ HAPResponse_t* HAPPairing::createSrpResponse(uint8_t tid, uint8_t status, TLV8_t
 #endif
 
     TLV8_t tlv = { .type = HAP_PARAM_VALUE, .len = srplen, .value = srpbuf };
-    hap_resp = _setup.createHapResponse(tid, status, &tlv, 1);
+    _setup.createHapResponse(conn_hdl, tid, status, &tlv, 1);
   }
 
   rtos_free(srpbuf);
-  return hap_resp;
 }
 
-HAPResponse_t* HAPPairing::pair_setup_m1(HAPRequest_t const* hap_req)
+void HAPPairing::pair_setup_m1(uint16_t conn_hdl, HAPRequest_t const* hap_req)
 {
   // if paired return PAIRING_ERROR_UNAVAILABLE
   // tries more than 100 time return PAIRING_ERROR_MAX_TRIES
@@ -232,10 +229,10 @@ HAPResponse_t* HAPPairing::pair_setup_m1(HAPRequest_t const* hap_req)
   LOG_LV2_BUFFER("SRP Salt"   , tlv_para[2].value, tlv_para[2].len);
   #endif
 
-  return createSrpResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+  createSrpResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
 }
 
-HAPResponse_t* HAPPairing::pair_setup_m3(HAPRequest_t const* hap_req, TLV8_t pubkey, TLV8_t proof)
+void HAPPairing::pair_setup_m3(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t pubkey, TLV8_t proof)
 {
   uint8_t mstate = 4;
   uint8_t pair_error = PAIRING_ERROR_AUTHENTICATION;
@@ -274,13 +271,11 @@ HAPResponse_t* HAPPairing::pair_setup_m3(HAPRequest_t const* hap_req, TLV8_t pub
     #endif
   }
 
-  return createSrpResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+  createSrpResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
 }
 
-HAPResponse_t* _pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t const* hap_req)
+void _pairing_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req)
 {
-  HAPResponse_t* hap_resp = NULL;
-
   uint16_t       body_len  = hap_req->body_len;
   uint8_t const* body_data = hap_req->body_data;
 
@@ -352,11 +347,11 @@ HAPResponse_t* _pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t con
         switch (mstate)
         {
           case 1:
-            hap_resp = svc.pair_setup_m1(hap_req);
+            svc.pair_setup_m1(conn_hdl, hap_req);
           break;
 
           case 3:
-            hap_resp = svc.pair_setup_m3(hap_req, ipubkey, iproof);
+            svc.pair_setup_m3(conn_hdl, hap_req, ipubkey, iproof);
 
             tlv8_decode_cleanup(ipubkey);
             tlv8_decode_cleanup(iproof);
@@ -373,6 +368,4 @@ HAPResponse_t* _pairing_setup_write_cb (HAPCharacteristic* chr, HAPRequest_t con
 
     tlv8_decode_cleanup(tlv);
   }
-
-  return hap_resp;
 }

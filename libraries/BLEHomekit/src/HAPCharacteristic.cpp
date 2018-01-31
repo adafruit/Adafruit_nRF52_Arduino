@@ -186,13 +186,13 @@ uint16_t HAPCharacteristic::writeHapValue(uint32_t num)
   return writeHapValue(&num, len);
 }
 
-HAPResponse_t* HAPCharacteristic::createHapResponse(uint8_t tid, uint8_t status, TLV8_t tlv_para[], uint8_t count)
+void HAPCharacteristic::createHapResponse(uint16_t conn_hdl, uint8_t tid, uint8_t status, TLV8_t tlv_para[], uint8_t count)
 {
   // Determine body len (not including 2 byte length itself)
   uint16_t body_len = tlv8_encode_calculate_len(tlv_para, count);
 
   // Determine the response length including fragmentation scheme
-  uint16_t const gatt_mtu = Bluefruit.Gap.getMTU( Bluefruit.connHandle() ) - 3; // FIXME conn handle
+  uint16_t const gatt_mtu = Bluefruit.Gap.getMTU(conn_hdl) - 3;
   uint16_t resp_len = sizeof(HAPResponseHeader_t) + 2 + body_len;
 
   uint16_t nfrag = 0; // number of fragments (excluding the first)
@@ -207,7 +207,7 @@ HAPResponse_t* HAPCharacteristic::createHapResponse(uint8_t tid, uint8_t status,
   }
 
   HAPResponse_t* hap_resp = (HAPResponse_t*) rtos_malloc(resp_len + nfrag*2);
-  VERIFY( hap_resp != NULL, NULL );
+  VERIFY( hap_resp != NULL, );
 
   /*------------- Header -------------*/
   varclr(&hap_resp->header.control);
@@ -244,13 +244,12 @@ HAPResponse_t* HAPCharacteristic::createHapResponse(uint8_t tid, uint8_t status,
     resp_len += nfrag*2;
   }
 
-  _hap_resplen = resp_len;
+  _hap_resp         = hap_resp;
+  _hap_resplen      = resp_len;
   _hap_resplen_sent = 0;
-
-  return hap_resp;
 }
 
-HAPResponse_t* HAPCharacteristic::processChrSignatureRead(HAPRequest_t* hap_req)
+void HAPCharacteristic::processChrSignatureRead(uint16_t conn_hdl, HAPRequest_t* hap_req)
 {
   uint16_t svc_id = ((HAPService*)_service)->getSvcId();
 
@@ -287,48 +286,46 @@ HAPResponse_t* HAPCharacteristic::processChrSignatureRead(HAPRequest_t* hap_req)
       { .type  = HAP_PARAM_GATT_FORMAT_DESC       , .len = sizeof(fmt_desc) , .value = &fmt_desc  },
   };
 
-  return createHapResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+  createHapResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
 }
 
-HAPResponse_t* HAPCharacteristic::processChrRead(HAPRequest_t* hap_req)
+void HAPCharacteristic::processChrRead(uint16_t conn_hdl, HAPRequest_t* hap_req)
 {
   TLV8_t tlv_para = { .type = HAP_PARAM_VALUE, .len = _vallen, .value = _value };
 
-  return createHapResponse(hap_req->header.tid, HAP_STATUS_SUCCESS, &tlv_para, 1);
+  createHapResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_SUCCESS, &tlv_para, 1);
 }
 
-HAPResponse_t* HAPCharacteristic::processHapRequest(uint16_t conn_hdl, HAPRequest_t* hap_req)
+void HAPCharacteristic::processHapRequest(uint16_t conn_hdl, HAPRequest_t* hap_req)
 {
-  HAPResponse_t* hap_resp = NULL;
-
   if (hap_req->header.control.type != HAP_PDU_REQUEST)
   {
-    hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
+    createHapResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
   }
   else if (hap_req->header.instance_id != _cid)
   {
-    hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_INVALID_INSTANCE_ID);
+    createHapResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_INVALID_INSTANCE_ID);
   }else
   {
     LOG_LV2("HAP", "Recv %s request, TID = 0x%02X, CS_ID = 0x%04X", hap_opcode_str[hap_req->header.opcode], hap_req->header.tid, hap_req->header.instance_id);
     switch(hap_req->header.opcode)
     {
       case HAP_OPCODE_CHR_SIGNATURE_READ:
-        hap_resp = processChrSignatureRead(hap_req);
+        processChrSignatureRead(conn_hdl, hap_req);
+      break;
+
+      case HAP_OPCODE_CHR_READ:
+        processChrRead(conn_hdl, hap_req);
       break;
 
       case HAP_OPCODE_CHR_WRITE:
         if ( _hap_wr_cb )
         {
-          hap_resp = _hap_wr_cb(this, hap_req);
+          _hap_wr_cb(conn_hdl, this, hap_req);
         }else
         {
-          hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
+          createHapResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
         }
-      break;
-
-      case HAP_OPCODE_CHR_READ:
-        hap_resp = processChrRead(hap_req);
       break;
 
       case HAP_OPCODE_CHR_TIMED_WRITE:
@@ -341,12 +338,10 @@ HAPResponse_t* HAPCharacteristic::processHapRequest(uint16_t conn_hdl, HAPReques
       //            case HAP_OPCODE_SVC_SIGNATURE_READ: break;
 
       default:
-        hap_resp = createHapResponse(hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
+        createHapResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
       break;
     }
   }
-
-  return hap_resp;
 }
 
 void HAPCharacteristic::processGattWrite(uint16_t conn_hdl, ble_gatts_evt_write_t* gatt_req)
@@ -428,6 +423,7 @@ void HAPCharacteristic::processGattWrite(uint16_t conn_hdl, ble_gatts_evt_write_
     _hap_reqlen += fraglen;
   }
 
+  // Reply before processing request since cryptography take time and could cause timeout
   VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply), );
 
   // process when full request is received
@@ -436,7 +432,7 @@ void HAPCharacteristic::processGattWrite(uint16_t conn_hdl, ble_gatts_evt_write_
   {
     LOG_LV2_BUFFER("HAP Request", _hap_req, _hap_reqlen);
 
-    _hap_resp = processHapRequest(conn_hdl, _hap_req);
+    processHapRequest(conn_hdl, _hap_req);
 
     LOG_LV2("HAP", "Response: Control = 0x%02X, TID = 0x%02X, Status = %d", _hap_resp->header.control, _hap_resp->header.tid, _hap_resp->header.status);
     LOG_LV2_BUFFER(NULL, _hap_resp, _hap_resplen);
@@ -484,6 +480,7 @@ void HAPCharacteristic::processGattRead(uint16_t conn_hdl, ble_gatts_evt_read_t*
     if ( _hap_resplen == _hap_resplen_sent )
     {
       rtos_free(_hap_resp);
+      _hap_resp = NULL;
       _hap_resplen = _hap_resplen_sent = 0;
     }
 
