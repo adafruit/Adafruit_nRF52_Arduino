@@ -11,6 +11,9 @@
 #define BIGNUM_BYTES        384
 #define BIGNUM_WORDS        (BIGNUM_BYTES / 4)
 
+#define DEBUG_SRP     0
+#define TEST_APPLE    0
+
 typedef struct
 {
   uint8_t b[32];

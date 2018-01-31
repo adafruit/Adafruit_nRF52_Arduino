@@ -25,6 +25,7 @@
 //#include "homekit/pairing.h"
 
 #include "common_inc.h"
+#include "rtos.h"
 #include "nrf_error.h"
 
 #define E(V)  (((V) << 24) | ((V) >> 24) | (((V) >> 8) & 0x0000FF00) | (((V) << 8) & 0x00FF0000))
@@ -48,7 +49,7 @@ static const uint32_t srp_N[] =
 #undef E
 static const uint32_t srp_N_sizeof = 384;
 static const uint8_t srp_G = 5;
-// Pre-compute hashes where we can
+// Pre-compute hashes where we can k = H(N | PAD(g))
 static const uint8_t srp_N_G_hash[] =
 {
     0xA9, 0xC2, 0xE2, 0x55, 0x9B, 0xF0, 0xEB, 0xB5, 0x3F, 0x0C, 0xBB, 0xF6, 0x22, 0x82, 0x90, 0x6B,
@@ -64,10 +65,61 @@ static const uint8_t srp_N_hash_srp_G_hash[] =
     0x68, 0x3C, 0x9E, 0x78, 0x32, 0x96, 0xDD, 0x16, 0x93, 0xEB, 0xC7, 0x1C, 0xF5, 0xA5, 0x3D, 0xA3
 };
 
-#define HOMEKIT_CONFIG_PINCODE  "111-22-333"
-static const uint8_t pincode[21] = "Pair-Setup:" HOMEKIT_CONFIG_PINCODE;
 
-//#define HOMEKIT_CONFIG_PINCODE  "password123"
+#if TEST_APPLE
+
+#define HOMEKIT_CONFIG_PINCODE  "password123"
+#define HOMEKIT_USERNAME        "alice"
+
+static const uint8_t pincode[17] = HOMEKIT_USERNAME ":" HOMEKIT_CONFIG_PINCODE;
+
+const uint8_t dbg_salt[] =
+{
+    0xBE, 0xB2, 0x53, 0x79, 0xD1, 0xA8, 0x58, 0x1E, 0xB5, 0xA7, 0x27, 0x67, 0x3A, 0x24, 0x41, 0xEE
+};
+
+const uint8_t dbg_b[] =
+{
+    0xE4, 0x87, 0xCB, 0x59, 0xD3, 0x1A, 0xC5, 0x50, 0x47, 0x1E, 0x81, 0xF0, 0x0F, 0x69, 0x28, 0xE0,
+    0x1D, 0xDA, 0x08, 0xE9, 0x74, 0xA0, 0x04, 0xF4, 0x9E, 0x61, 0xF5, 0xD1, 0x05, 0x28, 0x4D, 0x20
+};
+
+#else
+
+#define HOMEKIT_CONFIG_PINCODE  "111-22-333"
+#define HOMEKIT_USERNAME        "Pair-Setup"
+static const uint8_t pincode[21] = HOMEKIT_USERNAME ":" HOMEKIT_CONFIG_PINCODE;
+
+#if DEBUG_SRP
+const uint8_t dbg_salt[] =
+{
+    0x6E, 0xFC, 0xCB, 0x4A, 0x0D, 0x20, 0xDA, 0x55,
+    0x57, 0xE9, 0xDF, 0xD5, 0x44, 0x2B, 0x59, 0x48
+};
+
+const uint8_t dbg_b[] =
+{
+    0xCB, 0x13, 0xF7, 0xDB, 0x5A, 0x8A, 0xF0, 0xFB,
+    0xE3, 0xB7, 0x85, 0x89, 0xEA, 0x89, 0xC5, 0x3C,
+    0x61, 0x10, 0x21, 0x0B, 0x6F, 0xE5, 0x31, 0xD4,
+    0xCE, 0x7D, 0xF6, 0x72, 0x59, 0x18, 0x95, 0xA1
+};
+#endif
+#endif
+
+#if DEBUG_SRP
+void print_mpi(const char* str, mpi* m)
+{
+  uint32_t len = mpi_size(m) ;
+  uint8_t* buf = (uint8_t*) rtos_malloc ( len );
+  VERIFY(buf, );
+
+  mpi_write_binary(m, buf, len);
+  LOG_LV2_BUFFER(str, buf, len);
+
+  rtos_free(buf);
+}
+#endif
 
 srp_keys_t srp;
 
@@ -93,11 +145,16 @@ void srp_init(void)
 //  uint8_t memory[11 * 1024];
 //  memory_buffer_alloc_init(memory, sizeof(memory));
 
+#if DEBUG_SRP
+  memcpy(srp.salt, dbg_salt, sizeof(srp.salt));
+  memcpy(srp.b, dbg_b, 32);
+#else
   // Generate salt
   random_create(srp.salt, sizeof(srp.salt));
 
   // Generate 'b' - a random value
   random_create(srp.b, 32);
+#endif
 
   // Calculate 'x' = H(s | H(I | ":" | P))
   mpi x;
@@ -248,6 +305,10 @@ uint8_t srp_setA(uint8_t* abuf, uint16_t length, moretime_t moretime)
 
     mpi_free(&n);
 
+#if DEBUG_SRP > 1
+//    print_mpi("S", &s);
+#endif
+
     uint8_t sbuf[384];
     err_code = mpi_write_binary(&s, sbuf, sizeof(sbuf));
     MPI_ERROR_CHECK(err_code);
@@ -255,6 +316,10 @@ uint8_t srp_setA(uint8_t* abuf, uint16_t length, moretime_t moretime)
     mpi_free(&s);
 
     crypto_hash_sha512(srp.K, sbuf, sizeof(sbuf));
+
+#if DEBUG_SRP > 1
+    LOG_LV2_BUFFER("K=H(S)", srp.K, sizeof(srp.K));
+#endif
   }
 
 //  memory_buffer_alloc_free();
@@ -263,7 +328,7 @@ uint8_t srp_setA(uint8_t* abuf, uint16_t length, moretime_t moretime)
   {
     uint8_t message[sizeof(srp_N_hash_srp_G_hash) + 64 + sizeof(srp.salt) + length + 384 + sizeof(srp.K)];
     memcpy(message, srp_N_hash_srp_G_hash, sizeof(srp_N_hash_srp_G_hash));
-    crypto_hash_sha512(message + sizeof(srp_N_hash_srp_G_hash), pincode, 10); // First 10 chars only - not the PIN part
+    crypto_hash_sha512(message + sizeof(srp_N_hash_srp_G_hash), pincode, strlen(HOMEKIT_USERNAME)); // First 10 chars only - not the PIN part
     memcpy(message + sizeof(srp_N_hash_srp_G_hash) + 64, srp.salt, sizeof(srp.salt));
     memcpy(message + sizeof(srp_N_hash_srp_G_hash) + 64 + sizeof(srp.salt), abuf, length);
     memcpy(message + sizeof(srp_N_hash_srp_G_hash) + 64 + sizeof(srp.salt) + length, srp.B, sizeof(srp.B));
@@ -284,6 +349,10 @@ uint8_t srp_setA(uint8_t* abuf, uint16_t length, moretime_t moretime)
     }
   }
 
+#if DEBUG_SRP > 1
+  LOG_LV2_BUFFER("M1", srp.M1, sizeof(srp.M1));
+#endif
+
   // getM2
   {
     uint8_t message[length + sizeof(srp.M1) + sizeof(srp.K)];
@@ -292,6 +361,11 @@ uint8_t srp_setA(uint8_t* abuf, uint16_t length, moretime_t moretime)
     memcpy(message + length + sizeof(srp.M1), srp.K, sizeof(srp.K));
     crypto_hash_sha512(srp.M2, message, sizeof(message));
   }
+
+#if DEBUG_SRP > 1
+  LOG_LV2_BUFFER("M2", srp.M2, sizeof(srp.M2));
+#endif
+
 
   return 1;
 }
