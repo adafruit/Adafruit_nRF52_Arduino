@@ -247,6 +247,8 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
   cprintf(" | ");
   dump_str_line(buf8-16, remain ? remain : 16);
   cprintf("\n");
+
+  cprintf("\n");
 }
 
 
