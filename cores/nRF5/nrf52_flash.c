@@ -126,6 +126,8 @@ int nrf52_flash_erase_sector(const struct hal_flash *dev, uint32_t sector_addres
 
 static int write_and_wait(uint32_t addr, uint32_t const * const data, uint32_t size)
 {
+  if ( size == 0 ) return 0;
+
   uint32_t err;
 
 #if CFG_DEBUG_NFFS

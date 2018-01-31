@@ -172,7 +172,7 @@ const char* dbg_err_str(uint32_t err_id); // TODO move to other place
 
 #define ADALOG_BUFFER(_tag, _buf, _n) \
   do {\
-    if ( _tag ) cprintf("[%-6s]\n", _tag);\
+    if ( _tag ) cprintf("%-6s: len = %d\n", _tag, _n);\
     dbgDumpMemory(_buf, 1, _n, true);\
   }while(0)
 

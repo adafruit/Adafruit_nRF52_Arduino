@@ -38,6 +38,7 @@
 #include <stdarg.h>
 #include <malloc.h>
 #include <Arduino.h>
+#include <ctype.h>
 
 // defined in linker script
 extern uint32_t __data_start__[];
@@ -170,6 +171,16 @@ void dbgPrintVersion(void)
   cprintf("\n");
 }
 
+static void dump_str_line(uint8_t const* buf, uint16_t count)
+{
+  // each line is 16 bytes
+  for(int i=0; i<count; i++)
+  {
+    const char ch = buf[i];
+    cprintf("%c", isprint(ch) ? ch : '.');
+  }
+}
+
 /******************************************************************************/
 /*!
     @brief  Helper function to display memory contents in a friendly format
@@ -188,25 +199,26 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
   char format[] = "%00lX";
   format[2] += 2*size;
 
-  char offset_fmt[] = "%02lX: ";
-  if      ( count*size > UINT16_MAX ) offset_fmt[2] = '8';
-  else if ( count*size > UINT8_MAX  ) offset_fmt[2] = '4';
-
-  const uint8_t item_per_line = 16 / size;
+  const uint8_t  item_per_line  = 16 / size;
 
   for(int i=0; i<count; i++)
   {
     uint32_t value=0;
 
-    // Print address
     if ( i%item_per_line == 0 )
     {
-      if ( i != 0 ) cprintf("\n");
+      // Print Ascii
+      if ( i != 0 )
+      {
+        cprintf(" | ");
+        dump_str_line(buf8-16, 16);
+        cprintf("\n");
+      }
 
       // print offset or absolute address
       if (printOffset)
       {
-        cprintf(offset_fmt, 16*i/item_per_line);
+        cprintf("%03lX: ", 16*i/item_per_line);
       }else
       {
         cprintf("%08lX:", (uint32_t) buf8);
@@ -220,6 +232,20 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
     cprintf(format, value);
   }
 
+  // fill up last row to 16 for printing ascii
+  const uint16_t remain = count%16;
+
+  if ( remain )
+  {
+    for(int i=0; i< 16-remain; i++)
+    {
+      cprintf(" ");
+      for(int j=0; j<2*size; j++) cprintf(" ");
+    }
+  }
+
+  cprintf(" | ");
+  dump_str_line(buf8-16, remain ? remain : 16);
   cprintf("\n");
 }
 
