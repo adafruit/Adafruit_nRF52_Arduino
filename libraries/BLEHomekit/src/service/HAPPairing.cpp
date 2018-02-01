@@ -276,8 +276,8 @@ void HAPPairing::pair_setup_m3(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
 
 void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t encrypted)
 {
-  uint8_t mstate = 6;
-  bool    failed = false;
+  uint8_t const pair_error = PAIRING_ERROR_AUTHENTICATION;
+  uint8_t const mstate = 6;
 
   TLV8_t tlv_para[2] =
   {
@@ -285,9 +285,18 @@ void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
       { 0 }
   };
 
-  uint8_t output_key[64];
-  crypto_hkdf(output_key, (uint8_t*) "Pair-Setup-Encrypt-Salt", 23, (uint8_t*) "Pair-Setup-Encrypt-Info\001", 24, srp_getK(), 64);
-  if (crypto_verifyAndDecrypt(output_key, (uint8_t*) "PS-Msg05", (uint8_t*)encrypted.value, encrypted.len - 16, (uint8_t*) encrypted.value, ((uint8_t*) encrypted.value) + encrypted.len - 16))
+  bool failed = false;
+
+  /*------------------------------------------------------------------*/
+  /* M5 Verification
+   *------------------------------------------------------------------*/
+  uint8_t session_key[64];
+
+  // Step 0: Create Session Key
+  crypto_hkdf(session_key, (uint8_t*) "Pair-Setup-Encrypt-Salt", 23, (uint8_t*) "Pair-Setup-Encrypt-Info\001", 24, srp_getK(), 64);
+
+  // Step 1 + 2: Verify Auth Tag and Decrypt using ChaCha20-Poly1305
+  if (crypto_verifyAndDecrypt(session_key, (uint8_t*) "PS-Msg05", (uint8_t*)encrypted.value, encrypted.len - 16, (uint8_t*) encrypted.value, ((uint8_t*) encrypted.value) + encrypted.len - 16))
   {
     uint16_t blength = encrypted.len - 16;
     uint8_t const* buf = (uint8_t const*) encrypted.value;
@@ -296,6 +305,7 @@ void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
     uint8_t* signature = NULL;
     uint8_t* ltpk = NULL;
 
+    // Parse iOS's ID, Public Key (ED25519) and Signature
     while(blength)
     {
       TLV8_t tlv = tlv8_decode_next(&buf, &blength);
@@ -328,30 +338,36 @@ void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
       // There is no value > 255, there is no need to clean up. Put here for reference only
       // tlv8_decode_cleanup(tlv);
     }
-    PRINT_LOCATION();
 
     if (client && signature && ltpk)
     {
-      PRINT_LOCATION();
+      // iOSDeviceInfo = iOSDeviceX + iOSDevicePairingID, iOSDeviceLTPK
       uint8_t message[64 + 32 + 36 + 32];
       memcpy(message, signature, 64);
-      crypto_hkdf(message + 64, (uint8_t*) "Pair-Setup-Controller-Sign-Salt", 31, (uint8_t*) "Pair-Setup-Controller-Sign-Info\001", 32, srp_getK(), 64);
+
+      // Step 3: Derive iOSDeviceX
+      crypto_hkdf(message + 64, (uint8_t*) "Pair-Setup-Controller-Sign-Salt", 31, (uint8_t*) "Pair-Setup-Controller-Sign-Info\001", 32, srp_getK(), 64);\
+
+      // Step 4: Consutrct iOSDeviceInfo
       memcpy(message + 64 + 32, client, 36);
       memcpy(message + 64 + 32 + 36, ltpk, 32);
 
       uint8_t result[sizeof(message)];
       uint64_t rlen = 0;
-      if (crypto_sign_open(result, &rlen, message, sizeof(message), ltpk) != 0)
+
+      // Step 5: Verify iOSDeviceInfo with ED25519
+      if (crypto_sign_open(result, &rlen, message, sizeof(message), ltpk) < 0)
       {
-        PRINT_LOCATION();
         failed = true;
       }
       else
       {
-        PRINT_LOCATION();
+        // Step 6: save PairingID and LTPK
         memcpy(crypto_keys.client.ltpk, ltpk, sizeof(crypto_keys.client.ltpk));
         memcpy(crypto_keys.client.name, client, 36);
         crypto_scheduleStoreKeys();
+
+        // If failed to save ---> MaxPeers error
       }
     }
   }
@@ -361,20 +377,64 @@ void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
     failed = true;
   }
 
-  uint8_t pair_error = PAIRING_ERROR_AUTHENTICATION;
   if (failed)
   {
     tlv_para[1].type  = PAIRING_TYPE_ERROR;
     tlv_para[1].len   = 1;
     tlv_para[1].value = &pair_error;
-  }else
-  {
-    tlv_para[1].type  = PAIRING_TYPE_ERROR;
-    tlv_para[1].len   = 1;
-    tlv_para[1].value = &pair_error;
+
+    createSrpResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+
+    return;
   }
 
-//  createSrpResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+  /*------------------------------------------------------------------*/
+  /* M6 Response Generation
+   *------------------------------------------------------------------*/
+  // FIXME change later
+  const uint8_t pairing_device_name[] = "41:42:43:44:45:46";
+  uint8_t pairing_devname_len = 17; // sizeof(pairing_device_name)-1; // excluding null termination
+
+  uint8_t smessage[64 + 32 + pairing_devname_len + 32];
+
+  // Step 2: derive AccessoryX using HKDF_SHA512
+  crypto_hkdf(smessage + 64, (uint8_t*) "Pair-Setup-Accessory-Sign-Salt", 30, (uint8_t*) "Pair-Setup-Accessory-Sign-Info\001", 31, srp_getK(), 64);
+
+  // Step 3: Concat AccessoryX + PairingID + AccessoryLTPK
+  memcpy(smessage + 64 + 32, pairing_device_name, pairing_devname_len);
+  memcpy(smessage + 64 + 32 + pairing_devname_len, crypto_keys.sign.pub, sizeof(crypto_keys.sign.pub));
+
+  // Step 4: Generate AccessorySignature with Ed25519
+  uint64_t slen = 0;
+  crypto_sign(smessage, &slen, smessage + 64, sizeof(smessage) - 64, crypto_keys.sign.secret);
+
+  // Step 5: Contruct sub-tlv
+  TLV8_t ktlv[] =
+  {
+      { .type  = PAIRING_TYPE_IDENTIFIER, .len = pairing_devname_len, .value = pairing_device_name },
+      { .type  = PAIRING_TYPE_PUBLIC_KEY, .len = 32, .value = crypto_keys.sign.pub },
+      { .type  = PAIRING_TYPE_SIGNATURE , .len = 64, .value = smessage }
+  };
+
+  // Additional 16 byte for Auth Tag
+  uint16_t const lbuffer = tlv8_encode_calculate_len(ktlv, arrcount(ktlv)) + 16;
+  uint8_t* buffer = (uint8_t*) rtos_malloc(lbuffer);
+  VERIFY( buffer != NULL, );
+
+  tlv8_encode_n(buffer, lbuffer-16, ktlv, arrcount(ktlv));
+
+  // Step 6: Encrypt above sub-tlv and generate 16-byte auth tag.
+//  uint8_t session_key[64]; declare above
+//  crypto_hkdf(session_key, (uint8_t*) "Pair-Setup-Encrypt-Salt", 23, (uint8_t*) "Pair-Setup-Encrypt-Info\001", 24, srp_getK(), 64);
+  crypto_encryptAndSeal(session_key, (uint8_t*) "PS-Msg06", buffer, lbuffer - 16, buffer, buffer + lbuffer - 16);
+
+  tlv_para[1].type  = PAIRING_TYPE_ENCRYPTED_DATA;
+  tlv_para[1].len   = lbuffer;
+  tlv_para[1].value = buffer;
+
+  createSrpResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+
+  rtos_free(buffer);
 }
 
 void _pairing_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req)
