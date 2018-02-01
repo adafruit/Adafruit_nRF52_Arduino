@@ -234,6 +234,7 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
 
   // fill up last row to 16 for printing ascii
   const uint16_t remain = count%16;
+  uint8_t nback = (remain ? remain : 16);
 
   if ( remain )
   {
@@ -245,7 +246,7 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
   }
 
   cprintf(" | ");
-  dump_str_line(buf8-16, remain ? remain : 16);
+  dump_str_line(buf8-nback, nback);
   cprintf("\n");
 
   cprintf("\n");
