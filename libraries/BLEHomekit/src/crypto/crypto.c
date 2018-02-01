@@ -16,6 +16,9 @@
 #include "nffs/nffs.h"
 #include "utility/debug.h"
 
+#include "rtos.h"
+#include "utility/AdaCallback.h"
+
 #include "crypto.h"
 
 #define CRYPTO_INSTANCE  2   // Change this to force key regeneration on next run
@@ -71,7 +74,7 @@ void crypto_init(void)
     crypto_sign_keypair(crypto_keys.sign.pub, crypto_keys.sign.secret);
 
     // Store for reuse
-    crypto_scheduleStoreKeys();
+//    crypto_scheduleStoreKeys();
     crypto_storeKeys();
   }
 }
@@ -114,6 +117,7 @@ static uint8_t crypto_loadKeys(void)
 void crypto_scheduleStoreKeys(void)
 {
 //    crypto_storing = 1;
+  ada_callback(NULL, crypto_storeKeys);
 }
 
 void crypto_storeKeys(void)
