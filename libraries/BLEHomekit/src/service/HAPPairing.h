@@ -53,6 +53,7 @@ class HAPPairing : public HAPService
 
     void pair_setup_m1(uint16_t conn_hdl, HAPRequest_t const* hap_req);
     void pair_setup_m3(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t pubkey, TLV8_t proof);
+    void pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t encrypted);
 
     void createSrpResponse(uint16_t conn_hdl, uint8_t tid, uint8_t status, TLV8_t ktlv[], uint8_t count);
 

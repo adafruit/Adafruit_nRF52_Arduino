@@ -274,6 +274,109 @@ void HAPPairing::pair_setup_m3(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
   createSrpResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
 }
 
+void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t encrypted)
+{
+  uint8_t mstate = 6;
+  bool    failed = false;
+
+  TLV8_t tlv_para[2] =
+  {
+      { .type  = PAIRING_TYPE_STATE, .len = 1, .value = &mstate },
+      { 0 }
+  };
+
+  uint8_t output_key[64];
+  crypto_hkdf(output_key, (uint8_t*) "Pair-Setup-Encrypt-Salt", 23, (uint8_t*) "Pair-Setup-Encrypt-Info\001", 24, srp_getK(), 64);
+  if (crypto_verifyAndDecrypt(output_key, (uint8_t*) "PS-Msg05", (uint8_t*)encrypted.value, encrypted.len - 16, (uint8_t*) encrypted.value, ((uint8_t*) encrypted.value) + encrypted.len - 16))
+  {
+    uint16_t blength = encrypted.len - 16;
+    uint8_t const* buf = (uint8_t const*) encrypted.value;
+
+    uint8_t* client = NULL;
+    uint8_t* signature = NULL;
+    uint8_t* ltpk = NULL;
+
+    while(blength)
+    {
+      TLV8_t tlv = tlv8_decode_next(&buf, &blength);
+
+      LOG_LV2("M5", "type = %s", tlv.type == PAIRING_TYPE_SEPARATOR ? "Separator" : pairing_type_str[tlv.type]);
+      LOG_LV2_BUFFER(NULL, tlv.value, tlv.len);
+
+      switch(tlv.type)
+      {
+        case PAIRING_TYPE_IDENTIFIER:
+          VERIFY(tlv.len == 36, );
+          client = (uint8_t*) tlv.value;
+        break;
+
+        case PAIRING_TYPE_PUBLIC_KEY:
+          VERIFY(tlv.len == 32, );
+          ltpk = (uint8_t*) tlv.value;
+        break;
+
+        case PAIRING_TYPE_SIGNATURE:
+          VERIFY(tlv.len == 64, );
+          signature = (uint8_t*) tlv.value;
+        break;
+
+        default:
+          failed = true;
+        break;
+      }
+
+      // There is no value > 255, there is no need to clean up. Put here for reference only
+      // tlv8_decode_cleanup(tlv);
+    }
+    PRINT_LOCATION();
+
+    if (client && signature && ltpk)
+    {
+      PRINT_LOCATION();
+      uint8_t message[64 + 32 + 36 + 32];
+      memcpy(message, signature, 64);
+      crypto_hkdf(message + 64, (uint8_t*) "Pair-Setup-Controller-Sign-Salt", 31, (uint8_t*) "Pair-Setup-Controller-Sign-Info\001", 32, srp_getK(), 64);
+      memcpy(message + 64 + 32, client, 36);
+      memcpy(message + 64 + 32 + 36, ltpk, 32);
+
+      uint8_t result[sizeof(message)];
+      uint64_t rlen = 0;
+      if (crypto_sign_open(result, &rlen, message, sizeof(message), ltpk) != 0)
+      {
+        PRINT_LOCATION();
+        failed = true;
+      }
+      else
+      {
+        PRINT_LOCATION();
+        memcpy(crypto_keys.client.ltpk, ltpk, sizeof(crypto_keys.client.ltpk));
+        memcpy(crypto_keys.client.name, client, 36);
+        crypto_scheduleStoreKeys();
+      }
+    }
+  }
+  else
+  {
+    // Error
+    failed = true;
+  }
+
+  uint8_t pair_error = PAIRING_ERROR_AUTHENTICATION;
+  if (failed)
+  {
+    tlv_para[1].type  = PAIRING_TYPE_ERROR;
+    tlv_para[1].len   = 1;
+    tlv_para[1].value = &pair_error;
+  }else
+  {
+    tlv_para[1].type  = PAIRING_TYPE_ERROR;
+    tlv_para[1].len   = 1;
+    tlv_para[1].value = &pair_error;
+  }
+
+//  createSrpResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+}
+
 void _pairing_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req)
 {
   uint16_t       body_len  = hap_req->body_len;
@@ -302,6 +405,7 @@ void _pairing_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequ
         // M3 parameters
         TLV8_t ipubkey = { 0 }; // (A ) 384 bytes
         TLV8_t iproof  = { 0 }; // (M1) 64 bytes
+        TLV8_t iencrypted = { 0 }; // Encrypted data
 
         // Parse sub TLV (kTLV) data
         uint8_t  const* param_val = (uint8_t  const*) tlv.value;
@@ -334,6 +438,10 @@ void _pairing_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequ
               iproof = ktlv;
             break;
 
+            case PAIRING_TYPE_ENCRYPTED_DATA:
+              iencrypted = ktlv;
+            break;
+
             // ignore other type and clean up
             default:
               tlv8_decode_cleanup(ktlv);
@@ -355,6 +463,12 @@ void _pairing_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequ
 
             tlv8_decode_cleanup(ipubkey);
             tlv8_decode_cleanup(iproof);
+          break;
+
+          case 5:
+            svc.pair_setup_m5(conn_hdl, hap_req, iencrypted);
+
+            tlv8_decode_cleanup(iencrypted);
           break;
 
           default: break;
