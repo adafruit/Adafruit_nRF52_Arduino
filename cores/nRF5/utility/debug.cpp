@@ -171,6 +171,11 @@ void dbgPrintVersion(void)
   cprintf("\n");
 }
 
+/******************************************************************************/
+/*!
+    @brief  Helper function to display memory contents in a friendly format
+*/
+/******************************************************************************/
 static void dump_str_line(uint8_t const* buf, uint16_t count)
 {
   // each line is 16 bytes
@@ -181,11 +186,6 @@ static void dump_str_line(uint8_t const* buf, uint16_t count)
   }
 }
 
-/******************************************************************************/
-/*!
-    @brief  Helper function to display memory contents in a friendly format
-*/
-/******************************************************************************/
 void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffset)
 {
   if ( !buf )
@@ -251,6 +251,39 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
 
   cprintf("\n");
 }
+
+
+void dbgDumpMemoryCFormat(const char* str, void const *buf, uint16_t count)
+{
+  if ( !buf )
+  {
+    cprintf("NULL\n");
+    return;
+  }
+
+  cprintf("%s = \n{\n  ", str);
+
+  uint8_t const *buf8 = (uint8_t const *) buf;
+
+  for(int i=0; i<count; i++)
+  {
+    uint32_t value=0;
+
+    if ( i%16 == 0 )
+    {
+      if ( i != 0 ) cprintf(",\n  ");
+    }else
+    {
+      if ( i != 0 ) cprintf(", ");
+    }
+
+    cprintf("0x%02lX", *buf8);
+    buf8++;
+  }
+
+  cprintf("\n\};\n");
+}
+
 
 
 #if CFG_DEBUG
