@@ -61,6 +61,8 @@ extern void crypto_transportEncrypt(uint8_t* key, uint8_t* nonce, uint8_t* plain
 extern uint8_t crypto_transportDecrypt(uint8_t* key, uint8_t* nonce, uint8_t* ciphertext, uint16_t clength, uint8_t* plaintext, uint16_t* plength);
 extern uint8_t crypto_advertise(void);
 
+void crypto_printkey(void);
+
 #ifdef __cplusplus
 }
 #endif

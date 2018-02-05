@@ -54,6 +54,19 @@ typedef struct
   uint8_t __padding__[1];
 } crypto_persistent_keys_t;
 
+void crypto_printkey(void)
+{
+  crypto_persistent_keys_t keys = {};
+
+  uint32_t keylen = sizeof(keys);
+  fsutil_read_file(CRYPTO_KEYFILE, 0, keylen, &keys, &keylen);
+
+  if (keys.valid0 == 0x55 && keys.valid1 == 0xAA && keys.instance == CRYPTO_INSTANCE)
+  {
+      dbgDumpMemoryCFormat("uint8_t keys[] = ", &keys, sizeof(keys));
+  }
+}
+
 void crypto_init(void)
 {
 //  uint32_t err_code;
