@@ -173,7 +173,7 @@ bool BLEAdvertisingData::addService(BLEClientService& service)
 
 /**
  * Add Name to Adv packet, use setName() to set
- * @return true if success
+ * @return true if full name is added, false if shorten name or not enough data to add name
  */
 bool BLEAdvertisingData::addName(void)
 {
@@ -189,7 +189,9 @@ bool BLEAdvertisingData::addName(void)
     len  = BLE_GAP_ADV_MAX_SIZE - (_count+2);
   }
 
-  return addData(type, name, len);
+  VERIFY( addData(type, name, len) );
+
+  return type == BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME;
 }
 
 // tx power is set by setTxPower

@@ -37,8 +37,6 @@
 #include <bluefruit.h>
 #include "BLEHomekit.h"
 
-#define HOMEKIT_PROTOCOL_VERION           2
-
 uint16_t BLEHomekit::_gInstanceID = 1;
 
 BLEHomekit::BLEHomekit()
@@ -106,7 +104,7 @@ bool BLEHomekit::setAdv(BLEAdvertisingData& adv_ref)
       .category          = HAP_CAT_LIGHTBULB,
       .gsn               = 1,
       .config_num        = 1,
-      .compatible_verion = HOMEKIT_PROTOCOL_VERION
+      .compatible_verion = 2 // protocol version
   };
 
   Bluefruit.Gap.getAddr(data.dev_id);
@@ -114,6 +112,14 @@ bool BLEHomekit::setAdv(BLEAdvertisingData& adv_ref)
   VERIFY_STATIC( sizeof(data) == 17);
 
   adv.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  return adv.addManufacturerData(&data, sizeof(data));
+  adv.addManufacturerData(&data, sizeof(data));
+
+  // Full name is not added, added full name to scan response
+  if ( !adv.addName() )
+  {
+    Bluefruit.ScanResponse.addName();
+  }
+
+  return true;
 }
 

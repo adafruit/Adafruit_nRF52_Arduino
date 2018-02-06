@@ -142,10 +142,10 @@ const char* dbg_err_str(uint32_t err_id); // TODO move to other place
 #if CFG_DEBUG
 
 #define PRINT_LOCATION()      cprintf("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)
-#define PRINT_MESS(x)         cprintf("%s: %d: %s \n"   , __PRETTY_FUNCTION__, __LINE__, (char*)(x))
-#define PRTNT_HEAP()          if (CFG_DEBUG == 3) cprintf("\n%s: %d: Heap free: %d\n", __PRETTY_FUNCTION__, __LINE__, util_heap_get_free_size())
-#define PRINT_STR(x)          cprintf("%s: %d: " #x " = %s\n"   , __PRETTY_FUNCTION__, __LINE__, (char*)(x) )
-#define PRINT_INT(x)          cprintf("%s: %d: " #x " = %ld\n"  , __PRETTY_FUNCTION__, __LINE__, (uint32_t) (x) )
+#define PRINT_MESS(x)         cprintf("%s: %d: %s \n"   , __FUNCTION__, __LINE__, (char*)(x))
+#define PRTNT_HEAP()          if (CFG_DEBUG == 3) cprintf("\n%s: %d: Heap free: %d\n", __FUNCTION__, __LINE__, util_heap_get_free_size())
+#define PRINT_STR(x)          cprintf("%s: %d: " #x " = %s\n"   , __FUNCTION__, __LINE__, (char*)(x) )
+#define PRINT_INT(x)          cprintf("%s: %d: " #x " = %ld\n"  , __FUNCTION__, __LINE__, (uint32_t) (x) )
 
 #define PRINT_HEX(x) \
   do {\
