@@ -93,18 +93,18 @@ bool BLEHomekit::setAdv(BLEAdvertisingData& adv_ref)
     uint16_t category;
     uint16_t gsn;
     uint8_t  config_num;
-    uint8_t  compatible_verion;
+    uint8_t  compatible_version;
   }data =
   {
-      .company_id        = UUID16_COMPANY_ID_APPLE,
-      .type              = 0x06,
-      .adv_int_len       = ail,
-      .status_flag       = 1, // bit0 = HAP Pairing Status Flag (1 not paired)
-      .dev_id            = { 0x00},
-      .category          = HAP_CAT_LIGHTBULB,
-      .gsn               = 1,
-      .config_num        = 1,
-      .compatible_verion = 2 // protocol version
+      .company_id         = UUID16_COMPANY_ID_APPLE,
+      .type               = 0x06,
+      .adv_int_len        = ail,
+      .status_flag        = 1, // bit0 = HAP Pairing Status Flag (1 not paired)
+      .dev_id             = { 0x00},
+      .category           = HAP_CAT_LIGHTBULB,
+      .gsn                = 1,
+      .config_num         = 1,
+      .compatible_version = 2 // protocol version
   };
 
   Bluefruit.Gap.getAddr(data.dev_id);
