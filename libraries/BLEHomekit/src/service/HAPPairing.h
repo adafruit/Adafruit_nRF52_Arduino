@@ -55,13 +55,18 @@ class HAPPairing : public HAPService
 
     void setDeviceID(uint8_t dev_id[6]);
 
+    void createSrpResponse(uint16_t conn_hdl, uint8_t status, TLV8_t ktlv[], uint8_t count);
+
     void pair_setup_m1(uint16_t conn_hdl, HAPRequest_t const* hap_req);
     void pair_setup_m3(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t pubkey, TLV8_t proof);
     void pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t encrypted);
 
-    void createSrpResponse(uint16_t conn_hdl, uint8_t status, TLV8_t ktlv[], uint8_t count);
+
+    void pair_verify_m1(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t pubkey);
+    void pair_verify_m3(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t encrypted);
 
     friend void _pair_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req);
+    friend void _pair_verify_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req);
 
 #if CFG_DEBUG
     friend void test_homekit(void);

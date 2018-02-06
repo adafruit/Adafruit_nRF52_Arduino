@@ -103,6 +103,7 @@ static const char* pairing_type_str[] =
 #endif
 
 void _pair_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req);
+void _pair_verify_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req);
 
 // TODO add connection handle parameter
 void gatt_reply_now(void)
@@ -136,11 +137,12 @@ err_t HAPPairing::begin(void)
 
   _setup.setHapProperties(HAP_CHR_PROPS_READ | HAP_CHR_PROPS_WRITE);
   _setup.setHapWriteCallback(_pair_setup_write_cb);
-  _setup.setMaxLen(BLE_GATTS_VAR_ATTR_LEN_MAX);
+  _setup.setMaxLen(200); // FIXME change later
   VERIFY_STATUS( _setup.begin() );
 
   _verify.setHapProperties(HAP_CHR_PROPS_READ | HAP_CHR_PROPS_WRITE);
-  _verify.setMaxLen(100/*BLE_GATTS_VAR_ATTR_LEN_MAX*/); // FIXME change later
+  _verify.setHapWriteCallback(_pair_verify_write_cb);
+  _verify.setMaxLen(200); // FIXME change later
   VERIFY_STATUS( _verify.begin() );
 
   _features.setHapProperties(HAP_CHR_PROPS_READ);
@@ -189,6 +191,9 @@ void HAPPairing::createSrpResponse(uint16_t conn_hdl, uint8_t status, TLV8_t ktl
   rtos_free(srpbuf);
 }
 
+/*------------------------------------------------------------------*/
+/* PAIR SETUP
+ *------------------------------------------------------------------*/
 void HAPPairing::pair_setup_m1(uint16_t conn_hdl, HAPRequest_t const* hap_req)
 {
   // if paired return PAIRING_ERROR_UNAVAILABLE
@@ -431,99 +436,177 @@ void _pair_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest
 
     LOG_LV2_BUFFER("Decoded HAP", tlv.value, tlv.len);
 
-    switch (tlv.type)
+    // ignore HAP_PARAM_RETURN_RESP, it should always been 1 for pair setup sequence
+    if (HAP_PARAM_VALUE == tlv.type)
     {
-      case HAP_PARAM_RETURN_RESP:
-        // ignore, it should always been 1 for pair setup sequence
-      break;
+      uint8_t  mstate = 0;
 
-      case HAP_PARAM_VALUE:
+      // M1 parameters
+      uint8_t  method = 0;
+
+      // M3 parameters
+      TLV8_t ipubkey = { 0 }; // (A ) 384 bytes
+      TLV8_t iproof  = { 0 }; // (M1) 64 bytes
+      TLV8_t iencrypted = { 0 }; // Encrypted data
+
+      /*------------- Parse sub TLV (kTLV) data -------------*/
+      uint8_t  const* param_val = (uint8_t  const*) tlv.value;
+      uint16_t        param_len = tlv.len;
+      while(param_len)
       {
-        uint8_t  mstate = 0;
+        TLV8_t ktlv = tlv8_decode_next(&param_val, &param_len);
 
-        // M1 parameters
-        uint8_t  method = 0;
+        LOG_LV2("Pair-Setup", "type = %s", ktlv.type == PAIRING_TYPE_SEPARATOR ? "Separator" : pairing_type_str[ktlv.type]);
+        LOG_LV2_BUFFER(NULL, ktlv.value, ktlv.len);
 
-        // M3 parameters
-        TLV8_t ipubkey = { 0 }; // (A ) 384 bytes
-        TLV8_t iproof  = { 0 }; // (M1) 64 bytes
-        TLV8_t iencrypted = { 0 }; // Encrypted data
-
-        // Parse sub TLV (kTLV) data
-        uint8_t  const* param_val = (uint8_t  const*) tlv.value;
-        uint16_t        param_len = tlv.len;
-        while(param_len)
+        switch (ktlv.type)
         {
-          TLV8_t ktlv = tlv8_decode_next(&param_val, &param_len);
-
-          LOG_LV2("PAIRSETUP", "type = %s", ktlv.type == PAIRING_TYPE_SEPARATOR ? "Separator" : pairing_type_str[ktlv.type]);
-          LOG_LV2_BUFFER(NULL, ktlv.value, ktlv.len);
-
-          switch (ktlv.type)
-          {
-            case PAIRING_TYPE_METHOD:
-              memcpy(&method, ktlv.value, 1);
-              LOG_LV2("HAP", "Method %s", pairing_method_str[method]);
-            break;
+          case PAIRING_TYPE_METHOD:
+            memcpy(&method, ktlv.value, 1);
+            LOG_LV2("HAP", "Method %s", pairing_method_str[method]);
+          break;
 
             // TODO multiple pairing support
-            case PAIRING_TYPE_STATE:
-              memcpy(&mstate, ktlv.value, 1);
-              LOG_LV2("HAP", "State = M%d", mstate);
-            break;
+          case PAIRING_TYPE_STATE:
+            memcpy(&mstate, ktlv.value, 1);
+            LOG_LV2("HAP", "State = M%d", mstate);
+          break;
 
-            case PAIRING_TYPE_PUBLIC_KEY:
-              ipubkey = ktlv;
-            break;
+          case PAIRING_TYPE_PUBLIC_KEY:
+            ipubkey = ktlv;
+          break;
 
-            case PAIRING_TYPE_PROOF:
-              iproof = ktlv;
-            break;
+          case PAIRING_TYPE_PROOF:
+            iproof = ktlv;
+          break;
 
-            case PAIRING_TYPE_ENCRYPTED_DATA:
-              iencrypted = ktlv;
-            break;
+          case PAIRING_TYPE_ENCRYPTED_DATA:
+            iencrypted = ktlv;
+          break;
 
             // ignore other type and clean up
-            default:
-              tlv8_decode_cleanup(ktlv);
-            break;
-          }
-
-          // Purposely skip tlv8_decode_cleanup() here, will call it after done
+          default:
+            tlv8_decode_cleanup(ktlv);
+          break;
         }
 
-        HAPPairing& svc = (HAPPairing&) chr->parentService();
-        switch (mstate)
-        {
-          case 1:
-            svc.pair_setup_m1(conn_hdl, hap_req);
-          break;
-
-          case 3:
-            svc.pair_setup_m3(conn_hdl, hap_req, ipubkey, iproof);
-
-            tlv8_decode_cleanup(ipubkey);
-            tlv8_decode_cleanup(iproof);
-          break;
-
-          case 5:
-
-            svc.pair_setup_m5(conn_hdl, hap_req, iencrypted);
-
-            tlv8_decode_cleanup(iencrypted);
-          break;
-
-          default: break;
-        }
+        // Purposely skip tlv8_decode_cleanup() here, will call it later after processing
       }
-      break;
 
-      // ignore other type
-      default: break;
+      /*------------- Processing setup sequence -------------*/
+      HAPPairing& svc = (HAPPairing&) chr->parentService();
+      switch (mstate)
+      {
+        case 1:
+          svc.pair_setup_m1(conn_hdl, hap_req);
+          break;
+
+        case 3:
+          svc.pair_setup_m3(conn_hdl, hap_req, ipubkey, iproof);
+
+          tlv8_decode_cleanup(ipubkey);
+          tlv8_decode_cleanup(iproof);
+          break;
+
+        case 5:
+
+          svc.pair_setup_m5(conn_hdl, hap_req, iencrypted);
+
+          tlv8_decode_cleanup(iencrypted);
+          break;
+
+        default: break;
+      }
     }
 
     tlv8_decode_cleanup(tlv);
   }
+}
+
+/*------------------------------------------------------------------*/
+/* PAIR VERIFY
+ *------------------------------------------------------------------*/
+void _pair_verify_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req)
+{
+  uint16_t       body_len  = hap_req->body_len;
+  uint8_t const* body_data = hap_req->body_data;
+
+  // Parse TLV data
+  while (body_len)
+  {
+    TLV8_t tlv = tlv8_decode_next(&body_data, &body_len);
+
+    LOG_LV2_BUFFER("Decoded HAP", tlv.value, tlv.len);
+
+    // ignore HAP_PARAM_RETURN_RESP, it should always been 1 for pair setup sequence
+    if (HAP_PARAM_VALUE == tlv.type)
+    {
+      uint8_t mstate = 0;
+      TLV8_t  tlvparam = { 0 };
+
+      /*------------- Parse sub TLV (kTLV) data -------------*/
+      uint8_t  const* param_val = (uint8_t  const*) tlv.value;
+      uint16_t        param_len = tlv.len;
+      while(param_len)
+      {
+        TLV8_t ktlv = tlv8_decode_next(&param_val, &param_len);
+
+        LOG_LV2("Pair-Verify", "type = %s", ktlv.type == PAIRING_TYPE_SEPARATOR ? "Separator" : pairing_type_str[ktlv.type]);
+        LOG_LV2_BUFFER(NULL, ktlv.value, ktlv.len);
+
+        switch (ktlv.type)
+        {
+          case PAIRING_TYPE_STATE:
+            memcpy(&mstate, ktlv.value, 1);
+            LOG_LV2("HAP", "State = M%d", mstate);
+          break;
+
+          case PAIRING_TYPE_PUBLIC_KEY:
+            tlvparam = ktlv;
+          break;
+
+          case PAIRING_TYPE_ENCRYPTED_DATA:
+            tlvparam = ktlv;
+          break;
+
+            // ignore other type and clean up
+          default:
+            tlv8_decode_cleanup(ktlv);
+          break;
+        }
+
+        // Purposely skip tlv8_decode_cleanup() here, will call it later after processing
+      }
+
+      /*------------- Processing VERIFY sequence -------------*/
+      HAPPairing& svc = (HAPPairing&) chr->parentService();
+      switch (mstate)
+      {
+        case 1:
+          svc.pair_verify_m1(conn_hdl, hap_req, tlvparam);
+        break;
+
+        case 3:
+          svc.pair_verify_m3(conn_hdl, hap_req, tlvparam);
+        break;
+
+        default: break;
+      }
+
+      tlv8_decode_cleanup(tlvparam);
+    }
+
+    tlv8_decode_cleanup(tlv);
+  }
+}
+
+void HAPPairing::pair_verify_m1(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t pubkey)
+{
+
+}
+
+void HAPPairing::pair_verify_m3(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t encrypted)
+{
+
 }
 
