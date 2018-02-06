@@ -127,7 +127,7 @@ HAPPairing::HAPPairing(void)
     _features (HAP_UUID_SVC_PAIR_FEATURE , BLE_GATT_CPF_FORMAT_UINT8 ),
     _pairing  (HAP_UUID_SVC_PAIR_PAIRING , BLE_GATT_CPF_FORMAT_STRUCT)
 {
-
+  varclr(_pair_id);
 }
 
 err_t HAPPairing::begin(void)
@@ -151,11 +151,23 @@ err_t HAPPairing::begin(void)
   _pairing.setHapProperties(HAP_CHR_PROPS_SECURE_READ | HAP_CHR_PROPS_SECURE_WRITE);
   VERIFY_STATUS( _pairing.begin() );
 
+  // Make PairID based on MAC address
+  uint8_t mac[6];
+  Bluefruit.Gap.getAddr(mac);
+  setDeviceID(mac);
+
   // Init cryptography
   Nffs.mkdir_p("/adafruit/homekit");
   crypto_init();
 
   return ERROR_NONE;
+}
+
+void HAPPairing::setDeviceID(uint8_t dev_id[6])
+{
+  char str[sizeof(_pair_id) + 1];
+  sprintf(str, "%02X:%02X:%02X:%02X:%02X:%02X", dev_id[0], dev_id[1], dev_id[2], dev_id[3], dev_id[4], dev_id[5]);
+  memcpy(_pair_id, str, sizeof(_pair_id));
 }
 
 void HAPPairing::createSrpResponse(uint16_t conn_hdl, uint8_t status, TLV8_t ktlv[], uint8_t count)
@@ -264,8 +276,6 @@ void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
 
   bool failed = false;
 
-  uint32_t us = micros();
-
   /*------------------------------------------------------------------*/
   /* M5 Verification
    *------------------------------------------------------------------*/
@@ -370,33 +380,23 @@ void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
   /*------------------------------------------------------------------*/
   /* M6 Response Generation
    *------------------------------------------------------------------*/
-  // FIXME change later
-  const uint8_t pairing_device_name[] = "19:07:60:29:4E:C3"; // must be the string representation of Device ID in advertising
-  enum { pairing_devname_len = 17 };
-
-//  const uint8_t pairing_device_name[] = "TTTFF972-040E-4915-A83D-A964690DDTTT";
-//  enum { pairing_devname_len = 36 };
-
-  uint8_t smessage[64 + 32 + pairing_devname_len + 32];
+  uint8_t smessage[64 + 32 + sizeof(_pair_id) + 32];
 
   // Step 2: derive AccessoryX using HKDF_SHA512
   crypto_hkdf(smessage + 64, (uint8_t*) "Pair-Setup-Accessory-Sign-Salt", 30, (uint8_t*) "Pair-Setup-Accessory-Sign-Info\001", 31, srp_getK(), 64);
 
   // Step 3: Concat AccessoryX + PairingID + AccessoryLTPK
-  memcpy(smessage + 64 + 32, pairing_device_name, pairing_devname_len);
-  memcpy(smessage + 64 + 32 + pairing_devname_len, crypto_keys.sign.pub, sizeof(crypto_keys.sign.pub));
+  memcpy(smessage + 64 + 32, _pair_id, sizeof(_pair_id));
+  memcpy(smessage + 64 + 32 + sizeof(_pair_id), crypto_keys.sign.pub, sizeof(crypto_keys.sign.pub));
 
   // Step 4: Generate AccessorySignature with Ed25519
   uint64_t slen = 0;
   crypto_sign(smessage, &slen, smessage + 64, sizeof(smessage) - 64, crypto_keys.sign.secret);
 
-  gatt_reply_now();
-
-
   // Step 5: Construct sub-tlv
   TLV8_t ktlv[] =
   {
-      { .type  = PAIRING_TYPE_IDENTIFIER, .len = pairing_devname_len, .value = pairing_device_name },
+      { .type  = PAIRING_TYPE_IDENTIFIER, .len = sizeof(_pair_id), .value = _pair_id },
       { .type  = PAIRING_TYPE_PUBLIC_KEY, .len = 32, .value = crypto_keys.sign.pub },
       { .type  = PAIRING_TYPE_SIGNATURE , .len = 64, .value = smessage }
   };
@@ -408,8 +408,6 @@ void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
   tlv8_encode_n(buffer, lbuffer, ktlv, arrcount(ktlv));
 
   // Step 6: Encrypt above sub-tlv and generate 16-byte auth tag.
-//  uint8_t session_key[64]; declare above
-//  crypto_hkdf(session_key, (uint8_t*) "Pair-Setup-Encrypt-Salt", 23, (uint8_t*) "Pair-Setup-Encrypt-Info\001", 24, srp_getK(), 64);
   crypto_encryptAndSeal(session_key, (uint8_t*) "PS-Msg06", buffer, lbuffer, buffer, buffer + lbuffer);
 
   tlv_para[1].type  = PAIRING_TYPE_ENCRYPTED_DATA;

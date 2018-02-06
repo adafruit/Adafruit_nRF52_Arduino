@@ -51,6 +51,10 @@ class HAPPairing : public HAPService
     HAPCharacteristic _features;
     HAPCharacteristic _pairing;
 
+    uint8_t _pair_id[17]; // Device ID in string format e.g "aa:bb:cc:dd:ee"
+
+    void setDeviceID(uint8_t dev_id[6]);
+
     void pair_setup_m1(uint16_t conn_hdl, HAPRequest_t const* hap_req);
     void pair_setup_m3(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t pubkey, TLV8_t proof);
     void pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t encrypted);
