@@ -43,46 +43,7 @@
 
 #define DEBUG_HAP_PAIRING   0
 
-/*
-The following is a description of SRP-6 and 6a, the latest versions of SRP:
-
-  N    A large safe prime (N = 2q+1, where q is prime)
-       All arithmetic is done modulo N.
-  g    A generator modulo N
-  k    Multiplier parameter (k = H(N, g) in SRP-6a, k = 3 for legacy SRP-6)
-  s    User's salt
-  I    Username
-  p    Cleartext Password
-  H()  One-way hash function
-  ^    (Modular) Exponentiation
-  u    Random scrambling parameter
-  a,b  Secret ephemeral values
-  A,B  Public ephemeral values
-  x    Private key (derived from p and s)
-  v    Password verifier
-
-The host stores passwords using the following formula:
-  x = H(s, p)               (s is chosen randomly)
-  v = g^x                   (computes password verifier)
-The host then keeps {I, s, v} in its password database. The authentication protocol itself goes as follows:
-User -> Host:  I, A = g^a                  (identifies self, a = random number)
-Host -> User:  s, B = kv + g^b             (sends salt, b = random number)
-
-        Both:  u = H(A, B)
-
-        User:  x = H(s, p)                 (user enters password)
-        User:  S = (B - kg^x) ^ (a + ux)   (computes session key)
-        User:  K = H(S)
-
-        Host:  S = (Av^u) ^ b              (computes session key)
-        Host:  K = H(S)
-Now the two parties have a shared, strong session key K. To complete authentication, they need to prove to each other that their keys match. One possible way:
-User -> Host:  M = H(H(N) xor H(g), H(I), s, A, B, K)
-Host -> User:  H(A, M, K)
-The two parties also employ the following safeguards:
-The user will abort if he receives B == 0 (mod N) or u == 0.
-The host will abort if it detects that A == 0 (mod N).
-The user must show his proof of K first. If the server detects that the user's proof is incorrect, it must abort without showing its own proof of K.
+/* SRP design detail http://srp.stanford.edu/design.html
  */
 
 // kTLV type for pairing
@@ -141,7 +102,23 @@ static const char* pairing_type_str[] =
 
 #endif
 
-void _pairing_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req);
+void _pair_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req);
+
+// TODO add connection handle parameter
+void gatt_reply_now(void)
+{
+  ble_gatts_rw_authorize_reply_params_t reply =
+  {
+      .type = BLE_GATTS_AUTHORIZE_TYPE_WRITE,
+      .params = {
+          .write = {
+              .gatt_status = BLE_GATT_STATUS_SUCCESS,
+              .update      = 1,
+          }
+      }
+  };
+  VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(Bluefruit.connHandle(), &reply), );
+}
 
 HAPPairing::HAPPairing(void)
   : HAPService(HAP_UUID_SVC_PAIRING),
@@ -158,7 +135,7 @@ err_t HAPPairing::begin(void)
   VERIFY_STATUS( HAPService::begin() ); // Invoke base class begin()
 
   _setup.setHapProperties(HAP_CHR_PROPS_READ | HAP_CHR_PROPS_WRITE);
-  _setup.setHapWriteCallback(_pairing_setup_write_cb);
+  _setup.setHapWriteCallback(_pair_setup_write_cb);
   _setup.setMaxLen(BLE_GATTS_VAR_ATTR_LEN_MAX);
   VERIFY_STATUS( _setup.begin() );
 
@@ -181,7 +158,7 @@ err_t HAPPairing::begin(void)
   return ERROR_NONE;
 }
 
-void HAPPairing::createSrpResponse(uint16_t conn_hdl, uint8_t tid, uint8_t status, TLV8_t ktlv[], uint8_t count)
+void HAPPairing::createSrpResponse(uint16_t conn_hdl, uint8_t status, TLV8_t ktlv[], uint8_t count)
 {
   uint16_t srplen = tlv8_encode_calculate_len(ktlv, count);
   uint8_t* srpbuf = (uint8_t*) rtos_malloc(srplen);
@@ -194,7 +171,7 @@ void HAPPairing::createSrpResponse(uint16_t conn_hdl, uint8_t tid, uint8_t statu
 #endif
 
     TLV8_t tlv = { .type = HAP_PARAM_VALUE, .len = srplen, .value = srpbuf };
-    _setup.createHapResponse(conn_hdl, tid, status, &tlv, 1);
+    _setup.createHapResponse(conn_hdl, status, &tlv, 1);
   }
 
   rtos_free(srpbuf);
@@ -229,7 +206,7 @@ void HAPPairing::pair_setup_m1(uint16_t conn_hdl, HAPRequest_t const* hap_req)
   LOG_LV2_BUFFER("SRP Salt"   , tlv_para[2].value, tlv_para[2].len);
   #endif
 
-  createSrpResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+  createSrpResponse(conn_hdl, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
 }
 
 void HAPPairing::pair_setup_m3(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t pubkey, TLV8_t proof)
@@ -248,7 +225,7 @@ void HAPPairing::pair_setup_m3(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
   #endif
 
   // Set iOS public key
-  srp_setA( (uint8_t*) pubkey.value, pubkey.len, NULL);
+  srp_setA( (uint8_t*) pubkey.value, pubkey.len, gatt_reply_now);
 
   // Check proof
   if ( srp_checkM1( (uint8_t*) proof.value, proof.len) )
@@ -271,7 +248,7 @@ void HAPPairing::pair_setup_m3(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
     #endif
   }
 
-  createSrpResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+  createSrpResponse(conn_hdl, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
 }
 
 void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t encrypted)
@@ -286,6 +263,8 @@ void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
   };
 
   bool failed = false;
+
+  uint32_t us = micros();
 
   /*------------------------------------------------------------------*/
   /* M5 Verification
@@ -346,9 +325,9 @@ void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
       memcpy(message, signature, 64);
 
       // Step 3: Derive iOSDeviceX
-      crypto_hkdf(message + 64, (uint8_t*) "Pair-Setup-Controller-Sign-Salt", 31, (uint8_t*) "Pair-Setup-Controller-Sign-Info\001", 32, srp_getK(), 64);\
+      crypto_hkdf(message + 64, (uint8_t*) "Pair-Setup-Controller-Sign-Salt", 31, (uint8_t*) "Pair-Setup-Controller-Sign-Info\001", 32, srp_getK(), 64);
 
-      // Step 4: Consutrct iOSDeviceInfo
+      // Step 4: Construct iOSDeviceInfo
       memcpy(message + 64 + 32, client, 36);
       memcpy(message + 64 + 32 + 36, ltpk, 32);
 
@@ -383,7 +362,7 @@ void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
     tlv_para[1].len   = 1;
     tlv_para[1].value = &pair_error;
 
-    createSrpResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+    createSrpResponse(conn_hdl, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
 
     return;
   }
@@ -392,8 +371,11 @@ void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
   /* M6 Response Generation
    *------------------------------------------------------------------*/
   // FIXME change later
-  const uint8_t pairing_device_name[] = "41:42:43:44:45:46";
-  uint8_t pairing_devname_len = 17; // sizeof(pairing_device_name)-1; // excluding null termination
+  const uint8_t pairing_device_name[] = "19:07:60:29:4E:C3"; // must be the string representation of Device ID in advertising
+  enum { pairing_devname_len = 17 };
+
+//  const uint8_t pairing_device_name[] = "TTTFF972-040E-4915-A83D-A964690DDTTT";
+//  enum { pairing_devname_len = 36 };
 
   uint8_t smessage[64 + 32 + pairing_devname_len + 32];
 
@@ -408,7 +390,10 @@ void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
   uint64_t slen = 0;
   crypto_sign(smessage, &slen, smessage + 64, sizeof(smessage) - 64, crypto_keys.sign.secret);
 
-  // Step 5: Contruct sub-tlv
+  gatt_reply_now();
+
+
+  // Step 5: Construct sub-tlv
   TLV8_t ktlv[] =
   {
       { .type  = PAIRING_TYPE_IDENTIFIER, .len = pairing_devname_len, .value = pairing_device_name },
@@ -416,28 +401,27 @@ void HAPPairing::pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
       { .type  = PAIRING_TYPE_SIGNATURE , .len = 64, .value = smessage }
   };
 
-  // Additional 16 byte for Auth Tag
-  uint16_t const lbuffer = tlv8_encode_calculate_len(ktlv, arrcount(ktlv)) + 16;
-  uint8_t* buffer = (uint8_t*) rtos_malloc(lbuffer);
+  uint16_t const lbuffer = tlv8_encode_calculate_len(ktlv, arrcount(ktlv));
+  uint8_t* buffer = (uint8_t*) rtos_malloc(lbuffer + 16); // Additional 16 byte for Auth Tag
   VERIFY( buffer != NULL, );
 
-  tlv8_encode_n(buffer, lbuffer-16, ktlv, arrcount(ktlv));
+  tlv8_encode_n(buffer, lbuffer, ktlv, arrcount(ktlv));
 
   // Step 6: Encrypt above sub-tlv and generate 16-byte auth tag.
 //  uint8_t session_key[64]; declare above
 //  crypto_hkdf(session_key, (uint8_t*) "Pair-Setup-Encrypt-Salt", 23, (uint8_t*) "Pair-Setup-Encrypt-Info\001", 24, srp_getK(), 64);
-  crypto_encryptAndSeal(session_key, (uint8_t*) "PS-Msg06", buffer, lbuffer - 16, buffer, buffer + lbuffer - 16);
+  crypto_encryptAndSeal(session_key, (uint8_t*) "PS-Msg06", buffer, lbuffer, buffer, buffer + lbuffer);
 
   tlv_para[1].type  = PAIRING_TYPE_ENCRYPTED_DATA;
-  tlv_para[1].len   = lbuffer;
+  tlv_para[1].len   = lbuffer+16;
   tlv_para[1].value = buffer;
 
-  createSrpResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+  createSrpResponse(conn_hdl, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
 
   rtos_free(buffer);
 }
 
-void _pairing_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req)
+void _pair_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req)
 {
   uint16_t       body_len  = hap_req->body_len;
   uint8_t const* body_data = hap_req->body_data;
@@ -526,6 +510,7 @@ void _pairing_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequ
           break;
 
           case 5:
+
             svc.pair_setup_m5(conn_hdl, hap_req, iencrypted);
 
             tlv8_decode_cleanup(iencrypted);
@@ -543,3 +528,4 @@ void _pairing_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequ
     tlv8_decode_cleanup(tlv);
   }
 }
+

@@ -64,12 +64,14 @@ HAPCharacteristic::HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t u
 
   _hap_req     = NULL;
   _hap_reqlen  = 0;
+  _tid         = 0;
 
   _hap_resp    = NULL;
   _hap_resplen = 0;
   _hap_resplen_sent = 0;
 
   _hap_wr_cb   = NULL;
+  _hap_rd_cb   = NULL;
 
   // Need at least decent length for HAP Procedure
   _max_len     = 64;
@@ -93,6 +95,11 @@ void HAPCharacteristic::setHapProperties(uint16_t prop)
 void HAPCharacteristic::setHapWriteCallback(hap_write_cb_t fp)
 {
   _hap_wr_cb = fp;
+}
+
+void HAPCharacteristic::setHapReadCallback(hap_read_cb_t fp)
+{
+  _hap_rd_cb = fp;
 }
 
 /**
@@ -186,7 +193,7 @@ uint16_t HAPCharacteristic::writeHapValue(uint32_t num)
   return writeHapValue(&num, len);
 }
 
-void HAPCharacteristic::createHapResponse(uint16_t conn_hdl, uint8_t tid, uint8_t status, TLV8_t tlv_para[], uint8_t count)
+void HAPCharacteristic::createHapResponse(uint16_t conn_hdl, uint8_t status, TLV8_t tlv_para[], uint8_t count)
 {
   // Determine body len (not including 2 byte length itself)
   uint16_t body_len = tlv8_encode_calculate_len(tlv_para, count);
@@ -213,7 +220,7 @@ void HAPCharacteristic::createHapResponse(uint16_t conn_hdl, uint8_t tid, uint8_
   varclr(&hap_resp->header.control);
   hap_resp->header.control.fragment = 0;
   hap_resp->header.control.type     = HAP_PDU_RESPONSE;
-  hap_resp->header.tid              = tid;
+  hap_resp->header.tid              = _tid;
   hap_resp->header.status           = status;
   hap_resp->body_len                = body_len;
 
@@ -238,7 +245,7 @@ void HAPCharacteristic::createHapResponse(uint16_t conn_hdl, uint8_t tid, uint8_
       memmove(dst+2, src, cc);
 
       memcpy(&dst[0], &ctrl, 1);
-      dst[1] = tid;
+      dst[1] = _tid;
     }
 
     resp_len += nfrag*2;
@@ -286,25 +293,25 @@ void HAPCharacteristic::processChrSignatureRead(uint16_t conn_hdl, HAPRequest_t*
       { .type  = HAP_PARAM_GATT_FORMAT_DESC       , .len = sizeof(fmt_desc) , .value = &fmt_desc  },
   };
 
-  createHapResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
+  createHapResponse(conn_hdl, HAP_STATUS_SUCCESS, tlv_para, arrcount(tlv_para));
 }
 
 void HAPCharacteristic::processChrRead(uint16_t conn_hdl, HAPRequest_t* hap_req)
 {
   TLV8_t tlv_para = { .type = HAP_PARAM_VALUE, .len = _vallen, .value = _value };
 
-  createHapResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_SUCCESS, &tlv_para, 1);
+  createHapResponse(conn_hdl, HAP_STATUS_SUCCESS, &tlv_para, 1);
 }
 
 void HAPCharacteristic::processHapRequest(uint16_t conn_hdl, HAPRequest_t* hap_req)
 {
   if (hap_req->header.control.type != HAP_PDU_REQUEST)
   {
-    createHapResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
+    createHapResponse(conn_hdl, HAP_STATUS_UNSUPPORTED_PDU);
   }
   else if (hap_req->header.instance_id != _cid)
   {
-    createHapResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_INVALID_INSTANCE_ID);
+    createHapResponse(conn_hdl, HAP_STATUS_INVALID_INSTANCE_ID);
   }else
   {
     LOG_LV2("HAP", "Recv %s request, TID = 0x%02X, CS_ID = 0x%04X", hap_opcode_str[hap_req->header.opcode], hap_req->header.tid, hap_req->header.instance_id);
@@ -324,7 +331,7 @@ void HAPCharacteristic::processHapRequest(uint16_t conn_hdl, HAPRequest_t* hap_r
           _hap_wr_cb(conn_hdl, this, hap_req);
         }else
         {
-          createHapResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
+          createHapResponse(conn_hdl, HAP_STATUS_UNSUPPORTED_PDU);
         }
       break;
 
@@ -338,7 +345,7 @@ void HAPCharacteristic::processHapRequest(uint16_t conn_hdl, HAPRequest_t* hap_r
       //            case HAP_OPCODE_SVC_SIGNATURE_READ: break;
 
       default:
-        createHapResponse(conn_hdl, hap_req->header.tid, HAP_STATUS_UNSUPPORTED_PDU);
+        createHapResponse(conn_hdl, HAP_STATUS_UNSUPPORTED_PDU);
       break;
     }
   }
@@ -423,25 +430,31 @@ void HAPCharacteristic::processGattWrite(uint16_t conn_hdl, ble_gatts_evt_write_
     _hap_reqlen += fraglen;
   }
 
-  // Reply before processing request since cryptography take time and could cause timeout
-  VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply), );
-
   // process when full request is received
   if ( (_hap_reqlen == sizeof(HAPRequestHeader_t)) ||
        (_hap_reqlen == _hap_req->body_len + sizeof(HAPRequestHeader_t) + 2) )
   {
     LOG_LV2_BUFFER("HAP Request", _hap_req, _hap_reqlen);
 
+    // save tid
+    _tid    = _hap_req->header.tid;
+
     processHapRequest(conn_hdl, _hap_req);
 
-    LOG_LV2("HAP", "Response: Control = 0x%02X, TID = 0x%02X, Status = %d", _hap_resp->header.control, _hap_resp->header.tid, _hap_resp->header.status);
-    LOG_LV2_BUFFER(NULL, _hap_resp, _hap_resplen);
+    if (_hap_resp )
+    {
+      LOG_LV2("HAP", "Response: Control = 0x%02X, TID = 0x%02X, Status = %d", _hap_resp->header.control, _hap_resp->header.tid, _hap_resp->header.status);
+      LOG_LV2_BUFFER(NULL, _hap_resp, _hap_resplen);
+    }
 
     // Free if needed
     if ( _hap_reqlen > gatt_mtu ) rtos_free(_hap_req);
     _hap_req    = NULL;
     _hap_reqlen = 0;
   }
+
+  // Reply before processing request since cryptography take time and could cause timeout
+  VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply), );
 }
 
 void HAPCharacteristic::processGattRead(uint16_t conn_hdl, ble_gatts_evt_read_t* gatt_req)
@@ -463,6 +476,15 @@ void HAPCharacteristic::processGattRead(uint16_t conn_hdl, ble_gatts_evt_read_t*
           }
       }
   };
+
+  // If Response has not been generated, call the read callback
+  if ( _hap_resp == NULL && _hap_resplen == 0 )
+  {
+    if ( _hap_rd_cb )
+    {
+      _hap_rd_cb(conn_hdl, this);
+    }
+  }
 
   if (_hap_resplen_sent < _hap_resplen)
   {

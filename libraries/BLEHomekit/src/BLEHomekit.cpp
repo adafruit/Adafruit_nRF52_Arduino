@@ -117,6 +117,7 @@ bool BLEHomekit::setAdv(BLEAdvertisingData& adv_ref)
   // Full name is not added, added full name to scan response
   if ( !adv.addName() )
   {
+    Bluefruit.ScanResponse.clearData();
     Bluefruit.ScanResponse.addName();
   }
 

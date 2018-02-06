@@ -87,6 +87,10 @@ class BLEHomekit : public Advertisable
     HAPPairing  _pairing;
 
     HAPLightBulb _lightbulb;
+
+#if CFG_DEBUG
+    friend void test_homekit(void);
+#endif
 };
 
 #endif /* BLEHOMEKIT_H_ */
