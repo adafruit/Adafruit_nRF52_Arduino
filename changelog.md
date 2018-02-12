@@ -1,5 +1,10 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.8.3
+
+- Enhance indicat API() to wait for confirm or timeout from peer.
+- Add BLEScanner filterService() for BLEService and BLEClientService
+
 ## 0.8.2
 
 - Fixed burning bootloader issue with MacOS

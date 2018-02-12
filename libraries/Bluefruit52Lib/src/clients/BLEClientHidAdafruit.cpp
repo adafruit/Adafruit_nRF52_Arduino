@@ -1,0 +1,119 @@
+/**************************************************************************/
+/*!
+    @file     BLEClientHidAdafruit.cpp
+    @author   hathach (tinyusb.org)
+
+    @section LICENSE
+
+    Software License Agreement (BSD License)
+
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+    1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+    3. Neither the name of the copyright holders nor the
+    names of its contributors may be used to endorse or promote products
+    derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ''AS IS'' AND ANY
+    EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+/**************************************************************************/
+
+#include "bluefruit.h"
+
+void kbd_client_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len)
+{
+
+}
+
+void mouse_client_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len)
+{
+
+}
+
+BLEClientHidAdafruit::BLEClientHidAdafruit(void)
+ : BLEClientService(UUID16_SVC_HUMAN_INTERFACE_DEVICE),
+   _protcol_mode(UUID16_CHR_PROTOCOL_MODE),
+   _kbd_boot_input(UUID16_CHR_BOOT_KEYBOARD_INPUT_REPORT), _kbd_boot_output(UUID16_CHR_BOOT_KEYBOARD_OUTPUT_REPORT),
+   _mouse_boot_input(UUID16_CHR_BOOT_MOUSE_INPUT_REPORT),
+   _hid_info(UUID16_CHR_HID_INFORMATION), _hid_control(UUID16_CHR_HID_CONTROL_POINT)
+{
+  _country = 0;
+}
+
+bool BLEClientHidAdafruit::begin(void)
+{
+  // Invoke base class begin()
+  BLEClientService::begin();
+
+  _kbd_boot_input.begin(this);
+  _kbd_boot_output.begin(this);
+
+  _mouse_boot_input.begin(this);
+
+  // set notify callback
+  _kbd_boot_input.setNotifyCallback(kbd_client_notify_cb);
+  _mouse_boot_input.setNotifyCallback(mouse_client_notify_cb);
+
+}
+
+bool BLEClientHidAdafruit::discover(uint16_t conn_handle)
+{
+  // Call Base class discover
+  VERIFY( BLEClientService::discover(conn_handle) );
+  _conn_hdl = BLE_CONN_HANDLE_INVALID; // make as invalid until we found all chars
+
+  // Discover all characteristics
+  Bluefruit.Discovery.discoverCharacteristic(conn_handle, _protcol_mode, _kbd_boot_input, _kbd_boot_output, _mouse_boot_input, _hid_info, _hid_control);
+
+  VERIFY( _protcol_mode.discovered() && _hid_info.discovered() && _hid_control.discovered() );
+  VERIFY ( keyboardPresent() || mousePresent() );
+
+  _conn_hdl = conn_handle;
+  return true;
+}
+
+bool BLEClientHidAdafruit::keyboardPresent(void)
+{
+  return _kbd_boot_input.discovered() && _kbd_boot_output.discovered();
+}
+
+bool BLEClientHidAdafruit::mousePresent(void)
+{
+  return _mouse_boot_input.discovered();
+}
+
+bool BLEClientHidAdafruit::enableKeyboard(void)
+{
+  _kbd_boot_input.enableNotify();
+}
+
+bool BLEClientHidAdafruit::enableMouse(void)
+{
+  _mouse_boot_input.enableNotify();
+}
+
+bool BLEClientHidAdafruit::disableKeyboard(void)
+{
+  _kbd_boot_input.disableNotify();
+}
+
+bool BLEClientHidAdafruit::disableMouse(void)
+{
+  _mouse_boot_input.disableNotify();
+}
