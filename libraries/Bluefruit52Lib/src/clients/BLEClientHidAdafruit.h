@@ -46,22 +46,36 @@
 class BLEClientHidAdafruit : public BLEClientService
 {
   public:
+    // Callback Signatures
+    typedef void (*kbd_callback_t   ) (uint8_t modifier, uint8_t keycode[6]);
+    typedef void (*mouse_callback_t ) (uint8_t buttons, int8_t x, int8_t y, int8_t wheel, int8_t pan);
+
     BLEClientHidAdafruit(void);
 
     virtual bool  begin(void);
     virtual bool  discover(uint16_t conn_handle);
 
+    bool     getHidInfo(uint8_t info[4]);
+    uint8_t  getCountryCode(void);
+
+    // Check if peripheral support keyboard/mouse
     bool keyboardPresent(void);
     bool mousePresent(void);
 
+    // Enable/Disable report notification for keyboard/mouse
     bool enableKeyboard(void);
     bool disableKeyboard(void);
 
     bool enableMouse(void);
     bool disableMouse(void);
 
+    // Report callback
+    void setKeyboardReportCallback(kbd_callback_t fp);
+    void setMouseReportCallback(mouse_callback_t fp);
+
   private:
-    uint8_t _country;
+    kbd_callback_t   _kbd_cb;
+    mouse_callback_t _mouse_cb;
 
     // Only support Boot protocol for keyboard and Mouse
     BLEClientCharacteristic _protcol_mode;

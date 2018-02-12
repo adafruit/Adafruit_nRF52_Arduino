@@ -79,6 +79,8 @@ class BLEGap
     void           configPrphConn       (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
     void           configCentralConn    (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
 
+//    bool           requestPairing       (uint16_t conn_handle);
+
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal
@@ -108,6 +110,9 @@ class BLEGap
 
       SemaphoreHandle_t indicate_confirm_sem;
       bool              hvc_received;
+
+      // not really peer data
+//      ble_gap_sec_params_t sec_param;
     } gap_peer_t;
 
     gap_peer_t _peers[BLE_MAX_CONN];

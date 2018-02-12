@@ -83,6 +83,15 @@ void connect_callback(uint16_t conn_handle)
   {
     Serial.println("Found it");
 
+    // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.hid_information.xml
+    uint8_t hidInfo[4];
+    hid.getHidInfo(hidInfo);
+
+    Serial.printf("HID version: %d.%d\n", hidInfo[0], hidInfo[1]);
+    Serial.print("Country code: "); Serial.println(hidInfo[2]);
+    Serial.printf("HID Flags  : 0x%02X\n", hidInfo[3]);
+    
+
 //    Serial.println("Enable TXD's notify");
 //    clientUart.enableTXD();
 

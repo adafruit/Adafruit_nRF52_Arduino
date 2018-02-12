@@ -36,16 +36,6 @@
 
 #include "bluefruit.h"
 
-void kbd_client_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len)
-{
-
-}
-
-void mouse_client_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len)
-{
-
-}
-
 BLEClientHidAdafruit::BLEClientHidAdafruit(void)
  : BLEClientService(UUID16_SVC_HUMAN_INTERFACE_DEVICE),
    _protcol_mode(UUID16_CHR_PROTOCOL_MODE),
@@ -53,7 +43,6 @@ BLEClientHidAdafruit::BLEClientHidAdafruit(void)
    _mouse_boot_input(UUID16_CHR_BOOT_MOUSE_INPUT_REPORT),
    _hid_info(UUID16_CHR_HID_INFORMATION), _hid_control(UUID16_CHR_HID_CONTROL_POINT)
 {
-  _country = 0;
 }
 
 bool BLEClientHidAdafruit::begin(void)
@@ -61,15 +50,19 @@ bool BLEClientHidAdafruit::begin(void)
   // Invoke base class begin()
   BLEClientService::begin();
 
+  _protcol_mode.begin(this);
+  _hid_info.begin(this);
+  _hid_control.begin(this);
+
   _kbd_boot_input.begin(this);
   _kbd_boot_output.begin(this);
 
   _mouse_boot_input.begin(this);
 
-  // set notify callback
-  _kbd_boot_input.setNotifyCallback(kbd_client_notify_cb);
-  _mouse_boot_input.setNotifyCallback(mouse_client_notify_cb);
 
+  // set notify callback
+//  _kbd_boot_input.setNotifyCallback(kbd_client_notify_cb);
+//  _mouse_boot_input.setNotifyCallback(mouse_client_notify_cb);
 }
 
 bool BLEClientHidAdafruit::discover(uint16_t conn_handle)
@@ -86,6 +79,19 @@ bool BLEClientHidAdafruit::discover(uint16_t conn_handle)
 
   _conn_hdl = conn_handle;
   return true;
+}
+
+bool BLEClientHidAdafruit::getHidInfo(uint8_t info[4])
+{
+  return 4 == _hid_info.read(info, 4);
+}
+
+uint8_t BLEClientHidAdafruit::getCountryCode(void)
+{
+  uint8_t info[4] = { 0 };
+  getHidInfo(info);
+
+  return info[2];
 }
 
 bool BLEClientHidAdafruit::keyboardPresent(void)
