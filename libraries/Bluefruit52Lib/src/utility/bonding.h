@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
-    @file     bluefruit_common.h
-    @author   hathach
+    @file     bonding.h
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,36 +33,35 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLUEFRUIT_COMMON_H_
-#define BLUEFRUIT_COMMON_H_
+#ifndef BONDING_H_
+#define BONDING_H_
 
-#include <Arduino.h>
-#include "ble.h"
-#include "ble_hci.h"
-#include "nrf_sdm.h"
+#include "bluefruit_common.h"
 
-#include "utility/AdaMsg.h"
+#define CFG_BOND_NFFS_DIR                "/adafruit/bond"
+#define BOND_FILENAME                    CFG_BOND_NFFS_DIR "/%04x"
+#define BOND_FILENAME_LEN                (sizeof(CFG_BOND_NFFS_DIR) + 10)
 
-#define CFG_MAX_DEVNAME_LEN                     32
+// Shared keys with bonded device, size = 80 bytes
+typedef struct
+{
+  ble_gap_enc_key_t own_enc;
+  ble_gap_enc_key_t peer_enc;
+  ble_gap_id_key_t  peer_id;
+} bond_data_t;
 
-#define BLE_GENERIC_TIMEOUT                     100
+enum
+{
+  BOND_FILE_DEVNAME_OFFSET = sizeof(bond_data_t),
+  BOND_FILE_CCCD_OFFSET    = BOND_FILE_DEVNAME_OFFSET + CFG_MAX_DEVNAME_LEN
+};
 
-#define BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS     2000
-#define BLE_GAP_CONN_SLAVE_LATENCY              0
 
-#define BLE_GAP_CONN_MIN_INTERVAL_DFLT          MS100TO125(20)
-#define BLE_GAP_CONN_MAX_INTERVAL_DFLT          MS100TO125(30)
+void bond_save_keys(uint16_t conn_hdl, bond_data_t* bdata);
+void bond_save_cccd(uint16_t cond_hdl, uint16_t ediv);
 
-// Converts an integer of 1.25ms units to msecs
-#define MS100TO125(ms100) (((ms100)*4)/5)
+bool bond_load_keys(uint16_t ediv, bond_data_t* bdata);
+bool bond_load_cccd(uint16_t cond_hdl, uint16_t ediv);
 
-// Converts an integer of 1.25ms units to msecs
-#define MS125TO100(ms125) (((ms125)*5)/4)
 
-// Converts msec to 0.625 unit
-#define MS1000TO625(ms1000) (((ms1000)*8)/5)
-
-// Converts an integer of 625ms units to msecs
-#define MS625TO1000(u625) ( ((u625)*5) / 8 )
-
-#endif /* BLUEFRUIT_COMMON_H_ */
+#endif /* BONDING_H_ */

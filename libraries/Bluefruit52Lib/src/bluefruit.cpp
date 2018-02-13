@@ -36,6 +36,7 @@
 
 #include "bluefruit.h"
 #include <Nffs.h>
+#include "utility/bonding.h"
 
 #define SVC_CONTEXT_FLAG                 (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
 
@@ -1057,7 +1058,8 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
         {
           _bonded = true;
-          ada_callback(NULL, _adafruit_save_bond_key_dfr, _conn_hdl);
+//          ada_callback(NULL, _adafruit_save_bond_key_dfr, _conn_hdl);
+          bond_save_keys(evt_conn_hdl, &_bond_data);
         }else
         {
           PRINT_HEX(status->auth_status);
@@ -1149,11 +1151,11 @@ void AdafruitBluefruit::clearBonds(void)
  * - Name       32 bytes
  * - CCCD       variable
  *------------------------------------------------------------------*/
-void _adafruit_save_bond_key_dfr(uint32_t conn_handle)
-{
-  (void) conn_handle;
-  Bluefruit._saveBondKeys();
-}
+//void _adafruit_save_bond_key_dfr(uint32_t conn_handle)
+//{
+//  (void) conn_handle;
+//  Bluefruit._saveBondKeys();
+//}
 
 void _adafruit_save_bond_cccd_dfr(uint32_t conn_handle)
 {
@@ -1161,43 +1163,43 @@ void _adafruit_save_bond_cccd_dfr(uint32_t conn_handle)
   Bluefruit._saveBondCCCD();
 }
 
-void AdafruitBluefruit::_saveBondKeys(void)
-{
-  char filename[BOND_FILENAME_LEN];
-  sprintf(filename, BOND_FILENAME, _bond_data.own_enc.master_id.ediv);
-
-  char devname[CFG_MAX_DEVNAME_LEN] = { 0 };
-  Gap.getPeerName(_conn_hdl, devname, CFG_MAX_DEVNAME_LEN);
-
-  NffsFile file(filename, FS_ACCESS_WRITE);
-
-  VERIFY( file.exists(), );
-
-  bool result = true;
-
-  // write keys
-  if ( !file.write((uint8_t*)&_bond_data, sizeof(_bond_data)) )
-  {
-    result = false;
-  }
-
-  // write device name
-  if ( strlen(devname) && !file.write((uint8_t*) devname, CFG_MAX_DEVNAME_LEN) )
-  {
-    result = false;
-  }
-
-  file.close();
-
-  if (result)
-  {
-    LOG_LV2("BOND", "Keys for \"%s\" is saved to file %s", devname, filename);
-  }else
-  {
-    LOG_LV1("BOND", "Failed to save keys for \"%s\"", devname);
-  }
-  printBondDir();
-}
+//void AdafruitBluefruit::_saveBondKeys(void)
+//{
+//  char filename[BOND_FILENAME_LEN];
+//  sprintf(filename, BOND_FILENAME, _bond_data.own_enc.master_id.ediv);
+//
+//  char devname[CFG_MAX_DEVNAME_LEN] = { 0 };
+//  Gap.getPeerName(_conn_hdl, devname, CFG_MAX_DEVNAME_LEN);
+//
+//  NffsFile file(filename, FS_ACCESS_WRITE);
+//
+//  VERIFY( file.exists(), );
+//
+//  bool result = true;
+//
+//  // write keys
+//  if ( !file.write((uint8_t*)&_bond_data, sizeof(_bond_data)) )
+//  {
+//    result = false;
+//  }
+//
+//  // write device name
+//  if ( strlen(devname) && !file.write((uint8_t*) devname, CFG_MAX_DEVNAME_LEN) )
+//  {
+//    result = false;
+//  }
+//
+//  file.close();
+//
+//  if (result)
+//  {
+//    LOG_LV2("BOND", "Keys for \"%s\" is saved to file %s", devname, filename);
+//  }else
+//  {
+//    LOG_LV1("BOND", "Failed to save keys for \"%s\"", devname);
+//  }
+//  printBondDir();
+//}
 
 bool AdafruitBluefruit::_loadBondKeys(uint16_t ediv)
 {

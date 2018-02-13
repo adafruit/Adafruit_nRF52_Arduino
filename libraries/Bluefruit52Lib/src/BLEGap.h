@@ -110,9 +110,6 @@ class BLEGap
 
       SemaphoreHandle_t indicate_confirm_sem;
       bool              hvc_received;
-
-      // not really peer data
-//      ble_gap_sec_params_t sec_param;
     } gap_peer_t;
 
     gap_peer_t _peers[BLE_MAX_CONN];

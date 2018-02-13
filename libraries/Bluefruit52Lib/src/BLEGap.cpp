@@ -240,6 +240,10 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     }
     break;
 
+    case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
+      // Pairing in progress, Peer asking for our info
+    break;
+
 #if SD_VER < 500
     case BLE_EVT_TX_COMPLETE:
       if ( peer->hvn_tx_sem )

@@ -40,7 +40,6 @@
 #include "bluefruit_common.h"
 
 #define CFG_ADV_BLINKY_INTERVAL          500
-#define CFG_MAX_DEVNAME_LEN              32
 
 /* Note changing these parameters will affect APP_RAM_BASE
  * --> need to update RAM region in linker file
@@ -90,6 +89,9 @@
 #include "clients/BLEClientHidAdafruit.h"
 
 #include "utility/AdaCallback.h"
+
+
+#include "utility/bonding.h"
 
 enum
 {
@@ -234,12 +236,7 @@ class AdafruitBluefruit
     ble_gap_sec_params_t _sec_param;
 
     // Shared keys with bonded device, size = 80 bytes
-    struct
-    {
-      ble_gap_enc_key_t own_enc;
-      ble_gap_enc_key_t peer_enc;
-      ble_gap_id_key_t  peer_id;
-    } _bond_data;
+    bond_data_t _bond_data;
 
     enum
     {
