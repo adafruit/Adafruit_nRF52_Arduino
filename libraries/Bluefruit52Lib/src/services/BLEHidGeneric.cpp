@@ -232,7 +232,7 @@ err_t BLEHidGeneric::begin(void)
   _chr_control.setPermission(SECMODE_NO_ACCESS, SECMODE_ENC_NO_MITM);
   _chr_control.setFixedLen(1);
   VERIFY_STATUS( _chr_control.begin() );
-  _chr_control.write( (uint8_t) 0 );
+  _chr_control.write8(0);
 
   return ERROR_NONE;
 }
