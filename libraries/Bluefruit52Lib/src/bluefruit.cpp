@@ -121,9 +121,6 @@ COMMENT_OUT(
   _auth_type = BLE_GAP_AUTH_KEY_TYPE_NONE;
   varclr(_pin);
 )
-
-  varclr(&_bond_data);
-  _bond_data.own_enc.master_id.ediv = 0xFFFF; // invalid value for ediv
 }
 
 void AdafruitBluefruit::configServiceChanged(bool changed)
@@ -930,93 +927,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
       break;
 
-//      case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-//        // Pairing in progress
-//        varclr(&_bond_data);
-//        _bond_data.own_enc.master_id.ediv = 0xFFFF; // invalid value for ediv
-//
-//        /* Step 1: Pairing/Bonding
-//         * - Central supplies its parameters
-//         * - We replies with our security parameters
-//         */
-//        //      ble_gap_sec_params_t* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
-//        COMMENT_OUT(
-//            // Change security parameter according to authentication type
-//            if ( _auth_type == BLE_GAP_AUTH_KEY_TYPE_PASSKEY)
-//            {
-//              sec_para.mitm    = 1;
-//              sec_para.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
-//            }
-//        )
-//
-//        ble_gap_sec_keyset_t keyset =
-//        {
-//            .keys_own = {
-//                .p_enc_key  = &_bond_data.own_enc,
-//                .p_id_key   = NULL,
-//                .p_sign_key = NULL,
-//                .p_pk       = NULL
-//            },
-//
-//            .keys_peer = {
-//                .p_enc_key  = &_bond_data.peer_enc,
-//                .p_id_key   = &_bond_data.peer_id,
-//                .p_sign_key = NULL,
-//                .p_pk       = NULL
-//            }
-//        };
-//
-//        VERIFY_STATUS(sd_ble_gap_sec_params_reply(evt->evt.gap_evt.conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &_sec_param, &keyset), RETURN_VOID);
-//      break;
-
-//      case BLE_GAP_EVT_SEC_INFO_REQUEST:
-//      {
-//        // Reconnection. If bonded previously, Central will ask for stored keys.
-//        // return security information. Otherwise NULL
-//        ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
-//
-//        if ( bond_load_keys(sec_request->master_id.ediv, &_bond_data) )
-//        {
-//          sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_bond_data.own_enc.enc_info, &_bond_data.peer_id.id_info, NULL);
-//        } else
-//        {
-//          sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
-//        }
-//      }
-//      break;
-
-//      case BLE_GAP_EVT_CONN_SEC_UPDATE:
-//      {
-//        // Connection is secured aka Paired
-//        COMMENT_OUT( ble_gap_conn_sec_t* conn_sec = (ble_gap_conn_sec_t*) &evt->evt.gap_evt.params.conn_sec_update.conn_sec; )
-//
-//        // Previously bonded --> secure by re-connection process
-//        // --> Load & Set Sys Attr (Apply Service Context)
-//        // Else Init Sys Attr
-//        bond_load_cccd(evt_conn_hdl, _bond_data.own_enc.master_id.ediv);
-//
-//        // Consider Paired as Bonded
-//        _bonded = true;
-//      }
-//      break;
-//
-//      case BLE_GAP_EVT_AUTH_STATUS:
-//      {
-//        // Bonding process completed
-//        ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
-//
-//        // Pairing/Bonding succeeded --> save encryption keys
-//        if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
-//        {
-//          _bonded = true;
-//          bond_save_keys(evt_conn_hdl, &_bond_data);
-//        }else
-//        {
-//          PRINT_HEX(status->auth_status);
-//        }
-//      }
-//      break;
-
       case BLE_GATTS_EVT_SYS_ATTR_MISSING:
         sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
       break;
@@ -1077,20 +987,3 @@ void AdafruitBluefruit::clearBonds(void)
   bond_clear();
 }
 
-void AdafruitBluefruit::_bledfu_get_bond_data(ble_gap_addr_t* addr, ble_gap_irk_t* irk, ble_gap_enc_key_t* enc_key)
-{
-  (*addr) = getPeerAddr();
-
-  if ( connPaired() )
-  {
-    bond_data_t bdata;
-
-    if ( bond_load_keys( Gap._get_peer(_conn_hdl)->ediv, &bdata ) )
-    {
-      (*addr)    = _bond_data.peer_id.id_addr_info;
-      (*irk)     = _bond_data.peer_id.id_info;
-
-      (*enc_key) = _bond_data.own_enc;
-    }
-  }
-}

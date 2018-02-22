@@ -192,10 +192,6 @@ class AdafruitBluefruit
     void _startConnLed       (void);
     void _stopConnLed        (void);
     void _setConnLed         (bool on_off);
-    void _bledfu_get_bond_data(ble_gap_addr_t* addr, ble_gap_irk_t* irk, ble_gap_enc_key_t* enc_key);
-
-    // Shared keys with bonded device, size = 80 bytes
-    bond_data_t _bond_data;
 
   private:
     /*------------- SoftDevice Configuration -------------*/
