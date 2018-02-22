@@ -35,6 +35,7 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
+#include "utility/bonding.h"
 
 
 BLEGatt::BLEGatt(void)
@@ -95,7 +96,8 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
   const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
   const uint16_t evt_id       = evt->header.evt_id;
 
-  // Server Service TODO multiple peripherals
+  /*------------- Server service -------------*/
+  // TODO multiple peripherals
 //  if ( evt_conn_hdl == Bluefruit.connHandle() )
   {
     if ( evt_id == BLE_GAP_EVT_DISCONNECTED ||  evt_id == BLE_GAP_EVT_CONNECTED )
@@ -113,7 +115,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
     }
   }
 
-  // Server Characteristics
+  /*------------- Server Characteristics -------------*/
   // TODO multiple prph connection
   if ( evt_conn_hdl == Bluefruit.connHandle() )
   {
@@ -127,11 +129,11 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
         case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
           // Handle has the same offset for read & write request
           req_handle = evt->evt.gatts_evt.params.authorize_request.request.read.handle;
-          break;
+        break;
 
         case BLE_GATTS_EVT_WRITE:
           req_handle = evt->evt.gatts_evt.params.write.handle;
-          break;
+        break;
 
         default: break;
       }
@@ -140,11 +142,17 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
       if ((req_handle != BLE_GATT_HANDLE_INVALID) && (req_handle == chr->handles().value_handle || req_handle == chr->handles().cccd_handle ))
       {
         chr->_eventHandler(evt);
+
+        // Save CCCD if paired
+        if ( Bluefruit.connPaired() && (evt_id == BLE_GATTS_EVT_WRITE) && (req_handle == chr->handles().cccd_handle) )
+        {
+          bond_save_cccd(evt_conn_hdl, Bluefruit._bond_data.own_enc.master_id.ediv);
+        }
       }
     }
   }
 
-  // Client Characteristics
+  /*------------- Client Characteristics -------------*/
   for(int i=0; i<_client.chr_count; i++)
   {
     if ( evt_conn_hdl == _client.chr_list[i]->connHandle() )

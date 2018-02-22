@@ -64,8 +64,6 @@ extern "C"
 void adafruit_ble_task(void* arg);
 void adafruit_soc_task(void* arg);
 
-void _adafruit_save_bond_key_dfr(uint32_t conn_handle);
-
 #if CFG_DEBUG >= 2
 #define printBondDir()    dbgPrintDir(CFG_BOND_NFFS_DIR)
 #else
@@ -954,9 +952,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       break;
 
       case BLE_GAP_EVT_DISCONNECTED:
-        // Save all configured cccd
-        if (_bonded) _saveBondCCCD();
-
         if (_disconnect_cb) ada_callback(NULL, _disconnect_cb, _conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
 
         LOG_LV2("GAP", "Disconnect Reason 0x%02X", evt->evt.gap_evt.params.disconnected.reason);
@@ -1012,7 +1007,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         // return security information. Otherwise NULL
         ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
 
-        if ( _loadBondKeys(sec_request->master_id.ediv) )
+        if ( bond_load_keys(sec_request->master_id.ediv, &_bond_data) )
         {
           sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_bond_data.own_enc.enc_info, &_bond_data.peer_id.id_info, NULL);
         } else
@@ -1039,10 +1034,10 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         // Connection is secured aka Paired
         COMMENT_OUT( ble_gap_conn_sec_t* conn_sec = (ble_gap_conn_sec_t*) &evt->evt.gap_evt.params.conn_sec_update.conn_sec; )
 
-          // Previously bonded --> secure by re-connection process
-          // --> Load & Set Sys Attr (Apply Service Context)
-          // Else Init Sys Attr
-          _loadBondCCCD(_bond_data.own_enc.master_id.ediv);
+        // Previously bonded --> secure by re-connection process
+        // --> Load & Set Sys Attr (Apply Service Context)
+        // Else Init Sys Attr
+        bond_load_cccd(evt_conn_hdl, _bond_data.own_enc.master_id.ediv);
 
         // Consider Paired as Bonded
         _bonded = true;
@@ -1157,11 +1152,11 @@ void AdafruitBluefruit::clearBonds(void)
 //  Bluefruit._saveBondKeys();
 //}
 
-void _adafruit_save_bond_cccd_dfr(uint32_t conn_handle)
-{
-  (void) conn_handle;
-  Bluefruit._saveBondCCCD();
-}
+//void _adafruit_save_bond_cccd_dfr(uint32_t conn_handle)
+//{
+//  (void) conn_handle;
+//  Bluefruit._saveBondCCCD();
+//}
 
 //void AdafruitBluefruit::_saveBondKeys(void)
 //{
@@ -1201,103 +1196,103 @@ void _adafruit_save_bond_cccd_dfr(uint32_t conn_handle)
 //  printBondDir();
 //}
 
-bool AdafruitBluefruit::_loadBondKeys(uint16_t ediv)
-{
-  VERIFY_STATIC(sizeof(_bond_data) == 80 );
+//bool AdafruitBluefruit::_loadBondKeys(uint16_t ediv)
+//{
+//  VERIFY_STATIC(sizeof(_bond_data) == 80 );
+//
+//  char filename[BOND_FILENAME_LEN];
+//  sprintf(filename, BOND_FILENAME, ediv);
+//
+//  bool result = (Nffs.readFile(filename, &_bond_data, sizeof(_bond_data)) > 0);
+//
+//  if ( result )
+//  {
+//    LOG_LV2("BOND", "Load Keys from file %s", filename);
+//  }else
+//  {
+//    LOG_LV1("BOND", "Keys not found");
+//  }
+//
+//  return result;
+//}
 
-  char filename[BOND_FILENAME_LEN];
-  sprintf(filename, BOND_FILENAME, ediv);
+//void AdafruitBluefruit::_saveBondCCCD(void)
+//{
+//  VERIFY( _bond_data.own_enc.master_id.ediv != 0xFFFF, );
+//
+//  uint16_t len=0;
+//  sd_ble_gatts_sys_attr_get(_conn_hdl, NULL, &len, SVC_CONTEXT_FLAG);
+//
+//  uint8_t* sys_attr = (uint8_t*) rtos_malloc( len );
+//  VERIFY( sys_attr, );
+//
+//  if ( ERROR_NONE == sd_ble_gatts_sys_attr_get(_conn_hdl, sys_attr, &len, SVC_CONTEXT_FLAG) )
+//  {
+//    // save to file
+//    char filename[BOND_FILENAME_LEN];
+//    sprintf(filename, BOND_FILENAME, _bond_data.own_enc.master_id.ediv);
+//
+//    if ( Nffs.writeFile(filename, sys_attr, len, BOND_FILE_CCCD_OFFSET) )
+//    {
+//      LOG_LV2("BOND", "CCCD setting is saved to file %s", filename);
+//    }else
+//    {
+//      LOG_LV1("BOND", "Failed to save CCCD setting");
+//    }
+//
+//  }
+//
+//  printBondDir();
+//
+//  rtos_free(sys_attr);
+//}
 
-  bool result = (Nffs.readFile(filename, &_bond_data, sizeof(_bond_data)) > 0);
-
-  if ( result )
-  {
-    LOG_LV2("BOND", "Load Keys from file %s", filename);
-  }else
-  {
-    LOG_LV1("BOND", "Keys not found");
-  }
-
-  return result;
-}
-
-void AdafruitBluefruit::_saveBondCCCD(void)
-{
-  VERIFY( _bond_data.own_enc.master_id.ediv != 0xFFFF, );
-
-  uint16_t len=0;
-  sd_ble_gatts_sys_attr_get(_conn_hdl, NULL, &len, SVC_CONTEXT_FLAG);
-
-  uint8_t* sys_attr = (uint8_t*) rtos_malloc( len );
-  VERIFY( sys_attr, );
-
-  if ( ERROR_NONE == sd_ble_gatts_sys_attr_get(_conn_hdl, sys_attr, &len, SVC_CONTEXT_FLAG) )
-  {
-    // save to file
-    char filename[BOND_FILENAME_LEN];
-    sprintf(filename, BOND_FILENAME, _bond_data.own_enc.master_id.ediv);
-
-    if ( Nffs.writeFile(filename, sys_attr, len, BOND_FILE_CCCD_OFFSET) )
-    {
-      LOG_LV2("BOND", "CCCD setting is saved to file %s", filename);
-    }else
-    {
-      LOG_LV1("BOND", "Failed to save CCCD setting");
-    }
-
-  }
-
-  printBondDir();
-
-  rtos_free(sys_attr);
-}
-
-void AdafruitBluefruit::_loadBondCCCD(uint16_t ediv)
-{
-  bool loaded = false;
-
-  char filename[BOND_FILENAME_LEN];
-  sprintf(filename, BOND_FILENAME, ediv);
-
-  NffsFile file(filename, FS_ACCESS_READ);
-
-  if ( file.exists() )
-  {
-    int32_t len = file.size() - BOND_FILE_CCCD_OFFSET;
-
-    if ( len )
-    {
-      uint8_t* sys_attr = (uint8_t*) rtos_malloc( len );
-
-      if (sys_attr)
-      {
-        file.seek(BOND_FILE_CCCD_OFFSET);
-
-        if ( file.read(sys_attr, len ) )
-        {
-          if (ERROR_NONE == sd_ble_gatts_sys_attr_set(_conn_hdl, sys_attr, len, SVC_CONTEXT_FLAG) )
-          {
-            loaded = true;
-
-            LOG_LV2("BOND", "Load CCCD from file %s", filename);
-          }else
-          {
-            LOG_LV1("BOND", "CCCD setting not found");
-          }
-        }
-
-        rtos_free(sys_attr);
-      }
-    }
-  }
-
-  file.close();
-
-  if ( !loaded )
-  {
-    sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
-  }
-}
+//void AdafruitBluefruit::_loadBondCCCD(uint16_t ediv)
+//{
+//  bool loaded = false;
+//
+//  char filename[BOND_FILENAME_LEN];
+//  sprintf(filename, BOND_FILENAME, ediv);
+//
+//  NffsFile file(filename, FS_ACCESS_READ);
+//
+//  if ( file.exists() )
+//  {
+//    int32_t len = file.size() - BOND_FILE_CCCD_OFFSET;
+//
+//    if ( len )
+//    {
+//      uint8_t* sys_attr = (uint8_t*) rtos_malloc( len );
+//
+//      if (sys_attr)
+//      {
+//        file.seek(BOND_FILE_CCCD_OFFSET);
+//
+//        if ( file.read(sys_attr, len ) )
+//        {
+//          if (ERROR_NONE == sd_ble_gatts_sys_attr_set(_conn_hdl, sys_attr, len, SVC_CONTEXT_FLAG) )
+//          {
+//            loaded = true;
+//
+//            LOG_LV2("BOND", "Load CCCD from file %s", filename);
+//          }else
+//          {
+//            LOG_LV1("BOND", "CCCD setting not found");
+//          }
+//        }
+//
+//        rtos_free(sys_attr);
+//      }
+//    }
+//  }
+//
+//  file.close();
+//
+//  if ( !loaded )
+//  {
+//    sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
+//  }
+//}
 
 void AdafruitBluefruit::_bledfu_get_bond_data(ble_gap_addr_t* addr, ble_gap_irk_t* irk, ble_gap_enc_key_t* enc_key)
 {

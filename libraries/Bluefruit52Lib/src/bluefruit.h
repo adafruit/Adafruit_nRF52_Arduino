@@ -196,8 +196,16 @@ class AdafruitBluefruit
     void _setConnLed         (bool on_off);
     void _bledfu_get_bond_data(ble_gap_addr_t* addr, ble_gap_irk_t* irk, ble_gap_enc_key_t* enc_key);
 
-    void _saveBondKeys(void);
-    void _saveBondCCCD(void);
+//    void _saveBondKeys(void);
+//    void _saveBondCCCD(void);
+
+    // Shared keys with bonded device, size = 80 bytes
+    bond_data_t _bond_data;
+    enum
+    {
+      BOND_FILE_DEVNAME_OFFSET = sizeof(_bond_data),
+      BOND_FILE_CCCD_OFFSET    = BOND_FILE_DEVNAME_OFFSET + CFG_MAX_DEVNAME_LEN
+    };
 
   private:
     /*------------- SoftDevice Configuration -------------*/
@@ -235,15 +243,6 @@ class AdafruitBluefruit
 
     ble_gap_sec_params_t _sec_param;
 
-    // Shared keys with bonded device, size = 80 bytes
-    bond_data_t _bond_data;
-
-    enum
-    {
-      BOND_FILE_DEVNAME_OFFSET = sizeof(_bond_data),
-      BOND_FILE_CCCD_OFFSET    = BOND_FILE_DEVNAME_OFFSET + CFG_MAX_DEVNAME_LEN
-    };
-
 COMMENT_OUT(
     uint8_t _auth_type;
     char _pin[BLE_GAP_PASSKEY_LEN];
@@ -252,8 +251,8 @@ COMMENT_OUT(
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      *------------------------------------------------------------------*/
-    bool _loadBondKeys(uint16_t ediv);
-    void _loadBondCCCD(uint16_t ediv);
+//    bool _loadBondKeys(uint16_t ediv);
+//    void _loadBondCCCD(uint16_t ediv);
     void _ble_handler(ble_evt_t* evt);
 
     friend void SD_EVT_IRQHandler(void);

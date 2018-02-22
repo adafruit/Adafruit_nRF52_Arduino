@@ -46,6 +46,7 @@
 #define printBondDir()
 #endif
 
+#define SVC_CONTEXT_FLAG                 (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
 
 
 /*------------------------------------------------------------------*/
@@ -104,17 +105,105 @@ void bond_save_keys(uint16_t conn_hdl, bond_data_t* bdata)
   ada_callback(buf, bond_save_keys_dfr, conn_hdl, buf);
 }
 
+static void bond_save_cccd_dfr (uint16_t conn_hdl, uint16_t ediv)
+{
+  uint16_t len=0;
+  sd_ble_gatts_sys_attr_get(conn_hdl, NULL, &len, SVC_CONTEXT_FLAG);
+
+  uint8_t* sys_attr = (uint8_t*) rtos_malloc( len );
+  VERIFY( sys_attr, );
+
+  if ( ERROR_NONE == sd_ble_gatts_sys_attr_get(conn_hdl, sys_attr, &len, SVC_CONTEXT_FLAG) )
+  {
+    // save to file
+    char filename[BOND_FILENAME_LEN];
+    sprintf(filename, BOND_FILENAME, ediv);
+
+    if ( Nffs.writeFile(filename, sys_attr, len, BOND_FILE_CCCD_OFFSET) )
+    {
+      LOG_LV2("BOND", "CCCD setting is saved to file %s", filename);
+    }else
+    {
+      LOG_LV1("BOND", "Failed to save CCCD setting");
+    }
+
+  }
+
+  rtos_free(sys_attr);
+  printBondDir();
+}
+
 void bond_save_cccd(uint16_t cond_hdl, uint16_t ediv)
 {
+  VERIFY( ediv != 0xFFFF, );
 
+  // queue to execute in Ada Callback thread
+  ada_callback(NULL, bond_save_cccd_dfr, cond_hdl, ediv);
 }
 
 bool bond_load_keys(uint16_t ediv, bond_data_t* bdata)
 {
+  char filename[BOND_FILENAME_LEN];
+  sprintf(filename, BOND_FILENAME, ediv);
 
+  bool result = (Nffs.readFile(filename, bdata, sizeof(bond_data_t)) > 0);
+
+  if ( result )
+  {
+    LOG_LV2("BOND", "Load Keys from file %s", filename);
+  }else
+  {
+    LOG_LV1("BOND", "Keys not found");
+  }
+
+  return result;
 }
 
 bool bond_load_cccd(uint16_t cond_hdl, uint16_t ediv)
 {
+  bool loaded = false;
 
+  char filename[BOND_FILENAME_LEN];
+  sprintf(filename, BOND_FILENAME, ediv);
+
+  NffsFile file(filename, FS_ACCESS_READ);
+
+  if ( file.exists() )
+  {
+    int32_t len = file.size() - BOND_FILE_CCCD_OFFSET;
+
+    if ( len )
+    {
+      uint8_t* sys_attr = (uint8_t*) rtos_malloc( len );
+
+      if (sys_attr)
+      {
+        file.seek(BOND_FILE_CCCD_OFFSET);
+
+        if ( file.read(sys_attr, len ) )
+        {
+          if (ERROR_NONE == sd_ble_gatts_sys_attr_set(cond_hdl, sys_attr, len, SVC_CONTEXT_FLAG) )
+          {
+            loaded = true;
+
+            LOG_LV2("BOND", "Load CCCD from file %s", filename);
+          }else
+          {
+            LOG_LV1("BOND", "CCCD setting not found");
+          }
+        }
+
+        rtos_free(sys_attr);
+      }
+    }
+  }
+
+  file.close();
+
+  if ( !loaded )
+  {
+    sd_ble_gatts_sys_attr_set(cond_hdl, NULL, 0, 0);
+  }
+
+  return loaded;
 }

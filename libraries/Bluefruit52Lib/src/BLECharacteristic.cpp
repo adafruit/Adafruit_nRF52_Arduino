@@ -394,14 +394,6 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
           memcpy(&value, request->data, 2);
           _cccd_wr_cb(*this, value);
         }
-
-        // TODO could move later
-        // Save CCCD if bonded to file whenever changed
-        extern void _adafruit_save_bond_cccd_dfr(uint32_t conn_handle);
-        if ( Bluefruit.connPaired() )
-        {
-          ada_callback(NULL, _adafruit_save_bond_cccd_dfr, event->evt.common_evt.conn_handle);
-        }
       }
     }
     break;
