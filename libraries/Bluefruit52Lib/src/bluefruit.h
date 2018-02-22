@@ -196,9 +196,6 @@ class AdafruitBluefruit
     void _setConnLed         (bool on_off);
     void _bledfu_get_bond_data(ble_gap_addr_t* addr, ble_gap_irk_t* irk, ble_gap_enc_key_t* enc_key);
 
-//    void _saveBondKeys(void);
-//    void _saveBondCCCD(void);
-
     // Shared keys with bonded device, size = 80 bytes
     bond_data_t _bond_data;
     enum
@@ -251,8 +248,6 @@ COMMENT_OUT(
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      *------------------------------------------------------------------*/
-//    bool _loadBondKeys(uint16_t ediv);
-//    void _loadBondCCCD(uint16_t ediv);
     void _ble_handler(ble_evt_t* evt);
 
     friend void SD_EVT_IRQHandler(void);
