@@ -198,11 +198,6 @@ class AdafruitBluefruit
 
     // Shared keys with bonded device, size = 80 bytes
     bond_data_t _bond_data;
-    enum
-    {
-      BOND_FILE_DEVNAME_OFFSET = sizeof(_bond_data),
-      BOND_FILE_CCCD_OFFSET    = BOND_FILE_DEVNAME_OFFSET + CFG_MAX_DEVNAME_LEN
-    };
 
   private:
     /*------------- SoftDevice Configuration -------------*/

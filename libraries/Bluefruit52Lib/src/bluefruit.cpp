@@ -41,13 +41,8 @@
 #define CFG_BLE_TX_POWER_LEVEL           0
 #define CFG_DEFAULT_NAME                 "Bluefruit52"
 
-
 #define CFG_BLE_TASK_STACKSIZE          (512*3)
 #define CFG_SOC_TASK_STACKSIZE          (200)
-
-#define CFG_BOND_NFFS_DIR                "/adafruit/bond"
-#define BOND_FILENAME                    CFG_BOND_NFFS_DIR "/%04x"
-#define BOND_FILENAME_LEN                (sizeof(CFG_BOND_NFFS_DIR) + 10)
 
 AdafruitBluefruit Bluefruit;
 
@@ -61,12 +56,6 @@ extern "C"
 
 void adafruit_ble_task(void* arg);
 void adafruit_soc_task(void* arg);
-
-#if CFG_DEBUG >= 2
-#define printBondDir()    dbgPrintDir(CFG_BOND_NFFS_DIR)
-#else
-#define printBondDir()
-#endif
 
 /*------------------------------------------------------------------*/
 /* INTERNAL FUNCTION
@@ -1128,13 +1117,7 @@ bool AdafruitBluefruit::requestPairing(void)
 
 void AdafruitBluefruit::clearBonds(void)
 {
-  // Detele bonds dir
-  Nffs.remove(CFG_BOND_NFFS_DIR);
-
-  // Create an empty one
-  Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
-
-  printBondDir();
+  bond_clear();
 }
 
 void AdafruitBluefruit::_bledfu_get_bond_data(ble_gap_addr_t* addr, ble_gap_irk_t* irk, ble_gap_enc_key_t* enc_key)

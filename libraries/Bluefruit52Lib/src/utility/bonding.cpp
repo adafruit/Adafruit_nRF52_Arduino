@@ -39,21 +39,23 @@
 #include "bonding.h"
 #include "bluefruit.h"
 
+#define SVC_CONTEXT_FLAG                 (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
+
 #if CFG_DEBUG >= 2
-//#define printBondDir()    dbgPrintDir(CFG_BOND_NFFS_DIR)
-#define printBondDir()
+#define printBondDir()    dbgPrintDir(CFG_BOND_NFFS_DIR)
 #else
 #define printBondDir()
 #endif
-
-#define SVC_CONTEXT_FLAG                 (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
-
 
 /*------------------------------------------------------------------*/
 /* Saving Bond Data to Nffs in following layout
  * - _bond_data 80 bytes
  * - Name       32 bytes
  * - CCCD       variable
+ *------------------------------------------------------------------*/
+
+/*------------------------------------------------------------------*/
+/* Keys
  *------------------------------------------------------------------*/
 static void bond_save_keys_dfr(uint16_t conn_hdl, bond_data_t* bdata)
 {
@@ -105,6 +107,28 @@ void bond_save_keys(uint16_t conn_hdl, bond_data_t* bdata)
   ada_callback(buf, bond_save_keys_dfr, conn_hdl, buf);
 }
 
+bool bond_load_keys(uint16_t ediv, bond_data_t* bdata)
+{
+  char filename[BOND_FILENAME_LEN];
+  sprintf(filename, BOND_FILENAME, ediv);
+
+  bool result = (Nffs.readFile(filename, bdata, sizeof(bond_data_t)) > 0);
+
+  if ( result )
+  {
+    LOG_LV2("BOND", "Load Keys from file %s", filename);
+  }else
+  {
+    LOG_LV1("BOND", "Keys not found");
+  }
+
+  return result;
+}
+
+
+/*------------------------------------------------------------------*/
+/* CCCD
+ *------------------------------------------------------------------*/
 static void bond_save_cccd_dfr (uint16_t conn_hdl, uint16_t ediv)
 {
   uint16_t len=0;
@@ -141,23 +165,6 @@ void bond_save_cccd(uint16_t cond_hdl, uint16_t ediv)
   ada_callback(NULL, bond_save_cccd_dfr, cond_hdl, ediv);
 }
 
-bool bond_load_keys(uint16_t ediv, bond_data_t* bdata)
-{
-  char filename[BOND_FILENAME_LEN];
-  sprintf(filename, BOND_FILENAME, ediv);
-
-  bool result = (Nffs.readFile(filename, bdata, sizeof(bond_data_t)) > 0);
-
-  if ( result )
-  {
-    LOG_LV2("BOND", "Load Keys from file %s", filename);
-  }else
-  {
-    LOG_LV1("BOND", "Keys not found");
-  }
-
-  return result;
-}
 
 bool bond_load_cccd(uint16_t cond_hdl, uint16_t ediv)
 {
@@ -206,4 +213,18 @@ bool bond_load_cccd(uint16_t cond_hdl, uint16_t ediv)
   }
 
   return loaded;
+}
+
+/*------------------------------------------------------------------*/
+/* DELETE
+ *------------------------------------------------------------------*/
+void bond_clear(void)
+{
+  // Detele bonds dir
+  Nffs.remove(CFG_BOND_NFFS_DIR);
+
+  // Create an empty one
+  Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
+
+  printBondDir();
 }
