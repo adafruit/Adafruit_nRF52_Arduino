@@ -92,17 +92,19 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
        (request->op != BLE_GATTS_OP_EXEC_WRITE_REQ_NOW) &&
        (request->op != BLE_GATTS_OP_EXEC_WRITE_REQ_CANCEL))
   {
+    uint16_t conn_hdl = Bluefruit.connHandle();
+
     ble_gatts_rw_authorize_reply_params_t reply = { .type = BLE_GATTS_AUTHORIZE_TYPE_WRITE };
 
     if ( !chr.notifyEnabled() )
     {
       reply.params.write.gatt_status = BLE_GATT_STATUS_ATTERR_CPS_CCCD_CONFIG_ERROR;
-      sd_ble_gatts_rw_authorize_reply(Bluefruit.connHandle(), &reply);
+      sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
       return;
     }
 
     reply.params.write.gatt_status = BLE_GATT_STATUS_SUCCESS;
-    sd_ble_gatts_rw_authorize_reply(Bluefruit.connHandle(), &reply);
+    sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
 
     enum { START_DFU  = 1 };
     if ( request->data[0] == START_DFU )
@@ -128,10 +130,22 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
 
       // Get CCCD
       uint16_t sysattr_len = sizeof(peer_data->sys_attr);
-      sd_ble_gatts_sys_attr_get(Bluefruit.connHandle(), peer_data->sys_attr, &sysattr_len, BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS);
+      sd_ble_gatts_sys_attr_get(conn_hdl, peer_data->sys_attr, &sysattr_len, BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS);
 
-      // Get Bond Data
-      Bluefruit._bledfu_get_bond_data(&peer_data->addr, &peer_data->irk, &peer_data->enc_key);
+      // Get Bond Data or using Address if not bonded
+      peer_data->addr = Bluefruit.Gap.getPeerAddr(conn_hdl);
+
+      if ( Bluefruit.Gap.bonded(conn_hdl) )
+      {
+        bond_data_t bdata;
+
+        if ( bond_load_keys( Bluefruit.Gap._get_peer(conn_hdl)->ediv, &bdata ) )
+        {
+          peer_data->addr    = bdata.peer_id.id_addr_info;
+          peer_data->irk     = bdata.peer_id.id_info;
+          peer_data->enc_key = bdata.own_enc;
+        }
+      }
 
       // Calculate crc
       peer_data->crc16 = crc16((uint8_t*) peer_data, offsetof(peer_data_t, crc16));

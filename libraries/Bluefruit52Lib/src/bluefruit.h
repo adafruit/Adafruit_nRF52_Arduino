@@ -89,8 +89,6 @@
 #include "clients/BLEClientHidAdafruit.h"
 
 #include "utility/AdaCallback.h"
-
-
 #include "utility/bonding.h"
 
 enum
@@ -228,12 +226,9 @@ class AdafruitBluefruit
     BLEDfu _dfu_svc;
 
     uint16_t _conn_hdl;
-    bool     _bonded;
 
     BLEGap::connect_callback_t    _connect_cb;
     BLEGap::disconnect_callback_t _disconnect_cb;
-
-    ble_gap_sec_params_t _sec_param;
 
 COMMENT_OUT(
     uint8_t _auth_type;

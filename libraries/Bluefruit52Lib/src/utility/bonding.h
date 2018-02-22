@@ -56,6 +56,8 @@ enum
   BOND_FILE_CCCD_OFFSET    = BOND_FILE_DEVNAME_OFFSET + CFG_MAX_DEVNAME_LEN
 };
 
+void bond_init(void);
+void bond_clear(void);
 
 void bond_save_keys(uint16_t conn_hdl, bond_data_t* bdata);
 bool bond_load_keys(uint16_t ediv, bond_data_t* bdata);
@@ -63,7 +65,6 @@ bool bond_load_keys(uint16_t ediv, bond_data_t* bdata);
 void bond_save_cccd(uint16_t cond_hdl, uint16_t ediv);
 bool bond_load_cccd(uint16_t cond_hdl, uint16_t ediv);
 
-void bond_clear(void);
 
 
 #endif /* BONDING_H_ */

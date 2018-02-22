@@ -54,6 +54,13 @@
  * - CCCD       variable
  *------------------------------------------------------------------*/
 
+void bond_init(void)
+{
+  // Initialize nffs for bonding (it is safe to call nffs_pkg_init() multiple time)
+  Nffs.begin();
+  (void) Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
+}
+
 /*------------------------------------------------------------------*/
 /* Keys
  *------------------------------------------------------------------*/
