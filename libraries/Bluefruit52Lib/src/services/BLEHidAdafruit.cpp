@@ -205,7 +205,8 @@ err_t BLEHidAdafruit::begin(void)
   uint16_t output_len[] = { 1 };
 
   setReportLen(input_len, output_len, NULL);
-  enableBootProtocol(true, true);
+  enableKeyboard(true);
+  enableMouse(true);
   setReportMap(hid_report_descriptor, sizeof(hid_report_descriptor));
 
   VERIFY_STATUS( BLEHidGeneric::begin() );

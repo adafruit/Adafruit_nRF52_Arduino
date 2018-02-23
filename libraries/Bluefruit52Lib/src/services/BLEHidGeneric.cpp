@@ -45,7 +45,7 @@ enum {
 BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_feature)
   : BLEService(UUID16_SVC_HUMAN_INTERFACE_DEVICE), _chr_control(UUID16_CHR_HID_CONTROL_POINT)
 {
-  _boot_keyboard = _boot_mouse = false;
+  _has_keyboard = _has_mouse = false;
   _report_map = NULL;
   _report_map_len = 0;
 
@@ -88,11 +88,16 @@ BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_
   }
 }
 
-void BLEHidGeneric::enableBootProtocol(bool bootKeyboard, bool bootMouse)
+void BLEHidGeneric::enableKeyboard(bool enable)
 {
-  _boot_keyboard = bootKeyboard;
-  _boot_mouse    = bootMouse;
+  _has_keyboard = enable;
 }
+
+void BLEHidGeneric::enableMouse(bool enable)
+{
+  _has_mouse    = enable;
+}
+
 
 void BLEHidGeneric::setHidInfo(uint16_t bcd, uint8_t country, uint8_t flags)
 {
@@ -137,7 +142,7 @@ err_t BLEHidGeneric::begin(void)
   VERIFY_STATUS( BLEService::begin() );
 
   // Protocol Mode
-  if ( _boot_keyboard || _boot_mouse )
+  if ( _has_keyboard || _has_mouse )
   {
     _chr_protocol = new BLECharacteristic(UUID16_CHR_PROTOCOL_MODE);
     VERIFY(_chr_protocol, NRF_ERROR_NO_MEM);
@@ -192,7 +197,7 @@ err_t BLEHidGeneric::begin(void)
   report_map.write(_report_map, _report_map_len);
 
   // Boot Keyboard Input & Output Report
-  if ( _boot_keyboard )
+  if ( _has_keyboard )
   {
     _chr_boot_keyboard_input = new BLECharacteristic(UUID16_CHR_BOOT_KEYBOARD_INPUT_REPORT);
     _chr_boot_keyboard_input->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
@@ -209,7 +214,7 @@ err_t BLEHidGeneric::begin(void)
   }
 
   // Boot Mouse Input Report
-  if ( _boot_mouse )
+  if ( _has_mouse )
   {
     _chr_boot_mouse_input = new BLECharacteristic(UUID16_CHR_BOOT_MOUSE_INPUT_REPORT);
     _chr_boot_mouse_input->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);

@@ -91,7 +91,9 @@ class BLEHidGeneric : public BLEService
 
     BLEHidGeneric(uint8_t num_input, uint8_t num_output = 0, uint8_t num_feature = 0);
 
-    void enableBootProtocol(bool bootKeyboard, bool bootMouse);
+    void enableKeyboard(bool enable);
+    void enableMouse(bool enable);
+
     void setHidInfo(uint16_t bcd, uint8_t country, uint8_t flags);
 
     void setReportLen(uint16_t input_len[], uint16_t output_len[] = NULL, uint16_t feature_len[] = NULL);
@@ -108,8 +110,8 @@ class BLEHidGeneric : public BLEService
     uint8_t _num_output;
     uint8_t _num_feature;
 
-    bool _boot_keyboard;
-    bool _boot_mouse;
+    bool _has_keyboard;
+    bool _has_mouse;
 
     uint8_t _hid_info[4];
     const uint8_t* _report_map;
