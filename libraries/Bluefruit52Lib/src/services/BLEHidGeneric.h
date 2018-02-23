@@ -41,11 +41,23 @@
 #include "BLECharacteristic.h"
 #include "BLEService.h"
 
+enum
+{
+  HID_PROTOCOL_MODE_BOOT   = 0,
+  HID_PROTOCOL_MODE_REPORT = 1
+};
+
 typedef struct{
   uint8_t shift;
   uint8_t keycode;
 }hid_ascii_to_keycode_entry_t;
 extern const hid_ascii_to_keycode_entry_t HID_ASCII_TO_KEYCODE[128];
+
+typedef struct{
+  uint8_t ascii;
+  uint8_t shifted;
+}hid_keycode_to_ascii_t;
+extern hid_keycode_to_ascii_t const HID_KEYCODE_TO_ASCII[128];
 
 /// Standard HID Boot Protocol Mouse Report.
 typedef ATTR_PACKED_STRUCT(struct)
@@ -103,7 +115,7 @@ class BLEHidGeneric : public BLEService
 
     virtual err_t begin(void);
 
-    bool isBootMode(void) { return _protocol_mode == 0; }
+    bool isBootMode(void) { return _protocol_mode == HID_PROTOCOL_MODE_BOOT; }
 
     // Report
     bool inputReport(uint8_t reportID, void const* data, int len);
@@ -117,7 +129,7 @@ class BLEHidGeneric : public BLEService
 
     bool    _has_keyboard;
     bool    _has_mouse;
-    bool    _protocol_mode; // 0 boot, 1 report (default)
+    bool    _protocol_mode;
 
     uint8_t _hid_info[4];
     const uint8_t* _report_map;
