@@ -318,7 +318,11 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
           }
       };
 
-      VERIFY_STATUS(sd_ble_gap_sec_params_reply(evt->evt.gap_evt.conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &_sec_param, &keyset), RETURN_VOID);
+      VERIFY_STATUS(sd_ble_gap_sec_params_reply(conn_hdl,
+                                                BLE_GAP_SEC_STATUS_SUCCESS,
+                                                peer->role == BLE_GAP_ROLE_PERIPH ? &_sec_param : NULL,
+                                                &keyset),
+      );
     }
     break;
 
