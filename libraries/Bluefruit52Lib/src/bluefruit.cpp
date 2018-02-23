@@ -194,15 +194,15 @@ void AdafruitBluefruit::configCentralBandwidth(uint8_t bw)
     // TODO Bandwidth auto
     case BANDWIDTH_AUTO:
     case BANDWIDTH_NORMAL:
-      configCentralConn(BLE_GATT_ATT_MTU_DEFAULT, BLE_GAP_EVENT_LENGTH_DEFAULT, BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
+      configCentralConn(BLE_GATT_ATT_MTU_DEFAULT, BLE_GAP_EVENT_LENGTH_DEFAULT, BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT, 3);
     break;
 
     case BANDWIDTH_HIGH:
-      configCentralConn(128, 6, 2, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
+      configCentralConn(128, 6, 1, 3);
     break;
 
     case BANDWIDTH_MAX:
-      configCentralConn(247, 6, 3, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
+      configCentralConn(247, 6, 1, 3);
     break;
 
     default: break;

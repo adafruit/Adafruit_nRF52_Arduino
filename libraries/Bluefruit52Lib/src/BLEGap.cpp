@@ -331,13 +331,17 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       // Bonding process completed
       ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
 
-      // Pairing/Bonding succeeded --> save encryption keys
+      // Pairing succeeded --> save encryption keys ( Bonding )
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
         peer->bonded = true;
         peer->ediv   = peer->bond_data->own_enc.master_id.ediv;
 
-        bond_save_keys(conn_hdl, peer->bond_data);
+        // TODO Skip bonding for central, implement re-establishment connection later.
+        if ( peer->role == BLE_GAP_ROLE_PERIPH )
+        {
+          bond_save_keys(conn_hdl, peer->bond_data);
+        }
       }else
       {
         PRINT_HEX(status->auth_status);

@@ -33,8 +33,6 @@ void setup()
 
   Serial.println("Bluefruit52 Central HID (Keyboard + Mouse) Example");
   Serial.println("--------------------------------------------------\n");
-
-  Bluefruit.configCentralConn(23, 3, 1, 3);
   
   // Initialize Bluefruit with maximum connections as Peripheral = 0, Central = 1
   // SRAM usage required by SoftDevice will increase dramatically with number of connections
