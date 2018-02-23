@@ -47,8 +47,8 @@ class BLEClientHidAdafruit : public BLEClientService
 {
   public:
     // Callback Signatures
-    typedef void (*kbd_callback_t   ) (uint8_t modifier, uint8_t keycode[6]);
-    typedef void (*mouse_callback_t ) (uint8_t buttons, int8_t x, int8_t y, int8_t wheel, int8_t pan);
+    typedef void (*kbd_callback_t ) (hid_keyboard_report_t* report);
+    typedef void (*mse_callback_t ) (hid_mouse_report_t* report);
 
     BLEClientHidAdafruit(void);
 
@@ -58,24 +58,32 @@ class BLEClientHidAdafruit : public BLEClientService
     bool     getHidInfo(uint8_t info[4]);
     uint8_t  getCountryCode(void);
 
-    // Check if peripheral support keyboard/mouse
-    bool keyboardPresent(void);
-    bool mousePresent(void);
+    bool setProtocolMode(uint8_t mode);
 
-    // Enable/Disable report notification for keyboard/mouse
+    // Keyboard API
+    bool keyboardPresent(void);
     bool enableKeyboard(void);
     bool disableKeyboard(void);
 
+    void getKeyboardReport(hid_keyboard_report_t* report);
+
+    // Mouse API
+    bool mousePresent(void);
     bool enableMouse(void);
     bool disableMouse(void);
 
+    void getMouseReport(hid_mouse_report_t* report);
+
     // Report callback
     void setKeyboardReportCallback(kbd_callback_t fp);
-    void setMouseReportCallback(mouse_callback_t fp);
+    void setMouseReportCallback(mse_callback_t fp);
 
-  private:
-    kbd_callback_t   _kbd_cb;
-    mouse_callback_t _mouse_cb;
+  protected:
+    kbd_callback_t _kbd_cb;
+    mse_callback_t _mse_cb;
+
+    hid_keyboard_report_t _last_kbd_report;
+    hid_mouse_report_t    _last_mse_report;
 
     // Only support Boot protocol for keyboard and Mouse
     BLEClientCharacteristic _protcol_mode;
@@ -85,7 +93,13 @@ class BLEClientHidAdafruit : public BLEClientService
     BLEClientCharacteristic _kbd_boot_input;
     BLEClientCharacteristic _kbd_boot_output;
 
-    BLEClientCharacteristic _mouse_boot_input;
+    BLEClientCharacteristic _mse_boot_input;
+
+    void _handle_kbd_input(uint8_t* data, uint16_t len);
+    void _handle_mse_input(uint8_t* data, uint16_t len);
+
+    friend void kbd_client_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
+    friend void mse_client_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
 };
 
 

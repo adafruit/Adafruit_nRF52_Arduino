@@ -18,7 +18,14 @@
  */
 #include <bluefruit.h>
 
+// Polling or callback implementation
+#define POLLING       1
+
 BLEClientHidAdafruit hid;
+
+// Last checked report, to detect if we receive a new one with polling method
+hid_keyboard_report_t last_kbd_report = { 0 };
+hid_mouse_report_t last_mse_report = { 0 };
 
 void setup()
 {
@@ -26,6 +33,8 @@ void setup()
 
   Serial.println("Bluefruit52 Central HID (Keyboard + Mouse) Example");
   Serial.println("--------------------------------------------------\n");
+
+  Bluefruit.configCentralConn(23, 3, 1, 3);
   
   // Initialize Bluefruit with maximum connections as Peripheral = 0, Central = 1
   // SRAM usage required by SoftDevice will increase dramatically with number of connections
@@ -83,6 +92,13 @@ void connect_callback(uint16_t conn_handle)
   {
     Serial.println("Found it");
 
+    // HID device mostly require pairing/bonding
+    if ( !Bluefruit.Gap.requestPairing(conn_handle) )
+    {
+      Serial.print("Failed to paired");
+      return;
+    }
+
     // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.hid_information.xml
     uint8_t hidInfo[4];
     hid.getHidInfo(hidInfo);
@@ -90,11 +106,17 @@ void connect_callback(uint16_t conn_handle)
     Serial.printf("HID version: %d.%d\n", hidInfo[0], hidInfo[1]);
     Serial.print("Country code: "); Serial.println(hidInfo[2]);
     Serial.printf("HID Flags  : 0x%02X\n", hidInfo[3]);
+
+    // BLEClientHidAdafruit currently only suports Boot Protocol Mode
+    // for Keyboard and Mouse. Let's set the protocol mode on prph to Boot Mode
+    hid.setProtocolMode(HID_PROTOCOL_MODE_BOOT);
+
+    // Enable Keyboard report notification if present on prph
+    if ( hid.keyboardPresent() ) hid.enableKeyboard();
+
+    // Enable Mouse report notification if present on prph
+    if ( hid.mousePresent() ) hid.enableMouse();
     
-
-//    Serial.println("Enable TXD's notify");
-//    clientUart.enableTXD();
-
     Serial.println("Ready to receive from peripheral");
   }else
   {
@@ -118,27 +140,72 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   Serial.println("Disconnected");
 }
 
-/**
- * Callback invoked when uart received data
- * @param uart_svc Reference object to the service where the data 
- * arrived. In this example it is clientUart
- */
-//void bleuart_rx_callback(BLEClientUart& uart_svc)
-//{
-//  Serial.print("[RX]: ");
-//  
-//  while ( uart_svc.available() )
-//  {
-//    Serial.print( (char) uart_svc.read() );
-//  }
-//
-//  Serial.println();
-//}
-
 void loop()
 {
-  // nothing to do
+  
+#if POLLING  
+  // nothing to do if hid not discovered
   if ( !hid.discovered() ) return;
+  
+  /*------------- Polling Keyboard  -------------*/
+  hid_keyboard_report_t kbd_report;
 
+  // Get latest report
+  hid.getKeyboardReport(&kbd_report);
+
+  // Check with last report to see if there is new arrival report
+  if ( memcmp(&last_kbd_report, &kbd_report, sizeof(kbd_report)) )
+  {
+    bool shifted = false;
+    
+    if ( kbd_report.modifier  )
+    {
+      if ( kbd_report.modifier & (KEYBOARD_MODIFIER_LEFTCTRL | KEYBOARD_MODIFIER_RIGHTCTRL) )
+      {
+        Serial.print("Ctrl ");
+      }
+
+      if ( kbd_report.modifier & (KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_RIGHTSHIFT) )
+      {
+        Serial.print("Shift ");
+
+        shifted = true;
+      }
+
+      if ( kbd_report.modifier & (KEYBOARD_MODIFIER_LEFTALT | KEYBOARD_MODIFIER_RIGHTALT) )
+      {
+        Serial.print("Alt ");
+      }      
+    }
+    
+    for(uint8_t i=0; i<6; i++)
+    {
+      uint8_t kc = kbd_report.keycode[i];
+      char ch = 0;
+      
+      if ( kc < 128 )
+      {
+        ch = shifted ? HID_KEYCODE_TO_ASCII[kc].shifted : HID_KEYCODE_TO_ASCII[kc].ascii;
+      }else
+      {
+        // non-US keyboard !!??
+      }
+
+      // Printable
+      if (ch)
+      {
+        Serial.print(ch);
+      }
+    }
+  }
+
+  // update last report
+  memcpy(&last_kbd_report, &kbd_report, sizeof(kbd_report));
+
+
+  // polling interval is 5 ms
+  delay(5);
+#endif
+  
 }
 
