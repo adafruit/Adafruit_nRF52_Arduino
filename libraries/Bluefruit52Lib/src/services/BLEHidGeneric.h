@@ -103,15 +103,21 @@ class BLEHidGeneric : public BLEService
 
     virtual err_t begin(void);
 
+    bool isBootMode(void) { return _protocol_mode == 0; }
+
+    // Report
     bool inputReport(uint8_t reportID, void const* data, int len);
+    bool bootKeyboardReport(void const* data, int len);
+    bool bootMouseReport(void const* data, int len);
 
   protected:
     uint8_t _num_input;
     uint8_t _num_output;
     uint8_t _num_feature;
 
-    bool _has_keyboard;
-    bool _has_mouse;
+    bool    _has_keyboard;
+    bool    _has_mouse;
+    bool    _protocol_mode; // 0 boot, 1 report (default)
 
     uint8_t _hid_info[4];
     const uint8_t* _report_map;
@@ -134,6 +140,8 @@ class BLEHidGeneric : public BLEService
     BLECharacteristic* _chr_boot_mouse_input;
 
     BLECharacteristic _chr_control;
+
+    friend void blehid_generic_protocol_mode_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
 
     COMMENT_OUT (
         friend void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request);

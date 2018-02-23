@@ -222,7 +222,13 @@ err_t BLEHidAdafruit::begin(void)
  *------------------------------------------------------------------*/
 bool BLEHidAdafruit::keyboardReport(hid_keyboard_report_t* report)
 {
-  return inputReport( REPORT_ID_KEYBOARD, report, sizeof(hid_keyboard_report_t));
+  if ( isBootMode() )
+  {
+    return bootKeyboardReport(report, sizeof(hid_keyboard_report_t));
+  }else
+  {
+    return inputReport( REPORT_ID_KEYBOARD, report, sizeof(hid_keyboard_report_t));
+  }
 }
 
 bool BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode[6])
@@ -314,7 +320,13 @@ bool BLEHidAdafruit::consumerKeyRelease(void)
  *------------------------------------------------------------------*/
 bool BLEHidAdafruit::mouseReport(hid_mouse_report_t* report)
 {
-  return inputReport( REPORT_ID_MOUSE, report, sizeof(hid_mouse_report_t));
+  if ( isBootMode() )
+  {
+    return bootMouseReport(report, sizeof(hid_mouse_report_t));
+  }else
+  {
+    return inputReport( REPORT_ID_MOUSE, report, sizeof(hid_mouse_report_t));
+  }
 }
 
 bool BLEHidAdafruit::mouseReport(uint8_t buttons, int8_t x, int8_t y, int8_t wheel, int8_t pan)

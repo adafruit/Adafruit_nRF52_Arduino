@@ -46,6 +46,8 @@ BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_
   : BLEService(UUID16_SVC_HUMAN_INTERFACE_DEVICE), _chr_control(UUID16_CHR_HID_CONTROL_POINT)
 {
   _has_keyboard = _has_mouse = false;
+  _protocol_mode = 1;  // report mode
+
   _report_map = NULL;
   _report_map_len = 0;
 
@@ -88,6 +90,9 @@ BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_
   }
 }
 
+/*------------------------------------------------------------------*/
+/* CONFIG
+ *------------------------------------------------------------------*/
 void BLEHidGeneric::enableKeyboard(bool enable)
 {
   _has_keyboard = enable;
@@ -97,7 +102,6 @@ void BLEHidGeneric::enableMouse(bool enable)
 {
   _has_mouse    = enable;
 }
-
 
 void BLEHidGeneric::setHidInfo(uint16_t bcd, uint8_t country, uint8_t flags)
 {
@@ -124,6 +128,10 @@ void BLEHidGeneric::setOutputReportCallback(uint8_t reportID, output_report_cb_t
   _output_cbs[reportID] = fp;
 }
 
+/*------------------------------------------------------------------*/
+/* Callbacks
+ *------------------------------------------------------------------*/
+// TODO output report
 COMMENT_OUT (
 void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
 {
@@ -134,6 +142,17 @@ void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* requ
 }
 )
 
+void blehid_generic_protocol_mode_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
+{
+  BLEHidGeneric& svc = (BLEHidGeneric&) chr.parentService();
+  svc._protocol_mode = *data;
+
+  LOG_LV2("HID", "Protocol Mode : %d (0 Boot, 1 Report)", *data);
+}
+
+/*------------------------------------------------------------------*/
+/* Begin
+ *------------------------------------------------------------------*/
 err_t BLEHidGeneric::begin(void)
 {
   VERIFY ( (_report_map != NULL) && _report_map_len, NRF_ERROR_INVALID_PARAM);
@@ -149,8 +168,9 @@ err_t BLEHidGeneric::begin(void)
 
     _chr_protocol->setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE_WO_RESP);
     _chr_protocol->setFixedLen(1);
+    _chr_protocol->setWriteCallback(blehid_generic_protocol_mode_cb);
     VERIFY_STATUS( _chr_protocol->begin() );
-    _chr_protocol->write8(1);
+    _chr_protocol->write8(_protocol_mode);
   }
 
   // Input reports
@@ -242,12 +262,25 @@ err_t BLEHidGeneric::begin(void)
   return ERROR_NONE;
 }
 
+/*------------------------------------------------------------------*/
+/* Input Report
+ *------------------------------------------------------------------*/
 bool BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
 {
   // 0 will treated as report ID = 1
   if ( reportID == 0 ) reportID++;
 
   return _chr_inputs[reportID-1].notify( (uint8_t const*) data, len);
+}
+
+bool BLEHidGeneric::bootKeyboardReport(void const* data, int len)
+{
+  return _chr_boot_keyboard_input->notify(data, len);
+}
+
+bool BLEHidGeneric::bootMouseReport(void const* data, int len)
+{
+  return _chr_boot_mouse_input->notify(data, len);
 }
 
 /*------------------------------------------------------------------*/
