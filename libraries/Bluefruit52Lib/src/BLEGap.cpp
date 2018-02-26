@@ -171,15 +171,19 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
   // skip if already paired
   if ( peer->paired ) return true;
 
-  // Check to see if we did bonded with current prph
+  uint16_t cntr_ediv = 0xFFFF;
+
   if ( peer->role == BLE_GAP_ROLE_CENTRAL )
   {
+    // Check to see if we did bonded with current prph previously
     bond_data_t bdata;
 
     if ( bond_find_cntr(&peer->addr, &bdata) )
     {
-      LOG_LV2("BOND", "Load Keys from file " BOND_FNAME_CNTR, bdata.peer_enc.master_id.ediv);
+      cntr_ediv = bdata.peer_enc.master_id.ediv;
+      LOG_LV2("BOND", "Load Keys from file " BOND_FNAME_CNTR, cntr_ediv);
       VERIFY_STATUS( sd_ble_gap_encrypt(conn_hdl, &bdata.peer_enc.master_id, &bdata.peer_enc.enc_info), false);
+
     }else
     {
       VERIFY_STATUS( sd_ble_gap_authenticate(conn_hdl, &_sec_param ), false);
@@ -193,6 +197,18 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
   peer->pair_sem = xSemaphoreCreateBinary();
 
   xSemaphoreTake(peer->pair_sem, portMAX_DELAY);
+
+  // Failed to pair using centra stored keys, this happens when
+  // Prph delete bonds while we did not --> let's remove the obsolete keyfile and move on
+  if ( !peer->paired && (cntr_ediv != 0xffff) )
+  {
+    bond_remove_key(BLE_GAP_ROLE_CENTRAL, cntr_ediv);
+
+    // Re-try with a fresh session
+    VERIFY_STATUS( sd_ble_gap_authenticate(conn_hdl, &_sec_param ), false);
+
+    xSemaphoreTake(peer->pair_sem, portMAX_DELAY);
+  }
 
   vSemaphoreDelete(peer->pair_sem);
   peer->pair_sem = NULL;

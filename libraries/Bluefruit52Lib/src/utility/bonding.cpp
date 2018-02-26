@@ -47,6 +47,11 @@
 #define printBondDir(role)
 #endif
 
+static void get_fname(char* fname, uint8_t role, uint16_t ediv)
+{
+  sprintf(fname, ( role == BLE_GAP_ROLE_PERIPH ) ? BOND_FNAME_PRPH : BOND_FNAME_CNTR, ediv);
+}
+
 /*------------------------------------------------------------------*/
 /* Saving Bond Data to Nffs in following layout
  * - _bond_data 80 bytes
@@ -69,13 +74,7 @@ void bond_init(void)
 static void bond_save_keys_dfr(uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
 {
   char filename[BOND_FNAME_LEN];
-  if ( role == BLE_GAP_ROLE_PERIPH )
-  {
-    sprintf(filename, BOND_FNAME_PRPH, bdata->own_enc.master_id.ediv);
-  }else
-  {
-    sprintf(filename, BOND_FNAME_CNTR, bdata->peer_enc.master_id.ediv);
-  }
+  get_fname(filename, role, role == BLE_GAP_ROLE_PERIPH ? bdata->own_enc.master_id.ediv : bdata->peer_enc.master_id.ediv);
 
   char devname[CFG_MAX_DEVNAME_LEN] = { 0 };
   Bluefruit.Gap.getPeerName(conn_hdl, devname, CFG_MAX_DEVNAME_LEN);
@@ -100,12 +99,7 @@ static void bond_save_keys_dfr(uint8_t role, uint16_t conn_hdl, bond_data_t* bda
   }
 
   file.write((uint8_t*) devname, CFG_MAX_DEVNAME_LEN);
-
   file.close();
-
-  PRINT_HEX(bdata->own_enc.master_id.ediv);
-  PRINT_HEX(bdata->peer_enc.master_id.ediv);
-
 
   if (result)
   {
@@ -132,13 +126,7 @@ void bond_save_keys(uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
 bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata)
 {
   char filename[BOND_FNAME_LEN];
-  if ( role == BLE_GAP_ROLE_PERIPH )
-  {
-    sprintf(filename, BOND_FNAME_PRPH, ediv);
-  }else
-  {
-    sprintf(filename, BOND_FNAME_CNTR, ediv);
-  }
+  get_fname(filename, role, ediv);
 
   bool result = (Nffs.readFile(filename, bdata, sizeof(bond_data_t)) > 0);
 
@@ -169,13 +157,7 @@ static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
   {
     // save to file
     char filename[BOND_FNAME_LEN];
-    if ( role == BLE_GAP_ROLE_PERIPH )
-    {
-      sprintf(filename, BOND_FNAME_PRPH, ediv);
-    }else
-    {
-      sprintf(filename, BOND_FNAME_CNTR, ediv);
-    }
+    get_fname(filename, role, ediv);
 
     if ( Nffs.writeFile(filename, sys_attr, len, BOND_FILE_CCCD_OFFSET) )
     {
@@ -205,13 +187,7 @@ bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
   bool loaded = false;
 
   char filename[BOND_FNAME_LEN];
-  if ( role == BLE_GAP_ROLE_PERIPH )
-  {
-    sprintf(filename, BOND_FNAME_PRPH, ediv);
-  }else
-  {
-    sprintf(filename, BOND_FNAME_CNTR, ediv);
-  }
+  get_fname(filename, role, ediv);
 
   NffsFile file(filename, FS_ACCESS_READ);
 
@@ -352,4 +328,12 @@ void bond_clear_all(void)
   // Create an empty one for prph and central
   (void) Nffs.mkdir_p(BOND_DIR_PRPH);
   (void) Nffs.mkdir_p(BOND_DIR_CNTR);
+}
+
+void bond_remove_key(uint8_t role, uint16_t ediv)
+{
+  char filename[BOND_FNAME_LEN];
+  get_fname(filename, role, ediv);
+
+  Nffs.remove(filename);
 }
