@@ -23,7 +23,7 @@
 
 BLEClientHidAdafruit hid;
 
-// Last checked report, to detect if we receive a new one with polling method
+// Last checked report, to detect if there is changes between reports
 hid_keyboard_report_t last_kbd_report = { 0 };
 hid_mouse_report_t last_mse_report = { 0 };
 
@@ -42,7 +42,10 @@ void setup()
 
   // Init BLE Central Uart Serivce
   hid.begin();
-  //clientUart.setRxCallback(bleuart_rx_callback);
+
+  #if POLLING == 0  
+  hid.setKeyboardReportCallback(keyboard_report_callback);
+  #endif
 
   // Increase Blink rate to different from PrPh advertising mode
   Bluefruit.setConnLedInterval(250);
@@ -141,7 +144,7 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 void loop()
 {
   
-#if POLLING  
+#if POLLING == 1
   // nothing to do if hid not discovered
   if ( !hid.discovered() ) return;
   
@@ -151,26 +154,43 @@ void loop()
   // Get latest report
   hid.getKeyboardReport(&kbd_report);
 
-  // Check with last report to see if there is new arrival report
-  if ( memcmp(&last_kbd_report, &kbd_report, sizeof(kbd_report)) )
+  processKeyboardReport(&kbd_report);
+
+
+  // polling interval is 5 ms
+  delay(5);
+#endif
+  
+}
+
+
+void keyboard_report_callback(hid_keyboard_report_t* report)
+{
+  processKeyboardReport(report);
+}
+
+void processKeyboardReport(hid_keyboard_report_t* report)
+{
+  // Check with last report to see if there is any changes
+  if ( memcmp(&last_kbd_report, report, sizeof(hid_keyboard_report_t)) )
   {
     bool shifted = false;
     
-    if ( kbd_report.modifier  )
+    if ( report->modifier  )
     {
-      if ( kbd_report.modifier & (KEYBOARD_MODIFIER_LEFTCTRL | KEYBOARD_MODIFIER_RIGHTCTRL) )
+      if ( report->modifier & (KEYBOARD_MODIFIER_LEFTCTRL | KEYBOARD_MODIFIER_RIGHTCTRL) )
       {
         Serial.print("Ctrl ");
       }
 
-      if ( kbd_report.modifier & (KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_RIGHTSHIFT) )
+      if ( report->modifier & (KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_RIGHTSHIFT) )
       {
         Serial.print("Shift ");
 
         shifted = true;
       }
 
-      if ( kbd_report.modifier & (KEYBOARD_MODIFIER_LEFTALT | KEYBOARD_MODIFIER_RIGHTALT) )
+      if ( report->modifier & (KEYBOARD_MODIFIER_LEFTALT | KEYBOARD_MODIFIER_RIGHTALT) )
       {
         Serial.print("Alt ");
       }      
@@ -178,7 +198,7 @@ void loop()
     
     for(uint8_t i=0; i<6; i++)
     {
-      uint8_t kc = kbd_report.keycode[i];
+      uint8_t kc = report->keycode[i];
       char ch = 0;
       
       if ( kc < 128 )
@@ -198,12 +218,6 @@ void loop()
   }
 
   // update last report
-  memcpy(&last_kbd_report, &kbd_report, sizeof(kbd_report));
-
-
-  // polling interval is 5 ms
-  delay(5);
-#endif
-  
+  memcpy(&last_kbd_report, report, sizeof(hid_keyboard_report_t));  
 }
 
