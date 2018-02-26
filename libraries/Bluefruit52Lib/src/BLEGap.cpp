@@ -159,9 +159,9 @@ bool BLEGap::connected(uint16_t conn_hdl)
   return _peers[conn_hdl].connected;
 }
 
-bool BLEGap::bonded(uint16_t conn_hdl)
+bool BLEGap::paired(uint16_t conn_hdl)
 {
-  return _peers[conn_hdl].bonded;
+  return _peers[conn_hdl].paired;
 }
 
 bool BLEGap::requestPairing(uint16_t conn_hdl)
@@ -169,18 +169,20 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
   gap_peer_t* peer = &_peers[conn_hdl];
 
   // skip if already bonded
-  if ( peer->bonded ) return true;
+  if ( peer->paired ) return true;
+
+
 
   VERIFY_STATUS( sd_ble_gap_authenticate(conn_hdl, &_sec_param ), false);
   uint32_t start = millis();
 
   // timeout in 30 seconds
-  while ( ! ((volatile bool) peer->bonded) && (start + 30000 > millis()) )
+  while ( ! ((volatile bool) peer->paired) && (start + 30000 > millis()) )
   {
     yield();
   }
 
-  return peer->bonded;
+  return peer->paired;
 }
 
 uint8_t BLEGap::getRole(uint16_t conn_hdl)
@@ -266,7 +268,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       ble_gap_evt_disconnected_t const* para = &evt->evt.gap_evt.params.disconnected;
 
       // mark as disconnected, but keep the role for sub sequence event handler
-      peer->connected = peer->bonded = false;
+      peer->connected = peer->paired = false;
 
       vSemaphoreDelete( peer->hvn_tx_sem );
       peer->hvn_tx_sem = NULL;
@@ -334,7 +336,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       // Pairing succeeded --> save encryption keys ( Bonding )
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
-        peer->bonded = true;
+        peer->paired = true;
         peer->ediv   = peer->bond_data->own_enc.master_id.ediv;
 
         bond_save_keys(peer->role, conn_hdl, peer->bond_data);
@@ -378,7 +380,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       bond_load_cccd(peer->role, conn_hdl, peer->ediv);
 
       // Paired is Bonded (as we always save keys)
-      peer->bonded = true;
+      peer->paired = true;
     break;
 
     case BLE_GAP_EVT_PASSKEY_DISPLAY:

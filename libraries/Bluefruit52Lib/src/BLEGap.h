@@ -60,7 +60,7 @@ class BLEGap
 //    bool    setPrivacy                ();  sd_ble_gap_privacy_set()
 
     bool           connected            (uint16_t conn_hdl);
-    bool           bonded               (uint16_t conn_hdl);
+    bool           paired               (uint16_t conn_hdl);
     bool           requestPairing       (uint16_t conn_hdl);
 
     uint8_t        getRole              (uint16_t conn_hdl);
@@ -93,7 +93,7 @@ class BLEGap
     // Peer info where conn_hdl serves as index
     typedef struct {
       bool     connected;
-      bool     bonded;
+      bool     paired;
       uint8_t  role;
       uint16_t att_mtu;
 

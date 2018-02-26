@@ -135,7 +135,7 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
       // Get Bond Data or using Address if not bonded
       peer_data->addr = Bluefruit.Gap.getPeerAddr(conn_hdl);
 
-      if ( Bluefruit.Gap.bonded(conn_hdl) )
+      if ( Bluefruit.Gap.paired(conn_hdl) )
       {
         bond_data_t bdata;
 
