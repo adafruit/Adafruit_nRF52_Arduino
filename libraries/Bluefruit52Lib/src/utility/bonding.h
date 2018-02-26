@@ -38,9 +38,14 @@
 
 #include "bluefruit_common.h"
 
-#define CFG_BOND_NFFS_DIR                "/adafruit/bond"
-#define BOND_FILENAME                    CFG_BOND_NFFS_DIR "/%04x"
-#define BOND_FILENAME_LEN                (sizeof(CFG_BOND_NFFS_DIR) + 10)
+#define BOND_DIR_ROOT             "/adafruit/bond"
+#define BOND_DIR_PRPH             BOND_DIR_ROOT "/prph"
+#define BOND_DIR_CNTR             BOND_DIR_ROOT "/cntr"
+
+#define BOND_FNAME_PRPH           BOND_DIR_PRPH "/%04x"
+#define BOND_FNAME_CNTR           BOND_DIR_CNTR "/%04x"
+
+#define BOND_FNAME_LEN            max(sizeof(BOND_FNAME_PRPH), sizeof(BOND_FNAME_CNTR))
 
 // Shared keys with bonded device, size = 80 bytes
 typedef struct
@@ -57,13 +62,17 @@ enum
 };
 
 void bond_init(void);
-void bond_clear(void);
+void bond_clear_prph(void);
+void bond_clear_cntr(void);
+void bond_clear_all(void);
 
-void bond_save_keys(uint16_t conn_hdl, bond_data_t* bdata);
-bool bond_load_keys(uint16_t ediv, bond_data_t* bdata);
+void bond_save_keys(uint8_t role, uint16_t conn_hdl, bond_data_t* bdata);
+bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata);
 
-void bond_save_cccd(uint16_t cond_hdl, uint16_t ediv);
-bool bond_load_cccd(uint16_t cond_hdl, uint16_t ediv);
+void bond_save_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv);
+bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv);
+
+void bond_print_list(uint8_t role);
 
 
 

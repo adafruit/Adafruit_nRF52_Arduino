@@ -42,9 +42,9 @@
 #define SVC_CONTEXT_FLAG                 (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
 
 #if CFG_DEBUG >= 2
-#define printBondDir()    dbgPrintDir(CFG_BOND_NFFS_DIR)
+#define printBondDir(role)    dbgPrintDir( role == BLE_GAP_ROLE_PERIPH ? BOND_DIR_PRPH : BOND_DIR_CNTR )
 #else
-#define printBondDir()
+#define printBondDir(role)
 #endif
 
 /*------------------------------------------------------------------*/
@@ -58,16 +58,24 @@ void bond_init(void)
 {
   // Initialize nffs for bonding (it is safe to call nffs_pkg_init() multiple time)
   Nffs.begin();
-  (void) Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
+
+  (void) Nffs.mkdir_p(BOND_DIR_PRPH);
+  (void) Nffs.mkdir_p(BOND_DIR_CNTR);
 }
 
 /*------------------------------------------------------------------*/
 /* Keys
  *------------------------------------------------------------------*/
-static void bond_save_keys_dfr(uint16_t conn_hdl, bond_data_t* bdata)
+static void bond_save_keys_dfr(uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
 {
-  char filename[BOND_FILENAME_LEN];
-  sprintf(filename, BOND_FILENAME, bdata->own_enc.master_id.ediv);
+  char filename[BOND_FNAME_LEN];
+  if ( role == BLE_GAP_ROLE_PERIPH )
+  {
+    sprintf(filename, BOND_FNAME_PRPH, bdata->own_enc.master_id.ediv);
+  }else
+  {
+    sprintf(filename, BOND_FNAME_CNTR, bdata->own_enc.master_id.ediv);
+  }
 
   char devname[CFG_MAX_DEVNAME_LEN] = { 0 };
   Bluefruit.Gap.getPeerName(conn_hdl, devname, CFG_MAX_DEVNAME_LEN);
@@ -84,11 +92,14 @@ static void bond_save_keys_dfr(uint16_t conn_hdl, bond_data_t* bdata)
     result = false;
   }
 
-  // write device name
-  if ( strlen(devname) && !file.write((uint8_t*) devname, CFG_MAX_DEVNAME_LEN) )
+  // If couldn't get devname use peer mac address
+  if ( !strlen(devname) )
   {
-    result = false;
+    uint8_t* mac = bdata->peer_id.id_addr_info.addr;
+    sprintf(devname, "%02X:%02X:%02X:%02X:%02X:%02X", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
   }
+
+  file.write((uint8_t*) devname, CFG_MAX_DEVNAME_LEN);
 
   file.close();
 
@@ -100,10 +111,10 @@ static void bond_save_keys_dfr(uint16_t conn_hdl, bond_data_t* bdata)
     LOG_LV1("BOND", "Failed to save keys for \"%s\"", devname);
   }
 
-  printBondDir();
+  printBondDir(role);
 }
 
-void bond_save_keys(uint16_t conn_hdl, bond_data_t* bdata)
+void bond_save_keys(uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
 {
   uint8_t* buf = (uint8_t*) rtos_malloc( sizeof(bond_data_t) );
   VERIFY(buf, );
@@ -111,13 +122,19 @@ void bond_save_keys(uint16_t conn_hdl, bond_data_t* bdata)
   memcpy(buf, bdata, sizeof(bond_data_t));
 
   // queue to execute in Ada Callback thread
-  ada_callback(buf, bond_save_keys_dfr, conn_hdl, buf);
+  ada_callback(buf, bond_save_keys_dfr, role, conn_hdl, buf);
 }
 
-bool bond_load_keys(uint16_t ediv, bond_data_t* bdata)
+bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata)
 {
-  char filename[BOND_FILENAME_LEN];
-  sprintf(filename, BOND_FILENAME, ediv);
+  char filename[BOND_FNAME_LEN];
+  if ( role == BLE_GAP_ROLE_PERIPH )
+  {
+    sprintf(filename, BOND_FNAME_PRPH, ediv);
+  }else
+  {
+    sprintf(filename, BOND_FNAME_CNTR, ediv);
+  }
 
   bool result = (Nffs.readFile(filename, bdata, sizeof(bond_data_t)) > 0);
 
@@ -136,7 +153,7 @@ bool bond_load_keys(uint16_t ediv, bond_data_t* bdata)
 /*------------------------------------------------------------------*/
 /* CCCD
  *------------------------------------------------------------------*/
-static void bond_save_cccd_dfr (uint16_t conn_hdl, uint16_t ediv)
+static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
 {
   uint16_t len=0;
   sd_ble_gatts_sys_attr_get(conn_hdl, NULL, &len, SVC_CONTEXT_FLAG);
@@ -147,8 +164,14 @@ static void bond_save_cccd_dfr (uint16_t conn_hdl, uint16_t ediv)
   if ( ERROR_NONE == sd_ble_gatts_sys_attr_get(conn_hdl, sys_attr, &len, SVC_CONTEXT_FLAG) )
   {
     // save to file
-    char filename[BOND_FILENAME_LEN];
-    sprintf(filename, BOND_FILENAME, ediv);
+    char filename[BOND_FNAME_LEN];
+    if ( role == BLE_GAP_ROLE_PERIPH )
+    {
+      sprintf(filename, BOND_FNAME_PRPH, ediv);
+    }else
+    {
+      sprintf(filename, BOND_FNAME_CNTR, ediv);
+    }
 
     if ( Nffs.writeFile(filename, sys_attr, len, BOND_FILE_CCCD_OFFSET) )
     {
@@ -161,24 +184,30 @@ static void bond_save_cccd_dfr (uint16_t conn_hdl, uint16_t ediv)
   }
 
   rtos_free(sys_attr);
-  printBondDir();
+  printBondDir(role);
 }
 
-void bond_save_cccd(uint16_t cond_hdl, uint16_t ediv)
+void bond_save_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
 {
   VERIFY( ediv != 0xFFFF, );
 
   // queue to execute in Ada Callback thread
-  ada_callback(NULL, bond_save_cccd_dfr, cond_hdl, ediv);
+  ada_callback(NULL, bond_save_cccd_dfr, role, cond_hdl, ediv);
 }
 
 
-bool bond_load_cccd(uint16_t cond_hdl, uint16_t ediv)
+bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
 {
   bool loaded = false;
 
-  char filename[BOND_FILENAME_LEN];
-  sprintf(filename, BOND_FILENAME, ediv);
+  char filename[BOND_FNAME_LEN];
+  if ( role == BLE_GAP_ROLE_PERIPH )
+  {
+    sprintf(filename, BOND_FNAME_PRPH, ediv);
+  }else
+  {
+    sprintf(filename, BOND_FNAME_CNTR, ediv);
+  }
 
   NffsFile file(filename, FS_ACCESS_READ);
 
@@ -222,16 +251,68 @@ bool bond_load_cccd(uint16_t cond_hdl, uint16_t ediv)
   return loaded;
 }
 
+void bond_print_list(uint8_t role)
+{
+  const char* dpath = (role == BLE_GAP_ROLE_PERIPH ? BOND_DIR_PRPH : BOND_DIR_CNTR);
+
+  NffsDir dir(dpath);
+  NffsDirEntry dirEntry;
+
+  while( dir.read(&dirEntry) )
+  {
+    if ( !dirEntry.isDirectory() )
+    {
+      char name[64];
+      dirEntry.getName(name, sizeof(name));
+
+      cprintf("  %s : ", name);
+
+      // open file to read device name
+      NffsFile file(dpath, dirEntry, FS_ACCESS_READ);
+
+      varclr(name);
+
+      file.seek(BOND_FILE_DEVNAME_OFFSET);
+      if ( file.read(name, CFG_MAX_DEVNAME_LEN) )
+      {
+        cprintf(name);
+      }
+
+      cprintf("\n");
+      file.close();
+    }
+  }
+  cprintf("\n");
+}
+
 /*------------------------------------------------------------------*/
 /* DELETE
  *------------------------------------------------------------------*/
-void bond_clear(void)
+void bond_clear_prph(void)
 {
   // Detele bonds dir
-  Nffs.remove(CFG_BOND_NFFS_DIR);
+  Nffs.remove(BOND_DIR_PRPH);
 
   // Create an empty one
-  Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
+  (void) Nffs.mkdir_p(BOND_DIR_PRPH);
+}
 
-  printBondDir();
+void bond_clear_cntr(void)
+{
+  // Detele bonds dir
+  Nffs.remove(BOND_DIR_CNTR);
+
+  // Create an empty one
+  (void) Nffs.mkdir_p(BOND_DIR_CNTR);
+}
+
+
+void bond_clear_all(void)
+{
+  // Detele bonds dir
+  Nffs.remove(BOND_DIR_ROOT);
+
+  // Create an empty one for prph and central
+  (void) Nffs.mkdir_p(BOND_DIR_PRPH);
+  (void) Nffs.mkdir_p(BOND_DIR_CNTR);
 }

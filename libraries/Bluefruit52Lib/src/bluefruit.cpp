@@ -731,34 +731,12 @@ void AdafruitBluefruit::printInfo(void)
   Serial.println();
 
   /*------------- List the paried device -------------*/
-  Serial.printf(title_fmt, "Paired Devices");
+  Serial.printf(title_fmt, "Peripheral Paired Devices\n");
+  bond_print_list(BLE_GAP_ROLE_PERIPH);
   Serial.println();
 
-  NffsDir dir(CFG_BOND_NFFS_DIR);
-  NffsDirEntry dirEntry;
-  while( dir.read(&dirEntry) )
-  {
-    if ( !dirEntry.isDirectory() )
-    {
-      char name[64];
-      dirEntry.getName(name, sizeof(name));
-
-      Serial.printf("  %s : ", name);
-
-      // open file to read device name
-      NffsFile file(CFG_BOND_NFFS_DIR, dirEntry, FS_ACCESS_READ);
-
-      varclr(name);
-
-      file.seek(BOND_FILE_DEVNAME_OFFSET);
-      if ( file.read(name, CFG_MAX_DEVNAME_LEN) )
-      {
-        Serial.println(name);
-      }
-
-      file.close();
-    }
-  }
+  Serial.printf(title_fmt, "Central Paired Devices\n");
+  bond_print_list(BLE_GAP_ROLE_CENTRAL);
   Serial.println();
 
   Serial.println();
@@ -984,6 +962,6 @@ bool AdafruitBluefruit::requestPairing(void)
 
 void AdafruitBluefruit::clearBonds(void)
 {
-  bond_clear();
+  bond_clear_prph();
 }
 

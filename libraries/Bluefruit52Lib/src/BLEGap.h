@@ -124,7 +124,7 @@ class BLEGap
     ble_gap_sec_params_t _sec_param;
 
     friend class AdafruitBluefruit;
-    friend class BLEGatt;
+//    friend class BLEGatt;
 };
 
 #endif /* BLEGAP_H_ */

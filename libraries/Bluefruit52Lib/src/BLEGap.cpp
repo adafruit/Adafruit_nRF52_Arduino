@@ -337,11 +337,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
         peer->bonded = true;
         peer->ediv   = peer->bond_data->own_enc.master_id.ediv;
 
-        // TODO Skip bonding for central, implement re-establishment connection later.
-        if ( peer->role == BLE_GAP_ROLE_PERIPH )
-        {
-          bond_save_keys(conn_hdl, peer->bond_data);
-        }
+        bond_save_keys(peer->role, conn_hdl, peer->bond_data);
       }else
       {
         PRINT_HEX(status->auth_status);
@@ -361,7 +357,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       bond_data_t bdata;
       varclr(&bdata);
 
-      if ( bond_load_keys(sec_req->master_id.ediv, &bdata) )
+      if ( bond_load_keys(peer->role, sec_req->master_id.ediv, &bdata) )
       {
         sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &bdata.own_enc.enc_info, &bdata.peer_id.id_info, NULL);
 
@@ -379,7 +375,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       // Previously bonded --> secure by re-connection process
       // --> Load & Set Sys Attr (Apply Service Context)
       // Else Init Sys Attr
-      bond_load_cccd(conn_hdl, peer->ediv);
+      bond_load_cccd(peer->role, conn_hdl, peer->ediv);
 
       // Paired is Bonded (as we always save keys)
       peer->bonded = true;

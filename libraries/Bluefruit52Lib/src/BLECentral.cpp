@@ -35,6 +35,7 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
+#include "utility/bonding.h"
 
 /**
  * Constructor
@@ -135,6 +136,11 @@ void BLECentral::setConnectCallback( BLEGap::connect_callback_t fp)
 void BLECentral::setDisconnectCallback( BLEGap::disconnect_callback_t fp)
 {
   _disconnect_cb = fp;
+}
+
+void BLECentral::clearBonds(void)
+{
+  bond_clear_cntr();
 }
 
 /**

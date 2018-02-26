@@ -71,6 +71,8 @@ class BLECentral
     bool     connected (uint16_t conn_handle); // If connected to a specific peripheral
     bool     connected (void);                 // If connected to any peripherals
 
+    void     clearBonds        (void);
+
     /*------------- Callbacks -------------*/
     void setConnectCallback   ( BLEGap::connect_callback_t    fp);
     void setDisconnectCallback( BLEGap::disconnect_callback_t fp);

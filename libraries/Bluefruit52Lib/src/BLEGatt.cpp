@@ -146,7 +146,8 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
         // Save CCCD if paired
         if ( Bluefruit.connPaired() && (evt_id == BLE_GATTS_EVT_WRITE) && (req_handle == chr->handles().cccd_handle) )
         {
-          bond_save_cccd(evt_conn_hdl, Bluefruit.Gap._get_peer(evt_conn_hdl)->ediv);
+          BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(evt_conn_hdl);
+          bond_save_cccd( peer->role, evt_conn_hdl, peer->ediv);
         }
       }
     }
