@@ -105,8 +105,11 @@ class BLEGap
       SemaphoreHandle_t hvn_tx_sem;
       SemaphoreHandle_t wrcmd_tx_sem;
 
-      SemaphoreHandle_t indicate_confirm_sem;
       bool              hvc_received;
+
+      // On-demand semaphore that are created on the fly
+      SemaphoreHandle_t hvc_sem;
+      SemaphoreHandle_t pair_sem;
     } gap_peer_t;
 
     gap_peer_t* _get_peer(uint16_t conn_hdl) { return &_peers[conn_hdl]; }

@@ -80,12 +80,12 @@ bool BLEGatt::waitForIndicateConfirm(uint16_t conn_hdl)
   BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(conn_hdl);
 
   // hvi confirm semaphore is created on the fly
-  peer->indicate_confirm_sem = xSemaphoreCreateBinary();
+  peer->hvc_sem = xSemaphoreCreateBinary();
 
-  xSemaphoreTake(peer->indicate_confirm_sem, portMAX_DELAY);
+  xSemaphoreTake(peer->hvc_sem, portMAX_DELAY);
 
-  vSemaphoreDelete(peer->indicate_confirm_sem);
-  peer->indicate_confirm_sem = NULL;
+  vSemaphoreDelete(peer->hvc_sem);
+  peer->hvc_sem = NULL;
 
   return peer->hvc_received;
 }
@@ -237,7 +237,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
       LOG_LV2("GATTS", "Confirm received handle = 0x%04X", evt->evt.gatts_evt.params.hvc.handle);
       BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(evt_conn_hdl);
 
-      if ( peer->indicate_confirm_sem ) xSemaphoreGive(peer->indicate_confirm_sem);
+      if ( peer->hvc_sem ) xSemaphoreGive(peer->hvc_sem);
       peer->hvc_received = true;
     }
     break;
@@ -248,7 +248,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
 
       BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(evt_conn_hdl);
 
-      if ( peer->indicate_confirm_sem ) xSemaphoreGive(peer->indicate_confirm_sem);
+      if ( peer->hvc_sem ) xSemaphoreGive(peer->hvc_sem);
       peer->hvc_received = false;
     }
     break;

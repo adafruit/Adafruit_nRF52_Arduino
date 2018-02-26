@@ -61,18 +61,20 @@ enum
   BOND_FILE_CCCD_OFFSET    = BOND_FILE_DEVNAME_OFFSET + CFG_MAX_DEVNAME_LEN
 };
 
-void bond_init(void);
-void bond_clear_prph(void);
-void bond_clear_cntr(void);
-void bond_clear_all(void);
+void     bond_init(void);
+void     bond_clear_prph(void);
+void     bond_clear_cntr(void);
+void     bond_clear_all(void);
 
-void bond_save_keys(uint8_t role, uint16_t conn_hdl, bond_data_t* bdata);
-bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata);
+void     bond_save_keys(uint8_t role, uint16_t conn_hdl, bond_data_t* bdata);
+bool     bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata);
 
-void bond_save_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv);
-bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv);
+void     bond_save_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv);
+bool     bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv);
 
-void bond_print_list(uint8_t role);
+void     bond_print_list(uint8_t role);
+
+bool bond_find_cntr(ble_gap_addr_t* addr, bond_data_t* bdata);
 
 
 

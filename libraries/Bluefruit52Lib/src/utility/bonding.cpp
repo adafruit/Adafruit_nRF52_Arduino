@@ -74,7 +74,7 @@ static void bond_save_keys_dfr(uint8_t role, uint16_t conn_hdl, bond_data_t* bda
     sprintf(filename, BOND_FNAME_PRPH, bdata->own_enc.master_id.ediv);
   }else
   {
-    sprintf(filename, BOND_FNAME_CNTR, bdata->own_enc.master_id.ediv);
+    sprintf(filename, BOND_FNAME_CNTR, bdata->peer_enc.master_id.ediv);
   }
 
   char devname[CFG_MAX_DEVNAME_LEN] = { 0 };
@@ -102,6 +102,10 @@ static void bond_save_keys_dfr(uint8_t role, uint16_t conn_hdl, bond_data_t* bda
   file.write((uint8_t*) devname, CFG_MAX_DEVNAME_LEN);
 
   file.close();
+
+  PRINT_HEX(bdata->own_enc.master_id.ediv);
+  PRINT_HEX(bdata->peer_enc.master_id.ediv);
+
 
   if (result)
   {
@@ -283,6 +287,39 @@ void bond_print_list(uint8_t role)
     }
   }
   cprintf("\n");
+}
+
+
+bool bond_find_cntr(ble_gap_addr_t* addr, bond_data_t* bdata)
+{
+  bool found = false;
+
+  NffsDir dir(BOND_DIR_CNTR);
+  NffsDirEntry dirEntry;
+
+  while( dir.read(&dirEntry) && !found )
+  {
+    // Read bond data of each stored file
+    if ( !dirEntry.isDirectory() )
+    {
+      NffsFile file(BOND_DIR_CNTR, dirEntry, FS_ACCESS_READ);
+      if ( file.read( (uint8_t*)bdata, sizeof(bond_data_t)) )
+      {
+        if ( !memcmp(addr->addr, bdata->peer_id.id_addr_info.addr, 6) )
+        {
+          // Compare static address
+          found = true;
+        }else if ( addr->addr_type == BLE_GAP_ADDR_TYPE_RANDOM_PRIVATE_RESOLVABLE )
+        {
+          // Resolving private address
+        }
+      }
+
+      file.close();
+    }
+  }
+
+  return found;
 }
 
 /*------------------------------------------------------------------*/

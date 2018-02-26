@@ -168,19 +168,34 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
 {
   gap_peer_t* peer = &_peers[conn_hdl];
 
-  // skip if already bonded
+  // skip if already paired
   if ( peer->paired ) return true;
 
-
-
-  VERIFY_STATUS( sd_ble_gap_authenticate(conn_hdl, &_sec_param ), false);
-  uint32_t start = millis();
-
-  // timeout in 30 seconds
-  while ( ! ((volatile bool) peer->paired) && (start + 30000 > millis()) )
+  // Check to see if we did bonded with current prph
+  if ( peer->role == BLE_GAP_ROLE_CENTRAL )
   {
-    yield();
+    bond_data_t bdata;
+
+    if ( bond_find_cntr(&peer->addr, &bdata) )
+    {
+      LOG_LV2("BOND", "Load Keys from file " BOND_FNAME_CNTR, bdata.peer_enc.master_id.ediv);
+      VERIFY_STATUS( sd_ble_gap_encrypt(conn_hdl, &bdata.peer_enc.master_id, &bdata.peer_enc.enc_info), false);
+    }else
+    {
+      VERIFY_STATUS( sd_ble_gap_authenticate(conn_hdl, &_sec_param ), false);
+    }
+  }else
+  {
+    VERIFY_STATUS( sd_ble_gap_authenticate(conn_hdl, &_sec_param ), false);
   }
+
+  // Wait for pairing process using on-the-fly semaphore
+  peer->pair_sem = xSemaphoreCreateBinary();
+
+  xSemaphoreTake(peer->pair_sem, portMAX_DELAY);
+
+  vSemaphoreDelete(peer->pair_sem);
+  peer->pair_sem = NULL;
 
   return peer->paired;
 }
@@ -372,15 +387,22 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     break;
 
     case BLE_GAP_EVT_CONN_SEC_UPDATE:
-      // Connection is secured aka Paired
+    {
+      const ble_gap_conn_sec_t* conn_sec = &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
 
-      // Previously bonded --> secure by re-connection process
-      // --> Load & Set Sys Attr (Apply Service Context)
-      // Else Init Sys Attr
-      bond_load_cccd(peer->role, conn_hdl, peer->ediv);
+      // Connection is secured (paired)
+      if ( !( conn_sec->sec_mode.sm == 1 && conn_sec->sec_mode.lv == 1) )
+      {
+        // Previously bonded --> secure by re-connection process
+        // --> Load & Set Sys Attr (Apply Service Context)
+        // Else Init Sys Attr
+        bond_load_cccd(peer->role, conn_hdl, peer->ediv);
 
-      // Paired is Bonded (as we always save keys)
-      peer->paired = true;
+        peer->paired = true;
+      }
+
+      if (peer->pair_sem) xSemaphoreGive(peer->pair_sem);
+    }
     break;
 
     case BLE_GAP_EVT_PASSKEY_DISPLAY:
