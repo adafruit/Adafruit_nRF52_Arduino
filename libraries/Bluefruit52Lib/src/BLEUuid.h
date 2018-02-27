@@ -81,6 +81,7 @@ class BLEUuid
 #define UUID16_SVC_BLOOD_PRESSURE                             0x1810
 #define UUID16_SVC_CURRENT_TIME                               0x1805
 #define UUID16_SVC_CYCLING_SPEED_AND_CADENCE                  0x1816
+#define UUID16_SVC_CYCLING_POWER                              0x1818
 #define UUID16_SVC_LOCATION_AND_NAVIGATION                    0x1819
 #define UUID16_SVC_DEVICE_INFORMATION                         0x180A
 #define UUID16_SVC_GLUCOSE                                    0x1808
@@ -121,6 +122,8 @@ class BLEUuid
 #define UUID16_CHR_BOOT_KEYBOARD_OUTPUT_REPORT                0x2A32
 #define UUID16_CHR_BOOT_MOUSE_INPUT_REPORT                    0x2A33
 #define UUID16_CHR_CURRENT_TIME                               0x2A2B
+#define UUID16_CHR_CYCLING_POWER_MEASUREMENT                  0x2A63
+#define UUID16_CHR_CYCLING_POWER_FEATURE                      0x2A65
 #define UUID16_CHR_DATE_TIME                                  0x2A08
 #define UUID16_CHR_DAY_DATE_TIME                              0x2A0A
 #define UUID16_CHR_DAY_OF_WEEK                                0x2A09
