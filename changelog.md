@@ -2,8 +2,13 @@
 
 ## 0.8.3
 
-- Enhance indicat API() to wait for confirm or timeout from peer.
-- Add BLEScanner filterService() for BLEService and BLEClientService
+- Enhanced indicat API() to wait for confirm or timeout from peer.
+- Added BLEScanner filterService() for BLEService and BLEClientService
+- Enhanced bonding management to support central bond and re-connection
+- Added BLEClientHidAdafruit implementation for client HID
+	- Added Central HID example
+- Enhanced BLEHidGeneric/BLEHidAdafruit to support boot protocol mode.
+- Fixed I2C lock-up when endTransmission() is called with empty txBuffer.
 
 ## 0.8.2
 
