@@ -192,7 +192,7 @@ err_t BLEDfu::begin(void)
   VERIFY_STATUS( _chr_control.begin() );
 
   BLECharacteristic chr_revision(UUID128_CHR_DFU_REVISON);
-  chr_packet.setTempMemory();
+  chr_revision.setTempMemory();
   chr_revision.setProperties(CHR_PROPS_READ);
   chr_revision.setFixedLen(2);
   VERIFY_STATUS( chr_revision.begin());
