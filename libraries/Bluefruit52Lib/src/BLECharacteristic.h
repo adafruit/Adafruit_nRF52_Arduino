@@ -108,7 +108,7 @@ class BLECharacteristic
     void setWriteCallback        (write_cb_t fp);
     void setCccdWriteCallback    (write_cccd_cb_t fp);
     void setReadAuthorizeCallback(read_authorize_cb_t fp);
-    void setWriteAuthorizeCallbak(write_authorize_cb_t fp);
+    void setWriteAuthorizeCallback(write_authorize_cb_t fp);
 
     virtual err_t begin(void);
 

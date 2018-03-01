@@ -148,7 +148,7 @@ setPresentationFormatDescriptor	KEYWORD2
 setWriteCallback	KEYWORD2
 setCccdWriteCallback	KEYWORD2
 setReadAuthorizeCallback	KEYWORD2
-setWriteAuthorizeCallbak	KEYWORD2
+setWriteAuthorizeCallback	KEYWORD2
 handles	KEYWORD2
 
 write	KEYWORD2
