@@ -289,7 +289,7 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
       {
          // write any additional data to FIFO,
          // update total number of bytes written to FIFO
-			written += _tx_fifo->write(content+written, len-written);
+         written += _tx_fifo->write(content+written, len-written);
       }
 
       // return actual number of bytes written to FIFO
