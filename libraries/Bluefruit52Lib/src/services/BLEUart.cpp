@@ -167,6 +167,8 @@ void BLEUart::bufferTXD(uint8_t enable)
     _txd.setCccdWriteCallback(NULL);
 
     if ( _tx_fifo ) delete _tx_fifo;
+    // set TX FIFO pointer to NULL after delete
+    _tx_fifo = NULL;
   }
 }
 
@@ -254,7 +256,16 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
   // notify right away if txd buffered is not enabled
   if ( !(_tx_buffered && _tx_fifo) )
   {
-    return _txd.notify(content, len) ? len : 0;
+    size_t datatosend =  len;
+    size_t capacity = (Bluefruit.Gap.getMTU( Bluefruit.connHandle() ) - 3);
+    // check to make sure we can send as much data as the caller has requested
+    // if not, adjust the amount sent, and return to caller how much actually got sent
+    if(datatosend > capacity)
+    {
+       datatosend = capacity;
+    }
+
+    return _txd.notify(content, datatosend) ? datatosend : 0;
   }else
   {
     // skip if not enabled
@@ -276,10 +287,13 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
       // still more data left, send them all
       if ( written < len )
       {
-        VERIFY( _txd.notify(content+written, len-written), written);
+         // write any additional data to FIFO,
+         // update total number of bytes written to FIFO
+			written += _tx_fifo->write(content+written, len-written);
       }
 
-      return len;
+      // return actual number of bytes written to FIFO
+      return written;
     }
   }
 }
