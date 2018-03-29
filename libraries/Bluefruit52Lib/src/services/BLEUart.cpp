@@ -71,6 +71,7 @@ BLEUart::BLEUart(uint16_t fifo_depth)
   _rx_fifo_depth = fifo_depth;
 
   _tx_fifo       = NULL;
+  _tx_fifo_depth = 0;
   _tx_buffered   = 0;
   _buffered_th   = NULL;
 }
@@ -147,20 +148,21 @@ void BLEUart::setRxCallback( rx_callback_t fp)
  * Note: packet is sent right away if it reach MTU bytes
  * @param enable true or false
  */
-void BLEUart::bufferTXD(uint8_t enable)
+void BLEUart::bufferTXD(uint8_t enable, uint16_t fifo_depth)
 {
   _tx_buffered = enable;
+  _tx_fifo_depth = fifo_depth;
 
   if ( enable )
   {
     // enable cccd callback to start timer when enabled
     _txd.setCccdWriteCallback(bleuart_txd_cccd_cb);
 
-    // Create FIFO for TX TODO Larger MTU Size
+    // Create FIFO for TX
     if ( _tx_fifo == NULL )
     {
       _tx_fifo = new Adafruit_FIFO(1);
-      _tx_fifo->begin( Bluefruit.Gap.getMaxMtuByConnCfg(CONN_CFG_PERIPHERAL) );
+      _tx_fifo->begin(_tx_fifo_depth);
     }
   }else
   {
