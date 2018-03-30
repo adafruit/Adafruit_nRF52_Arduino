@@ -44,19 +44,21 @@ Servo::Servo()
 uint8_t Servo::attach(int pin)
 {
 	
-	return this->attach(pin, 0, 2500);
+	return this->attach(pin, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
 }
 
 
 uint8_t Servo::attach(int pin, int min, int max)
 {
-  int servo_min, servo_max;
   if (this->servoIndex < MAX_SERVOS) {
     pinMode(pin, OUTPUT);                                   // set servo pin to output
     servos[this->servoIndex].Pin.nbr = pin;
 
-    if(min < servo_min) min = servo_min;
-    if (max > servo_max) max = servo_max;
+    if(min < MIN_PULSE_WIDTH) min = MIN_PULSE_WIDTH;
+    if (max > MAX_PULSE_WIDTH) max = MAX_PULSE_WIDTH;
+    //fix min if conversion to pulse cycle value is too low
+    if((min/DUTY_CYCLE_RESOLUTION)*DUTY_CYCLE_RESOLUTION<min) min+=DUTY_CYCLE_RESOLUTION;
+	  
     this->min  = min;
     this->max  = max;
 
@@ -67,9 +69,8 @@ uint8_t Servo::attach(int pin, int min, int max)
     {
       if ( HwPWMx[i]->addPin(pin) )
       {
-        // 20ms - 50Hz
-        HwPWMx[i]->setMaxValue(2500);
-        HwPWMx[i]->setClockDiv(PWM_PRESCALER_PRESCALER_DIV_128);
+        HwPWMx[i]->setMaxValue(MAXVALUE);
+        HwPWMx[i]->setClockDiv(CLOCKDIV);
 
         break;
       }
@@ -93,7 +94,7 @@ void Servo::write(int value)
 		value = 0;
 	else if (value > 180)
 		value = 180;
-	value = map(value, 0, 180, MIN_PULSE, MAX_PULSE);
+	value = map(value, 0, 180, this->min, this->max);
 	
 	writeMicroseconds(value);
 }
@@ -127,17 +128,17 @@ void Servo::writeMicroseconds(int value)
 	nrf_pwm_task_trigger(PWMInstance, NRF_PWM_TASK_SEQSTART0);
 #else
 	uint8_t pin = servos[this->servoIndex].Pin.nbr;
-
+	
 	for(int i=0; i<HWPWM_MODULE_NUM; i++)
 	{
-	  if ( HwPWMx[i]->writePin(pin, value) ) break;
+	  if ( HwPWMx[i]->writePin(pin, value/DUTY_CYCLE_RESOLUTION) ) break;
 	}
 #endif
 }
 
 int Servo::read() // return the value as degrees
 {
-	return map(readMicroseconds(), MIN_PULSE, MAX_PULSE, 0, 180);
+	return map(readMicroseconds(), this->min, this->max, 0, 180);
 }
 
 int Servo::readMicroseconds()
@@ -156,7 +157,7 @@ int Servo::readMicroseconds()
 	{
 	  if ( HwPWMx[i]->checkPin(pin) )
 	  {
-	    return HwPWMx[i]->readPin(pin);
+	    return HwPWMx[i]->readPin(pin)*DUTY_CYCLE_RESOLUTION;
 	  }
 	}
 
