@@ -36,19 +36,13 @@
 
 #include "bluefruit.h"
 #include <Nffs.h>
-
-#define SVC_CONTEXT_FLAG                 (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
+#include "utility/bonding.h"
 
 #define CFG_BLE_TX_POWER_LEVEL           0
 #define CFG_DEFAULT_NAME                 "Bluefruit52"
 
-
 #define CFG_BLE_TASK_STACKSIZE          (512*3)
 #define CFG_SOC_TASK_STACKSIZE          (200)
-
-#define CFG_BOND_NFFS_DIR                "/adafruit/bond"
-#define BOND_FILENAME                    CFG_BOND_NFFS_DIR "/%04x"
-#define BOND_FILENAME_LEN                (sizeof(CFG_BOND_NFFS_DIR) + 10)
 
 AdafruitBluefruit Bluefruit;
 
@@ -62,14 +56,6 @@ extern "C"
 
 void adafruit_ble_task(void* arg);
 void adafruit_soc_task(void* arg);
-
-void _adafruit_save_bond_key_dfr(uint32_t conn_handle);
-
-#if CFG_DEBUG >= 2
-#define printBondDir()    Nffs.listDir(CFG_BOND_NFFS_DIR)
-#else
-#define printBondDir()
-#endif
 
 /*------------------------------------------------------------------*/
 /* INTERNAL FUNCTION
@@ -123,7 +109,6 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _tx_power  = 0;
 
   _conn_hdl  = BLE_CONN_HANDLE_INVALID;
-  _bonded    = false;
 
   _ppcp_min_conn = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
   _ppcp_max_conn = BLE_GAP_CONN_MAX_INTERVAL_DFLT;
@@ -136,23 +121,6 @@ COMMENT_OUT(
   _auth_type = BLE_GAP_AUTH_KEY_TYPE_NONE;
   varclr(_pin);
 )
-
-  varclr(&_bond_data);
-  _bond_data.own_enc.master_id.ediv = 0xFFFF; // invalid value for ediv
-
-  _sec_param = (ble_gap_sec_params_t)
-              {
-                .bond         = 1,
-                .mitm         = 0,
-                .lesc         = 0,
-                .keypress     = 0,
-                .io_caps      = BLE_GAP_IO_CAPS_NONE,
-                .oob          = 0,
-                .min_key_size = 7,
-                .max_key_size = 16,
-                .kdist_own    = { .enc = 1, .id = 1},
-                .kdist_peer   = { .enc = 1, .id = 1},
-              };
 }
 
 void AdafruitBluefruit::configServiceChanged(bool changed)
@@ -447,9 +415,8 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   // Create Timer for led advertising blinky
   _led_blink_th = xTimerCreate(NULL, ms2tick(CFG_ADV_BLINKY_INTERVAL/2), true, NULL, bluefruit_blinky_cb);
 
-  // Initialize nffs for bonding (it is safe to call nffs_pkg_init() multiple time)
-  Nffs.begin();
-  (void) Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
+  // Initialize bonding
+  bond_init();
 
   return ERROR_NONE;
 }
@@ -580,7 +547,7 @@ uint16_t AdafruitBluefruit::connHandle(void)
 
 bool AdafruitBluefruit::connPaired(void)
 {
-  return _bonded;
+  return Gap.paired(_conn_hdl);
 }
 
 uint16_t AdafruitBluefruit::connInterval(void)
@@ -731,35 +698,13 @@ void AdafruitBluefruit::printInfo(void)
   Serial.println();
 
   /*------------- List the paried device -------------*/
-  Serial.printf(title_fmt, "Paired Devices");
+  Serial.printf(title_fmt, "Peripheral Paired Devices");
   Serial.println();
+  bond_print_list(BLE_GAP_ROLE_PERIPH);
 
-  NffsDir dir(CFG_BOND_NFFS_DIR);
-  NffsDirEntry dirEntry;
-  while( dir.read(&dirEntry) )
-  {
-    if ( !dirEntry.isDirectory() )
-    {
-      char name[64];
-      dirEntry.getName(name, sizeof(name));
-
-      Serial.printf("  %s : ", name);
-
-      // open file to read device name
-      NffsFile file(CFG_BOND_NFFS_DIR, dirEntry, FS_ACCESS_READ);
-
-      varclr(name);
-
-      file.seek(BOND_FILE_DEVNAME_OFFSET);
-      if ( file.read(name, CFG_MAX_DEVNAME_LEN) )
-      {
-        Serial.println(name);
-      }
-
-      file.close();
-    }
-  }
+  Serial.printf(title_fmt, "Central Paired Devices");
   Serial.println();
+  bond_print_list(BLE_GAP_ROLE_CENTRAL);
 
   Serial.println();
 }
@@ -913,116 +858,11 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       break;
 
       case BLE_GAP_EVT_DISCONNECTED:
-        // Save all configured cccd
-        if (_bonded) _saveBondCCCD();
-
         if (_disconnect_cb) ada_callback(NULL, _disconnect_cb, _conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
 
         LOG_LV2("GAP", "Disconnect Reason 0x%02X", evt->evt.gap_evt.params.disconnected.reason);
 
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
-        _bonded   = false;
-      break;
-
-      case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-      {
-        // Pairing in progress
-        varclr(&_bond_data);
-        _bond_data.own_enc.master_id.ediv = 0xFFFF; // invalid value for ediv
-
-        /* Step 1: Pairing/Bonding
-         * - Central supplies its parameters
-         * - We replies with our security parameters
-         */
-        //      ble_gap_sec_params_t* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
-        COMMENT_OUT(
-            // Change security parameter according to authentication type
-            if ( _auth_type == BLE_GAP_AUTH_KEY_TYPE_PASSKEY)
-            {
-              sec_para.mitm    = 1;
-              sec_para.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
-            }
-        )
-
-        ble_gap_sec_keyset_t keyset =
-        {
-            .keys_own = {
-                .p_enc_key  = &_bond_data.own_enc,
-                .p_id_key   = NULL,
-                .p_sign_key = NULL,
-                .p_pk       = NULL
-            },
-
-            .keys_peer = {
-                .p_enc_key  = &_bond_data.peer_enc,
-                .p_id_key   = &_bond_data.peer_id,
-                .p_sign_key = NULL,
-                .p_pk       = NULL
-            }
-        };
-
-        VERIFY_STATUS(sd_ble_gap_sec_params_reply(evt->evt.gap_evt.conn_handle, BLE_GAP_SEC_STATUS_SUCCESS, &_sec_param, &keyset), RETURN_VOID);
-      }
-      break;
-
-      case BLE_GAP_EVT_SEC_INFO_REQUEST:
-      {
-        // Reconnection. If bonded previously, Central will ask for stored keys.
-        // return security information. Otherwise NULL
-        ble_gap_evt_sec_info_request_t* sec_request = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
-
-        if ( _loadBondKeys(sec_request->master_id.ediv) )
-        {
-          sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &_bond_data.own_enc.enc_info, &_bond_data.peer_id.id_info, NULL);
-        } else
-        {
-          sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
-        }
-      }
-      break;
-
-
-      case BLE_GAP_EVT_PASSKEY_DISPLAY:
-      {
-        //      ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
-        //
-        //      PRINT_INT(passkey_display->match_request);
-        //      PRINT_BUFFER(passkey_display->passkey, 6);
-
-        // sd_ble_gap_auth_key_reply
-      }
-      break;
-
-      case BLE_GAP_EVT_CONN_SEC_UPDATE:
-      {
-        // Connection is secured aka Paired
-        COMMENT_OUT( ble_gap_conn_sec_t* conn_sec = (ble_gap_conn_sec_t*) &evt->evt.gap_evt.params.conn_sec_update.conn_sec; )
-
-          // Previously bonded --> secure by re-connection process
-          // --> Load & Set Sys Attr (Apply Service Context)
-          // Else Init Sys Attr
-          _loadBondCCCD(_bond_data.own_enc.master_id.ediv);
-
-        // Consider Paired as Bonded
-        _bonded = true;
-      }
-      break;
-
-      case BLE_GAP_EVT_AUTH_STATUS:
-      {
-        // Bonding process completed
-        ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
-
-        // Pairing/Bonding succeeded --> save encryption keys
-        if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
-        {
-          _bonded = true;
-          ada_callback(NULL, _adafruit_save_bond_key_dfr, _conn_hdl);
-        }else
-        {
-          PRINT_HEX(status->auth_status);
-        }
-      }
       break;
 
       case BLE_GATTS_EVT_SYS_ATTR_MISSING:
@@ -1077,196 +917,11 @@ void AdafruitBluefruit::_setConnLed (bool on_off)
  *------------------------------------------------------------------*/
 bool AdafruitBluefruit::requestPairing(void)
 {
-  // skip if already bonded
-  if (_bonded) return true;
-
-  VERIFY_STATUS( sd_ble_gap_authenticate(_conn_hdl, &_sec_param ), false);
-  uint32_t start = millis();
-
-  // timeout in 30 seconds
-  while ( !_bonded && (start + 30000 > millis()) )
-  {
-    yield();
-  }
-
-  return _bonded;
+  return Gap.requestPairing(_conn_hdl);
 }
 
 void AdafruitBluefruit::clearBonds(void)
 {
-  // Detele bonds dir
-  Nffs.remove(CFG_BOND_NFFS_DIR);
-
-  // Create an empty one
-  Nffs.mkdir_p(CFG_BOND_NFFS_DIR);
-
-  printBondDir();
+  bond_clear_prph();
 }
 
-/*------------------------------------------------------------------*/
-/* Saving Bond Data to Nffs in following layout
- * - _bond_data 80 bytes
- * - Name       32 bytes
- * - CCCD       variable
- *------------------------------------------------------------------*/
-void _adafruit_save_bond_key_dfr(uint32_t conn_handle)
-{
-  (void) conn_handle;
-  Bluefruit._saveBondKeys();
-}
-
-void _adafruit_save_bond_cccd_dfr(uint32_t conn_handle)
-{
-  (void) conn_handle;
-  Bluefruit._saveBondCCCD();
-}
-
-void AdafruitBluefruit::_saveBondKeys(void)
-{
-  char filename[BOND_FILENAME_LEN];
-  sprintf(filename, BOND_FILENAME, _bond_data.own_enc.master_id.ediv);
-
-  char devname[CFG_MAX_DEVNAME_LEN] = { 0 };
-  Gap.getPeerName(_conn_hdl, devname, CFG_MAX_DEVNAME_LEN);
-
-  NffsFile file(filename, FS_ACCESS_WRITE);
-
-  VERIFY( file.exists(), );
-
-  bool result = true;
-
-  // write keys
-  if ( !file.write((uint8_t*)&_bond_data, sizeof(_bond_data)) )
-  {
-    result = false;
-  }
-
-  // write device name
-  if ( strlen(devname) && !file.write((uint8_t*) devname, CFG_MAX_DEVNAME_LEN) )
-  {
-    result = false;
-  }
-
-  file.close();
-
-  if (result)
-  {
-    LOG_LV2("BOND", "Keys for \"%s\" is saved to file %s", devname, filename);
-  }else
-  {
-    LOG_LV1("BOND", "Failed to save keys for \"%s\"", devname);
-  }
-  printBondDir();
-}
-
-bool AdafruitBluefruit::_loadBondKeys(uint16_t ediv)
-{
-  VERIFY_STATIC(sizeof(_bond_data) == 80 );
-
-  char filename[BOND_FILENAME_LEN];
-  sprintf(filename, BOND_FILENAME, ediv);
-
-  bool result = (Nffs.readFile(filename, &_bond_data, sizeof(_bond_data)) > 0);
-
-  if ( result )
-  {
-    LOG_LV2("BOND", "Load Keys from file %s", filename);
-  }else
-  {
-    LOG_LV1("BOND", "Keys not found");
-  }
-
-  return result;
-}
-
-void AdafruitBluefruit::_saveBondCCCD(void)
-{
-  VERIFY( _bond_data.own_enc.master_id.ediv != 0xFFFF, );
-
-  uint16_t len=0;
-  sd_ble_gatts_sys_attr_get(_conn_hdl, NULL, &len, SVC_CONTEXT_FLAG);
-
-  uint8_t* sys_attr = (uint8_t*) rtos_malloc( len );
-  VERIFY( sys_attr, );
-
-  if ( ERROR_NONE == sd_ble_gatts_sys_attr_get(_conn_hdl, sys_attr, &len, SVC_CONTEXT_FLAG) )
-  {
-    // save to file
-    char filename[BOND_FILENAME_LEN];
-    sprintf(filename, BOND_FILENAME, _bond_data.own_enc.master_id.ediv);
-
-    if ( Nffs.writeFile(filename, sys_attr, len, BOND_FILE_CCCD_OFFSET) )
-    {
-      LOG_LV2("BOND", "CCCD setting is saved to file %s", filename);
-    }else
-    {
-      LOG_LV1("BOND", "Failed to save CCCD setting");
-    }
-
-  }
-
-  printBondDir();
-
-  rtos_free(sys_attr);
-}
-
-void AdafruitBluefruit::_loadBondCCCD(uint16_t ediv)
-{
-  bool loaded = false;
-
-  char filename[BOND_FILENAME_LEN];
-  sprintf(filename, BOND_FILENAME, ediv);
-
-  NffsFile file(filename, FS_ACCESS_READ);
-
-  if ( file.exists() )
-  {
-    int32_t len = file.size() - BOND_FILE_CCCD_OFFSET;
-
-    if ( len )
-    {
-      uint8_t* sys_attr = (uint8_t*) rtos_malloc( len );
-
-      if (sys_attr)
-      {
-        file.seek(BOND_FILE_CCCD_OFFSET);
-
-        if ( file.read(sys_attr, len ) )
-        {
-          if (ERROR_NONE == sd_ble_gatts_sys_attr_set(_conn_hdl, sys_attr, len, SVC_CONTEXT_FLAG) )
-          {
-            loaded = true;
-
-            LOG_LV2("BOND", "Load CCCD from file %s", filename);
-          }else
-          {
-            LOG_LV1("BOND", "CCCD setting not found");
-          }
-        }
-
-        rtos_free(sys_attr);
-      }
-    }
-  }
-
-  file.close();
-
-  if ( !loaded )
-  {
-    sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
-  }
-}
-
-void AdafruitBluefruit::_bledfu_get_bond_data(ble_gap_addr_t* addr, ble_gap_irk_t* irk, ble_gap_enc_key_t* enc_key)
-{
-  if (!_bonded)
-  {
-    (*addr) = getPeerAddr();
-  }else
-  {
-    (*addr)    = _bond_data.peer_id.id_addr_info;
-    (*irk)     = _bond_data.peer_id.id_info;
-
-    (*enc_key) = _bond_data.own_enc;
-  }
-}

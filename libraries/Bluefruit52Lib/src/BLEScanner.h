@@ -68,6 +68,9 @@ public:
   void filterUuid(BLEUuid ble_uuid1, BLEUuid ble_uuid2, BLEUuid ble_uuid3, BLEUuid ble_uuid4);
   void filterUuid(BLEUuid ble_uuid[], uint8_t count);
 
+  void filterService(BLEService& svc);
+  void filterService(BLEClientService& cli);
+
   void clearFilters(void);
 
   bool start(uint16_t timeout = 0);

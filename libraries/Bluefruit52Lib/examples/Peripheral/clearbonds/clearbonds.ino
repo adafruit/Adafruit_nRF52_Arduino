@@ -18,6 +18,7 @@
 
 #include <bluefruit.h>
 #include <Nffs.h>
+#include <utility/bonding.h>
 
 void setup() 
 {
@@ -29,13 +30,17 @@ void setup()
 
   Serial.println();
   Serial.println("----- Before -----\n");
-  printDir("/adafruit/bond");
+  bond_print_list(BLE_GAP_ROLE_PERIPH);
+  bond_print_list(BLE_GAP_ROLE_CENTRAL);
 
   Bluefruit.clearBonds();
+  Bluefruit.Central.clearBonds();
 
   Serial.println();
   Serial.println("----- After  -----\n");
-  printDir("/adafruit/bond");
+  
+  bond_print_list(BLE_GAP_ROLE_PERIPH);
+  bond_print_list(BLE_GAP_ROLE_CENTRAL);
 }
 
 void loop() 
@@ -46,54 +51,3 @@ void loop()
   delay(1000);
 }
 
-void printDir(const char* cwd)
-{
-  // Open the input folder
-  NffsDir dir(cwd);
-
-  Serial.println(cwd);
- 
-  // File Entry Information which hold file attribute and name
-  NffsDirEntry dirEntry;
-
-  // Loop through the directory
-  while( dir.read(&dirEntry) )
-  {
-    // Indentation
-    Serial.print("|_ ");
-
-    char eName[64];
-    dirEntry.getName(eName, sizeof(eName));
-
-    char fullpath[256];
-    strcpy(fullpath, cwd);
-    strcat(fullpath, "/");
-    strcat(fullpath, eName);
-    
-    Serial.print( eName );
-
-    if ( dirEntry.isDirectory() )
-    {
-      Serial.println("/");
-    }else
-    {
-      // Print file size starting from position 50
-      int pos = 3 + strlen(eName);
-
-      // Print padding
-      for (int i=pos; i<50; i++) Serial.print(' ');
-
-      // Print at least one extra space in case current position > 50
-      Serial.print(' ');
-
-      NffsFile file(fullpath);
-
-      Serial.print( file.size() );
-      Serial.println( " Bytes");
-
-      file.close();
-    }
-  }
-
-  dir.close();
-}

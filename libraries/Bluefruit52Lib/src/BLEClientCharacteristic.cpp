@@ -43,7 +43,9 @@ void BLEClientCharacteristic::_init(void)
   _cccd_handle      = BLE_GATT_HANDLE_INVALID;
 
   _notify_cb       = NULL;
-  _use_AdaCallback = true;
+  _indicate_cb     = NULL;
+
+  varclr(&_use_ada_cb);
 }
 
 BLEClientCharacteristic::BLEClientCharacteristic(void)
@@ -110,11 +112,6 @@ bool BLEClientCharacteristic::discover(void)
 bool BLEClientCharacteristic::discovered(void)
 {
   return _chr.handle_value != BLE_GATT_HANDLE_INVALID;
-}
-
-void BLEClientCharacteristic::useAdaCallback(bool enabled)
-{
-  _use_AdaCallback = enabled;
 }
 
 uint16_t BLEClientCharacteristic::connHandle(void)
@@ -331,9 +328,16 @@ uint16_t BLEClientCharacteristic::write32(int value)
 }
 
 
-void BLEClientCharacteristic::setNotifyCallback(notify_cb_t fp)
+void BLEClientCharacteristic::setNotifyCallback(notify_cb_t fp, bool useAdaCallback)
 {
   _notify_cb = fp;
+  _use_ada_cb.notify = useAdaCallback;
+}
+
+void BLEClientCharacteristic::setIndicateCallback(indicate_cb_t fp, bool useAdaCallback)
+{
+  _indicate_cb = fp;
+  _use_ada_cb.indicate = useAdaCallback;
 }
 
 bool BLEClientCharacteristic::writeCCCD(uint16_t value)
@@ -384,6 +388,7 @@ bool BLEClientCharacteristic::disableIndicate (void)
 
 void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
 {
+  const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
   uint16_t gatt_status = evt->evt.gattc_evt.gatt_status;
 
   switch(evt->header.evt_id)
@@ -392,26 +397,50 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
     {
       ble_gattc_evt_hvx_t* hvx = &evt->evt.gattc_evt.params.hvx;
 
-      if ( hvx->type == BLE_GATT_HVX_NOTIFICATION )
+      switch ( hvx->type )
       {
-        if (_notify_cb)
-        {
-          // use AdaCallback or invoke directly
-          if (_use_AdaCallback)
+        case BLE_GATT_HVX_NOTIFICATION:
+          if (_notify_cb)
           {
-            uint8_t* data = (uint8_t*) rtos_malloc(hvx->len);
-            if (!data) return;
-            memcpy(data, hvx->data, hvx->len);
+            // use AdaCallback or invoke directly
+            if (_use_ada_cb.notify)
+            {
+              uint8_t* data = (uint8_t*) rtos_malloc(hvx->len);
+              if (!data) return;
+              memcpy(data, hvx->data, hvx->len);
 
-            ada_callback(data, _notify_cb, this, data, hvx->len);
-          }else
-          {
-            _notify_cb(*this, hvx->data, hvx->len);
+              // data is free by callback
+              ada_callback(data, _notify_cb, this, data, hvx->len);
+            }else
+            {
+              _notify_cb(this, hvx->data, hvx->len);
+            }
           }
-        }
-      }else
-      {
+        break;
 
+        case BLE_GATT_HVX_INDICATION:
+          if (_indicate_cb)
+          {
+            // use AdaCallback or invoke directly
+            if (_use_ada_cb.indicate)
+            {
+              uint8_t* data = (uint8_t*) rtos_malloc(hvx->len);
+              if (!data) return;
+              memcpy(data, hvx->data, hvx->len);
+
+              // data is free by callback
+              ada_callback(data, _indicate_cb, this, data, hvx->len);
+            }else
+            {
+              _indicate_cb(this, hvx->data, hvx->len);
+            }
+
+            // Send confirmation to server
+            VERIFY_STATUS( sd_ble_gattc_hv_confirm(evt_conn_hdl, hvx->handle), );
+          }
+        break;
+
+        default : break;
       }
     }
     break;

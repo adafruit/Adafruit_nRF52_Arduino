@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
-    @file     AdaMsg.cpp
-    @author   hathach
+    @file     bonding.h
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,99 +33,51 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
+#ifndef BONDING_H_
+#define BONDING_H_
 
-#include "AdaMsg.h"
+#include "bluefruit_common.h"
 
-void AdaMsg::_init(void)
+#define BOND_DIR_ROOT             "/adafruit/bond"
+#define BOND_DIR_PRPH             BOND_DIR_ROOT "/prph"
+#define BOND_DIR_CNTR             BOND_DIR_ROOT "/cntr"
+
+#define BOND_FNAME_PRPH           BOND_DIR_PRPH "/%04x"
+#define BOND_FNAME_CNTR           BOND_DIR_CNTR "/%04x"
+
+#define BOND_FNAME_LEN            max(sizeof(BOND_FNAME_PRPH), sizeof(BOND_FNAME_CNTR))
+
+// Shared keys with bonded device, size = 80 bytes
+typedef struct
 {
-  _dynamic = true;
-  _waiting = false;
-  _sem     = NULL;
+  ble_gap_enc_key_t own_enc;
+  ble_gap_enc_key_t peer_enc;
+  ble_gap_id_key_t  peer_id;
+} bond_data_t;
 
-  buffer  = NULL;
-  remaining = xferlen = 0;
-}
-
-AdaMsg::AdaMsg(void)
+enum
 {
-  _init();
-}
+  BOND_FILE_DEVNAME_OFFSET = sizeof(bond_data_t),
+  BOND_FILE_CCCD_OFFSET    = BOND_FILE_DEVNAME_OFFSET + CFG_MAX_DEVNAME_LEN
+};
 
-// dynamic mean semaphore is malloced and freed only when in action
-void AdaMsg::begin(bool dynamic)
-{
-  _dynamic = dynamic;
-  if ( !_dynamic )
-  {
-    _sem = xSemaphoreCreateCounting(10, 0);
-  }
-}
+void bond_init(void);
+void bond_clear_prph(void);
+void bond_clear_cntr(void);
+void bond_clear_all(void);
 
-void AdaMsg::stop(void)
-{
-  if (!_dynamic) vSemaphoreDelete(_sem);
-  _init();
-}
+void bond_remove_key(uint8_t role, uint16_t ediv);
 
-void AdaMsg::prepare(void* buf, uint16_t bufsize)
-{
-  buffer    = (uint8_t*) buf;
-  remaining = bufsize;
-  xferlen   = 0;
-}
+void bond_save_keys(uint8_t role, uint16_t conn_hdl, bond_data_t* bdata);
+bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata);
 
-/**
- *
- * @param ms
- * @return -1 if timeout
- */
-int32_t AdaMsg::waitUntilComplete(uint32_t ms)
-{
-  if (_dynamic)
-  {
-    _sem = xSemaphoreCreateBinary();
-    VERIFY(_sem, -1);
-  }
+void bond_save_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv);
+bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv);
 
-  int result = -1;
+void bond_print_list(uint8_t role);
 
-  _waiting = true;
-  if ( xSemaphoreTake(_sem, ms2tick(ms) ) )
-  {
-    result = xferlen;
-  }
-  _waiting = false;
+bool bond_find_cntr(ble_gap_addr_t* addr, bond_data_t* bdata);
 
-  if (_dynamic)
-  {
-    vSemaphoreDelete(_sem);
-    _sem = NULL;
-  }
 
-  return result;
-}
 
-bool AdaMsg::isWaiting(void)
-{
-  return _waiting;
-}
-
-uint16_t AdaMsg::feed(void* data, uint16_t len)
-{
-  len = min16(len, remaining);
-
-  // pass NULL to skip copy
-  if ( data ) memcpy(buffer, data, len);
-
-  buffer    += len;
-  remaining -= len;
-  xferlen   += len;
-
-  return len;
-}
-
-void AdaMsg::complete(void)
-{
-  if(_sem) xSemaphoreGive(_sem);
-}
-
+#endif /* BONDING_H_ */

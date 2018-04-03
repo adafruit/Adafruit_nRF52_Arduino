@@ -394,14 +394,6 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
           memcpy(&value, request->data, 2);
           _cccd_wr_cb(*this, value);
         }
-
-        // TODO could move later
-        // Save CCCD if bonded to file whenever changed
-        extern void _adafruit_save_bond_cccd_dfr(uint32_t conn_handle);
-        if ( Bluefruit.connPaired() )
-        {
-          ada_callback(NULL, _adafruit_save_bond_cccd_dfr, event->evt.common_evt.conn_handle);
-        }
       }
     }
     break;
@@ -496,12 +488,10 @@ uint32_t BLECharacteristic::read32(void)
   return read(&num, sizeof(num)) ? num : 0;
 }
 
-/*------------------------------------------------------------------*/
-/* NOTIFY
- *------------------------------------------------------------------*/
-bool BLECharacteristic::notifyEnabled(void)
+
+uint16_t BLECharacteristic::getCccd(void)
 {
-  VERIFY( _properties.notify && Bluefruit.connected() );
+  VERIFY( Bluefruit.connected() && (_handles.cccd_handle != BLE_GATT_HANDLE_INVALID), 0 );
 
   uint16_t cccd;
   ble_gatts_value_t value =
@@ -522,7 +512,16 @@ bool BLECharacteristic::notifyEnabled(void)
     VERIFY_STATUS(err);
   }
 
-  return (cccd & BLE_GATT_HVX_NOTIFICATION);
+  return cccd;
+}
+
+/*------------------------------------------------------------------*/
+/* NOTIFY
+ *------------------------------------------------------------------*/
+bool BLECharacteristic::notifyEnabled(void)
+{
+  VERIFY( _properties.notify );
+  return  (getCccd() & BLE_GATT_HVX_NOTIFICATION);
 }
 
 bool BLECharacteristic::notify(const void* data, uint16_t len)
@@ -557,7 +556,7 @@ bool BLECharacteristic::notify(const void* data, uint16_t len)
       VERIFY_STATUS( sd_ble_gatts_hvx(Bluefruit.connHandle(), &hvx_params), false );
 
       remaining -= packet_len;
-      u8data     += packet_len;
+      u8data    += packet_len;
     }
   }
   else
@@ -592,4 +591,84 @@ bool BLECharacteristic::notify32(uint32_t num)
 bool BLECharacteristic::notify32(int num)
 {
   return notify32( (uint32_t) num);
+}
+
+/*------------------------------------------------------------------*/
+/* INDICATE
+ *------------------------------------------------------------------*/
+bool BLECharacteristic::indicateEnabled(void)
+{
+  VERIFY( _properties.indicate );
+  return  (getCccd() & BLE_GATT_HVX_INDICATION);
+}
+
+bool BLECharacteristic::indicate(const void* data, uint16_t len)
+{
+  VERIFY( _properties.indicate );
+
+  // could not exceed max len
+  uint16_t remaining = min16(len, _max_len);
+
+  if ( indicateEnabled() )
+  {
+    uint16_t conn_hdl = Bluefruit.connHandle();
+
+    uint16_t const max_payload = Bluefruit.Gap.getMTU( conn_hdl ) - 3;
+    const uint8_t* u8data = (const uint8_t*) data;
+
+    while ( remaining )
+    {
+      uint16_t packet_len = min16(max_payload, remaining);
+
+      ble_gatts_hvx_params_t hvx_params =
+      {
+          .handle = _handles.value_handle,
+          .type   = BLE_GATT_HVX_INDICATION,
+          .offset = 0,
+          .p_len  = &packet_len,
+          .p_data = (uint8_t*) u8data,
+      };
+
+      LOG_LV2("CHR", "Indicate %d bytes", packet_len);
+
+      // Blocking wait until receiving confirmation from peer
+      VERIFY_STATUS( sd_ble_gatts_hvx( conn_hdl, &hvx_params), false );
+      VERIFY ( Bluefruit.Gatt.waitForIndicateConfirm(conn_hdl) );
+
+      remaining -= packet_len;
+      u8data    += packet_len;
+    }
+  }
+  else
+  {
+    write(data, remaining);
+    return false;
+  }
+
+  return true;
+}
+
+bool BLECharacteristic::indicate(const char * str)
+{
+  return indicate( (const uint8_t*) str, strlen(str) );
+}
+
+bool BLECharacteristic::indicate8(uint8_t num)
+{
+  return indicate( (uint8_t*) &num, sizeof(num));
+}
+
+bool BLECharacteristic::indicate16(uint16_t num)
+{
+  return indicate( (uint8_t*) &num, sizeof(num));
+}
+
+bool BLECharacteristic::indicate32(uint32_t num)
+{
+  return indicate( (uint8_t*) &num, sizeof(num));
+}
+
+bool BLECharacteristic::indicate32(int num)
+{
+  return indicate32( (uint32_t) num);
 }

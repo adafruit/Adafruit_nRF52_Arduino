@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
-    @file     BLECentralUart.h
-    @author   hathach
+    @file     BLEClientHidAdafruit.h
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -33,57 +33,75 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef BLECLIENTUART_H_
-#define BLECLIENTUART_H_
+#ifndef BLECLIENTHIDADAFRUIT_H_
+#define BLECLIENTHIDADAFRUIT_H_
 
 #include "bluefruit_common.h"
-#include "utility/adafruit_fifo.h"
-
 #include "BLEClientCharacteristic.h"
 #include "BLEClientService.h"
 
-#include "services/BLEUart.h"
+#include "services/BLEHidGeneric.h"
 
-class BLEClientUart : public BLEClientService, public Stream
+// Only support Boot Keyboard and/or Boot Mouse, there is no Consumer Control support
+class BLEClientHidAdafruit : public BLEClientService
 {
   public:
     // Callback Signatures
-    typedef void (*rx_callback_t) (BLEClientUart& svc);
+    typedef void (*kbd_callback_t ) (hid_keyboard_report_t* report);
+    typedef void (*mse_callback_t ) (hid_mouse_report_t* report);
 
-    BLEClientUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
+    BLEClientHidAdafruit(void);
 
     virtual bool  begin(void);
     virtual bool  discover(uint16_t conn_handle);
 
-    void setRxCallback( rx_callback_t fp);
+    bool     getHidInfo(uint8_t info[4]);
+    uint8_t  getCountryCode(void);
 
-    bool enableTXD(void);
-    bool disableTXD(void);
+    bool setProtocolMode(uint8_t mode);
 
-    // Stream API
-    virtual int       read       ( void );
-    virtual int       read       ( uint8_t * buf, size_t size );
-            int       read       ( char    * buf, size_t size ) { return read( (uint8_t*) buf, size); }
-    virtual size_t    write      ( uint8_t b );
-    virtual size_t    write      ( const uint8_t *content, size_t len );
-    virtual int       available  ( void );
-    virtual int       peek       ( void );
-    virtual void      flush      ( void );
+    // Keyboard API
+    bool keyboardPresent(void);
+    bool enableKeyboard(void);
+    bool disableKeyboard(void);
 
-    // pull in write(str) and write(buf, size) from Print
-    using Print::write;
+    void getKeyboardReport(hid_keyboard_report_t* report);
+
+    // Mouse API
+    bool mousePresent(void);
+    bool enableMouse(void);
+    bool disableMouse(void);
+
+    void getMouseReport(hid_mouse_report_t* report);
+
+    // Report callback
+    void setKeyboardReportCallback(kbd_callback_t fp);
+    void setMouseReportCallback(mse_callback_t fp);
 
   protected:
-    virtual void  disconnect(void);
+    kbd_callback_t _kbd_cb;
+    mse_callback_t _mse_cb;
 
-  private:
-    BLEClientCharacteristic _txd;
-    BLEClientCharacteristic _rxd;
+    hid_keyboard_report_t _last_kbd_report;
+    hid_mouse_report_t    _last_mse_report;
 
-    Adafruit_FIFO     _rx_fifo;
-    rx_callback_t     _rx_cb;
+    // Only support Boot protocol for keyboard and Mouse
+    BLEClientCharacteristic _protcol_mode;
+    BLEClientCharacteristic _hid_info;
+    BLEClientCharacteristic _hid_control;
 
-    friend void bleuart_central_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
+    BLEClientCharacteristic _kbd_boot_input;
+    BLEClientCharacteristic _kbd_boot_output;
+
+    BLEClientCharacteristic _mse_boot_input;
+
+    void _handle_kbd_input(uint8_t* data, uint16_t len);
+    void _handle_mse_input(uint8_t* data, uint16_t len);
+
+    friend void kbd_client_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
+    friend void mse_client_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
 };
 
-#endif /* BLECLIENTUART_H_ */
+
+
+#endif /* BLECLIENTHIDADAFRUIT_H_ */

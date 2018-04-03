@@ -2,6 +2,28 @@
 
 ## 0.9.0
 
+## 0.8.3
+
+- Enhanced indicate API() to wait for confirm or timeout from peer.
+- Added BLEScanner filterService() for BLEService and BLEClientService
+- Enhanced bonding management to support central bond and re-connection
+- Added BLEClientHidAdafruit implementation for client HID
+	- Added Central HID example
+- Enhanced BLEHidGeneric/BLEHidAdafruit to support boot protocol mode.
+- Fixed I2C lock-up when endTransmission() is called with empty txBuffer.
+
+## 0.8.2
+
+- Fixed burning bootloader issue with MacOS
+- Added gpstest_swuart example sketch
+- Added indicate API for BLECharacteristic
+- Added custom_htm as usage example for indicate API.
+- BLEClientCharacteristic
+  - Added setIndicateCallback(), issue #113
+  - Added useAdaCallback option to setNotifyCallback(), setIndicateCallback()
+  - Change notify callback signature from 
+notify_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len) to notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len)
+
 ## 0.8.1
 
 - Prevent sketch compiled with S132 v2 upload to device running S132 v5 and vice versa.

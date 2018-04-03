@@ -47,8 +47,8 @@ class BLEClientCharacteristic
 {
   public:
     /*--------- Callback Signatures ----------*/
-    typedef void (*notify_cb_t  ) (BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
-    typedef void (*indicate_cb_t) (BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
+    typedef void (*notify_cb_t  ) (BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
+    typedef void (*indicate_cb_t) (BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
 
     BLEUuid uuid;
 
@@ -100,22 +100,29 @@ class BLEClientCharacteristic
     bool     disableIndicate (void);
 
     /*------------- Callbacks -------------*/
-    void     setNotifyCallback(notify_cb_t fp);
-    void     useAdaCallback(bool enabled);
+    void     setNotifyCallback(notify_cb_t fp, bool useAdaCallback = true);
+    void     setIndicateCallback(indicate_cb_t fp, bool useAdaCallback = true);
 
     /*------------- Internal usage -------------*/
     void     _assign(ble_gattc_char_t* gattc_chr);
     bool     _discoverDescriptor(uint16_t conn_handle, ble_gattc_handle_range_t hdl_range);
 
   private:
-    ble_gattc_char_t   _chr;
-    uint16_t           _cccd_handle;
+    ble_gattc_char_t  _chr;
+    uint16_t          _cccd_handle;
 
     BLEClientService* _service;
-    notify_cb_t        _notify_cb;
-    bool               _use_AdaCallback; // whether callback is invoked in separated task with AdaCallback
-
     AdaMsg             _adamsg;
+
+    /*------------- Callbacks -------------*/
+    notify_cb_t       _notify_cb;
+    indicate_cb_t     _indicate_cb;
+
+    struct ATTR_PACKED {
+      uint8_t notify    : 1;
+      uint8_t indicate : 1;
+    } _use_ada_cb;
+
 
     void  _init         (void);
     void  _eventHandler (ble_evt_t* event);

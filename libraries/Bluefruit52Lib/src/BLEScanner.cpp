@@ -272,6 +272,16 @@ void BLEScanner::filterUuid(BLEUuid ble_uuid[], uint8_t count)
   for(uint8_t i=0; i<count; i++) _filter_uuid[i] = ble_uuid[i];
 }
 
+void BLEScanner::filterService(BLEService& svc)
+{
+  filterUuid(svc.uuid);
+}
+
+void BLEScanner::filterService(BLEClientService& cli)
+{
+  filterUuid(cli.uuid);
+}
+
 void BLEScanner::filterMSD(uint16_t manuf_id)
 {
   _filter_msd_en = true;
