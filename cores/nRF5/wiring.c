@@ -36,6 +36,7 @@ void init( void )
   // Retrieve bootloader version
   bootloaderVersion = BOOTLOADER_VERSION_REGISTER;
 
+  // Select Clock Source : XTAL or RC
 #if defined( USE_LFXO )
   // 32Khz XTAL
   NRF_CLOCK->LFCLKSRC = (uint32_t)((CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);

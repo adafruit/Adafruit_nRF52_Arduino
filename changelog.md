@@ -2,7 +2,7 @@
 
 ## 0.8.3
 
-- Enhanced indicat API() to wait for confirm or timeout from peer.
+- Enhanced indicate API() to wait for confirm or timeout from peer.
 - Added BLEScanner filterService() for BLEService and BLEClientService
 - Enhanced bonding management to support central bond and re-connection
 - Added BLEClientHidAdafruit implementation for client HID
