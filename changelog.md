@@ -9,6 +9,9 @@
 	- Added Central HID example
 - Enhanced BLEHidGeneric/BLEHidAdafruit to support boot protocol mode.
 - Fixed I2C lock-up when endTransmission() is called with empty txBuffer.
+- Fixed #125 : DFU temp memory typo
+- Fixed #126 : setWriteAuthorizeCallback typo
+- Fixed #90 : using VDD as analog reference
 
 ## 0.8.2
 
