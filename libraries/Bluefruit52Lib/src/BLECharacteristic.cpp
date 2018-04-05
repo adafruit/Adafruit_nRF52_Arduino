@@ -150,7 +150,7 @@ void BLECharacteristic::setReadAuthorizeCallback(read_authorize_cb_t fp)
   _rd_authorize_cb = fp;
 }
 
-void BLECharacteristic::setWriteAuthorizeCallbak(write_authorize_cb_t fp)
+void BLECharacteristic::setWriteAuthorizeCallback(write_authorize_cb_t fp)
 {
   _attr_meta.wr_auth = (fp ? 1 : 0);
   _wr_authorize_cb = fp;
