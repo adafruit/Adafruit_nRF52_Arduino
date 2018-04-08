@@ -44,7 +44,8 @@ class SoftwareTimer
     TimerHandle_t _handle;
 
   public:
-    SoftwareTimer() { _handle = NULL; }
+    SoftwareTimer()          { _handle = NULL; }
+    virtual ~SoftwareTimer() { if(_handle != NULL) xTimerDelete(_handle, 0); }
 
     void begin(uint32_t ms, TimerCallbackFunction_t callback)
     {

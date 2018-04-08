@@ -165,7 +165,7 @@ void BLECentral::_event_handler(ble_evt_t* evt)
     case BLE_GAP_EVT_DISCONNECTED:
       if ( Bluefruit.Gap.getRole(evt_conn_hdl) == BLE_GAP_ROLE_CENTRAL)
       {
-        // Invoke callback
+        // Invoke callback reason is BLE_HCI_STATUS code
         if ( _disconnect_cb) ada_callback(NULL, _disconnect_cb, evt_conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
       }
     break;
