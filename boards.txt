@@ -35,9 +35,10 @@ feather52.build.f_cpu=64000000
 feather52.build.board=NRF52_FEATHER
 feather52.build.core=nRF5
 feather52.build.variant=feather52
+feather52.build.extra_flags=-DNRF52832_XXAA -DNRF52
 
 # SofDevice Menu
-# Ram & ROM size varies depending on S132 (check linker script)
+# Ram & ROM size varies depending on SoftDevice (check linker script)
 
 feather52.menu.softdevice.s132v510dual=5.1.0 Dual, S132 5.1.0
 feather52.menu.softdevice.s132v510dual.build.sd_flags=-DS132 -DSD_VER=510
@@ -69,36 +70,60 @@ feather52.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
 feather52.menu.debug.l3=Level 3 (Segger SystemView)
 feather52.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 
-# required if using native usb ( for reference )
-#feather52.upload.use_1200bps_touch=false
-#feather52.upload.wait_for_upload_port=false
-#feather52.upload.native_usb=false
+
 
 #**********************************************
-# Metro nrf52 Board
+# Feather nrf52840 Board
 #**********************************************
-#metro52.name=Adafruit Bluefruit nRF52 Metro
-#metro52.bootloader.tool=nrfjprog
+feather52840.name=Adafruit Bluefruit nRF52840 Feather
+feather52840.bootloader.tool=bootburn
 
 # Upload
-#metro52.upload.tool=nrfutil
-#metro52.upload.protocol=nrfutil
-#metro52.upload.maximum_size=167936
-#metro52.upload.maximum_data_size=51072
+feather52840.upload.tool=nrfutil
+feather52840.upload.protocol=nrfutil
 
 # Build
-#metro52.build.mcu=cortex-m4
-#metro52.build.f_cpu=64000000
-#metro52.build.board=NRF52_METRO
-#metro52.build.core=nRF5
-#metro52.build.variant=metro52
+feather52840.build.mcu=cortex-m4
+feather52840.build.f_cpu=64000000
+feather52840.build.board=NRF52840_FEATHER
+feather52840.build.core=nRF5
+feather52840.build.variant=feather52840
+feather52840.build.extra_flags=-DNRF52840_XXAA
+
+# SofDevice Menu
+# Ram & ROM size varies depending on SoftDevice (check linker script)
+
+#feather52840.menu.softdevice.s140v600dual=6.0.0 Dual, S140 6.0.0
+#feather52840.menu.softdevice.s140v600dual.build.sd_flags=-DS140 -DSD_VER=600
+#feather52840.menu.softdevice.s140v600dual.build.sd_name=s140
+#feather52840.menu.softdevice.s140v600dual.build.sd_version=6.0.0
+#feather52840.menu.softdevice.s140v600dual.build.sd_fwid=0x00A9
+#feather52840.menu.softdevice.s140v600dual.build.ldscript=bluefruit52_s140_6.0.0_dual.ld
+#feather52840.menu.softdevice.s140v600dual.build.bootfile=dual/feather52840_bootloader_6.0.0_s140_dual
+#feather52840.menu.softdevice.s140v600dual.upload.maximum_size=151552
+#feather52840.menu.softdevice.s140v600dual.upload.maximum_data_size=51072
+
+feather52840.menu.softdevice.s140v600single=6.0.0 Single, S140 6.0.0
+feather52840.menu.softdevice.s140v600single.build.sd_flags=-DS140 -DSD_VER=600
+feather52840.menu.softdevice.s140v600single.build.sd_name=s140
+feather52840.menu.softdevice.s140v600single.build.sd_version=6.0.0
+feather52840.menu.softdevice.s140v600single.build.sd_fwid=0x00A9
+feather52840.menu.softdevice.s140v600single.build.ldscript=bluefruit52_s140_6.0.0_single.ld
+feather52840.menu.softdevice.s140v600single.build.bootfile=single/feather52840_bootloader_6.0.0_s140_single
+feather52840.menu.softdevice.s140v600single.upload.maximum_size=303104
+feather52840.menu.softdevice.s140v600single.upload.maximum_data_size=51072
 
 # Debug Menu
-#metro52.menu.debug.l0=Level 0 (Release)
-#metro52.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0 -Os
-#metro52.menu.debug.l1=Level 1 (Error Message)
-#metro52.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1 -Os
-#metro52.menu.debug.l2=Level 2 (Full Debug)
-#metro52.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
-#metro52.menu.debug.l3=Level 3 (Segger SystemView)
-#metro52.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Og
+feather52840.menu.debug.l0=Level 0 (Release)
+feather52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0 -Os
+feather52840.menu.debug.l1=Level 1 (Error Message)
+feather52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1 -Os
+feather52840.menu.debug.l2=Level 2 (Full Debug)
+feather52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
+feather52840.menu.debug.l3=Level 3 (Segger SystemView)
+feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
+
+# required if using native usb ( for reference )
+#feather52840.upload.use_1200bps_touch=false
+#feather52840.upload.wait_for_upload_port=false
+#feather52840.upload.native_usb=false

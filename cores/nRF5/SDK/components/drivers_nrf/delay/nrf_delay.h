@@ -250,6 +250,7 @@ __ASM volatile (
     : [SystemCoreClock] "r"              (SystemCoreClock),
       [clock16MHz]      "r"              (clock16MHz),
                         "[number_of_us]" (number_of_us)
+    : "cc"
     );
     }
 }

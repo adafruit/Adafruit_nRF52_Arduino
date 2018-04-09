@@ -5,7 +5,7 @@ GROUP(-lgcc -lc -lnosys)
 
 MEMORY
 {
-  FLASH (rx) : ORIGIN = 0x23000, LENGTH = 0x4A000 /* Max 296 KB for single bank */
+  FLASH (rx) : ORIGIN = 0x26000, LENGTH = 0xC7000 /* Max 796 KB for single bank */
 
   /* SRAM required by S132 depend on
    * - Attribute Table Size
@@ -14,8 +14,7 @@ MEMORY
    * - Concurrent connection peripheral + central + secure links
    * - Event Len, HVN queue, Write CMD queue
    */ 
-  /* RAM (rwx) :  ORIGIN = 0x20003200, LENGTH = 0x20010000 - 0x20003200 */
-  RAM (rwx) :  ORIGIN = 0x20003400, LENGTH = 0x20010000 - 0x20003400
+  RAM (rwx) :  ORIGIN = 0x20003400, LENGTH = 0x20040000 - 0x20003400
 }
 
 SECTIONS
