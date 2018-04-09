@@ -107,14 +107,9 @@ class DfuTransportSerial(DfuTransport):
         time.sleep(DfuTransportSerial.SERIAL_PORT_OPEN_WAIT_TIME)
 
         # Toggle DTR to reset the board and enter DFU mode
-        # Note: This double reset may or may not be necessary depending on the
-        # CP21xx configuration, but we'll perform a second reset here to be
-        # sure
         self.serial_port.setDTR(False)
         time.sleep(0.05)
         self.serial_port.setDTR(True)
-        time.sleep(0.05)
-        self.serial_port.setDTR(False)
 
         # Delay to allow device to boot up
         time.sleep(DfuTransportSerial.NRF52_RESET_WAIT_TIME)
