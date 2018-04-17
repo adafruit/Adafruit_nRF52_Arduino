@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifdef NRF52
+#if defined(NRF52) || defined(NRF52_SERIES)
 
 extern "C" {
 #include <string.h>

@@ -119,6 +119,7 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 #define PIN_WIRE_SCL         (26u)
 
 
+// TODO remove
 static inline bool isPinValid(uint32_t pin)
 {
   // 0, 1 is xtal

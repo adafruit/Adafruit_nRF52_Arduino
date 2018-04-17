@@ -24,7 +24,7 @@
 
 #include <string.h>
 
-#ifdef NRF52
+#if defined(NRF52) || defined(NRF52_SERIES)
 #define NUMBER_OF_GPIO_TE 8
 #else
 #define NUMBER_OF_GPIO_TE 4
