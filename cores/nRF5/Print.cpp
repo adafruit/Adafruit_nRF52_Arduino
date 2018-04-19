@@ -228,10 +228,20 @@ size_t Print::printNumber(unsigned long n, uint8_t base)
 size_t Print::printFloat(double number, uint8_t digits)
 {
   char buf[256];
+  char format[6];
   size_t s=0;
 
-  char format[] = "%.0f";
-  format[2] += digits;
+  if (digits < 10)
+  {
+	  strcpy(format, "%.0f");
+	  format[2] += digits;
+  }
+  else
+  {
+	  strcpy(format, "%.00f");
+	  format[2] += digits / 10;
+	  format[3] += digits % 10;
+  }
 
   s = snprintf(buf, 256, format, number);
   s = write(buf, s);
