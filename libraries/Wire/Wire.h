@@ -43,6 +43,7 @@ class TwoWire : public Stream
 #ifdef NRF52
     void begin(uint8_t);
 #endif
+	void sclLow(void);
     void end();
     void setClock(uint32_t);
 
