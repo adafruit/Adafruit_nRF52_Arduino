@@ -66,7 +66,8 @@ class DfuTransportSerial(DfuTransport):
     SEND_START_DFU_MIN_WAIT_TIME = 0.5
 
     FLASH_PAGE_ERASE_MAX_TIME = 0.09      # Worst time to erase a page 90 ms (89 ms)
-    FLASH_PAGE_ERASE_MIN_TIME = 0.00205   # Best time to erase a page 2.05 ms
+    #FLASH_PAGE_ERASE_MIN_TIME = 0.00205   # Best time to erase a page 2.05 ms
+    FLASH_PAGE_ERASE_MIN_TIME = 0.09
 
     FLASH_WORD_WRITE_MAX_TIME = 0.000338  # Worst time to write one word 338 us
     FLASH_WORD_WRITE_MIN_TIME = 0.0000675 # Best time to write one word 67.5 us
