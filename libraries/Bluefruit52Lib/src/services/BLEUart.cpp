@@ -279,7 +279,7 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
     // Not up to GATT MTU, notify will be sent later by TXD timer handler
     if ( _tx_fifo->count() < (Bluefruit.Gap.getMTU( Bluefruit.connHandle() ) - 3) )
     {
-      return len;
+      return written;
     }
     else
     {
