@@ -7,6 +7,7 @@ nrfjprog.program.tool=bootburn
 nrfjprog.program.path=
 nrfjprog.program.cmd=nrfjprog
 nrfjprog.program.cmd.windows=nrfjprog.exe
+nrfjprog.program.cmd.macosx=/usr/local/bin/nrfjprog
 
 nrfjprog.program.pattern="{program.path}{program.cmd}" --program "{runtime.platform.path}/bin/bootloader/{build.variant}/{build.bootfile}.hex" -f nrf52 --chiperase --reset
 
