@@ -47,6 +47,7 @@ feather52.menu.softdevice.s132v510dual.build.sd_version=5.1.0
 feather52.menu.softdevice.s132v510dual.build.sd_fwid=0x00A5
 feather52.menu.softdevice.s132v510dual.build.ldscript=bluefruit52_s132_5.1.0_dual.ld
 feather52.menu.softdevice.s132v510dual.build.bootfile=dual/feather52_bootloader_5.1.0_s132_dual
+feather52.menu.softdevice.s132v510dual.build.bank_flag=
 feather52.menu.softdevice.s132v510dual.upload.maximum_size=151552
 feather52.menu.softdevice.s132v510dual.upload.maximum_data_size=51072
 
@@ -57,6 +58,7 @@ feather52.menu.softdevice.s132v510single.build.sd_version=5.1.0
 feather52.menu.softdevice.s132v510single.build.sd_fwid=0x00A5
 feather52.menu.softdevice.s132v510single.build.ldscript=bluefruit52_s132_5.1.0_single.ld
 feather52.menu.softdevice.s132v510single.build.bootfile=single/feather52_bootloader_5.1.0_s132_single
+feather52.menu.softdevice.s132v510single.build.bank_flag=--singlebank
 feather52.menu.softdevice.s132v510single.upload.maximum_size=303104
 feather52.menu.softdevice.s132v510single.upload.maximum_data_size=51072
 
@@ -109,6 +111,7 @@ feather52840.build.extra_flags=-DNRF52840_XXAA
 #feather52840.menu.softdevice.s140v600dual.build.sd_fwid=0x00A9
 #feather52840.menu.softdevice.s140v600dual.build.ldscript=bluefruit52_s140_6.0.0_dual.ld
 #feather52840.menu.softdevice.s140v600dual.build.bootfile=dual/feather52840_bootloader_6.0.0_s140_dual
+#feather52840.menu.softdevice.s140v600dual.build.bank_flag=
 #feather52840.menu.softdevice.s140v600dual.upload.maximum_size=151552
 #feather52840.menu.softdevice.s140v600dual.upload.maximum_data_size=51072
 
@@ -119,6 +122,7 @@ feather52840.menu.softdevice.s140v600single.build.sd_version=6.0.0
 feather52840.menu.softdevice.s140v600single.build.sd_fwid=0x00A9
 feather52840.menu.softdevice.s140v600single.build.ldscript=bluefruit52_s140_6.0.0_single.ld
 feather52840.menu.softdevice.s140v600single.build.bootfile=single/feather52840_bootloader_6.0.0_s140_single
+feather52840.menu.softdevice.s140v600single.build.bank_flag=--singlebank
 feather52840.menu.softdevice.s140v600single.upload.maximum_size=303104
 feather52840.menu.softdevice.s140v600single.upload.maximum_data_size=51072
 
