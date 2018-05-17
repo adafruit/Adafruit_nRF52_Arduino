@@ -31,6 +31,7 @@ import time
 from datetime import datetime, timedelta
 import binascii
 import logging
+import click
 
 # Python 3rd party imports
 from serial import Serial
@@ -66,22 +67,21 @@ class DfuTransportSerial(DfuTransport):
     FLASH_PAGE_ERASE_MAX_TIME = 0.085
 
     # T write word for nrf52832 is (6.7 to 338 us), nrf52840 is ~41 us max
-    FLASH_WORD_WRITE_MAX_TIME = 0.000338
-    FLASH_WORD_WRITE_MIN_TIME = 0.0000675
-
-    FLASH_OP_WAIT_RATIO = 0.5             # Ratio in % for flash operation (erase, write) comparing to the MAX(worst) scenario
+    FLASH_WORD_WRITE_AVG_TIME = 0.000041
 
     FLASH_PAGE_SIZE = 4096                # 4K for nrf52
     DFU_PACKET_MAX_SIZE = 512             # The DFU packet max size
 
-    def __init__(self, com_port, baud_rate=DEFAULT_BAUD_RATE, flow_control=DEFAULT_FLOW_CONTROL, timeout=DEFAULT_SERIAL_PORT_TIMEOUT):
+    def __init__(self, com_port, baud_rate=DEFAULT_BAUD_RATE, flow_control=DEFAULT_FLOW_CONTROL, single_bank=False, timeout=DEFAULT_SERIAL_PORT_TIMEOUT):
         super(DfuTransportSerial, self).__init__()
         self.com_port = com_port
         self.baud_rate = baud_rate
         self.flow_control = 1 if flow_control else 0
+        self.single_bank = single_bank
         self.timeout = timeout
         self.serial_port = None
         self.total_size = 167936 # default is max application size
+        self.sd_size   = 0
         """:type: serial.Serial """
 
     def open(self):
@@ -143,10 +143,14 @@ class DfuTransportSerial(DfuTransport):
         return (((self.total_size)//self.FLASH_PAGE_SIZE)+1)*self.FLASH_PAGE_ERASE_MAX_TIME
 
     def get_activate_wait_time(self):
-        # Activate wait time including time to erase bank 0 and writing bank 0
-        avg_flash_write = (self.FLASH_WORD_WRITE_MAX_TIME - self.FLASH_WORD_WRITE_MIN_TIME) * self.FLASH_OP_WAIT_RATIO + self.FLASH_WORD_WRITE_MIN_TIME
-        write_wait_time = ((self.total_size // 4) + 1) * avg_flash_write
-        return self.get_erase_wait_time() + write_wait_time
+        if (self.single_bank and (self.sd_size == 0)):
+            # Single bank and not updating SD+Bootloader, we can skip bank1 -> bank0 delay
+            # but still need to delay bootloader setting save (1 flash page)
+            return self.FLASH_PAGE_ERASE_MAX_TIME;
+        else:
+            # Activate wait time including time to erase bank0 and transfer bank1 -> bank0
+            write_wait_time = ((self.total_size // 4) + 1) * self.FLASH_WORD_WRITE_AVG_TIME
+            return self.get_erase_wait_time() + write_wait_time
 
     def send_start_dfu(self, mode, softdevice_size=None, bootloader_size=None, app_size=None):
         super(DfuTransportSerial, self).send_start_dfu(mode, softdevice_size, bootloader_size, app_size)
@@ -158,17 +162,20 @@ class DfuTransportSerial(DfuTransport):
         packet = HciPacket(frame)
         self.send_packet(packet)
 
+        self.sd_size = softdevice_size
         self.total_size = softdevice_size+bootloader_size+app_size
         #logger.info("Wait after Init Packet %s second", self.get_erase_wait_time())
         time.sleep( self.get_erase_wait_time() )
 
     def send_activate_firmware(self):
         super(DfuTransportSerial, self).send_activate_firmware()
-        # nrf52 will erase the bank 0 up to Application size & Transfer App size from bank1 to bank0
-        # There must a enough delay before finished to prevent Arduino IDE reopen Serial Monitor
 
-        logger.info("\nActivating new firmware")
-        #logger.info("Wait after activating %s second", self.get_activate_wait_time())
+        # Dual bank bootloader will erase the bank 0 with Application size & Transfer App size from bank1 to bank0
+        # There must a enough delay before finished to prevent Arduino IDE reopen Serial Monitor which cause pin reset
+        # Single bank bootloader could skip this delay if package contains only application firmware
+        click.echo("\nActivating new firmware")
+
+        # logger.info("Wait after activating %s second", self.get_activate_wait_time())
         time.sleep( self.get_activate_wait_time() )
 
     def send_firmware(self, firmware):

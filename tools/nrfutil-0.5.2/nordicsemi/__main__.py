@@ -270,14 +270,18 @@ def update_progress(progress=0, done=False, log_message=""):
               help='Enable flow control, default: disabled',
               type=click.BOOL,
               is_flag=True)
-def serial(package, port, baudrate, flowcontrol):
+@click.option('-sb', '--singlebank',
+              help='Single band bootloader to skip firmware activating delay, default: Dual bank',
+              type=click.BOOL,
+              is_flag=True)
+def serial(package, port, baudrate, flowcontrol, singlebank):
     """Program a device with bootloader that support serial DFU"""
-    serial_backend = DfuTransportSerial(port, baudrate, flowcontrol)
+    serial_backend = DfuTransportSerial(port, baudrate, flowcontrol, singlebank)
     serial_backend.register_events_callback(DfuEvent.PROGRESS_EVENT, update_progress)
     dfu = Dfu(package, dfu_transport=serial_backend)
 
-    click.echo("Upgrading target on {1} with DFU package {0}. Flow control is {2}."
-               .format(package, port, "enabled" if flowcontrol else "disabled"))
+    click.echo("Upgrading target on {1} with DFU package {0}. Flow control is {2}, {3} bank mode"
+               .format(package, port, "enabled" if flowcontrol else "disabled", "Single" if singlebank else "Dual"))
 
     try:
         dfu.dfu_send_images()
