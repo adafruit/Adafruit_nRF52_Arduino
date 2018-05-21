@@ -261,8 +261,8 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       peer->att_mtu   = BLE_GATT_ATT_MTU_DEFAULT;
 
       // Init transmission buffer for notification
-      peer->hvn_tx_sem   = xSemaphoreCreateCounting(getHvnQueueSize(conn_handle), getHvnQueueSize(conn_handle));
-      peer->wrcmd_tx_sem = xSemaphoreCreateCounting(getWriteCmdQueueSize(conn_handle), getWriteCmdQueueSize(conn_handle));
+      peer->hvn_tx_sem   = xSemaphoreCreateCounting(getHvnQueueSize(conn_hdl), getHvnQueueSize(conn_hdl));
+      peer->wrcmd_tx_sem = xSemaphoreCreateCounting(getWriteCmdQueueSize(conn_hdl), getWriteCmdQueueSize(conn_hdl));
     }
     break;
 

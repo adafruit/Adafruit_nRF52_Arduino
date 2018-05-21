@@ -327,6 +327,8 @@ static const char* _evt_gap_str[] =
     "BLE_GAP_EVT_PHY_UPDATE"                 ,
     "BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST" ,
     "BLE_GAP_EVT_DATA_LENGTH_UPDATE"         ,
+    "BLE_GAP_EVT_QOS_CHANNEL_SURVEY_REPORT"  ,
+    "BLE_GAP_EVT_ADV_SET_TERMINATED"         ,
 };
 
 // GATTC Event
@@ -426,7 +428,9 @@ static lookup_entry_t const _err_lookup_items[] =
     { .key = BLE_ERROR_NOT_ENABLED                             , .data = "BLE_ERROR_NOT_ENABLED" },
     { .key = BLE_ERROR_INVALID_CONN_HANDLE                     , .data = "BLE_ERROR_INVALID_CONN_HANDLE" },
     { .key = BLE_ERROR_INVALID_ATTR_HANDLE                     , .data = "BLE_ERROR_INVALID_ATTR_HANDLE" },
+    { .key = BLE_ERROR_INVALID_ADV_HANDLE                      , .data = "BLE_ERROR_INVALID_ADV_HANDLE" },
     { .key = BLE_ERROR_INVALID_ROLE                            , .data = "BLE_ERROR_INVALID_ROLE" },
+    { .key = BLE_ERROR_BLOCKED_BY_OTHER_LINKS                  , .data = "BLE_ERROR_BLOCKED_BY_OTHER_LINKS" },
 
     // BLE GAP
     { .key = BLE_ERROR_GAP_UUID_LIST_MISMATCH                  , .data = "BLE_ERROR_GAP_UUID_LIST_MISMATCH" },
