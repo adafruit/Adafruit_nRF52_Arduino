@@ -100,15 +100,15 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _prph_count    = 0;
   _central_count = 0;
 
-  _ble_event_sem    = NULL;
-  _soc_event_sem    = NULL;
+  _ble_event_sem = NULL;
+  _soc_event_sem = NULL;
 
-  _led_blink_th     = NULL;
-  _led_conn         = true;
+  _led_blink_th  = NULL;
+  _led_conn      = true;
 
-  _tx_power  = 0;
+  _tx_power      = CFG_BLE_TX_POWER_LEVEL;
 
-  _conn_hdl  = BLE_CONN_HANDLE_INVALID;
+  _conn_hdl      = BLE_CONN_HANDLE_INVALID;
 
   _ppcp_min_conn = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
   _ppcp_max_conn = BLE_GAP_CONN_MAX_INTERVAL_DFLT;
@@ -388,7 +388,6 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   VERIFY_STATUS ( sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)) );
 
   VERIFY_STATUS( sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN) );
-  VERIFY_STATUS( sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_CONN, CONN_CFG_PERIPHERAL, CFG_BLE_TX_POWER_LEVEL ) );
 
   /*------------- DFU OTA as built-in service -------------*/
   _dfu_svc.begin();
@@ -438,9 +437,13 @@ uint8_t AdafruitBluefruit::getName(char* name, uint16_t bufsize)
 
 bool AdafruitBluefruit::setTxPower(int8_t power)
 {
-  // Check if TX Power is valid value
-  const int8_t accepted[] = { -40, -30, -20, -16, -12, -8, -4, 0, 4 };
+#if NRF52832_XXAA
+  const int8_t accepted[] = { -40, -20, -16, -12, -8, -4, 0, 3, 4 };
+#elif NRF52840_XXAA
+  const int8_t accepted[] = { -40, -20, -16, -12, -8, -4, 0, 2, 3, 4, 5, 6, 7, 8 };
+#endif
 
+  // Check if TX Power is valid value
   uint32_t i;
   for (i=0; i<sizeof(accepted); i++)
   {
@@ -448,8 +451,11 @@ bool AdafruitBluefruit::setTxPower(int8_t power)
   }
   VERIFY(i < sizeof(accepted));
 
-  // Apply
-  VERIFY_STATUS( sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_CONN, CONN_CFG_PERIPHERAL, power), false );
+  // Apply if connected
+  if ( _conn_hdl != BLE_CONN_HANDLE_INVALID )
+  {
+    VERIFY_STATUS( sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_CONN, _conn_hdl, power), false );
+  }
   _tx_power = power;
 
   return true;
