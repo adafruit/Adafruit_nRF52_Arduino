@@ -72,7 +72,7 @@ class Advertisable
 class BLEAdvertisingData
 {
 protected:
-  uint8_t _data[BLE_GAP_ADV_MAX_SIZE];
+  uint8_t _data[BLE_GAP_ADV_SET_DATA_SIZE_MAX];
   uint8_t _count;
 
 public:
@@ -148,6 +148,7 @@ public:
   void _eventHandler(ble_evt_t* evt);
 
 private:
+  uint8_t  _hdl;
   uint8_t  _type;
   bool     _start_if_disconnect;
   bool     _runnning;

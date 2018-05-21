@@ -388,7 +388,7 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   VERIFY_STATUS ( sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)) );
 
   VERIFY_STATUS( sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN) );
-  VERIFY_STATUS( sd_ble_gap_tx_power_set( CFG_BLE_TX_POWER_LEVEL ) );
+  VERIFY_STATUS( sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_CONN, CONN_CFG_PERIPHERAL, CFG_BLE_TX_POWER_LEVEL ) );
 
   /*------------- DFU OTA as built-in service -------------*/
   _dfu_svc.begin();
@@ -449,7 +449,7 @@ bool AdafruitBluefruit::setTxPower(int8_t power)
   VERIFY(i < sizeof(accepted));
 
   // Apply
-  VERIFY_STATUS( sd_ble_gap_tx_power_set(power), false);
+  VERIFY_STATUS( sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_CONN, CONN_CFG_PERIPHERAL, power), false );
   _tx_power = power;
 
   return true;

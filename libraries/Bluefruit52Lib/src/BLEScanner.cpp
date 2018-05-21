@@ -36,8 +36,13 @@
 
 #include "bluefruit.h"
 
+static uint8_t _scan_data[BLE_GAP_SCAN_BUFFER_MAX];
+
 BLEScanner::BLEScanner(void)
 {
+  _report_data.p_data  = _scan_data;
+  _report_data.len     = BLE_GAP_SCAN_BUFFER_MAX;
+
   _runnning            = false;
   _start_if_disconnect = true;
 
@@ -53,12 +58,18 @@ BLEScanner::BLEScanner(void)
   _stop_cb             = NULL;
 
   _param  = (ble_gap_scan_params_t) {
+    // TODO Extended Adv on secondary channels
+    .extended               = 0,
+    .report_incomplete_evts = 0,
+
     .active         = 0,
-    .use_whitelist  = 0,
-    .adv_dir_report = 0,
+    .filter_policy  = BLE_GAP_SCAN_FP_ACCEPT_ALL,
+    .scan_phys      = BLE_GAP_PHY_AUTO,
+
     .interval       = BLE_SCAN_INTERVAL_DFLT,
     .window         = BLE_SCAN_WINDOW_DFLT,
-    .timeout        = 0, // no timeout
+    .timeout        = 0, // no timeout, in 10 ms units
+    .channel_mask   = { 0, 0, 0, 0, 0 }
   };
 }
 
@@ -107,7 +118,7 @@ ble_gap_scan_params_t* BLEScanner::getParams(void)
 bool BLEScanner::start(uint16_t timeout)
 {
   _param.timeout = timeout;
-  VERIFY_STATUS( sd_ble_gap_scan_start(&_param), false );
+  VERIFY_STATUS( sd_ble_gap_scan_start(&_param, &_report_data), false );
 
   Bluefruit._startConnLed(); // start blinking
   _runnning = true;
@@ -133,7 +144,7 @@ bool BLEScanner::stop(void)
   * @param scandata
   * @param scanlen
   * @param type
-  * @param buf
+  * @param buf     Output buffer
   * @param bufsize If bufsize is skipped (zero), len check will be skipped
   * @return number of written bytes
   */
@@ -170,7 +181,7 @@ uint8_t BLEScanner::parseReportByType(const uint8_t* scandata, uint8_t scanlen, 
 
 uint8_t BLEScanner::parseReportByType(const ble_gap_evt_adv_report_t* report, uint8_t type, uint8_t* buf, uint8_t bufsize)
 {
-  return parseReportByType(report->data, report->dlen, type, buf, bufsize);
+  return parseReportByType(report->data.p_data, report->data.len, type, buf, bufsize);
 }
 
 bool BLEScanner::checkReportForUuid(const ble_gap_evt_adv_report_t* report, BLEUuid ble_uuid)
@@ -199,7 +210,7 @@ bool BLEScanner::checkReportForUuid(const ble_gap_evt_adv_report_t* report, BLEU
 
   for (int i=0; i<2; i++)
   {
-    uint8_t buffer[BLE_GAP_ADV_MAX_SIZE] = { 0 };
+    uint8_t buffer[BLE_GAP_ADV_SET_DATA_SIZE_MAX] = { 0 };
     uint8_t len = parseReportByType(report, type_arr[i], buffer);
 
     uint8_t* ptr = buffer;

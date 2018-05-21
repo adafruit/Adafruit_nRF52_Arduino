@@ -96,15 +96,17 @@ public:
   void _eventHandler(ble_evt_t* evt);
 
 private:
-  bool     _runnning;
-  bool     _start_if_disconnect;
+  ble_data_t _report_data;
 
-  int8_t   _filter_rssi;
-  bool     _filter_msd_en; // since all value of manufacturer id is valid (0-FFFF)
-  uint16_t _filter_msd_id;
+  bool       _runnning;
+  bool       _start_if_disconnect;
 
-  BLEUuid* _filter_uuid;
-  uint8_t  _filter_uuid_count;
+  int8_t     _filter_rssi;
+  bool       _filter_msd_en; // since all value of manufacturer id is valid (0-FFFF)
+  uint16_t   _filter_msd_id;
+
+  BLEUuid*   _filter_uuid;
+  uint8_t    _filter_uuid_count;
 
   rx_callback_t   _rx_cb;
   stop_callback_t _stop_cb;
