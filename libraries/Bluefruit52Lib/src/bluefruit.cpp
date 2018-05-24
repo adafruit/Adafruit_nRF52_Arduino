@@ -704,13 +704,19 @@ void AdafruitBluefruit::printInfo(void)
   Serial.println();
 
   /*------------- List the paried device -------------*/
-  Serial.printf(title_fmt, "Peripheral Paired Devices");
-  Serial.println();
-  bond_print_list(BLE_GAP_ROLE_PERIPH);
+  if ( _prph_count )
+  {
+    Serial.printf(title_fmt, "Peripheral Paired Devices");
+    Serial.println();
+    bond_print_list(BLE_GAP_ROLE_PERIPH);
+  }
 
-  Serial.printf(title_fmt, "Central Paired Devices");
-  Serial.println();
-  bond_print_list(BLE_GAP_ROLE_CENTRAL);
+  if ( _central_count )
+  {
+    Serial.printf(title_fmt, "Central Paired Devices");
+    Serial.println();
+    bond_print_list(BLE_GAP_ROLE_CENTRAL);
+  }
 
   Serial.println();
 }
