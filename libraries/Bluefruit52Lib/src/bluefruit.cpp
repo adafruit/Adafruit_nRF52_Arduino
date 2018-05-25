@@ -94,7 +94,6 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _sd_cfg.attr_table_size = 0x800;
   _sd_cfg.uuid128_max     = BLE_UUID_VS_COUNT_DEFAULT;
-  _sd_cfg.service_changed = 0;
 
 
   _prph_count    = 0;
@@ -121,11 +120,6 @@ COMMENT_OUT(
   _auth_type = BLE_GAP_AUTH_KEY_TYPE_NONE;
   varclr(_pin);
 )
-}
-
-void AdafruitBluefruit::configServiceChanged(bool changed)
-{
-  _sd_cfg.service_changed = (changed ? 1 : 0);
 }
 
 void AdafruitBluefruit::configUuid128Count(uint8_t  uuid128_max)
@@ -284,7 +278,7 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 //  VERIFY_STATUS( sd_ble_cfg_set(BLE_GAP_CFG_DEVICE_NAME, &blecfg, ram_start) );
 
   varclr(&blecfg);
-  blecfg.gatts_cfg.service_changed.service_changed = _sd_cfg.service_changed;
+  blecfg.gatts_cfg.service_changed.service_changed = 1; // must be enabled to be consistent with DFU in OTA mode
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_SERVICE_CHANGED, &blecfg, ram_start) );
 
   // ATTR Table Size
@@ -614,10 +608,6 @@ void AdafruitBluefruit::printInfo(void)
   // ATTR Table Size
   Serial.printf(title_fmt, "ATTR Table Size");
   Serial.println(_sd_cfg.attr_table_size);
-
-  // Service Changed
-  Serial.printf(title_fmt, "Service Changed");
-  Serial.println(_sd_cfg.service_changed);
 
   if ( _prph_count )
   {

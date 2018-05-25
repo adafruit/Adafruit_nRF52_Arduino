@@ -120,7 +120,6 @@ class AdafruitBluefruit
     /* SoftDevice Configure Functions, must call before begin().
      * These function affect the SRAM consumed by SoftDevice.
      *------------------------------------------------------------------*/
-    void     configServiceChanged (bool     changed);
     void     configUuid128Count   (uint8_t  uuid128_max);
     void     configAttrTableSize  (uint32_t attr_table_size);
 
@@ -191,7 +190,6 @@ class AdafruitBluefruit
     /*------------- SoftDevice Configuration -------------*/
     struct {
       uint32_t attr_table_size;
-      uint8_t  service_changed;
       uint8_t  uuid128_max;
     }_sd_cfg;
 
