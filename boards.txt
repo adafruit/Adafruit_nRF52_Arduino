@@ -40,17 +40,6 @@ feather52.build.extra_flags=-DNRF52832_XXAA -DNRF52
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-feather52.menu.softdevice.s132dual=6.0.0 Dual, S132 6.0.0
-feather52.menu.softdevice.s132dual.build.sd_flags=-DS132 -DSD_VER=600
-feather52.menu.softdevice.s132dual.build.sd_name=s132
-feather52.menu.softdevice.s132dual.build.sd_version=6.0.0
-feather52.menu.softdevice.s132dual.build.sd_fwid=0x00A8
-feather52.menu.softdevice.s132dual.build.ldscript=nrf52832_s132_6.0.0_dual.ld
-feather52.menu.softdevice.s132dual.build.bootfile=dual/feather52_bootloader_6.0.0_s132_dual
-feather52.menu.softdevice.s132dual.build.bank_flag=
-feather52.menu.softdevice.s132dual.upload.maximum_size=145408
-feather52.menu.softdevice.s132dual.upload.maximum_data_size=51072
-
 feather52.menu.softdevice.s132single=6.0.0 Single, S132 6.0.0
 feather52.menu.softdevice.s132single.build.sd_flags=-DS132 -DSD_VER=600
 feather52.menu.softdevice.s132single.build.sd_name=s132
@@ -61,6 +50,17 @@ feather52.menu.softdevice.s132single.build.bootfile=single/feather52_bootloader_
 feather52.menu.softdevice.s132single.build.bank_flag=--singlebank
 feather52.menu.softdevice.s132single.upload.maximum_size=290816
 feather52.menu.softdevice.s132single.upload.maximum_data_size=51072
+
+#feather52.menu.softdevice.s132dual=6.0.0 Dual, S132 6.0.0
+#feather52.menu.softdevice.s132dual.build.sd_flags=-DS132 -DSD_VER=600
+#feather52.menu.softdevice.s132dual.build.sd_name=s132
+#feather52.menu.softdevice.s132dual.build.sd_version=6.0.0
+#feather52.menu.softdevice.s132dual.build.sd_fwid=0x00A8
+#feather52.menu.softdevice.s132dual.build.ldscript=nrf52832_s132_6.0.0_dual.ld
+#feather52.menu.softdevice.s132dual.build.bootfile=dual/feather52_bootloader_6.0.0_s132_dual
+#feather52.menu.softdevice.s132dual.build.bank_flag=
+#feather52.menu.softdevice.s132dual.upload.maximum_size=145408
+#feather52.menu.softdevice.s132dual.upload.maximum_data_size=51072
 
 # Debug Menu
 feather52.menu.debug.l0=Level 0 (Release)
@@ -103,17 +103,6 @@ feather52840.build.extra_flags=-DNRF52840_XXAA
 
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
-
-#feather52840.menu.softdevice.s140dual=6.0.0 Dual, S140 6.0.0
-#feather52840.menu.softdevice.s140dual.build.sd_flags=-DS140 -DSD_VER=600
-#feather52840.menu.softdevice.s140dual.build.sd_name=s140
-#feather52840.menu.softdevice.s140dual.build.sd_version=6.0.0
-#feather52840.menu.softdevice.s140dual.build.sd_fwid=0x00A9
-#feather52840.menu.softdevice.s140dual.build.ldscript=bluefruit52_s140_6.0.0_dual.ld
-#feather52840.menu.softdevice.s140dual.build.bootfile=dual/feather52840_bootloader_6.0.0_s140_dual
-#feather52840.menu.softdevice.s140dual.build.bank_flag=
-#feather52840.menu.softdevice.s140dual.upload.maximum_size=151552
-#feather52840.menu.softdevice.s140dual.upload.maximum_data_size=51072
 
 feather52840.menu.softdevice.s140single=6.0.0 Single, S140 6.0.0
 feather52840.menu.softdevice.s140single.build.sd_flags=-DS140 -DSD_VER=600
