@@ -79,6 +79,9 @@ void setup()
   matrix.setBrightness(40);
   matrix.setTextColor( matrix.Color(0, 0, 255) ); // Blue for Bluefruit
 
+  matrix.print('?'); // print out ?
+  matrix.show();
+
   // Init Bluefruit
   Bluefruit.begin();
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
@@ -147,12 +150,16 @@ void loop()
     {
       char ch = (char) bleuart.read();
 
-      matrix.fillScreen(0);
-      matrix.setCursor(0, 0);
-      matrix.print(ch);
-
-      matrix.show();
-      delay(100);
+      // skip newline
+      if ( ch != '\r' && ch != '\n' )
+      {
+        matrix.fillScreen(0);
+        matrix.setCursor(0, 0);
+        matrix.print(ch);
+  
+        matrix.show();
+        delay(200);
+      }
     }    
   }  
 }

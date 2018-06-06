@@ -1,5 +1,83 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.8.3
+
+- Enhanced indicate API() to wait for confirm or timeout from peer.
+- Added BLEScanner filterService() for BLEService and BLEClientService
+- Enhanced bonding management to support central bond and re-connection
+- Added BLEClientHidAdafruit implementation for client HID
+	- Added Central HID example
+- Enhanced BLEHidGeneric/BLEHidAdafruit to support boot protocol mode.
+- Fixed I2C lock-up when endTransmission() is called with empty txBuffer.
+- Fixed #125 : DFU temp memory typo
+- Fixed #126 : setWriteAuthorizeCallback typo
+- Fixed #90 : using VDD as analog reference
+
+## 0.8.2
+
+- Fixed burning bootloader issue with MacOS
+- Added gpstest_swuart example sketch
+- Added indicate API for BLECharacteristic
+- Added custom_htm as usage example for indicate API.
+- BLEClientCharacteristic
+  - Added setIndicateCallback(), issue #113
+  - Added useAdaCallback option to setNotifyCallback(), setIndicateCallback()
+  - Change notify callback signature from 
+notify_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len) to notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len)
+
+## 0.8.1
+
+- Prevent sketch compiled with S132 v2 upload to device running S132 v5 and vice versa.
+
+## 0.8.0
+
+## Core
+
+- Added IDE programmer and DFU option to upgrade bootloader from IDE.
+- Added IDE option to choose either old & new bootloader (Softdevice 2.0.1 and 5.1.0)
+- Added printBufferReverse() for Print class.
+- Added Error String for easier debugging.
+- Added analog oversampling #89 thanks to @Ureloc.
+
+## BLE
+
+- Upgrade Bluetooth 5 with Softdevice to S132 v5.0.0
+- Support max ATT MTU up to 247 (configurable)
+- Added SoftDevice configuration that affects SRAM used by SD. These function must be called before Bluefruit.begin()
+  - configServiceChanged() add service changed characteristic
+  - configUuid128Count() set the number of max uuid128 base
+  - configAttrTableSize() set the size of buffer for GATT table
+  - configPrphConn(), configPrphBandwidth() set the connection bandwidth setting for peripheral connections
+  - configCentralConn(), configCentralBandwidth() set the connection bandwidth setting for central connections
+- BLEAdvertising
+  - Added multiple services aaddition API
+  - Added addManufacturerData()
+  - Added getInterval() to retrieve current active interval
+  - Added Slow interval callback support via setSlowCallback()
+- Added setPresentationFormatDescriptor() support
+- Added addDescriptor() for BLECharacteritsic
+- Added set/get appearance
+- Added experimental (work in progress) BLE Homekit
+- Enhanced bleuart to work with larger MTU
+- Partially support data length extension
+- Added BLECLientCharacteristic isValid() and read 8,16, 32 bit
+- Added cental_custom_hrm example for how to use client service and characteristic
+- BLECharacteristic
+  - Added read8(), read16(), read32(), write8(), write16(), write32(), notify8(), notify16(), notify32()
+  - Remove read(), write(), notify() with different uint8_t, uint16_t, uint32_t, int variant to prevent confusion
+- Added discover(), discovered() to BLEClientCharacteristic
+- Added getHandleRange() to BLEClientService
+
+## Bug Fixs
+
+- Fixed #92 PWM incorrect logic check, thanks to @burbankb 
+- Fixed issue #108 with GPIO output when reset.
+- Fixed an discovery bug introduced in 0.7.5
+- Fixed #99 setStopCallback() for BLEScanner is not implemented
+- Fixed #104 non-English keyboard BLE Hid, thanks to @ogatatsu
+- Fixed weekday for client_cts example
+- Fixed #110 Advertising.isRunning() returns true if stopped manually
+
 ## 0.7.5
 
 ### Core

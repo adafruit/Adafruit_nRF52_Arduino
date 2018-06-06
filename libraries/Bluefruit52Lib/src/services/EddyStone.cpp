@@ -154,7 +154,7 @@ bool EddyStoneUrl::start(void)
     uint8_t cp_num = (expansion) ?  (expansion-url) : strlen(url);
     if ( cp_num > URL_MAXLEN-(len + (expansion ? 1:0)) )
     {
-      LOG_LV1(EDDYSTONE, "url is too long");
+      LOG_LV1("EDDYS", "url is too long");
       return false;
     }
 

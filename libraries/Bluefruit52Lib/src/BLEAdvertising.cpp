@@ -61,6 +61,9 @@ bool BLEAdvertisingData::addData(uint8_t type, const void* data, uint8_t len)
   return true;
 }
 
+/*------------------------------------------------------------------*/
+/* Adding UUID
+ *------------------------------------------------------------------*/
 bool BLEAdvertisingData::addUuid(BLEUuid bleuuid)
 {
   return addUuid(&bleuuid, 1);
@@ -122,26 +125,27 @@ bool BLEAdvertisingData::addUuid(BLEUuid bleuuid[], uint8_t count)
   return true;
 }
 
-//bool BLEAdvertisingData::addService(BLEService& service[], uint8_t count)
-//{
-//  for(uint8_t i=0; i<count; i++)
-//  {
-//
-//  }
-//}
-//
-//bool BLEAdvertisingData::addService(BLEClientService& service[], uint8_t count)
-//{
-//  for(uint8_t i=0; i<count; i++)
-//  {
-//
-//  }
-//}
-
-
+/*------------------------------------------------------------------*/
+/* Adding Service's UUID
+ *------------------------------------------------------------------*/
 bool BLEAdvertisingData::addService(BLEService& service)
 {
   return addUuid(service.uuid);
+}
+
+bool BLEAdvertisingData::addService(BLEService& service1, BLEService& service2)
+{
+  return addUuid(service1.uuid, service2.uuid);
+}
+
+bool BLEAdvertisingData::addService(BLEService& service1, BLEService& service2, BLEService& service3)
+{
+  return addUuid(service1.uuid, service2.uuid, service3.uuid);
+}
+
+bool BLEAdvertisingData::addService(BLEService& service1, BLEService& service2, BLEService& service3, BLEService& service4)
+{
+  return addUuid(service1.uuid, service2.uuid, service3.uuid, service4.uuid);
 }
 
 bool BLEAdvertisingData::addService(BLEClientService& service)
@@ -163,7 +167,14 @@ bool BLEAdvertisingData::addService(BLEClientService& service)
   return false;
 }
 
-// Add Name to Adv packet, use setName() to set
+/*------------------------------------------------------------------*/
+/* Adding Others
+ *------------------------------------------------------------------*/
+
+/**
+ * Add Name to Adv packet, use setName() to set
+ * @return true if success
+ */
 bool BLEAdvertisingData::addName(void)
 {
   char name[BLE_GAP_ADV_MAX_SIZE+1];
@@ -196,6 +207,11 @@ bool BLEAdvertisingData::addFlags(uint8_t flags)
 bool BLEAdvertisingData::addAppearance(uint16_t appearance)
 {
   return addData(BLE_GAP_AD_TYPE_APPEARANCE, &appearance, 2);
+}
+
+bool BLEAdvertisingData::addManufacturerData(const void* data, uint8_t count)
+{
+  return addData(BLE_GAP_AD_TYPE_MANUFACTURER_SPECIFIC_DATA, data, count);
 }
 
 /*------------------------------------------------------------------*/
@@ -236,12 +252,14 @@ BLEAdvertising::BLEAdvertising(void)
   _start_if_disconnect = true;
   _runnning            = false;
 
-  _fast_interval = BLE_ADV_INTERVAL_FAST_DFLT;
-  _slow_interval = BLE_ADV_INTERVAL_SLOW_DFLT;
+  _fast_interval       = BLE_ADV_INTERVAL_FAST_DFLT;
+  _slow_interval       = BLE_ADV_INTERVAL_SLOW_DFLT;
+  _active_interval     = _fast_interval;
 
-  _fast_timeout  = BLE_ADV_FAST_TIMEOUT_DFLT;
-  _stop_timeout  = _left_timeout = 0;
-  _stop_cb       = NULL;
+  _fast_timeout        = BLE_ADV_FAST_TIMEOUT_DFLT;
+  _stop_timeout        = _left_timeout = 0;
+  _stop_cb             = NULL;
+  _slow_cb             = NULL;
 }
 
 void BLEAdvertising::setFastTimeout(uint16_t sec)
@@ -254,16 +272,37 @@ void BLEAdvertising::setType(uint8_t adv_type)
   _type = adv_type;
 }
 
+/**
+ * Set Interval in unit of 0.625 ms
+ * @param fast  Interval that is used in the first n seconds (configurable)
+ * @param slow  Interval that is used after fast timeout
+ */
 void BLEAdvertising::setInterval(uint16_t fast, uint16_t slow)
 {
-  _fast_interval = fast;
-  _slow_interval = slow;
+  _fast_interval   = fast;
+  _slow_interval   = slow;
+
+  // default is fast since it will be advertising first
+  _active_interval = _fast_interval;
 }
 
 void BLEAdvertising::setIntervalMS(uint16_t fast, uint16_t slow)
 {
-  _fast_interval = MS1000TO625(fast);
-  _slow_interval = MS1000TO625(slow);
+  setInterval(MS1000TO625(fast), MS1000TO625(slow));
+}
+
+/**
+ * Get current active interval
+ * @return Either slow or fast interval in unit of 0.625 ms
+ */
+uint16_t BLEAdvertising::getInterval(void)
+{
+  return _active_interval;
+}
+
+void BLEAdvertising::setSlowCallback(slow_callback_t fp)
+{
+  _slow_cb = fp;
 }
 
 void BLEAdvertising::setStopCallback(stop_callback_t fp)
@@ -296,18 +335,26 @@ bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
   // ADV Params
   ble_gap_adv_params_t adv_para =
   {
-      .type        = _type              ,
-      .p_peer_addr = NULL               , // Undirected advertisement
-      .fp          = BLE_GAP_ADV_FP_ANY ,
-      .p_whitelist = NULL               ,
-      .interval    = interval           , // advertising interval (in units of 0.625 ms)
-      .timeout     = timeout            ,
+      .type         = _type              ,
+      .p_peer_addr  = NULL               , // Undirected advertisement
+      .fp           = BLE_GAP_ADV_FP_ANY ,
+#if SD_VER < 500
+      .p_whitelist  = NULL               ,
+#endif
+      .interval     = interval           , // advertising interval (in units of 0.625 ms)
+      .timeout      = timeout            ,
+      //.channel_mask = { 0, 0, 0 }        , // Enable all 3 adv channels
   };
 
+#if SD_VER < 500
   VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para), false );
+#else
+  VERIFY_STATUS( sd_ble_gap_adv_start(&adv_para, CONN_CFG_PERIPHERAL), false );
+#endif
 
   Bluefruit._startConnLed(); // start blinking
-  _runnning = true;
+  _runnning        = true;
+  _active_interval = interval;
 
   _left_timeout -= min16(_left_timeout, timeout);
 
@@ -333,6 +380,7 @@ bool BLEAdvertising::stop(void)
 {
   VERIFY_STATUS( sd_ble_gap_adv_stop(), false);
 
+  _runnning = false;
   Bluefruit._stopConnLed(); // stop blinking
 
   return true;
@@ -379,6 +427,9 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
 
         if ( _stop_timeout == 0 )
         {
+          // Call slow callback if available
+          if (_slow_cb) _slow_cb();
+
           // if stop_timeout is 0 --> no timeout
           _start(_slow_interval, 0);
         }else
@@ -386,6 +437,9 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
           // Advertising if there is still time left, otherwise stop it
           if ( _left_timeout )
           {
+            // Call slow callback if available
+            if (_slow_cb) _slow_cb();
+
             _start(_slow_interval, _left_timeout);
           }else
           {

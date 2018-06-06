@@ -45,6 +45,7 @@
 static lookup_entry_t const sd_lookup_items[] =
 {
     { .key = 0x0088, .data = "S132 2.0.1" },
+    { .key = 0x00A5, .data = "S132 5.1.0" },
 };
 
 static const lookup_table_t sd_lookup_table =
@@ -72,11 +73,13 @@ void const * lookup_find(lookup_table_t const* p_table, uint32_t key)
  * Format: SDname SDverion, bootloader version
  * e.g
  *    "S132 2.0.1, 0.5.0"
+ *    "S132 5.0.0, 5.0.0 single bank"
+ *    "S132 5.0.0, 5.0.0 dual banks"
  * @return
  */
 const char* getFirmwareVersion(void)
 {
-  static char fw_str[20+1] = { 0 };
+  static char fw_str[30+1] = { 0 };
 
   // Skip if already created
   if ( fw_str[0] == 0 )
@@ -84,16 +87,31 @@ const char* getFirmwareVersion(void)
     uint32_t sd_id = SD_FWID_GET(MBR_SIZE) & 0x0000ffff;
     char const* p_lookup = (char const*) lookup_find(&sd_lookup_table, sd_id);
 
+#if SD_VER < 500
     if (p_lookup)
     {
-      sprintf(fw_str, "%s, %d.%d.%d", p_lookup,
+      sprintf(fw_str, "%s, %d.%d.%d dual banks", p_lookup,
               U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion), U32_BYTE4(bootloaderVersion));
     }else
     {
       // Unknown SD ID --> display ID
-      sprintf(fw_str, "0x%04X, %d.%d.%d", (uint16_t) sd_id,
+      sprintf(fw_str, "0x%04X, %d.%d.%d dual banks", (uint16_t) sd_id,
               U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion), U32_BYTE4(bootloaderVersion));
     }
+#else
+    if (p_lookup)
+    {
+      sprintf(fw_str, "%s, %d.%d.%d %s", p_lookup,
+              U32_BYTE1(bootloaderVersion), U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion),
+              U32_BYTE4(bootloaderVersion) ? "single bank" : "dual banks");
+    }else
+    {
+      // Unknown SD ID --> display ID
+      sprintf(fw_str, "0x%04X, %d.%d.%d %s", (uint16_t) sd_id,
+              U32_BYTE1(bootloaderVersion), U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion),
+              U32_BYTE4(bootloaderVersion) ? "single bank" : "dual banks");
+    }
+#endif
   }
 
   return fw_str;
@@ -117,46 +135,8 @@ const char* getMcuUniqueID(void)
  *
   SoftDevice          |  FWID  | memory address |
   --------------------|--------|----------------
-  S110 v5.2.1         | 0x0043 |   0x10001010   |
-  S110 v6.0.0         | 0x0049 |   0x10001010   |
-  S110 v6.2.1         | 0x0035 |   0x10001010   |
-  S110 v7.0.0         | 0x004F |   0x0000300C   |
-  S110 v7.1.0         | 0x005A |   0x0000300C   |
-  S110 v7.3.0         | 0x0063 |   0x0000300C   |
-  S110 v8.0.0         | 0x0064 |   0x0000300C   |
-  ----------------------------------------------
-  S120 v1.0.0         | 0x0055 |   0x0000300C   |
-  S120 v1.0.1         | 0x0058 |   0x0000300C   |
-  S120 v2.0.0-1.alpha | 0x005B |   0x0000300C   |
-  S120 v2.0.0         | 0x0060 |   0x0000300C   |
-  S120 v2.1.0         | 0x006B |   0x0000300C   |
-  ----------------------------------------------
-  S130 v0.9.0-1.alpha | 0x005E |   0x0000300C   |
-  S130 v1.0.0-3.alpha | 0x0066 |   0x0000300C   |
-  S130 v1.0.0         | 0x0067 |   0x0000300C   |
-  S130 v2.0.0         | 0x0080 |   0x0000300C   |
-  S130 v2.0.1         | 0x0087 |   0x0000300C   |
-  ----------------------------------------------
-  S210 v3.0.0         | 0x004B |   0x10001010   |
-  S210 v4.0.0         | 0x0057 |   0x0000300C   |
-  ----------------------------------------------
-  S310 v1.0.0         | 0x004D |   0x10001010   |
-  S310 v2.0.0         | 0x005D |   0x0000300C   |
-  S310 v2.0.1         | 0x005D |   0x0000300C   |
-  S310 v3.0.0         | 0x0065 |   0x0000300C   |
-  ----------------------------------------------
-  S132 v1.0.0-3.alpha | 0x006D |       ?        |
-  S132 v2.0.0-4.alpha | 0x0074 |       ?        |
-  S132 v2.0.0-7.alpha | 0x0079 |   0x0000300C   |
-  S132 v2.0.0         | 0x0081 |   0x0000300C   |
   S132 v2.0.1         | 0x0088 |   0x0000300C   |
-  ----------------------------------------------
-  S212 v0.6.0.alpha   | 0x007F |   0x0000300C   |
-  S212 v0.9.1.alpha   | 0x0083 |   0x0000300C   |
-  ----------------------------------------------
-  S332 v0.6.0.alpha   | 0x007E |   0x0000300C   |
-  S332 v0.9.1.alpha   | 0x0082 |   0x0000300C   |
-  ----------------------------------------------
-  Development/any     | 0xFFFE
+  S132 v5.0.0         | 0x009D |                |
+  Development/any     | 0xFFFE |                |
   ----------------------------
  */

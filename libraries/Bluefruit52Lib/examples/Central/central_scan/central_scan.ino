@@ -21,8 +21,10 @@ void setup()
   Serial.println("Bluefruit52 Central Scan Example");
   Serial.println("--------------------------------\n");
 
-  // Enable both peripheral and central
-  Bluefruit.begin(true, true);
+  // Initialize Bluefruit with maximum connections as Peripheral = 0, Central = 1
+  // SRAM usage required by SoftDevice will increase dramatically with number of connections
+  Bluefruit.begin(0, 1);
+  
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
   Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52");
@@ -41,7 +43,8 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
 
   Serial.printf("%09d ", millis());
   
-  Serial.printBuffer(report->peer_addr.addr, 6, ':');
+  // MAC is in little endian --> print reverse
+  Serial.printBufferReverse(report->peer_addr.addr, 6, ':');
   Serial.print(" ");
 
   Serial.print(report->rssi);

@@ -40,17 +40,23 @@
 #include "bluefruit_common.h"
 
 #define CFG_ADV_BLINKY_INTERVAL          500
-#define CFG_MAX_DEVNAME_LEN              32
 
-// Note changing these parameters will affect APP_RAM_BASE
-// --> need to update RAM in feather52_s132.ld linker
-#define BLE_GATTS_ATTR_TABLE_SIZE        0x0B00
-#define BLE_VENDOR_UUID_MAX              10
-#define BLE_PRPH_MAX_CONN                1
-#define BLE_CENTRAL_MAX_CONN             4
-#define BLE_CENTRAL_MAX_SECURE_CONN      1 // should be enough
+/* Note changing these parameters will affect APP_RAM_BASE
+ * --> need to update RAM region in linker file
+ * - BLEGATT_ATT_MTU_MAX from 23 (default) to 247
+ */
 
-#define BLE_MAX_CONN                     (BLE_CENTRAL_MAX_CONN+BLE_PRPH_MAX_CONN)
+#if SD_VER < 500
+#define BLEGATT_ATT_MTU_MAX             BLE_GATT_ATT_MTU_DEFAULT
+#else
+#define BLEGATT_ATT_MTU_MAX             247
+#endif
+
+#define BLE_PRPH_MAX_CONN               1
+#define BLE_CENTRAL_MAX_CONN            4
+#define BLE_CENTRAL_MAX_SECURE_CONN     1 // should be enough
+
+#define BLE_MAX_CONN                    (BLE_CENTRAL_MAX_CONN+BLE_PRPH_MAX_CONN)
 
 #include "BLEUuid.h"
 #include "BLEAdvertising.h"
@@ -80,10 +86,19 @@
 #include "clients/BLEClientUart.h"
 #include "clients/BLEClientDis.h"
 #include "clients/BLEClientCts.h"
+#include "clients/BLEClientHidAdafruit.h"
 
 #include "utility/AdaCallback.h"
+#include "utility/bonding.h"
 
-#define BLE_MAX_DATA_PER_MTU  (GATT_MTU_SIZE_DEFAULT - 3)
+enum
+{
+  BANDWIDTH_AUTO = 0,
+  BANDWIDTH_LOW,
+  BANDWIDTH_NORMAL,
+  BANDWIDTH_HIGH,
+  BANDWIDTH_MAX,
+};
 
 extern "C"
 {
@@ -93,10 +108,7 @@ extern "C"
 class AdafruitBluefruit
 {
   public:
-    // Constructor
-    AdafruitBluefruit(void);
-
-    err_t begin(bool prph_enable = true, bool central_enable = false);
+    AdafruitBluefruit(void); // Constructor
 
     /*------------------------------------------------------------------*/
     /* Lower Level Classes (Bluefruit.Advertising.*, etc.)
@@ -111,16 +123,37 @@ class AdafruitBluefruit
     BLEDiscovery       Discovery;
 
     /*------------------------------------------------------------------*/
-    /* General Purpose Functions
+    /* SoftDevice Configure Functions, must call before begin().
+     * These function affect the SRAM consumed by SoftDevice.
      *------------------------------------------------------------------*/
-    void    autoConnLed         (bool enabled);
-    void    setConnLedInterval  (uint32_t ms);
+    void     configServiceChanged (bool     changed);
+    void     configUuid128Count   (uint8_t  uuid128_max);
+    void     configAttrTableSize  (uint32_t attr_table_size);
 
-    void    setName             (const char* str);
-    uint8_t getName             (char* name, uint16_t bufsize);
+    // Config Bandwidth for connections
+    void     configPrphConn        (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    void     configCentralConn     (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
 
-    bool    setTxPower          (int8_t power);
-    int8_t  getTxPower          (void);
+    // Convenient function to config connection
+    void     configPrphBandwidth   (uint8_t bw);
+    void     configCentralBandwidth(uint8_t bw);
+
+    err_t    begin(uint8_t prph_count = 1, uint8_t central_count = 0);
+
+    /*------------------------------------------------------------------*/
+    /* General Functions
+     *------------------------------------------------------------------*/
+    void     setName            (const char* str);
+    uint8_t  getName            (char* name, uint16_t bufsize);
+
+    bool     setTxPower         (int8_t power);
+    int8_t   getTxPower         (void);
+
+    bool     setApperance       (uint16_t appear);
+    uint16_t getApperance       (void);
+
+    void     autoConnLed        (bool enabled);
+    void     setConnLedInterval (uint32_t ms);
 
     /*------------------------------------------------------------------*/
     /* GAP, Connections and Bonding
@@ -138,10 +171,10 @@ class AdafruitBluefruit
     bool     requestPairing    (void);
     void     clearBonds        (void);
 
-    ble_gap_addr_t getPeerAddr(void);
-    uint8_t        getPeerAddr(uint8_t addr[6]);
+    ble_gap_addr_t getPeerAddr (void);
+    uint8_t        getPeerAddr (uint8_t addr[6]);
 
-    void      printInfo(void);
+    void     printInfo(void);
 
     /*------------------------------------------------------------------*/
     /* Callbacks
@@ -159,15 +192,17 @@ class AdafruitBluefruit
     void _startConnLed       (void);
     void _stopConnLed        (void);
     void _setConnLed         (bool on_off);
-    void _bledfu_get_bond_data(ble_gap_addr_t* addr, ble_gap_irk_t* irk, ble_gap_enc_key_t* enc_key);
-
-    void _saveBondKeys(void);
-    void _saveBondCCCD(void);
 
   private:
-    /*------------- BLE para -------------*/
-    bool _prph_enabled;
-    bool _central_enabled;
+    /*------------- SoftDevice Configuration -------------*/
+    struct {
+      uint32_t attr_table_size;
+      uint8_t  service_changed;
+      uint8_t  uuid128_max;
+    }_sd_cfg;
+
+    uint8_t _prph_count;
+    uint8_t _central_count;
 
     // Peripheral Preferred Connection Parameters (PPCP)
     uint16_t _ppcp_min_conn;
@@ -187,26 +222,9 @@ class AdafruitBluefruit
     BLEDfu _dfu_svc;
 
     uint16_t _conn_hdl;
-    bool     _bonded;
 
     BLEGap::connect_callback_t    _connect_cb;
     BLEGap::disconnect_callback_t _disconnect_cb;
-
-    ble_gap_sec_params_t _sec_param;
-
-    // Shared keys with bonded device, size = 80 bytes
-    struct
-    {
-      ble_gap_enc_key_t own_enc;
-      ble_gap_enc_key_t peer_enc;
-      ble_gap_id_key_t  peer_id;
-    } _bond_data;
-
-    enum
-    {
-      BOND_FILE_DEVNAME_OFFSET = sizeof(_bond_data),
-      BOND_FILE_CCCD_OFFSET    = BOND_FILE_DEVNAME_OFFSET + CFG_MAX_DEVNAME_LEN
-    };
 
 COMMENT_OUT(
     uint8_t _auth_type;
@@ -216,8 +234,6 @@ COMMENT_OUT(
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      *------------------------------------------------------------------*/
-    bool _loadBondKeys(uint16_t ediv);
-    void _loadBondCCCD(uint16_t ediv);
     void _ble_handler(ble_evt_t* evt);
 
     friend void SD_EVT_IRQHandler(void);

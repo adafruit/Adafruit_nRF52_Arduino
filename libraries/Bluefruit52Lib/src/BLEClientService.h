@@ -53,6 +53,7 @@ class BLEClientService
 
     BLEUuid uuid;
 
+    // Constructors
     BLEClientService(void);
     BLEClientService(BLEUuid bleuuid);
 
@@ -62,8 +63,9 @@ class BLEClientService
             bool     discovered(void);
 
             uint16_t connHandle(void);
-            void     setHandleRange(uint16_t start_hdl, uint16_t end_hdl);
-            void     setHandleRange(ble_gattc_handle_range_t handle_range);
+
+            void             setHandleRange(ble_gattc_handle_range_t handle_range);
+    ble_gattc_handle_range_t getHandleRange(void);
 
     friend class BLEGatt;
 };

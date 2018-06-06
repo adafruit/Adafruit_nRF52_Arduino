@@ -35,6 +35,7 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
+#include "utility/bonding.h"
 
 /**
  * Constructor
@@ -80,7 +81,11 @@ bool BLECentral::connect(const ble_gap_addr_t* peer_addr)
       .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
   };
 
+#if SD_VER < 500
   VERIFY_STATUS( sd_ble_gap_connect(peer_addr, Bluefruit.Scanner.getParams(), &gap_conn_params), false );
+#else
+  VERIFY_STATUS( sd_ble_gap_connect(peer_addr, Bluefruit.Scanner.getParams(), &gap_conn_params, CONN_CFG_CENTRAL), false );
+#endif
   return true;
 }
 
@@ -131,6 +136,11 @@ void BLECentral::setConnectCallback( BLEGap::connect_callback_t fp)
 void BLECentral::setDisconnectCallback( BLEGap::disconnect_callback_t fp)
 {
   _disconnect_cb = fp;
+}
+
+void BLECentral::clearBonds(void)
+{
+  bond_clear_cntr();
 }
 
 /**

@@ -65,7 +65,7 @@ extern "C"
 //--------------------------------------------------------------------+
 #if CFG_DEBUG >= 1
 //  #define VERIFY_MESS(format, ...) cprintf("[%08ld] %s: %d: verify failed\n", get_millis(), __func__, __LINE__)
-  #define VERIFY_MESS(_status)   cprintf("%s: %d: verify failed, status = 0x%04X\n", __PRETTY_FUNCTION__, __LINE__, _status);
+  #define VERIFY_MESS(_status)   cprintf("%s: %d: verify failed, error = %s\n", __PRETTY_FUNCTION__, __LINE__, dbg_err_str(_status));
 #else
   #define VERIFY_MESS(_status)
 #endif
@@ -121,6 +121,8 @@ extern "C"
  * - 2 parameter if called with 2 parameters e.g VERIFY(condition, errorcode)
  */
 #define VERIFY(...)  VERIFY_GETARGS(__VA_ARGS__, VERIFY_2ARGS, VERIFY_1ARGS)(__VA_ARGS__)
+
+// TODO VERIFY with final statement
 
 #ifdef __cplusplus
 }

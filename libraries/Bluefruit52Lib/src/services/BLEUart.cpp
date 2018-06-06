@@ -37,8 +37,6 @@
 #include "bluefruit.h"
 #include "utility/TimeoutTimer.h"
 
-#define TXD_FIFO_SIZE   (GATT_MTU_SIZE_DEFAULT-3)
-
 /* UART Serivce: 6E400001-B5A3-F393-E0A9-E50E24DCCA9E
  * UART RXD    : 6E400002-B5A3-F393-E0A9-E50E24DCCA9E
  * UART TXD    : 6E400003-B5A3-F393-E0A9-E50E24DCCA9E
@@ -66,15 +64,15 @@ const uint8_t BLEUART_UUID_CHR_TXD[] =
  * Constructor
  */
 BLEUart::BLEUart(uint16_t fifo_depth)
-  : BLEService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD),
-    _rx_fifo(1, fifo_depth)
+  : BLEService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD)
 {
-  _rx_cb        = NULL;
+  _rx_fifo       = NULL;
+  _rx_cb         = NULL;
+  _rx_fifo_depth = fifo_depth;
 
-  _tx_buffered  = 0;
-  _buffered_th  = NULL;
-
-  _tx_fifo      = NULL;
+  _tx_fifo       = NULL;
+  _tx_buffered   = 0;
+  _buffered_th   = NULL;
 }
 
 /**
@@ -97,10 +95,10 @@ void bleuart_rxd_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_
   (void) offset;
 
   BLEUart& svc = (BLEUart&) chr.parentService();
-  svc._rx_fifo.write(data, len);
+  svc._rx_fifo->write(data, len);
 
 #if CFG_DEBUG >= 2
-  LOG_LV2(BLEUART, "RX: ");
+  LOG_LV2("BLEUART", "RX: ");
   PRINT_BUFFER(data, len);
 #endif
 
@@ -120,7 +118,7 @@ void bleuart_txd_buffered_hdlr(TimerHandle_t timer)
   if ( !svc->_tx_fifo ) return;
 
   // flush tx data
-  svc->flush_tx_buffered();
+  (void) svc->flush_tx_buffered();
 }
 
 void bleuart_txd_cccd_cb(BLECharacteristic& chr, uint16_t value)
@@ -132,7 +130,7 @@ void bleuart_txd_cccd_cb(BLECharacteristic& chr, uint16_t value)
   // Enable TXD timer if configured
   if (value & BLE_GATT_HVX_NOTIFICATION)
   {
-    xTimerStart(svc._buffered_th, 0);
+    xTimerStart(svc._buffered_th, 0); // if started --> timer got reset
   }else
   {
     xTimerStop(svc._buffered_th, 0);
@@ -162,7 +160,7 @@ void BLEUart::bufferTXD(uint8_t enable)
     if ( _tx_fifo == NULL )
     {
       _tx_fifo = new Adafruit_FIFO(1);
-      _tx_fifo->begin(TXD_FIFO_SIZE);
+      _tx_fifo->begin( Bluefruit.Gap.getMaxMtuByConnCfg(CONN_CFG_PERIPHERAL) );
     }
   }else
   {
@@ -174,17 +172,20 @@ void BLEUart::bufferTXD(uint8_t enable)
 
 err_t BLEUart::begin(void)
 {
-  _rx_fifo.begin();
+  _rx_fifo = new Adafruit_FIFO(1);
+  _rx_fifo->begin(_rx_fifo_depth);
 
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
 
+  uint16_t max_mtu = Bluefruit.Gap.getMaxMtuByConnCfg(CONN_CFG_PERIPHERAL);
+
   // Add TXD Characteristic
   _txd.setProperties(CHR_PROPS_NOTIFY);
-//  _txd.setMaxLen(BLE_MAX_DATA_PER_MTU);
   // TODO enable encryption when bonding is enabled
   _txd.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  _txd.setStringDescriptor("TXD");
+  _txd.setMaxLen( max_mtu );
+  _txd.setUserDescriptor("TXD");
   VERIFY_STATUS( _txd.begin() );
 
   // Add RXD Characteristic
@@ -193,8 +194,8 @@ err_t BLEUart::begin(void)
 
   // TODO enable encryption when bonding is enabled
   _rxd.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
-
-  _rxd.setStringDescriptor("RXD");
+  _rxd.setMaxLen( max_mtu );
+  _rxd.setUserDescriptor("RXD");
   VERIFY_STATUS(_rxd.begin());
 
   return ERROR_NONE;
@@ -218,11 +219,14 @@ void BLEUart::_disconnect_cb(void)
 
 void BLEUart::_connect_cb (void)
 {
-  if ( _tx_buffered)
+  if ( _tx_buffered )
   {
     // create TXD timer TODO take connInterval into account
     // ((5*ms2tick(Bluefruit.connInterval())) / 4) / 2
     _buffered_th = xTimerCreate(NULL, ms2tick(10), true, this, bleuart_txd_buffered_hdlr);
+
+    // Start the timer
+    xTimerStart(_buffered_th, 0);
   }
 }
 
@@ -237,7 +241,7 @@ int BLEUart::read (void)
 
 int BLEUart::read (uint8_t * buf, size_t size)
 {
-  return _rx_fifo.read(buf, size);
+  return _rx_fifo->read(buf, size);
 }
 
 size_t BLEUart::write (uint8_t b)
@@ -253,22 +257,26 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
     return _txd.notify(content, len) ? len : 0;
   }else
   {
+    // skip if not enabled
+    if ( !notifyEnabled() ) return 0;
+
     uint16_t written = _tx_fifo->write(content, len);
 
-    if ( !_tx_fifo->full() )
+    // TODO multiple prph connections
+    // Not up to GATT MTU, notify will be sent later by TXD timer handler
+    if ( _tx_fifo->count() < (Bluefruit.Gap.getMTU( Bluefruit.connHandle() ) - 3) )
     {
-      // Not full, notify will be sent later by txd timer handler
       return len;
     }
     else
     {
-      // TX fifo is full, send notify right away
+      // TX fifo has enough data, send notify right away
       VERIFY( flush_tx_buffered(), 0);
 
       // still more data left, send them all
       if ( written < len )
       {
-        VERIFY( _txd.notify(content+written, len-written), TXD_FIFO_SIZE );
+        VERIFY( _txd.notify(content+written, len-written), written);
       }
 
       return len;
@@ -278,31 +286,38 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
 
 int BLEUart::available (void)
 {
-  return _rx_fifo.count();
+  return _rx_fifo->count();
 }
 
 int BLEUart::peek (void)
 {
   uint8_t ch;
-  return _rx_fifo.peek(&ch) ? (int) ch : EOF;
+  return _rx_fifo->peek(&ch) ? (int) ch : EOF;
 }
 
 void BLEUart::flush (void)
 {
-  _rx_fifo.clear();
+  _rx_fifo->clear();
 }
 
 bool BLEUart::flush_tx_buffered(void)
 {
-  uint8_t ff_data[TXD_FIFO_SIZE];
-  uint16_t len = _tx_fifo->read(ff_data, sizeof(ff_data));
+  uint16_t max_hvx = Bluefruit.Gap.getMTU( Bluefruit.connHandle() ) - 3;
+  uint8_t* ff_data = (uint8_t*) rtos_malloc( max_hvx );
+
+  if (!ff_data) return false;
+
+  uint16_t len = _tx_fifo->read(ff_data, max_hvx);
+  bool result = true;
 
   if ( len )
   {
-    return _txd.notify(ff_data, len);
+    result = _txd.notify(ff_data, len);
   }
 
-  return true;
+  rtos_free(ff_data);
+
+  return result;
 }
 
 

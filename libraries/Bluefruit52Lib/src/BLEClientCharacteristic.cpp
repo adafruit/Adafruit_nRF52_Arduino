@@ -43,7 +43,9 @@ void BLEClientCharacteristic::_init(void)
   _cccd_handle      = BLE_GATT_HANDLE_INVALID;
 
   _notify_cb       = NULL;
-  _use_AdaCallback = true;
+  _indicate_cb     = NULL;
+
+  varclr(&_use_ada_cb);
 }
 
 BLEClientCharacteristic::BLEClientCharacteristic(void)
@@ -70,7 +72,7 @@ BLEClientCharacteristic::~BLEClientCharacteristic()
 void BLEClientCharacteristic::begin(BLEClientService* parent_svc)
 {
   // Add UUID128 if needed
-  uuid.begin();
+  (void) uuid.begin();
 
   // Use the last (discovered) service as parent if not provided
   _service = ( parent_svc == NULL ) ? BLEClientService::lastService : parent_svc;
@@ -81,7 +83,7 @@ void BLEClientCharacteristic::begin(BLEClientService* parent_svc)
   _adamsg.begin(true);
 }
 
-void BLEClientCharacteristic::assign(ble_gattc_char_t* gattc_chr)
+void BLEClientCharacteristic::_assign(ble_gattc_char_t* gattc_chr)
 {
   _chr = *gattc_chr;
 }
@@ -91,9 +93,25 @@ void BLEClientCharacteristic::disconnect(void)
   _chr.handle_value = BLE_GATT_HANDLE_INVALID;
 }
 
-void BLEClientCharacteristic::useAdaCallback(bool enabled)
+
+bool BLEClientCharacteristic::discover(void)
 {
-  _use_AdaCallback = enabled;
+  ble_gattc_handle_range_t bck_range = Bluefruit.Discovery.getHandleRange();
+
+  // Set discovery handle to parent's service
+  Bluefruit.Discovery.setHandleRange( _service->getHandleRange() );
+
+  bool result = Bluefruit.Discovery.discoverCharacteristic( _service->connHandle(), *this) > 0;
+
+  // Set back to previous
+  Bluefruit.Discovery.setHandleRange(bck_range);
+
+  return result;
+}
+
+bool BLEClientCharacteristic::discovered(void)
+{
+  return _chr.handle_value != BLE_GATT_HANDLE_INVALID;
 }
 
 uint16_t BLEClientCharacteristic::connHandle(void)
@@ -118,7 +136,7 @@ BLEClientService& BLEClientCharacteristic::parentService (void)
   return *_service;
 }
 
-bool BLEClientCharacteristic::discoverDescriptor(uint16_t conn_handle, ble_gattc_handle_range_t hdl_range)
+bool BLEClientCharacteristic::_discoverDescriptor(uint16_t conn_handle, ble_gattc_handle_range_t hdl_range)
 {
   enum { MAX_DESCIRPTORS = 8 };
 
@@ -135,7 +153,7 @@ bool BLEClientCharacteristic::discoverDescriptor(uint16_t conn_handle, ble_gattc
     if ( disc_rsp.descs[i].uuid.type == BLE_UUID_TYPE_BLE &&
          disc_rsp.descs[i].uuid.uuid == BLE_UUID_DESCRIPTOR_CLIENT_CHAR_CONFIG )
     {
-      LOG_LV2(Discovery, "Found CCDD: handle = %d", disc_rsp.descs[i].handle);
+      LOG_LV2("DISC", "Found CCDD: handle = %d", disc_rsp.descs[i].handle);
       _cccd_handle = disc_rsp.descs[i].handle;
     }
   }
@@ -150,11 +168,31 @@ uint16_t BLEClientCharacteristic::read(void* buffer, uint16_t bufsize)
 {
   VERIFY( _chr.char_props.read, 0 );
 
+  uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+
   _adamsg.prepare(buffer, bufsize);
   VERIFY_STATUS( sd_ble_gattc_read(_service->connHandle(), _chr.handle_value, 0), 0);
-  int32_t rxlen = _adamsg.waitUntilComplete( (bufsize/(MTU_MPS-2)+1) * BLE_GENERIC_TIMEOUT );
+  int32_t rxlen = _adamsg.waitUntilComplete( (bufsize/(max_payload-2) + 1) * BLE_GENERIC_TIMEOUT );
 
   return (rxlen < 0) ? 0 : rxlen;
+}
+
+uint8_t BLEClientCharacteristic::read8 (void)
+{
+  uint8_t num;
+  return read(&num, sizeof(num)) ? num : 0;
+}
+
+uint16_t BLEClientCharacteristic::read16(void)
+{
+  uint16_t num;
+  return read(&num, sizeof(num)) ? num : 0;
+}
+
+uint32_t BLEClientCharacteristic::read32(void)
+{
+  uint32_t num;
+  return read(&num, sizeof(num)) ? num : 0;
 }
 
 /*------------------------------------------------------------------*/
@@ -164,10 +202,9 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
 {
   VERIFY( _chr.char_props.write, 0 );
 
-  // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
-  // SD132 v3.0 could negotiate MTU to higher number
-  // For BLE_GATT_OP_PREP_WRITE_REQ, max data is 18 ( 2 byte is used for offset)
-  const bool long_write = (len > MTU_MPS);
+  uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+
+  const bool long_write = (len > max_payload);
   int32_t count = 0;
 
   // CMD WRITE_REQUEST for single transaction
@@ -192,19 +229,21 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
   else
   {
     /*------------- Long Write Sequence -------------*/
+    // For BLE_GATT_OP_PREP_WRITE_REQ, 2 bytes are used for offset
+
     ble_gattc_write_params_t param =
     {
         .write_op = BLE_GATT_OP_PREP_WRITE_REQ,
         .flags    = 0,
         .handle   = _chr.handle_value,
         .offset   = 0,
-        .len      = min16(len, MTU_MPS-2),
+        .len      = min16(len, max_payload-2),
         .p_value  = (uint8_t*) data
     };
 
     _adamsg.prepare( (void*) data, len);
     VERIFY_STATUS ( sd_ble_gattc_write(_service->connHandle(), &param) );
-    count = _adamsg.waitUntilComplete( (len/(MTU_MPS-2)+1) * BLE_GENERIC_TIMEOUT );
+    count = _adamsg.waitUntilComplete( (len/(max_payload-2) + 1) * BLE_GENERIC_TIMEOUT );
 
     // delay to swallow last WRITE RESPONSE
     // delay(20);
@@ -213,22 +252,41 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
   return (count < 0) ? 0 : count;
 }
 
+uint16_t BLEClientCharacteristic::write8_resp(uint8_t value)
+{
+  return write_resp(&value, sizeof(value));
+}
+
+uint16_t BLEClientCharacteristic::write16_resp(uint16_t value)
+{
+  return write_resp(&value, sizeof(value));
+}
+
+uint16_t BLEClientCharacteristic::write32_resp(uint32_t value)
+{
+  return write_resp(&value, sizeof(value));
+}
+
+uint16_t BLEClientCharacteristic::write32_resp(int value)
+{
+  return write32_resp((uint32_t) value);
+}
+
 uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
 {
 //  VERIFY( _chr.char_props.write_wo_resp, 0 );
 
-  // Break into multiple MTU-3 packet
-  // TODO Currently SD132 v2.0 MTU is fixed with max payload = 20
-  // SD132 v3.0 could negotiate MTU to higher number
+  uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
   const uint8_t* u8data = (const uint8_t*) data;
 
+  // Break into multiple packet if needed
   uint16_t remaining = len;
   while( remaining )
   {
-    // Write CMD consume a TX buffer
-    if ( !Bluefruit.Gap.getTxPacket(_service->connHandle()) )  return BLE_ERROR_NO_TX_PACKETS;
+    // TODO only Write without response consume a TX buffer
+    if ( !Bluefruit.Gap.getWriteCmdPacket(_service->connHandle()) )  return NRF_ERROR_RESOURCES; //BLE_ERROR_NO_TX_PACKETS;
 
-    uint16_t packet_len = min16(MTU_MPS, remaining);
+    uint16_t packet_len = min16(max_payload, remaining);
 
     ble_gattc_write_params_t param =
     {
@@ -249,9 +307,37 @@ uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
   return len;
 }
 
-void BLEClientCharacteristic::setNotifyCallback(notify_cb_t fp)
+uint16_t BLEClientCharacteristic::write8(uint8_t value)
+{
+  return write(&value, sizeof(value));
+}
+
+uint16_t BLEClientCharacteristic::write16(uint16_t value)
+{
+  return write(&value, sizeof(value));
+}
+
+uint16_t BLEClientCharacteristic::write32(uint32_t value)
+{
+  return write(&value, sizeof(value));
+}
+
+uint16_t BLEClientCharacteristic::write32(int value)
+{
+  return write32( (uint32_t) value);
+}
+
+
+void BLEClientCharacteristic::setNotifyCallback(notify_cb_t fp, bool useAdaCallback)
 {
   _notify_cb = fp;
+  _use_ada_cb.notify = useAdaCallback;
+}
+
+void BLEClientCharacteristic::setIndicateCallback(indicate_cb_t fp, bool useAdaCallback)
+{
+  _indicate_cb = fp;
+  _use_ada_cb.indicate = useAdaCallback;
 }
 
 bool BLEClientCharacteristic::writeCCCD(uint16_t value)
@@ -268,8 +354,8 @@ bool BLEClientCharacteristic::writeCCCD(uint16_t value)
       .p_value  = (uint8_t*) &value
   };
 
-  // Write consume a TX buffer
-  if ( !Bluefruit.Gap.getTxPacket(conn_handle) )  return BLE_ERROR_NO_TX_PACKETS;
+  // TODO only Write without response consume a TX buffer
+  if ( !Bluefruit.Gap.getWriteCmdPacket(conn_handle) )  return NRF_ERROR_RESOURCES; //BLE_ERROR_NO_TX_PACKETS;
 
   VERIFY_STATUS( sd_ble_gattc_write(conn_handle, &param), false );
 
@@ -302,6 +388,7 @@ bool BLEClientCharacteristic::disableIndicate (void)
 
 void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
 {
+  const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
   uint16_t gatt_status = evt->evt.gattc_evt.gatt_status;
 
   switch(evt->header.evt_id)
@@ -310,26 +397,50 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
     {
       ble_gattc_evt_hvx_t* hvx = &evt->evt.gattc_evt.params.hvx;
 
-      if ( hvx->type == BLE_GATT_HVX_NOTIFICATION )
+      switch ( hvx->type )
       {
-        if (_notify_cb)
-        {
-          // use AdaCallback or invoke directly
-          if (_use_AdaCallback)
+        case BLE_GATT_HVX_NOTIFICATION:
+          if (_notify_cb)
           {
-            uint8_t* data = (uint8_t*) rtos_malloc(hvx->len);
-            if (!data) return;
-            memcpy(data, hvx->data, hvx->len);
+            // use AdaCallback or invoke directly
+            if (_use_ada_cb.notify)
+            {
+              uint8_t* data = (uint8_t*) rtos_malloc(hvx->len);
+              if (!data) return;
+              memcpy(data, hvx->data, hvx->len);
 
-            ada_callback(data, _notify_cb, this, data, hvx->len);
-          }else
-          {
-            _notify_cb(*this, hvx->data, hvx->len);
+              // data is free by callback
+              ada_callback(data, _notify_cb, this, data, hvx->len);
+            }else
+            {
+              _notify_cb(this, hvx->data, hvx->len);
+            }
           }
-        }
-      }else
-      {
+        break;
 
+        case BLE_GATT_HVX_INDICATION:
+          if (_indicate_cb)
+          {
+            // use AdaCallback or invoke directly
+            if (_use_ada_cb.indicate)
+            {
+              uint8_t* data = (uint8_t*) rtos_malloc(hvx->len);
+              if (!data) return;
+              memcpy(data, hvx->data, hvx->len);
+
+              // data is free by callback
+              ada_callback(data, _indicate_cb, this, data, hvx->len);
+            }else
+            {
+              _indicate_cb(this, hvx->data, hvx->len);
+            }
+
+            // Send confirmation to server
+            VERIFY_STATUS( sd_ble_gattc_hv_confirm(evt_conn_hdl, hvx->handle), );
+          }
+        break;
+
+        default : break;
       }
     }
     break;
@@ -353,7 +464,8 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
         _adamsg.complete();
       }else if ( wr_rsp->write_op == BLE_GATT_OP_PREP_WRITE_REQ)
       {
-        uint16_t packet_len = min16(_adamsg.remaining, MTU_MPS-2);
+        uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+        uint16_t packet_len = min16(_adamsg.remaining, max_payload-2);
 
         // still has data, continue to prepare
         if ( packet_len )
@@ -400,6 +512,7 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
 
     case BLE_GATTC_EVT_READ_RSP:
     {
+      uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
       ble_gattc_evt_read_rsp_t* rd_rsp = (ble_gattc_evt_read_rsp_t*) &evt->evt.gattc_evt.params.read_rsp;
 
       // Give up if failed (BLE_GATT_STATUS_ATTERR_INVALID_OFFSET usually)
@@ -413,11 +526,11 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
 
       /* Complete condition is one of follows
        * - Running out of buffer
-       * - Receive data less than MPS - 1 (19)
+       * - Receive data less than MPS - 1
        * - Couldn't perform GATTC Read
        */
       if (( _adamsg.remaining == 0)    ||
-          (rd_rsp->len < (MTU_MPS-1) ) ||
+          (rd_rsp->len < (max_payload-1) ) ||
           (ERROR_NONE != sd_ble_gattc_read(_service->connHandle(), _chr.handle_value, _adamsg.xferlen)) )
       {
         _adamsg.complete();

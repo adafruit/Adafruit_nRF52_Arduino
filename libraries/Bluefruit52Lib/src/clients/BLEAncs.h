@@ -177,8 +177,8 @@ class BLEAncs : public BLEClientService
     void _handleNotification(uint8_t* data, uint16_t len);
     void _handleData(uint8_t* data, uint16_t len);
 
-    friend void bleancs_notification_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
-    friend void bleancs_data_cb        (BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
+    friend void bleancs_notification_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
+    friend void bleancs_data_cb        (BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
 };
 
 

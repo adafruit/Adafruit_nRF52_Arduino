@@ -6,38 +6,47 @@
  *           nrf52 from Nordic Semiconductor.
  *
  * @version  V1
- * @date     23. February 2016
+ * @date     6. June 2017
  *
  * @note     Generated with SVDConv V2.81d 
  *           from CMSIS SVD File 'nrf52.svd' Version 1,
  *
- * @par      Copyright (c) 2015, Nordic Semiconductor ASA
+ * @par      Copyright (c) 2010 - 2017, Nordic Semiconductor ASA
+ *           
  *           All rights reserved.
  *           
- *           Redistribution and use in source and binary forms, with or without
- *           modification, are permitted provided that the following conditions are met:
+ *           Redistribution and use in source and binary forms, with or without modification,
+ *           are permitted provided that the following conditions are met:
  *           
- *           * Redistributions of source code must retain the above copyright notice, this
+ *           1. Redistributions of source code must retain the above copyright notice, this
  *           list of conditions and the following disclaimer.
  *           
- *           * Redistributions in binary form must reproduce the above copyright notice,
- *           this list of conditions and the following disclaimer in the documentation
- *           and/or other materials provided with the distribution.
+ *           2. Redistributions in binary form, except as embedded into a Nordic
+ *           Semiconductor ASA integrated circuit in a product or a software update for
+ *           such product, must reproduce the above copyright notice, this list of
+ *           conditions and the following disclaimer in the documentation and/or other
+ *           materials provided with the distribution.
  *           
- *           * Neither the name of Nordic Semiconductor ASA nor the names of its
- *           contributors may be used to endorse or promote products derived from
- *           this software without specific prior written permission.
+ *           3. Neither the name of Nordic Semiconductor ASA nor the names of its
+ *           contributors may be used to endorse or promote products derived from this
+ *           software without specific prior written permission.
  *           
- *           THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *           AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *           IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *           DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *           FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *           DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *           SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *           CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *           OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *           OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *           4. This software, with or without modification, must only be used with a
+ *           Nordic Semiconductor ASA integrated circuit.
+ *           
+ *           5. Any software provided in binary form under this license must not be reverse
+ *           engineered, decompiled, modified and/or disassembled.
+ *           
+ *           THIS SOFTWARE IS PROVIDED BY NORDIC SEMICONDUCTOR ASA "AS IS" AND ANY EXPRESS
+ *           OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ *           OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *           DISCLAIMED. IN NO EVENT SHALL NORDIC SEMICONDUCTOR ASA OR CONTRIBUTORS BE
+ *           LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *           CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ *           GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ *           HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *           LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ *           OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *           
  *
  *******************************************************************************************************/
@@ -213,25 +222,6 @@ typedef struct {
 } POWER_RAM_Type;
 
 typedef struct {
-  __IO uint32_t  CPU0;                              /*!< AHB bus master priority register for CPU0                             */
-  __IO uint32_t  SPIS1;                             /*!< AHB bus master priority register for SPIM1, SPIS1, TWIM1 and
-                                                         TWIS1                                                                 */
-  __IO uint32_t  RADIO;                             /*!< AHB bus master priority register for RADIO                            */
-  __IO uint32_t  ECB;                               /*!< AHB bus master priority register for ECB                              */
-  __IO uint32_t  CCM;                               /*!< AHB bus master priority register for CCM                              */
-  __IO uint32_t  AAR;                               /*!< AHB bus master priority register for AAR                              */
-  __IO uint32_t  SAADC;                             /*!< AHB bus master priority register for SAADC                            */
-  __IO uint32_t  UARTE;                             /*!< AHB bus master priority register for UARTE                            */
-  __IO uint32_t  SERIAL0;                           /*!< AHB bus master priority register for SPIM0, SPIS0, TWIM0 and
-                                                         TWIS0                                                                 */
-  __IO uint32_t  SERIAL2;                           /*!< AHB bus master priority register for SPIM2 and SPIS2                  */
-  __IO uint32_t  NFCT;                              /*!< AHB bus master priority register for NFCT                             */
-  __IO uint32_t  I2S;                               /*!< AHB bus master priority register for I2S                              */
-  __IO uint32_t  PDM;                               /*!< AHB bus master priority register for PDM                              */
-  __IO uint32_t  PWM;                               /*!< AHB bus master priority register for PWM0, PWM1 and PWM2              */
-} AMLI_RAMPRI_Type;
-
-typedef struct {
   __IO uint32_t  RTS;                               /*!< Pin select for RTS signal                                             */
   __IO uint32_t  TXD;                               /*!< Pin select for TXD signal                                             */
   __IO uint32_t  CTS;                               /*!< Pin select for CTS signal                                             */
@@ -371,12 +361,12 @@ typedef struct {
 } QDEC_PSEL_Type;
 
 typedef struct {
-  __IO uint32_t  PTR;                               /*!< Description cluster[0]: Beginning address in Data RAM of sequence
-                                                         A                                                                     */
-  __IO uint32_t  CNT;                               /*!< Description cluster[0]: Amount of values (duty cycles) in sequence
-                                                         A                                                                     */
+  __IO uint32_t  PTR;                               /*!< Description cluster[0]: Beginning address in Data RAM of this
+                                                         sequence                                                              */
+  __IO uint32_t  CNT;                               /*!< Description cluster[0]: Amount of values (duty cycles) in this
+                                                         sequence                                                              */
   __IO uint32_t  REFRESH;                           /*!< Description cluster[0]: Amount of additional PWM periods between
-                                                         samples loaded to compare register (load every CNT+1 PWM periods)     */
+                                                         samples loaded into compare register                                  */
   __IO uint32_t  ENDDELAY;                          /*!< Description cluster[0]: Time added after the sequence                 */
   __I  uint32_t  RESERVED1[4];
 } PWM_SEQ_Type;
@@ -633,26 +623,10 @@ typedef struct {                                    /*!< CLOCK Structure        
   __I  uint32_t  RESERVED5[62];
   __IO uint32_t  LFCLKSRC;                          /*!< Clock source for the LFCLK                                            */
   __I  uint32_t  RESERVED6[7];
-  __IO uint32_t  CTIV;                              /*!< Calibration timer interval (retained register, same reset behaviour
-                                                         as RESETREAS)                                                         */
+  __IO uint32_t  CTIV;                              /*!< Calibration timer interval                                            */
   __I  uint32_t  RESERVED7[8];
   __IO uint32_t  TRACECONFIG;                       /*!< Clocking options for the Trace Port debug interface                   */
 } NRF_CLOCK_Type;
-
-
-/* ================================================================================ */
-/* ================                      AMLI                      ================ */
-/* ================================================================================ */
-
-
-/**
-  * @brief AHB Multi-Layer Interface (AMLI)
-  */
-
-typedef struct {                                    /*!< AMLI Structure                                                        */
-  __I  uint32_t  RESERVED0[896];
-  AMLI_RAMPRI_Type RAMPRI;                          /*!< RAM configurable priority configuration structure                     */
-} NRF_AMLI_Type;
 
 
 /* ================================================================================ */
@@ -754,9 +728,12 @@ typedef struct {                                    /*!< UARTE Structure        
   __I  uint32_t  RESERVED1[52];
   __IO uint32_t  EVENTS_CTS;                        /*!< CTS is activated (set low). Clear To Send.                            */
   __IO uint32_t  EVENTS_NCTS;                       /*!< CTS is deactivated (set high). Not Clear To Send.                     */
-  __I  uint32_t  RESERVED2[2];
+  __IO uint32_t  EVENTS_RXDRDY;                     /*!< Data received in RXD (but potentially not yet transferred to
+                                                         Data RAM)                                                             */
+  __I  uint32_t  RESERVED2;
   __IO uint32_t  EVENTS_ENDRX;                      /*!< Receive buffer is filled up                                           */
-  __I  uint32_t  RESERVED3[3];
+  __I  uint32_t  RESERVED3[2];
+  __IO uint32_t  EVENTS_TXDRDY;                     /*!< Data sent from TXD                                                    */
   __IO uint32_t  EVENTS_ENDTX;                      /*!< Last TX byte transmitted                                              */
   __IO uint32_t  EVENTS_ERROR;                      /*!< Error detected                                                        */
   __I  uint32_t  RESERVED4[7];
@@ -779,7 +756,7 @@ typedef struct {                                    /*!< UARTE Structure        
   __I  uint32_t  RESERVED11;
   UARTE_PSEL_Type PSEL;                             /*!< Unspecified                                                           */
   __I  uint32_t  RESERVED12[3];
-  __IO uint32_t  BAUDRATE;                          /*!< Baud rate                                                             */
+  __IO uint32_t  BAUDRATE;                          /*!< Baud rate. Accuracy depends on the HFCLK source selected.             */
   __I  uint32_t  RESERVED13[3];
   UARTE_RXD_Type RXD;                               /*!< RXD EasyDMA channel                                                   */
   __I  uint32_t  RESERVED14;
@@ -874,7 +851,7 @@ typedef struct {                                    /*!< SPIM Structure         
   __I  uint32_t  RESERVED10;
   SPIM_PSEL_Type PSEL;                              /*!< Unspecified                                                           */
   __I  uint32_t  RESERVED11[4];
-  __IO uint32_t  FREQUENCY;                         /*!< SPI frequency                                                         */
+  __IO uint32_t  FREQUENCY;                         /*!< SPI frequency. Accuracy depends on the HFCLK source selected.         */
   __I  uint32_t  RESERVED12[3];
   SPIM_RXD_Type RXD;                                /*!< RXD EasyDMA channel                                                   */
   SPIM_TXD_Type TXD;                                /*!< TXD EasyDMA channel                                                   */
@@ -1977,7 +1954,6 @@ typedef struct {                                    /*!< GPIO Structure         
 #define NRF_BPROT_BASE                  0x40000000UL
 #define NRF_POWER_BASE                  0x40000000UL
 #define NRF_CLOCK_BASE                  0x40000000UL
-#define NRF_AMLI_BASE                   0x40000000UL
 #define NRF_RADIO_BASE                  0x40001000UL
 #define NRF_UARTE0_BASE                 0x40002000UL
 #define NRF_UART0_BASE                  0x40002000UL
@@ -2049,7 +2025,6 @@ typedef struct {                                    /*!< GPIO Structure         
 #define NRF_BPROT                       ((NRF_BPROT_Type          *) NRF_BPROT_BASE)
 #define NRF_POWER                       ((NRF_POWER_Type          *) NRF_POWER_BASE)
 #define NRF_CLOCK                       ((NRF_CLOCK_Type          *) NRF_CLOCK_BASE)
-#define NRF_AMLI                        ((NRF_AMLI_Type           *) NRF_AMLI_BASE)
 #define NRF_RADIO                       ((NRF_RADIO_Type          *) NRF_RADIO_BASE)
 #define NRF_UARTE0                      ((NRF_UARTE_Type          *) NRF_UARTE0_BASE)
 #define NRF_UART0                       ((NRF_UART_Type           *) NRF_UART0_BASE)

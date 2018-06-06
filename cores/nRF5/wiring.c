@@ -17,8 +17,6 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <nrf.h>
-
 #include "Arduino.h"
 #include "nrf.h"
 
@@ -35,6 +33,10 @@ uint32_t bootloaderVersion = 0;
 
 void init( void )
 {
+  // Retrieve bootloader version
+  bootloaderVersion = BOOTLOADER_VERSION_REGISTER;
+
+  // Select Clock Source : XTAL or RC
 #if defined( USE_LFXO )
   // 32Khz XTAL
   NRF_CLOCK->LFCLKSRC = (uint32_t)((CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos) & CLOCK_LFCLKSRC_SRC_Msk);
@@ -47,15 +49,15 @@ void init( void )
 
   NRF_CLOCK->TASKS_LFCLKSTART = 1UL;
 
-  // Retrieve bootloader version
-  bootloaderVersion = BOOTLOADER_VERSION_REGISTER;
-
   // RTC1 could be enabled by bootloader. Disable it
   NVIC_DisableIRQ(RTC1_IRQn);
   NRF_RTC1->EVTENCLR    = RTC_EVTEN_COMPARE0_Msk;
   NRF_RTC1->INTENCLR    = RTC_INTENSET_COMPARE0_Msk;
   NRF_RTC1->TASKS_STOP  = 1;
   NRF_RTC1->TASKS_CLEAR = 1;
+
+  // Make sure all pin is set HIGH when pinmode() is called
+  NRF_GPIO->OUTSET = UINT32_MAX;
 }
 
 void enterSerialDfu(void)

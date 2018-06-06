@@ -195,8 +195,6 @@ class Dfu(object):
                     bootloader_size,
                     application_size)
 
-        #logger.info("Sending DFU start packet, afterwards we wait for the flash on "
-        #            "target to be initialized before continuing.")
         logger.info("Sending DFU start packet")
         self.dfu_transport.send_start_dfu(program_mode, softdevice_size, bootloader_size,
                                           application_size)

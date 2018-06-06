@@ -63,7 +63,7 @@ void BLEService::setUuid(BLEUuid bleuuid)
 err_t BLEService::begin(void)
 {
   // Add UUID128 if needed
-  uuid.begin();
+  (void) uuid.begin();
 
   uint16_t handle;
   VERIFY_STATUS( sd_ble_gatts_service_add(BLE_GATTS_SRVC_TYPE_PRIMARY, &uuid._uuid, &handle) );

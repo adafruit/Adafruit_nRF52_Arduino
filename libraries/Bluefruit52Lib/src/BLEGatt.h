@@ -60,6 +60,8 @@ class BLEGatt
 
     uint16_t readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffer, uint16_t bufsize, uint16_t start_hdl = 1, uint16_t end_hdl = 0xffff);
 
+    bool     waitForIndicateConfirm(uint16_t conn_hdl);
+
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal

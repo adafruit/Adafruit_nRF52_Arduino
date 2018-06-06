@@ -32,9 +32,6 @@ void startAdv(void);
 void setupHRM(void);
 void connect_callback(uint16_t conn_handle);
 void disconnect_callback(uint16_t conn_handle, uint8_t reason);
-void cccd_callback(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
-
-void blink_timer_callback(TimerHandle_t xTimerID);
 
 void setup()
 {
@@ -124,7 +121,7 @@ void setupHRM(void)
 
   // Configure the Heart Rate Measurement characteristic
   // See: https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.heart_rate_measurement.xml
-  // Permission = Notify
+  // Properties = Notify
   // Min Len    = 1
   // Max Len    = 8
   //    B0      = UINT8  - Flag (MANDATORY)
@@ -147,7 +144,7 @@ void setupHRM(void)
 
   // Configure the Body Sensor Location characteristic
   // See: https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.body_sensor_location.xml
-  // Permission = Read
+  // Properties = Read
   // Min Len    = 1
   // Max Len    = 1
   //    B0      = UINT8 - Body Sensor Location
@@ -163,7 +160,7 @@ void setupHRM(void)
   bslc.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   bslc.setFixedLen(1);
   bslc.begin();
-  bslc.write(2);    // Set the characteristic to 'Wrist' (2)
+  bslc.write8(2);    // Set the characteristic to 'Wrist' (2)
 }
 
 void connect_callback(uint16_t conn_handle)

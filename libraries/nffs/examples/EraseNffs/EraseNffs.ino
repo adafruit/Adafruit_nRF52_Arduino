@@ -14,7 +14,7 @@
 
 #include <Arduino.h>
 
-/* This example erase the content of 28KB User Data starting from 0x6D000 
+/* This example erase the content of 28KB User Data starting from 0x6D000
  * (used by NFFS) using low level API sd_flash_page_erase() with SoftDevice
  * DISABLED. In other words, it performs low level formating of NFFS.
  */

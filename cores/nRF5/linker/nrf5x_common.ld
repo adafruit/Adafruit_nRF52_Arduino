@@ -1,4 +1,4 @@
-/* Linker script for Nordic Semiconductor nRF51 devices
+/* Linker script for Nordic Semiconductor nRF52 devices
  *
  * Version: Sourcery G++ 4.5-1
  * Support: https://support.codesourcery.com/GNUToolchain/
@@ -38,6 +38,7 @@ OUTPUT_FORMAT ("elf32-littlearm", "elf32-bigarm", "elf32-littlearm")
  *   __bss_end__
  *   __end__
  *   end
+ *   __HeapBase
  *   __HeapLimit
  *   __StackLimit
  *   __StackTop
@@ -87,8 +88,8 @@ SECTIONS
 
         KEEP(*(.eh_frame*))
     } > FLASH
-    
-    .ARM.extab : 
+
+    .ARM.extab :
     {
         *(.ARM.extab* .gnu.linkonce.armextab.*)
     } > FLASH
@@ -101,7 +102,7 @@ SECTIONS
     __exidx_end = .;
 
     __etext = .;
-        
+
     .data : AT (__etext)
     {
         __data_start__ = .;

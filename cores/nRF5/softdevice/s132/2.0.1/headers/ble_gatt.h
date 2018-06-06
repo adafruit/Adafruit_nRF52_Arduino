@@ -56,6 +56,9 @@ extern "C" {
 /** @brief Default MTU size. */
 #define GATT_MTU_SIZE_DEFAULT 23
 
+// Adafruit: make compatible with S132 5.0.0
+#define BLE_GATT_ATT_MTU_DEFAULT  23
+
 /** @brief Only the default MTU size of 23 is currently supported. */
 #define GATT_RX_MTU 23
 

@@ -36,7 +36,7 @@
 
 #include "bluefruit.h"
 
-void blects_central_notify_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
+void blects_central_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
 
 BLEClientCts::BLEClientCts(void)
  : BLEClientService(UUID16_SVC_CURRENT_TIME), _cur_time(UUID16_CHR_CURRENT_TIME), _local_info(UUID16_CHR_LOCAL_TIME_INFORMATION)
@@ -107,7 +107,7 @@ void BLEClientCts::_cur_time_notify_cb(uint8_t* data, uint16_t len)
   if ( _adjust_cb ) _adjust_cb( Time.adjust_reason );
 }
 
-void blects_central_notify_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len)
+void blects_central_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  ((BLEClientCts&) chr.parentService())._cur_time_notify_cb(data, len);
+  ((BLEClientCts&) chr->parentService())._cur_time_notify_cb(data, len);
 }

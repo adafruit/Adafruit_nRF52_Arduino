@@ -781,14 +781,21 @@ void setup()
   Serial.begin(115200);                              
   Serial.println("Bluefruit52 Standard Firmata via BLEUART Example");
   Serial.println("------------------------------------------------\n");
-    
+
+  // Config the peripheral connection with maximum bandwidth 
+  // more SRAM required by SoftDevice
+  // Note: All config***() function must be called before begin()
+  Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
+  
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
+  
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
   Bluefruit.setTxPower(4);
+  
   // try to go as fast as possible, could be rejected by some central, increase it if needed
   // iOS won't negotitate and will mostly use 30ms
-  Bluefruit.setConnInterval(9, 16); // min = 9*1.25=11.25 ms, max = 16*1.25=20ms
+  Bluefruit.setConnInterval(9, 24); // min = 9*1.25=11.25 ms, max = 23*1.25=30ms
   
   // Configure and Start BLE Uart Service
   // Firmata use several small write(1) --> buffering TXD is required to run smoothly

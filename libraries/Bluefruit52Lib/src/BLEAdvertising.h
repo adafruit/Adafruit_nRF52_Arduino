@@ -59,6 +59,16 @@
 #define BLE_ADV_INTERVAL_SLOW_DFLT       244 // 152.5 ms (in 0.625 ms unit)
 #define BLE_ADV_FAST_TIMEOUT_DFLT        30  // in seconds
 
+// forward declaration
+class BLEAdvertisingData;
+
+// Abstract Class to set Adv Data
+class Advertisable
+{
+  public:
+    virtual bool setAdv(BLEAdvertisingData& adv) = 0;
+};
+
 class BLEAdvertisingData
 {
 protected:
@@ -74,7 +84,9 @@ public:
   bool addTxPower(void);
   bool addName(void);
   bool addAppearance(uint16_t appearance);
+  bool addManufacturerData(const void* data, uint8_t count);
 
+  /*------------- UUID -------------*/
   bool addUuid(BLEUuid bleuuid);
   bool addUuid(BLEUuid bleuuid1, BLEUuid bleuuid2);
   bool addUuid(BLEUuid bleuuid1, BLEUuid bleuuid2, BLEUuid bleuuid3);
@@ -82,32 +94,42 @@ public:
 
   bool addUuid(BLEUuid bleuuid[], uint8_t count);
 
+  /*------------- Service -------------*/
   bool addService(BLEService& service);
+  bool addService(BLEService& service1, BLEService& service2);
+  bool addService(BLEService& service1, BLEService& service2, BLEService& service3);
+  bool addService(BLEService& service1, BLEService& service2, BLEService& service3, BLEService& service4);
+
+  /*------------- Client Service -------------*/
   bool addService(BLEClientService& service);
 
-//  bool addService(BLEService& service[], uint8_t count);
-//  bool addService(BLEClientService& service[], uint8_t count);
-
-  // Custom API
+  // Functions to work with the raw advertising packet
   uint8_t  count(void);
   uint8_t* getData(void);
   bool     setData(const uint8_t* data, uint8_t count);
   void     clearData(void);
-};
 
+  bool     setData(Advertisable& adv_able) { return adv_able.setAdv(*this); }
+};
 
 class BLEAdvertising : public BLEAdvertisingData
 {
 public:
   typedef void (*stop_callback_t) (void);
+  typedef void (*slow_callback_t) (void);
+
   BLEAdvertising(void);
 
   void setType(uint8_t adv_type);
   void setFastTimeout(uint16_t sec);
+
+  void setSlowCallback(slow_callback_t fp);
   void setStopCallback(stop_callback_t fp);
 
   void setInterval  (uint16_t fast, uint16_t slow);
   void setIntervalMS(uint16_t fast, uint16_t slow);
+
+  uint16_t getInterval(void);
 
   bool setBeacon(BLEBeacon& beacon);
   bool setBeacon(EddyStoneUrl& eddy_url);
@@ -130,14 +152,16 @@ private:
   bool     _start_if_disconnect;
   bool     _runnning;
 
-  uint16_t _fast_interval; // in 0.625 ms
-  uint16_t _slow_interval; // in 0.625 ms
+  uint16_t _fast_interval;   // in 0.625 ms
+  uint16_t _slow_interval;   // in 0.625 ms
+  uint16_t _active_interval; // in 0.625 ms
 
   uint16_t _fast_timeout; // in second
   uint16_t _stop_timeout; // in second
   uint16_t _left_timeout;
 
   stop_callback_t _stop_cb;
+  slow_callback_t _slow_cb;
 
   // Internal function
   bool _start(uint16_t interval, uint16_t timeout);

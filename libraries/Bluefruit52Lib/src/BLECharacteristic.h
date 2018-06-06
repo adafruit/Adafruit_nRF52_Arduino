@@ -73,49 +73,19 @@ enum CharsProperties
 class BLECharacteristic
 {
   public:
+    /*--------- Callback Signatures ----------*/
     typedef void (*read_authorize_cb_t)  (BLECharacteristic& chr, ble_gatts_evt_read_t * request);
     typedef void (*write_authorize_cb_t) (BLECharacteristic& chr, ble_gatts_evt_write_t* request);
     typedef void (*write_cb_t)           (BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
     typedef void (*write_cccd_cb_t)      (BLECharacteristic& chr, uint16_t value);
 
-  protected:
-    bool _is_temp;
-
-    ble_gatt_char_props_t _properties;
-    const char* _descriptor;
-    uint16_t _max_len;
-
-    struct ATTR_PACKED {
-      uint8_t id;
-      uint8_t type;
-    }_report_ref_desc;
-
-    /* Characteristic attribute metadata */
-    /* https://devzone.nordicsemi.com/documentation/nrf51/5.2.0/html/a00269.html */
-    ble_gatts_attr_md_t _attr_meta;
-
-    ble_gatts_char_handles_t _handles;
-
-    BLEService* _service; // pointer to parent's service
-
-    // Callback pointer
-    read_authorize_cb_t  _rd_authorize_cb;
-    write_authorize_cb_t _wr_authorize_cb;
-
-    write_cb_t           _wr_cb;
-    write_cccd_cb_t      _cccd_wr_cb;
-
-    void _init(void);
-    void _eventHandler(ble_evt_t* event);
-  
-  public:
     BLEUuid uuid;
 
-    typedef void (*chars_cb_t) (void);
-
+    // Constructors
     BLECharacteristic(void);
     BLECharacteristic(BLEUuid bleuuid);
 
+    // Destructor
     virtual ~BLECharacteristic();
 
     BLEService& parentService(void);
@@ -128,46 +98,95 @@ class BLECharacteristic
     void setPermission(BleSecurityMode read_perm, BleSecurityMode write_perm);
     void setMaxLen(uint16_t max_len);
     void setFixedLen(uint16_t fixed_len);
-    void setStringDescriptor(const char* descriptor); // aka user descriptor
-    void setReportRefDescriptor(uint8_t id, uint8_t type);
+
+    /*------------- Descriptors -------------*/
+    void setUserDescriptor(const char* descriptor); // aka user descriptor
+    void setReportRefDescriptor(uint8_t id, uint8_t type); // TODO refactor to use addDescriptor()
+    void setPresentationFormatDescriptor(uint8_t type, int8_t exponent, uint16_t unit, uint8_t name_space = 1, uint16_t descritpor = 0);
 
     /*------------- Callbacks -------------*/
-    void setWriteCallback(write_cb_t fp);
-    void setCccdWriteCallback(write_cccd_cb_t fp);
+    void setWriteCallback        (write_cb_t fp);
+    void setCccdWriteCallback    (write_cccd_cb_t fp);
     void setReadAuthorizeCallback(read_authorize_cb_t fp);
-    void setWriteAuthorizeCallbak(write_authorize_cb_t fp);
+    void setWriteAuthorizeCallback(write_authorize_cb_t fp);
 
-    err_t begin(void);
+    virtual err_t begin(void);
+
+    // Add Descriptor function must be called right after begin()
+    err_t addDescriptor(BLEUuid bleuuid, void const * content, uint16_t len, BleSecurityMode read_perm = SECMODE_OPEN, BleSecurityMode write_perm = SECMODE_NO_ACCESS);
 
     ble_gatts_char_handles_t handles(void);
 
     /*------------- Write -------------*/
     uint16_t write(const void* data, uint16_t len);
-    uint16_t write(const char   * str);
+    uint16_t write(const char* str);
 
-    uint16_t write(int      num);
-    uint16_t write(uint32_t num);
-    uint16_t write(uint16_t num);
-    uint16_t write(uint8_t  num);
+    uint16_t write8    (uint8_t  num);
+    uint16_t write16   (uint16_t num);
+    uint16_t write32   (uint32_t num);
+    uint16_t write32   (int      num);
+
 
     /*------------- Read -------------*/
     uint16_t read(void* buffer, uint16_t bufsize);
-    uint16_t read(uint32_t* num);
-    uint16_t read(uint16_t* num);
-    uint16_t read(uint8_t*  num);
+
+    uint8_t  read8 (void);
+    uint16_t read16(void);
+    uint32_t read32(void);
 
     /*------------- Notify -------------*/
+    uint16_t getCccd(void);
+
     bool notifyEnabled(void);
+
     bool notify(const void* data, uint16_t len);
-    bool notify(const char   * str);
-    bool notify(int      num);
-    bool notify(uint32_t num);
-    bool notify(uint16_t num);
-    bool notify(uint8_t  num);
+    bool notify(const char* str);
 
-    friend class BLEGatt;
+    bool notify8    (uint8_t  num);
+    bool notify16   (uint16_t num);
+    bool notify32   (uint32_t num);
+    bool notify32   (int      num);
+
+    /*------------- Indicate -------------*/
+    bool indicateEnabled(void);
+
+    bool indicate(const void* data, uint16_t len);
+    bool indicate(const char* str);
+
+    bool indicate8    (uint8_t  num);
+    bool indicate16   (uint16_t num);
+    bool indicate32   (uint32_t num);
+    bool indicate32   (int      num);
+
+    /*------------- Internal Functions -------------*/
+    virtual void _eventHandler(ble_evt_t* event);
+
+  protected:
+    bool _is_temp;
+    uint16_t _max_len;
+    BLEService* _service; // pointer to parent's service
+
+    /*------------- Descriptors -------------*/
+    const char* _usr_descriptor;
+    struct ATTR_PACKED {
+      uint8_t id;
+      uint8_t type;
+    }_report_ref_desc;
+
+    ble_gatts_char_pf_t       _format_desc;
+    ble_gatt_char_props_t     _properties;
+    ble_gatts_attr_md_t       _attr_meta;
+    ble_gatts_char_handles_t  _handles;
+
+    /*------------- Callback pointers -------------*/
+    read_authorize_cb_t       _rd_authorize_cb;
+    write_authorize_cb_t      _wr_authorize_cb;
+
+    write_cb_t                _wr_cb;
+    write_cccd_cb_t           _cccd_wr_cb;
+
+    /*------------- Internal Functions -------------*/
+    void _init(void);
 };
-
-
 
 #endif /* BLECHARACTERISTIC_H_ */

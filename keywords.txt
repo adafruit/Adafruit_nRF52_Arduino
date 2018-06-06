@@ -16,6 +16,8 @@ HardwarePWM	KEYWORD1
 
 digitalToggle	KEYWORD2
 waitForEvent	KEYWORD2
+systemOff	KEYWORD2
+suspendLoop	KEYWORD2
 
 enterSerialDfu	KEYWORD2
 enterOTADfu	KEYWORD2
@@ -27,6 +29,7 @@ ledToggle	KEYWORD2
 
 printf	KEYWORD2
 printBuffer	KEYWORD2
+printBufferReverse	KEYWORD2
 
 dwt_enable	KEYWORD2
 dwt_disable	KEYWORD2
@@ -53,6 +56,7 @@ dbgPrintVersion	KEYWORD2
 
 startLoop	KEYWORD2
 setPins	KEYWORD2
+
 
 #######################################
 # Adafruit_FIFO Methods (KEYWORD2)

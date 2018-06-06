@@ -45,7 +45,9 @@ enum {
 BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_feature)
   : BLEService(UUID16_SVC_HUMAN_INTERFACE_DEVICE), _chr_control(UUID16_CHR_HID_CONTROL_POINT)
 {
-  _boot_keyboard = _boot_mouse = false;
+  _has_keyboard = _has_mouse = false;
+  _protocol_mode = HID_PROTOCOL_MODE_REPORT;
+
   _report_map = NULL;
   _report_map_len = 0;
 
@@ -88,10 +90,17 @@ BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_
   }
 }
 
-void BLEHidGeneric::enableBootProtocol(bool bootKeyboard, bool bootMouse)
+/*------------------------------------------------------------------*/
+/* CONFIG
+ *------------------------------------------------------------------*/
+void BLEHidGeneric::enableKeyboard(bool enable)
 {
-  _boot_keyboard = bootKeyboard;
-  _boot_mouse    = bootMouse;
+  _has_keyboard = enable;
+}
+
+void BLEHidGeneric::enableMouse(bool enable)
+{
+  _has_mouse    = enable;
 }
 
 void BLEHidGeneric::setHidInfo(uint16_t bcd, uint8_t country, uint8_t flags)
@@ -119,6 +128,10 @@ void BLEHidGeneric::setOutputReportCallback(uint8_t reportID, output_report_cb_t
   _output_cbs[reportID] = fp;
 }
 
+/*------------------------------------------------------------------*/
+/* Callbacks
+ *------------------------------------------------------------------*/
+// TODO output report
 COMMENT_OUT (
 void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
 {
@@ -129,6 +142,17 @@ void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* requ
 }
 )
 
+void blehid_generic_protocol_mode_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
+{
+  BLEHidGeneric& svc = (BLEHidGeneric&) chr.parentService();
+  svc._protocol_mode = *data;
+
+  LOG_LV2("HID", "Protocol Mode : %d (0 Boot, 1 Report)", *data);
+}
+
+/*------------------------------------------------------------------*/
+/* Begin
+ *------------------------------------------------------------------*/
 err_t BLEHidGeneric::begin(void)
 {
   VERIFY ( (_report_map != NULL) && _report_map_len, NRF_ERROR_INVALID_PARAM);
@@ -137,15 +161,16 @@ err_t BLEHidGeneric::begin(void)
   VERIFY_STATUS( BLEService::begin() );
 
   // Protocol Mode
-  if ( _boot_keyboard || _boot_mouse )
+  if ( _has_keyboard || _has_mouse )
   {
     _chr_protocol = new BLECharacteristic(UUID16_CHR_PROTOCOL_MODE);
     VERIFY(_chr_protocol, NRF_ERROR_NO_MEM);
 
     _chr_protocol->setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE_WO_RESP);
     _chr_protocol->setFixedLen(1);
+    _chr_protocol->setWriteCallback(blehid_generic_protocol_mode_cb);
     VERIFY_STATUS( _chr_protocol->begin() );
-    _chr_protocol->write( (uint8_t) 1);
+    _chr_protocol->write8(_protocol_mode);
   }
 
   // Input reports
@@ -179,7 +204,7 @@ err_t BLEHidGeneric::begin(void)
 
     VERIFY_STATUS( _chr_outputs[i].begin() );
 
-    _chr_outputs[i].write( (uint8_t) 0 );
+    _chr_outputs[i].write8(0);
   }
 
   // Report Map (HID Report Descriptor)
@@ -192,7 +217,7 @@ err_t BLEHidGeneric::begin(void)
   report_map.write(_report_map, _report_map_len);
 
   // Boot Keyboard Input & Output Report
-  if ( _boot_keyboard )
+  if ( _has_keyboard )
   {
     _chr_boot_keyboard_input = new BLECharacteristic(UUID16_CHR_BOOT_KEYBOARD_INPUT_REPORT);
     _chr_boot_keyboard_input->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
@@ -205,11 +230,11 @@ err_t BLEHidGeneric::begin(void)
     _chr_boot_keyboard_output->setFixedLen(1); // boot keyboard is 1 byte
     _chr_boot_keyboard_output->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
     VERIFY_STATUS(_chr_boot_keyboard_output->begin());
-    _chr_boot_keyboard_output->write((uint8_t) 0);
+    _chr_boot_keyboard_output->write8(0);
   }
 
   // Boot Mouse Input Report
-  if ( _boot_mouse )
+  if ( _has_mouse )
   {
     _chr_boot_mouse_input = new BLECharacteristic(UUID16_CHR_BOOT_MOUSE_INPUT_REPORT);
     _chr_boot_mouse_input->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
@@ -232,11 +257,14 @@ err_t BLEHidGeneric::begin(void)
   _chr_control.setPermission(SECMODE_NO_ACCESS, SECMODE_ENC_NO_MITM);
   _chr_control.setFixedLen(1);
   VERIFY_STATUS( _chr_control.begin() );
-  _chr_control.write( (uint8_t) 0 );
+  _chr_control.write8(0);
 
   return ERROR_NONE;
 }
 
+/*------------------------------------------------------------------*/
+/* Input Report
+ *------------------------------------------------------------------*/
 bool BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
 {
   // 0 will treated as report ID = 1
@@ -245,8 +273,18 @@ bool BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
   return _chr_inputs[reportID-1].notify( (uint8_t const*) data, len);
 }
 
+bool BLEHidGeneric::bootKeyboardReport(void const* data, int len)
+{
+  return _chr_boot_keyboard_input->notify(data, len);
+}
+
+bool BLEHidGeneric::bootMouseReport(void const* data, int len)
+{
+  return _chr_boot_mouse_input->notify(data, len);
+}
+
 /*------------------------------------------------------------------*/
-/*
+/* Ascii to Keycode
  *------------------------------------------------------------------*/
 const hid_ascii_to_keycode_entry_t HID_ASCII_TO_KEYCODE[128] =
 {
@@ -383,3 +421,112 @@ const hid_ascii_to_keycode_entry_t HID_ASCII_TO_KEYCODE[128] =
     {0, HID_KEY_DELETE        }  // 0x7F Delete
 };
 
+/*------------------------------------------------------------------*/
+/* Keycode to Ascii
+ *------------------------------------------------------------------*/
+const hid_keycode_to_ascii_t HID_KEYCODE_TO_ASCII[128] =
+{
+    {0     , 0      }, // 0x00
+    {0     , 0      }, // 0x01
+    {0     , 0      }, // 0x02
+    {0     , 0      }, // 0x03
+    {'a'   , 'A'    }, // 0x04
+    {'b'   , 'B'    }, // 0x05
+    {'c'   , 'C'    }, // 0x06
+    {'d'   , 'D'    }, // 0x07
+    {'e'   , 'E'    }, // 0x08
+    {'f'   , 'F'    }, // 0x09
+    {'g'   , 'G'    }, // 0x0a
+    {'h'   , 'H'    }, // 0x0b
+    {'i'   , 'I'    }, // 0x0c
+    {'j'   , 'J'    }, // 0x0d
+    {'k'   , 'K'    }, // 0x0e
+    {'l'   , 'L'    }, // 0x0f
+    {'m'   , 'M'    }, // 0x10
+    {'n'   , 'N'    }, // 0x11
+    {'o'   , 'O'    }, // 0x12
+    {'p'   , 'P'    }, // 0x13
+    {'q'   , 'Q'    }, // 0x14
+    {'r'   , 'R'    }, // 0x15
+    {'s'   , 'S'    }, // 0x16
+    {'t'   , 'T'    }, // 0x17
+    {'u'   , 'U'    }, // 0x18
+    {'v'   , 'V'    }, // 0x19
+    {'w'   , 'W'    }, // 0x1a
+    {'x'   , 'X'    }, // 0x1b
+    {'y'   , 'Y'    }, // 0x1c
+    {'z'   , 'Z'    }, // 0x1d
+    {'1'   , '!'    }, // 0x1e
+    {'2'   , '@'    }, // 0x1f
+    {'3'   , '#'    }, // 0x20
+    {'4'   , '$'    }, // 0x21
+    {'5'   , '%'    }, // 0x22
+    {'6'   , '^'    }, // 0x23
+    {'7'   , '&'    }, // 0x24
+    {'8'   , '*'    }, // 0x25
+    {'9'   , '('    }, // 0x26
+    {'0'   , ')'    }, // 0x27
+    {'\r'  , '\r'   }, // 0x28
+    {'\x1b', '\x1b' }, // 0x29
+    {'\b'  , '\b'   }, // 0x2a
+    {'\t'  , '\t'   }, // 0x2b
+    {' '   , ' '    }, // 0x2c
+    {'-'   , '_'    }, // 0x2d
+    {'='   , '+'    }, // 0x2e
+    {'['   , '{'    }, // 0x2f
+    {']'   , '}'    }, // 0x30
+    {'\\'  , '|'    }, // 0x31
+    {'#'   , '~'    }, // 0x32
+    {';'   , ':'    }, // 0x33
+    {'\''  , '\"'   }, // 0x34
+    {0     , 0      }, // 0x35
+    {','   , '<'    }, // 0x36
+    {'.'   , '>'    }, // 0x37
+    {'/'   , '?'    }, // 0x38
+
+    {0     , 0      }, // 0x39
+    {0     , 0      }, // 0x3a
+    {0     , 0      }, // 0x3b
+    {0     , 0      }, // 0x3c
+    {0     , 0      }, // 0x3d
+    {0     , 0      }, // 0x3e
+    {0     , 0      }, // 0x3f
+    {0     , 0      }, // 0x40
+    {0     , 0      }, // 0x41
+    {0     , 0      }, // 0x42
+    {0     , 0      }, // 0x43
+    {0     , 0      }, // 0x44
+    {0     , 0      }, // 0x45
+    {0     , 0      }, // 0x46
+    {0     , 0      }, // 0x47
+    {0     , 0      }, // 0x48
+    {0     , 0      }, // 0x49
+    {0     , 0      }, // 0x4a
+    {0     , 0      }, // 0x4b
+    {0     , 0      }, // 0x4c
+    {0     , 0      }, // 0x4d
+    {0     , 0      }, // 0x4e
+    {0     , 0      }, // 0x4f
+    {0     , 0      }, // 0x50
+    {0     , 0      }, // 0x51
+    {0     , 0      }, // 0x52
+    {0     , 0      }, // 0x53
+
+    {'/'   , '/'    }, // 0x54
+    {'*'   , '*'    }, // 0x55
+    {'-'   , '-'    }, // 0x56
+    {'+'   , '+'    }, // 0x57
+    {'\r'  , '\r'   }, // 0x58
+    {'1'   , 0      }, // 0x59 /* numpad1 & end */ \
+    {'2'   , 0      }, // 0x5a
+    {'3'   , 0      }, // 0x5b
+    {'4'   , 0      }, // 0x5c
+    {'5'   , '5'    }, // 0x5d
+    {'6'   , 0      }, // 0x5e
+    {'7'   , 0      }, // 0x5f
+    {'8'   , 0      }, // 0x60
+    {'9'   , 0      }, // 0x61
+    {'0'   , 0      }, // 0x62
+    {'0'   , 0      }, // 0x63
+    {'='   , '='    }, // 0x67
+};

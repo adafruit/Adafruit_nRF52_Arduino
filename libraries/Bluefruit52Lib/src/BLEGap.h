@@ -39,29 +39,48 @@
 #include <Arduino.h>
 #include "bluefruit_common.h"
 #include "BLEUuid.h"
+#include "utility/bonding.h"
+
+enum
+{
+  CONN_CFG_PERIPHERAL = 1,
+  CONN_CFG_CENTRAL = 2,
+};
 
 class BLEGap
 {
   public:
-    typedef void (*connect_callback_t    ) (uint16_t conn_handle);
-    typedef void (*disconnect_callback_t ) (uint16_t conn_handle, uint8_t reason);
+    typedef void (*connect_callback_t    ) (uint16_t conn_hdl);
+    typedef void (*disconnect_callback_t ) (uint16_t conn_hdl, uint8_t reason);
 
     BLEGap(void);
 
-    uint8_t getAddr(uint8_t mac[6]);
-    bool    setAddr(uint8_t mac[6], uint8_t type);
+    uint8_t        getAddr               (uint8_t mac[6]);
+    bool           setAddr               (uint8_t mac[6], uint8_t type);
+//    bool    setPrivacy                ();  sd_ble_gap_privacy_set()
 
-    bool connected(uint16_t conn_handle);
+    bool           connected            (uint16_t conn_hdl);
+    bool           paired               (uint16_t conn_hdl);
+    bool           requestPairing       (uint16_t conn_hdl);
 
-    uint8_t        getRole(uint16_t conn_handle);
+    uint8_t        getRole              (uint16_t conn_hdl);
 
-    uint8_t        getPeerAddr(uint16_t conn_handle, uint8_t addr[6]);
-    ble_gap_addr_t getPeerAddr(uint16_t conn_handle);
+    uint8_t        getPeerAddr          (uint16_t conn_hdl, uint8_t addr[6]);
+    ble_gap_addr_t getPeerAddr          (uint16_t conn_hdl);
+    uint16_t       getPeerName          (uint16_t conn_hdl, char* buf, uint16_t bufsize);
 
-    uint16_t       getPeerName(uint16_t conn_handle, char* buf, uint16_t bufsize);
-    bool           getTxPacket(uint16_t conn_handle);
+    uint16_t       getMTU               (uint16_t conn_hdl);
+    uint16_t       getMaxMtuByConnCfg   (uint8_t conn_cfg);
+    uint16_t       getMaxMtu            (uint8_t conn_hdl);
 
-    uint16_t       getMTU(uint16_t conn_handle);
+    uint8_t        getHvnQueueSize      (uint8_t conn_hdl);
+    uint8_t        getWriteCmdQueueSize (uint8_t conn_hdl);
+
+    bool           getHvnPacket         (uint16_t conn_hdl);
+    bool           getWriteCmdPacket    (uint16_t conn_hdl);
+
+    void           configPrphConn       (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    void           configCentralConn    (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
@@ -70,19 +89,45 @@ class BLEGap
      *------------------------------------------------------------------*/
     void _eventHandler(ble_evt_t* evt);
 
-  private:
     // Array of TX Packet semaphore, indexed by connection handle
-    // Peer info where conn_handle serves as index
+    // Peer info where conn_hdl serves as index
     typedef struct {
-      bool    connected;
-      uint8_t role;
+      bool     connected;
+      bool     paired;
+      uint8_t  role;
+      uint16_t att_mtu;
 
       ble_gap_addr_t addr;
 
-      SemaphoreHandle_t txpacket_sem;
+      uint16_t         ediv;
+      bond_data_t*     bond_data; // Shared keys with bonded device, size ~ 80 bytes
+
+      SemaphoreHandle_t hvn_tx_sem;
+      SemaphoreHandle_t wrcmd_tx_sem;
+
+      bool              hvc_received;
+
+      // On-demand semaphore that are created on the fly
+      SemaphoreHandle_t hvc_sem;
+      SemaphoreHandle_t pair_sem;
     } gap_peer_t;
 
+    gap_peer_t* _get_peer(uint16_t conn_hdl) { return &_peers[conn_hdl]; }
+
+  private:
+    struct {
+        uint16_t mtu_max;
+        uint8_t  event_len;
+        uint8_t  hvn_tx_qsize;
+        uint8_t  wr_cmd_qsize;
+    } _cfg_prph, _cfg_central;
+
     gap_peer_t _peers[BLE_MAX_CONN];
+
+    ble_gap_sec_params_t _sec_param;
+
+    friend class AdafruitBluefruit;
+//    friend class BLEGatt;
 };
 
 #endif /* BLEGAP_H_ */

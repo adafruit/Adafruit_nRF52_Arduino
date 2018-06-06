@@ -73,11 +73,12 @@ caddr_t _sbrk( int incr )
   return (caddr_t) prev_heap;
 }
 
-#if 0
 void __malloc_lock(struct _reent *ptr)
 {
   (void) ptr;
   ledOn(LED_RED);
+
+  vTaskSuspendAll();
 }
 
 void __malloc_unlock(struct _reent *ptr)
@@ -85,6 +86,7 @@ void __malloc_unlock(struct _reent *ptr)
   (void) ptr;
 
   ledOn(LED_BLUE);
+
+  xTaskResumeAll();
 }
-#endif
 

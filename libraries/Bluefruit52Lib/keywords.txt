@@ -1,5 +1,5 @@
 #######################################
-# Syntax Coloring Map For Adafruit Feather WiFi
+# Syntax Coloring Map For Adafruit Bluefruit nrf52
 #######################################
 
 #######################################
@@ -45,6 +45,14 @@ AncsNotification_t	KEYWORD3
 # AdafruitBluefruit Methods (KEYWORD2)
 #######################################
 
+configServiceChanged	KEYWORD2
+configUuid128Count	KEYWORD2
+configAttrTableSize	KEYWORD2
+configPrphConn	KEYWORD2
+configCentralConn	KEYWORD2   
+configPrphBandwidth	KEYWORD2      
+configCentralBandwidth	KEYWORD2
+
 autoConnLed	KEYWORD2
 setConnLedInterval	KEYWORD2
 startConnLed	KEYWORD2
@@ -53,6 +61,8 @@ setName	KEYWORD2
 getName	KEYWORD2      
 setTxPower	KEYWORD2
 getTxPower	KEYWORD2
+setApperance	KEYWORD2
+getApperance	KEYWORD2
 
 connected	KEYWORD2
 disconnect	KEYWORD2
@@ -94,7 +104,17 @@ getRole	KEYWORD2
 
 getPeerAddr	KEYWORD2
 getPeerName	KEYWORD2
-getTxPacket	KEYWORD2
+
+configPrphConn	KEYWORD2
+configCentralConn	KEYWORD2
+getMaxMtuByConnCfg	KEYWORD2
+getMaxMtu	KEYWORD2
+getHvnQueueSize	KEYWORD2
+getWriteCmdQueueSize	KEYWORD2
+getMTU	KEYWORD2
+
+getHvnPacket	KEYWORD2
+getWriteCmdPacket	KEYWORD2
 
 #######################################
 # BLEGatt Methods (KEYWORD2)
@@ -120,18 +140,31 @@ setProperties	KEYWORD2
 setPermission	KEYWORD2
 setMaxLen	KEYWORD2
 setFixedLen	KEYWORD2
-setStringDescriptor	KEYWORD2
+addDescriptor	KEYWORD2
+setUserDescriptor	KEYWORD2
 setReportRefDescriptor	KEYWORD2
+setPresentationFormatDescriptor	KEYWORD2
 
 setWriteCallback	KEYWORD2
 setCccdWriteCallback	KEYWORD2
 setReadAuthorizeCallback	KEYWORD2
-setWriteAuthorizeCallbak	KEYWORD2
+setWriteAuthorizeCallback	KEYWORD2
 handles	KEYWORD2
 
 write	KEYWORD2
+
 notifyEnabled	KEYWORD2
 notify	KEYWORD2
+notify8	KEYWORD2
+notify16	KEYWORD2
+notify32	KEYWORD2
+
+indicateEnabled	KEYWORD2
+indicate	KEYWORD2
+indicate8	KEYWORD2
+indicate16	KEYWORD2
+indicate32	KEYWORD2
+
 
 #######################################
 # BLEClientService Methods (KEYWORD2)
@@ -149,10 +182,22 @@ parentService	KEYWORD2
 assign	KEYWORD2
 discoverDescriptor	KEYWORD2
 valueHandle	KEYWORD2
+discovered	KEYWORD2
 
 read	KEYWORD2
+read8	KEYWORD2
+read16	KEYWORD2
+read32	KEYWORD2
+
 write	KEYWORD2
+write8	KEYWORD2
+write16	KEYWORD2
+write32	KEYWORD2
+
 write_resp	KEYWORD2
+write8_resp	KEYWORD2
+write16_resp	KEYWORD2
+write32_resp	KEYWORD2
 
 writeCCCD	KEYWORD2
 enableNotify	KEYWORD2
@@ -161,7 +206,7 @@ enableIndicate	KEYWORD2
 disableIndicate	KEYWORD2
 
 setNotifyCallback	KEYWORD2
-useAdaCallback	KEYWORD2
+setIndicateCallback	KEYWORD2
 
 #######################################
 # BLEScanner Methods (KEYWORD2)
@@ -401,6 +446,11 @@ BLE_PRPH_MAX_CONN	LITERAL1
 
 BLE_CONN_HANDLE_INVALID	LITERAL1
 
+BANDWIDTH_AUTO	LITERAL1
+BANDWIDTH_LOW	LITERAL1
+BANDWIDTH_NORMAL	LITERAL1
+BANDWIDTH_HIGH	LITERAL1
+BANDWIDTH_MAX	LITERAL1
 
 #######################################
 # Characteristic Constants (LITERAL1)
@@ -419,6 +469,35 @@ SECMODE_ENC_NO_MITM	LITERAL1
 SECMODE_ENC_WITH_MITM	LITERAL1
 SECMODE_SIGNED_NO_MITM	LITERAL1
 SECMODE_SIGNED_WITH_MITM	LITERAL1
+
+#######################################
+# HID Constants
+#######################################
+
+HID_PROTOCOL_MODE_BOOT	LITERAL1
+HID_PROTOCOL_MODE_REPORT	LITERAL1
+
+MOUSE_BUTTON_LEFT	LITERAL1
+MOUSE_BUTTON_RIGHT	LITERAL1
+MOUSE_BUTTON_MIDDLE	LITERAL1
+MOUSE_BUTTON_BACKWARD	LITERAL1
+MOUSE_BUTTON_FORWARD	LITERAL1
+
+KEYBOARD_MODIFIER_LEFTCTRL	LITERAL1
+KEYBOARD_MODIFIER_LEFTSHIFT	LITERAL1
+KEYBOARD_MODIFIER_LEFTALT	LITERAL1
+KEYBOARD_MODIFIER_LEFTGUI	LITERAL1
+KEYBOARD_MODIFIER_RIGHTCTRL	LITERAL1
+KEYBOARD_MODIFIER_RIGHTSHIFT	LITERAL1
+KEYBOARD_MODIFIER_RIGHTALT	LITERAL1
+KEYBOARD_MODIFIER_RIGHTGUI	LITERAL1
+
+KEYBOARD_LED_NUMLOCK	LITERAL1
+KEYBOARD_LED_CAPSLOCK	LITERAL1
+KEYBOARD_LED_SCROLLLOCK	LITERAL1
+KEYBOARD_LED_COMPOSE	LITERAL1
+KEYBOARD_LED_KANA	LITERAL1
+
 
 #######################################
 # ANCS Constants

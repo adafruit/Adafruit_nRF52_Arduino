@@ -70,9 +70,9 @@ uint8_t const hid_report_descriptor[] =
     // 6-byte Keycodes
     HID_USAGE_PAGE (HID_USAGE_PAGE_KEYBOARD),
       HID_USAGE_MIN    ( 0                                   ),
-      HID_USAGE_MAX    ( 101                                 ),
+      HID_USAGE_MAX    ( 255                                 ),
       HID_LOGICAL_MIN  ( 0                                   ),
-      HID_LOGICAL_MAX  ( 101                                 ),
+      HID_LOGICAL_MAX  ( 255                                 ),
 
       HID_REPORT_COUNT ( 6                                   ),
       HID_REPORT_SIZE  ( 8                                   ),
@@ -205,7 +205,8 @@ err_t BLEHidAdafruit::begin(void)
   uint16_t output_len[] = { 1 };
 
   setReportLen(input_len, output_len, NULL);
-  enableBootProtocol(true, true);
+  enableKeyboard(true);
+  enableMouse(true);
   setReportMap(hid_report_descriptor, sizeof(hid_report_descriptor));
 
   VERIFY_STATUS( BLEHidGeneric::begin() );
@@ -221,7 +222,13 @@ err_t BLEHidAdafruit::begin(void)
  *------------------------------------------------------------------*/
 bool BLEHidAdafruit::keyboardReport(hid_keyboard_report_t* report)
 {
-  return inputReport( REPORT_ID_KEYBOARD, report, sizeof(hid_keyboard_report_t));
+  if ( isBootMode() )
+  {
+    return bootKeyboardReport(report, sizeof(hid_keyboard_report_t));
+  }else
+  {
+    return inputReport( REPORT_ID_KEYBOARD, report, sizeof(hid_keyboard_report_t));
+  }
 }
 
 bool BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode[6])
@@ -313,7 +320,13 @@ bool BLEHidAdafruit::consumerKeyRelease(void)
  *------------------------------------------------------------------*/
 bool BLEHidAdafruit::mouseReport(hid_mouse_report_t* report)
 {
-  return inputReport( REPORT_ID_MOUSE, report, sizeof(hid_mouse_report_t));
+  if ( isBootMode() )
+  {
+    return bootMouseReport(report, sizeof(hid_mouse_report_t));
+  }else
+  {
+    return inputReport( REPORT_ID_MOUSE, report, sizeof(hid_mouse_report_t));
+  }
 }
 
 bool BLEHidAdafruit::mouseReport(uint8_t buttons, int8_t x, int8_t y, int8_t wheel, int8_t pan)

@@ -46,57 +46,83 @@ class BLEClientService;
 class BLEClientCharacteristic
 {
   public:
-    typedef void (*notify_cb_t  ) (BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
-    typedef void (*indicate_cb_t) (BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
+    /*--------- Callback Signatures ----------*/
+    typedef void (*notify_cb_t  ) (BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
+    typedef void (*indicate_cb_t) (BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
 
     BLEUuid uuid;
 
+    // Constructors
     BLEClientCharacteristic(void);
     BLEClientCharacteristic(BLEUuid bleuuid);
 
+    // Destructor
     virtual ~BLEClientCharacteristic();
 
-    void assign(ble_gattc_char_t* gattc_chr);
-    bool discoverDescriptor(uint16_t conn_handle, ble_gattc_handle_range_t hdl_range);
+    void     begin(BLEClientService* parent_svc = NULL);
 
-    void begin(BLEClientService* parent_svc = NULL);
+    bool     discover(void);
+    bool     discovered(void);
 
     uint16_t connHandle(void);
     uint16_t valueHandle(void);
     uint8_t  properties(void);
+
     BLEClientService& parentService(void);
 
     /*------------- Read -------------*/
     uint16_t read(void* buffer, uint16_t bufsize);
+    uint8_t  read8 (void);
+    uint16_t read16(void);
+    uint32_t read32(void);
 
-    /*------------- Write -------------*/
+    /*------------- Write without Response-------------*/
     uint16_t write     (const void* data, uint16_t len);
+    uint16_t write8    (uint8_t value);
+    uint16_t write16   (uint16_t value);
+    uint16_t write32   (uint32_t value);
+    uint16_t write32   (int      value);
+
+    /*------------- Write with Response-------------*/
     uint16_t write_resp(const void* data, uint16_t len);
+    uint16_t write8_resp    (uint8_t value);
+    uint16_t write16_resp   (uint16_t value);
+    uint16_t write32_resp   (uint32_t value);
+    uint16_t write32_resp   (int      value);
 
     /*------------- Notify -------------*/
-    bool writeCCCD       (uint16_t value);
+    bool     writeCCCD       (uint16_t value);
 
-    bool enableNotify    (void);
-    bool disableNotify   (void);
+    bool     enableNotify    (void);
+    bool     disableNotify   (void);
 
-    bool enableIndicate  (void);
-    bool disableIndicate (void);
+    bool     enableIndicate  (void);
+    bool     disableIndicate (void);
 
     /*------------- Callbacks -------------*/
-    void setNotifyCallback(notify_cb_t fp);
-    void useAdaCallback(bool enabled);
+    void     setNotifyCallback(notify_cb_t fp, bool useAdaCallback = true);
+    void     setIndicateCallback(indicate_cb_t fp, bool useAdaCallback = true);
+
+    /*------------- Internal usage -------------*/
+    void     _assign(ble_gattc_char_t* gattc_chr);
+    bool     _discoverDescriptor(uint16_t conn_handle, ble_gattc_handle_range_t hdl_range);
 
   private:
-    enum { MTU_MPS = 20 } ;
-
-    ble_gattc_char_t   _chr;
-    uint16_t           _cccd_handle;
+    ble_gattc_char_t  _chr;
+    uint16_t          _cccd_handle;
 
     BLEClientService* _service;
-    notify_cb_t        _notify_cb;
-    bool               _use_AdaCallback; // whether callback is invoked in separated task with AdaCallback
-
     AdaMsg             _adamsg;
+
+    /*------------- Callbacks -------------*/
+    notify_cb_t       _notify_cb;
+    indicate_cb_t     _indicate_cb;
+
+    struct ATTR_PACKED {
+      uint8_t notify    : 1;
+      uint8_t indicate : 1;
+    } _use_ada_cb;
+
 
     void  _init         (void);
     void  _eventHandler (ble_evt_t* event);

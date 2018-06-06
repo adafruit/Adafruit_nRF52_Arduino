@@ -40,8 +40,8 @@
 
 #define DEBUG_ANCS    0
 
-void bleancs_notification_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
-void bleancs_data_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
+void bleancs_notification_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
+void bleancs_data_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
 
 /* ANCS Service        : 7905F431-B5CE-4E99-A40F-4B1E122D00D0
  * Control Point       : 69D1D8F3-45E1-49A8-9821-9BBDFDAAD9D9
@@ -94,10 +94,9 @@ bool BLEAncs::begin(void)
 
   _notification.setNotifyCallback(bleancs_notification_cb);
 
-  // Data Attribute is likely requested in notification callback
+  // Data Attribute is most likely requested in notification callback
   // let's call data's callback in the ble task
-  _data.useAdaCallback(false);
-  _data.setNotifyCallback(bleancs_data_cb);
+  _data.setNotifyCallback(bleancs_data_cb, false);
 
   return true;
 }
@@ -384,14 +383,14 @@ bool BLEAncs::actNegative(uint32_t uid)
 /*------------------------------------------------------------------*/
 /* Callback
  *------------------------------------------------------------------*/
-void bleancs_notification_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len)
+void bleancs_notification_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  BLEAncs& svc = (BLEAncs&) chr.parentService();
+  BLEAncs& svc = (BLEAncs&) chr->parentService();
   svc._handleNotification(data, len);
 }
 
-void bleancs_data_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len)
+void bleancs_data_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  BLEAncs& svc = (BLEAncs&) chr.parentService();
+  BLEAncs& svc = (BLEAncs&) chr->parentService();
   svc._handleData(data, len);
 }

@@ -1,4 +1,4 @@
-#include <bluefruit.h>
+#include <Arduino.h>
 
 typedef volatile uint32_t REG32;
 #define pREG32 (REG32 *)
@@ -26,9 +26,13 @@ void setup() {
   Serial.print((addr_low) & 0xFF, HEX); Serial.println("");
 
   // Unique Device ID
-  Serial.print("Device ID:   ");
+  Serial.print("Device ID  : ");
   Serial.print(DEVICE_ID_HIGH, HEX);
   Serial.println(DEVICE_ID_LOW, HEX);
+
+  // MCU Variant;
+  Serial.printf("MCU Variant: nRF%X 0x%08X\n",NRF_FICR->INFO.PART, NRF_FICR->INFO.VARIANT);
+  Serial.printf("Memory     : Flash = %d KB, RAM = %d KB\n", NRF_FICR->INFO.FLASH, NRF_FICR->INFO.RAM);
 }
 
 void loop() {

@@ -59,7 +59,7 @@ class BLECentral
     void begin(void);
 
     /*------------------------------------------------------------------*/
-    /*
+    /* GAP
      *------------------------------------------------------------------*/
     bool     setConnInterval(uint16_t min, uint16_t max);
     bool     setConnIntervalMS (uint16_t min_ms, uint16_t max_ms);
@@ -70,6 +70,8 @@ class BLECentral
 
     bool     connected (uint16_t conn_handle); // If connected to a specific peripheral
     bool     connected (void);                 // If connected to any peripherals
+
+    void     clearBonds        (void);
 
     /*------------- Callbacks -------------*/
     void setConnectCallback   ( BLEGap::connect_callback_t    fp);

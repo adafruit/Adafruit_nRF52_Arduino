@@ -142,7 +142,7 @@ void cts_adjust_callback(uint8_t reason)
 
 void printTime(void)
 {
-  const char * day_of_week_str[] = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+  const char * day_of_week_str[] = { "n/a", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
   
   Serial.printf("%04d-%02d-%02d ", bleCTime.Time.year, bleCTime.Time.month, bleCTime.Time.day);
   Serial.printf("%02d:%02d:%02d ", bleCTime.Time.hour, bleCTime.Time.minute, bleCTime.Time.second);

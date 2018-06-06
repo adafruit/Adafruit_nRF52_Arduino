@@ -24,13 +24,9 @@ void setup() {
      
 // the loop function runs over and over again forever
 void loop() {
-#if 0  
   for (int i = 0; i < 2; i++)
   {
     digitalToggle(LED_BLUE);   // turn the LED on (HIGH is the voltage level)
     delay(1000);                       // wait for a second
   }
-#endif
-
-  systemOff(A0, HIGH);
 }

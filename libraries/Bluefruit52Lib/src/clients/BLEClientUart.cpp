@@ -36,7 +36,7 @@
 
 #include "bluefruit.h"
 
-void bleuart_central_notify_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len);
+void bleuart_central_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
 
 BLEClientUart::BLEClientUart(uint16_t fifo_depth)
   : BLEClientService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD),
@@ -96,9 +96,9 @@ void BLEClientUart::disconnect(void)
   flush();
 }
 
-void bleuart_central_notify_cb(BLEClientCharacteristic& chr, uint8_t* data, uint16_t len)
+void bleuart_central_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  BLEClientUart& uart_svc = (BLEClientUart&) chr.parentService();
+  BLEClientUart& uart_svc = (BLEClientUart&) chr->parentService();
   uart_svc._rx_fifo.write(data, len);
 
   // invoke callback

@@ -79,12 +79,15 @@ class BLEUart : public BLEService, public Stream
     BLECharacteristic _txd;
     BLECharacteristic _rxd;
 
-    Adafruit_FIFO     _rx_fifo;
+    // RXD
+    Adafruit_FIFO*    _rx_fifo;
+    uint16_t          _rx_fifo_depth;
     rx_callback_t     _rx_cb;
 
+    // TXD
+    Adafruit_FIFO*    _tx_fifo;
     uint8_t           _tx_buffered;
     TimerHandle_t     _buffered_th;
-    Adafruit_FIFO*    _tx_fifo;
 
     bool flush_tx_buffered(void);
 

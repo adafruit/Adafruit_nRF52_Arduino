@@ -16,25 +16,18 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+menu.softdevice=Bootloader
 menu.debug=Debug Mode
 
 #**********************************************
 # Feather nrf52 Board
 #**********************************************
 feather52.name=Adafruit Bluefruit nRF52 Feather
-feather52.bootloader.tool=nrfjprog
+feather52.bootloader.tool=bootburn
 
 # Upload
 feather52.upload.tool=nrfutil
 feather52.upload.protocol=nrfutil
-feather52.upload.maximum_size=167936
-# ram size varies depending on S132 (check linker script)
-feather52.upload.maximum_data_size=51072
-
-# required if using native usb ( for reference )
-#feather52.upload.use_1200bps_touch=false
-#feather52.upload.wait_for_upload_port=false
-#feather52.upload.native_usb=false
 
 # Build
 feather52.build.mcu=cortex-m4
@@ -43,8 +36,25 @@ feather52.build.board=NRF52_FEATHER
 feather52.build.core=nRF5
 feather52.build.variant=feather52
 
-# compatiable with other lib only, would remove in the future
-feather52.build.extra_flags=-DARDUINO_FEATHER52
+# SofDevice Menu
+# Ram & ROM size varies depending on S132 (check linker script)
+feather52.menu.softdevice.s132v201=0.5.0 dual, S132 2.0.1
+feather52.menu.softdevice.s132v201.build.sd_flags=-DS132 -DSD_VER=201
+feather52.menu.softdevice.s132v201.build.sd_name=s132
+feather52.menu.softdevice.s132v201.build.sd_version=2.0.1
+feather52.menu.softdevice.s132v201.build.sd_fwid=0x0088
+feather52.menu.softdevice.s132v201.build.bootfile=0.5.0/dual/feather52_bootloader_v050_s132_v201
+feather52.menu.softdevice.s132v201.upload.maximum_size=165888
+feather52.menu.softdevice.s132v201.upload.maximum_data_size=51072
+
+feather52.menu.softdevice.s132v510=5.1.0 dual, S132 5.1.0
+feather52.menu.softdevice.s132v510.build.sd_flags=-DS132 -DSD_VER=510
+feather52.menu.softdevice.s132v510.build.sd_name=s132
+feather52.menu.softdevice.s132v510.build.sd_version=5.1.0
+feather52.menu.softdevice.s132v510.build.sd_fwid=0x00A5
+feather52.menu.softdevice.s132v510.build.bootfile={build.sd_version}/dual/feather52_bootloader_5.1.0_s132_dual
+feather52.menu.softdevice.s132v510.upload.maximum_size=151552
+feather52.menu.softdevice.s132v510.upload.maximum_data_size=51072
 
 # Debug Menu
 feather52.menu.debug.l0=Level 0 (Release)
@@ -55,6 +65,11 @@ feather52.menu.debug.l2=Level 2 (Full Debug)
 feather52.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
 feather52.menu.debug.l3=Level 3 (Segger SystemView)
 feather52.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
+
+# required if using native usb ( for reference )
+#feather52.upload.use_1200bps_touch=false
+#feather52.upload.wait_for_upload_port=false
+#feather52.upload.native_usb=false
 
 #**********************************************
 # Metro nrf52 Board
@@ -74,9 +89,6 @@ feather52.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 #metro52.build.board=NRF52_METRO
 #metro52.build.core=nRF5
 #metro52.build.variant=metro52
-
-# compatiable with other lib only, would remove in the future
-#metro52.build.extra_flags=-DARDUINO_FEATHER52
 
 # Debug Menu
 #metro52.menu.debug.l0=Level 0 (Release)

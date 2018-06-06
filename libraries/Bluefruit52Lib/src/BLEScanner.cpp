@@ -54,8 +54,13 @@ BLEScanner::BLEScanner(void)
 
   _param  = (ble_gap_scan_params_t) {
     .active      = 0,
+#if SD_VER < 500
     .selective   = 0,
     .p_whitelist = NULL,
+#else
+    .use_whitelist  = 0,
+    .adv_dir_report = 0,
+#endif
     .interval    = BLE_SCAN_INTERVAL_DFLT,
     .window      = BLE_SCAN_WINDOW_DFLT,
     .timeout     = 0, // no timeout
@@ -87,6 +92,11 @@ bool BLEScanner::isRunning(void)
 void BLEScanner::setRxCallback(rx_callback_t fp)
 {
   _rx_cb = fp;
+}
+
+void BLEScanner::setStopCallback(stop_callback_t fp)
+{
+  _stop_cb = fp;
 }
 
 void BLEScanner::restartOnDisconnect(bool enable)
@@ -136,6 +146,8 @@ uint8_t BLEScanner::parseReportByType(const uint8_t* scandata, uint8_t scanlen, 
 {
   uint8_t len = 0;
   uint8_t const* ptr = NULL;
+
+  if ( scanlen < 2 ) return 0;
 
   // len (1+data), type, data
   while ( scanlen )
@@ -265,6 +277,16 @@ void BLEScanner::filterUuid(BLEUuid ble_uuid[], uint8_t count)
   _filter_uuid = new BLEUuid[count];
 
   for(uint8_t i=0; i<count; i++) _filter_uuid[i] = ble_uuid[i];
+}
+
+void BLEScanner::filterService(BLEService& svc)
+{
+  filterUuid(svc.uuid);
+}
+
+void BLEScanner::filterService(BLEClientService& cli)
+{
+  filterUuid(cli.uuid);
 }
 
 void BLEScanner::filterMSD(uint16_t manuf_id)

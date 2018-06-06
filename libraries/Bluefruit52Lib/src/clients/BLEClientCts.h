@@ -43,6 +43,7 @@
 class BLEClientCts : public BLEClientService
 {
   public:
+    // Callback Signatures
     typedef void (*adjust_callback_t) (uint8_t reason);
 
     BLEClientCts(void);

@@ -31,6 +31,7 @@ import time
 from datetime import datetime, timedelta
 import binascii
 import logging
+import click
 
 # Python 3rd party imports
 from serial import Serial
@@ -177,7 +178,7 @@ class DfuTransportSerial(DfuTransport):
         # nrf52 will erase the bank 0 up to Application size & Transfer App size from bank1 to bank0
         # There must a enough delay before finished to prevent Arduino IDE reopen Serial Monitor
 
-        logger.info("\nActivating new firmware")
+        click.echo("\nActivating new firmware")
         #logger.info("Wait after activating %s second", self.get_activate_wait_time())
         time.sleep( self.get_activate_wait_time() )
 

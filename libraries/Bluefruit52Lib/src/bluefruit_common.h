@@ -43,6 +43,8 @@
 
 #include "utility/AdaMsg.h"
 
+#define CFG_MAX_DEVNAME_LEN                     32
+
 #define BLE_GENERIC_TIMEOUT                     100
 
 #define BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS     2000
