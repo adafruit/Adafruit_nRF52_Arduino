@@ -109,7 +109,7 @@ feather52840.menu.softdevice.s140single.build.sd_flags=-DS140 -DSD_VER=600
 feather52840.menu.softdevice.s140single.build.sd_name=s140
 feather52840.menu.softdevice.s140single.build.sd_version=6.0.0
 feather52840.menu.softdevice.s140single.build.sd_fwid=0x00A9
-feather52840.menu.softdevice.s140single.build.ldscript=bluefruit52_s140_6.0.0_single.ld
+feather52840.menu.softdevice.s140single.build.ldscript=nrf52840_s140_6.0.0_single.ld
 feather52840.menu.softdevice.s140single.build.bootfile=single/feather52840_bootloader_6.0.0_s140_single
 feather52840.menu.softdevice.s140single.build.bank_flag=--singlebank
 feather52840.menu.softdevice.s140single.upload.maximum_size=303104
