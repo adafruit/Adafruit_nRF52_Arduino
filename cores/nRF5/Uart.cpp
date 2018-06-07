@@ -193,9 +193,9 @@ void Uart::IrqHandler()
 {
   if (nrfUart->EVENTS_RXDRDY)
   {
-    rxBuffer.store_char(nrfUart->RXD);
+	nrfUart->EVENTS_RXDRDY = 0x0UL;
 
-    nrfUart->EVENTS_RXDRDY = 0x0UL;
+    rxBuffer.store_char(nrfUart->RXD);
   }
 }
 
