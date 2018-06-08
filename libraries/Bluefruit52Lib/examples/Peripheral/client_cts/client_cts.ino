@@ -159,7 +159,11 @@ void printTime(void)
   Serial.println();
 }
 
-
+/**
+ * Callback invoked when a connection is dropped
+ * @param conn_handle connection where this event happens
+ * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
+ */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
   (void) reason;
