@@ -90,6 +90,8 @@ feather52840.pid.1=0x8029
 # test VID/PID
 feather52840.vid.2=0xcafe
 feather52840.pid.2=0x4011
+feather52840.vid.3=0xcafe
+feather52840.pid.3=0x4001
 
 feather52840.bootloader.tool=bootburn
 
