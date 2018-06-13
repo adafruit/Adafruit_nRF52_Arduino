@@ -274,6 +274,7 @@ def update_progress(progress=0, done=False, log_message=""):
               help='Single band bootloader to skip firmware activating delay, default: Dual bank',
               type=click.BOOL,
               is_flag=True)
+
 def serial(package, port, baudrate, flowcontrol, singlebank):
     """Program a device with bootloader that support serial DFU"""
     serial_backend = DfuTransportSerial(port, baudrate, flowcontrol, singlebank)
