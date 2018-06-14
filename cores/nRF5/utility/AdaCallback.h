@@ -102,7 +102,18 @@ typedef void (*adacb_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
       ada_callback_queue(cb_data);\
   } while(0)
 
+/**
+ * Schedule an function and parameters to be invoked in Ada Callback Task
+ * Macro can take at least 2 and at max 7 arguments
+ * - 1st arg     : pointer data that need to be freed with free(pointer) after function is invoked
+ * - 2nd arg     : function to be invoked
+ * - 3rd-7th arg : function argument, will be cast to uint32_t
+ */
 #define ada_callback(... )           _cb_setup(false, __VA_ARGS__)
+
+/**
+ * Similar to ada_callback() but invoke in ISR-context
+ */
 #define ada_callback_fromISR(... )   _cb_setup(true , __VA_ARGS__)
 
 void ada_callback_init(void);
