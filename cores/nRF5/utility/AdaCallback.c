@@ -72,9 +72,9 @@ void adafruit_callback_task(void* arg)
   }
 }
 
-void ada_callback_queue(ada_callback_t* cb_data)
+void ada_callback_queue(ada_callback_t* cb_data, bool from_isr)
 {
-  if ( cb_data->from_isr )
+  if ( from_isr )
   {
     xQueueSendFromISR(_cb_queue, (void*) &cb_data, NULL);
   }else
