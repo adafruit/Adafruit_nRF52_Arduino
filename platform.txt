@@ -99,8 +99,11 @@ recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}"
 ## Create output (hex file)
 recipe.objcopy.hex.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} {compiler.elf2hex.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.hex"
 
-## Creat dfu package zip file
+## Create dfu package zip file
 recipe.objcopy.zip.pattern="{tools.nrfutil.cmd}" dfu genpkg --dev-type 0x0052 --sd-req {build.sd_fwid} --application "{build.path}/{build.project_name}.hex" "{build.path}/{build.project_name}.zip"
+
+## Create uf2 file
+recipe.objcopy.uf2.pattern=python "{runtime.platform.path}/tools/uf2conv/uf2conv.py" -o "{build.path}/{build.project_name}.uf2" "{build.path}/{build.project_name}.hex"
 
 ## Save bin
 recipe.output.tmp_file_bin={build.project_name}.bin
@@ -131,6 +134,11 @@ tools.nrfutil.cmd.macosx=/usr/local/bin/nrfutil
 tools.nrfutil.upload.params.verbose=--verbose
 tools.nrfutil.upload.params.quiet=
 tools.nrfutil.upload.pattern={cmd} {upload.verbose} dfu serial -pkg "{build.path}/{build.project_name}.zip" -p {serial.port} -b 115200 {build.bank_flag}
+
+#tools.nrfutil.upload.pattern=nrfjprog --reset --program "{build.path}/{build.project_name}.hex" --sectorerase -f nrf52
+
+# && nrfjprog --erasepage {upload.BOOT_SETTING_ADDR} -f nrf52 && nrfjprog --memwr {upload.BOOT_SETTING_ADDR} --val 0x00000001 -f nrf52 && nrfjprog --reset -f nrf52
+# tools.nrfutil.upload.BOOT_SETTING_ADDR=0xFF000
 
 #**********************************************
 # Burning bootloader with either jlink or nrfutil

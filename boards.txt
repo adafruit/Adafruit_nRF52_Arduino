@@ -80,11 +80,11 @@ feather52.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 feather52840.name=Adafruit Bluefruit nRF52840 Feather
 
 # DFU Mode with CDC + MSC + Custom
-feather52840.vid.0=0x2391
+feather52840.vid.0=0x239A
 feather52840.pid.0=0x0029
 
 # Application with CDC + MSC + Custom
-feather52840.vid.1=0x2391
+feather52840.vid.1=0x239A
 feather52840.pid.1=0x8029
 
 feather52840.bootloader.tool=bootburn
