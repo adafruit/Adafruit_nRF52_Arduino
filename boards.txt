@@ -22,43 +22,42 @@ menu.debug=Debug Mode
 #**********************************************
 # Feather nrf52832 (nrf52) Board
 #**********************************************
-feather52.name=Adafruit Bluefruit nRF52 Feather
-feather52.bootloader.tool=bootburn
+feather52832.name=Adafruit Bluefruit nRF52832 Feather
+feather52832.bootloader.tool=bootburn
 
 # Upload
-feather52.upload.tool=nrfutil
-feather52.upload.protocol=nrfutil
+feather52832.upload.tool=nrfutil
+feather52832.upload.protocol=nrfutil
 
 # Build
-feather52.build.mcu=cortex-m4
-feather52.build.f_cpu=64000000
-feather52.build.board=NRF52_FEATHER
-feather52.build.core=nRF5
-feather52.build.variant=feather52
-feather52.build.extra_flags=-DNRF52832_XXAA -DNRF52
+feather52832.build.mcu=cortex-m4
+feather52832.build.f_cpu=64000000
+feather52832.build.board=NRF52_FEATHER
+feather52832.build.core=nRF5
+feather52832.build.variant=feather52832
+feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
 
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-feather52.menu.softdevice.s132v6=v6.0.0, S132 6.0.0
-feather52.menu.softdevice.s132v6.build.sd_flags=-DS132 -DSD_VER=600
-feather52.menu.softdevice.s132v6.build.sd_name=s132
-feather52.menu.softdevice.s132v6.build.sd_version=6.0.0
-feather52.menu.softdevice.s132v6.build.sd_fwid=0x00A8
-feather52.menu.softdevice.s132v6.build.ldscript=nrf52832_s132_6.0.0.ld
-feather52.menu.softdevice.s132v6.build.bootfile=feather52_bootloader_6.0.0_s132
-feather52.menu.softdevice.s132v6.upload.maximum_size=290816
-feather52.menu.softdevice.s132v6.upload.maximum_data_size=51072
+feather52832.menu.softdevice.s132v6=v6.0.0, S132 6.0.0
+feather52832.menu.softdevice.s132v6.build.sd_flags=-DS132 -DSD_VER=600
+feather52832.menu.softdevice.s132v6.build.sd_name=s132
+feather52832.menu.softdevice.s132v6.build.sd_version=6.0.0
+feather52832.menu.softdevice.s132v6.build.sd_fwid=0x00A8
+feather52832.menu.softdevice.s132v6.build.ldscript=nrf52832_s132_6.0.0.ld
+feather52832.menu.softdevice.s132v6.upload.maximum_size=290816
+feather52832.menu.softdevice.s132v6.upload.maximum_data_size=51072
 
 # Debug Menu
-feather52.menu.debug.l0=Level 0 (Release)
-feather52.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0 -Os
-feather52.menu.debug.l1=Level 1 (Error Message)
-feather52.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1 -Os
-feather52.menu.debug.l2=Level 2 (Full Debug)
-feather52.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
-feather52.menu.debug.l3=Level 3 (Segger SystemView)
-feather52.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
+feather52832.menu.debug.l0=Level 0 (Release)
+feather52832.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0 -Os
+feather52832.menu.debug.l1=Level 1 (Error Message)
+feather52832.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1 -Os
+feather52832.menu.debug.l2=Level 2 (Full Debug)
+feather52832.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
+feather52832.menu.debug.l3=Level 3 (Segger SystemView)
+feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 
 
 
@@ -98,7 +97,6 @@ feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.0.0
 feather52840.menu.softdevice.s140v6.build.sd_fwid=0x00A9
 feather52840.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_6.0.0.ld
-feather52840.menu.softdevice.s140v6.build.bootfile=feather52840_bootloader_6.0.0_s140
 feather52840.menu.softdevice.s140v6.upload.maximum_size=303104
 feather52840.menu.softdevice.s140v6.upload.maximum_data_size=51072
 
