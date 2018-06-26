@@ -114,3 +114,58 @@ feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 #feather52840.upload.use_1200bps_touch=false
 #feather52840.upload.wait_for_upload_port=false
 #feather52840.upload.native_usb=false
+
+
+#**********************************************
+# PCA10056 ( to be remove  )
+#**********************************************
+pca10056.name=Bluefruit on PCA10056
+
+# DFU Mode with CDC + MSC + Custom
+pca10056.vid.0=0x239A
+pca10056.pid.0=0x0029
+
+# Application with CDC + MSC + Custom
+pca10056.vid.1=0x239A
+pca10056.pid.1=0x8029
+
+pca10056.bootloader.tool=bootburn
+
+# Upload
+pca10056.upload.tool=nrfutil
+pca10056.upload.protocol=nrfutil
+
+# Build
+pca10056.build.mcu=cortex-m4
+pca10056.build.f_cpu=64000000
+pca10056.build.board=NRF52840_FEATHER
+pca10056.build.core=nRF5
+pca10056.build.variant=pca10056
+pca10056.build.extra_flags=-DNRF52840_XXAA
+
+# SofDevice Menu
+# Ram & ROM size varies depending on SoftDevice (check linker script)
+
+pca10056.menu.softdevice.s140v6=v6.0.0, S140 6.0.0
+pca10056.menu.softdevice.s140v6.build.sd_flags=-DS140 -DSD_VER=600
+pca10056.menu.softdevice.s140v6.build.sd_name=s140
+pca10056.menu.softdevice.s140v6.build.sd_version=6.0.0
+pca10056.menu.softdevice.s140v6.build.sd_fwid=0x00A9
+pca10056.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_6.0.0.ld
+pca10056.menu.softdevice.s140v6.upload.maximum_size=303104
+pca10056.menu.softdevice.s140v6.upload.maximum_data_size=51072
+
+# Debug Menu
+pca10056.menu.debug.l0=Level 0 (Release)
+pca10056.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0 -Os
+pca10056.menu.debug.l1=Level 1 (Error Message)
+pca10056.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1 -Os
+pca10056.menu.debug.l2=Level 2 (Full Debug)
+pca10056.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
+pca10056.menu.debug.l3=Level 3 (Segger SystemView)
+pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
+
+# required if using native usb ( for reference )
+#pca10056.upload.use_1200bps_touch=false
+#pca10056.upload.wait_for_upload_port=false
+#pca10056.upload.native_usb=false
