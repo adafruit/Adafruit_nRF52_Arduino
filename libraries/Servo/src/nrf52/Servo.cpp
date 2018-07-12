@@ -22,14 +22,8 @@
 #include <Servo.h>
 
 
-static servo_t servos[MAX_SERVOS];                          // static array of servo structures
-
-uint8_t ServoCount = 0;                                     // the total number of attached servos
-
-
-
-//uint32_t group_pins[3][NRF_PWM_CHANNEL_COUNT]={{NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED}, {NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED}, {NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED}};
-//static uint16_t seq_values[3][NRF_PWM_CHANNEL_COUNT]={{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
+static servo_t servos[MAX_SERVOS];              // static array of servo structures
+uint8_t ServoCount = 0;                         // the total number of attached servos
 
 Servo::Servo()
 {
@@ -39,14 +33,13 @@ Servo::Servo()
     this->servoIndex = INVALID_SERVO;  					// too many servos
   }
 
+  this->pwm = NULL;
 }
 
 uint8_t Servo::attach(int pin)
 {
-	
 	return this->attach(pin, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
 }
-
 
 uint8_t Servo::attach(int pin, int min, int max)
 {
@@ -56,6 +49,7 @@ uint8_t Servo::attach(int pin, int min, int max)
 
     if(min < MIN_PULSE_WIDTH) min = MIN_PULSE_WIDTH;
     if (max > MAX_PULSE_WIDTH) max = MAX_PULSE_WIDTH;
+
     //fix min if conversion to pulse cycle value is too low
     if((min/DUTY_CYCLE_RESOLUTION)*DUTY_CYCLE_RESOLUTION<min) min+=DUTY_CYCLE_RESOLUTION;
 	  
@@ -69,12 +63,13 @@ uint8_t Servo::attach(int pin, int min, int max)
     {
       if ( HwPWMx[i]->addPin(pin) )
       {
-        HwPWMx[i]->setMaxValue(MAXVALUE);
-        HwPWMx[i]->setClockDiv(CLOCKDIV);
-
+        this->pwm = HwPWMx[i];
         break;
       }
     }
+
+    this->pwm->setMaxValue(MAXVALUE);
+    this->pwm->setClockDiv(CLOCKDIV);
 
   }
   return this->servoIndex;
@@ -83,7 +78,6 @@ uint8_t Servo::attach(int pin, int min, int max)
 void Servo::detach()
 {
 	servos[this->servoIndex].Pin.isActive = false;
-
 	// TODO Adafruit remove pin from HW PWM
 }
 
@@ -102,38 +96,9 @@ void Servo::write(int value)
 
 void Servo::writeMicroseconds(int value)
 {
-#if 0
-	uint8_t channel, instance;
-	uint8_t pin = servos[this->servoIndex].Pin.nbr;
-	//instance of pwm module is MSB - look at VWariant.h
-	instance=(g_APinDescription[pin].ulPWMChannel & 0xF0)/16;
-	//index of pwm channel is LSB - look at VWariant.h
-	channel=g_APinDescription[pin].ulPWMChannel & 0x0F;
-	group_pins[instance][channel]=g_APinDescription[pin].ulPin;
-	NRF_PWM_Type * PWMInstance = instance == 0 ? NRF_PWM0 : (instance == 1 ? NRF_PWM1 : NRF_PWM2);
-	//configure pwm instance and enable it
-	seq_values[instance][channel]= value | 0x8000;
-	nrf_pwm_sequence_t const seq={
-								seq_values[instance],
-								NRF_PWM_VALUES_LENGTH(seq_values),
-								0,
-								0
-    };
-	nrf_pwm_pins_set(PWMInstance, group_pins[instance]);
-	nrf_pwm_enable(PWMInstance);
-	nrf_pwm_configure(PWMInstance, NRF_PWM_CLK_125kHz, NRF_PWM_MODE_UP, 2500);	// 20ms - 50Hz
-	nrf_pwm_decoder_set(PWMInstance, NRF_PWM_LOAD_INDIVIDUAL, NRF_PWM_STEP_AUTO);
-	nrf_pwm_sequence_set(PWMInstance, 0, &seq);
-	nrf_pwm_loop_set(PWMInstance, 0UL);
-	nrf_pwm_task_trigger(PWMInstance, NRF_PWM_TASK_SEQSTART0);
-#else
 	uint8_t pin = servos[this->servoIndex].Pin.nbr;
 	
-	for(int i=0; i<HWPWM_MODULE_NUM; i++)
-	{
-	  if ( HwPWMx[i]->writePin(pin, value/DUTY_CYCLE_RESOLUTION) ) break;
-	}
-#endif
+	if ( this->pwm ) this->pwm->writePin(pin, value/DUTY_CYCLE_RESOLUTION);
 }
 
 int Servo::read() // return the value as degrees
@@ -143,26 +108,11 @@ int Servo::read() // return the value as degrees
 
 int Servo::readMicroseconds()
 {	
-#if 0
-	uint8_t channel, instance;
-	uint8_t pin=servos[this->servoIndex].Pin.nbr;
-	instance=(g_APinDescription[pin].ulPWMChannel & 0xF0)/16;
-	channel=g_APinDescription[pin].ulPWMChannel & 0x0F;
-	// remove the 16th bit we added before
-	return seq_values[instance][channel] & 0x7FFF;
-#else
 	uint8_t pin=servos[this->servoIndex].Pin.nbr;
 
-	for(int i=0; i<HWPWM_MODULE_NUM; i++)
-	{
-	  if ( HwPWMx[i]->checkPin(pin) )
-	  {
-	    return HwPWMx[i]->readPin(pin)*DUTY_CYCLE_RESOLUTION;
-	  }
-	}
+	if ( this->pwm ) return this->pwm->readPin(pin)*DUTY_CYCLE_RESOLUTION;
 
 	return 0;
-#endif
 }
 
 bool Servo::attached()
