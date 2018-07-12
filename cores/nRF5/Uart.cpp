@@ -21,6 +21,12 @@
 #include "Arduino.h"
 #include "wiring_private.h"
 
+
+void serialEventRun(void)
+{
+  if (serialEvent && Serial.available() ) serialEvent();
+}
+
 Uart::Uart(NRF_UART_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pinTX)
 {
   nrfUart = _nrfUart;
