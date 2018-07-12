@@ -410,7 +410,7 @@ uint32_t readPressedButtons(void)
 
   // Take current read and masked with BUTTONs
   // Note: Bitwise inverted since buttons are active (pressed) LOW
-  uint32_t debounced = ~(*portInputRegister(0));
+  uint32_t debounced = ~(*portInputRegister( digitalPinToPort(0) ));
   debounced &= (bit(BUTTON_A) | bit(BUTTON_B) | bit(BUTTON_C));
 
   // Copy current state into array

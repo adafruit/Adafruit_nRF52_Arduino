@@ -106,12 +106,12 @@ uint32_t setLoopStacksize(void);
 
 #define bit(b) (1UL << (b))
 
-#define digitalPinToPort(P)        ( &(NRF_GPIO[P]) )
-#define digitalPinToBitMask(P)     ( 1 << g_ADigitalPinMap[P] )
+#define digitalPinToPort(P)        ( NRF_P0 )
+#define digitalPinToBitMask(P)     ( 1 << (P) )
 //#define analogInPinToBit(P)        ( )
-#define portOutputRegister(port)   ( &(NRF_GPIO->OUT) )
-#define portInputRegister(port)    ( &(NRF_GPIO->IN) )
-#define portModeRegister(port)     ( &(NRF_GPIO->DIRSET) )
+#define portOutputRegister(port)   ( &(port->OUT) )
+#define portInputRegister(port)    ( &(port->IN) )
+#define portModeRegister(port)     ( &(port->DIR) )
 #define digitalPinHasPWM(P)        ( (P) > 1 )
 
 void rtos_idle_callback(void) ATTR_WEAK;
