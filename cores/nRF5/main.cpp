@@ -61,6 +61,8 @@ static void loop_task(void* arg)
   {
     loop();
 
+    if (serialEvent && serialEventRun) serialEventRun();
+
     #if CFG_DEBUG >= 2 && DBG_MEM_INFO
     static uint32_t meminfo_ms = 0;
     if (meminfo_ms + DBG_MEM_INFO_INTERVAL < millis())

@@ -153,6 +153,8 @@ uint8_t BLEScanner::parseReportByType(const uint8_t* scandata, uint8_t scanlen, 
   uint8_t len = 0;
   uint8_t const* ptr = NULL;
 
+  if ( scanlen < 2 ) return 0;
+
   // len (1+data), type, data
   while ( scanlen )
   {

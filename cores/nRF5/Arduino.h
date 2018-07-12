@@ -66,10 +66,6 @@ uint32_t setLoopStacksize(void);
 #include "utility/utilities.h"
 #include "utility/AdaCallback.h"
 
-#ifdef NRF52840_XXAA
-//#include "tusb.h"
-#endif
-
 #ifdef __cplusplus
   #include "Uart.h"
 #endif
@@ -111,7 +107,7 @@ uint32_t setLoopStacksize(void);
 #define bit(b) (1UL << (b))
 
 #define digitalPinToPort(P)        ( ((P) < 32) ? NRF_P0 : NRF_P1 )
-#define digitalPinToBitMask(P)     ( 1 << g_ADigitalPinMap[P] )
+#define digitalPinToBitMask(P)     ( 1 << (P) )
 //#define analogInPinToBit(P)        ( )
 #define portOutputRegister(port)   ( &(port->OUT) )
 #define portInputRegister(port)    ( &(port->IN) )

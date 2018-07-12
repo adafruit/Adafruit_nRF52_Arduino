@@ -2,6 +2,13 @@
 
 ## 0.9.0
 
+## 0.8.4
+
+- Fix #160: hardware PWM issue that cause Servo freq is 640 hz instead of 50hz
+- Fix #134:  hardcoded pulse limits with Servo
+- Fix upload issue with windows when username has spaces
+- Support serialEvent()
+
 ## 0.8.3
 
 - Enhanced indicate API() to wait for confirm or timeout from peer.
