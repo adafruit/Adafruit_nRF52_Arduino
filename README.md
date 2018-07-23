@@ -42,12 +42,15 @@ this available to the Arduino IDE:
 ```
 $ cd tools/nrfutil-0.5.2
 $ sudo pip install -r requirements.txt
-$ sudo python setup.py install
+$ sudo pip install .
 ```
 
-**Notes** : Don't install nrfutil from the pip package (ex. `sudo pip install nrfutil`). The
-latest nrfutil does not support DFU via Serial, and you should install the local copy of 0.5.2
-included with the BSP via the `python setup.py install` command above.
+**Notes** : Don't install nrfutil from the pip package (ex. `sudo pip install nrfutil` or even
+`sudo pip install nrfutil==0.5.2`). The latest nrfutil does not support DFU via Serial, and you
+should install the local copy of 0.5.2 included with the BSP via the `pip install .` command above.
+
+If you have installed a different version of nrfutil using pip previously, run
+`sudo pip install -U .` from the `tools/nrfutil-0.5.2` working directory.
 
 ## Arduino BLE Application Support
 
