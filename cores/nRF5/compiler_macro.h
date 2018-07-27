@@ -1,14 +1,14 @@
 /******************************************************************************/
 /*!
     @file     compiler_macro.h
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
     Copyright (c) 2013, K. Townsend (microBuilder.eu)
-    Copyright (c) 2014, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     
     All rights reserved.
 

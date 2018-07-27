@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLEHidAdafruit.cpp
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -285,7 +285,7 @@ bool BLEHidAdafruit::keySequence(const char* str, int interal)
     delay(interal);
 
     /* Only need to empty report if the next character is NULL or the same with
-     * the current one, or no need to send */
+     * the current one, else no need to send */
     if ( lookahead == ch || lookahead == 0 )
     {
       keyRelease();
