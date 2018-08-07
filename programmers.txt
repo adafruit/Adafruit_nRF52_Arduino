@@ -17,8 +17,8 @@ nrfjprog.program.pattern="{program.path}{program.cmd}" --program "{runtime.platf
 #**********************************************
 nrfutil_boot.name=Bootloader DFU for Bluefruit nRF52
 nrfutil_boot.program.tool=bootburn
-nrfutil_boot.program.cmd=nrfutil
-nrfutil_boot.program.cmd.windows={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/win32/nrfutil.exe
-nrfutil_boot.program.cmd.macosx=/usr/local/bin/nrfutil
+nrfutil_boot.program.cmd=adafruit-nrfutil
+#nrfutil_boot.program.cmd.windows={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/win32/nrfutil.exe
+nrfutil_boot.program.cmd.macosx=/usr/local/bin/adafruit-nrfutil
 
 nrfutil_boot.program.pattern={program.cmd} --verbose dfu serial -pkg "{runtime.platform.path}/bin/bootloader/{build.variant}/{build.sd_version}/{build.variant}_bootloader_{build.sd_version}_{build.sd_name}.zip" -p {serial.port} -b 115200
