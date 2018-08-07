@@ -74,7 +74,7 @@ err_t BLEDis::begin(void)
   VERIFY_STATUS( BLEService::begin() );
 
   _serial       = getMcuUniqueID();
-  _firmware_rev = getFirmwareVersion();
+  _firmware_rev = getBootloaderVersion();
 
   for(uint8_t i=0; i<arrcount(_strarr); i++)
   {

@@ -56,7 +56,7 @@ typedef struct
 
 void const *  lookup_find(lookup_table_t const* p_table, uint32_t key);
 
-const char* getFirmwareVersion(void);
+const char* getBootloaderVersion(void);
 const char* getMcuUniqueID(void);
 
 #ifdef __cplusplus

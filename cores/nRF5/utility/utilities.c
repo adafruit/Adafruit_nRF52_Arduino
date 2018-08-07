@@ -42,6 +42,17 @@
 #include "nrf_sdm.h"
 #include "nrf52/nrf_mbr.h"
 
+
+/*
+ * nrfjprog --family NRF52 --memrd 0x0000300C
+ *
+  SoftDevice          |  FWID  | memory address |
+  --------------------|--------|----------------
+  S132 v2.0.1         | 0x0088 |   0x0000300C   |
+  S132 v5.0.0         | 0x009D |                |
+  Development/any     | 0xFFFE |                |
+  ----------------------------
+ */
 static lookup_entry_t const sd_lookup_items[] =
 {
     // S132
@@ -81,7 +92,7 @@ void const * lookup_find(lookup_table_t const* p_table, uint32_t key)
  *    "S132 5.0.0, 5.0.0 dual banks"
  * @return
  */
-const char* getFirmwareVersion(void)
+const char* getBootloaderVersion(void)
 {
   static char fw_str[30+1] = { 0 };
 
@@ -93,15 +104,12 @@ const char* getFirmwareVersion(void)
 
     if (p_lookup)
     {
-      sprintf(fw_str, "%s, %d.%d.%d %s", p_lookup,
-              U32_BYTE1(bootloaderVersion), U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion),
-              U32_BYTE4(bootloaderVersion) ? "single bank" : "dual banks");
+      sprintf(fw_str, "%s r%d", p_lookup, U32_BYTE4(bootloaderVersion) );
     }else
     {
       // Unknown SD ID --> display ID
-      sprintf(fw_str, "0x%04X, %d.%d.%d %s", (uint16_t) sd_id,
-              U32_BYTE1(bootloaderVersion), U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion),
-              U32_BYTE4(bootloaderVersion) ? "single bank" : "dual banks");
+      sprintf(fw_str, "0x%04X %d.%d.%d r%d", (uint16_t) sd_id,
+              U32_BYTE1(bootloaderVersion), U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion), U32_BYTE4(bootloaderVersion) );
     }
   }
 
@@ -121,13 +129,3 @@ const char* getMcuUniqueID(void)
   return serial_str;
 }
 
-/*
- * nrfjprog --family NRF52 --memrd 0x0000300C
- *
-  SoftDevice          |  FWID  | memory address |
-  --------------------|--------|----------------
-  S132 v2.0.1         | 0x0088 |   0x0000300C   |
-  S132 v5.0.0         | 0x009D |                |
-  Development/any     | 0xFFFE |                |
-  ----------------------------
- */
