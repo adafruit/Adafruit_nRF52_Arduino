@@ -69,8 +69,6 @@ BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_
   _chr_inputs = _chr_outputs = _chr_features = NULL;
   _chr_boot_keyboard_input = _chr_boot_keyboard_output = _chr_boot_mouse_input = NULL;
 
-  _output_cbs = NULL;
-
   if ( _num_input   )
   {
     _chr_inputs   = new BLECharacteristic[_num_input];
@@ -79,9 +77,6 @@ BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_
   if ( _num_output  )
   {
     _chr_outputs  = new BLECharacteristic[_num_output];
-    _output_cbs   = new output_report_cb_t[_num_output];
-
-    for (uint8_t i=0; i<_num_output; i++) _output_cbs[i] = NULL;
   }
 
   if ( _num_feature )
@@ -123,25 +118,18 @@ void BLEHidGeneric::setReportLen(uint16_t input_len[], uint16_t output_len[], ui
   _feature_len = feature_len;
 }
 
-void BLEHidGeneric::setOutputReportCallback(uint8_t reportID, output_report_cb_t fp)
+void BLEHidGeneric::setOutputReportCallback(uint8_t reportID, BLECharacteristic::write_cb_t fp)
 {
-  _output_cbs[reportID] = fp;
+  // index is ID-1
+  uint8_t const idx =  ( reportID ? (reportID-1) : 0 );
+
+  // report mode
+  if ( idx < _num_output ) _chr_outputs[idx].setWriteCallback(fp);
 }
 
 /*------------------------------------------------------------------*/
 /* Callbacks
  *------------------------------------------------------------------*/
-// TODO output report
-COMMENT_OUT (
-void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
-{
-  (void) chr;
-  (void) request;
-//  BLEHidGeneric& hid = (BLEHidGeneric&) chr.parentService();
-//  PRINT_BUFFER(request->data, request->len);
-}
-)
-
 void blehid_generic_protocol_mode_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
 {
   BLEHidGeneric& svc = (BLEHidGeneric&) chr.parentService();
@@ -192,12 +180,8 @@ err_t BLEHidGeneric::begin(void)
   {
     _chr_outputs[i].setUuid(UUID16_CHR_REPORT);
     _chr_outputs[i].setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP);
-    _chr_outputs[i].setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    _chr_outputs[i].setPermission(SECMODE_ENC_NO_MITM, SECMODE_ENC_NO_MITM);
     _chr_outputs[i].setReportRefDescriptor(i+1, REPORT_TYPE_OUTPUT);
-
-    COMMENT_OUT(
-    _chr_outputs[i].setWriteCallback(blehidgeneric_output_cb);
-    )
 
     // Input report len is configured, else variable len up to 255
     if ( _output_len ) _chr_outputs[i].setFixedLen( _output_len[i] );
@@ -228,7 +212,7 @@ err_t BLEHidGeneric::begin(void)
     _chr_boot_keyboard_output = new BLECharacteristic(UUID16_CHR_BOOT_KEYBOARD_OUTPUT_REPORT);
     _chr_boot_keyboard_output->setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP);
     _chr_boot_keyboard_output->setFixedLen(1); // boot keyboard is 1 byte
-    _chr_boot_keyboard_output->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+    _chr_boot_keyboard_output->setPermission(SECMODE_ENC_NO_MITM, SECMODE_ENC_NO_MITM);
     VERIFY_STATUS(_chr_boot_keyboard_output->begin());
     _chr_boot_keyboard_output->write8(0);
   }
@@ -267,10 +251,10 @@ err_t BLEHidGeneric::begin(void)
  *------------------------------------------------------------------*/
 bool BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
 {
-  // 0 will treated as report ID = 1
-  if ( reportID == 0 ) reportID++;
+  // index is ID-1
+  uint8_t const idx =  ( reportID ? (reportID-1) : 0 );
 
-  return _chr_inputs[reportID-1].notify( (uint8_t const*) data, len);
+  return _chr_inputs[idx].notify( (uint8_t const*) data, len);
 }
 
 bool BLEHidGeneric::bootKeyboardReport(void const* data, int len)

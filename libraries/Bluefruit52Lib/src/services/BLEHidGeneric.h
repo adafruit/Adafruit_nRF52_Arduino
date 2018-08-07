@@ -99,8 +99,6 @@ typedef ATTR_PACKED_STRUCT(struct)
 class BLEHidGeneric : public BLEService
 {
   public:
-    typedef void (*output_report_cb_t) (uint8_t reportID, uint8_t* data, uint16_t len);
-
     BLEHidGeneric(uint8_t num_input, uint8_t num_output = 0, uint8_t num_feature = 0);
 
     void enableKeyboard(bool enable);
@@ -111,7 +109,7 @@ class BLEHidGeneric : public BLEService
     void setReportLen(uint16_t input_len[], uint16_t output_len[] = NULL, uint16_t feature_len[] = NULL);
     void setReportMap(const uint8_t* report_map, size_t len);
 
-    void setOutputReportCallback(uint8_t reportID, output_report_cb_t fp);
+    void setOutputReportCallback(uint8_t reportID, BLECharacteristic::write_cb_t fp);
 
     virtual err_t begin(void);
 
@@ -139,8 +137,6 @@ class BLEHidGeneric : public BLEService
     uint16_t* _output_len;
     uint16_t* _feature_len;
 
-    output_report_cb_t* _output_cbs;
-
     BLECharacteristic* _chr_protocol;
 
     BLECharacteristic* _chr_inputs;
@@ -154,10 +150,6 @@ class BLEHidGeneric : public BLEService
     BLECharacteristic _chr_control;
 
     friend void blehid_generic_protocol_mode_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
-
-    COMMENT_OUT (
-        friend void blehidgeneric_output_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request);
-    )
 };
 
 //--------------------------------------------------------------------+

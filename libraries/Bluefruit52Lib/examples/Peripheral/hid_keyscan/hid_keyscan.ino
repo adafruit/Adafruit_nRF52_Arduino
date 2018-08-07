@@ -73,6 +73,9 @@ void setup()
    */
   blehid.begin();
 
+  // Set callback for set LED from central
+  blehid.setKeyboardLedCallback(set_keyboard_led);
+
   /* Set connection interval (min, max) to your perferred value.
    * Note: It is already set by BLEHidAdafruit::begin() to 11.25ms - 15ms
    * min = 9*1.25=11.25 ms, max = 12*1.25= 15 ms 
@@ -167,4 +170,24 @@ void loop()
   
   // Poll interval
   delay(10);
+}
+
+/**
+ * Callback invoked when received Set LED from central.
+ * Must be set previously with setKeyboardLedCallback()
+ *
+ * The LED bit map is as follows: (also defined by KEYBOARD_LED_* )
+ *    Kana (4) | Compose (3) | ScrollLock (2) | CapsLock (1) | Numlock (0)
+ */
+void set_keyboard_led(uint8_t led_bitmap)
+{
+  // light up Red Led if any bits is set
+  if ( led_bitmap )
+  {
+    ledOn( LED_RED );
+  }
+  else
+  {
+    ledOff( LED_RED );
+  }
 }

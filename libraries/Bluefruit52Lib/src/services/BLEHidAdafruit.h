@@ -45,10 +45,10 @@
 
 class BLEHidAdafruit : public BLEHidGeneric
 {
-  protected:
-    uint8_t _mse_buttons;
-
   public:
+    /*--------- Callback Signatures ----------*/
+    typedef void (*kbd_led_cb_t)  (uint8_t leds_bitmap);
+
     BLEHidAdafruit(void);
 
     virtual err_t begin(void);
@@ -57,6 +57,8 @@ class BLEHidAdafruit : public BLEHidGeneric
     bool keyboardReport(hid_keyboard_report_t* report);
     bool keyboardReport(uint8_t modifier, uint8_t keycode[6]);
     bool keyboardReport(uint8_t modifier, uint8_t keycode0, uint8_t keycode1=0, uint8_t keycode2=0, uint8_t keycode3=0, uint8_t keycode4=0, uint8_t keycode5=0);
+
+    void setKeyboardLedCallback(kbd_led_cb_t fp);
 
     bool keyPress(char ch);
     bool keyRelease(void);
@@ -77,6 +79,12 @@ class BLEHidAdafruit : public BLEHidGeneric
     bool mouseMove(int8_t x, int8_t y);
     bool mouseScroll(int8_t scroll);
     bool mousePan(int8_t pan);
+
+  protected:
+    uint8_t _mse_buttons;
+    kbd_led_cb_t _kbd_led_cb;
+
+    friend void blehid_ada_keyboard_output_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
 };
 
 #endif /* BLEHIDADAFRUIT_H_ */

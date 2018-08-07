@@ -1,6 +1,9 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-## 0.9.0
+## 0.8.5
+
+- Implement #166 BLE HID Keyboard LED receive from Central, update hid_keyscan & hid_keyboard example.
+- Add hardware's systick sketch example
 
 ## 0.8.4
 

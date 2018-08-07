@@ -40,12 +40,12 @@ feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-feather52832.menu.softdevice.s132v6=v6.0.0, S132 6.0.0
+feather52832.menu.softdevice.s132v6=S132 6.0.0r0
 feather52832.menu.softdevice.s132v6.build.sd_flags=-DS132 -DSD_VER=600
 feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.0.0
 feather52832.menu.softdevice.s132v6.build.sd_fwid=0x00A8
-feather52832.menu.softdevice.s132v6.build.ldscript=nrf52832_s132_6.0.0.ld
+feather52832.menu.softdevice.s132v6.build.ldscript=nrf52832_s132_v6.ld
 feather52832.menu.softdevice.s132v6.upload.maximum_size=290816
 feather52832.menu.softdevice.s132v6.upload.maximum_data_size=51072
 
@@ -91,12 +91,12 @@ feather52840.build.extra_flags=-DNRF52840_XXAA
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-feather52840.menu.softdevice.s140v6=v6.0.0, S140 6.0.0
+feather52840.menu.softdevice.s140v6=S140 6.0.0r0
 feather52840.menu.softdevice.s140v6.build.sd_flags=-DS140 -DSD_VER=600
 feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.0.0
 feather52840.menu.softdevice.s140v6.build.sd_fwid=0x00A9
-feather52840.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_6.0.0.ld
+feather52840.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_v6.ld
 feather52840.menu.softdevice.s140v6.upload.maximum_size=303104
 feather52840.menu.softdevice.s140v6.upload.maximum_data_size=51072
 
@@ -146,12 +146,12 @@ pca10056.build.extra_flags=-DNRF52840_XXAA
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-pca10056.menu.softdevice.s140v6=v6.0.0, S140 6.0.0
+pca10056.menu.softdevice.s140v6=S140 6.0.0r0
 pca10056.menu.softdevice.s140v6.build.sd_flags=-DS140 -DSD_VER=600
 pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.0.0
 pca10056.menu.softdevice.s140v6.build.sd_fwid=0x00A9
-pca10056.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_6.0.0.ld
+pca10056.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_v6.ld
 pca10056.menu.softdevice.s140v6.upload.maximum_size=303104
 pca10056.menu.softdevice.s140v6.upload.maximum_data_size=51072
 
