@@ -9,7 +9,7 @@ nrfjprog.program.path=
 nrfjprog.program.cmd=nrfjprog
 nrfjprog.program.cmd.windows=nrfjprog.exe
 
-nrfjprog.program.pattern="{program.path}{program.cmd}" --program "{runtime.platform.path}/bin/bootloader/{build.variant}/{build.sd_version}/{build.variant}_bootloader_{build.sd_version}_{build.sd_name}.hex" -f nrf52 --chiperase --reset
+nrfjprog.program.pattern="{program.path}{program.cmd}" --program "{runtime.platform.path}/bootloader/{build.variant}/beta/{build.variant}_bootloader_{build.sd_name}_{build.sd_version}r0.hex" -f nrf52 --chiperase --reset
 
 #**********************************************
 # nrfutil to upgrade bootloader
@@ -21,4 +21,4 @@ nrfutil_boot.program.cmd=adafruit-nrfutil
 #nrfutil_boot.program.cmd.windows={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/win32/nrfutil.exe
 nrfutil_boot.program.cmd.macosx=/usr/local/bin/adafruit-nrfutil
 
-nrfutil_boot.program.pattern={program.cmd} --verbose dfu serial -pkg "{runtime.platform.path}/bin/bootloader/{build.variant}/{build.sd_version}/{build.variant}_bootloader_{build.sd_version}_{build.sd_name}.zip" -p {serial.port} -b 115200
+nrfutil_boot.program.pattern={program.cmd} --verbose dfu serial -pkg "{runtime.platform.path}/bootloader/{build.variant}/beta/{build.variant}_bootloader_{build.sd_name}_{build.sd_version}r0.zip" -p {serial.port} -b 115200
