@@ -43,32 +43,6 @@
 #include "nrf52/nrf_mbr.h"
 
 
-/*
- * nrfjprog --family NRF52 --memrd 0x0000300C
- *
-  SoftDevice          |  FWID  | memory address |
-  --------------------|--------|----------------
-  S132 v2.0.1         | 0x0088 |   0x0000300C   |
-  S132 v5.0.0         | 0x009D |                |
-  Development/any     | 0xFFFE |                |
-  ----------------------------
- */
-static lookup_entry_t const sd_lookup_items[] =
-{
-    // S132
-    { .key = 0x0088, .data = "S132 2.0.1" },
-    { .key = 0x00A5, .data = "S132 5.1.0" },
-    { .key = 0x00A8, .data = "S132 6.0.0" },
-    // S140
-    { .key = 0x00A9, .data = "S140 6.0.0" },
-};
-
-static const lookup_table_t sd_lookup_table =
-{
-    .count = sizeof(sd_lookup_items)/sizeof(lookup_entry_t),
-    .items = sd_lookup_items
-};
-
 /******************************************************************************/
 /*!
     @brief Find the corresponding data from the key
@@ -89,7 +63,7 @@ void const * lookup_find(lookup_table_t const* p_table, uint32_t key)
  * e.g
  *    "S132 2.0.1, 0.5.0"
  *    "S132 5.0.0, 5.0.0 single bank"
- *    "S132 5.0.0, 5.0.0 dual banks"
+ *    "S132 6.1.0 r0"
  * @return
  */
 const char* getBootloaderVersion(void)
@@ -99,18 +73,15 @@ const char* getBootloaderVersion(void)
   // Skip if already created
   if ( fw_str[0] == 0 )
   {
-    uint32_t sd_id = SD_FWID_GET(MBR_SIZE) & 0x0000ffff;
-    char const* p_lookup = (char const*) lookup_find(&sd_lookup_table, sd_id);
+    uint32_t const sd_id      = SD_ID_GET(MBR_SIZE);
+    uint32_t const sd_version = SD_VERSION_GET(MBR_SIZE);
 
-    if (p_lookup)
-    {
-      sprintf(fw_str, "%s r%d", p_lookup, U32_BYTE4(bootloaderVersion) );
-    }else
-    {
-      // Unknown SD ID --> display ID
-      sprintf(fw_str, "0x%04X %d.%d.%d r%d", (uint16_t) sd_id,
-              U32_BYTE1(bootloaderVersion), U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion), U32_BYTE4(bootloaderVersion) );
-    }
+    uint32_t const ver1 = sd_version / 1000000;
+    uint32_t const ver2 = (sd_version % 1000000)/1000;
+    uint32_t const ver3 = sd_version % 1000;
+
+    sprintf(fw_str, "s%d %d.%d.%d r%d", sd_id,
+                    ver1, ver2, ver3, U32_BYTE4(bootloaderVersion) );
   }
 
   return fw_str;
