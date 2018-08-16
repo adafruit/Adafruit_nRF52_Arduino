@@ -24,8 +24,9 @@
 extern "C" {
 #endif
 
-#define BOOTLOADER_DFU_SERIAL_MAGIC         0x4e
-#define BOOTLOADER_DFU_OTA_FULLRESET_MAGIC  0xA8
+#define DFU_MAGIC_SERIAL_ONLY_RESET   0x4e
+#define DFU_MAGIC_UF2_RESET           0x57
+#define DFU_MAGIC_OTA_RESET           0xA8
 
 // Must match temp register in bootloader
 #define BOOTLOADER_VERSION_REGISTER     NRF_TIMER2->CC[0]
@@ -60,15 +61,21 @@ void init( void )
   NRF_GPIO->OUTSET = UINT32_MAX;
 }
 
+void enterUf2Dfu(void)
+{
+  NRF_POWER->GPREGRET = DFU_MAGIC_UF2_RESET;
+  NVIC_SystemReset();
+}
+
 void enterSerialDfu(void)
 {
-  NRF_POWER->GPREGRET = BOOTLOADER_DFU_SERIAL_MAGIC;
+  NRF_POWER->GPREGRET = DFU_MAGIC_SERIAL_ONLY_RESET;
   NVIC_SystemReset();
 }
 
 void enterOTADfu(void)
 {
-  NRF_POWER->GPREGRET = BOOTLOADER_DFU_OTA_FULLRESET_MAGIC;
+  NRF_POWER->GPREGRET = DFU_MAGIC_OTA_RESET;
   NVIC_SystemReset();
 }
 
