@@ -66,36 +66,3 @@ feather52.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
 feather52.menu.debug.l3=Level 3 (Segger SystemView)
 feather52.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 
-# required if using native usb ( for reference )
-#feather52.upload.use_1200bps_touch=false
-#feather52.upload.wait_for_upload_port=false
-#feather52.upload.native_usb=false
-
-#**********************************************
-# Metro nrf52 Board
-#**********************************************
-#metro52.name=Adafruit Bluefruit nRF52 Metro
-#metro52.bootloader.tool=nrfjprog
-
-# Upload
-#metro52.upload.tool=nrfutil
-#metro52.upload.protocol=nrfutil
-#metro52.upload.maximum_size=167936
-#metro52.upload.maximum_data_size=51072
-
-# Build
-#metro52.build.mcu=cortex-m4
-#metro52.build.f_cpu=64000000
-#metro52.build.board=NRF52_METRO
-#metro52.build.core=nRF5
-#metro52.build.variant=metro52
-
-# Debug Menu
-#metro52.menu.debug.l0=Level 0 (Release)
-#metro52.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0 -Os
-#metro52.menu.debug.l1=Level 1 (Error Message)
-#metro52.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1 -Os
-#metro52.menu.debug.l2=Level 2 (Full Debug)
-#metro52.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
-#metro52.menu.debug.l3=Level 3 (Segger SystemView)
-#metro52.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Og
