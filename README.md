@@ -1,4 +1,8 @@
-# Arduino Core for Adafruit nRF52 Feather Boards
+# Arduino Core for Adafruit Bluefruit nRF52 Boards
+
+This repository contains the Arduino BSP for Adafruit nRF52 series:
+
+- [Bluefruit Feather nRF52832](https://www.adafruit.com/product/3406)
 
 ## BSP Installation
 
@@ -21,33 +25,27 @@ There are two methods that you can use to install this BSP. We highly recommend 
   * OS X   : `~/Library/Arduino15/packages/adafruit/hardware/nrf52`
   * Linux  : `~/.arduino15/packages/adafruit/hardware/nrf52`
   * Windows: `%APPDATA%\Local\Arduino15\packages\adafruit\hardware\nrf52`
- 3. ```cd <SKETCHBOOK>```, where ```<SKETCHBOOK>``` is your Arduino Sketch folder:
-  * OS X   : ```~/Documents/Arduino```
-  * Linux  : ```~/Arduino```
-  * Windows: ```~/Documents/Arduino```
- 4. Create a folder named ```hardware/Adafruit```, if it does not exist, and change directories to it
- 5. Clone this repo: `git clone git@github.com:adafruit/Adafruit_nRF52_Arduino.git`
+ 3. `cd <SKETCHBOOK>`, where `<SKETCHBOOK>` is your Arduino Sketch folder:
+  * OS X   : `~/Documents/Arduino`
+  * Linux  : `~/Arduino`
+  * Windows: `~/Documents/Arduino`
+ 4. Create a folder named `hardware/Adafruit`, if it does not exist, and change directories to it
+ 5. Clone this repo: `git clone https://github.com/adafruit/Adafruit_nRF52_Arduino.git`
  6. Restart the Arduino IDE
  7. Once the BSP is installed, select 'Adafruit Bluefruit nRF52 Feather' from the Tools -> Board menu, which will update your system config to use the right compiler and settings for the nRF52.
 
 ### Third Party Tools
 
-#### nrfutil
+#### adafruit-nrfutil
 
-The Adafruit nRF52 BSP includes a [python wrapper](https://github.com/NordicSemiconductor/pc-nrfutil)
-for Nordic's `nrfutil`, which is used to flash boards. Go into the BSP folder
-(`hardware/Adafruit/Adafruit_nRF52_Arduino/tools/nrfutil-0.5.2`), and run the following to make
-this available to the Arduino IDE:
+[adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil) is needed to upload sketch via serial port.
 
-```
-$ cd tools/nrfutil-0.5.2
-$ sudo pip install -r requirements.txt
-$ sudo python setup.py install
-```
+- For Windows and macOS, pre-built executable binaries are included in the BSP at `tools/adafruit-nrfutil/`.
+- While Linux user can install it easily via PyPi
 
-**Notes** : Don't install nrfutil from the pip package (ex. `sudo pip install nrfutil`). The
-latest nrfutil does not support DFU via Serial, and you should install the local copy of 0.5.2
-included with the BSP via the `python setup.py install` command above.
+    ```
+    $ pip3 install adafruit-nrfutil --user
+	```
 
 ## Arduino BLE Application Support
 
@@ -63,17 +61,33 @@ examples sketched for the selected board.
 
 ## Bootloader Support
 
-### Third Party Tools
+### Upgrade existiting Bootloader
+
+Bluefruit's Bootloader is self-upgradable, you could upgrade to the latest Bootloader + Softdevice using the serial port within Arduino IDE.
+
+- Select `Tools > Board > Adafruit Bluefruit Feather52`
+- Select `Tools > Programmer > Bootloader DFU for Bluefruit nRF52`
+- Select `Tools > Burn Bootloader`
+- **WAIT** until the process complete ~30 seconds
+
+Note: close the Serial Monitor before you click "Burn Bootloader". Afterwards, you shouldn't close the Arduino IDE, unplug the Feather, launch Serial Monitor etc ... to abort the process. There is a high chance it will brick your device! Do this with care and caution.
+
+### Burnning new Bootloader
 
 To burn the bootloader from within the Arduino IDE, you will need the following tools installed
 on your system and available in the system path:
 
-#### Jlink Driver and Tools
+- Segger [JLink Software and Documentation Pack](https://www.segger.com/downloads/jlink)
+- Nordic [nRF5x Command Line Tools](http://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.tools%2Fdita%2Ftools%2Fnrf5x_command_line_tools%2Fnrf5x_installation.html)
 
-Download and install the [JLink Software and Documentation Pack](https://www.segger.com/downloads/jlink)
-from Segger, which will also install a set of command line tools.
+Check to make sure you can run `nrfjprog` from your terminal/command prompt
 
-### Burning the Bootloader
+**OS X Note** At present, you will need to create a symlink in `/usr/local/bin` to the
+`nrfjprog` tool wherever you have added it. You can run the following command, for example:
+
+```
+$ ln -s $HOME/prog/nordic/nrfjprog/nrfjprog /usr/local/bin/nrfjprog
+```
 
 Once the tools above have been installed and added to your system path, from the Arduino IDE:
 
@@ -83,24 +97,11 @@ Once the tools above have been installed and added to your system path, from the
 
 #### Manually Burning the Bootloader via nrfjprog
 
-You can also manually burn the bootloader from the command line, you will need `nrfjprog` from Nordic: 
-
-- Download [nRF5x-Command-Line-Tools](https://www.nordicsemi.com/eng/Products/Bluetooth-low-energy/nRF52832#Downloads) for OSX/Linux/Win32
-- Extract the downloaded file and add the extracted path to your environment `PATH` variable
-- Check to make sure you can run `nrfjprog` from your terminal/command prompt
-
-**OS X Note** At present, you will need to create a symlink in `/usr/local/bin` to the
-`nrfjprog` tool wherever you have added it. You can run the following command, for example:
-
-```
-$ ln -s $HOME/prog/nordic/nrfjprog/nrfjprog /usr/local/bin/nrfjprog
-```
-
-Then run the command as follows:
+The bootloader hex file can be found at `bin/bootloader` run the command as follows:
 
 ```
 $ nrfjprog -e -f nrf52
-$ nrfjprog --program bootloader_with_s132.hex -f nrf52
+$ nrfjprog --program feather_nrf52832_bootloader.hex -f nrf52
 $ nrfjprog --reset -f nrf52
 ```
 
