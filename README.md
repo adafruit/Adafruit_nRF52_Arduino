@@ -34,11 +34,9 @@ There are two methods that you can use to install this BSP. We highly recommend 
  6. Restart the Arduino IDE
  7. Once the BSP is installed, select 'Adafruit Bluefruit nRF52 Feather' from the Tools -> Board menu, which will update your system config to use the right compiler and settings for the nRF52.
 
-### Third Party Tools
+### Adafruit's nrfutil tools
 
-#### adafruit-nrfutil
-
-[adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil) is needed to upload sketch via serial port.
+[adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil) (derived from Nordic pc-nrfutil) is needed to upload sketch via serial port.
 
 - For Windows and macOS, pre-built executable binaries are included in the BSP at `tools/adafruit-nrfutil/`.
 - While Linux user can install it easily via PyPi
@@ -143,3 +141,4 @@ which in turn is based on the [Arduino SAMD Core](https://github.com/arduino/Ard
 The following tools are used:
 
  * [GCC ARM Embedded](https://launchpad.net/gcc-arm-embedded) as the compiler
+ * adafruit-nrfutil is based on Nordic Semiconductor ASA's [pc-nrfutil](https://github.com/NordicSemiconductor/pc-nrfutil)
