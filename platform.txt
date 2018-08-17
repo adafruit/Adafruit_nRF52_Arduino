@@ -124,11 +124,12 @@ recipe.output.save_file={build.project_name}.{build.variant}.hex
 #***************************************************
 # adafruit-nrfutil for uploading
 # https://github.com/adafruit/Adafruit_nRF52_nrfutil
+# pre-built binaries are provided for macos and windows
 #***************************************************
 
 tools.nrfutil.cmd=adafruit-nrfutil
 tools.nrfutil.cmd.windows={runtime.platform.path}/tools/adafruit-nrfutil/win32/adafruit-nrfutil.exe
-tools.nrfutil.cmd.macosx=/usr/local/bin/nrfutil
+tools.nrfutil.cmd.macosx={runtime.platform.path}/tools/adafruit-nrfutil/macos/adafruit-nrfutil
 
 tools.nrfutil.upload.params.verbose=--verbose
 tools.nrfutil.upload.params.quiet=
