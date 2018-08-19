@@ -38,8 +38,8 @@ There are two methods that you can use to install this BSP. We highly recommend 
 
 [adafruit-nrfutil](https://github.com/adafruit/Adafruit_nRF52_nrfutil) (derived from Nordic pc-nrfutil) is needed to upload sketch via serial port.
 
-- For Windows and macOS, pre-built executable binaries are included in the BSP at `tools/adafruit-nrfutil/`.
-- While Linux user can install it easily via PyPi
+- For Windows and macOS, pre-built executable binaries are included in the BSP at `tools/adafruit-nrfutil/`. It should work out of the box.
+- Linux user need to run follow command to install it from PyPi
 
     ```
     $ pip3 install adafruit-nrfutil --user
