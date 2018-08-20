@@ -1,7 +1,6 @@
 #**********************************************
 # Jlink with nrfjprog to burn bootloader
 #**********************************************
-
 nrfjprog.name=J-Link for Bluefruit nRF52
 nrfjprog.program.tool=bootburn
 #nrfjprog.program.path={runtime.tools.nrfjprog.path}/
@@ -12,13 +11,12 @@ nrfjprog.program.cmd.windows=nrfjprog.exe
 nrfjprog.program.pattern="{program.path}{program.cmd}" --program "{runtime.platform.path}/bootloader/{build.variant}/beta/{build.variant}_bootloader_{build.sd_name}_{build.sd_version}r0.hex" -f nrf52 --chiperase --reset
 
 #**********************************************
-# nrfutil to upgrade bootloader
-# # Note : For MacOS, make a symlink to /usr/local/bin/nrfutil if installed to other location
+# adafruit-nrfutil to upgrade bootloader
 #**********************************************
 nrfutil_boot.name=Bootloader DFU for Bluefruit nRF52
 nrfutil_boot.program.tool=bootburn
 nrfutil_boot.program.cmd=adafruit-nrfutil
-#nrfutil_boot.program.cmd.windows={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/win32/nrfutil.exe
-nrfutil_boot.program.cmd.macosx=/usr/local/bin/adafruit-nrfutil
+nrfutil_boot.program.cmd.windows={runtime.platform.path}/tools/adafruit-nrfutil/win32/adafruit-nrfutil.exe
+nrfutil_boot.program.cmd.macosx={runtime.platform.path}/tools/adafruit-nrfutil/macos/adafruit-nrfutil
 
 nrfutil_boot.program.pattern={program.cmd} --verbose dfu serial -pkg "{runtime.platform.path}/bootloader/{build.variant}/beta/{build.variant}_bootloader_{build.sd_name}_{build.sd_version}r0.zip" -p {serial.port} -b 115200

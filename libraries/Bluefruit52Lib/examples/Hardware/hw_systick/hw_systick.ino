@@ -13,6 +13,9 @@
 *********************************************************************/
 #include <Arduino.h>
 
+// Interval between systick event
+#define TICK_INTERVAL_MS    50
+
 // Note: Extern "C" is required since all the IRQ hardware handler is
 // declared as "C function" within the startup (assembly) file.
 // Without it, our SysTick_Handler will be declared as "C++ function"
@@ -37,8 +40,15 @@ void SysTick_Handler(void)
 
 void setup()
 {
-  // Set up systick to fire 10 times per second
-  SysTick_Config(F_CPU/10);
+  /* Input parameter is number of ticks between interrupts handler i.e SysTick_Handler
+   * 1000 ms --> F_CPU            ticks
+   * T    ms --> (F_CPU/1000)*T   ticks
+   *
+   * Note: Since systick is 24-bit timer, the max tick value is 0xFFFFFF, F_CPU = 64 Mhz
+   * --> our Tmax = 0xFFFFFF/64000 ~ 262 ms
+   */
+
+  SysTick_Config( (F_CPU/1000)*TICK_INTERVAL_MS );
 }
 
 void loop()

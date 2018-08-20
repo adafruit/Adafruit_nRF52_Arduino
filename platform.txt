@@ -122,34 +122,31 @@ recipe.size.regex.data=(\.data|\.bss|\.stack)\s+([0-9]+).*
 recipe.output.tmp_file={build.project_name}.hex
 recipe.output.save_file={build.project_name}.{build.variant}.hex
 
-#**********************************************
+#***************************************************
 # adafruit-nrfutil for uploading
 # https://github.com/adafruit/Adafruit_nRF52_nrfutil
-# Note : For MacOS, make a symlink to /usr/local/bin/adafruit-nrfutil 
-#        if installed to other location
-#**********************************************
+# pre-built binaries are provided for macos and windows
+#***************************************************
 
 tools.nrfutil.cmd=adafruit-nrfutil
-#tools.nrfutil.cmd.windows={runtime.platform.path}/tools/nrfutil-0.5.2/binaries/win32/nrfutil.exe
-tools.nrfutil.cmd.macosx=/usr/local/bin/adafruit-nrfutil
+tools.nrfutil.cmd.windows={runtime.platform.path}/tools/adafruit-nrfutil/win32/adafruit-nrfutil.exe
+tools.nrfutil.cmd.macosx={runtime.platform.path}/tools/adafruit-nrfutil/macos/adafruit-nrfutil
 
 tools.nrfutil.upload.params.verbose=--verbose
 tools.nrfutil.upload.params.quiet=
 tools.nrfutil.upload.pattern="{cmd}" {upload.verbose} dfu serial -pkg "{build.path}/{build.project_name}.zip" -p {serial.port} -b 115200 --singlebank
 
-#**********************************************
+#***************************************************
 # Jlink for programming
-#**********************************************
+#***************************************************
 
 #tools.nrfutil.upload.pattern=nrfjprog --reset --program "{build.path}/{build.project_name}.hex" --sectorerase -f nrf52
 # && nrfjprog --erasepage {upload.BOOT_SETTING_ADDR} -f nrf52 && nrfjprog --memwr {upload.BOOT_SETTING_ADDR} --val 0x00000001 -f nrf52 && nrfjprog --reset -f nrf52
 # tools.nrfutil.upload.BOOT_SETTING_ADDR=0xFF000
 
-
-#**********************************************
+#***************************************************
 # Burning bootloader with either jlink or nrfutil
-#**********************************************
-
+#***************************************************
 tools.bootburn.bootloader.params.verbose=
 tools.bootburn.bootloader.params.quiet=
 tools.bootburn.bootloader.pattern={program.pattern}

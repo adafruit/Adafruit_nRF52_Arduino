@@ -2,8 +2,10 @@
 
 ## 0.8.5
 
+- Migrate nrfutil to adafruit-nrfutil, executable binaries for windows and macOS are included.
 - Implement #166 BLE HID Keyboard LED receive from Central, update hid_keyscan & hid_keyboard example.
 - Add hardware's systick sketch example
+- Add software timer's sketch example
 
 ## 0.8.4
 
