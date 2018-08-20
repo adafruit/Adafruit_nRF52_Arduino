@@ -45,6 +45,10 @@ There are two methods that you can use to install this BSP. We highly recommend 
     $ pip3 install adafruit-nrfutil --user
 	```
 
+### Drivers
+
+- [SiLabs CP2104 driver](http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx) is required for USB to Serial when using with Feather nRF52832
+
 ## Arduino BLE Application Support
 
 This Arduino core contains basic BLE peripheral mode helper classes and an initial peripheral mode
