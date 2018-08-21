@@ -28,6 +28,9 @@ feather52832.bootloader.tool=bootburn
 # Upload
 feather52832.upload.tool=nrfutil
 feather52832.upload.protocol=nrfutil
+feather52832.upload.use_1200bps_touch=false
+feather52832.upload.wait_for_upload_port=false
+feather52832.upload.native_usb=false
 
 # Build
 feather52832.build.mcu=cortex-m4
@@ -44,7 +47,7 @@ feather52832.menu.softdevice.s132v6=s132 6.0.0 r0
 feather52832.menu.softdevice.s132v6.build.sd_flags=-DS132
 feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.0.0
-feather52832.menu.softdevice.s132v6.build.sd_fwid=0x00A9
+feather52832.menu.softdevice.s132v6.build.sd_fwid=0x00A8
 feather52832.menu.softdevice.s132v6.build.ldscript=nrf52832_s132_v6.ld
 feather52832.menu.softdevice.s132v6.upload.maximum_size=290816
 feather52832.menu.softdevice.s132v6.upload.maximum_data_size=51072
@@ -117,12 +120,6 @@ feather52840.menu.debug.l2=Level 2 (Full Debug)
 feather52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
 feather52840.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
-
-# required if using native usb ( for reference )
-#feather52840.upload.use_1200bps_touch=false
-#feather52840.upload.wait_for_upload_port=false
-#feather52840.upload.native_usb=false
-
 
 #**********************************************
 # PCA10056 ( to be remove  )
