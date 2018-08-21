@@ -177,14 +177,15 @@ void dbgPrintVersion(void)
 void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffset)
 {
   uint8_t const *buf8 = (uint8_t const *) buf;
+  
+  uint8_t format_size = 2 * size;
+  if ( count*size > UINT8_MAX  ) format_size *= 2;
+  if ( count*size > UINT16_MAX ) format_size *= 2;
 
   char format[] = "%00lX";
-  format[2] += 2*size;
+  format[2] += format_size;
 
   char offset_fmt[] = "%02lX: ";
-
-  if ( count*size > UINT8_MAX  ) format[2] *= 2;
-  if ( count*size > UINT16_MAX ) format[2] *= 2;
 
   const uint8_t item_per_line = 16 / size;
 
