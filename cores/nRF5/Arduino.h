@@ -66,6 +66,10 @@ uint32_t setLoopStacksize(void);
 #include "utility/utilities.h"
 #include "utility/AdaCallback.h"
 
+#ifdef NRF52840_XXAA
+#include "tusb.h"
+#endif
+
 #ifdef __cplusplus
   #include "Uart.h"
 #endif

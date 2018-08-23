@@ -1,5 +1,13 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.9.0
+
+- Feather nRF52840 support
+- Upgrade bootloader to v6.1.0 ( single bank only )
+- Upgrade freeRTOS from v8 to v10.0.1
+- Added nrfx to core
+- Added tinyusb stack to libraries
+
 ## 0.8.5
 
 - Migrate nrfutil to adafruit-nrfutil, executable binaries for windows and macOS are included.
