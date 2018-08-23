@@ -60,7 +60,12 @@ enum
   TASK_PRIO_HIGHEST = 4,
 };
 
-#define malloc_type(type)     rtos_malloc( sizeof(type) )
+#define ms2tick              pdMS_TO_TICKS
+
+#define tick2ms(tck)         ( ( ((uint64_t)(tck)) * 1000) / configTICK_RATE_HZ )
+#define tick2us(tck)         ( ( ((uint64_t)(tck)) * 1000000) / configTICK_RATE_HZ )
+
+#define malloc_type(type)    rtos_malloc( sizeof(type) )
 
 #if 0
 #define rtos_malloc(_size)  ({ cprintf("[malloc] %s:%d : %d bytes\r\n", __PRETTY_FUNCTION__, __LINE__, _size); pvPortMalloc(_size); })
@@ -77,11 +82,6 @@ static inline void* rtos_malloc(size_t _size)
 static inline void rtos_free( void *pv )
 {
   return (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) ? free(pv) : vPortFree(pv);
-}
-
-static inline void* rtos_realloc(void* pv, size_t new_size)
-{
-  return (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) ? realloc(pv, new_size) : pvPortRealloc(pv, new_size);
 }
 #endif
 

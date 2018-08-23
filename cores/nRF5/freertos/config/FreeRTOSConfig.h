@@ -72,11 +72,7 @@
 #endif
 #include "app_util_platform.h"
 
-/*-----------------------------------------------------------
- * Possible configurations for system timer
- */
-#define FREERTOS_USE_RTC      0 /**< Use real time clock for the system */
-#define FREERTOS_USE_SYSTICK  1 /**< Use SysTick timer for system */
+// This port of nrf52 use RTC for freeRTOS tick
 
 /*-----------------------------------------------------------
  * Application specific definitions.
@@ -89,83 +85,83 @@
  *
  * See http://www.freertos.org/a00110.html.
  *----------------------------------------------------------*/
+#define configUSE_PREEMPTION                                     1
+#define configUSE_PORT_OPTIMISED_TASK_SELECTION                  0
+#define configUSE_TICKLESS_IDLE                                  1
+#define configUSE_TICKLESS_IDLE_SIMPLE_DEBUG                     1 /* See into vPortSuppressTicksAndSleep source code for explanation */
+#define configCPU_CLOCK_HZ                                       ( SystemCoreClock )
+#define configTICK_RATE_HZ                                       1024
+#define configMAX_PRIORITIES                                     ( 5 )
+#define configMINIMAL_STACK_SIZE                                 ( 100 )
+#define configTOTAL_HEAP_SIZE                                    ( 4096 ) /* not used since we use malloc */
+#define configMAX_TASK_NAME_LEN                                  ( 8 )
+#define configUSE_16_BIT_TICKS                                   0
+#define configIDLE_SHOULD_YIELD                                  1
+#define configUSE_MUTEXES                                        1
+#define configUSE_RECURSIVE_MUTEXES                              1
+#define configUSE_COUNTING_SEMAPHORES                            1
+#define configUSE_ALTERNATIVE_API                                0    /* Deprecated! */
+#define configQUEUE_REGISTRY_SIZE                                2
+#define configUSE_QUEUE_SETS                                     0
+#define configUSE_TIME_SLICING                                   0
+#define configUSE_NEWLIB_REENTRANT                               0
+#define configENABLE_BACKWARD_COMPATIBILITY                      1
 
-#define configTICK_SOURCE                                                         FREERTOS_USE_RTC
-
-#define configUSE_PREEMPTION                                                      1
-#define configUSE_PORT_OPTIMISED_TASK_SELECTION                                   0
-#define configUSE_TICKLESS_IDLE                                                   1
-#define configUSE_TICKLESS_IDLE_SIMPLE_DEBUG                                      1 /* See into vPortSuppressTicksAndSleep source code for explanation */
-#define configCPU_CLOCK_HZ                                                        ( SystemCoreClock )
-#define configTICK_RATE_HZ                                                        1024
-#define configMAX_PRIORITIES                                                      ( 5 )
-#define configMINIMAL_STACK_SIZE                                                  ( 100 )
-#define configTOTAL_HEAP_SIZE                                                     ( 4096 ) /* not used since we use malloc */
-#define configMAX_TASK_NAME_LEN                                                   ( 8 )
-#define configUSE_16_BIT_TICKS                                                    0
-#define configIDLE_SHOULD_YIELD                                                   1
-#define configUSE_MUTEXES                                                         1
-#define configUSE_RECURSIVE_MUTEXES                                               1
-#define configUSE_COUNTING_SEMAPHORES                                             1
-#define configUSE_ALTERNATIVE_API                                                 0    /* Deprecated! */
-#define configQUEUE_REGISTRY_SIZE                                                 2
-#define configUSE_QUEUE_SETS                                                      0
-#define configUSE_TIME_SLICING                                                    0
-#define configUSE_NEWLIB_REENTRANT                                                0
-#define configENABLE_BACKWARD_COMPATIBILITY                                       1
+#define configSUPPORT_STATIC_ALLOCATION                          1
+#define configSUPPORT_DYNAMIC_ALLOCATION                         1
 
 /* Hook function related definitions. */
-#define configUSE_IDLE_HOOK                                                       1
-#define configUSE_TICK_HOOK                                                       0
-#define configCHECK_FOR_STACK_OVERFLOW                                            1
-#define configUSE_MALLOC_FAILED_HOOK                                              (CFG_DEBUG > 0 ? 1 : 0)
+#define configUSE_IDLE_HOOK                                      1
+#define configUSE_TICK_HOOK                                      0
+#define configCHECK_FOR_STACK_OVERFLOW                           1
+#define configUSE_MALLOC_FAILED_HOOK                             (CFG_DEBUG > 0 ? 1 : 0)
 
 /* Run time and task stats gathering related definitions. */
-#define configGENERATE_RUN_TIME_STATS                                             0
-#define configUSE_TRACE_FACILITY                                                  1
-#define configUSE_STATS_FORMATTING_FUNCTIONS                                      1
+#define configGENERATE_RUN_TIME_STATS                            0
+#define configUSE_TRACE_FACILITY                                 1
+#define configUSE_STATS_FORMATTING_FUNCTIONS                     1
 
 /* Co-routine definitions. */
-#define configUSE_CO_ROUTINES                                                     0
-#define configMAX_CO_ROUTINE_PRIORITIES                                           ( 2 )
+#define configUSE_CO_ROUTINES                                    0
+#define configMAX_CO_ROUTINE_PRIORITIES                          ( 2 )
 
 /* Software timer definitions. */
-#define configUSE_TIMERS                                                          1
-#define configTIMER_TASK_PRIORITY                                                 ( 2 ) // Normal
-#define configTIMER_QUEUE_LENGTH                                                  32
-#define configTIMER_TASK_STACK_DEPTH                                              ( 100 )
+#define configUSE_TIMERS                                         1
+#define configTIMER_TASK_PRIORITY                                ( 2 ) // Normal
+#define configTIMER_QUEUE_LENGTH                                 32
+#define configTIMER_TASK_STACK_DEPTH                             ( 100 )
 
 /* Tickless Idle configuration. */
-#define configEXPECTED_IDLE_TIME_BEFORE_SLEEP                                     2
+#define configEXPECTED_IDLE_TIME_BEFORE_SLEEP                    2
 
 /* Tickless idle/low power functionality. */
 
 
 /* Define to trap errors during development. */
 #if defined(DEBUG_NRF) || defined(DEBUG_NRF_USER)
-#define configASSERT( x )                                                         ASSERT(x)
+#define configASSERT( x )                                        ASSERT(x)
 #endif
 
 /* FreeRTOS MPU specific definitions. */
-#define configINCLUDE_APPLICATION_DEFINED_PRIVILEGED_FUNCTIONS                    1
+#define configINCLUDE_APPLICATION_DEFINED_PRIVILEGED_FUNCTIONS   1
 
 /* Optional functions - most linkers will remove unused functions anyway. */
-#define INCLUDE_vTaskPrioritySet                                                  1
-#define INCLUDE_uxTaskPriorityGet                                                 1
-#define INCLUDE_vTaskDelete                                                       1
-#define INCLUDE_vTaskSuspend                                                      1
-#define INCLUDE_xResumeFromISR                                                    1
-#define INCLUDE_vTaskDelayUntil                                                   1
-#define INCLUDE_vTaskDelay                                                        1
-#define INCLUDE_xTaskGetSchedulerState                                            1
-#define INCLUDE_xTaskGetCurrentTaskHandle                                         1
-#define INCLUDE_uxTaskGetStackHighWaterMark                                       1
-#define INCLUDE_xTaskGetIdleTaskHandle                                            1
-#define INCLUDE_xTimerGetTimerDaemonTaskHandle                                    1
-#define INCLUDE_pcTaskGetTaskName                                                 1
-#define INCLUDE_eTaskGetState                                                     1
-#define INCLUDE_xEventGroupSetBitFromISR                                          1
-#define INCLUDE_xTimerPendFunctionCall                                            1
+#define INCLUDE_vTaskPrioritySet                                 1
+#define INCLUDE_uxTaskPriorityGet                                1
+#define INCLUDE_vTaskDelete                                      1
+#define INCLUDE_vTaskSuspend                                     1
+#define INCLUDE_xResumeFromISR                                   1
+#define INCLUDE_vTaskDelayUntil                                  1
+#define INCLUDE_vTaskDelay                                       1
+#define INCLUDE_xTaskGetSchedulerState                           1
+#define INCLUDE_xTaskGetCurrentTaskHandle                        1
+#define INCLUDE_uxTaskGetStackHighWaterMark                      1
+#define INCLUDE_xTaskGetIdleTaskHandle                           1
+#define INCLUDE_xTimerGetTimerDaemonTaskHandle                   1
+#define INCLUDE_pcTaskGetTaskName                                1
+#define INCLUDE_eTaskGetState                                    1
+#define INCLUDE_xEventGroupSetBitFromISR                         1
+#define INCLUDE_xTimerPendFunctionCall                           1
 
 /* The lowest interrupt priority that can be used in a call to a "set priority"
 function. */
@@ -196,16 +192,8 @@ standard names - or at least those used in the unmodified vector table. */
  * Settings that are generated automatically
  * basing on the settings above
  */
-#if (configTICK_SOURCE == FREERTOS_USE_SYSTICK)
-    // do not define configSYSTICK_CLOCK_HZ for SysTick to be configured automatically
-    // to CPU clock source
-    #define xPortSysTickHandler     SysTick_Handler
-#elif (configTICK_SOURCE == FREERTOS_USE_RTC)
-    #define configSYSTICK_CLOCK_HZ  ( 32768UL )
-    #define xPortSysTickHandler     RTC1_IRQHandler
-#else
-    #error  Unsupported configTICK_SOURCE value
-#endif
+#define configSYSTICK_CLOCK_HZ  ( 32768UL )
+#define xPortSysTickHandler     RTC1_IRQHandler
 
 /* Code below should be only used by the compiler, and not the assembler. */
 #if !(defined(__ASSEMBLY__) || defined(__ASSEMBLER__))
@@ -219,12 +207,6 @@ standard names - or at least those used in the unmodified vector table. */
         #define configPRIO_BITS             __NVIC_PRIO_BITS
     #else
         #error "This port requires __NVIC_PRIO_BITS to be defined"
-    #endif
-
-    /* Access to current system core clock is required only if we are ticking the system by systimer */
-    #if (configTICK_SOURCE == FREERTOS_USE_SYSTICK)
-        #include <stdint.h>
-        extern uint32_t SystemCoreClock;
     #endif
 #endif /* !assembler */
 

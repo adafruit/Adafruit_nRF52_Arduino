@@ -84,66 +84,6 @@
  * Implementation of functions defined in portable.h for the ARM CM4F port.
  * CMSIS compatible layer to menage SysTick ticking source.
  *----------------------------------------------------------*/
-
-#if configTICK_SOURCE == FREERTOS_USE_SYSTICK
-
-
-#ifndef configSYSTICK_CLOCK_HZ
-    #define configSYSTICK_CLOCK_HZ configCPU_CLOCK_HZ
-    /* Ensure the SysTick is clocked at the same frequency as the core. */
-    #define portNVIC_SYSTICK_CLK_BIT    ( SysTick_CTRL_CLKSOURCE_Msk )
-#else
-    /* The way the SysTick is clocked is not modified in case it is not the same
-    as the core. */
-    #define portNVIC_SYSTICK_CLK_BIT    ( 0 )
-#endif
-
-
-#if configUSE_TICKLESS_IDLE == 1
-    #error SysTick port for RF52 does not support tickless idle. Use RTC mode instead.
-#endif /* configUSE_TICKLESS_IDLE */
-
-/*-----------------------------------------------------------*/
-
-void xPortSysTickHandler( void )
-{
-    /* The SysTick runs at the lowest interrupt priority, so when this interrupt
-    executes all interrupts must be unmasked.  There is therefore no need to
-    save and then restore the interrupt mask value as its value is already
-    known. */
-    ( void ) portSET_INTERRUPT_MASK_FROM_ISR();
-    {
-        /* Increment the RTOS tick. */
-        if ( xTaskIncrementTick() != pdFALSE )
-        {
-            /* A context switch is required.  Context switching is performed in
-            the PendSV interrupt.  Pend the PendSV interrupt. */
-            SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
-            __SEV();
-        }
-    }
-    portCLEAR_INTERRUPT_MASK_FROM_ISR( 0 );
-}
-
-/*-----------------------------------------------------------*/
-
-/*
- * Setup the systick timer to generate the tick interrupts at the required
- * frequency.
- */
-void vPortSetupTimerInterrupt( void )
-{
-    /* Set interrupt priority */
-    NVIC_SetPriority(SysTick_IRQn, configKERNEL_INTERRUPT_PRIORITY);
-    /* Configure SysTick to interrupt at the requested rate. */
-    SysTick->LOAD = ROUNDED_DIV(configSYSTICK_CLOCK_HZ, configTICK_RATE_HZ) - 1UL;
-    SysTick->CTRL = ( portNVIC_SYSTICK_CLK_BIT | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk );
-}
-
-/*-----------------------------------------------------------*/
-
-#elif configTICK_SOURCE == FREERTOS_USE_RTC
-
 #if configUSE_16_BIT_TICKS == 1
 #error This port does not support 16 bit ticks.
 #endif
@@ -335,7 +275,3 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
 }
 
 #endif // configUSE_TICKLESS_IDLE
-
-#else // configTICK_SOURCE
-    #error  Unsupported configTICK_SOURCE value
-#endif // configTICK_SOURCE == FREERTOS_USE_SYSTICK
