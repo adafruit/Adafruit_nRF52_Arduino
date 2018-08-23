@@ -80,7 +80,6 @@ void Uart::begin(unsigned long baudrate, uint16_t /*config*/)
 
   uint32_t nrfBaudRate;
 
-#if defined(NRF52) || defined(NRF52_SERIES)
   if (baudrate <= 1200) {
     nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud1200;
   } else if (baudrate <= 2400) {
@@ -114,41 +113,6 @@ void Uart::begin(unsigned long baudrate, uint16_t /*config*/)
   } else {
     nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud1M;
   }
-#else
-  if (baudrate <= 1200) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud1200;
-  } else if (baudrate <= 2400) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud2400;
-  } else if (baudrate <= 4800) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud4800;
-  } else if (baudrate <= 9600) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud9600;
-  } else if (baudrate <= 14400) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud14400;
-  } else if (baudrate <= 19200) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud19200;
-  } else if (baudrate <= 28800) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud28800;
-  } else if (baudrate <= 38400) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud38400;
-  } else if (baudrate <= 57600) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud57600;
-  } else if (baudrate <= 76800) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud76800;
-  } else if (baudrate <= 115200) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud115200;
-  } else if (baudrate <= 230400) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud230400;
-  } else if (baudrate <= 250000) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud250000;
-  } else if (baudrate <= 460800) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud460800;
-  } else if (baudrate <= 921600) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud921600;
-  } else {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud1M;
-  }
-#endif
 
   nrfUart->BAUDRATE = nrfBaudRate;
 
@@ -235,11 +199,8 @@ size_t Uart::write(const uint8_t data)
   return 1;
 }
 
-#if defined(NRF52) || defined(NRF52_SERIES)
-  #define NRF_UART0_IRQn UARTE0_UART0_IRQn
-#elif defined(NRF51)
-  #define NRF_UART0_IRQn UART0_IRQn
-#endif
+
+#define NRF_UART0_IRQn UARTE0_UART0_IRQn
 
 #if defined(PIN_SERIAL_CTS) && defined(PIN_SERIAL_RTS)
   Uart Serial( NRF_UART0, NRF_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX, PIN_SERIAL_CTS, PIN_SERIAL_RTS );
@@ -247,7 +208,6 @@ size_t Uart::write(const uint8_t data)
   Uart Serial( NRF_UART0, NRF_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX );
 #endif
 
-#if defined(NRF52) || defined(NRF52_SERIES)
 extern "C"
 {
   void UARTE0_UART0_IRQHandler()
@@ -255,12 +215,3 @@ extern "C"
     Serial.IrqHandler();
   }
 }
-#elif defined(NRF51)
-extern "C"
-{
-  void UART0_IRQHandler()
-  {
-    Serial.IrqHandler();
-  }
-}
-#endif
