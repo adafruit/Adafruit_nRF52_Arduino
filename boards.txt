@@ -96,7 +96,7 @@ feather52840.build.mcu=cortex-m4
 feather52840.build.f_cpu=64000000
 feather52840.build.board=NRF52840_FEATHER
 feather52840.build.core=nRF5
-feather52840.build.variant=feather52840
+feather52840.build.variant=feather_nrf52840_express
 feather52840.build.extra_flags=-DNRF52840_XXAA
 
 # SofDevice Menu
