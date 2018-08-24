@@ -1,4 +1,0 @@
-[submodule "libraries/tinyusb"]
-	path = libraries/tinyusb
-	url = https://github.com/hathach/tinyusb.git
-	branch = develop
