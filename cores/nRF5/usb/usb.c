@@ -110,4 +110,24 @@ void usb_init(void)
   tusb_init();
 }
 
+
+
+// Invoked when cdc when line state changed e.g connected/disconnected
+// Use to reset to DFU when disconnect with 1200 bps
+void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts)
+{
+  (void) itf;  // interface ID, not used
+
+  // disconnected event
+  if ( !dtr && !rts )
+  {
+    cdc_line_coding_t coding;
+    tud_cdc_get_line_coding(&coding);
+
+    if ( coding.bit_rate == 1200 ) enterSerialDfu();
+  }
+}
+
+
+
 #endif

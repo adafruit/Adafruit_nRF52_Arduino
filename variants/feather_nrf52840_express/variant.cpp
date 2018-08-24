@@ -23,6 +23,8 @@
 #include "wiring_digital.h"
 #include "nrf.h"
 
+extern "C" void usb_init(void);
+
 const uint32_t g_ADigitalPinMap[] =
 {
   0  , 1  , 2  , 3  , 4  , 5  , 6  , 7 ,
@@ -39,5 +41,8 @@ void initVariant()
 
   pinMode(PIN_LED2, OUTPUT);
   ledOff(PIN_LED2);
+
+  // USB init  TODO may have trouble with ISR when SD is enabled
+  usb_init();
 }
 
