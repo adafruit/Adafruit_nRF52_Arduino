@@ -131,7 +131,7 @@ Possible causes:
 
 To resolve this and enable 512 byte packets over USB serial, you must disable the
 Mass Storage Device interface on the JLink-OB, which will free up two of the 512 byte
-USB end points. (For details see [this article](https://wiki.segger.com/index.php?title=J-Link-OB_SAM3U).) 
+USB end points. (For details see [this article](https://wiki.segger.com/index.php?title=J-Link-OB_SAM3U).)
 
 You can do so by running `JLinkExe` from the command line, and then entering the
 `MSDDisable` command, and power cycling your nRF52DK. To re-enable MSD support, do the same
@@ -142,7 +142,8 @@ but enter the `MSDEnable` command.
 This core is based on [Arduino-nRF5](https://github.com/sandeepmistry/arduino-nRF5) by Sandeep Mistry,
 which in turn is based on the [Arduino SAMD Core](https://github.com/arduino/ArduinoCore-samd).
 
-The following tools are used:
+The following repos are used:
 
- * [GCC ARM Embedded](https://launchpad.net/gcc-arm-embedded) as the compiler
- * adafruit-nrfutil is based on Nordic Semiconductor ASA's [pc-nrfutil](https://github.com/NordicSemiconductor/pc-nrfutil)
+- adafruit-nrfutil is based on Nordic Semiconductor ASA's [pc-nrfutil](https://github.com/NordicSemiconductor/pc-nrfutil)
+- [tinyusb](https://github.com/hathach/tinyusb) as usb stack
+- [nrfx](https://github.com/NordicSemiconductor/nrfx) for driver

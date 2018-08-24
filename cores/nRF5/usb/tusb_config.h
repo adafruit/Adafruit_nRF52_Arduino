@@ -72,6 +72,9 @@
  */
 #define CFG_TUD_DESC_AUTO           1
 
+#define CFG_TUD_DESC_VID            0x239A
+#define CFG_TUD_DESC_PID            0x8029
+
 /* USB VID/PID if not defined, tinyusb to use default value
  * Note: different class combination e.g CDC and (CDC + MSC) should have different
  * PID since Host OS will "remembered" device driver after the first plug */
