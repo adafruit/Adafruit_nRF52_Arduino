@@ -118,7 +118,7 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts)
 {
   (void) itf;  // interface ID, not used
 
-  // DTR = false is counted as disconnected event for touch1200
+  // DTR = false is counted as disconnected
   if ( !dtr )
   {
     cdc_line_coding_t coding;

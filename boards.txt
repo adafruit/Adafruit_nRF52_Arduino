@@ -87,7 +87,7 @@ feather52840.bootloader.tool=bootburn
 feather52840.upload.tool=nrfutil
 feather52840.upload.protocol=nrfutil
 feather52840.upload.use_1200bps_touch=true
-feather52840.upload.wait_for_upload_port=false
+feather52840.upload.wait_for_upload_port=true
 #feather52840.upload.native_usb=true
 
 
@@ -144,7 +144,7 @@ pca10056.bootloader.tool=bootburn
 pca10056.upload.tool=nrfutil
 pca10056.upload.protocol=nrfutil
 pca10056.upload.use_1200bps_touch=true
-pca10056.upload.wait_for_upload_port=false
+pca10056.upload.wait_for_upload_port=true
 #pca10056.upload.native_usb=true
 
 # Build
