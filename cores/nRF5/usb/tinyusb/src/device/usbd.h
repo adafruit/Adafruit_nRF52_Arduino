@@ -83,7 +83,7 @@ extern tud_desc_set_t tud_desc_set;
 bool tud_mounted(void);
 
 //--------------------------------------------------------------------+
-// APPLICATION CALLBACK
+// APPLICATION CALLBACK (WEAK is optional)
 //--------------------------------------------------------------------+
 
 /** Callback invoked when device is mounted (configured) */

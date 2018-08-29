@@ -67,7 +67,7 @@ feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 #**********************************************
 # Feather nRF52840 Board
 #**********************************************
-feather52840.name=Adafruit Bluefruit nRF52840 Feather
+feather52840.name=Adafruit Bluefruit nRF52840 Feather Express
 
 # DFU Mode with CDC only
 feather52840.vid.0=0x239A

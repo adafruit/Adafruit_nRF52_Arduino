@@ -60,7 +60,8 @@ enum
   MAX_PACKET_SIZE   = 64,
 
   // Mask of all END event (IN & OUT) for all endpoints. ENDEPIN0-7, ENDEPOUT0-7, ENDISOIN, ENDISOOUT
-  EDPT_END_ALL_MASK = 0x1FFBFCUL
+  EDPT_END_ALL_MASK = (0xff << USBD_INTEN_ENDEPIN0_Pos) | (0xff << USBD_INTEN_ENDEPOUT0_Pos) |
+                      USBD_INTENCLR_ENDISOIN_Msk | USBD_INTEN_ENDISOOUT_Msk
 };
 
 /*------------------------------------------------------------------*/
@@ -85,7 +86,7 @@ typedef struct
   {
     uint8_t* buffer;
     uint16_t total_len;
-    uint16_t actual_len;
+    volatile uint16_t actual_len;
 
     uint8_t  dir;
   }control;
@@ -215,9 +216,9 @@ bool dcd_control_xfer (uint8_t rhport, uint8_t dir, uint8_t * buffer, uint16_t l
     xact_control_start();
   }else
   {
-    // Status Phase
-    NRF_USBD->TASKS_EP0STATUS = 1;
-    __ISB(); __DSB();
+    // Status Phase also require Easy DMA has to be free as well !!!!
+    edpt_dma_start(&NRF_USBD->TASKS_EP0STATUS);
+    edpt_dma_end();
   }
 
   return true;
@@ -401,7 +402,7 @@ void USBD_IRQHandler(void)
 
   volatile uint32_t* regevt = &NRF_USBD->EVENTS_USBRESET;
 
-  for(int i=0; i<32; i++)
+  for(int i=0; i<USBD_INTEN_EPDATA_Pos+1; i++)
   {
     if ( BIT_TEST_(inten, i) && regevt[i]  )
     {
@@ -417,7 +418,6 @@ void USBD_IRQHandler(void)
   if ( int_status & USBD_INTEN_USBRESET_Msk )
   {
     bus_reset();
-
     dcd_bus_event(0, USBD_BUS_EVENT_RESET);
   }
 
@@ -558,8 +558,6 @@ void USBD_IRQHandler(void)
   {
     dcd_bus_event(0, USBD_BUS_EVENT_SOF);
   }
-
-
 }
 
 #endif
