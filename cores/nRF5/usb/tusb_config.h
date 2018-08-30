@@ -47,7 +47,12 @@
 // COMMON CONFIGURATION
 //--------------------------------------------------------------------
 #define CFG_TUSB_MCU                OPT_MCU_NRF5X
+
+#ifdef NRF52840_XXAA
 #define CFG_TUSB_RHPORT0_MODE       OPT_MODE_DEVICE
+#else
+#define CFG_TUSB_RHPORT0_MODE       OPT_MODE_NONE
+#endif
 
 #define CFG_TUSB_DEBUG              0
 
@@ -101,8 +106,8 @@
 //--------------------------------------------------------------------
 
 // FIFO size of CDC TX and RX
-#define CFG_TUD_CDC_RX_BUFSIZE      64
-#define CFG_TUD_CDC_TX_BUFSIZE      64
+#define CFG_TUD_CDC_RX_BUFSIZE      256
+#define CFG_TUD_CDC_TX_BUFSIZE      256
 
 // TX is sent automatically every Start of Frame event.
 // If not enabled, application must call tud_cdc_write_flush() periodically
