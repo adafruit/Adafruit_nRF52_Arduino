@@ -46,6 +46,7 @@ class USBSerial : public Stream
 public:
 	USBSerial(void);
 
+	void setPins(uint8_t pin_rx, uint8_t pin_tx) { (void) pin_rx; (void) pin_tx; }
 	void begin(uint32_t baud_count);
 	void begin(uint32_t baud, uint8_t config);
 	void end(void);
@@ -60,6 +61,9 @@ public:
 	operator bool();
 
 	size_t readBytes(char *buffer, size_t length);
+	size_t readBytes(uint8_t *buffer, size_t length) { return readBytes((char *)buffer, length); }
+
+	bool started(void) { return true; }
 };
 
 
