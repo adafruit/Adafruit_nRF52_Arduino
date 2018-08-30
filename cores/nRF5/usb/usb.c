@@ -47,9 +47,7 @@
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
-
-
-extern uint16_t           usb_desc_str_serial[1+16];
+extern uint16_t usb_desc_str_serial[1+16];
 
 /* tinyusb function that handles power event (detected, ready, removed)
  * We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled. */

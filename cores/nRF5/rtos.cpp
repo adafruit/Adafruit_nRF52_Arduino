@@ -36,12 +36,13 @@
 
 #include "Arduino.h"
 
+SchedulerRTOS Scheduler;
+
 void yield(void)
 {
   taskYIELD();
 }
 
-SchedulerRTOS Scheduler;
 
 static void _redirect_task(void* arg)
 {
@@ -82,12 +83,21 @@ bool SchedulerRTOS::startLoop(taskfunc_t task, const char* name, uint32_t stack_
   return pdPASS == xTaskCreate( _redirect_task, name, stack_size, (void*) task, TASK_PRIO_LOW, &handle);
 }
 
+
+//--------------------------------------------------------------------+
+// FreeRTOS Hooks
+//--------------------------------------------------------------------+
+
 extern "C"
 {
 
 void vApplicationIdleHook( void )
 {
   // Internal background task
+#ifdef NRF52840_XXAA
+  // flush cdc in case loop() is suspended for low-power
+  tud_cdc_write_flush();
+#endif
 
   // Call user callback if defined
   if ( rtos_idle_callback ) rtos_idle_callback();

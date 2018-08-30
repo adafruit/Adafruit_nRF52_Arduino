@@ -70,7 +70,11 @@ class Uart : public HardwareSerial
 
 #ifdef __cplusplus
 
-extern Uart Serial;
+#ifdef NRF52840_XXAA
+  extern Uart Serial1;
+#else
+  extern Uart Serial;
+#endif
 
 #endif
 

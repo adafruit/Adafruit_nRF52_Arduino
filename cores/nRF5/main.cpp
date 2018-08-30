@@ -61,6 +61,11 @@ static void loop_task(void* arg)
   {
     loop();
 
+    #ifdef NRF52840_XXAA
+    tud_cdc_write_flush();
+    #endif
+
+    // Serial events
     if (serialEvent && serialEventRun) serialEventRun();
 
     #if CFG_DEBUG >= 2 && DBG_MEM_INFO

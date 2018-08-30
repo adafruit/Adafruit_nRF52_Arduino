@@ -57,6 +57,8 @@ uint32_t setLoopStacksize(void);
   #include "pulse.h"
   #include "HardwarePWM.h"
   #include "utility/SoftwareTimer.h"
+
+  #include "Uart.h"
 #endif
 
 #include "delay.h"
@@ -67,11 +69,12 @@ uint32_t setLoopStacksize(void);
 #include "utility/AdaCallback.h"
 
 #ifdef NRF52840_XXAA
-#include "tusb.h"
-#endif
+  #include "tusb.h"
 
 #ifdef __cplusplus
-  #include "Uart.h"
+  #include "USBSerial.h"
+#endif
+
 #endif
 
 // Include board variant
