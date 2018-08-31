@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     debug.cpp
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@
 #include <stdarg.h>
 #include <malloc.h>
 #include <Arduino.h>
+#include <ctype.h>
 
 // defined in linker script
 extern uint32_t __data_start__[];
@@ -54,30 +55,30 @@ extern uint32_t __StackLimit[];
 
 extern "C"
 {
-  int cprintf(const char * format, ...)
-  {
-    char buf[256];
-    int len;
 
-    va_list ap;
-    va_start(ap, format);
+int cprintf(const char * format, ...)
+{
+  char buf[256];
+  int len;
 
-    len = vsnprintf(buf, 256, format, ap);
-    Serial.write(buf, len);
+  va_list ap;
+  va_start(ap, format);
 
-    va_end(ap);
-    return len;
-  }
+  len = vsnprintf(buf, 256, format, ap);
+  Serial.write(buf, len);
 
-  void vApplicationMallocFailedHook(void)
-  {
-    Serial.println("Failed to Malloc");
-  }
+  va_end(ap);
+  return len;
+}
 
-  void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
-  {
-    Serial.printf("%s Stack Overflow !!!", pcTaskName);
-  }
+void vApplicationMallocFailedHook(void)
+{
+  cprintf("Failed to Malloc");
+}
+
+void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
+{
+  cprintf("%s Stack Overflow !!!", pcTaskName);
 }
 
 int dbgHeapTotal(void)
@@ -124,14 +125,14 @@ static void printMemRegion(const char* name, uint32_t top, uint32_t bottom, uint
     sprintf(buffer, "%lu", top-bottom);
   }
 
-  Serial.printf("| %-5s| 0x%04X - 0x%04X | %-19s |\n", name, (uint16_t) bottom, (uint16_t) (top-1), buffer);
+  cprintf("| %-5s| 0x%04X - 0x%04X | %-19s |\n", name, (uint16_t) bottom, (uint16_t) (top-1), buffer);
 }
 
 void dbgMemInfo(void)
 {
-  Serial.println(" ______________________________________________");
-  Serial.println("| Name | Addr 0x2000xxxx | Usage               |");
-  Serial.println("| ---------------------------------------------|");
+  cprintf(" ______________________________________________\n");
+  cprintf("| Name | Addr 0x2000xxxx | Usage               |\n");
+  cprintf("| ---------------------------------------------|\n");
 
   // Pritn SRAM used for Stack executed by S132 and ISR
   printMemRegion("Stack", ((uint32_t) __StackTop), ((uint32_t) __StackLimit), dbgStackUsed() );
@@ -145,8 +146,8 @@ void dbgMemInfo(void)
   // Print SRAM Used by SoftDevice
   printMemRegion("S132", (uint32_t) __data_start__, 0x20000000, 0);
 
-  Serial.printf("|______________________________________________|\n");
-  Serial.println();
+  cprintf("|______________________________________________|\n");
+  cprintf("\n");
 
   // Print Task list
   uint32_t tasknum = uxTaskGetNumberOfTasks();
@@ -154,9 +155,10 @@ void dbgMemInfo(void)
 
   vTaskList(buf);
 
-  Serial.println("Task    State   Prio  StackLeft Num");
-  Serial.println("-----------------------------------");
-  Serial.println(buf);
+  cprintf("Task    State   Prio  StackLeft Num\n");
+  cprintf("-----------------------------------\n");
+  cprintf(buf);
+  cprintf("\n");
   rtos_free(buf);
 }
 
@@ -174,49 +176,115 @@ void dbgPrintVersion(void)
     @brief  Helper function to display memory contents in a friendly format
 */
 /******************************************************************************/
+static void dump_str_line(uint8_t const* buf, uint16_t count)
+{
+  // each line is 16 bytes
+  for(int i=0; i<count; i++)
+  {
+    const char ch = buf[i];
+    cprintf("%c", isprint(ch) ? ch : '.');
+  }
+}
+
 void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffset)
 {
+  if ( !buf )
+  {
+    cprintf("NULL\n");
+    return;
+  }
+
   uint8_t const *buf8 = (uint8_t const *) buf;
-  
-  uint8_t format_size = 2 * size;
-  if ( count*size > UINT8_MAX  ) offset_fmt_size *= 2;
-  if ( count*size > UINT16_MAX ) offset_fmt_size *= 2;
 
-  char format[] = "%02lX";
+  char format[] = "%00lX";
+  format[2] += 2*size;
 
-  char offset_fmt[] = "%00lX: ";
-  offset_fmt[2] += offset_fmt_size;
-
-  const uint8_t item_per_line = 16 / size;
+  const uint8_t  item_per_line  = 16 / size;
 
   for(int i=0; i<count; i++)
   {
     uint32_t value=0;
 
-    // Print address
     if ( i%item_per_line == 0 )
     {
-      if ( i != 0 ) Serial.println();
+      // Print Ascii
+      if ( i != 0 )
+      {
+        cprintf(" | ");
+        dump_str_line(buf8-16, 16);
+        cprintf("\n");
+      }
 
       // print offset or absolute address
       if (printOffset)
       {
-        Serial.printf(offset_fmt, 16*i/item_per_line);
+        cprintf("%03lX: ", 16*i/item_per_line);
       }else
       {
-        Serial.printf("%08lX:", (uint32_t) buf8);
+        cprintf("%08lX:", (uint32_t) buf8);
       }
     }
 
     memcpy(&value, buf8, size);
     buf8 += size;
 
-    Serial.print(' ');
-    Serial.printf(format, value);
+    cprintf(" ");
+    cprintf(format, value);
   }
 
-  Serial.println();
+  // fill up last row to 16 for printing ascii
+  const uint16_t remain = count%16;
+  uint8_t nback = (remain ? remain : 16);
+
+  if ( remain )
+  {
+    for(int i=0; i< 16-remain; i++)
+    {
+      cprintf(" ");
+      for(int j=0; j<2*size; j++) cprintf(" ");
+    }
+  }
+
+  cprintf(" | ");
+  dump_str_line(buf8-nback, nback);
+  cprintf("\n");
+
+  cprintf("\n");
 }
+
+
+void dbgDumpMemoryCFormat(const char* str, void const *buf, uint16_t count)
+{
+  if ( !buf )
+  {
+    cprintf("NULL\n");
+    return;
+  }
+
+  cprintf("%s = \n{\n  ", str);
+
+  uint8_t const *buf8 = (uint8_t const *) buf;
+
+  for(int i=0; i<count; i++)
+  {
+    uint32_t value=0;
+
+    if ( i%16 == 0 )
+    {
+      if ( i != 0 ) cprintf(",\n  ");
+    }else
+    {
+      if ( i != 0 ) cprintf(", ");
+    }
+
+    cprintf("0x%02lX", *buf8);
+    buf8++;
+  }
+
+  cprintf("\n\};\n");
+}
+
+
 
 #if CFG_DEBUG
 
