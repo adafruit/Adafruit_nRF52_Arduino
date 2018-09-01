@@ -19,10 +19,13 @@
 
 #include "Arduino.h"
 #include "nrf.h"
+#include "nrf_nvic.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+nrf_nvic_state_t nrf_nvic_state;
 
 #define DFU_MAGIC_SERIAL_ONLY_RESET   0x4e
 #define DFU_MAGIC_UF2_RESET           0x57
