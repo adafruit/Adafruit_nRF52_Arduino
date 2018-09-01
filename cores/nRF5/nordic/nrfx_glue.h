@@ -32,12 +32,6 @@
 #ifndef NRFX_GLUE_H__
 #define NRFX_GLUE_H__
 
-// THIS IS A TEMPLATE FILE.
-// It should be copied to a suitable location within the host environment into
-// which nrfx is integrated, and the following macros should be provided with
-// appropriate implementations.
-// And this comment should be removed from the customized file.
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -183,7 +177,8 @@ static inline bool _NRFX_IRQ_IS_PENDING(IRQn_Type irq_number)
  *
  * @param us_time Number of microseconds to wait.
  */
-#define NRFX_DELAY_US(us_time)
+#include <soc/nrfx_coredep.h>
+#define NRFX_DELAY_US(us_time)    nrfx_coredep_delay_us(us_time)
 
 //------------------------------------------------------------------------------
 
