@@ -202,19 +202,12 @@ size_t Uart::write(const uint8_t data)
 
 #define NRF_UART0_IRQn UARTE0_UART0_IRQn
 
-
-#ifdef NRF52840_XXAA
-  #define SERIAL_HW   Serial1
-#else
-  #define SERIAL_HW   Serial
-#endif
-
-Uart SERIAL_HW( NRF_UART0, NRF_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX );
+Uart SERIAL_PORT_HARDWARE( NRF_UART0, NRF_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX );
 
 extern "C"
 {
   void UARTE0_UART0_IRQHandler()
   {
-    SERIAL_HW.IrqHandler();
+    SERIAL_PORT_HARDWARE.IrqHandler();
   }
 }

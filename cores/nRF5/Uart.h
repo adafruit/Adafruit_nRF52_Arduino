@@ -68,15 +68,6 @@ class Uart : public HardwareSerial
     SemaphoreHandle_t _mutex;
 };
 
-#ifdef __cplusplus
-
-#ifdef NRF52840_XXAA
-  extern Uart Serial1;
-#else
-  extern Uart Serial;
-#endif
-
-#endif
 
 // These serial port names are intended to allow libraries and architecture-neutral
 // sketches to automatically default to the correct port name for a particular type
@@ -93,5 +84,22 @@ class Uart : public HardwareSerial
 //
 // SERIAL_PORT_HARDWARE_OPEN  Hardware serial ports which are open for use.  Their RX & TX
 //                            pins are NOT connected to anything by default.
-#define SERIAL_PORT_MONITOR   Serial
-#define SERIAL_PORT_HARDWARE  Serial
+#ifdef NRF52840_XXAA
+
+#define SERIAL_PORT_MONITOR         Serial
+#define SERIAL_PORT_USBVIRTUAL      Serial
+
+#define SERIAL_PORT_HARDWARE        Serial1
+#define SERIAL_PORT_HARDWARE_OPEN   Serial1
+
+#else
+
+#define SERIAL_PORT_MONITOR         Serial
+#define SERIAL_PORT_HARDWARE        Serial
+
+#endif
+
+
+#ifdef __cplusplus
+extern Uart SERIAL_PORT_HARDWARE;
+#endif
