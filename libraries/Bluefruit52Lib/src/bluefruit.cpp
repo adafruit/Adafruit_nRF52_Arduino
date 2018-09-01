@@ -796,7 +796,7 @@ void adafruit_ble_task(void* arg)
   (void) arg;
 
 #if SD_VER >= 500
-  uint8_t * ev_buf = (uint8_t*) rtos_malloc(BLE_EVT_LEN_MAX(BLEGATT_ATT_MTU_MAX));
+  uint8_t * ev_buf = (uint8_t*) rtos_malloc(BLE_EVT_LEN_MAX(BLE_GATT_ATT_MTU_MAX));
 #endif
 
   while (1)
@@ -812,7 +812,7 @@ void adafruit_ble_task(void* arg)
         __ALIGN(4) uint8_t ev_buf[ sizeof(ble_evt_t) + (BLE_GATT_ATT_MTU_DEFAULT) ];
         uint16_t ev_len = sizeof(ev_buf);
 #else
-        uint16_t ev_len = BLE_EVT_LEN_MAX(BLEGATT_ATT_MTU_MAX);
+        uint16_t ev_len = BLE_EVT_LEN_MAX(BLE_GATT_ATT_MTU_MAX);
 #endif
 
         // Get BLE Event

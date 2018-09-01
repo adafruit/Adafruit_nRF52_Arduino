@@ -43,13 +43,13 @@
 
 /* Note changing these parameters will affect APP_RAM_BASE
  * --> need to update RAM region in linker file
- * - BLEGATT_ATT_MTU_MAX from 23 (default) to 247
+ * - BLE_GATT_ATT_MTU_MAX from 23 (default) to 247
  */
 
 #if SD_VER < 500
-#define BLEGATT_ATT_MTU_MAX             BLE_GATT_ATT_MTU_DEFAULT
+#define BLE_GATT_ATT_MTU_MAX             BLE_GATT_ATT_MTU_DEFAULT
 #else
-#define BLEGATT_ATT_MTU_MAX             247
+#define BLE_GATT_ATT_MTU_MAX             247
 #endif
 
 #define BLE_PRPH_MAX_CONN               1
