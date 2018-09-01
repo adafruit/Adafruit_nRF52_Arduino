@@ -38,6 +38,11 @@
 #include <Nffs.h>
 #include "utility/bonding.h"
 
+#ifdef NRF52840_XXAA
+#include "nrfx_power.h"
+#include "usb/usb.h"
+#endif
+
 #define CFG_BLE_TX_POWER_LEVEL           0
 #define CFG_DEFAULT_NAME                 "Bluefruit52"
 
@@ -206,6 +211,10 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   _prph_count    = prph_count;
   _central_count = central_count;
 
+#ifdef NRF52840_XXAA
+  usb_softdevice_pre_enable();
+#endif
+
   // Configure Clock
 #if defined( USE_LFXO )
   nrf_clock_lf_cfg_t clock_cfg =
@@ -219,6 +228,10 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 #endif
 
   VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, nrf_error_cb) );
+
+#ifdef NRF52840_XXAA
+  usb_softdevice_post_enable();
+#endif
 
   /*------------------------------------------------------------------*/
   /*  SoftDevice Default Configuration depending on the number of
@@ -382,6 +395,13 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   VERIFY_STATUS ( sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)) );
 
   VERIFY_STATUS( sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN) );
+
+  //------------- USB -------------//
+#if NRF52840_XXAA
+  sd_power_usbdetected_enable(true);
+  sd_power_usbpwrrdy_enable(true);
+  sd_power_usbremoved_enable(true);
+#endif
 
   /*------------- DFU OTA as built-in service -------------*/
   _dfu_svc.begin();
@@ -744,10 +764,26 @@ void adafruit_soc_task(void* arg)
         {
           switch (soc_evt)
           {
+            // Flash
             case NRF_EVT_FLASH_OPERATION_SUCCESS:
             case NRF_EVT_FLASH_OPERATION_ERROR:
               if (hal_flash_event_cb) hal_flash_event_cb(soc_evt);
             break;
+
+            /*------------- usb power event handler -------------*/
+#ifdef NRF52840_XXAA
+            case NRF_EVT_POWER_USB_DETECTED:
+            case NRF_EVT_POWER_USB_POWER_READY:
+            case NRF_EVT_POWER_USB_REMOVED:
+            {
+              int32_t usbevt = (soc_evt == NRF_EVT_POWER_USB_DETECTED   ) ? NRFX_POWER_USB_EVT_DETECTED:
+                               (soc_evt == NRF_EVT_POWER_USB_POWER_READY) ? NRFX_POWER_USB_EVT_READY   :
+                               (soc_evt == NRF_EVT_POWER_USB_REMOVED    ) ? NRFX_POWER_USB_EVT_REMOVED : -1;
+
+              if ( usbevt >= 0) tusb_hal_nrf_power_event(usbevt);
+            }
+            break;
+#endif
 
             default: break;
           }

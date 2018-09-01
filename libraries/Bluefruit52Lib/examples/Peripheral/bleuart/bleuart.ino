@@ -24,6 +24,8 @@ SoftwareTimer blinkTimer;
 void setup()
 {
   Serial.begin(115200);
+  while( !Serial ) {} // only needed for nRF52840
+  
   Serial.println("Bluefruit52 BLEUART Example");
   Serial.println("---------------------------\n");
 
@@ -178,4 +180,3 @@ void rtos_idle_callback(void)
   // Don't call any other FreeRTOS blocking API()
   // Perform background task(s) here
 }
-
