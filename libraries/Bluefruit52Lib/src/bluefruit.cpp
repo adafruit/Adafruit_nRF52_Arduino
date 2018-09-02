@@ -754,7 +754,7 @@ void AdafruitBluefruit::printInfo(void)
   Serial.println();
 
   Serial.printf(title_fmt, "Conn Timeout");
-  Serial.printf("%.2f ms, ", _ppcp_conn_sup_timeout*10.0f);
+  Serial.printf("%.2f ms", _ppcp_conn_sup_timeout*10.0f);
   Serial.println();
 
   /*------------- List the paried device -------------*/
