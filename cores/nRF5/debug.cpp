@@ -479,3 +479,5 @@ const char* dbg_err_str(uint32_t err_id)
 
 #endif
 
+}
+
