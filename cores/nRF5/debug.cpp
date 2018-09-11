@@ -56,7 +56,7 @@ extern uint32_t __StackLimit[];
 extern "C"
 {
 
-int cprintf(const char * format, ...)
+int cprintf (char const * format, ...)
 {
   char buf[256];
   int len;
@@ -79,6 +79,8 @@ void vApplicationMallocFailedHook(void)
 void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
 {
   cprintf("%s Stack Overflow !!!", pcTaskName);
+}
+
 }
 
 int dbgHeapTotal(void)
@@ -114,7 +116,7 @@ int dbgStackUsed(void)
   return ((uint32_t) p_end) - ((uint32_t) p_buf);
 }
 
-static void printMemRegion(const char* name, uint32_t top, uint32_t bottom, uint32_t used)
+static void printMemRegion (char const * name, uint32_t top, uint32_t bottom, uint32_t used)
 {
   char buffer[30];
   if ( used )
@@ -181,7 +183,7 @@ static void dump_str_line(uint8_t const* buf, uint16_t count)
   // each line is 16 bytes
   for(int i=0; i<count; i++)
   {
-    const char ch = buf[i];
+    char const ch = buf[i];
     cprintf("%c", isprint(ch) ? ch : '.');
   }
 }
@@ -199,7 +201,7 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
   char format[] = "%00lX";
   format[2] += 2*size;
 
-  const uint8_t  item_per_line  = 16 / size;
+  uint8_t const item_per_line = 16 / size;
 
   for(int i=0; i<count; i++)
   {
@@ -233,7 +235,7 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
   }
 
   // fill up last row to 16 for printing ascii
-  const uint16_t remain = count%16;
+  uint16_t const remain = count % 16;
   uint8_t nback = (remain ? remain : 16);
 
   if ( remain )
@@ -253,7 +255,7 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
 }
 
 
-void dbgDumpMemoryCFormat(const char* str, void const *buf, uint16_t count)
+void dbgDumpMemoryCFormat (char const * str, void const *buf, uint16_t count)
 {
   if ( !buf )
   {
@@ -298,7 +300,7 @@ void dbgDumpMemoryCFormat(const char* str, void const *buf, uint16_t count)
  *------------------------------------------------------------------*/
 
 // Common BLE Event base
-static const char* _evt_base_str[] =
+static char const * _evt_base_str[] =
 {
 #if SD_VER < 500
     "BLE_EVT_TX_COMPLETE"                     ,
@@ -307,7 +309,7 @@ static const char* _evt_base_str[] =
     "BLE_EVT_USER_MEM_RELEASE"                ,
 };
 
-static const char* _evt_gap_str[] =
+static char const * _evt_gap_str[] =
 {
     "BLE_GAP_EVT_CONNECTED"                  ,
     "BLE_GAP_EVT_DISCONNECTED"               ,
@@ -333,7 +335,7 @@ static const char* _evt_gap_str[] =
 };
 
 // GATTC Event
-static const char* _evt_gattc_str[] =
+static char const * _evt_gattc_str[] =
 {
     "BLE_GATTC_EVT_PRIM_SRVC_DISC_RSP"        ,
     "BLE_GATTC_EVT_REL_DISC_RSP"              ,
@@ -355,7 +357,7 @@ static const char* _evt_gattc_str[] =
 };
 
 // GATTS Event
-static const char* _evt_gatts_str[] =
+static char const * _evt_gatts_str[] =
 {
     "BLE_GATTS_EVT_WRITE"                     ,
     "BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST"      ,
@@ -371,7 +373,7 @@ static const char* _evt_gatts_str[] =
 #endif
 };
 
-const char* dbg_ble_event_str(uint16_t evt_id)
+char const * dbg_ble_event_str (uint16_t evt_id)
 {
   static char unknown_evt[7] = {0};
 
@@ -463,9 +465,9 @@ lookup_table_t const _err_table =
   .items = _err_lookup_items
 };
 
-const char* dbg_err_str(uint32_t err_id)
+char const * dbg_err_str (uint32_t err_id)
 {
-  const char * str = (const char *) lookup_find(&_err_table, err_id);
+  char const * str = (char const *) lookup_find(&_err_table, err_id);
   static char unknown_err[7] = {0};
 
   if ( str == NULL )
@@ -478,6 +480,4 @@ const char* dbg_err_str(uint32_t err_id)
 }
 
 #endif
-
-}
 
