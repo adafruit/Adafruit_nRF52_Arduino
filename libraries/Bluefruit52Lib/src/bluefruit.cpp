@@ -99,7 +99,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _sd_cfg.attr_table_size = 0x800;
   _sd_cfg.uuid128_max     = BLE_UUID_VS_COUNT_DEFAULT;
-
+  _sd_cfg.service_changed = 1;
 
   _prph_count    = 0;
   _central_count = 0;
@@ -116,6 +116,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _ppcp_min_conn = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
   _ppcp_max_conn = BLE_GAP_CONN_MAX_INTERVAL_DFLT;
+  _ppcp_conn_sup_timeout = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10; // in 10ms unit
   _conn_interval = 0;
 
   _connect_cb    = NULL;
@@ -125,6 +126,11 @@ COMMENT_OUT(
   _auth_type = BLE_GAP_AUTH_KEY_TYPE_NONE;
   varclr(_pin);
 )
+}
+
+void AdafruitBluefruit::configServiceChanged(bool changed)
+{
+  _sd_cfg.service_changed = (changed ? 1 : 0);
 }
 
 void AdafruitBluefruit::configUuid128Count(uint8_t  uuid128_max)
@@ -291,7 +297,7 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 //  VERIFY_STATUS( sd_ble_cfg_set(BLE_GAP_CFG_DEVICE_NAME, &blecfg, ram_start) );
 
   varclr(&blecfg);
-  blecfg.gatts_cfg.service_changed.service_changed = 1; // must be enabled to be consistent with DFU in OTA mode
+  blecfg.gatts_cfg.service_changed.service_changed = _sd_cfg.service_changed;
   VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_SERVICE_CHANGED, &blecfg, ram_start) );
 
   // ATTR Table Size
@@ -385,7 +391,7 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
       .min_conn_interval = _ppcp_min_conn, // in 1.25ms unit
       .max_conn_interval = _ppcp_max_conn, // in 1.25ms unit
       .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
-      .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
+      .conn_sup_timeout  = _ppcp_conn_sup_timeout, // in 10ms unit
   };
 
   VERIFY_STATUS( sd_ble_gap_ppcp_set(&gap_conn_params) );
@@ -536,7 +542,7 @@ bool AdafruitBluefruit::setConnInterval(uint16_t min, uint16_t max)
       .min_conn_interval = _ppcp_min_conn, // in 1.25ms unit
       .max_conn_interval = _ppcp_max_conn, // in 1.25ms unit
       .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
-      .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
+      .conn_sup_timeout  = _ppcp_conn_sup_timeout // in 10ms unit
   };
 
   VERIFY_STATUS( sd_ble_gap_ppcp_set(&gap_conn_params), false);
@@ -549,6 +555,27 @@ bool AdafruitBluefruit::setConnIntervalMS(uint16_t min_ms, uint16_t max_ms)
   return setConnInterval( MS100TO125(min_ms), MS100TO125(max_ms) );
 }
 
+bool AdafruitBluefruit::setConnSupervisionTimeout(uint16_t timeout)
+{
+  _ppcp_conn_sup_timeout = timeout;
+
+  ble_gap_conn_params_t   gap_conn_params =
+  {
+      .min_conn_interval = _ppcp_min_conn, // in 1.25ms unit
+      .max_conn_interval = _ppcp_max_conn, // in 1.25ms unit
+      .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
+      .conn_sup_timeout  = _ppcp_conn_sup_timeout // in 10ms unit
+  };
+
+  VERIFY_STATUS( sd_ble_gap_ppcp_set(&gap_conn_params), false);
+
+  return true;
+}
+
+bool AdafruitBluefruit::setConnSupervisionTimeoutMS(uint16_t timeout_ms)
+{
+  return setConnSupervisionTimeout(timeout_ms / 10); // 10ms unit
+}
 
 void AdafruitBluefruit::setConnectCallback( BLEGap::connect_callback_t fp )
 {
@@ -628,6 +655,10 @@ void AdafruitBluefruit::printInfo(void)
   // ATTR Table Size
   Serial.printf(title_fmt, "ATTR Table Size");
   Serial.println(_sd_cfg.attr_table_size);
+
+  // Service Changed
+  Serial.printf(title_fmt, "Service Changed");
+  Serial.println(_sd_cfg.service_changed);
 
   if ( _prph_count )
   {
@@ -711,6 +742,10 @@ void AdafruitBluefruit::printInfo(void)
   Serial.printf(title_fmt, "Conn Intervals");
   Serial.printf("min = %.2f ms, ", _ppcp_min_conn*1.25f);
   Serial.printf("max = %.2f ms", _ppcp_max_conn*1.25f);
+  Serial.println();
+
+  Serial.printf(title_fmt, "Conn Timeout");
+  Serial.printf("%.2f ms", _ppcp_conn_sup_timeout*10.0f);
   Serial.println();
 
   /*------------- List the paried device -------------*/
@@ -800,7 +835,7 @@ void adafruit_ble_task(void* arg)
 {
   (void) arg;
 
-  uint8_t * ev_buf = (uint8_t*) rtos_malloc(BLE_EVT_LEN_MAX(BLEGATT_ATT_MTU_MAX));
+  uint8_t * ev_buf = (uint8_t*) rtos_malloc(BLE_EVT_LEN_MAX(BLE_GATT_ATT_MTU_MAX));
 
   while (1)
   {
@@ -811,7 +846,7 @@ void adafruit_ble_task(void* arg)
       // Until no pending events
       while( NRF_ERROR_NOT_FOUND != err )
       {
-        uint16_t ev_len = BLE_EVT_LEN_MAX(BLEGATT_ATT_MTU_MAX);
+        uint16_t ev_len = BLE_EVT_LEN_MAX(BLE_GATT_ATT_MTU_MAX);
 
         // Get BLE Event
         err = sd_ble_evt_get(ev_buf, &ev_len);

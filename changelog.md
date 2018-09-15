@@ -8,6 +8,13 @@
 - Added nrfx to core
 - Added tinyusb stack to libraries
 
+## 0.8.6
+
+- Fixed dbgDumpMemory for buffer > 255 byte, thanks to @airbornemint
+- Added setConnSupervisionTimeout and setConnSupervisionTimeoutMS, thanks to @airbornemint
+- Decrease gpio's interrupt level to 2 to avoid conlfict with SD timing critical task, thanks to @Nenik
+- Fixed #174 window build error with Arduino 1.8.6 with verbose = off
+
 ## 0.8.5
 
 - Migrate nrfutil to adafruit-nrfutil, executable binaries for windows and macOS are included.
