@@ -80,9 +80,35 @@ void bond_init(void)
 /*------------------------------------------------------------------*/
 /* Keys
  *------------------------------------------------------------------*/
-#if 0
 static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
 {
+  uint16_t const ediv = (role == BLE_GAP_ROLE_PERIPH) ? bdata->own_enc.master_id.ediv : bdata->peer_enc.master_id.ediv;
+
+  //------------- save keys -------------//
+  uint32_t fl_addr = BOND_FLASH_ADDR;
+  uint8_t const keylen = sizeof(bond_data_t);
+
+  fl_addr += flash_nrf52_write8(fl_addr, sizeof(bond_data_t));
+  fl_addr += flash_nrf52_write(fl_addr, bdata, sizeof(bond_data_t));
+
+  //------------- save device name -------------//
+  char devname[64] = { 0 };
+  uint8_t namelen = Bluefruit.Gap.getPeerName(conn_hdl, devname, sizeof(devname));
+
+  // If couldn't get devname use peer mac address
+  if ( namelen == 0 )
+  {
+    uint8_t* mac = bdata->peer_id.id_addr_info.addr;
+    namelen = sprintf(devname, "%02X:%02X:%02X:%02X:%02X:%02X", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
+  }
+
+  fl_addr += flash_nrf52_write8(fl_addr, namelen + 1);    // also include null char
+  fl_addr += flash_nrf52_write(fl_addr, devname, namelen);
+  fl_addr += flash_nrf52_write8(fl_addr, 0);    // null char
+
+  LOG_LV2("BOND", "Keys for \"%s\" is saved", devname);
+
+#if 0
   char filename[BOND_FNAME_LEN];
   get_fname(filename, role, role == BLE_GAP_ROLE_PERIPH ? bdata->own_enc.master_id.ediv : bdata->peer_enc.master_id.ediv);
 
@@ -120,48 +146,20 @@ static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_data_t* bd
   }
 
   printBondDir(role);
-}
 #endif
+}
 
 bool bond_save_keys (uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
 {
-  uint16_t const ediv = (role == BLE_GAP_ROLE_PERIPH) ? bdata->own_enc.master_id.ediv : bdata->peer_enc.master_id.ediv;
-
-  //------------- save keys -------------//
-  uint32_t fl_addr = BOND_FLASH_ADDR;
-  uint8_t const keylen = sizeof(bond_data_t);
-
-  fl_addr += flash_nrf52_write8(fl_addr, sizeof(bond_data_t));
-  fl_addr += flash_nrf52_write(fl_addr, bdata, sizeof(bond_data_t));
-
-  //------------- save device name -------------//
-  char devname[64] = { 0 };
-  uint8_t namelen = Bluefruit.Gap.getPeerName(conn_hdl, devname, sizeof(devname));
-
-  // If couldn't get devname use peer mac address
-  if ( namelen == 0 )
-  {
-    uint8_t* mac = bdata->peer_id.id_addr_info.addr;
-    namelen = sprintf(devname, "%02X:%02X:%02X:%02X:%02X:%02X", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
-  }
-
-  fl_addr += flash_nrf52_write8(fl_addr, namelen + 1);    // also include null char
-  fl_addr += flash_nrf52_write(fl_addr, devname, namelen);
-  fl_addr += flash_nrf52_write8(fl_addr, 0);    // null char
-
-  LOG_LV2("BOND", "Keys for \"%s\" is saved", devname);
-
-  return true;
-
-#if 0
   uint8_t* buf = (uint8_t*) rtos_malloc( sizeof(bond_data_t) );
-  VERIFY(buf, );
+  VERIFY(buf);
 
   memcpy(buf, bdata, sizeof(bond_data_t));
 
   // queue to execute in Ada Callback thread
   ada_callback(buf, bond_save_keys_dfr, role, conn_hdl, buf);
-#endif
+
+  return true;
 }
 
 bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata)
@@ -195,9 +193,23 @@ bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata)
 /*------------------------------------------------------------------*/
 /* CCCD
  *------------------------------------------------------------------*/
-#if 0
 static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
 {
+  uint16_t alen = 0;
+  sd_ble_gatts_sys_attr_get(conn_hdl, NULL, &alen, SVC_CONTEXT_FLAG);
+
+  uint8_t attr[alen];
+
+  VERIFY(ERROR_NONE == sd_ble_gatts_sys_attr_get(conn_hdl, attr, &alen, SVC_CONTEXT_FLAG),);
+
+  (void) role;
+  uint32_t fl_addr = BOND_FLASH_ADDR + 256;
+
+  flash_nrf52_write8(fl_addr++, alen);
+  flash_nrf52_write(fl_addr, attr, alen);
+  LOG_LV2("BOND", "CCCD setting is saved");
+
+#if 0
   uint16_t len=0;
   sd_ble_gatts_sys_attr_get(conn_hdl, NULL, &len, SVC_CONTEXT_FLAG);
 
@@ -222,33 +234,17 @@ static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
 
   rtos_free(sys_attr);
   printBondDir(role);
-}
 #endif
+}
 
 bool bond_save_cccd (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
 {
   VERIFY(ediv != 0xFFFF);
 
-  uint16_t alen = 0;
-  sd_ble_gatts_sys_attr_get(conn_hdl, NULL, &alen, SVC_CONTEXT_FLAG);
-
-  uint8_t attr[alen];
-
-  VERIFY(ERROR_NONE == sd_ble_gatts_sys_attr_get(conn_hdl, attr, &alen, SVC_CONTEXT_FLAG));
-
-  (void) role;
-  uint32_t fl_addr = BOND_FLASH_ADDR + 256;
-
-  flash_nrf52_write8(fl_addr++, alen);
-  flash_nrf52_write(fl_addr, attr, alen);
-  LOG_LV2("BOND", "CCCD setting is saved");
+  // queue to execute in Ada Callback thread
+  ada_callback(NULL, bond_save_cccd_dfr, role, conn_hdl, ediv);
 
   return true;
-
-#if 0
-  // queue to execute in Ada Callback thread
-  ada_callback(NULL, bond_save_cccd_dfr, role, cond_hdl, ediv);
-#endif
 }
 
 

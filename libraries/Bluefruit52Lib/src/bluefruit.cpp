@@ -55,7 +55,7 @@ AdafruitBluefruit Bluefruit;
  *------------------------------------------------------------------*/
 extern "C"
 {
-  void hal_flash_event_cb(uint32_t event) ATTR_WEAK;
+void flash_nrf52_event_cb (uint32_t event) ATTR_WEAK;
 }
 
 void adafruit_ble_task(void* arg);
@@ -801,7 +801,7 @@ void adafruit_soc_task(void* arg)
             // Flash
             case NRF_EVT_FLASH_OPERATION_SUCCESS:
             case NRF_EVT_FLASH_OPERATION_ERROR:
-              if (hal_flash_event_cb) hal_flash_event_cb(soc_evt);
+              if ( flash_nrf52_event_cb ) flash_nrf52_event_cb(soc_evt);
             break;
 
             /*------------- usb power event handler -------------*/

@@ -37,8 +37,7 @@
 #ifndef FLASH_NRF52_H_
 #define FLASH_NRF52_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "common_inc.h"
 
 #ifdef __cplusplus
  extern "C" {

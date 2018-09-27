@@ -34,16 +34,25 @@
 */
 /**************************************************************************/
 
-#include "../flash/flash_nrf52.h"
-
-#include "../flash/flash_cache.h"
+#include "flash_nrf52.h"
+#include "flash_cache.h"
+#include "nrf_soc.h"
+#include "rtos.h"
 
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
+static SemaphoreHandle_t _sem = NULL;
+static volatile uint32_t _op_result;
+
+void flash_nrf52_event_cb (uint32_t event)
+{
+  _op_result = event;
+  xSemaphoreGive(_sem);
+}
 
 // Flash Abstraction Layer
-static void fal_erase (uint32_t addr);
+static bool fal_erase (uint32_t addr);
 static uint32_t fal_program (uint32_t dst, void const * src, uint32_t len);
 static uint32_t fal_read (void* dst, uint32_t src, uint32_t len);
 static bool fal_verify (uint32_t addr, void const * buf, uint32_t len);
@@ -78,16 +87,44 @@ uint32_t flash_nrf52_read (void* dst, uint32_t src, uint32_t len)
 //--------------------------------------------------------------------+
 // HAL for caching
 //--------------------------------------------------------------------+
-static void fal_erase (uint32_t addr)
+static bool fal_erase (uint32_t addr)
 {
-  // TODO SD enabled
-  nrf_nvmc_page_erase(addr);
+  // Init semaphore for first call
+  if ( !_sem )
+  {
+    _sem = xSemaphoreCreateBinary();
+    VERIFY(_sem);
+  }
+
+  // delay and retry if busy
+  uint32_t err;
+  while ( NRF_ERROR_BUSY == (err = sd_flash_page_erase(addr / FLASH_CACHE_PAGE_SIZE)) )
+  {
+    delay(1);
+  }
+  VERIFY_STATUS(err);
+
+  // wait until complete
+  xSemaphoreTake(_sem, portMAX_DELAY);
+  VERIFY(_op_result == NRF_EVT_FLASH_OPERATION_SUCCESS);
+
+  return true;
 }
 
 static uint32_t fal_program (uint32_t dst, void const * src, uint32_t len)
 {
-  // TODO SD enabled
-  nrf_nvmc_write_words(dst, (uint32_t const *) src, len / 4);
+  // delay and try again if busy
+  uint32_t err;
+  while ( NRF_ERROR_BUSY == (err = sd_flash_write((uint32_t*) dst, (uint32_t const *) src, len / 4)) )
+  {
+    delay(1);
+  }
+  VERIFY_STATUS(err);
+
+  // wait until complete
+  xSemaphoreTake(_sem, portMAX_DELAY);
+  VERIFY(_op_result == NRF_EVT_FLASH_OPERATION_SUCCESS);
+
   return len;
 }
 

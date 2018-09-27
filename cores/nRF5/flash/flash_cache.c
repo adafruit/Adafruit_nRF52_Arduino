@@ -43,12 +43,12 @@
 //--------------------------------------------------------------------+
 static inline uint32_t page_addr_of (uint32_t addr)
 {
-  return addr & ~(FLASH_API_PAGE_SIZE - 1);
+  return addr & ~(FLASH_CACHE_PAGE_SIZE - 1);
 }
 
 static inline uint32_t page_offset_of (uint32_t addr)
 {
-  return addr & (FLASH_API_PAGE_SIZE - 1);
+  return addr & (FLASH_CACHE_PAGE_SIZE - 1);
 }
 
 uint32_t flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, uint32_t len)
@@ -62,7 +62,7 @@ uint32_t flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, u
     uint32_t const page_addr = page_addr_of(dst);
     uint32_t const offset = page_offset_of(dst);
 
-    uint32_t wr_bytes = FLASH_API_PAGE_SIZE - offset;
+    uint32_t wr_bytes = FLASH_CACHE_PAGE_SIZE - offset;
     wr_bytes = min32(remain, wr_bytes);
 
     // Page changes, flush old and update new cache
@@ -78,9 +78,9 @@ uint32_t flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, u
       }
 
       uint32_t const last_byte = offset + wr_bytes;
-      if ( last_byte < FLASH_API_PAGE_SIZE )
+      if ( last_byte < FLASH_CACHE_PAGE_SIZE )
       {
-        fc->read(fc->cache_buf + last_byte, page_addr + last_byte, FLASH_API_PAGE_SIZE - last_byte);
+        fc->read(fc->cache_buf + last_byte, page_addr + last_byte, FLASH_CACHE_PAGE_SIZE - last_byte);
       }
     }
 
@@ -99,10 +99,10 @@ void flash_cache_flush (flash_cache_t* fc)
   if ( fc->cache_addr == FLASH_CACHE_INVALID_ADDR ) return;
 
   // skip erase & program if verify() exists, and memory matches
-  if ( !(fc->verify && fc->verify(fc->cache_addr, fc->cache_buf, FLASH_API_PAGE_SIZE)) )
+  if ( !(fc->verify && fc->verify(fc->cache_addr, fc->cache_buf, FLASH_CACHE_PAGE_SIZE)) )
   {
     fc->erase(fc->cache_addr);
-    fc->program(fc->cache_addr, fc->cache_buf, FLASH_API_PAGE_SIZE);
+    fc->program(fc->cache_addr, fc->cache_buf, FLASH_CACHE_PAGE_SIZE);
   }
 
   fc->cache_addr = FLASH_CACHE_INVALID_ADDR;

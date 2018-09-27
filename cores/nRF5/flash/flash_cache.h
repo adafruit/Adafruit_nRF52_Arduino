@@ -40,18 +40,18 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define FLASH_API_PAGE_SIZE       4096
+#define FLASH_CACHE_PAGE_SIZE     4096
 #define FLASH_CACHE_INVALID_ADDR  0xffffffff
 
 typedef struct
 {
-  void (*erase) (uint32_t addr);
+  bool (*erase) (uint32_t addr);
   uint32_t (*program) (uint32_t dst, void const * src, uint32_t len);
   uint32_t (*read) (void* dst, uint32_t src, uint32_t len);
   bool (*verify) (uint32_t addr, void const * buf, uint32_t len);
 
   uint32_t cache_addr;
-  uint8_t cache_buf[FLASH_API_PAGE_SIZE] __attribute__((aligned(4)));
+  uint8_t cache_buf[FLASH_CACHE_PAGE_SIZE] __attribute__((aligned(4)));
 } flash_cache_t;
 
 #ifdef __cplusplus
