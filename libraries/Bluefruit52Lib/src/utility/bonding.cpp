@@ -75,6 +75,7 @@ static void get_fname(char* fname, uint8_t role, uint16_t ediv)
 
 void bond_init(void)
 {
+
 }
 
 /*------------------------------------------------------------------*/
@@ -105,6 +106,8 @@ static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_data_t* bd
   fl_addr += flash_nrf52_write8(fl_addr, namelen + 1);    // also include null char
   fl_addr += flash_nrf52_write(fl_addr, devname, namelen);
   fl_addr += flash_nrf52_write8(fl_addr, 0);    // null char
+
+  flash_nrf52_flush();
 
   LOG_LV2("BOND", "Keys for \"%s\" is saved", devname);
 
@@ -207,6 +210,9 @@ static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
 
   flash_nrf52_write8(fl_addr++, alen);
   flash_nrf52_write(fl_addr, attr, alen);
+
+  flash_nrf52_flush();
+
   LOG_LV2("BOND", "CCCD setting is saved");
 
 #if 0
