@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     NffsDirEntry.h
+    @file     flash_nrf52.h
     @author   hathach (tinyusb.org)
 
     @section LICENSE
@@ -33,28 +33,63 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef NFFSDIRENTRY_H_
-#define NFFSDIRENTRY_H_
 
-#include <Arduino.h>
+#ifndef FLASH_NRF52_H_
+#define FLASH_NRF52_H_
 
-class NffsDirEntry
+#include <stdint.h>
+#include <stdbool.h>
+
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
+void flash_nrf52_flush (void);
+
+uint32_t flash_nrf52_write (uint32_t dst, void const * src, uint32_t len);
+uint32_t flash_nrf52_read (void* dst, uint32_t src, uint32_t len);
+
+static inline uint32_t flash_nrf52_write8 (uint32_t dst, uint8_t num)
 {
-private:
-  struct fs_dirent* _dirent;
+  flash_nrf52_write(dst, &num, sizeof(num));
+  return sizeof(num);
+}
 
-public:
-  NffsDirEntry(void);
-  NffsDirEntry(struct fs_dirent* entry);
+static inline uint32_t flash_nrf52_write16 (uint32_t dst, uint8_t num)
+{
+  flash_nrf52_write(dst, &num, sizeof(num));
+  return sizeof(num);
+}
+static inline uint32_t flash_nrf52_write32 (uint32_t dst, uint8_t num)
+{
+  flash_nrf52_write(dst, &num, sizeof(num));
+  return sizeof(num);
+}
 
-  NffsDirEntry& operator=(const NffsDirEntry& rhs);
+static inline uint8_t flash_nrf52_read8 (uint32_t src)
+{
+  uint8_t num;
+  flash_nrf52_read(&num, src, sizeof(num));
+  return num;
+}
 
-  bool exists(void);
+static inline uint16_t flash_nrf52_read16 (uint32_t src)
+{
+  uint16_t num;
+  flash_nrf52_read(&num, src, sizeof(num));
+  return num;
+}
 
-  size_t getName(char* name, size_t bufsize);
-  bool   isDirectory(void);
-};
+static inline uint16_t flash_nrf52_read32 (uint32_t src)
+{
+  uint32_t num;
+  flash_nrf52_read(&num, src, sizeof(num));
+  return num;
+}
 
 
+#ifdef __cplusplus
+ }
+#endif
 
-#endif /* NFFSDIRENTRY_H_ */
+#endif /* FLASH_NRF52_H_ */

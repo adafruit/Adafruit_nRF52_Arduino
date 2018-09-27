@@ -35,7 +35,6 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
-#include <Nffs.h>
 #include "utility/bonding.h"
 
 #ifdef NRF52840_XXAA
@@ -398,7 +397,7 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 
   // Default device name
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
-  VERIFY_STATUS ( sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)) );
+  VERIFY_STATUS(sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)));
 
   VERIFY_STATUS( sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN) );
 
@@ -443,10 +442,10 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 /*------------------------------------------------------------------*/
 /* General Functions
  *------------------------------------------------------------------*/
-void AdafruitBluefruit::setName(const char* str)
+void AdafruitBluefruit::setName (char const * str)
 {
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
-  sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) str, strlen(str));
+sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) str, strlen(str));
 }
 
 uint8_t AdafruitBluefruit::getName(char* name, uint16_t bufsize)
@@ -457,10 +456,10 @@ uint8_t AdafruitBluefruit::getName(char* name, uint16_t bufsize)
 
 bool AdafruitBluefruit::setTxPower(int8_t power)
 {
-#if NRF52832_XXAA
-  const int8_t accepted[] = { -40, -20, -16, -12, -8, -4, 0, 3, 4 };
-#elif NRF52840_XXAA
-  const int8_t accepted[] = { -40, -20, -16, -12, -8, -4, 0, 2, 3, 4, 5, 6, 7, 8 };
+#if defined(NRF52832_XXAA)
+int8_t const accepted[] = { -40, -20, -16, -12, -8, -4, 0, 3, 4 };
+#elif defined( NRF52840_XXAA)
+int8_t const accepted[] = { -40, -20, -16, -12, -8, -4, 0, 2, 3, 4, 5, 6, 7, 8 };
 #endif
 
   // Check if TX Power is valid value
@@ -645,7 +644,7 @@ void AdafruitBluefruit::printInfo(void)
 
   Serial.println("--------- SoftDevice Config ---------");
 
-  const char* title_fmt = "%-16s: ";
+char const * title_fmt = "%-16s: ";
 
   /*------------- SoftDevice Config -------------*/
   // Max uuid128
@@ -723,7 +722,7 @@ void AdafruitBluefruit::printInfo(void)
   // Address
   Serial.printf(title_fmt, "Address");
   {
-    const char* type_str[] = { "Public", "Static", "Private Resolvable", "Private Non Resolvable" };
+  char const * type_str[] = { "Public", "Static", "Private Resolvable", "Private Non Resolvable" };
     uint8_t mac[6];
     uint8_t type = Gap.getAddr(mac);
 
@@ -868,7 +867,7 @@ void adafruit_ble_task(void* arg)
 void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 {
   // conn handle has fixed offset regardless of event type
-  const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
+  uint16_t const evt_conn_hdl = evt->evt.common_evt.conn_handle;
 
   LOG_LV1("BLE", "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), evt_conn_hdl);
 

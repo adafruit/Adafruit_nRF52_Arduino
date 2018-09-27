@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     Nffs.h
+    @file     flash_cache.h
     @author   hathach (tinyusb.org)
 
     @section LICENSE
@@ -33,63 +33,36 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
-#ifndef NFFS_H_
-#define NFFS_H_
 
-#include <Arduino.h>
+#ifndef FLASH_CACHE_H_
+#define FLASH_CACHE_H_
 
-#include "nffs/nffs.h"
-#include "fs/fsutil.h"
+#include <stdint.h>
+#include <stdbool.h>
 
-#include "NffsDirEntry.h"
-#include "NffsFile.h"
-#include "NffsDir.h"
+#define FLASH_API_PAGE_SIZE       4096
+#define FLASH_CACHE_INVALID_ADDR  0xffffffff
 
-class ApacheNffs
+typedef struct
 {
-private:
-  bool _initialized;
+  void (*erase) (uint32_t addr);
+  uint32_t (*program) (uint32_t dst, void const * src, uint32_t len);
+  uint32_t (*read) (void* dst, uint32_t src, uint32_t len);
+  bool (*verify) (uint32_t addr, void const * buf, uint32_t len);
 
-public:
-  int errnum;
+  uint32_t cache_addr;
+  uint8_t cache_buf[FLASH_API_PAGE_SIZE] __attribute__((aligned(4)));
+} flash_cache_t;
 
-  ApacheNffs(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-  bool begin(void);
+uint32_t flash_cache_write (flash_cache_t* fc, uint32_t dst, void const *src, uint32_t count);
+void flash_cache_flush (flash_cache_t* fc);
 
-  // Format the flash
-  bool format(void);
+#ifdef __cplusplus
+ }
+#endif
 
-  // Make a directory, All intermediate directories must already exist
-  bool mkdir(const char* path);
-
-  // Make a directory and its parents if not existed a.k.a "mkdir -p"
-  bool mkdir_p(const char* path);
-
-  // Remove a file or an directory (recursively)
-  bool remove(const char* path);
-  bool rm    (const char* path) { return remove(path); }
-
-  // Remove a non-readonly file or an empty directory
-  bool rename(const char* from, const char* to);
-  bool mv    (const char* from, const char* to) { return rename(from, to); }
-
-  // utils
-  bool     testFile  (const char* filename);
-  bool     testFolder(const char* path);
-
-  uint32_t readFile (const char* filename, void* buffer, uint32_t bufsize, int32_t offset=0);
-  bool     writeFile(const char* filename, const void* data, uint32_t count, int32_t offset=0);
-  bool     writeFile(const char* filename, const char* str , int32_t offset=0)
-  {
-    return writeFile(filename, str, strlen(str), offset);
-  }
-
-  void     listDir(const char* cwd);
-  void     catFile(const char* fpath, bool isText = false);
-};
-
-
-extern ApacheNffs Nffs;
-
-#endif /* NFFS_H_ */
+#endif /* FLASH_CACHE_H_ */

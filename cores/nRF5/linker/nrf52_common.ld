@@ -47,18 +47,20 @@ OUTPUT_FORMAT ("elf32-littlearm", "elf32-bigarm", "elf32-littlearm")
 ENTRY(Reset_Handler)
 
 /* Adafruit
- * Stack is used by ISR and SoftDevice only, 
- * other code run on thread's allocated stack from heap 
- * Maximum stack used by S132's spec is 1536 byte.
- * Therefore 2KB should be enough
+ * Stack is used by ISR and SoftDevice only, other code run on thread's allocated stack from heap. 
+ * Maximum stack used by S132's spec is 1536 byte. Therefore 2KB should be enough
  */
 __StackSize = 1024*2;
 
-/* Set stack top to end of RAM, and stack limit move down by
- * size of stack_dummy section */
+/* Set stack top to end of RAM, and stack limit move down by size of stack_dummy section */
 PROVIDE(__StackTop   = ORIGIN(RAM) + LENGTH(RAM));
 PROVIDE(__StackLimit = __StackTop - __StackSize);
 PROVIDE(__stack      = __StackTop);
+
+/* Flash region */
+__flash_arduino_start = ORIGIN(FLASH);
+__flash_arduino_end   = ORIGIN(FLASH) + LENGTH(FLASH);
+__flash_bond_start    = ORIGIN(FLASH_BOND);
     
 SECTIONS
 {

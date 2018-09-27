@@ -68,11 +68,11 @@ void bond_clear_all(void);
 
 void bond_remove_key(uint8_t role, uint16_t ediv);
 
-void bond_save_keys(uint8_t role, uint16_t conn_hdl, bond_data_t* bdata);
+bool bond_save_keys (uint8_t role, uint16_t conn_hdl, bond_data_t* bdata);
 bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata);
 
-void bond_save_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv);
-bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv);
+bool bond_save_cccd (uint8_t role, uint16_t conn_hdl, uint16_t ediv);
+bool bond_load_cccd (uint8_t role, uint16_t conn_hdl, uint16_t ediv);
 
 void bond_print_list(uint8_t role);
 

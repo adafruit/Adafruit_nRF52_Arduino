@@ -35,9 +35,30 @@
 /**************************************************************************/
 
 #include <Arduino.h>
-#include <Nffs.h>
 #include "bonding.h"
+
+#include "flash/flash_nrf52.h"
 #include "bluefruit.h"
+
+/*------------------------------------------------------------------*/
+/* Bond Key is saved in following layout
+ * - Bond Data : 80 bytes
+ * - Name      : variable (including null char)
+ *
+ * CCCD is saved separately
+ * - CCCD      : variable
+ *
+ * Each field has an 1-byte preceding length
+ *------------------------------------------------------------------*/
+
+#ifdef NRF52840_XXAA
+#define BOND_FLASH_ADDR     0xF3000
+#else
+#define BOND_FLASH_ADDR     0x73000
+#endif
+
+// TODO make it dynamic later
+#define MAX_BONDS   16
 
 #define SVC_CONTEXT_FLAG                 (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
 
@@ -52,26 +73,15 @@ static void get_fname(char* fname, uint8_t role, uint16_t ediv)
   sprintf(fname, ( role == BLE_GAP_ROLE_PERIPH ) ? BOND_FNAME_PRPH : BOND_FNAME_CNTR, ediv);
 }
 
-/*------------------------------------------------------------------*/
-/* Saving Bond Data to Nffs in following layout
- * - _bond_data 80 bytes
- * - Name       32 bytes
- * - CCCD       variable
- *------------------------------------------------------------------*/
-
 void bond_init(void)
 {
-  // Initialize nffs for bonding (it is safe to call nffs_pkg_init() multiple time)
-  Nffs.begin();
-
-  (void) Nffs.mkdir_p(BOND_DIR_PRPH);
-  (void) Nffs.mkdir_p(BOND_DIR_CNTR);
 }
 
 /*------------------------------------------------------------------*/
 /* Keys
  *------------------------------------------------------------------*/
-static void bond_save_keys_dfr(uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
+#if 0
+static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
 {
   char filename[BOND_FNAME_LEN];
   get_fname(filename, role, role == BLE_GAP_ROLE_PERIPH ? bdata->own_enc.master_id.ediv : bdata->peer_enc.master_id.ediv);
@@ -92,7 +102,7 @@ static void bond_save_keys_dfr(uint8_t role, uint16_t conn_hdl, bond_data_t* bda
   }
 
   // If couldn't get devname use peer mac address
-  if ( !strlen(devname) )
+  if ( !devname[0] )
   {
     uint8_t* mac = bdata->peer_id.id_addr_info.addr;
     sprintf(devname, "%02X:%02X:%02X:%02X:%02X:%02X", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
@@ -111,9 +121,39 @@ static void bond_save_keys_dfr(uint8_t role, uint16_t conn_hdl, bond_data_t* bda
 
   printBondDir(role);
 }
+#endif
 
-void bond_save_keys(uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
+bool bond_save_keys (uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
 {
+  uint16_t const ediv = (role == BLE_GAP_ROLE_PERIPH) ? bdata->own_enc.master_id.ediv : bdata->peer_enc.master_id.ediv;
+
+  //------------- save keys -------------//
+  uint32_t fl_addr = BOND_FLASH_ADDR;
+  uint8_t const keylen = sizeof(bond_data_t);
+
+  fl_addr += flash_nrf52_write8(fl_addr, sizeof(bond_data_t));
+  fl_addr += flash_nrf52_write(fl_addr, bdata, sizeof(bond_data_t));
+
+  //------------- save device name -------------//
+  char devname[64] = { 0 };
+  uint8_t namelen = Bluefruit.Gap.getPeerName(conn_hdl, devname, sizeof(devname));
+
+  // If couldn't get devname use peer mac address
+  if ( namelen == 0 )
+  {
+    uint8_t* mac = bdata->peer_id.id_addr_info.addr;
+    namelen = sprintf(devname, "%02X:%02X:%02X:%02X:%02X:%02X", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
+  }
+
+  fl_addr += flash_nrf52_write8(fl_addr, namelen + 1);    // also include null char
+  fl_addr += flash_nrf52_write(fl_addr, devname, namelen);
+  fl_addr += flash_nrf52_write8(fl_addr, 0);    // null char
+
+  LOG_LV2("BOND", "Keys for \"%s\" is saved", devname);
+
+  return true;
+
+#if 0
   uint8_t* buf = (uint8_t*) rtos_malloc( sizeof(bond_data_t) );
   VERIFY(buf, );
 
@@ -121,10 +161,20 @@ void bond_save_keys(uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
 
   // queue to execute in Ada Callback thread
   ada_callback(buf, bond_save_keys_dfr, role, conn_hdl, buf);
+#endif
 }
 
 bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata)
 {
+  uint32_t fl_addr = BOND_FLASH_ADDR;
+  uint8_t const keylen = flash_nrf52_read8(fl_addr);
+
+  fl_addr++;
+  flash_nrf52_read(bdata, fl_addr, keylen);
+
+  return true;
+
+#if 0
   char filename[BOND_FNAME_LEN];
   get_fname(filename, role, ediv);
 
@@ -137,14 +187,15 @@ bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata)
   {
     LOG_LV1("BOND", "Keys not found");
   }
-
   return result;
+#endif
 }
 
 
 /*------------------------------------------------------------------*/
 /* CCCD
  *------------------------------------------------------------------*/
+#if 0
 static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
 {
   uint16_t len=0;
@@ -172,18 +223,53 @@ static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
   rtos_free(sys_attr);
   printBondDir(role);
 }
+#endif
 
-void bond_save_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
+bool bond_save_cccd (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
 {
-  VERIFY( ediv != 0xFFFF, );
+  VERIFY(ediv != 0xFFFF);
 
+  uint16_t alen = 0;
+  sd_ble_gatts_sys_attr_get(conn_hdl, NULL, &alen, SVC_CONTEXT_FLAG);
+
+  uint8_t attr[alen];
+
+  VERIFY(ERROR_NONE == sd_ble_gatts_sys_attr_get(conn_hdl, attr, &alen, SVC_CONTEXT_FLAG));
+
+  (void) role;
+  uint32_t fl_addr = BOND_FLASH_ADDR + 256;
+
+  flash_nrf52_write8(fl_addr++, alen);
+  flash_nrf52_write(fl_addr, attr, alen);
+  LOG_LV2("BOND", "CCCD setting is saved");
+
+  return true;
+
+#if 0
   // queue to execute in Ada Callback thread
   ada_callback(NULL, bond_save_cccd_dfr, role, cond_hdl, ediv);
+#endif
 }
 
 
 bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
 {
+  (void) role;
+  uint32_t fl_addr = BOND_FLASH_ADDR + 256;
+  uint16_t alen = flash_nrf52_read8(fl_addr++);
+
+  uint8_t attr[alen];
+  flash_nrf52_read(attr, fl_addr, alen);
+
+  if ( ERROR_NONE != sd_ble_gatts_sys_attr_set(cond_hdl, attr, alen, SVC_CONTEXT_FLAG) )
+  {
+    sd_ble_gatts_sys_attr_set(cond_hdl, NULL, 0, 0);
+    return false;
+  }
+
+  return true;
+
+#if 0
   bool loaded = false;
 
   char filename[BOND_FNAME_LEN];
@@ -229,11 +315,13 @@ bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
   }
 
   return loaded;
+#endif
 }
 
 void bond_print_list(uint8_t role)
 {
-  const char* dpath = (role == BLE_GAP_ROLE_PERIPH ? BOND_DIR_PRPH : BOND_DIR_CNTR);
+#if 0
+  char const * dpath = (role == BLE_GAP_ROLE_PERIPH ? BOND_DIR_PRPH : BOND_DIR_CNTR);
 
   NffsDir dir(dpath);
   NffsDirEntry dirEntry;
@@ -263,6 +351,7 @@ void bond_print_list(uint8_t role)
     }
   }
   cprintf("\n");
+#endif
 }
 
 
@@ -270,6 +359,7 @@ bool bond_find_cntr(ble_gap_addr_t* addr, bond_data_t* bdata)
 {
   bool found = false;
 
+#if 0
   NffsDir dir(BOND_DIR_CNTR);
   NffsDirEntry dirEntry;
 
@@ -294,6 +384,7 @@ bool bond_find_cntr(ble_gap_addr_t* addr, bond_data_t* bdata)
       file.close();
     }
   }
+#endif
 
   return found;
 }
@@ -303,37 +394,48 @@ bool bond_find_cntr(ble_gap_addr_t* addr, bond_data_t* bdata)
  *------------------------------------------------------------------*/
 void bond_clear_prph(void)
 {
+#if 0
   // Detele bonds dir
   Nffs.remove(BOND_DIR_PRPH);
 
   // Create an empty one
   (void) Nffs.mkdir_p(BOND_DIR_PRPH);
+#endif
 }
 
 void bond_clear_cntr(void)
 {
+#if 0
   // Detele bonds dir
   Nffs.remove(BOND_DIR_CNTR);
 
   // Create an empty one
   (void) Nffs.mkdir_p(BOND_DIR_CNTR);
+#endif
+
 }
 
 
 void bond_clear_all(void)
 {
+#if 0
   // Detele bonds dir
   Nffs.remove(BOND_DIR_ROOT);
 
   // Create an empty one for prph and central
   (void) Nffs.mkdir_p(BOND_DIR_PRPH);
   (void) Nffs.mkdir_p(BOND_DIR_CNTR);
+#endif
+
 }
 
 void bond_remove_key(uint8_t role, uint16_t ediv)
 {
+#if 0
   char filename[BOND_FNAME_LEN];
   get_fname(filename, role, ediv);
 
   Nffs.remove(filename);
+#endif
+
 }
