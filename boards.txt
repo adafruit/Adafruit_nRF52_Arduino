@@ -81,6 +81,10 @@ feather52840.pid.1=0x0029
 feather52840.vid.2=0x239A
 feather52840.pid.2=0x8029
 
+# CircuitPython
+feather52840.vid.2=0x239A
+feather52840.pid.2=0x802A
+
 feather52840.bootloader.tool=bootburn
 
 # Upload
@@ -125,18 +129,6 @@ feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 # PCA10056 ( to be remove  )
 #**********************************************
 pca10056.name=Bluefruit on PCA10056
-
-# DFU Mode with CDC only
-pca10056.vid.0=0x239A
-pca10056.pid.0=0x002A
-
-# DFU Mode with CDC + MSC (UF2)
-pca10056.vid.1=0x239A
-pca10056.pid.1=0x0029
-
-# Application with CDC + MSC
-pca10056.vid.2=0x239A
-pca10056.pid.2=0x8029
 
 pca10056.bootloader.tool=bootburn
 

@@ -19,4 +19,4 @@ nrfutil_boot.program.cmd=adafruit-nrfutil
 nrfutil_boot.program.cmd.windows={runtime.platform.path}/tools/adafruit-nrfutil/win32/adafruit-nrfutil.exe
 nrfutil_boot.program.cmd.macosx={runtime.platform.path}/tools/adafruit-nrfutil/macos/adafruit-nrfutil
 
-nrfutil_boot.program.pattern={program.cmd} --verbose dfu serial -pkg "{runtime.platform.path}/bootloader/{build.variant}/{build.sd_version}r0/{build.variant}_bootloader_{build.sd_name}_{build.sd_version}r0.zip" -p {serial.port} -b 115200
+nrfutil_boot.program.pattern={program.cmd} --verbose dfu serial -pkg "{runtime.platform.path}/bootloader/{build.variant}/{build.sd_version}r0/{build.variant}_bootloader_{build.sd_name}_{build.sd_version}r0.zip" -p {serial.port} -b 115200 --touch 1200
