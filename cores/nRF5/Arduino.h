@@ -113,7 +113,12 @@ uint32_t setLoopStacksize(void);
 
 #define bit(b) (1UL << (b))
 
+#ifdef NRF_P1
 #define digitalPinToPort(P)        ( ((P) < 32) ? NRF_P0 : NRF_P1 )
+#else
+#define digitalPinToPort(P)        ( NRF_P0 )
+#endif
+
 #define digitalPinToBitMask(P)     ( 1 << (P) )
 //#define analogInPinToBit(P)        ( )
 #define portOutputRegister(port)   ( &(port->OUT) )
