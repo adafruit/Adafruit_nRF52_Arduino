@@ -68,11 +68,6 @@
 #define printBondDir(role)
 #endif
 
-static void get_fname(char* fname, uint8_t role, uint16_t ediv)
-{
-  sprintf(fname, ( role == BLE_GAP_ROLE_PERIPH ) ? BOND_FNAME_PRPH : BOND_FNAME_CNTR, ediv);
-}
-
 void bond_init(void)
 {
 
