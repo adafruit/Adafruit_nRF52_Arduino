@@ -75,9 +75,6 @@ class File: public Stream
 class FileSystemClass
 {
   public:
-    FileSystemClass ();
-    virtual ~FileSystemClass ();
-
     virtual bool begin () = 0;
 
     // Open the specified file/directory with the supplied mode (e.g. read or

@@ -328,7 +328,7 @@ extern void *nffs_dir_mem;
 extern uint32_t nffs_hash_next_file_id;
 extern uint32_t nffs_hash_next_dir_id;
 extern uint32_t nffs_hash_next_block_id;
-extern struct nffs_area nffs_areas[CONFIG_NFFS_FILESYSTEM_MAX_AREAS];
+extern struct nffs_area nffs_areas[NFFS_CONFIG_MAX_AREAS];
 extern uint8_t nffs_num_areas;
 extern uint8_t nffs_scratch_area_idx;
 extern uint16_t nffs_block_max_data_sz;
@@ -557,7 +557,7 @@ int nffs_write_to_file(struct nffs_file *file, const void *data, int len);
 
 #define NFFS_FLASH_LOC_NONE  nffs_flash_loc(NFFS_AREA_ID_NONE, 0)
 
-#if __ZEPHYR__
+#if __ZEPHYR__ || defined(ARDUINO_NRF52_ADAFRUIT)
 
 #define NFFS_LOG(lvl, ...)
 #define MYNEWT_VAL(val) 0

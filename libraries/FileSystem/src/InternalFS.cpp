@@ -39,6 +39,19 @@
 
 MynewtNFFS InternalFS;
 
+//--------------------------------------------------------------------+
+// Mynewt NFFS port
+//--------------------------------------------------------------------+
+extern "C"
+{
+nffs_os_mempool_t nffs_file_pool;
+nffs_os_mempool_t nffs_dir_pool;
+nffs_os_mempool_t nffs_inode_entry_pool;
+nffs_os_mempool_t nffs_block_entry_pool;
+nffs_os_mempool_t nffs_cache_inode_pool;
+nffs_os_mempool_t nffs_cache_block_pool;
+}
+
 MynewtNFFS::MynewtNFFS (void)
 {
 

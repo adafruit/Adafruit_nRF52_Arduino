@@ -20,11 +20,13 @@
 #ifndef H_CONFIG_
 #define H_CONFIG_
 
-#if 1 // Adafruit Bluefruit
+#ifdef ARDUINO_NRF52_ADAFRUIT
+
+typedef void* nffs_os_mempool_t;
 
 #define NFFS_CONFIG_USE_HEAP              0
-#define CONFIG_NFFS_FILESYSTEM_MAX_AREAS  7
-
+#define NFFS_CONFIG_MAX_AREAS             7
+#define NFFS_CONFIG_MAX_BLOCK_SIZE      2048
 
 #elif __ZEPHYR__
 
