@@ -20,7 +20,13 @@
 #ifndef H_CONFIG_
 #define H_CONFIG_
 
-#if __ZEPHYR__
+#if 1 // Adafruit Bluefruit
+
+#define NFFS_CONFIG_USE_HEAP              0
+#define CONFIG_NFFS_FILESYSTEM_MAX_AREAS  7
+
+
+#elif __ZEPHYR__
 
 typedef struct k_mem_slab nffs_os_mempool_t;
 

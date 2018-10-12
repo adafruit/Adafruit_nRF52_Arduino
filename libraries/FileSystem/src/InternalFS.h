@@ -39,11 +39,15 @@
 
 #include "FileIO.h"
 
-class LittleFS: public BluefuritLib::FileSystemClass
+// Internal Flash uses Apache Mynewt Newtron Flash File System
+// https://github.com/apache/mynewt-nffs
+#include "mynewt-nffs/include/nffs/nffs.h"
+
+class MynewtNFFS: public BluefuritLib::FileSystemClass
 {
   public:
-    LittleFS (void);
-    virtual ~LittleFS ();
+    MynewtNFFS (void);
+    virtual ~MynewtNFFS ();
 
     bool begin (void);
     BluefuritLib::File open (char const *filename, uint8_t mode = FILE_READ);
@@ -52,6 +56,10 @@ class LittleFS: public BluefuritLib::FileSystemClass
     bool remove (char const *filepath);
     bool rmdir (char const *filepath);
 
+  private:
+
 };
+
+extern MynewtNFFS InternalFS;
 
 #endif /* INTERNALFS_H_ */

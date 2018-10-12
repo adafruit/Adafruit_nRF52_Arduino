@@ -36,46 +36,47 @@
 
 #include <Arduino.h>
 #include "InternalFS.h"
-#include "littlefs/lfs.h"
 
-using namespace BluefuritLib;
+MynewtNFFS InternalFS;
 
-LittleFS::LittleFS (void)
+MynewtNFFS::MynewtNFFS (void)
 {
 
 }
 
-LittleFS::~LittleFS ()
+MynewtNFFS::~MynewtNFFS ()
 {
 
 }
 
-bool LittleFS::begin (void)
+bool MynewtNFFS::begin (void)
+{
+//  nffs_config_init();
+
+  nffs_cache_clear();
+}
+
+BluefuritLib::File MynewtNFFS::open (char const *filename, uint8_t mode)
 {
 
 }
 
-File LittleFS::open (char const *filename, uint8_t mode)
+bool MynewtNFFS::exists (char const *filepath)
 {
 
 }
 
-bool LittleFS::exists (char const *filepath)
+bool MynewtNFFS::mkdir (char const *filepath)
 {
 
 }
 
-bool LittleFS::mkdir (char const *filepath)
+bool MynewtNFFS::remove (char const *filepath)
 {
 
 }
 
-bool LittleFS::remove (char const *filepath)
-{
-
-}
-
-bool LittleFS::rmdir (char const *filepath)
+bool MynewtNFFS::rmdir (char const *filepath)
 {
 
 }
