@@ -42,51 +42,46 @@ extern "C"
   int nffs_init(void);
 }
 
-MynewtNFFS InternalFS;
+LittleFS InternalFS;
 
-MynewtNFFS::MynewtNFFS (void)
+LittleFS::LittleFS (void)
 {
 
 }
 
-MynewtNFFS::~MynewtNFFS ()
+LittleFS::~LittleFS ()
 {
 
 }
 
-bool MynewtNFFS::begin (void)
+bool LittleFS::begin (void)
 {
-  nffs_init();
+
 }
 
-BluefuritLib::File MynewtNFFS::open (char const *filename, uint8_t mode)
+BluefuritLib::File LittleFS::open (char const *filename, uint8_t mode)
 {
   BluefuritLib::File file(*this);
-  struct nffs_file* fh = NULL;
-
-  VERIFY_STATUS( nffs_file_open(&fh, filename, mode), file);
-
-  file._hdl = fh;
 
   return file;
 }
 
-bool MynewtNFFS::exists (char const *filepath)
+bool LittleFS::exists (char const *filepath)
 {
 
 }
 
-bool MynewtNFFS::mkdir (char const *filepath)
+bool LittleFS::mkdir (char const *filepath)
 {
 
 }
 
-bool MynewtNFFS::remove (char const *filepath)
+bool LittleFS::remove (char const *filepath)
 {
 
 }
 
-bool MynewtNFFS::rmdir (char const *filepath)
+bool LittleFS::rmdir (char const *filepath)
 {
 
 }

@@ -37,7 +37,7 @@
 #define FILE_WRITE 1
 #define FILE_APPEND 2
 
-class MynewtNFFS;
+class LittleFS;
 
 namespace BluefuritLib
 {
@@ -76,7 +76,7 @@ class File: public Stream
 
 //    String filename;
 
-    friend class ::MynewtNFFS;
+    friend class ::LittleFS;
 };
 
 class FileSystemClass
