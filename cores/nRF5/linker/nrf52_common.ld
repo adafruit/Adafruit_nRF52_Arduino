@@ -171,5 +171,6 @@ SECTIONS
     
     /* Check if data + heap + stack exceeds RAM limit */
     ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
+    ASSERT(__StackLimit >= __bss_end__, "region RAM overflowed with stack")
 }
 

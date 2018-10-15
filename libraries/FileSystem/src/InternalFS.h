@@ -57,6 +57,8 @@ class LittleFS: public BluefuritLib::FileSystemClass
     bool rmdir (char const *filepath);
 
   private:
+    struct lfs_config _lfs_cfg;
+    lfs_t _lfs;
 
 };
 

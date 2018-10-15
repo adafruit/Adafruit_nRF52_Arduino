@@ -24,6 +24,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "FreeRTOS.h"
+
 #ifndef LFS_NO_MALLOC
 #include <stdlib.h>
 #endif
@@ -161,7 +163,7 @@ void lfs_crc(uint32_t *crc, const void *buffer, size_t size);
 // Allocate memory, only used if buffers are not provided to littlefs
 static inline void *lfs_malloc(size_t size) {
 #ifndef LFS_NO_MALLOC
-    return malloc(size);
+    return pvPortMalloc(size);
 #else
     (void)size;
     return NULL;
@@ -171,7 +173,7 @@ static inline void *lfs_malloc(size_t size) {
 // Deallocate memory, only used if buffers are not provided to littlefs
 static inline void lfs_free(void *p) {
 #ifndef LFS_NO_MALLOC
-    free(p);
+    vPortFree(p);
 #else
     (void)p;
 #endif

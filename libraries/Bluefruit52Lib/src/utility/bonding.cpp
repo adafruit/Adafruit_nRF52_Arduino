@@ -35,6 +35,8 @@
 /**************************************************************************/
 
 #include <Arduino.h>
+#include "FileIO.h"
+#include "InternalFS.h"
 #include "bonding.h"
 
 #include "flash/flash_nrf52.h"
@@ -52,9 +54,9 @@
  *------------------------------------------------------------------*/
 
 #ifdef NRF52840_XXAA
-#define BOND_FLASH_ADDR     0xF3000
+#define BOND_FLASH_ADDR     0xED000
 #else
-#define BOND_FLASH_ADDR     0x73000
+#define BOND_FLASH_ADDR     0x6D000
 #endif
 
 // TODO make it dynamic later
@@ -68,9 +70,14 @@
 #define printBondDir(role)
 #endif
 
+static void get_fname (char* fname, uint8_t role, uint16_t ediv)
+{
+  sprintf(fname, (role == BLE_GAP_ROLE_PERIPH) ? BOND_FNAME_PRPH : BOND_FNAME_CNTR, ediv);
+}
+
 void bond_init(void)
 {
-
+  InternalFS.begin();
 }
 
 /*------------------------------------------------------------------*/
