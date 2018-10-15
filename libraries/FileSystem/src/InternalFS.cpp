@@ -36,7 +36,7 @@
 
 #include <Arduino.h>
 #include "InternalFS.h"
-
+#include "flash/flash_nrf52.h"
 
 #ifdef NRF52840_XXAA
 #define LFS_FLASH_ADDR     0xED000
@@ -44,19 +44,28 @@
 #define LFS_FLASH_ADDR     0x6D000
 #endif
 
-#define LFS_FLASH_SIZE     (4*4096) //(7*4096)
+#define LFS_PAGE_SIZE      4096
+#define LFS_FLASH_SIZE     (7*LFS_PAGE_SIZE)
+
 #define LFS_BLOCK_SIZE     128
+#define LFS_BLOCK_PER_PAGE (LFS_PAGE_SIZE/LFS_BLOCK_SIZE)
 
 //--------------------------------------------------------------------+
 //
 //--------------------------------------------------------------------+
 uint8_t ramdisk[LFS_FLASH_SIZE/LFS_BLOCK_SIZE][LFS_BLOCK_SIZE];
 
+static inline uint32_t lba2addr(uint32_t block)
+{
+    return ((uint32_t)LFS_FLASH_ADDR) + block * LFS_BLOCK_SIZE;
+}
+
 int _iflash_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
 {
   (void) c;
+  uint32_t addr = lba2addr(block) + off;
 
-  memcpy(buffer, ramdisk[block] + off, size);
+  memcpy(buffer, (void*) addr, size);
 
   return 0;
 }
@@ -68,9 +77,13 @@ int _iflash_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, c
 {
   (void) c;
 
-  memcpy(ramdisk[block] + off, buffer, size);
+  uint32_t addr = lba2addr(block) + off;
+  flash_nrf52_write(addr, buffer, size);
+
   return 0;
 }
+
+
 
 // Erase a block. A block must be erased before being programmed.
 // The state of an erased block is undefined. Negative error codes
@@ -79,6 +92,15 @@ int _iflash_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, c
 int _iflash_erase(const struct lfs_config *c, lfs_block_t block)
 {
   (void) c;
+
+  uint32_t addr = lba2addr(block);
+
+  // implement as write 0xff to whole block address
+  for(int i=0; i <LFS_BLOCK_SIZE; i++)
+  {
+    flash_nrf52_write8(addr, 0xFF);
+  }
+
   return 0;
 }
 
@@ -87,6 +109,7 @@ int _iflash_erase(const struct lfs_config *c, lfs_block_t block)
 int _iflash_sync(const struct lfs_config *c)
 {
   (void) c;
+  flash_nrf52_flush();
   return 0;
 }
 
