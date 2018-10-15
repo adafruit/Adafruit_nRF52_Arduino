@@ -60,8 +60,8 @@ PROVIDE(__stack      = __StackTop);
 /* Flash region */
 __flash_arduino_start = ORIGIN(FLASH);
 __flash_arduino_end   = ORIGIN(FLASH) + LENGTH(FLASH);
-__flash_bond_start    = ORIGIN(FLASH_BOND);
-    
+/* __flash_bond_start    = ORIGIN(FLASH_BOND); */
+
 SECTIONS
 {
     .text :
@@ -148,26 +148,26 @@ SECTIONS
         . = ALIGN(4);
         __bss_end__ = .;
     } > RAM
-    
-    /*.heap (COPY):*/
+
     .heap :
     {
+        __HeapBase = .;
         __end__ = .;
         PROVIDE(end = .);
-        __HeapBase = .;
-        *(.heap*)
+        KEEP(*(.heap*))
         . = ALIGN(__StackLimit);
         __HeapLimit = .;
     } > RAM
-
     
-    /* .stack section doesn't contains any symbols. It is only
-     * used for linker to calculate size of stack sections */
-    .stack :
+    /* .stack_dummy section doesn't contains any symbols. It is only
+     * used for linker to calculate size of stack sections, and assign
+     * values to stack symbols later */
+    /*
+    .stack_dummy (COPY):
     {
-      . = ALIGN(__StackLimit);
-      . = ALIGN(__StackTop);
+        KEEP(*(.stack*))
     } > RAM
+    */
     
     /* Check if data + heap + stack exceeds RAM limit */
     ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
