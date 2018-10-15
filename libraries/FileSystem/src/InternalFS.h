@@ -41,7 +41,7 @@
 
 // Internal Flash uses Apache Mynewt Newtron Flash File System
 // https://github.com/apache/mynewt-nffs
-#include "mynewt-nffs/include/nffs/nffs.h"
+#include "nffs/nffs.h"
 
 class MynewtNFFS: public BluefuritLib::FileSystemClass
 {

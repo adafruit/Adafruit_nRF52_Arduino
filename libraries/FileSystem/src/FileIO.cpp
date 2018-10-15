@@ -39,4 +39,102 @@
 namespace BluefuritLib
 {
 
+File::File (FileSystemClass &fs)
+ : _fs(fs)
+{
+  _hdl = NULL;
+}
+
+File::File (char const *_filename, uint8_t _mode, FileSystemClass &fs)
+  : _fs(fs)
+{
+  _hdl = NULL;
+}
+
+File::~File ()
+{
+
+}
+
+size_t File::write (uint8_t)
+{
+
+}
+
+size_t File::write (uint8_t const *buf, size_t size)
+{
+
+}
+
+int File::read ()
+{
+
+}
+
+int File::peek ()
+{
+
+}
+
+int File::available ()
+{
+
+}
+
+void File::flush ()
+{
+
+}
+
+int File::read (void *buf, uint16_t nbyte)
+{
+
+}
+
+bool File::seek (uint32_t pos)
+{
+
+}
+
+uint32_t File::position ()
+{
+
+}
+
+uint32_t File::size ()
+{
+
+}
+
+void File::close ()
+{
+
+}
+
+File::operator bool ()
+{
+
+}
+
+char const * File::name ()
+{
+
+}
+
+bool File::isDirectory ()
+{
+
+}
+
+File File::openNextFile (uint8_t mode)
+{
+
+}
+
+void File::rewindDirectory (void)
+{
+
+}
+
+
 }

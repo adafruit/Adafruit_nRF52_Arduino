@@ -22,7 +22,19 @@
 
 #ifdef ARDUINO_NRF52_ADAFRUIT
 
-typedef void* nffs_os_mempool_t;
+#include "common_inc.h"
+
+#define VERIFY_NFFS(_err)   \
+    do { \
+      uint32_t _status = _err; \
+      if ( 0 != _status ) {               \
+        cprintf("%s: %d: verify failed, error = %d\n", __PRETTY_FUNCTION__, __LINE__, _status);\
+        return _status;                    \
+      }\
+    }while(0)\
+
+// use heap for mempool
+typedef uint32_t nffs_os_mempool_t;
 
 #define NFFS_CONFIG_USE_HEAP              0
 #define NFFS_CONFIG_MAX_AREAS             7

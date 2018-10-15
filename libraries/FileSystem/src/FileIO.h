@@ -16,6 +16,18 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/**************************************************************************/
+/*!
+    @file     FileIO.h
+    @author   hathach (tinyusb.org)
+
+    @section LICENSE
+
+    Software License Agreement (BSD License)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
+*/
+/**************************************************************************/
+
 #ifndef __FILEIO_H__
 #define __FILEIO_H__
 
@@ -24,6 +36,8 @@
 #define FILE_READ 0
 #define FILE_WRITE 1
 #define FILE_APPEND 2
+
+class MynewtNFFS;
 
 namespace BluefuritLib
 {
@@ -57,19 +71,12 @@ class File: public Stream
     //using Print::write;
 
   private:
-    void doBuffer ();
-    uint8_t buffered;
-    uint8_t readPos;
-    uint16_t dirPosition;
-    static int const BUFFER_SIZE = 64;
-    uint8_t buffer[BUFFER_SIZE];
-
-  private:
     FileSystemClass &_fs;
-    String filename;
-    uint8_t mode;
-    uint8_t handle;
+    void* _hdl;
 
+//    String filename;
+
+    friend class ::MynewtNFFS;
 };
 
 class FileSystemClass
@@ -80,7 +87,7 @@ class FileSystemClass
     // Open the specified file/directory with the supplied mode (e.g. read or
     // write, etc). Returns a File object for interacting with the file.
     // Note that currently only one file can be open at a time.
-    virtual File open (char const *filename, uint8_t mode = FILE_READ) = 0;
+    virtual File open (char const *filename, uint8_t mode) = 0;
 
     // Methods to determine if the requested file path exists.
     virtual bool exists (char const *filepath) = 0;
@@ -93,8 +100,6 @@ class FileSystemClass
     virtual bool remove (char const *filepath) = 0;
 
     virtual bool rmdir (char const *filepath) = 0;
-
-    friend class File;
 };
 
 }

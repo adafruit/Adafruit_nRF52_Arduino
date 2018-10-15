@@ -37,20 +37,12 @@
 #include <Arduino.h>
 #include "InternalFS.h"
 
-MynewtNFFS InternalFS;
-
-//--------------------------------------------------------------------+
-// Mynewt NFFS port
-//--------------------------------------------------------------------+
 extern "C"
 {
-nffs_os_mempool_t nffs_file_pool;
-nffs_os_mempool_t nffs_dir_pool;
-nffs_os_mempool_t nffs_inode_entry_pool;
-nffs_os_mempool_t nffs_block_entry_pool;
-nffs_os_mempool_t nffs_cache_inode_pool;
-nffs_os_mempool_t nffs_cache_block_pool;
+  int nffs_init(void);
 }
+
+MynewtNFFS InternalFS;
 
 MynewtNFFS::MynewtNFFS (void)
 {
@@ -64,14 +56,19 @@ MynewtNFFS::~MynewtNFFS ()
 
 bool MynewtNFFS::begin (void)
 {
-//  nffs_config_init();
-
-  nffs_cache_clear();
+  nffs_init();
 }
 
 BluefuritLib::File MynewtNFFS::open (char const *filename, uint8_t mode)
 {
+  BluefuritLib::File file(*this);
+  struct nffs_file* fh = NULL;
 
+  VERIFY_STATUS( nffs_file_open(&fh, filename, mode), file);
+
+  file._hdl = fh;
+
+  return file;
 }
 
 bool MynewtNFFS::exists (char const *filepath)
