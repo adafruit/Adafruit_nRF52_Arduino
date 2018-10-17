@@ -156,6 +156,7 @@ bool File::isDirectory (void)
 
 File File::openNextFile (uint8_t mode)
 {
+  if ( !_is_dir ) return File(*_fs);
   return _fs->_f_openNextFile(_hdl, mode);
 }
 

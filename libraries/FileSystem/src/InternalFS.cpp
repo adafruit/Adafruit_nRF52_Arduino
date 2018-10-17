@@ -101,7 +101,7 @@ static const char* dbg_strerr_lfs (int32_t err)
       return "LFS_ERR_NOMEM";
 
     default:
-      return NULL;
+      return "Unlikely Error";
   }
 }
 
@@ -204,7 +204,7 @@ bool LittleFS::begin (void)
   return true;
 }
 
-BluefuritLib::File LittleFS::_openByInfo (struct lfs_info *info, uint8_t mode)
+BluefuritLib::File LittleFS::_open_file (char const *filename, uint8_t mode)
 {
   BluefuritLib::File file(*this);
 
@@ -214,21 +214,8 @@ BluefuritLib::File LittleFS::_openByInfo (struct lfs_info *info, uint8_t mode)
 
   if ( flags )
   {
-    void* fhdl;
-    int rc;
-
-    if ( info->type == LFS_TYPE_REG )
-    {
-      // Open file
-      fhdl = rtos_malloc(sizeof(lfs_file_t));
-      rc = lfs_file_open(&_lfs, (lfs_file_t*) fhdl, info->name, flags);
-    }
-    else if ( info->type == LFS_TYPE_DIR )
-    {
-      // open a dir
-      fhdl = rtos_malloc(sizeof(lfs_dir_t));
-      rc = lfs_dir_open(&_lfs, (lfs_dir_t*) fhdl, info->name);
-    }
+    lfs_file_t* fhdl = (lfs_file_t*) rtos_malloc(sizeof(lfs_file_t));
+    int rc = lfs_file_open(&_lfs, fhdl, filename, flags);
 
     if ( rc )
     {
@@ -238,10 +225,35 @@ BluefuritLib::File LittleFS::_openByInfo (struct lfs_info *info, uint8_t mode)
     else
     {
       file._hdl = fhdl;
-      file._is_dir = (info->type == LFS_TYPE_DIR);
-      file._name = (char*) rtos_malloc(strlen(info->name) + 1);
-      strcpy(file._name, info->name);
+      file._is_dir = false;
+
+      file._name = (char*) rtos_malloc(strlen(filename) + 1);
+      strcpy(file._name, filename);
     }
+  }
+
+  return file;
+}
+
+BluefuritLib::File LittleFS::_open_dir (char const *filename)
+{
+  BluefuritLib::File file(*this);
+
+  lfs_dir_t* fhdl = (lfs_dir_t*) rtos_malloc(sizeof(lfs_dir_t));
+  int rc = lfs_dir_open(&_lfs, fhdl, filename);
+
+  if ( rc )
+  {
+    rtos_free(fhdl);
+    VERIFY_MESS(rc, dbg_strerr_lfs);
+  }
+  else
+  {
+    file._hdl = fhdl;
+    file._is_dir = true;
+
+    file._name = (char*) rtos_malloc(strlen(filename) + 1);
+    strcpy(file._name, filename);
   }
 
   return file;
@@ -249,12 +261,26 @@ BluefuritLib::File LittleFS::_openByInfo (struct lfs_info *info, uint8_t mode)
 
 BluefuritLib::File LittleFS::open (char const *filename, uint8_t mode)
 {
+  BluefuritLib::File file(*this);
   struct lfs_info info;
 
-  // file not found
-  if ( LFS_ERR_OK != lfs_stat(&_lfs, filename, &info) ) return BluefuritLib::File(*this);
+  int rc = lfs_stat(&_lfs, filename, &info);
+  if ( LFS_ERR_OK == rc )
+  {
+    // file existed, open file or directory accordingly
+    file = (info.type == LFS_TYPE_REG) ? _open_file(filename, mode) : _open_dir(filename);
+  }
+  else if ( LFS_ERR_NOENT == rc )
+  {
+    // file not existed, only proceed with FILE_WRITE mode
+    if ( mode == FILE_WRITE ) file = _open_file(filename, mode);
+  }
+  else
+  {
+    VERIFY_MESS(rc, dbg_strerr_lfs);
+  }
 
-  return _openByInfo(&info, mode);
+  return file;
 }
 
 bool LittleFS::exists (char const *filepath)
@@ -330,12 +356,15 @@ void LittleFS::_f_close (void* fhdl, bool is_dir)
 
 File LittleFS::_f_openNextFile (void* fhdl, uint8_t mode)
 {
+  BluefuritLib::File file(*this);
   struct lfs_info info;
 
-  // file not found
-  if ( LFS_ERR_OK != lfs_dir_read(&_lfs, (lfs_dir_t *) fhdl, &info) ) return BluefuritLib::File(*this);
+  // file not existed
+  if ( 0 > lfs_dir_read(&_lfs, (lfs_dir_t *) fhdl, &info) ) return file;
 
-  return _openByInfo(&info, mode);
+  file = ( info.type == LFS_TYPE_REG ) ? _open_file(info.name, mode) : _open_dir(info.name);
+
+  return file;
 }
 
 void LittleFS::_f_rewindDirectory (void* fhdl)

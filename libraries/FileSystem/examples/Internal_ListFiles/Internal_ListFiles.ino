@@ -113,9 +113,9 @@ void printTreeDir(const char* cwd, uint8_t level)
       
       Serial.print( item.size() );
       Serial.println( " Bytes");
-
-      item.close();
     }
+
+    item.close();
   }
 
   dir.close();
