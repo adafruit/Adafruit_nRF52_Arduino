@@ -54,17 +54,13 @@ build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16 -u _printf_float
 build.debug_flags=-DCFG_DEBUG=0 -Os
 
 # common compiler for nrf
-nrf.sdk.path={build.core.path}/SDK
 rtos.path={build.core.path}/freertos
-nffs.path={runtime.platform.path}/libraries/nffs/src
 nordic.path={build.core.path}/nordic
-
-nffs.includes="-I{nffs.path}/fs/nffs/include" "-I{nffs.path}/fs/fs/include"  "-I{nffs.path}/fs/disk/include" "-I{nffs.path}/util/crc/include" "-I{nffs.path}/kernel/os/include" "-I{nffs.path}/kernel/os/include/os/arch/cortex_m4" "-I{nffs.path}/hw/hal/include" "-I{nffs.path}/sys/flash_map/include" "-I{nffs.path}/sys/defs/include"
 
 # ARDUINO_FEATHER52 is defined for backward compatiable with other lib only
 # should be replaced by ARDUINO_NRF52_ADAFRUIT in the future
 
-compiler.nrf.flags= -DARDUINO_FEATHER52 -DARDUINO_NRF52_ADAFRUIT -DNRF52_SERIES -DUSE_LFXO {build.sd_flags} {build.debug_flags} "-I{build.core.path}/cmsis/include" "-I{nrf.sdk.path}/components/drivers_nrf/delay/" "-I{nrf.sdk.path}/components/drivers_nrf/hal/" "-I{nrf.sdk.path}/components/libraries/util/" "-I{nordic.path}" "-I{nordic.path}/nrfx" "-I{nordic.path}/nrfx/hal" "-I{nordic.path}/nrfx/mdk" "-I{nordic.path}/nrfx/soc" "-I{nordic.path}/nrfx/drivers/include" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include" "-I{rtos.path}/Source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" "-I{build.core.path}/usb" "-I{build.core.path}/usb/tinyusb/src" {nffs.includes}
+compiler.nrf.flags= -DARDUINO_FEATHER52 -DARDUINO_NRF52_ADAFRUIT -DNRF52_SERIES -DUSE_LFXO {build.sd_flags} {build.debug_flags} "-I{build.core.path}/cmsis/include" "-I{nordic.path}" "-I{nordic.path}/nrfx" "-I{nordic.path}/nrfx/hal" "-I{nordic.path}/nrfx/mdk" "-I{nordic.path}/nrfx/soc" "-I{nordic.path}/nrfx/drivers/include" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include" "-I{rtos.path}/Source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" "-I{build.core.path}/usb" "-I{build.core.path}/usb/tinyusb/src"
 
 # These can be overridden in platform.local.txt
 compiler.c.extra_flags=
@@ -92,7 +88,7 @@ recipe.S.o.pattern="{compiler.path}{compiler.S.cmd}" {compiler.S.flags} -DF_CPU=
 recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} {compiler.ar.extra_flags} "{archive_file_path}" "{object_file}"
 
 ## Combine gc-sections, archives, and objects
-recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} "-L{build.variant.path}" "-L{build.core.path}/linker" "-T{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" {compiler.ldflags} -o "{build.path}/{build.project_name}.elf" {object_files} -Wl,--start-group -lm "{build.path}/{archive_file}" -Wl,--end-group
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} "-L{build.core.path}/linker" "-T{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" {compiler.ldflags} -o "{build.path}/{build.project_name}.elf" {object_files} -Wl,--start-group -lm "{build.path}/{archive_file}" -Wl,--end-group
 
 ## Create output (bin file)
 #recipe.objcopy.bin.pattern="{compiler.path}{compiler.elf2bin.cmd}" {compiler.elf2bin.flags} {compiler.elf2bin.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.bin"
