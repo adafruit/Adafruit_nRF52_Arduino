@@ -95,15 +95,8 @@ int File::peek (void)
 
 int File::available (void)
 {
-
+  return size() - position();
 }
-
-void File::flush (void)
-{
-  _fs->_f_flush(_hdl);
-}
-
-
 
 bool File::seek (uint32_t pos)
 {
@@ -112,12 +105,17 @@ bool File::seek (uint32_t pos)
 
 uint32_t File::position (void)
 {
-
+  return _fs->_f_position(_hdl);
 }
 
 uint32_t File::size (void)
 {
+  return _fs->_f_size(_hdl);
+}
 
+void File::flush (void)
+{
+  _fs->_f_flush(_hdl);
 }
 
 void File::close (void)

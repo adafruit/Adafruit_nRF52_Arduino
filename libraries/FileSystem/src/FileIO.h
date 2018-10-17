@@ -66,6 +66,7 @@ class File: public Stream
     bool seek (uint32_t pos);
     uint32_t position (void);
     uint32_t size (void);
+
     void close (void);
     operator bool (void);
     char const * name (void);
@@ -117,6 +118,8 @@ class FileSystemClass
     virtual void _f_close (void* fhdl) = 0;
 
     virtual bool _f_seek (void* fhdl, uint32_t pos) = 0;
+    virtual uint32_t _f_position (void* fhdl) = 0;
+    virtual uint32_t _f_size (void* fhdl) = 0;
 };
 
 }

@@ -253,6 +253,17 @@ bool LittleFS::_f_seek (void* fhdl, uint32_t pos)
   return lfs_file_seek(&_lfs, (lfs_file_t*) fhdl, pos, LFS_SEEK_SET) >= 0;
 }
 
+uint32_t LittleFS::_f_position (void* fhdl)
+{
+  return lfs_file_tell(&_lfs, (lfs_file_t*) fhdl);
+}
+
+uint32_t LittleFS::_f_size (void* fhdl)
+{
+  return lfs_file_size(&_lfs, (lfs_file_t*) fhdl);
+}
+
+
 void LittleFS::_f_close (void* fhdl)
 {
   lfs_file_close(&_lfs, (lfs_file_t*) fhdl);
