@@ -251,22 +251,26 @@ BluefuritLib::File LittleFS::open (char const *filename, uint8_t mode)
 
 bool LittleFS::exists (char const *filepath)
 {
-
+  struct lfs_info info;
+  return 0 == lfs_stat(&_lfs, filepath, &info);
 }
 
 bool LittleFS::mkdir (char const *filepath)
 {
-
+  VERIFY_LFS(lfs_mkdir(&_lfs, filepath));
+  return true;
 }
 
 bool LittleFS::remove (char const *filepath)
 {
-
+  VERIFY_LFS(lfs_remove(&_lfs, filepath));
+  return true;
 }
 
 bool LittleFS::rmdir (char const *filepath)
 {
-
+  VERIFY_LFS(lfs_remove(&_lfs, filepath));
+  return true;
 }
 
 //--------------------------------------------------------------------+
