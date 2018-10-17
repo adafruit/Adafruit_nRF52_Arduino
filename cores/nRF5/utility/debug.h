@@ -45,7 +45,7 @@
 
 #if CFG_DEBUG
 const char* dbg_ble_event_str(uint16_t evt_id);
-const char* dbg_err_str(uint32_t err_id);
+const char* dbg_err_str(int32_t err_id);
 #endif
 
 int dbgHeapTotal(void);

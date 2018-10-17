@@ -48,30 +48,36 @@ class File: public Stream
 {
   public:
     File (FileSystemClass &fs);
-    File (char const *_filename, uint8_t _mode, FileSystemClass &fs);
+    File (char const *filename, uint8_t mode, FileSystemClass &fs);
     ~File ();
 
-    virtual size_t write (uint8_t);
+    bool open (char const *filename, uint8_t mode);
+
+    virtual size_t write (uint8_t ch);
     virtual size_t write (uint8_t const *buf, size_t size);
-    virtual int read ();
-    virtual int peek ();
-    virtual int available ();
-    virtual void flush ();
+
+    virtual int read (void);
     int read (void *buf, uint16_t nbyte);
+
+    virtual int peek (void);
+    virtual int available (void);
+    virtual void flush (void);
+
     bool seek (uint32_t pos);
-    uint32_t position ();
-    uint32_t size ();
-    void close ();
-    operator bool ();
-    char const * name ();
+    uint32_t position (void);
+    uint32_t size (void);
+    void close (void);
+    operator bool (void);
+    char const * name (void);
+
     bool isDirectory ();
     File openNextFile (uint8_t mode = FILE_READ);
     void rewindDirectory (void);
 
-    //using Print::write;
+    using Print::write;
 
   private:
-    FileSystemClass &_fs;
+    FileSystemClass* _fs;
     void* _hdl;
 
 //    String filename;
@@ -100,21 +106,29 @@ class FileSystemClass
     virtual bool remove (char const *filepath) = 0;
 
     virtual bool rmdir (char const *filepath) = 0;
+
+    //--------------------------------------------------------------------+
+    // Internal API, shouldn't call directly
+    //--------------------------------------------------------------------+
+    virtual size_t _f_write (void* fhdl, uint8_t const *buf, size_t size) = 0;
+    virtual int _f_read (void* fhdl, void *buf, uint16_t nbyte) = 0;
+    virtual void _f_flush (void* fhdl) = 0;
+    virtual void _f_close (void* fhdl) = 0;
 };
 
 }
 
-// We enclose File and FileSystem classes in namespace BridgeLib to avoid
+// We enclose File and FileSystem classes in namespace BluefuritLib to avoid
 // conflicts with legacy SD library.
 
 // This ensure compatibility with older sketches that uses only Bridge lib
 // (the user can still use File instead of BridgeFile)
-//using namespace BridgeLib;
-//
-//// This allows sketches to use BridgeLib::File together with SD library
-//// (you must use BridgeFile instead of File when needed to disambiguate)
-//typedef BridgeLib::File            BridgeFile;
-//typedef BridgeLib::FileSystemClass BridgeFileSystemClass;
-//#define BridgeFileSystem           BridgeLib::FileSystem
+using namespace BluefuritLib;
+
+// This allows sketches to use BluefuritLib::File together with SD library
+// (you must use BridgeFile instead of File when needed to disambiguate)
+typedef BluefuritLib::File BluefruitFile;
+
+#include "InternalFS.h"
 
 #endif

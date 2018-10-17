@@ -47,8 +47,6 @@ extern "C"
 {
 #endif
 
-#define RETURN_VOID
-
 //--------------------------------------------------------------------+
 // Compile-time Assert
 //--------------------------------------------------------------------+
@@ -64,39 +62,42 @@ extern "C"
 // VERIFY Helper
 //--------------------------------------------------------------------+
 #if CFG_DEBUG >= 1
-//  #define VERIFY_MESS(format, ...) cprintf("[%08ld] %s: %d: verify failed\n", get_millis(), __func__, __LINE__)
-  #define VERIFY_MESS(_status)   cprintf("%s: %d: verify failed, error = %s\n", __PRETTY_FUNCTION__, __LINE__, dbg_err_str(_status));
+  #define VERIFY_MESS(_status, _funcstr) \
+    do { \
+      const char* (*_fstr)(int32_t) = _funcstr;\
+      cprintf("%s: %d: verify failed, error = ", __PRETTY_FUNCTION__, __LINE__);\
+      if (_fstr) cprintf(_fstr(_status)); else cprintf("%d", _status);\
+      cprintf("\n");\
+    }while(0)
 #else
-  #define VERIFY_MESS(_status)
+  #define VERIFY_MESS(_status, _funcstr)
 #endif
 
 
-#define VERIFY_DEFINE(_status, _error)  \
-    if ( 0 != _status ) {               \
-      VERIFY_MESS(_status)              \
-      return _error;                    \
+#define VERIFY_ERR_DEF(_status, _ret, _funcstr) \
+    if ( 0 != _status ) {                       \
+      VERIFY_MESS(_status, _funcstr);           \
+      return _ret;                              \
     }
 
-/**
- * Helper to implement optional parameter for VERIFY Macro family
- */
-#define VERIFY_GETARGS(arg1, arg2, arg3, ...)  arg3
+// Helper to implement optional parameter for VERIFY Macro family
+#define _GET_3RD_ARG(arg1, arg2, arg3, ...)  arg3
 
 /*------------------------------------------------------------------*/
 /* VERIFY STATUS
- * - VERIFY_STS_1ARGS : return status of condition if failed
- * - VERIFY_STS_2ARGS : return provided status code if failed
+ * - VERIFY_ERR_1ARGS : return status of condition if failed
+ * - VERIFY_ERR_2ARGS : return provided status code if failed
  *------------------------------------------------------------------*/
-#define VERIFY_STS_1ARGS(sts)             \
-    do {                              \
-      uint32_t _status = (uint32_t)(sts);   \
-      VERIFY_DEFINE(_status, _status);\
+#define VERIFY_ERR_1ARGS(_exp, _funcstr)          \
+    do {                                          \
+      int32_t _status = (int32_t)(_exp);          \
+      VERIFY_ERR_DEF(_status, _status, _funcstr); \
     } while(0)
 
-#define VERIFY_STS_2ARGS(sts, _error)     \
-    do {                              \
-      uint32_t _status = (uint32_t)(sts);   \
-      VERIFY_DEFINE(_status, _error);\
+#define VERIFY_ERR_2ARGS(_exp, _ret, _funcstr)    \
+    do {                                          \
+      int32_t _status = (int32_t)(_exp);          \
+      VERIFY_ERR_DEF(_status, _ret, _funcstr);    \
     } while(0)
 
 /**
@@ -104,8 +105,9 @@ extern "C"
  * - status value if called with 1 parameter e.g VERIFY_STATUS(status)
  * - 2 parameter if called with 2 parameters e.g VERIFY_STATUS(status, errorcode)
  */
-#define VERIFY_STATUS(...)  VERIFY_GETARGS(__VA_ARGS__, VERIFY_STS_2ARGS, VERIFY_STS_1ARGS)(__VA_ARGS__)
+#define VERIFY_STATUS(...)  _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, dbg_err_str)
 
+#define VERIFY_ERROR(...)   _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, NULL)
 
 /*------------------------------------------------------------------*/
 /* VERIFY
@@ -120,7 +122,7 @@ extern "C"
  * - false value if called with 1 parameter e.g VERIFY(condition)
  * - 2 parameter if called with 2 parameters e.g VERIFY(condition, errorcode)
  */
-#define VERIFY(...)  VERIFY_GETARGS(__VA_ARGS__, VERIFY_2ARGS, VERIFY_1ARGS)(__VA_ARGS__)
+#define VERIFY(...)  _GET_3RD_ARG(__VA_ARGS__, VERIFY_2ARGS, VERIFY_1ARGS)(__VA_ARGS__)
 
 // TODO VERIFY with final statement
 

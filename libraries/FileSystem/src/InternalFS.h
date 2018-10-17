@@ -56,6 +56,11 @@ class LittleFS: public BluefuritLib::FileSystemClass
     bool remove (char const *filepath);
     bool rmdir (char const *filepath);
 
+    virtual size_t _f_write (void* fhdl, uint8_t const *buf, size_t size);
+    virtual int _f_read (void* fhdl, void *buf, uint16_t nbyte);
+    virtual void _f_flush (void* fhdl);
+    virtual void _f_close (void* fhdl);
+
   private:
     struct lfs_config _lfs_cfg;
     lfs_t _lfs;

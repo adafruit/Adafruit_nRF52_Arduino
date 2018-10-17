@@ -160,8 +160,8 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
       enum { DFU_OTA_MAGIC = 0xB1 };
 
       sd_power_gpregret_clr(0, 0xFF);
-      VERIFY_STATUS( sd_power_gpregret_set(0, DFU_OTA_MAGIC), RETURN_VOID);
-      VERIFY_STATUS( sd_softdevice_disable(), RETURN_VOID );
+      VERIFY_STATUS( sd_power_gpregret_set(0, DFU_OTA_MAGIC), );
+      VERIFY_STATUS( sd_softdevice_disable(),  );
 
       // Disable all interrupts
       #if defined(NRF52832_XXAA)
@@ -182,7 +182,7 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
 //      NRF_RTC1->TASKS_STOP  = 1;
 //      NRF_RTC1->TASKS_CLEAR = 1;
 
-      VERIFY_STATUS( sd_softdevice_vector_table_base_set(NRF_UICR->NRFFW[0]), RETURN_VOID);
+      VERIFY_STATUS( sd_softdevice_vector_table_base_set(NRF_UICR->NRFFW[0]), );
 
       __set_CONTROL(0); // switch to MSP, required if using FreeRTOS
       bootloader_util_app_start(NRF_UICR->NRFFW[0]);

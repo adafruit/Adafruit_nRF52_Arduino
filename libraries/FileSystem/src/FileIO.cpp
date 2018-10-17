@@ -34,21 +34,23 @@
 */
 /**************************************************************************/
 
+#include "rtos.h"
 #include "FileIO.h"
 
 namespace BluefuritLib
 {
 
 File::File (FileSystemClass &fs)
- : _fs(fs)
 {
+  _fs = &fs;
   _hdl = NULL;
 }
 
-File::File (char const *_filename, uint8_t _mode, FileSystemClass &fs)
-  : _fs(fs)
+File::File (char const *filename, uint8_t mode, FileSystemClass &fs)
 {
+  _fs = &fs;
   _hdl = NULL;
+  open(filename, mode);
 }
 
 File::~File ()
@@ -56,72 +58,90 @@ File::~File ()
 
 }
 
-size_t File::write (uint8_t)
+bool File::open (char const *filename, uint8_t mode)
 {
+  // close previous opened
+  if ( _hdl ) close();
 
+  *this = _fs->open(filename, mode);
+  return _hdl != NULL;
+}
+
+size_t File::write (uint8_t ch)
+{
+  return write(&ch, 1);
 }
 
 size_t File::write (uint8_t const *buf, size_t size)
 {
-
+  return _fs->_f_write(_hdl, buf, size);
 }
 
-int File::read ()
+int File::read (void)
 {
-
-}
-
-int File::peek ()
-{
-
-}
-
-int File::available ()
-{
-
-}
-
-void File::flush ()
-{
-
+  uint8_t ch;
+  return (read(&ch, 1) > 0) ? ch : -1;
 }
 
 int File::read (void *buf, uint16_t nbyte)
 {
+  return _fs->_f_read(_hdl, buf, nbyte);
+}
+
+int File::peek (void)
+{
 
 }
+
+int File::available (void)
+{
+
+}
+
+void File::flush (void)
+{
+  _fs->_f_flush(_hdl);
+}
+
+
 
 bool File::seek (uint32_t pos)
 {
 
 }
 
-uint32_t File::position ()
+uint32_t File::position (void)
 {
 
 }
 
-uint32_t File::size ()
+uint32_t File::size (void)
 {
 
 }
 
-void File::close ()
+void File::close (void)
 {
+  if ( _hdl )
+  {
+    _fs->_f_close(_hdl);
+    rtos_free(_hdl);
+  }
 
+  _hdl = NULL;
 }
 
 File::operator bool ()
 {
-
+  return _hdl != NULL;
 }
 
-char const * File::name ()
+char const * File::name (void)
 {
 
 }
 
-bool File::isDirectory ()
+bool File::isDirectory (void)
 {
 
 }

@@ -444,7 +444,7 @@ lookup_table_t const _strerr_table =
   .items = _strerr_lookup
 };
 
-const char* dbg_err_str(uint32_t err_id)
+const char* dbg_err_str(int32_t err_id)
 {
   const char * str = (const char *) lookup_find(&_strerr_table, err_id);
   static char unknown_str[7] = {0};

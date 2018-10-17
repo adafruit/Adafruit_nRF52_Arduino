@@ -53,11 +53,62 @@
 //--------------------------------------------------------------------+
 //
 //--------------------------------------------------------------------+
-uint8_t ramdisk[LFS_FLASH_SIZE/LFS_BLOCK_SIZE][LFS_BLOCK_SIZE];
+
+#if !CFG_DEBUG
+
+#define VERIFY_LFS(...) _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, NULL)
+
+#else
+
+#define VERIFY_LFS(...) _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, dbg_strerr_lfs)
+
+static const char* dbg_strerr_lfs (int32_t err)
+{
+  switch ( err )
+  {
+    case LFS_ERR_IO:
+      return "LFS_ERR_IO";
+
+    case LFS_ERR_CORRUPT:
+      return "LFS_ERR_CORRUPT";
+
+    case LFS_ERR_NOENT:
+      return "LFS_ERR_NOENT";
+
+    case LFS_ERR_EXIST:
+      return "LFS_ERR_EXIST";
+
+    case LFS_ERR_NOTDIR:
+      return "LFS_ERR_NOTDIR";
+
+    case LFS_ERR_ISDIR:
+      return "LFS_ERR_ISDIR";
+
+    case LFS_ERR_NOTEMPTY:
+      return "LFS_ERR_NOTEMPTY";
+
+    case LFS_ERR_BADF:
+      return "LFS_ERR_BADF";
+
+    case LFS_ERR_INVAL:
+      return "LFS_ERR_INVAL";
+
+    case LFS_ERR_NOSPC:
+      return "LFS_ERR_NOSPC";
+
+    case LFS_ERR_NOMEM:
+      return "LFS_ERR_NOMEM";
+
+    default:
+      return NULL;
+  }
+}
+
+#endif
 
 static inline uint32_t lba2addr(uint32_t block)
 {
-    return ((uint32_t)LFS_FLASH_ADDR) + block * LFS_BLOCK_SIZE;
+  return ((uint32_t) LFS_FLASH_ADDR) + block * LFS_BLOCK_SIZE;
 }
 
 int _iflash_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
@@ -82,8 +133,6 @@ int _iflash_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, c
 
   return 0;
 }
-
-
 
 // Erase a block. A block must be erased before being programmed.
 // The state of an erased block is undefined. Negative error codes
@@ -120,19 +169,18 @@ LittleFS InternalFS;
 
 LittleFS::LittleFS (void)
 {
-  _lfs_cfg = ((struct lfs_config) {
-    .context = NULL,
-    .read = _iflash_read,
-    .prog = _iflash_prog,
-    .erase = _iflash_erase,
-    .sync = _iflash_sync,
+  varclr(&_lfs_cfg);
+  _lfs_cfg.context = NULL;
+  _lfs_cfg.read = _iflash_read;
+  _lfs_cfg.prog = _iflash_prog;
+  _lfs_cfg.erase = _iflash_erase;
+  _lfs_cfg.sync = _iflash_sync;
 
-    .read_size = LFS_BLOCK_SIZE,
-    .prog_size = LFS_BLOCK_SIZE,
-    .block_size = LFS_BLOCK_SIZE,
-    .block_count = LFS_FLASH_SIZE/LFS_BLOCK_SIZE,
-    .lookahead = 128
-  } );
+  _lfs_cfg.read_size = LFS_BLOCK_SIZE;
+  _lfs_cfg.prog_size = LFS_BLOCK_SIZE;
+  _lfs_cfg.block_size = LFS_BLOCK_SIZE;
+  _lfs_cfg.block_count = LFS_FLASH_SIZE / LFS_BLOCK_SIZE;
+  _lfs_cfg.lookahead = 128;
 }
 
 LittleFS::~LittleFS ()
@@ -143,17 +191,14 @@ LittleFS::~LittleFS ()
 bool LittleFS::begin (void)
 {
   int err = lfs_mount(&_lfs, &_lfs_cfg);
-  PRINT_INT(err);
 
   // reformat if we can't mount the filesystem
-  // this should only happen on the first boot
-  if (err) {
-    err = lfs_format(&_lfs, &_lfs_cfg);
-    PRINT_INT(err);
-    err = lfs_mount(&_lfs, &_lfs_cfg);
-    PRINT_INT(err);
+  if ( LFS_ERR_CORRUPT == err )
+  {
+    LOG_LV1("IFLASH", "Format internal file system");
+    VERIFY_LFS(lfs_format(&_lfs, &_lfs_cfg));
+    VERIFY_LFS(lfs_mount(&_lfs, &_lfs_cfg));
   }
-  PRINT_LOCATION();
 
   return true;
 }
@@ -162,7 +207,50 @@ BluefuritLib::File LittleFS::open (char const *filename, uint8_t mode)
 {
   BluefuritLib::File file(*this);
 
+  int flags = (mode == FILE_READ) ? LFS_O_RDONLY :
+              (mode == FILE_WRITE) ? (LFS_O_RDWR | LFS_O_CREAT) :
+              (mode == FILE_APPEND) ? (LFS_O_RDWR | LFS_O_CREAT | LFS_O_APPEND) : 0;
+
+  if ( flags )
+  {
+    lfs_file_t* fhdl = (lfs_file_t*) rtos_malloc(sizeof(lfs_file_t));
+    int rc = lfs_file_open(&_lfs, fhdl, filename, flags);
+
+    if ( rc )
+    {
+      rtos_free(fhdl);
+      // print error if error is other than file not existed
+      if ( rc != LFS_ERR_NOENT ) VERIFY_MESS(rc, dbg_strerr_lfs);
+    }
+    else
+    {
+      file._hdl = fhdl;
+    }
+  }
+
   return file;
+}
+
+size_t LittleFS::_f_write (void* fhdl, uint8_t const *buf, size_t size)
+{
+  lfs_ssize_t wrcount = lfs_file_write(&_lfs, (lfs_file_t*) fhdl, buf, size);
+  VERIFY(wrcount > 0, 0);
+  return wrcount;
+}
+
+void LittleFS::_f_flush (void* fhdl)
+{
+  VERIFY_LFS(lfs_file_sync(&_lfs, (lfs_file_t* ) fhdl),);
+}
+
+int LittleFS::_f_read (void* fhdl, void *buf, uint16_t nbyte)
+{
+  return lfs_file_read(&_lfs, (lfs_file_t*) fhdl, buf, nbyte);
+}
+
+void LittleFS::_f_close (void* fhdl)
+{
+  lfs_file_close(&_lfs, (lfs_file_t*) fhdl);
 }
 
 bool LittleFS::exists (char const *filepath)
