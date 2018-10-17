@@ -124,7 +124,7 @@ void File::close (void)
 {
   if ( _hdl )
   {
-    _fs->_f_close(_hdl);
+    _fs->_f_close(_hdl, _is_dir);
     rtos_free(_hdl);
   }
 

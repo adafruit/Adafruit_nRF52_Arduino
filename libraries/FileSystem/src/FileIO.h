@@ -116,7 +116,7 @@ class FileSystemClass
     virtual size_t _f_write (void* fhdl, uint8_t const *buf, size_t size) = 0;
     virtual int _f_read (void* fhdl, void *buf, uint16_t nbyte) = 0;
     virtual void _f_flush (void* fhdl) = 0;
-    virtual void _f_close (void* fhdl) = 0;
+    virtual void _f_close (void* fhdl, bool is_dir) = 0;
 
     virtual bool _f_seek (void* fhdl, uint32_t pos) = 0;
     virtual uint32_t _f_position (void* fhdl) = 0;

@@ -308,9 +308,16 @@ uint32_t LittleFS::_f_size (void* fhdl)
   return lfs_file_size(&_lfs, (lfs_file_t*) fhdl);
 }
 
-void LittleFS::_f_close (void* fhdl)
+void LittleFS::_f_close (void* fhdl, bool is_dir)
 {
-  lfs_file_close(&_lfs, (lfs_file_t*) fhdl);
+  if ( is_dir )
+  {
+    lfs_dir_close(&_lfs, (lfs_dir_t *) fhdl);
+  }
+  else
+  {
+    lfs_file_close(&_lfs, (lfs_file_t*) fhdl);
+  }
 }
 
 File LittleFS::_f_openNextFile (void* fhdl, uint8_t mode)
