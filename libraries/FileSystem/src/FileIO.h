@@ -37,6 +37,8 @@
 #define FILE_WRITE 1
 #define FILE_APPEND 2
 
+#define FILE_NAME_MAX 255
+
 class LittleFS;
 
 namespace BluefuritLib
@@ -69,7 +71,7 @@ class File: public Stream
 
     void close (void);
     operator bool (void);
-    char const * name (void);
+    const char* name (void);
 
     bool isDirectory (void);
     File openNextFile (uint8_t mode = FILE_READ);
@@ -80,9 +82,8 @@ class File: public Stream
   private:
     FileSystemClass* _fs;
     void* _hdl;
+    char* _name;
     bool _is_dir;
-
-//    String filename;
 
     friend class ::LittleFS;
 };

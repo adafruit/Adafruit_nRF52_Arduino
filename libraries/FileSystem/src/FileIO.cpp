@@ -44,6 +44,7 @@ File::File (FileSystemClass &fs)
 {
   _fs = &fs;
   _hdl = NULL;
+  _name = NULL;
   _is_dir = false;
 }
 
@@ -51,7 +52,9 @@ File::File (char const *filename, uint8_t mode, FileSystemClass &fs)
 {
   _fs = &fs;
   _hdl = NULL;
+  _name = NULL;
   _is_dir = false;
+
   open(filename, mode);
 }
 
@@ -62,7 +65,7 @@ File::~File ()
 
 bool File::open (char const *filename, uint8_t mode)
 {
-  // close previous opened
+  // close if currently opened
   if ( _hdl ) close();
 
   *this = _fs->open(filename, mode);
@@ -130,7 +133,10 @@ void File::close (void)
     rtos_free(_hdl);
   }
 
+  if ( _name ) rtos_free(_name);
+
   _hdl = NULL;
+  _name = NULL;
 }
 
 File::operator bool ()
@@ -138,9 +144,9 @@ File::operator bool ()
   return _hdl != NULL;
 }
 
-char const * File::name (void)
+const char* File::name (void)
 {
-
+  return _name;
 }
 
 bool File::isDirectory (void)

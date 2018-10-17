@@ -35,6 +35,7 @@
 /**************************************************************************/
 
 #include <Arduino.h>
+#include <string.h>
 #include "InternalFS.h"
 #include "flash/flash_nrf52.h"
 
@@ -238,6 +239,8 @@ BluefuritLib::File LittleFS::_openByInfo (struct lfs_info *info, uint8_t mode)
     {
       file._hdl = fhdl;
       file._is_dir = (info->type == LFS_TYPE_DIR);
+      file._name = (char*) rtos_malloc(strlen(info->name) + 1);
+      strcpy(file._name, info->name);
     }
   }
 
