@@ -85,6 +85,7 @@ class File: public Stream
     friend class ::LittleFS;
 };
 
+// Abstract Interface Class
 class FileSystemClass
 {
   public:
@@ -114,6 +115,8 @@ class FileSystemClass
     virtual int _f_read (void* fhdl, void *buf, uint16_t nbyte) = 0;
     virtual void _f_flush (void* fhdl) = 0;
     virtual void _f_close (void* fhdl) = 0;
+
+    virtual bool _f_seek (void* fhdl, uint32_t pos) = 0;
 };
 
 }

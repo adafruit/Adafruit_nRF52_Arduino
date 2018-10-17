@@ -107,7 +107,7 @@ void File::flush (void)
 
 bool File::seek (uint32_t pos)
 {
-
+  return _fs->_f_seek(_hdl, pos);
 }
 
 uint32_t File::position (void)

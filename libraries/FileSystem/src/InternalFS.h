@@ -60,6 +60,7 @@ class LittleFS: public BluefuritLib::FileSystemClass
     virtual int _f_read (void* fhdl, void *buf, uint16_t nbyte);
     virtual void _f_flush (void* fhdl);
     virtual void _f_close (void* fhdl);
+    virtual bool _f_seek (void* fhdl, uint32_t pos);
 
   private:
     struct lfs_config _lfs_cfg;
