@@ -92,7 +92,9 @@ int File::read (void *buf, uint16_t nbyte)
 
 int File::peek (void)
 {
-
+  int ch = read();
+  seek((position() > 0) ? (position() - 1) : 0);
+  return ch;
 }
 
 int File::available (void)
@@ -148,7 +150,7 @@ bool File::isDirectory (void)
 
 File File::openNextFile (uint8_t mode)
 {
-
+  return _fs->_f_openNextFile(_hdl, mode);
 }
 
 void File::rewindDirectory (void)
