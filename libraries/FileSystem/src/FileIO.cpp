@@ -44,12 +44,14 @@ File::File (FileSystemClass &fs)
 {
   _fs = &fs;
   _hdl = NULL;
+  _is_dir = false;
 }
 
 File::File (char const *filename, uint8_t mode, FileSystemClass &fs)
 {
   _fs = &fs;
   _hdl = NULL;
+  _is_dir = false;
   open(filename, mode);
 }
 
@@ -141,7 +143,7 @@ char const * File::name (void)
 
 bool File::isDirectory (void)
 {
-
+  return _is_dir;
 }
 
 File File::openNextFile (uint8_t mode)

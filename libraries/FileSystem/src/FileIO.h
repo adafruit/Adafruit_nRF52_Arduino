@@ -71,7 +71,7 @@ class File: public Stream
     operator bool (void);
     char const * name (void);
 
-    bool isDirectory ();
+    bool isDirectory (void);
     File openNextFile (uint8_t mode = FILE_READ);
     void rewindDirectory (void);
 
@@ -80,6 +80,7 @@ class File: public Stream
   private:
     FileSystemClass* _fs;
     void* _hdl;
+    bool _is_dir;
 
 //    String filename;
 
@@ -120,6 +121,9 @@ class FileSystemClass
     virtual bool _f_seek (void* fhdl, uint32_t pos) = 0;
     virtual uint32_t _f_position (void* fhdl) = 0;
     virtual uint32_t _f_size (void* fhdl) = 0;
+
+    virtual File _f_openNextFile (void* fhdl, uint8_t mode) = 0;
+    virtual void _f_rewindDirectory (void* fhdl) = 0;
 };
 
 }

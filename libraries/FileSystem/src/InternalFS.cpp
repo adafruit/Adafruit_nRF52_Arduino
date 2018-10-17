@@ -213,24 +213,65 @@ BluefuritLib::File LittleFS::open (char const *filename, uint8_t mode)
 
   if ( flags )
   {
-    lfs_file_t* fhdl = (lfs_file_t*) rtos_malloc(sizeof(lfs_file_t));
-    int rc = lfs_file_open(&_lfs, fhdl, filename, flags);
+    struct lfs_info info;
 
-    if ( rc )
+    if ( 0 == lfs_stat(&_lfs, filename, &info) )
     {
-      rtos_free(fhdl);
-      // print error if error is other than file not existed
-      if ( rc != LFS_ERR_NOENT ) VERIFY_MESS(rc, dbg_strerr_lfs);
-    }
-    else
-    {
-      file._hdl = fhdl;
+      void* fhdl;
+      int rc;
+
+      if ( info.type == LFS_TYPE_REG )
+      {
+        // Open file
+        fhdl = rtos_malloc(sizeof(lfs_file_t));
+        rc = lfs_file_open(&_lfs, (lfs_file_t*) fhdl, filename, flags);
+      }
+      else if ( info.type == LFS_TYPE_DIR )
+      {
+        // open a dir
+        fhdl = rtos_malloc(sizeof(lfs_dir_t));
+        rc = lfs_dir_open(&_lfs, (lfs_dir_t*) fhdl, filename);
+      }
+
+      if ( rc )
+      {
+        rtos_free(fhdl);
+        VERIFY_MESS(rc, dbg_strerr_lfs);
+      }
+      else
+      {
+        file._hdl = fhdl;
+        file._is_dir = (info.type == LFS_TYPE_DIR);
+      }
     }
   }
 
   return file;
 }
 
+bool LittleFS::exists (char const *filepath)
+{
+
+}
+
+bool LittleFS::mkdir (char const *filepath)
+{
+
+}
+
+bool LittleFS::remove (char const *filepath)
+{
+
+}
+
+bool LittleFS::rmdir (char const *filepath)
+{
+
+}
+
+//--------------------------------------------------------------------+
+// FILE API
+//--------------------------------------------------------------------+
 size_t LittleFS::_f_write (void* fhdl, uint8_t const *buf, size_t size)
 {
   lfs_ssize_t wrcount = lfs_file_write(&_lfs, (lfs_file_t*) fhdl, buf, size);
@@ -263,28 +304,17 @@ uint32_t LittleFS::_f_size (void* fhdl)
   return lfs_file_size(&_lfs, (lfs_file_t*) fhdl);
 }
 
-
 void LittleFS::_f_close (void* fhdl)
 {
   lfs_file_close(&_lfs, (lfs_file_t*) fhdl);
 }
 
-bool LittleFS::exists (char const *filepath)
+File LittleFS::_f_openNextFile (void* fhdl, uint8_t mode)
 {
 
 }
 
-bool LittleFS::mkdir (char const *filepath)
-{
-
-}
-
-bool LittleFS::remove (char const *filepath)
-{
-
-}
-
-bool LittleFS::rmdir (char const *filepath)
+void LittleFS::_f_rewindDirectory (void* fhdl)
 {
 
 }
