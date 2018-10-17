@@ -67,7 +67,7 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
     count = _adamsg.waitUntilComplete(5*BLE_GENERIC_TIMEOUT);
   }else
   {
-    VERIFY_MESS(err);
+    VERIFY_MESS(err, dbg_err_str);
   }
   _adamsg.stop();
 

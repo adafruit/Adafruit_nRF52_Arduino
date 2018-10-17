@@ -62,7 +62,7 @@ void adafruit_callback_task(void* arg)
         case 4: ((adacb_4arg_t) func)(args[0], args[1], args[2], args[3]);          break;
         case 5: ((adacb_5arg_t) func)(args[0], args[1], args[2], args[3], args[4]); break;
 
-        default: VERIFY_MESS(NRF_ERROR_INVALID_PARAM); break;
+        default: VERIFY_MESS(NRF_ERROR_INVALID_PARAM, dbg_err_str); break;
       }
 
       // free up resource
