@@ -153,7 +153,7 @@ File File::openNextFile (uint8_t mode)
 
 void File::rewindDirectory (void)
 {
-
+  _fs->_f_rewindDirectory(_hdl);
 }
 
 

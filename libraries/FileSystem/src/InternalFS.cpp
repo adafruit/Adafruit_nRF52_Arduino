@@ -320,5 +320,5 @@ File LittleFS::_f_openNextFile (void* fhdl, uint8_t mode)
 
 void LittleFS::_f_rewindDirectory (void* fhdl)
 {
-
+  VERIFY_LFS(lfs_dir_rewind(&_lfs, (lfs_dir_t* ) fhdl),);
 }
