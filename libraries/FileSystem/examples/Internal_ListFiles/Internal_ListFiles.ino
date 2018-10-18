@@ -26,6 +26,8 @@
 void setup() 
 {
   Serial.begin(115200);
+  while ( !Serial ) {} // for nrf52840 with native usb
+  
   Serial.println("InternalFS List Files Example");
 
   // Initialize Internal File System

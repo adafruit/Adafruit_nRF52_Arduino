@@ -113,12 +113,12 @@ static inline uint32_t lba2addr(uint32_t block)
   return ((uint32_t) LFS_FLASH_ADDR) + block * LFS_BLOCK_SIZE;
 }
 
-int _iflash_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
+static int _iflash_read (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
 {
   (void) c;
-  uint32_t addr = lba2addr(block) + off;
 
-  memcpy(buffer, (void*) addr, size);
+  uint32_t addr = lba2addr(block) + off;
+  flash_nrf52_read(buffer, addr, size);
 
   return 0;
 }
@@ -126,7 +126,8 @@ int _iflash_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, v
 // Program a region in a block. The block must have previously
 // been erased. Negative error codes are propogated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
-int _iflash_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size)
+static int _iflash_prog (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer,
+                         lfs_size_t size)
 {
   (void) c;
 
@@ -140,7 +141,7 @@ int _iflash_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, c
 // The state of an erased block is undefined. Negative error codes
 // are propogated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
-int _iflash_erase(const struct lfs_config *c, lfs_block_t block)
+static int _iflash_erase (const struct lfs_config *c, lfs_block_t block)
 {
   (void) c;
 
@@ -149,15 +150,17 @@ int _iflash_erase(const struct lfs_config *c, lfs_block_t block)
   // implement as write 0xff to whole block address
   for(int i=0; i <LFS_BLOCK_SIZE; i++)
   {
-    flash_nrf52_write8(addr, 0xFF);
+    flash_nrf52_write8(addr + i, 0xFF);
   }
+
+  //flash_nrf52_flush();
 
   return 0;
 }
 
 // Sync the state of the underlying block device. Negative error codes
 // are propogated to the user.
-int _iflash_sync(const struct lfs_config *c)
+static int _iflash_sync (const struct lfs_config *c)
 {
   (void) c;
   flash_nrf52_flush();
