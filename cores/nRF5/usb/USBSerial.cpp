@@ -49,8 +49,12 @@ USBSerial::USBSerial(void)
 }
 
 // Baud and config is ignore in CDC
-void USBSerial::begin(uint32_t baud) { }
-void USBSerial::begin(uint32_t baud, uint8_t config) { }
+void USBSerial::begin (uint32_t baud)
+{
+}
+void USBSerial::begin (uint32_t baud, uint8_t config)
+{
+}
 
 void USBSerial::end(void)
 {

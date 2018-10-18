@@ -52,7 +52,7 @@ static void loop_task(void* arg)
 
 #if CFG_DEBUG
   // If Serial is not begin(), call it to avoid hard fault
-  if ( !Serial.started() ) Serial.begin(115200);
+  if ( !Serial ) Serial.begin(115200);
   dbgPrintVersion();
   Bluefruit_printInfo();
 #endif

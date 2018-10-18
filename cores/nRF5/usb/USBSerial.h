@@ -62,8 +62,6 @@ public:
 
 	size_t readBytes(char *buffer, size_t length);
 	size_t readBytes(uint8_t *buffer, size_t length) { return readBytes((char *)buffer, length); }
-
-	bool started(void) { return true; }
 };
 
 

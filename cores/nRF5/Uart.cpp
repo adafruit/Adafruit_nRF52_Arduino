@@ -66,6 +66,9 @@ void Uart::begin(unsigned long baudrate)
 
 void Uart::begin(unsigned long baudrate, uint16_t /*config*/)
 {
+  // skip if already begun
+  if ( _begun ) return;
+
   nrfUart->PSELTXD = uc_pinTX;
   nrfUart->PSELRXD = uc_pinRX;
 
@@ -76,7 +79,6 @@ void Uart::begin(unsigned long baudrate, uint16_t /*config*/)
   } else {
     nrfUart->CONFIG = (UART_CONFIG_PARITY_Excluded << UART_CONFIG_PARITY_Pos) | UART_CONFIG_HWFC_Disabled;
   }
-
 
   uint32_t nrfBaudRate;
 
@@ -152,6 +154,10 @@ void Uart::end()
   nrfUart->PSELCTS = 0xFFFFFFFF;
 
   rxBuffer.clear();
+
+  vSemaphoreDelete(_mutex);
+  _mutex = NULL;
+  _begun = false;
 }
 
 void Uart::flush()

@@ -637,14 +637,14 @@ void Bluefruit_printInfo(void)
 void AdafruitBluefruit::printInfo(void)
 {
   // Skip if Serial is not initialised
-  if ( !Serial.started() ) return;
+  if ( !Serial ) return;
 
   // Skip if Bluefruit.begin() is not called
   if ( _ble_event_sem == NULL ) return;
 
   Serial.println("--------- SoftDevice Config ---------");
 
-char const * title_fmt = "%-16s: ";
+  char const * title_fmt = "%-16s: ";
 
   /*------------- SoftDevice Config -------------*/
   // Max uuid128

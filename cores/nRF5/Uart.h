@@ -46,9 +46,10 @@ class Uart : public HardwareSerial
 
     void IrqHandler();
 
-    bool started(void) { return _begun; }
-
-    operator bool() { return true; }
+    operator bool ()
+    {
+      return _begun;
+    }
 
   private:
     NRF_UART_Type *nrfUart;
