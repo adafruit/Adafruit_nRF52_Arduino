@@ -230,38 +230,28 @@ bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
 
 void bond_print_list(uint8_t role)
 {
-#if 0
   char const * dpath = (role == BLE_GAP_ROLE_PERIPH ? BOND_DIR_PRPH : BOND_DIR_CNTR);
 
-  NffsDir dir(dpath);
-  NffsDirEntry dirEntry;
+  File dir(dpath, FILE_READ, InternalFS);
+  File file(InternalFS);
 
-  while( dir.read(&dirEntry) )
+  while ( (file = dir.openNextFile(FILE_READ)) )
   {
-    if ( !dirEntry.isDirectory() )
-    {
-      char name[64];
-      dirEntry.getName(name, sizeof(name));
+    file.seek(file.read());    // skip key
 
-      cprintf("  %s : ", name);
+    uint8_t len = file.read();
 
-      // open file to read device name
-      NffsFile file(dpath, dirEntry, FS_ACCESS_READ);
+    char devname[len];
+    file.read(devname, len);
 
-      varclr(name);
+    cprintf("  %s : %s (%d bytes)\n", file.name(), devname, file.size());
 
-      file.seek(BOND_FILE_DEVNAME_OFFSET);
-      if ( file.read(name, CFG_MAX_DEVNAME_LEN) )
-      {
-        cprintf(name);
-      }
-
-      cprintf("\n");
-      file.close();
-    }
+    file.close();
   }
+
   cprintf("\n");
-#endif
+
+  dir.close();
 }
 
 
@@ -269,32 +259,34 @@ bool bond_find_cntr(ble_gap_addr_t* addr, bond_data_t* bdata)
 {
   bool found = false;
 
-#if 0
-  NffsDir dir(BOND_DIR_CNTR);
-  NffsDirEntry dirEntry;
+  File dir(BOND_DIR_CNTR, FILE_READ, InternalFS);
+  File file(InternalFS);
 
-  while( dir.read(&dirEntry) && !found )
+  while ( (file = dir.openNextFile(FILE_READ)) )
   {
     // Read bond data of each stored file
-    if ( !dirEntry.isDirectory() )
+    uint8_t keylen = file.read();
+    if ( keylen == sizeof(bond_data_t) )
     {
-      NffsFile file(BOND_DIR_CNTR, dirEntry, FS_ACCESS_READ);
-      if ( file.read( (uint8_t*)bdata, sizeof(bond_data_t)) )
-      {
-        if ( !memcmp(addr->addr, bdata->peer_id.id_addr_info.addr, 6) )
-        {
-          // Compare static address
-          found = true;
-        }else if ( addr->addr_type == BLE_GAP_ADDR_TYPE_RANDOM_PRIVATE_RESOLVABLE )
-        {
-          // Resolving private address
-        }
-      }
+      file.read((uint8_t*) bdata, keylen);
 
-      file.close();
+      // Compare static address
+      if ( !memcmp(addr->addr, bdata->peer_id.id_addr_info.addr, 6) )
+      {
+        found = true;
+      }
+      else if ( addr->addr_type == BLE_GAP_ADDR_TYPE_RANDOM_PRIVATE_RESOLVABLE )
+      {
+        // Resolving private address
+      }
     }
+
+    file.close();
+
+    if ( found ) break;
   }
-#endif
+
+  dir.close();
 
   return found;
 }

@@ -77,7 +77,7 @@ void printTreeDir(const char* cwd, uint8_t level)
   File item(InternalFS);
 
   // Loop through the directory
-  while( item = dir.openNextFile(FILE_READ) )
+  while( (item = dir.openNextFile(FILE_READ)) )
   {
     // Indentation according to dir level
     for(int i=0; i<level; i++) Serial.print("|  ");
