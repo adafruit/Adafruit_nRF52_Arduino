@@ -360,8 +360,14 @@ File LittleFS::_f_openNextFile (void* fhdl, char const* cwd, uint8_t mode)
   BluefuritLib::File file(*this);
   struct lfs_info info;
 
+  int rc;
+
   // lfs_dir_read return 0 when reaching end of directory, 1 if found an entry
-  int rc = lfs_dir_read(&_lfs, (lfs_dir_t *) fhdl, &info);
+  // skip "." and ".." entries
+  do
+  {
+    rc = lfs_dir_read(&_lfs, (lfs_dir_t *) fhdl, &info);
+  } while ( rc == 1 && (!strcmp(".", info.name) || !strcmp("..", info.name)) );
 
   if ( rc == 1 )
   {
