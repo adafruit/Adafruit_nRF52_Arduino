@@ -49,14 +49,8 @@
  *
  * Each field has an 1-byte preceding length
  *------------------------------------------------------------------*/
-
 #define SVC_CONTEXT_FLAG      (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
-
-#if CFG_DEBUG >= 2
-#define printBondDir(role)    dbgPrintDir( role == BLE_GAP_ROLE_PERIPH ? BOND_DIR_PRPH : BOND_DIR_CNTR )
-#else
-#define printBondDir(role)
-#endif
+#define BOND_FNAME_LEN        max(sizeof(BOND_FNAME_PRPH), sizeof(BOND_FNAME_CNTR))
 
 static void get_fname (char* fname, uint8_t role, uint16_t ediv)
 {
