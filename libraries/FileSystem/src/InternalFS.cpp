@@ -359,10 +359,17 @@ File LittleFS::_f_openNextFile (void* fhdl, uint8_t mode)
   BluefuritLib::File file(*this);
   struct lfs_info info;
 
-  // file not existed
-  if ( 0 > lfs_dir_read(&_lfs, (lfs_dir_t *) fhdl, &info) ) return file;
+  // lfs_dir_read return 0 when reaching end of directory, 1 if found an entry
+  int rc = lfs_dir_read(&_lfs, (lfs_dir_t *) fhdl, &info);
 
-  file = ( info.type == LFS_TYPE_REG ) ? _open_file(info.name, mode) : _open_dir(info.name);
+  if ( rc == 1 )
+  {
+    file = (info.type == LFS_TYPE_REG) ? _open_file(info.name, mode) : _open_dir(info.name);
+  }
+  else if ( rc < 0 )
+  {
+    VERIFY_MESS(rc, dbg_strerr_lfs);
+  }
 
   return file;
 }
