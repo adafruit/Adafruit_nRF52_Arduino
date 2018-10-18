@@ -182,6 +182,8 @@ LittleFS::LittleFS (void)
   _lfs_cfg.block_size = LFS_BLOCK_SIZE;
   _lfs_cfg.block_count = LFS_FLASH_SIZE / LFS_BLOCK_SIZE;
   _lfs_cfg.lookahead = 128;
+
+  _begun = false;
 }
 
 LittleFS::~LittleFS ()
@@ -191,6 +193,9 @@ LittleFS::~LittleFS ()
 
 bool LittleFS::begin (void)
 {
+  if ( _begun ) return true;
+  _begun = true;
+
   int err = lfs_mount(&_lfs, &_lfs_cfg);
 
   // reformat if we can't mount the filesystem

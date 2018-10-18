@@ -68,12 +68,12 @@ class LittleFS: public BluefuritLib::FileSystemClass
     virtual void _f_rewindDirectory (void* fhdl);
 
   private:
-    BluefuritLib::File _open_file (char const *filepath, uint8_t mode);
-    BluefuritLib::File _open_dir (char const *filepath);
-
     struct lfs_config _lfs_cfg;
     lfs_t _lfs;
+    bool _begun;
 
+    BluefuritLib::File _open_file (char const *filepath, uint8_t mode);
+    BluefuritLib::File _open_dir (char const *filepath);
 };
 
 extern LittleFS InternalFS;
