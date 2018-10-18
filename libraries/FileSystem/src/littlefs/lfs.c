@@ -1879,9 +1879,11 @@ int lfs_remove(lfs_t *lfs, const char *path) {
         err = lfs_dir_fetch(lfs, &dir, entry.d.u.dir);
         if (err) {
             return err;
-        } else if (dir.d.size != sizeof(dir.d)+4) {
+        } /* else if (dir.d.size != sizeof(dir.d)+4) {
             return LFS_ERR_NOTEMPTY;
-        }
+        }  adafruit: allow to remove non-empty folder,
+           According to below issue, comment these 2 line won't corrupt filesystem
+           https://github.com/ARMmbed/littlefs/issues/43 */
     }
 
     // remove the entry
