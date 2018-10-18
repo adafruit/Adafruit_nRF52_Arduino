@@ -57,11 +57,12 @@
 
 #if !CFG_DEBUG
 
-#define VERIFY_LFS(...) _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, NULL)
-
+#define VERIFY_LFS(...)       _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, NULL)
+#define PRINT_LFS_ERR(_err)
 #else
 
-#define VERIFY_LFS(...) _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, dbg_strerr_lfs)
+#define VERIFY_LFS(...)       _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, dbg_strerr_lfs)
+#define PRINT_LFS_ERR(_err)   VERIFY_MESS(_err, dbg_strerr_lfs)
 
 static const char* dbg_strerr_lfs (int32_t err)
 {
@@ -225,8 +226,7 @@ BluefuritLib::File LittleFS::_open_file (char const *filepath, uint8_t mode)
     if ( rc )
     {
       rtos_free(fhdl);
-      PRINT_STR(filepath);
-      VERIFY_MESS(rc, dbg_strerr_lfs);
+      PRINT_LFS_ERR(rc);
     }
     else
     {
@@ -251,7 +251,7 @@ BluefuritLib::File LittleFS::_open_dir (char const *filepath)
   if ( rc )
   {
     rtos_free(fhdl);
-    VERIFY_MESS(rc, dbg_strerr_lfs);
+    PRINT_LFS_ERR(rc);
   }
   else
   {
@@ -283,7 +283,7 @@ BluefuritLib::File LittleFS::open (char const *filepath, uint8_t mode)
   }
   else
   {
-    VERIFY_MESS(rc, dbg_strerr_lfs);
+    PRINT_LFS_ERR(rc);
   }
 
   return file;
@@ -297,13 +297,38 @@ bool LittleFS::exists (char const *filepath)
 
 bool LittleFS::mkdir (char const *filepath)
 {
-  VERIFY_LFS(lfs_mkdir(&_lfs, filepath));
+  const char* slash = filepath;
+  if ( slash[0] == '/' ) slash++;    // skip root '/'
+
+  while ( NULL != (slash = strchr(slash, '/')) )
+  {
+    char parent[slash - filepath + 1] = { 0 };
+    memcpy(parent, filepath, slash - filepath);
+
+    // make intermediate parent
+    int rc = lfs_mkdir(&_lfs, parent);
+    if ( rc != LFS_ERR_OK && rc != LFS_ERR_EXIST )
+    {
+      PRINT_LFS_ERR(rc);
+      return false;
+    }
+
+    slash++;
+  }
+  
+  int rc = lfs_mkdir(&_lfs, filepath);
+  if ( rc != LFS_ERR_OK && rc != LFS_ERR_EXIST )
+  {
+    PRINT_LFS_ERR(rc);
+    return false;
+  }
+
   return true;
 }
 
 bool LittleFS::remove (char const *filepath)
 {
-  VERIFY_LFS(lfs_remove(&_lfs, filepath));
+  VERIFY_LFS(lfs_remove(&_lfs, filepath), false);
   return true;
 }
 
@@ -378,15 +403,16 @@ File LittleFS::_f_openNextFile (void* fhdl, char const* cwd, uint8_t mode)
   {
     // string cat name with current folder
     char filepath[strlen(cwd) + 1 + strlen(info.name) + 1];
+
     strcpy(filepath, cwd);
-    strcat(filepath, "/");
+    if ( !(cwd[0] == '/' && cwd[1] == 0) ) strcat(filepath, "/");    // only add '/' if cwd is not root
     strcat(filepath, info.name);
 
     file = (info.type == LFS_TYPE_REG) ? _open_file(filepath, mode) : _open_dir(filepath);
   }
   else if ( rc < 0 )
   {
-    VERIFY_MESS(rc, dbg_strerr_lfs);
+    PRINT_LFS_ERR(rc);
   }
 
   return file;

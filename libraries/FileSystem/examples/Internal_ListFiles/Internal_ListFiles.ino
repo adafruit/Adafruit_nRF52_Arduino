@@ -17,9 +17,6 @@
 
 /* This example  print out NFFS content up to
  * MAX_LEVEL level of directories (including root)
- */
-
-/*
  * WARNING: This example uses recursive call to print out directory tree
  * be extra careful, high number of MAX_LEVEL can cause memory overflow
  */
@@ -33,6 +30,8 @@ void setup()
 
   // Initialize Internal File System
   InternalFS.begin();
+
+  Bluefruit.begin();
 
   // Print whole directory tree of root whose level is 0
   printTreeDir("/", 0);
@@ -94,15 +93,15 @@ void printTreeDir(const char* cwd, uint8_t level)
       // High number of MAX_LEVEL can cause memory overflow
       if ( level < MAX_LEVEL )
       {
-        printTreeDir( item.name(), level+1 );
+        printTreeDir( item.path(), level+1 );
       }
     }else
     {
-      // Print file size starting from position 50
+      // Print file size starting from position 30
       int pos = level*3 + 3 + strlen(item.name());
 
       // Print padding
-      for (int i=pos; i<50; i++) Serial.print(' ');
+      for (int i=pos; i<30; i++) Serial.print(' ');
 
       // Print at least one extra space in case current position > 50
       Serial.print(' ');
