@@ -54,12 +54,6 @@ typedef struct
   ble_gap_id_key_t  peer_id;
 } bond_data_t;
 
-enum
-{
-  BOND_FILE_DEVNAME_OFFSET = sizeof(bond_data_t),
-  BOND_FILE_CCCD_OFFSET    = BOND_FILE_DEVNAME_OFFSET + CFG_MAX_DEVNAME_LEN
-};
-
 void bond_init(void);
 void bond_clear_prph(void);
 void bond_clear_cntr(void);

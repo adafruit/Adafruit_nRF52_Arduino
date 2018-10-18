@@ -50,15 +50,6 @@
  * Each field has an 1-byte preceding length
  *------------------------------------------------------------------*/
 
-#ifdef NRF52840_XXAA
-#define BOND_FLASH_ADDR     0xED000
-#else
-#define BOND_FLASH_ADDR     0x6D000
-#endif
-
-// TODO make it dynamic later
-#define MAX_BONDS   16
-
 #define SVC_CONTEXT_FLAG      (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
 
 #if CFG_DEBUG >= 2
@@ -146,6 +137,8 @@ bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata)
   VERIFY(keylen == sizeof(bond_data_t));
 
   file.read(bdata, keylen);
+  file.close();
+
   LOG_LV2("BOND", "Load Keys from file %s", filename);
 
   return true;
@@ -157,49 +150,30 @@ bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata)
  *------------------------------------------------------------------*/
 static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
 {
-  uint16_t alen = 0;
-  sd_ble_gatts_sys_attr_get(conn_hdl, NULL, &alen, SVC_CONTEXT_FLAG);
-
-  uint8_t attr[alen];
-
-  VERIFY(ERROR_NONE == sd_ble_gatts_sys_attr_get(conn_hdl, attr, &alen, SVC_CONTEXT_FLAG),);
-
-  (void) role;
-  uint32_t fl_addr = BOND_FLASH_ADDR + 256;
-
-  flash_nrf52_write8(fl_addr++, alen);
-  flash_nrf52_write(fl_addr, attr, alen);
-
-  flash_nrf52_flush();
-
-  LOG_LV2("BOND", "CCCD setting is saved");
-
-#if 0
   uint16_t len=0;
   sd_ble_gatts_sys_attr_get(conn_hdl, NULL, &len, SVC_CONTEXT_FLAG);
 
-  uint8_t* sys_attr = (uint8_t*) rtos_malloc( len );
+  uint8_t sys_attr[len];
   VERIFY( sys_attr, );
 
-  if ( ERROR_NONE == sd_ble_gatts_sys_attr_get(conn_hdl, sys_attr, &len, SVC_CONTEXT_FLAG) )
-  {
-    // save to file
-    char filename[BOND_FNAME_LEN];
-    get_fname(filename, role, ediv);
+  VERIFY_STATUS(sd_ble_gatts_sys_attr_get(conn_hdl, sys_attr, &len, SVC_CONTEXT_FLAG),);
 
-    if ( Nffs.writeFile(filename, sys_attr, len, BOND_FILE_CCCD_OFFSET) )
-    {
-      LOG_LV2("BOND", "CCCD setting is saved to file %s", filename);
-    }else
-    {
-      LOG_LV1("BOND", "Failed to save CCCD setting");
-    }
+  char filename[BOND_FNAME_LEN];
+  get_fname(filename, role, ediv);
 
-  }
+  File file(filename, FILE_WRITE, InternalFS);
+  VERIFY(file,);
 
-  rtos_free(sys_attr);
-  printBondDir(role);
-#endif
+  file.seek(0);
+  file.seek(file.read());    // skip key
+  file.seek(file.read() + file.position());    // skip name
+
+  file.write((uint8_t) len);
+  file.write(sys_attr, len);
+
+  LOG_LV2("BOND", "CCCD setting is saved to file %s ( offset = %d, len = %d bytes )", filename, file.size() - len, len);
+
+  file.close();
 }
 
 bool bond_save_cccd (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
@@ -212,58 +186,33 @@ bool bond_save_cccd (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
   return true;
 }
 
-
 bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
 {
-  (void) role;
-  uint32_t fl_addr = BOND_FLASH_ADDR + 256;
-  uint16_t alen = flash_nrf52_read8(fl_addr++);
-
-  uint8_t attr[alen];
-  flash_nrf52_read(attr, fl_addr, alen);
-
-  if ( ERROR_NONE != sd_ble_gatts_sys_attr_set(cond_hdl, attr, alen, SVC_CONTEXT_FLAG) )
-  {
-    sd_ble_gatts_sys_attr_set(cond_hdl, NULL, 0, 0);
-    return false;
-  }
-
-  return true;
-
-#if 0
   bool loaded = false;
 
   char filename[BOND_FNAME_LEN];
   get_fname(filename, role, ediv);
 
-  NffsFile file(filename, FS_ACCESS_READ);
+  File file(filename, FILE_READ, InternalFS);
+  VERIFY(file);
 
-  if ( file.exists() )
+  if ( file )
   {
-    int32_t len = file.size() - BOND_FILE_CCCD_OFFSET;
+    file.seek(file.read());    // skip key
+    file.seek(file.read() + file.position());    // skip name
+
+    uint16_t len = file.available();
 
     if ( len )
     {
-      uint8_t* sys_attr = (uint8_t*) rtos_malloc( len );
+      uint8_t sys_attr[len];
 
-      if (sys_attr)
+      file.read(sys_attr, len);
+
+      if ( ERROR_NONE == sd_ble_gatts_sys_attr_set(cond_hdl, sys_attr, len, SVC_CONTEXT_FLAG) )
       {
-        file.seek(BOND_FILE_CCCD_OFFSET);
-
-        if ( file.read(sys_attr, len ) )
-        {
-          if (ERROR_NONE == sd_ble_gatts_sys_attr_set(cond_hdl, sys_attr, len, SVC_CONTEXT_FLAG) )
-          {
-            loaded = true;
-
-            LOG_LV2("BOND", "Load CCCD from file %s", filename);
-          }else
-          {
-            LOG_LV1("BOND", "CCCD setting not found");
-          }
-        }
-
-        rtos_free(sys_attr);
+        loaded = true;
+        LOG_LV2("BOND", "Load CCCD from file %s ( offset = %d, len = %d bytes )", filename, file.size() - len, len);
       }
     }
   }
@@ -272,11 +221,11 @@ bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
 
   if ( !loaded )
   {
+    LOG_LV1("BOND", "CCCD setting not found");
     sd_ble_gatts_sys_attr_set(cond_hdl, NULL, 0, 0);
   }
 
   return loaded;
-#endif
 }
 
 void bond_print_list(uint8_t role)
