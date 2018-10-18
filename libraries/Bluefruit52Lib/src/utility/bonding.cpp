@@ -385,11 +385,8 @@ void bond_clear_all(void)
 
 void bond_remove_key(uint8_t role, uint16_t ediv)
 {
-#if 0
   char filename[BOND_FNAME_LEN];
   get_fname(filename, role, ediv);
 
-  Nffs.remove(filename);
-#endif
-
+  InternalFS.remove(filename);
 }
