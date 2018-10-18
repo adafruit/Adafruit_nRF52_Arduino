@@ -36,18 +36,15 @@
 
 #include <Arduino.h>
 #include "FileIO.h"
-#include "InternalFS.h"
 #include "bonding.h"
 
-#include "flash/flash_nrf52.h"
 #include "bluefruit.h"
+#include "flash/flash_nrf52.h"
 
 /*------------------------------------------------------------------*/
 /* Bond Key is saved in following layout
  * - Bond Data : 80 bytes
  * - Name      : variable (including null char)
- *
- * CCCD is saved separately
  * - CCCD      : variable
  *
  * Each field has an 1-byte preceding length
@@ -62,7 +59,7 @@
 // TODO make it dynamic later
 #define MAX_BONDS   16
 
-#define SVC_CONTEXT_FLAG                 (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
+#define SVC_CONTEXT_FLAG      (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
 
 #if CFG_DEBUG >= 2
 #define printBondDir(role)    dbgPrintDir( role == BLE_GAP_ROLE_PERIPH ? BOND_DIR_PRPH : BOND_DIR_CNTR )
@@ -78,6 +75,10 @@ static void get_fname (char* fname, uint8_t role, uint16_t ediv)
 void bond_init(void)
 {
   InternalFS.begin();
+
+  // Create prph and central bond folder if not existed
+  if ( !InternalFS.exists(BOND_DIR_PRPH) ) InternalFS.mkdir(BOND_DIR_PRPH);
+  if ( !InternalFS.exists(BOND_DIR_CNTR) ) InternalFS.mkdir(BOND_DIR_CNTR);
 }
 
 /*------------------------------------------------------------------*/
@@ -87,71 +88,37 @@ static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_data_t* bd
 {
   uint16_t const ediv = (role == BLE_GAP_ROLE_PERIPH) ? bdata->own_enc.master_id.ediv : bdata->peer_enc.master_id.ediv;
 
-  //------------- save keys -------------//
-  uint32_t fl_addr = BOND_FLASH_ADDR;
-  uint8_t const keylen = sizeof(bond_data_t);
+  char filename[BOND_FNAME_LEN];
+  get_fname(filename, role, ediv);
 
-  fl_addr += flash_nrf52_write8(fl_addr, sizeof(bond_data_t));
-  fl_addr += flash_nrf52_write(fl_addr, bdata, sizeof(bond_data_t));
+  // delete if file already exists
+  if ( InternalFS.exists(filename) ) InternalFS.remove(filename);
+
+  File file(filename, FILE_WRITE, InternalFS);
+  VERIFY(file,);
+
+  //------------- save keys -------------//
+  file.write(sizeof(bond_data_t));
+  file.write((uint8_t*) bdata, sizeof(bond_data_t));
 
   //------------- save device name -------------//
-  char devname[64] = { 0 };
-  uint8_t namelen = Bluefruit.Gap.getPeerName(conn_hdl, devname, sizeof(devname));
-
-  // If couldn't get devname use peer mac address
-  if ( namelen == 0 )
-  {
-    uint8_t* mac = bdata->peer_id.id_addr_info.addr;
-    namelen = sprintf(devname, "%02X:%02X:%02X:%02X:%02X:%02X", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
-  }
-
-  fl_addr += flash_nrf52_write8(fl_addr, namelen + 1);    // also include null char
-  fl_addr += flash_nrf52_write(fl_addr, devname, namelen);
-  fl_addr += flash_nrf52_write8(fl_addr, 0);    // null char
-
-  flash_nrf52_flush();
-
-  LOG_LV2("BOND", "Keys for \"%s\" is saved", devname);
-
-#if 0
-  char filename[BOND_FNAME_LEN];
-  get_fname(filename, role, role == BLE_GAP_ROLE_PERIPH ? bdata->own_enc.master_id.ediv : bdata->peer_enc.master_id.ediv);
-
   char devname[CFG_MAX_DEVNAME_LEN] = { 0 };
   Bluefruit.Gap.getPeerName(conn_hdl, devname, CFG_MAX_DEVNAME_LEN);
 
-  NffsFile file(filename, FS_ACCESS_WRITE);
-
-  VERIFY( file.exists(), );
-
-  bool result = true;
-
-  // write keys
-  if ( !file.write((uint8_t*)bdata, sizeof(bond_data_t)) )
-  {
-    result = false;
-  }
-
-  // If couldn't get devname use peer mac address
+  // If couldn't get devname then use peer mac address
   if ( !devname[0] )
   {
     uint8_t* mac = bdata->peer_id.id_addr_info.addr;
     sprintf(devname, "%02X:%02X:%02X:%02X:%02X:%02X", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
   }
 
-  file.write((uint8_t*) devname, CFG_MAX_DEVNAME_LEN);
+  uint8_t const namelen = strlen(devname);
+  file.write(namelen + 1);
+  file.write((uint8_t*) devname, namelen + 1);
+
+  LOG_LV2("BOND", "Keys for \"%s\" is saved to file %s ( %d bytes )", devname, filename, file.size());
+
   file.close();
-
-  if (result)
-  {
-    LOG_LV2("BOND", "Keys for \"%s\" is saved to file %s", devname, filename);
-  }else
-  {
-    LOG_LV1("BOND", "Failed to save keys for \"%s\"", devname);
-  }
-
-  printBondDir(role);
-#endif
 }
 
 bool bond_save_keys (uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
@@ -169,29 +136,19 @@ bool bond_save_keys (uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
 
 bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata)
 {
-  uint32_t fl_addr = BOND_FLASH_ADDR;
-  uint8_t const keylen = flash_nrf52_read8(fl_addr);
-
-  fl_addr++;
-  flash_nrf52_read(bdata, fl_addr, keylen);
-
-  return true;
-
-#if 0
   char filename[BOND_FNAME_LEN];
   get_fname(filename, role, ediv);
 
-  bool result = (Nffs.readFile(filename, bdata, sizeof(bond_data_t)) > 0);
+  File file(filename, FILE_READ, InternalFS);
+  VERIFY(file);
 
-  if ( result )
-  {
-    LOG_LV2("BOND", "Load Keys from file %s", filename);
-  }else
-  {
-    LOG_LV1("BOND", "Keys not found");
-  }
-  return result;
-#endif
+  int keylen = file.read();
+  VERIFY(keylen == sizeof(bond_data_t));
+
+  file.read(bdata, keylen);
+  LOG_LV2("BOND", "Load Keys from file %s", filename);
+
+  return true;
 }
 
 
@@ -398,39 +355,32 @@ bool bond_find_cntr(ble_gap_addr_t* addr, bond_data_t* bdata)
  *------------------------------------------------------------------*/
 void bond_clear_prph(void)
 {
-#if 0
-  // Detele bonds dir
-  Nffs.remove(BOND_DIR_PRPH);
+  // delete bonds dir
+  InternalFS.rmdir_r(BOND_DIR_PRPH);
 
   // Create an empty one
-  (void) Nffs.mkdir_p(BOND_DIR_PRPH);
-#endif
+  InternalFS.mkdir(BOND_DIR_PRPH);
 }
 
 void bond_clear_cntr(void)
 {
-#if 0
-  // Detele bonds dir
-  Nffs.remove(BOND_DIR_CNTR);
+  // delete bonds dir
+  InternalFS.rmdir_r(BOND_DIR_CNTR);
 
   // Create an empty one
-  (void) Nffs.mkdir_p(BOND_DIR_CNTR);
-#endif
+  InternalFS.mkdir(BOND_DIR_CNTR);
 
 }
 
-
 void bond_clear_all(void)
 {
-#if 0
-  // Detele bonds dir
-  Nffs.remove(BOND_DIR_ROOT);
+  // delete bonds dir
+  InternalFS.rmdir_r(BOND_DIR_PRPH);
+  InternalFS.rmdir_r(BOND_DIR_CNTR);
 
-  // Create an empty one for prph and central
-  (void) Nffs.mkdir_p(BOND_DIR_PRPH);
-  (void) Nffs.mkdir_p(BOND_DIR_CNTR);
-#endif
-
+  // Create an empty one
+  InternalFS.mkdir(BOND_DIR_PRPH);
+  InternalFS.mkdir(BOND_DIR_CNTR);
 }
 
 void bond_remove_key(uint8_t role, uint16_t ediv)

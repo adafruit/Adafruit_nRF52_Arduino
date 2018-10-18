@@ -338,6 +338,12 @@ bool LittleFS::rmdir (char const *filepath)
   return true;
 }
 
+bool LittleFS::rmdir_r (char const *filepath)
+{
+  VERIFY_LFS(lfs_remove(&_lfs, filepath));
+  return true;
+}
+
 //--------------------------------------------------------------------+
 // FILE API
 //--------------------------------------------------------------------+

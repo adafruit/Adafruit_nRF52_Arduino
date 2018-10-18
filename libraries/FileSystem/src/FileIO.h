@@ -111,7 +111,11 @@ class FileSystemClass
     // Delete the file.
     virtual bool remove (char const *filepath) = 0;
 
+    // Delete a folder (must be empty)
     virtual bool rmdir (char const *filepath) = 0;
+
+    // Delete a folder (recursively)
+    virtual bool rmdir_r (char const *filepath) = 0;
 
     //--------------------------------------------------------------------+
     // Internal API, shouldn't call directly
