@@ -51,6 +51,7 @@ class File: public Stream
   public:
     File (FileSystemClass &fs);
     File (char const *filename, uint8_t mode, FileSystemClass &fs);
+    File & operator = (const File &rhs);
     ~File ();
 
     bool open (char const *filename, uint8_t mode);

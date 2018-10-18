@@ -58,6 +58,16 @@ File::File (char const *filename, uint8_t mode, FileSystemClass &fs)
   open(filename, mode);
 }
 
+File& File::operator = (const File &rhs)
+{
+  // close if currently opened
+  if ( _hdl ) close();
+
+  memcpy(this, &rhs, sizeof(File));
+
+  return *this;
+}
+
 File::~File ()
 {
 
@@ -139,7 +149,7 @@ void File::close (void)
   _name = NULL;
 }
 
-File::operator bool ()
+File::operator bool (void)
 {
   return _hdl != NULL;
 }
