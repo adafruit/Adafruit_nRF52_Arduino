@@ -161,6 +161,11 @@ char const* File::name (void)
   return barename ? (barename + 1) : _path;
 }
 
+char const* File::path (void)
+{
+  return _path;
+}
+
 bool File::isDirectory (void)
 {
   return _is_dir;

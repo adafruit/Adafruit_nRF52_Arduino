@@ -52,7 +52,7 @@ class File: public Stream
     File (FileSystemClass &fs);
     File (char const *filename, uint8_t mode, FileSystemClass &fs);
     File & operator = (const File &rhs);
-    ~File ();
+    virtual ~File ();
 
     bool open (char const *filename, uint8_t mode);
 
@@ -73,6 +73,7 @@ class File: public Stream
     void close (void);
     operator bool (void);
     char const* name (void);
+    char const* path (void);
 
     bool isDirectory (void);
     File openNextFile (uint8_t mode = FILE_READ);
