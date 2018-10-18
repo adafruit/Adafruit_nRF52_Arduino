@@ -34,7 +34,7 @@
 */
 /**************************************************************************/
 
-#include "../flash/flash_cache.h"
+#include "flash_cache.h"
 
 #include "common_func.h"
 

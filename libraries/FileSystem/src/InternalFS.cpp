@@ -206,8 +206,8 @@ bool LittleFS::begin (void)
   if ( LFS_ERR_CORRUPT == err )
   {
     LOG_LV1("IFLASH", "Format internal file system");
-    VERIFY_LFS(lfs_format(&_lfs, &_lfs_cfg));
-    VERIFY_LFS(lfs_mount(&_lfs, &_lfs_cfg));
+    VERIFY_LFS(lfs_format(&_lfs, &_lfs_cfg), false);
+    VERIFY_LFS(lfs_mount(&_lfs, &_lfs_cfg), false);
   }
 
   return true;
