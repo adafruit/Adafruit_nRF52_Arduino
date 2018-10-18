@@ -15,7 +15,8 @@
 #include <bluefruit.h>
 #include <FileIO.h>
 
-#define FILENAME    "/adafruit.txt"
+#define FILENAME    "/testdir1/ada2.txt"
+
 #define CONTENTS    "Bluefruit Feather52's file contents"
 
 File file(InternalFS);
@@ -38,12 +39,8 @@ void setup()
   Serial.println();
   Serial.println();
 
-  // Bluefruit module must be initialized for Nffs to work
-  // Since Bluefruit's SOC event handling task is required for flash operation
-  Bluefruit.begin();
-
-  // Initialize Nffs
-  //Nffs.begin();
+  // Initialize Internal File System
+  InternalFS.begin();
 
   file.open(FILENAME, FILE_READ);
 
@@ -61,6 +58,7 @@ void setup()
     file.close();
   }else
   {
+    InternalFS.mkdir("/testdir1");
     Serial.print("Open " FILENAME " file to write ... ");
 
     if( file.open(FILENAME, FILE_WRITE) )
@@ -70,7 +68,7 @@ void setup()
       file.close();
     }else
     {
-      Serial.println("Failed to open file to write");
+      Serial.println("Failed!");
     }
   }
 }

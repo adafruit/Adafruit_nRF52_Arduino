@@ -36,6 +36,7 @@
 
 #include "flash_nrf52.h"
 #include "flash_cache.h"
+#include "nrf_sdm.h"
 #include "nrf_soc.h"
 #include "rtos.h"
 
@@ -109,10 +110,16 @@ bool fal_erase (uint32_t addr)
   }
   VERIFY_STATUS(err);
 
-  // wait until complete
-  xSemaphoreTake(_sem, portMAX_DELAY);
-  VERIFY(_op_result == NRF_EVT_FLASH_OPERATION_SUCCESS);
+  // wait for async event if SD is enabled
+  uint8_t sd_en = 0;
+  (void) sd_softdevice_is_enabled(&sd_en);
 
+  if ( sd_en )
+  {
+    xSemaphoreTake(_sem, portMAX_DELAY);
+    VERIFY(_op_result == NRF_EVT_FLASH_OPERATION_SUCCESS);
+  }
+  
   return true;
 }
 
@@ -126,9 +133,15 @@ static uint32_t fal_program (uint32_t dst, void const * src, uint32_t len)
   }
   VERIFY_STATUS(err);
 
-  // wait until complete
-  xSemaphoreTake(_sem, portMAX_DELAY);
-  VERIFY(_op_result == NRF_EVT_FLASH_OPERATION_SUCCESS);
+  // wait for async event if SD is enabled
+  uint8_t sd_en = 0;
+  (void) sd_softdevice_is_enabled(&sd_en);
+
+  if ( sd_en )
+  {
+    xSemaphoreTake(_sem, portMAX_DELAY);
+    VERIFY(_op_result == NRF_EVT_FLASH_OPERATION_SUCCESS);
+  }
 
   return len;
 }

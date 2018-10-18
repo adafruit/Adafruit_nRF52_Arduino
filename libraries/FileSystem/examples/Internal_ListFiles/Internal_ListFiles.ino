@@ -31,12 +31,8 @@ void setup()
   Serial.begin(115200);
   Serial.println("InternalFS List Files Example");
 
-  // Bluefruit module must be initialized for Nffs to work
-  // Since Bluefruit's SOC event handling task is required for flash operation
-  Bluefruit.begin();
-
-  // Initialize Nffs
-  //Nffs.begin();
+  // Initialize Internal File System
+  InternalFS.begin();
 
   // Print whole directory tree of root whose level is 0
   printTreeDir("/", 0);
