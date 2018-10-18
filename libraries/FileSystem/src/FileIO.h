@@ -72,7 +72,7 @@ class File: public Stream
 
     void close (void);
     operator bool (void);
-    const char* name (void);
+    char const* name (void);
 
     bool isDirectory (void);
     File openNextFile (uint8_t mode = FILE_READ);
@@ -83,7 +83,7 @@ class File: public Stream
   private:
     FileSystemClass* _fs;
     void* _hdl;
-    char* _name;
+    char* _path;
     bool _is_dir;
 
     friend class ::LittleFS;
@@ -124,7 +124,7 @@ class FileSystemClass
     virtual uint32_t _f_position (void* fhdl) = 0;
     virtual uint32_t _f_size (void* fhdl) = 0;
 
-    virtual File _f_openNextFile (void* fhdl, uint8_t mode) = 0;
+    virtual File _f_openNextFile (void* fhdl, char const* cwd, uint8_t mode) = 0;
     virtual void _f_rewindDirectory (void* fhdl) = 0;
 };
 

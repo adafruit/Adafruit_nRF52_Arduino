@@ -44,7 +44,7 @@ File::File (FileSystemClass &fs)
 {
   _fs = &fs;
   _hdl = NULL;
-  _name = NULL;
+  _path = NULL;
   _is_dir = false;
 }
 
@@ -52,7 +52,7 @@ File::File (char const *filename, uint8_t mode, FileSystemClass &fs)
 {
   _fs = &fs;
   _hdl = NULL;
-  _name = NULL;
+  _path = NULL;
   _is_dir = false;
 
   open(filename, mode);
@@ -143,10 +143,10 @@ void File::close (void)
     rtos_free(_hdl);
   }
 
-  if ( _name ) rtos_free(_name);
+  if ( _path ) rtos_free(_path);
 
   _hdl = NULL;
-  _name = NULL;
+  _path = NULL;
 }
 
 File::operator bool (void)
@@ -154,9 +154,11 @@ File::operator bool (void)
   return _hdl != NULL;
 }
 
-const char* File::name (void)
+char const* File::name (void)
 {
-  return _name;
+  // return barename only
+  char* barename = strrchr(_path, '/');
+  return barename ? (barename + 1) : _path;
 }
 
 bool File::isDirectory (void)
@@ -167,7 +169,7 @@ bool File::isDirectory (void)
 File File::openNextFile (uint8_t mode)
 {
   if ( !_is_dir ) return File(*_fs);
-  return _fs->_f_openNextFile(_hdl, mode);
+  return _fs->_f_openNextFile(_hdl, _path, mode);
 }
 
 void File::rewindDirectory (void)

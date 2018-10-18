@@ -50,7 +50,7 @@ class LittleFS: public BluefuritLib::FileSystemClass
     virtual ~LittleFS ();
 
     bool begin (void);
-    BluefuritLib::File open (char const *filename, uint8_t mode = FILE_READ);
+    BluefuritLib::File open (char const *filepath, uint8_t mode = FILE_READ);
     bool exists (char const *filepath);
     bool mkdir (char const *filepath);
     bool remove (char const *filepath);
@@ -64,12 +64,12 @@ class LittleFS: public BluefuritLib::FileSystemClass
     virtual uint32_t _f_position (void* fhdl);
     virtual uint32_t _f_size (void* fhdl);
 
-    virtual File _f_openNextFile (void* fhdl, uint8_t mode);
+    virtual File _f_openNextFile (void* fhdl, char const* cwd, uint8_t mode);
     virtual void _f_rewindDirectory (void* fhdl);
 
   private:
-    BluefuritLib::File _open_file (char const *filename, uint8_t mode);
-    BluefuritLib::File _open_dir (char const *filename);
+    BluefuritLib::File _open_file (char const *filepath, uint8_t mode);
+    BluefuritLib::File _open_dir (char const *filepath);
 
     struct lfs_config _lfs_cfg;
     lfs_t _lfs;
