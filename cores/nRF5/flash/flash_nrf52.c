@@ -84,10 +84,15 @@ uint32_t flash_nrf52_read (void* dst, uint32_t src, uint32_t len)
   return fal_read(dst, src, len);
 }
 
+bool flash_nrf52_erase(uint32_t addr)
+{
+  return fal_erase(addr);
+}
+
 //--------------------------------------------------------------------+
 // HAL for caching
 //--------------------------------------------------------------------+
-static bool fal_erase (uint32_t addr)
+bool fal_erase (uint32_t addr)
 {
   // Init semaphore for first call
   if ( !_sem )

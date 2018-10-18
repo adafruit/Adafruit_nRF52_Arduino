@@ -44,6 +44,7 @@
 #endif
 
 void flash_nrf52_flush (void);
+bool flash_nrf52_erase(uint32_t addr);
 
 uint32_t flash_nrf52_write (uint32_t dst, void const * src, uint32_t len);
 uint32_t flash_nrf52_read (void* dst, uint32_t src, uint32_t len);
