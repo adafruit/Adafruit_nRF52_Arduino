@@ -12,10 +12,9 @@
  any redistribution
 *********************************************************************/
 
-#include <bluefruit.h>
 #include <FileIO.h>
 
-#define FILENAME    "/testdir1/ada2.txt"
+#define FILENAME    "/adafruit.txt"
 
 #define CONTENTS    "Bluefruit Feather52's file contents"
 
@@ -25,6 +24,7 @@ File file(InternalFS);
 void setup() 
 {
   Serial.begin(115200);
+  while ( !Serial ) {} // for nrf52840 with native usb
 
   Serial.println("Internal Read Write File Example");
   Serial.println();
@@ -58,7 +58,6 @@ void setup()
     file.close();
   }else
   {
-    InternalFS.mkdir("/testdir1");
     Serial.print("Open " FILENAME " file to write ... ");
 
     if( file.open(FILENAME, FILE_WRITE) )
