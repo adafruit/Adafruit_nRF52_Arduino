@@ -39,6 +39,8 @@
 
 #include "common_inc.h"
 
+#define FLASH_NRF52_PAGE_SIZE   4096
+
 #ifdef __cplusplus
  extern "C" {
 #endif

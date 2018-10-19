@@ -106,7 +106,7 @@ bool fal_erase (uint32_t addr)
 
   // delay and retry if busy
   uint32_t err;
-  while ( NRF_ERROR_BUSY == (err = sd_flash_page_erase(addr / FLASH_CACHE_PAGE_SIZE)) )
+  while ( NRF_ERROR_BUSY == (err = sd_flash_page_erase(addr / FLASH_NRF52_PAGE_SIZE)) )
   {
     delay(1);
   }
