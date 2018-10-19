@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     flash_nrf52.c
+    @file     flash_nrf5x.c
     @author   hathach (tinyusb.org)
 
     @section LICENSE
@@ -34,7 +34,7 @@
 */
 /**************************************************************************/
 
-#include "flash_nrf52.h"
+#include "flash_nrf5x.h"
 #include "flash_cache.h"
 #include "nrf_sdm.h"
 #include "nrf_soc.h"
@@ -46,7 +46,7 @@
 static SemaphoreHandle_t _sem = NULL;
 static volatile uint32_t _op_result;
 
-void flash_nrf52_event_cb (uint32_t event)
+void flash_nrf5x_event_cb (uint32_t event)
 {
   _op_result = event;
   xSemaphoreGive(_sem);
@@ -69,25 +69,25 @@ flash_cache_t _cache = {
 //--------------------------------------------------------------------+
 // Application API
 //--------------------------------------------------------------------+
-void flash_nrf52_flush (void)
+void flash_nrf5x_flush (void)
 {
   flash_cache_flush(&_cache);
 }
 
-uint32_t flash_nrf52_write (uint32_t dst, void const * src, uint32_t len)
+uint32_t flash_nrf5x_write (uint32_t dst, void const * src, uint32_t len)
 {
   // TODO prevent write SD + bootloader region
   return flash_cache_write(&_cache, dst, src, len);
 }
 
-uint32_t flash_nrf52_read (void* dst, uint32_t src, uint32_t len)
+uint32_t flash_nrf5x_read (void* dst, uint32_t src, uint32_t len)
 {
   // return cache value if available
   flash_cache_read(&_cache, dst, src, len);
   return len;
 }
 
-bool flash_nrf52_erase(uint32_t addr)
+bool flash_nrf5x_erase(uint32_t addr)
 {
   return fal_erase(addr);
 }

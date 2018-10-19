@@ -37,7 +37,7 @@
 #include <Arduino.h>
 #include <string.h>
 #include "InternalFS.h"
-#include "flash/flash_nrf52.h"
+#include "flash/flash_nrf5x.h"
 
 #ifdef NRF52840_XXAA
 #define LFS_FLASH_ADDR     0xED000
@@ -118,7 +118,7 @@ static int _iflash_read (const struct lfs_config *c, lfs_block_t block, lfs_off_
   (void) c;
 
   uint32_t addr = lba2addr(block) + off;
-  flash_nrf52_read(buffer, addr, size);
+  flash_nrf5x_read(buffer, addr, size);
 
   return 0;
 }
@@ -132,7 +132,7 @@ static int _iflash_prog (const struct lfs_config *c, lfs_block_t block, lfs_off_
   (void) c;
 
   uint32_t addr = lba2addr(block) + off;
-  flash_nrf52_write(addr, buffer, size);
+  flash_nrf5x_write(addr, buffer, size);
 
   return 0;
 }
@@ -150,10 +150,10 @@ static int _iflash_erase (const struct lfs_config *c, lfs_block_t block)
   // implement as write 0xff to whole block address
   for(int i=0; i <LFS_BLOCK_SIZE; i++)
   {
-    flash_nrf52_write8(addr + i, 0xFF);
+    flash_nrf5x_write8(addr + i, 0xFF);
   }
 
-  // flash_nrf52_flush();
+  // flash_nrf5x_flush();
 
   return 0;
 }
@@ -163,7 +163,7 @@ static int _iflash_erase (const struct lfs_config *c, lfs_block_t block)
 static int _iflash_sync (const struct lfs_config *c)
 {
   (void) c;
-  flash_nrf52_flush();
+  flash_nrf5x_flush();
   return 0;
 }
 

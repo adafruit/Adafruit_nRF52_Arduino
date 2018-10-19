@@ -39,7 +39,7 @@
 #include "bonding.h"
 
 #include "bluefruit.h"
-#include "flash/flash_nrf52.h"
+#include "flash/flash_nrf5x.h"
 
 /*------------------------------------------------------------------*/
 /* Bond Key is saved in following layout
