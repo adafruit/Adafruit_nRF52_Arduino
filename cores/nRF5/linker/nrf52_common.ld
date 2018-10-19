@@ -60,7 +60,6 @@ PROVIDE(__stack      = __StackTop);
 /* Flash region */
 __flash_arduino_start = ORIGIN(FLASH);
 __flash_arduino_end   = ORIGIN(FLASH) + LENGTH(FLASH);
-/* __flash_bond_start    = ORIGIN(FLASH_BOND); */
 
 SECTIONS
 {
