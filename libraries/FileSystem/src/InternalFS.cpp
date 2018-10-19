@@ -153,7 +153,7 @@ static int _iflash_erase (const struct lfs_config *c, lfs_block_t block)
     flash_nrf52_write8(addr + i, 0xFF);
   }
 
-  //flash_nrf52_flush();
+  // flash_nrf52_flush();
 
   return 0;
 }
