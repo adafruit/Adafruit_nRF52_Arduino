@@ -45,11 +45,8 @@
 #define LFS_FLASH_ADDR     0x6D000
 #endif
 
-#define LFS_PAGE_SIZE      4096
-#define LFS_FLASH_SIZE     (7*LFS_PAGE_SIZE)
-
+#define LFS_FLASH_SIZE     (7*FLASH_NRF52_PAGE_SIZE)
 #define LFS_BLOCK_SIZE     128
-#define LFS_BLOCK_PER_PAGE (LFS_PAGE_SIZE/LFS_BLOCK_SIZE)
 
 //--------------------------------------------------------------------+
 // LFS Disk IO

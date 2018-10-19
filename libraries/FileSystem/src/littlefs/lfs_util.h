@@ -45,25 +45,26 @@ extern "C"
 // Macros, may be replaced by system specific wrappers. Arguments to these
 // macros must not have side-effects as the macros can be removed for a smaller
 // code footprint
+int cprintf (const char * format, ...);
 
 // Logging functions
 #ifndef LFS_NO_DEBUG
 #define LFS_DEBUG(fmt, ...) \
-    printf("lfs debug:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+    cprintf("lfs debug:%d: " fmt "\n", __LINE__, __VA_ARGS__)
 #else
 #define LFS_DEBUG(fmt, ...)
 #endif
 
 #ifndef LFS_NO_WARN
 #define LFS_WARN(fmt, ...) \
-    printf("lfs warn:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+    cprintf("lfs warn:%d: " fmt "\n", __LINE__, __VA_ARGS__)
 #else
 #define LFS_WARN(fmt, ...)
 #endif
 
 #ifndef LFS_NO_ERROR
 #define LFS_ERROR(fmt, ...) \
-    printf("lfs error:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+    cprintf("lfs error:%d: " fmt "\n", __LINE__, __VA_ARGS__)
 #else
 #define LFS_ERROR(fmt, ...)
 #endif
