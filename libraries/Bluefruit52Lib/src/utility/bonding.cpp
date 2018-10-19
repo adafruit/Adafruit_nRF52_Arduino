@@ -165,7 +165,8 @@ static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
   file.write((uint8_t) len);
   file.write(sys_attr, len);
 
-  LOG_LV2("BOND", "CCCD setting is saved to file %s ( offset = %d, len = %d bytes )", filename, file.size() - len, len);
+  LOG_LV2("BOND", "CCCD setting is saved to file %s ( offset = %d, len = %d bytes )", filename, file.size() - (len + 1),
+          len);
 
   file.close();
 }
@@ -195,7 +196,7 @@ bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
     file.seek(file.read() + file.position());    // skip key
     file.seek(file.read() + file.position());    // skip name
 
-    uint16_t len = file.available();
+    uint16_t len = file.read();
 
     if ( len )
     {
@@ -206,7 +207,8 @@ bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
       if ( ERROR_NONE == sd_ble_gatts_sys_attr_set(cond_hdl, sys_attr, len, SVC_CONTEXT_FLAG) )
       {
         loaded = true;
-        LOG_LV2("BOND", "Load CCCD from file %s ( offset = %d, len = %d bytes )", filename, file.size() - len, len);
+        LOG_LV2("BOND", "Load CCCD from file %s ( offset = %d, len = %d bytes )", filename, file.size() - (len + 1),
+                len);
       }
     }
   }
