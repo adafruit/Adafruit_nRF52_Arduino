@@ -37,9 +37,7 @@
 #include <Arduino.h>
 #include "FileIO.h"
 #include "bonding.h"
-
 #include "bluefruit.h"
-#include "flash/flash_nrf5x.h"
 
 /*------------------------------------------------------------------*/
 /* Bond Key is saved in following layout
