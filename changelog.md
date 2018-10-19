@@ -7,6 +7,9 @@
 - Upgrade freeRTOS from v8 to v10.0.1
 - Added nrfx to core
 - Added tinyusb stack to libraries
+- Added LittleFS to replace NFFS
+- Added FileSystem Libraries base on SD File API
+  - InternalFS use LittleFS to manage internal flash for bonding and other user data
 
 ## 0.8.6
 
