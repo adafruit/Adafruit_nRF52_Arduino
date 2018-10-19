@@ -32,8 +32,16 @@
 #ifndef LFS_NO_ASSERT
 #include <assert.h>
 #endif
+
+#if !CFG_DEBUG
+#define LFS_NO_DEBUG
+#define LFS_NO_WARN
+#define LFS_NO_ERROR
+#endif
+
 #if !defined(LFS_NO_DEBUG) || !defined(LFS_NO_WARN) || !defined(LFS_NO_ERROR)
 #include <stdio.h>
+int cprintf (const char * format, ...);
 #endif
 
 #ifdef __cplusplus
@@ -45,7 +53,6 @@ extern "C"
 // Macros, may be replaced by system specific wrappers. Arguments to these
 // macros must not have side-effects as the macros can be removed for a smaller
 // code footprint
-int cprintf (const char * format, ...);
 
 // Logging functions
 #ifndef LFS_NO_DEBUG
