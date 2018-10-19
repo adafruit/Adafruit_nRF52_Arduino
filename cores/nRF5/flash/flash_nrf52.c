@@ -82,7 +82,9 @@ uint32_t flash_nrf52_write (uint32_t dst, void const * src, uint32_t len)
 
 uint32_t flash_nrf52_read (void* dst, uint32_t src, uint32_t len)
 {
-  return fal_read(dst, src, len);
+  // return cache value if available
+  flash_cache_read(&_cache, dst, src, len);
+  return len;
 }
 
 bool flash_nrf52_erase(uint32_t addr)

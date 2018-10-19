@@ -107,3 +107,37 @@ void flash_cache_flush (flash_cache_t* fc)
 
   fc->cache_addr = FLASH_CACHE_INVALID_ADDR;
 }
+
+void flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t count)
+{
+  // overwrite with cache value if available
+  if ( (fc->cache_addr != FLASH_CACHE_INVALID_ADDR) &&
+       !(addr < fc->cache_addr && addr + count <= fc->cache_addr) &&
+       !(addr >= fc->cache_addr + FLASH_CACHE_PAGE_SIZE) )
+  {
+    int dst_off = fc->cache_addr - addr;
+    int src_off = 0;
+
+    if ( dst_off < 0 )
+    {
+      src_off = -dst_off;
+      dst_off = 0;
+    }
+
+    int cache_bytes = minof(FLASH_CACHE_PAGE_SIZE-src_off, count - dst_off);
+
+    // start to cached
+    if ( dst_off ) fc->read(dst, addr, dst_off);
+
+    // cached
+    memcpy(dst + dst_off, fc->cache_buf + src_off, cache_bytes);
+
+    // cached to end
+    int copied = dst_off + cache_bytes;
+    if ( copied < count ) fc->read(dst + copied, addr + copied, count - copied);
+  }
+  else
+  {
+    memcpy(dst, (void*) addr, count);
+  }
+}
