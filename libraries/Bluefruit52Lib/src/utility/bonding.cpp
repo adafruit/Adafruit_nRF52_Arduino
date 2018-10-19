@@ -159,7 +159,7 @@ static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
   VERIFY(file,);
 
   file.seek(0);
-  file.seek(file.read());    // skip key
+  file.seek(file.read() + file.position());    // skip key
   file.seek(file.read() + file.position());    // skip name
 
   file.write((uint8_t) len);
@@ -192,7 +192,7 @@ bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
 
   if ( file )
   {
-    file.seek(file.read());    // skip key
+    file.seek(file.read() + file.position());    // skip key
     file.seek(file.read() + file.position());    // skip name
 
     uint16_t len = file.available();
@@ -231,7 +231,7 @@ void bond_print_list(uint8_t role)
 
   while ( (file = dir.openNextFile(FILE_READ)) )
   {
-    file.seek(file.read());    // skip key
+    file.seek(file.read() + file.position());    // skip key
 
     uint8_t len = file.read();
 

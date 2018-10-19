@@ -433,8 +433,8 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   // Create Timer for led advertising blinky
   _led_blink_th = xTimerCreate(NULL, ms2tick(CFG_ADV_BLINKY_INTERVAL/2), true, NULL, bluefruit_blinky_cb);
 
-// Initialize bonding
-bond_init();
+  // Initialize bonding
+  bond_init();
 
   return ERROR_NONE;
 }
