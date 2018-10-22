@@ -75,6 +75,7 @@ extern "C" {
 #endif
 
 // NFCT_IRQn
+#define nrfx_nfct_irq_handler       NFCT_IRQHandler
 
 // GPIOTE_IRQn
 #define nrfx_gpiote_irq_handler     GPIOTE_IRQHandler

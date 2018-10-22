@@ -1,9 +1,37 @@
 # Changelog
 All notable changes to this project are documented in this file.
 
-## [Unreleased]
+## [1.3.1] - 2018-09-28
 ### Fixed
-- Fixed starting TWIM TXRX transfer after preceding transfer was without stop condition.
+- Corrected the type of nrfx_usbd_ep_status_get() return value.
+- Corrected calls to undefined macros in NFCT and USBD drivers.
+
+## [1.3.0] - 2018-09-21
+### Added
+- Added HAL and driver for NFCT.
+- Added driver for USBD.
+- Added function for setting the burst mode in the SAADC HAL.
+- Added the NRFX_ARRAY_SIZE macro.
+
+### Changed
+- Moved the implementation of nrfx_power_clock_irq_handler() to nrfx_power.c, removed nrfx_power_clock.c.
+
+### Fixed
+- Replaced ARRAY_SIZE macro calls with NRFX_ARRAY_SIZE ones.
+
+## [1.2.0] - 2018-09-06
+### Added
+- Added function for checking if a specific channel is enabled in the GPIOTE HAL.
+- Added support for using the QDEC driver without LED.
+- Added functions for modifying only the event endpoint or only the task endpoint in the PPI HAL.
+- Added function for reading the pin pull configuration in the GPIO HAL.
+
+### Changed
+- Corrected ISOSPLIT enumerator names in the USBD HAL.
+
+### Fixed
+- Fixed a double buffering bug that occurred in the UARTE driver after the RX abort.
+- Fixed the TXRX transfers in the TWIM driver. They can now be started after transfers that are not ended with the stop condition.
 
 ## [1.1.0] - 2018-06-15
 ### Added
@@ -41,7 +69,7 @@ All notable changes to this project are documented in this file.
 - Changed the RNG bias correction configuration option to be enabled by default.
 - Refactored the ADC driver and HAL.
 - Corrected assertions in the TIMER driver to make it usable in debug version with PPI.
-- Improved buffer handling in the I2S driver. The API of the driver has been sligthly modified.
+- Improved buffer handling in the I2S driver. The API of the driver has been slightly modified.
 - Enhanced SPIS driver API: added the "p_context" parameter, allowed NULL pointers for zero-length buffers.
 
 ### Fixed
