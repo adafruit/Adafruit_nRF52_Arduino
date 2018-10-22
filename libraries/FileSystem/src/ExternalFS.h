@@ -51,6 +51,18 @@ class FatFS: public BluefuritLib::FileSystemClass
     bool mkdir (char const *filepath);
     bool remove (char const *filepath);
     bool rmdir (char const *filepath);
+    bool rmdir_r (char const *filepath);
+
+    virtual size_t _f_write (void* fhdl, uint8_t const *buf, size_t size);
+    virtual int _f_read (void* fhdl, void *buf, uint16_t nbyte);
+    virtual void _f_flush (void* fhdl);
+    virtual void _f_close (void* fhdl, bool is_dir);
+    virtual bool _f_seek (void* fhdl, uint32_t pos);
+    virtual uint32_t _f_position (void* fhdl);
+    virtual uint32_t _f_size (void* fhdl);
+
+    virtual File _f_openNextFile (void* fhdl, char const* cwd, uint8_t mode);
+    virtual void _f_rewindDirectory (void* fhdl);
 
 };
 

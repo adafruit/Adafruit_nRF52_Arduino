@@ -63,7 +63,6 @@ feather52832.menu.debug.l3=Level 3 (Segger SystemView)
 feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 
 
-
 #**********************************************
 # Feather nRF52840 Board
 #**********************************************
@@ -94,7 +93,6 @@ feather52840.upload.use_1200bps_touch=true
 feather52840.upload.wait_for_upload_port=true
 #feather52840.upload.native_usb=true
 
-
 # Build
 feather52840.build.mcu=cortex-m4
 feather52840.build.f_cpu=64000000
@@ -124,6 +122,7 @@ feather52840.menu.debug.l2=Level 2 (Full Debug)
 feather52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
 feather52840.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
+
 
 #**********************************************
 # PCA10056 ( to be remove  )

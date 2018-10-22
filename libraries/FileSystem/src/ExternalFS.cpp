@@ -34,3 +34,64 @@
 */
 /**************************************************************************/
 
+#include <Arduino.h>
+#include <string.h>
+#include "ExternalFS.h"
+
+FatFS::FatFS ()
+{
+}
+FatFS::~FatFS ()
+{
+}
+
+bool FatFS::begin ()
+{
+}
+File FatFS::open (char const *filename, uint8_t mode)
+{
+}
+bool FatFS::exists (char const *filepath)
+{
+}
+bool FatFS::mkdir (char const *filepath)
+{
+}
+bool FatFS::remove (char const *filepath)
+{
+}
+bool FatFS::rmdir (char const *filepath)
+{
+}
+bool FatFS::rmdir_r (char const *filepath)
+{
+}
+
+size_t FatFS::_f_write (void* fhdl, uint8_t const *buf, size_t size)
+{
+}
+int FatFS::_f_read (void* fhdl, void *buf, uint16_t nbyte)
+{
+}
+void FatFS::_f_flush (void* fhdl)
+{
+}
+void FatFS::_f_close (void* fhdl, bool is_dir)
+{
+}
+bool FatFS::_f_seek (void* fhdl, uint32_t pos)
+{
+}
+uint32_t FatFS::_f_position (void* fhdl)
+{
+}
+uint32_t FatFS::_f_size (void* fhdl)
+{
+}
+
+File FatFS::_f_openNextFile (void* fhdl, char const* cwd, uint8_t mode)
+{
+}
+void FatFS::_f_rewindDirectory (void* fhdl)
+{
+}
