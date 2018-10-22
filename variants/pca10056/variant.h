@@ -92,7 +92,6 @@ static const uint8_t AREF = PIN_AREF;
 /*
  * Serial interfaces
  */
-// Serial
 #define PIN_SERIAL_RX       (8)
 #define PIN_SERIAL_TX       (6)
 
@@ -118,6 +117,19 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 #define PIN_WIRE_SDA         (25u)
 #define PIN_WIRE_SCL         (26u)
 
+/*
+ * QSPI interface for external flash
+ */
+#define PIN_QSPI_SCK         19
+#define PIN_QSPI_CS          17
+#define PIN_QSPI_DATA0       20
+#define PIN_QSPI_DATA1       21
+#define PIN_QSPI_DATA2       22
+#define PIN_QSPI_DATA3       23
+
+// On-board QSPI Flash
+// If EXTERNAL_FLASH_DEVICES is not defined, all supported devices will be used
+#define EXTERNAL_FLASH_DEVICES   MX25R6435F
 
 // TODO remove
 static inline bool isPinValid(uint32_t pin)
