@@ -77,18 +77,15 @@
  */
 #define CFG_TUD_DESC_AUTO           1
 
-#define CFG_TUD_DESC_VID            0x239A
-#define CFG_TUD_DESC_PID            0x8029
-
 /* USB VID/PID if not defined, tinyusb to use default value
  * Note: different class combination e.g CDC and (CDC + MSC) should have different
  * PID since Host OS will "remembered" device driver after the first plug */
-// #define CFG_TUD_DESC_VID          0xCAFE
-// #define CFG_TUD_DESC_PID          0x0001
+#define CFG_TUD_DESC_VID            0x239A
+#define CFG_TUD_DESC_PID            0x8029
 
 //------------- CLASS -------------//
 #define CFG_TUD_CDC                 1
-#define CFG_TUD_MSC                 0
+#define CFG_TUD_MSC                 1
 
 #define CFG_TUD_HID                 0
 #define CFG_TUD_HID_KEYBOARD        0
@@ -109,10 +106,6 @@
 #define CFG_TUD_CDC_RX_BUFSIZE      256
 #define CFG_TUD_CDC_TX_BUFSIZE      256
 
-// TX is sent automatically every Start of Frame event.
-// If not enabled, application must call tud_cdc_write_flush() periodically
-#define CFG_TUD_CDC_FLUSH_ON_SOF    0
-
 //--------------------------------------------------------------------
 // MSC
 //--------------------------------------------------------------------
@@ -124,16 +117,18 @@
 #define CFG_TUD_MSC_BUFSIZE         512
 
 // Number of Blocks
-#define CFG_TUD_MSC_BLOCK_NUM       16
+#include <stdint.h>
+extern uint32_t flash_qspi_size (void);
+#define CFG_TUD_MSC_BLOCK_NUM       (flash_qspi_size() / CFG_TUD_MSC_BLOCK_SZ)
 
 // Block size
 #define CFG_TUD_MSC_BLOCK_SZ        512
 
 // Vendor name included in Inquiry response, max 8 bytes
-#define CFG_TUD_MSC_VENDOR          "tinyusb"
+#define CFG_TUD_MSC_VENDOR          "Adafruit"
 
 // Product name included in Inquiry response, max 16 bytes
-#define CFG_TUD_MSC_PRODUCT         "tusb msc"
+#define CFG_TUD_MSC_PRODUCT         "Bluefruit nRF52"
 
 // Product revision string included in Inquiry response, max 4 bytes
 #define CFG_TUD_MSC_PRODUCT_REV     "1.0"

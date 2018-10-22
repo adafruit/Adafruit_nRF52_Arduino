@@ -48,6 +48,7 @@
 void flash_qspi_init (void);
 void flash_qspi_flush (void);
 bool flash_qspi_erase (uint32_t addr);
+uint32_t flash_qspi_size (void);
 
 uint32_t flash_qspi_write (uint32_t dst, void const * src, uint32_t len);
 uint32_t flash_qspi_read (void* dst, uint32_t src, uint32_t len);

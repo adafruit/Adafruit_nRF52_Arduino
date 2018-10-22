@@ -94,6 +94,28 @@ static flash_cache_t _cache = {
 //--------------------------------------------------------------------+
 // Application API
 //--------------------------------------------------------------------+
+uint32_t flash_qspi_size (void)
+{
+  VERIFY(_flash_dev, 0);
+  return _flash_dev->total_size;
+}
+
+uint32_t flash_qspi_write (uint32_t dst, void const * src, uint32_t len)
+{
+  return flash_cache_write(&_cache, dst, src, len);
+}
+
+uint32_t flash_qspi_read (void* dst, uint32_t src, uint32_t len)
+{
+  flash_cache_read(&_cache, dst, src, len);
+  return len;
+}
+
+void flash_qspi_flush (void)
+{
+  flash_cache_flush(&_cache);
+}
+
 void flash_qspi_init (void)
 {
   // Init QSPI flash
