@@ -22,6 +22,7 @@
 / by use of this software.
 */
 
+#ifdef NRF52840_XXAA
 
 #include "ff.h"
 
@@ -15595,3 +15596,5 @@ DWORD ff_wtoupper (	/* Returns up-converted code point */
 
 
 #endif /* #if FF_USE_LFN */
+
+#endif

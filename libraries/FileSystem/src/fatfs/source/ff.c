@@ -17,7 +17,7 @@
 / by use of this software.
 /
 /----------------------------------------------------------------------------*/
-
+#ifdef NRF52840_XXAA
 
 #include "ff.h"			/* Declarations of FatFs API */
 #include "diskio.h"		/* Declarations of device I/O functions */
@@ -6551,4 +6551,6 @@ FRESULT f_setcp (
 	return FR_OK;
 }
 #endif	/* FF_CODE_PAGE == 0 */
+
+#endif
 

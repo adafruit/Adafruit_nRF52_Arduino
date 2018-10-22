@@ -7,6 +7,8 @@
 /* storage control modules to the FatFs module with a defined API.       */
 /*-----------------------------------------------------------------------*/
 
+#ifdef NRF52840_XXAA
+
 #include "ff.h"			/* Obtains integer types */
 #include "diskio.h"		/* Declarations of disk functions */
 
@@ -226,4 +228,6 @@ DRESULT disk_ioctl (
 
 	return RES_PARERR;
 }
+
+#endif
 

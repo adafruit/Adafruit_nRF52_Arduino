@@ -2,7 +2,7 @@
 /* Sample Code of OS Dependent Functions for FatFs                        */
 /* (C)ChaN, 2018                                                          */
 /*------------------------------------------------------------------------*/
-
+#ifdef NRF52840_XXAA
 
 #include "ff.h"
 
@@ -168,3 +168,4 @@ void ff_rel_grant (
 
 #endif
 
+#endif
