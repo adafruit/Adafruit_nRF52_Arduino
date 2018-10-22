@@ -34,6 +34,8 @@
 */
 /**************************************************************************/
 
+#ifdef NRF52840_XXAA
+
 #include <Arduino.h>
 #include <string.h>
 #include "ExternalFS.h"
@@ -95,3 +97,5 @@ File FatFS::_f_openNextFile (void* fhdl, char const* cwd, uint8_t mode)
 void FatFS::_f_rewindDirectory (void* fhdl)
 {
 }
+
+#endif

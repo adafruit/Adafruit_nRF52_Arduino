@@ -33,8 +33,6 @@ void setup()
   // Initialize Internal File System
   InternalFS.begin();
 
-  Bluefruit.begin();
-
   // Print whole directory tree of root whose level is 0
   printTreeDir("/", 0);
 
