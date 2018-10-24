@@ -39,12 +39,6 @@
 #include "nrf_gpio.h"
 #include "flash/flash_qspi.h"
 
-// For updating fatfs's cache
-//#include "extmod/vfs.h"
-//#include "extmod/vfs_fat.h"
-//#include "lib/oofatfs/ff.h"
-//#include "py/mpstate.h"
-
 // Callback invoked when received an SCSI command not in built-in list below
 // - READ_CAPACITY10, READ_FORMAT_CAPACITY, INQUIRY, MODE_SENSE6, REQUEST_SENSE
 // - READ10 and WRITE10 has their own callbacks
