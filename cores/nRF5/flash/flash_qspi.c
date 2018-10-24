@@ -224,21 +224,21 @@ void flash_qspi_init (void)
 bool fal_qspi_erase (uint32_t addr)
 {
   VERIFY(_flash_dev);
-  VERIFY_ERROR(nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_4KB, addr), false);
+  VERIFY(NRFX_SUCCESS == nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_4KB, addr));
   return true;
 }
 
 static uint32_t fal_qspi_program (uint32_t dst, void const * src, uint32_t len)
 {
   VERIFY(_flash_dev, 0);
-  VERIFY_ERROR(nrfx_qspi_write(src, len, dst), 0);
+  VERIFY(NRFX_SUCCESS == nrfx_qspi_write(src, len, dst));
   return len;
 }
 
 static uint32_t fal_qspi_read (void* dst, uint32_t src, uint32_t len)
 {
   VERIFY(_flash_dev, 0);
-  VERIFY_ERROR(nrfx_qspi_read(dst, len, src), 0);
+  VERIFY(NRFX_SUCCESS == nrfx_qspi_read(dst, len, src));
   return len;
 }
 

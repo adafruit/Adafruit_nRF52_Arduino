@@ -117,7 +117,6 @@ FatFS::FatFS ()
 
 FatFS::~FatFS ()
 {
-  if (_fs) rtos_free(_fs);
 }
 
 bool FatFS::begin ()
@@ -131,6 +130,8 @@ bool FatFS::begin ()
   // If FileSystem is not available, format it
   if ( FR_NO_FILESYSTEM == err )
   {
+    LOG_LV1("FATFS", "No file system, format it");
+
     uint8_t workbuf[FF_MAX_SS];
     VERIFY_FAT(f_mkfs("", FM_FAT | FM_SFD, 4096, workbuf, FF_MAX_SS), false);
 
