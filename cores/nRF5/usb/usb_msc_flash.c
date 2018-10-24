@@ -114,7 +114,6 @@ int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buf
 int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
 {
   (void) lun;
-  (void) offset;
 
 #ifdef MICROPY_HW_LED_MSC
   nrf_gpio_pin_write(MICROPY_HW_LED_MSC, MICROPY_HW_LED_MSC_ACTIVE_LEVEL);

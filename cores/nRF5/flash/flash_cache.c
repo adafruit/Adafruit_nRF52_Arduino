@@ -138,6 +138,6 @@ void flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t cou
   }
   else
   {
-    memcpy(dst, (void*) addr, count);
+    fc->read(dst, (void*) addr, count);
   }
 }

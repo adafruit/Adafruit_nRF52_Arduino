@@ -125,9 +125,23 @@
 #define INCLUDE_xEventGroupSetBitFromISR                         1
 #define INCLUDE_xTimerPendFunctionCall                           1
 
+/* Code below should be only used by the compiler, and not the assembler. */
+#if !(defined(__ASSEMBLY__) || defined(__ASSEMBLER__))
+    #include "nrf.h"
+
+    /* This part of definitions may be problematic in assembly - it uses definitions from files that are not assembly compatible. */
+    /* Cortex-M specific definitions. */
+    #ifdef __NVIC_PRIO_BITS
+        /* __BVIC_PRIO_BITS will be specified when CMSIS is being used. */
+        #define configPRIO_BITS             __NVIC_PRIO_BITS
+    #else
+        #error "This port requires __NVIC_PRIO_BITS to be defined"
+    #endif
+#endif /* !assembler */
+
 /* The lowest interrupt priority that can be used in a call to a "set priority"
 function. */
-#define configLIBRARY_LOWEST_INTERRUPT_PRIORITY                  0xf
+#define configLIBRARY_LOWEST_INTERRUPT_PRIORITY                   ((1<<configPRIO_BITS) - 1)
 
 /* The highest interrupt priority that can be used by any interrupt service
 routine that makes calls to interrupt safe FreeRTOS API functions.  DO NOT CALL
@@ -144,9 +158,14 @@ PRIORITY THAN THIS! (higher priorities are lower numeric values. */
  */
 #define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY             2
 
+// Note: Nordic implement its own port (nrf52/port.c) that will shift the NVIC priority to to MSB
+// Therefore configKERNEL_INTERRUPT_PRIORITY/configMAX_SYSCALL_INTERRUPT_PRIORITY shouldn't be shifted
+// here as the standard port provided by freeRTOS for Cortex M
+
 /* Interrupt priorities used by the kernel port layer itself.  These are generic
 to all Cortex-M ports, and do not rely on any particular library functions. */
 #define configKERNEL_INTERRUPT_PRIORITY                          configLIBRARY_LOWEST_INTERRUPT_PRIORITY
+
 /* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
 See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY                     configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY
@@ -157,27 +176,12 @@ standard names - or at least those used in the unmodified vector table. */
 #define vPortSVCHandler                                          SVC_Handler
 #define xPortPendSVHandler                                       PendSV_Handler
 
-
 /*-----------------------------------------------------------
  * Settings that are generated automatically
  * basing on the settings above
  */
 #define configSYSTICK_CLOCK_HZ  ( 32768UL )
 #define xPortSysTickHandler     RTC1_IRQHandler
-
-/* Code below should be only used by the compiler, and not the assembler. */
-#if !(defined(__ASSEMBLY__) || defined(__ASSEMBLER__))
-    #include "nrf.h"
-
-    /* This part of definitions may be problematic in assembly - it uses definitions from files that are not assembly compatible. */
-    /* Cortex-M specific definitions. */
-    #ifdef __NVIC_PRIO_BITS
-        /* __BVIC_PRIO_BITS will be specified when CMSIS is being used. */
-        #define configPRIO_BITS             __NVIC_PRIO_BITS
-    #else
-        #error "This port requires __NVIC_PRIO_BITS to be defined"
-    #endif
-#endif /* !assembler */
 
 /** Implementation note:  Use this with caution and set this to 1 ONLY for debugging
  * ----------------------------------------------------------
