@@ -54,7 +54,7 @@
 #else
 
 #define VERIFY_FAT(...)       _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, dbg_strerr_fat)
-#define PRINT_FAT_ERR(_err)   VERIFY_MESS(_err, dbg_strerr_lfs)
+#define PRINT_FAT_ERR(_err)   VERIFY_MESS(_err, dbg_strerr_fat)
 
 static const char* dbg_strerr_fat (int32_t err)
 {
@@ -113,6 +113,7 @@ FatFS ExternalFS;
 FatFS::FatFS ()
 {
   _fs = NULL;
+  _begun = true;
 }
 
 FatFS::~FatFS ()
@@ -121,6 +122,9 @@ FatFS::~FatFS ()
 
 bool FatFS::begin ()
 {
+  if ( _begun ) return true;
+  _begun = true;
+
   if ( !_fs ) _fs = (FATFS*) rtos_malloc(sizeof(FATFS));
   VERIFY(_fs);
 
@@ -152,9 +156,85 @@ bool FatFS::begin ()
   return true;
 }
 
-File FatFS::open (char const *filename, uint8_t mode)
+File FatFS::_open_file (char const *filepath, uint8_t mode)
 {
+  BluefuritLib::File file(*this);
+
+  int flags = (mode == FILE_READ) ? FA_READ :
+              (mode == FILE_WRITE) ? (FA_READ | FA_WRITE | FA_OPEN_APPEND) : 0;
+
+  if ( flags )
+  {
+    FIL* fhdl = (FIL*) rtos_malloc(sizeof(FIL));
+    int rc = f_open(fhdl, filepath, flags);
+
+    if ( rc )
+    {
+      rtos_free(fhdl);
+      PRINT_FAT_ERR(rc);
+    }
+    else
+    {
+      file._hdl = fhdl;
+      file._is_dir = false;
+
+      file._path = (char*) rtos_malloc(strlen(filepath) + 1);
+      strcpy(file._path, filepath);
+    }
+  }
+
+  return file;
 }
+
+File FatFS::_open_dir (char const *filepath)
+{
+  BluefuritLib::File file(*this);
+
+  DIR* fhdl = (DIR*) rtos_malloc(sizeof(DIR));
+  int rc = f_opendir(fhdl, filepath);
+
+  if ( rc )
+  {
+    rtos_free(fhdl);
+    PRINT_FAT_ERR(rc);
+  }
+  else
+  {
+    file._hdl = fhdl;
+    file._is_dir = true;
+
+    file._path = (char*) rtos_malloc(strlen(filepath) + 1);
+    strcpy(file._path, filepath);
+  }
+
+  return file;
+}
+
+File FatFS::open (char const *filepath, uint8_t mode)
+{
+  BluefuritLib::File file(*this);
+
+  FILINFO fno;
+  FRESULT rc = f_stat(filepath, &fno);
+
+  if ( FR_OK == rc )
+  {
+    // file existed, open file or directory accordingly
+    file = (fno.fattrib & AM_DIR) ? _open_file(filepath, mode) : _open_dir(filepath);
+  }
+  else if ( FR_NO_FILE == rc )
+  {
+    // file not existed, only proceed with FILE_WRITE mode
+    if ( mode == FILE_WRITE ) file = _open_file(filepath, mode);
+  }
+  else
+  {
+    PRINT_FAT_ERR(rc);
+  }
+
+  return file;
+}
+
 bool FatFS::exists (char const *filepath)
 {
 }
@@ -180,24 +260,62 @@ int FatFS::_f_read (void* fhdl, void *buf, uint16_t nbyte)
 void FatFS::_f_flush (void* fhdl)
 {
 }
+
 void FatFS::_f_close (void* fhdl, bool is_dir)
 {
+  if ( is_dir )
+  {
+    VERIFY_FAT(f_closedir((DIR* ) fhdl),);
+  }
+  else
+  {
+    VERIFY_FAT(f_close((FIL* ) fhdl),);
+  }
 }
+
 bool FatFS::_f_seek (void* fhdl, uint32_t pos)
 {
 }
+
 uint32_t FatFS::_f_position (void* fhdl)
 {
 }
+
 uint32_t FatFS::_f_size (void* fhdl)
 {
+  return f_size((FIL* ) fhdl);
 }
 
 File FatFS::_f_openNextFile (void* fhdl, char const* cwd, uint8_t mode)
 {
+  BluefuritLib::File file(*this);
+
+  FILINFO fno;
+  FRESULT rc;
+
+  // f_readdir return FR_OK if there is no error. If there is no more entry,
+  // fno.fname will be set to NUL string
+  VERIFY_FAT(f_readdir((DIR * ) fhdl, &fno), file);
+
+  if ( fno.fname[0] != 0 )
+  {
+    // string cat name with current folder
+    char filepath[strlen(cwd) + 1 + strlen(fno.fname) + 1];
+
+    strcpy(filepath, cwd);
+    if ( !(cwd[0] == '/' && cwd[1] == 0) ) strcat(filepath, "/");    // only add '/' if cwd is not root
+    strcat(filepath, fno.fname);
+
+    file = (fno.fattrib & AM_DIR) ? _open_file(filepath, mode) : _open_dir(filepath);
+  }
+
+  return file;
 }
+
 void FatFS::_f_rewindDirectory (void* fhdl)
 {
 }
+
+
 
 #endif

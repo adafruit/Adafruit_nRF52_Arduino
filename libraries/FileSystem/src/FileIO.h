@@ -39,6 +39,7 @@
 #define FILE_NAME_MAX 255
 
 class LittleFS;
+class FatFS;
 
 namespace BluefuritLib
 {
@@ -87,6 +88,7 @@ class File: public Stream
     bool _is_dir;
 
     friend class ::LittleFS;
+    friend class ::FatFS;
 };
 
 // Abstract Interface Class
