@@ -113,11 +113,11 @@ static inline bool osal_task_create(osal_task_def_t* taskdef)
 //------------- Sub Task Assert -------------//
 #define STASK_RETURN(error)     do { TASK_RESTART; return error; } while(0)
 
-#define STASK_ASSERT_ERR(_err)                TU_VERIFY_ERR_HDLR(_err, verify_breakpoint(); TASK_RESTART, TUSB_ERROR_FAILED)
-#define STASK_ASSERT_ERR_HDLR(_err, _func)    TU_VERIFY_ERR_HDLR(_err, verify_breakpoint(); _func; TASK_RESTART, TUSB_ERROR_FAILED )
+#define STASK_ASSERT_ERR(_err)                TU_VERIFY_ERR_HDLR(_err, TU_BREAKPOINT(); TASK_RESTART, TUSB_ERROR_FAILED)
+#define STASK_ASSERT_ERR_HDLR(_err, _func)    TU_VERIFY_ERR_HDLR(_err, TU_BREAKPOINT(); _func; TASK_RESTART, TUSB_ERROR_FAILED )
 
-#define STASK_ASSERT(_cond)                   TU_VERIFY_HDLR(_cond, verify_breakpoint(); TASK_RESTART, TUSB_ERROR_FAILED)
-#define STASK_ASSERT_HDLR(_cond, _func)       TU_VERIFY_HDLR(_cond, verify_breakpoint(); _func; TASK_RESTART, TUSB_ERROR_FAILED)
+#define STASK_ASSERT(_cond)                   TU_VERIFY_HDLR(_cond, TU_BREAKPOINT(); TASK_RESTART, TUSB_ERROR_FAILED)
+#define STASK_ASSERT_HDLR(_cond, _func)       TU_VERIFY_HDLR(_cond, TU_BREAKPOINT(); _func; TASK_RESTART, TUSB_ERROR_FAILED)
 
 //--------------------------------------------------------------------+
 // QUEUE API
@@ -133,12 +133,11 @@ static inline osal_queue_t osal_queue_create(osal_queue_def_t* qdef)
   return (osal_queue_t) qdef;
 }
 
-static inline bool osal_queue_send_isr(osal_queue_t const queue_hdl, void const * data)
+static inline bool osal_queue_send(osal_queue_t const queue_hdl, void const * data, bool in_isr)
 {
+  (void) in_isr;
   return tu_fifo_write( (tu_fifo_t*) queue_hdl, data);
 }
-
-#define osal_queue_send osal_queue_send_isr
 
 static inline void osal_queue_flush(osal_queue_t const queue_hdl)
 {
@@ -182,10 +181,9 @@ static inline osal_semaphore_t osal_semaphore_create(osal_semaphore_def_t* semde
   return semdef;
 }
 
-#define osal_semaphore_post_isr osal_semaphore_post
-
-static inline  bool osal_semaphore_post(osal_semaphore_t sem_hdl)
+static inline  bool osal_semaphore_post(osal_semaphore_t sem_hdl, bool in_isr)
 {
+  (void) in_isr;
   if (sem_hdl->count < sem_hdl->max_count ) sem_hdl->count++;
   return true;
 }

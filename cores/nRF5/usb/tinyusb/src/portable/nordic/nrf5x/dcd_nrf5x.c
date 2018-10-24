@@ -108,7 +108,7 @@ void bus_reset(void)
   NRF_USBD->TASKS_STARTISOIN  = 0;
   NRF_USBD->TASKS_STARTISOOUT = 0;
 
-  varclr_(&_dcd);
+  tu_varclr(&_dcd);
 }
 
 /*------------------------------------------------------------------*/
@@ -418,7 +418,9 @@ void USBD_IRQHandler(void)
   if ( int_status & USBD_INTEN_USBRESET_Msk )
   {
     bus_reset();
-    dcd_bus_event(0, USBD_BUS_EVENT_RESET);
+
+    dcd_event_t event = { .rhport = 0, .event_id = DCD_EVENT_BUS_RESET };
+    dcd_event_handler(&event, true);
   }
 
   if ( int_status & EDPT_END_ALL_MASK )
@@ -435,7 +437,10 @@ void USBD_IRQHandler(void)
         NRF_USBD->WINDEXL       , NRF_USBD->WINDEXH , NRF_USBD->WLENGTHL, NRF_USBD->WLENGTHH
     };
 
-    dcd_setup_received(0, setup);
+    dcd_event_t event = { .rhport = 0, .event_id = DCD_EVENT_SETUP_RECEIVED };
+    memcpy(&event.setup_received, setup, 8);
+
+    dcd_event_handler(&event, true);
   }
 
   if ( int_status & USBD_INTEN_EP0DATADONE_Msk )
@@ -454,7 +459,7 @@ void USBD_IRQHandler(void)
       }else
       {
         // Control IN complete
-        dcd_control_complete(0, _dcd.control.actual_len);
+        dcd_event_xfer_complete(0, 0, _dcd.control.actual_len, DCD_XFER_SUCCESS, true);
       }
     }
   }
@@ -468,7 +473,7 @@ void USBD_IRQHandler(void)
     }else
     {
       // Control OUT complete
-      dcd_control_complete(0, _dcd.control.actual_len);
+      dcd_event_xfer_complete(0, 0, _dcd.control.actual_len, DCD_XFER_SUCCESS, true);
     }
   }
 
@@ -499,7 +504,7 @@ void USBD_IRQHandler(void)
         xfer->total_len = xfer->actual_len;
 
         // BULK/INT OUT complete
-        dcd_xfer_complete(0, epnum, xfer->actual_len, true);
+        dcd_event_xfer_complete(0, epnum, xfer->actual_len, DCD_XFER_SUCCESS, true);
       }
     }
 
@@ -528,7 +533,7 @@ void USBD_IRQHandler(void)
         } else
         {
           // Bulk/Int IN complete
-          dcd_xfer_complete(0, epnum | TUSB_DIR_IN_MASK, xfer->actual_len, true);
+          dcd_event_xfer_complete(0, epnum | TUSB_DIR_IN_MASK, xfer->actual_len, DCD_XFER_SUCCESS, true);
         }
       }
     }
@@ -556,7 +561,8 @@ void USBD_IRQHandler(void)
   // SOF interrupt
   if ( int_status & USBD_INTEN_SOF_Msk )
   {
-    dcd_bus_event(0, USBD_BUS_EVENT_SOF);
+    dcd_event_t event = { .rhport = 0, .event_id = DCD_EVENT_SOF };
+    dcd_event_handler(&event, true);
   }
 }
 

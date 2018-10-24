@@ -156,50 +156,15 @@ enum { USBD_CLASS_DRIVER_COUNT = sizeof(usbd_class_drivers) / sizeof(usbd_class_
 //--------------------------------------------------------------------+
 // DCD Event
 //--------------------------------------------------------------------+
-typedef enum
-{
-  USBD_EVT_SETUP_RECEIVED = 1,
-  USBD_EVT_XFER_DONE,
-  USBD_EVT_SOF,
-
-  USBD_EVT_FUNC_CALL
-}usbd_eventid_t;
-
-typedef struct ATTR_ALIGNED(4)
-{
-  uint8_t rhport;
-  uint8_t event_id;
-
-  union {
-    // USBD_EVT_SETUP_RECEIVED
-    tusb_control_request_t setup_received;
-
-    // USBD_EVT_XFER_DONE
-    struct {
-      uint8_t  ep_addr;
-      uint8_t  result;
-      uint32_t xferred_byte;
-    }xfer_done;
-
-    // USBD_EVT_FUNC_CALL
-    struct {
-      osal_task_func_t func;
-      void* param;
-    }func_call;
-  };
-} usbd_task_event_t;
-
-TU_VERIFY_STATIC(sizeof(usbd_task_event_t) <= 12, "size is not correct");
-
 OSAL_TASK_DEF(_usbd_task_def, "usbd", usbd_task, CFG_TUD_TASK_PRIO, CFG_TUD_TASK_STACK_SZ);
 
 /*------------- event queue -------------*/
-OSAL_QUEUE_DEF(_usbd_qdef, CFG_TUD_TASK_QUEUE_SZ, usbd_task_event_t);
+OSAL_QUEUE_DEF(_usbd_qdef, CFG_TUD_TASK_QUEUE_SZ, dcd_event_t);
 static osal_queue_t _usbd_q;
 
 /*------------- control transfer semaphore -------------*/
 static osal_semaphore_def_t _usbd_sem_def;
-/*static*/ osal_semaphore_t _usbd_ctrl_sem;
+osal_semaphore_t _usbd_ctrl_sem;
 
 //--------------------------------------------------------------------+
 // INTERNAL FUNCTION
@@ -264,7 +229,7 @@ void usbd_task( void* param)
 
 static tusb_error_t usbd_main_st(void)
 {
-  static usbd_task_event_t event;
+  static dcd_event_t event;
 
   OSAL_SUBTASK_BEGIN
 
@@ -274,26 +239,26 @@ static tusb_error_t usbd_main_st(void)
     tusb_error_t err;
     err = TUSB_ERROR_NONE;
 
-    memclr_(&event, sizeof(usbd_task_event_t));
+    tu_memclr(&event, sizeof(dcd_event_t));
 
     osal_queue_receive(_usbd_q, &event, OSAL_TIMEOUT_WAIT_FOREVER, &err);
 
-    if ( USBD_EVT_SETUP_RECEIVED == event.event_id )
+    if ( DCD_EVENT_SETUP_RECEIVED == event.event_id )
     {
       STASK_INVOKE( proc_control_request_st(event.rhport, &event.setup_received), err );
     }
-    else if (USBD_EVT_XFER_DONE == event.event_id)
+    else if (DCD_EVENT_XFER_COMPLETE == event.event_id)
     {
       // Invoke the class callback associated with the endpoint address
-      uint8_t const ep_addr = event.xfer_done.ep_addr;
+      uint8_t const ep_addr = event.xfer_complete.ep_addr;
       uint8_t const drv_id  = _usbd_dev.ep2drv[ edpt_dir(ep_addr) ][ edpt_number(ep_addr) ];
 
       if (drv_id < USBD_CLASS_DRIVER_COUNT)
       {
-        usbd_class_drivers[drv_id].xfer_cb( event.rhport, ep_addr, (tusb_event_t) event.xfer_done.result, event.xfer_done.xferred_byte);
+        usbd_class_drivers[drv_id].xfer_cb( event.rhport, ep_addr, (tusb_event_t) event.xfer_complete.result, event.xfer_complete.len);
       }
     }
-    else if (USBD_EVT_SOF == event.event_id)
+    else if (DCD_EVENT_SOF == event.event_id)
     {
       for (uint8_t i = 0; i < USBD_CLASS_DRIVER_COUNT; i++)
       {
@@ -309,7 +274,7 @@ static tusb_error_t usbd_main_st(void)
     }
     else
     {
-      verify_breakpoint();
+      TU_BREAKPOINT();
     }
   }
 
@@ -318,7 +283,7 @@ static tusb_error_t usbd_main_st(void)
 
 static void usbd_reset(uint8_t rhport)
 {
-  varclr_(&_usbd_dev);
+  tu_varclr(&_usbd_dev);
   memset(_usbd_dev.itf2drv, 0xff, sizeof(_usbd_dev.itf2drv)); // invalid mapping
   memset(_usbd_dev.ep2drv , 0xff, sizeof(_usbd_dev.ep2drv )); // invalid mapping
 
@@ -567,81 +532,67 @@ static void mark_interface_endpoint(uint8_t const* p_desc, uint16_t desc_len, ui
 //--------------------------------------------------------------------+
 // USBD-DCD Callback API
 //--------------------------------------------------------------------+
-void dcd_bus_event(uint8_t rhport, usbd_bus_event_type_t bus_event)
+void dcd_event_handler(dcd_event_t const * event, bool in_isr)
 {
-  switch(bus_event)
+  uint8_t const rhport = event->rhport;
+
+  switch (event->event_id)
   {
-    case USBD_BUS_EVENT_RESET:
+    case DCD_EVENT_BUS_RESET:
       usbd_reset(rhport);
 
       osal_queue_flush(_usbd_q);
       osal_semaphore_reset_isr(_usbd_ctrl_sem);
     break;
 
-    case USBD_BUS_EVENT_SOF:
+    case DCD_EVENT_SOF:
     {
       #if 0
-      usbd_task_event_t task_event =
+      dcd_event_t task_event =
       {
           .rhport          = rhport,
-          .event_id        = USBD_EVT_SOF,
+          .event_id        = DCD_EVENT_SOF,
       };
-      osal_queue_send_isr(_usbd_q, &task_event);
+      osal_queue_send(_usbd_q, &task_event, in_isr);
       #endif
     }
     break;
 
-    case USBD_BUS_EVENT_UNPLUGGED:
+    case DCD_EVENT_UNPLUGGED:
       usbd_reset(rhport);
       tud_umount_cb(); // invoke callback
     break;
 
-    case USBD_BUS_EVENT_SUSPENDED:
+    case DCD_EVENT_SUSPENDED:
       // TODO support suspended
+    break;
+
+    case DCD_EVENT_RESUME:
+      // TODO support resume
+    break;
+
+    case DCD_EVENT_SETUP_RECEIVED:
+      osal_queue_send(_usbd_q, event, in_isr);
+    break;
+
+    case DCD_EVENT_XFER_COMPLETE:
+      if (event->xfer_complete.ep_addr == 0)
+      {
+        // only signal data stage, skip status (zero byte)
+        if (event->xfer_complete.len)
+        {
+          (void) event->xfer_complete.result; // TODO handle control error/stalled
+          osal_semaphore_post( _usbd_ctrl_sem, in_isr);
+        }
+      }else
+      {
+        osal_queue_send(_usbd_q, event, in_isr);
+      }
+      TU_ASSERT(event->xfer_complete.result == DCD_XFER_SUCCESS,);
     break;
 
     default: break;
   }
-}
-
-void dcd_setup_received(uint8_t rhport, uint8_t const* p_request)
-{
-  usbd_task_event_t task_event =
-  {
-      .rhport   = rhport,
-      .event_id = USBD_EVT_SETUP_RECEIVED,
-  };
-
-  memcpy(&task_event.setup_received, p_request, sizeof(tusb_control_request_t));
-  osal_queue_send_isr(_usbd_q, &task_event);
-}
-
-void dcd_xfer_complete(uint8_t rhport, uint8_t ep_addr, uint32_t xferred_bytes, bool succeeded)
-{
-  if (ep_addr == 0 )
-  {
-    // Control Transfer
-    (void) rhport;
-    (void) succeeded;
-
-    // only signal data stage, skip status (zero byte)
-    if (xferred_bytes) osal_semaphore_post_isr( _usbd_ctrl_sem );
-  }else
-  {
-    usbd_task_event_t event =
-    {
-        .rhport         = rhport,
-        .event_id     = USBD_EVT_XFER_DONE,
-    };
-
-    event.xfer_done.ep_addr      = ep_addr;
-    event.xfer_done.xferred_byte = xferred_bytes;
-    event.xfer_done.result       = succeeded ? TUSB_EVENT_XFER_COMPLETE : TUSB_EVENT_XFER_ERROR;
-
-    osal_queue_send_isr(_usbd_q, &event);
-  }
-
-  TU_ASSERT(succeeded, );
 }
 
 //--------------------------------------------------------------------+
@@ -670,9 +621,9 @@ tusb_error_t usbd_open_edpt_pair(uint8_t rhport, tusb_desc_endpoint_t const* p_d
   return TUSB_ERROR_NONE;
 }
 
-void usbd_defer_func(osal_task_func_t func, void* param, bool isr )
+void usbd_defer_func(osal_task_func_t func, void* param, bool in_isr )
 {
-  usbd_task_event_t event =
+  dcd_event_t event =
   {
       .rhport   = 0,
       .event_id = USBD_EVT_FUNC_CALL,
@@ -681,13 +632,7 @@ void usbd_defer_func(osal_task_func_t func, void* param, bool isr )
   event.func_call.func  = func;
   event.func_call.param = param;
 
-  if ( isr )
-  {
-    osal_queue_send_isr(_usbd_q, &event);
-  }else
-  {
-    osal_queue_send(_usbd_q, &event);
-  }
+  osal_queue_send(_usbd_q, &event, in_isr);
 }
 
 #endif

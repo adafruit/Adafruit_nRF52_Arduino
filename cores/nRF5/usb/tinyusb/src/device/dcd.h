@@ -49,14 +49,52 @@
  extern "C" {
 #endif
 
+enum
+{
+  DCD_XFER_SUCCESS = 0,
+  DCD_XFER_FAILED,
+  DCD_XFER_STALLED
+};
+
 typedef enum
 {
-  USBD_BUS_EVENT_RESET = 1,
-  USBD_BUS_EVENT_UNPLUGGED,
-  USBD_BUS_EVENT_SOF,
-  USBD_BUS_EVENT_SUSPENDED,
-  USBD_BUS_EVENT_RESUME
-}usbd_bus_event_type_t;
+  DCD_EVENT_BUS_RESET = 1,
+  DCD_EVENT_UNPLUGGED,
+  DCD_EVENT_SOF,
+  DCD_EVENT_SUSPENDED,
+  DCD_EVENT_RESUME,
+
+  DCD_EVENT_SETUP_RECEIVED,
+  DCD_EVENT_XFER_COMPLETE,
+
+  USBD_EVT_FUNC_CALL
+}usbd_eventid_t;
+
+typedef struct ATTR_ALIGNED(4)
+{
+  uint8_t rhport;
+  uint8_t event_id;
+
+  union {
+    // USBD_EVT_SETUP_RECEIVED
+    tusb_control_request_t setup_received;
+
+    // USBD_EVT_XFER_COMPLETE
+    struct {
+      uint8_t  ep_addr;
+      uint8_t  result;
+      uint32_t len;
+    }xfer_complete;
+
+    // USBD_EVT_FUNC_CALL
+    struct {
+      void (*func) (void*);
+      void* param;
+    }func_call;
+  };
+} dcd_event_t;
+
+TU_VERIFY_STATIC(sizeof(dcd_event_t) <= 12, "size is not correct");
 
 /*------------------------------------------------------------------*/
 /* Device API (Weak is optional)
@@ -72,14 +110,21 @@ void dcd_disconnect       (uint8_t rhport) ATTR_WEAK;
 /* Event Function
  * Called by DCD to notify USBD
  *------------------------------------------------------------------*/
-void dcd_bus_event        (uint8_t rhport, usbd_bus_event_type_t bus_event);
-void dcd_setup_received   (uint8_t rhport, uint8_t const* p_request);
-void dcd_xfer_complete    (uint8_t rhport, uint8_t ep_addr, uint32_t xferred_bytes, bool succeeded);
+void dcd_event_handler(dcd_event_t const * event, bool in_isr);
 
-static inline void dcd_control_complete(uint8_t rhport, uint32_t xferred_bytes)
+static inline void dcd_event_xfer_complete(uint8_t rhport, uint8_t ep_addr, uint32_t xferred_bytes, uint8_t result, bool in_isr)
 {
-  // all control complete is successful !!
-  dcd_xfer_complete(rhport, 0, xferred_bytes, true);
+  dcd_event_t event =
+  {
+   .rhport   = 0,
+   .event_id = DCD_EVENT_XFER_COMPLETE,
+  };
+
+  event.xfer_complete.ep_addr = ep_addr;
+  event.xfer_complete.len     = xferred_bytes;
+  event.xfer_complete.result  = result;
+
+  dcd_event_handler(&event, true);
 }
 
 /*------------------------------------------------------------------*/
