@@ -12,10 +12,7 @@
 #include "ff.h"			/* Obtains integer types */
 #include "diskio.h"		/* Declarations of disk functions */
 
-/* Definitions of physical drive number for each drive */
-#define DEV_RAM		0	/* Example: Map Ramdisk to physical drive 0 */
-#define DEV_MMC		1	/* Example: Map MMC/SD card to physical drive 1 */
-#define DEV_USB		2	/* Example: Map USB MSD to physical drive 2 */
+#include "flash/flash_qspi.h"
 
 
 /*-----------------------------------------------------------------------*/
@@ -57,39 +54,10 @@ DRESULT disk_read (
 	UINT count		/* Number of sectors to read */
 )
 {
-	DRESULT res;
-	int result;
+  (void) pdrv;
 
-	switch (pdrv) {
-	case DEV_RAM :
-		// translate the arguments here
-
-		result = RAM_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case DEV_MMC :
-		// translate the arguments here
-
-		result = MMC_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case DEV_USB :
-		// translate the arguments here
-
-		result = USB_disk_read(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-	}
-
-	return RES_PARERR;
+  uint32_t const len = count * FF_MIN_SS;
+  return (len == flash_qspi_read(buff, sector * FF_MIN_SS, len)) ? RES_OK : RES_ERROR;
 }
 
 
@@ -107,39 +75,10 @@ DRESULT disk_write (
 	UINT count			/* Number of sectors to write */
 )
 {
-	DRESULT res;
-	int result;
+  (void) pdrv;
 
-	switch (pdrv) {
-	case DEV_RAM :
-		// translate the arguments here
-
-		result = RAM_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case DEV_MMC :
-		// translate the arguments here
-
-		result = MMC_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-
-	case DEV_USB :
-		// translate the arguments here
-
-		result = USB_disk_write(buff, sector, count);
-
-		// translate the reslut code here
-
-		return res;
-	}
-
-	return RES_PARERR;
+  uint32_t const len = count * FF_MIN_SS;
+  return (len == flash_qspi_write(sector * FF_MIN_SS, buff, len)) ? RES_OK : RES_ERROR;
 }
 
 #endif
@@ -155,30 +94,35 @@ DRESULT disk_ioctl (
 	void *buff		/* Buffer to send/receive control data */
 )
 {
-	DRESULT res;
-	int result;
+  (void) pdrv;
 
-	switch (pdrv) {
-	case DEV_RAM :
+  switch ( cmd )
+  {
+    case GET_SECTOR_COUNT:
+      *((DWORD*) buff) = flash_qspi_size() / FF_MIN_SS;
+    break;
 
-		// Process of the command for the RAM drive
+    case GET_SECTOR_SIZE:
+      *((WORD*) buff) = FF_MIN_SS;
+    break;
 
-		return res;
+    case GET_BLOCK_SIZE:
+      *((DWORD*) buff) = FLASH_QSPI_PAGE_SIZE;
+    break;
 
-	case DEV_MMC :
+    case CTRL_SYNC:
+      flash_qspi_flush();
+    break;
 
-		// Process of the command for the MMC/SD card
+    case CTRL_TRIM:
+      // not support trim
+    break;
 
-		return res;
+    default:
+      return RES_ERROR;
+  }
 
-	case DEV_USB :
-
-		// Process of the command the USB drive
-
-		return res;
-	}
-
-	return RES_PARERR;
+  return RES_OK;
 }
 
 #endif
