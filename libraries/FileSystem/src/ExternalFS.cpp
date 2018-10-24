@@ -40,16 +40,117 @@
 #include <string.h>
 #include "ExternalFS.h"
 
+// up to 11 characters
+#define VOLUME_LABEL    "BLUEFRUIT"
+
+//--------------------------------------------------------------------+
+//
+//--------------------------------------------------------------------+
+#if !CFG_DEBUG
+
+#define VERIFY_FAT(...)       _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, NULL)
+#define PRINT_FAT_ERR(_err)
+
+#else
+
+#define VERIFY_FAT(...)       _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, dbg_strerr_fat)
+#define PRINT_FAT_ERR(_err)   VERIFY_MESS(_err, dbg_strerr_lfs)
+
+static const char* dbg_strerr_fat (int32_t err)
+{
+  switch ( err )
+  {
+    case FR_DISK_ERR:
+      return "FR_DISK_ERR";
+    case FR_INT_ERR:
+      return "FR_INT_ERR";
+    case FR_NOT_READY:
+      return "FR_NOT_READY";
+    case FR_NO_FILE:
+      return "FR_NO_FILE";
+    case FR_NO_PATH:
+      return "FR_NO_PATH";
+    case FR_INVALID_NAME:
+      return "FR_INVALID_NAME";
+    case FR_DENIED:
+      return "FR_DENIED";
+    case FR_EXIST:
+      return "FR_EXIST";
+    case FR_INVALID_OBJECT:
+      return "FR_INVALID_OBJECT";
+    case FR_WRITE_PROTECTED:
+      return "FR_WRITE_PROTECTED";
+    case FR_INVALID_DRIVE:
+      return "FR_INVALID_DRIVE";
+    case FR_NOT_ENABLED:
+      return "FR_NOT_ENABLED";
+    case FR_NO_FILESYSTEM:
+      return "FR_NO_FILESYSTEM";
+    case FR_MKFS_ABORTED:
+      return "FR_MKFS_ABORTED";
+    case FR_TIMEOUT:
+      return "FR_TIMEOUT";
+    case FR_LOCKED:
+      return "FR_LOCKED";
+    case FR_NOT_ENOUGH_CORE:
+      return "FR_NOT_ENOUGH_CORE";
+    case FR_TOO_MANY_OPEN_FILES:
+      return "FR_TOO_MANY_OPEN_FILES";
+    case FR_INVALID_PARAMETER:
+      return "FR_INVALID_PARAMETER";
+    default:
+      return "Unlikely Error";
+  }
+}
+
+#endif
+
+//--------------------------------------------------------------------+
+//
+//--------------------------------------------------------------------+
+FatFS ExternalFS;
+
 FatFS::FatFS ()
 {
+  _fs = NULL;
 }
+
 FatFS::~FatFS ()
 {
+  if (_fs) rtos_free(_fs);
 }
 
 bool FatFS::begin ()
 {
+  if ( !_fs ) _fs = (FATFS*) rtos_malloc(sizeof(FATFS));
+  VERIFY(_fs);
+
+  // Mount file system
+  uint32_t err = f_mount(_fs, "", 1);
+
+  // If FileSystem is not available, format it
+  if ( FR_NO_FILESYSTEM == err )
+  {
+    uint8_t workbuf[FF_MAX_SS];
+    VERIFY_FAT(f_mkfs("", FM_FAT | FM_SFD, 4096, workbuf, FF_MAX_SS), false);
+
+    VERIFY_FAT(f_setlabel(VOLUME_LABEL), false);
+
+//    FatFile readme;
+//    readme.open("readme.txt", FAT_FILE_WRITE | FAT_FILE_CREATE_ALWAYS);
+//    readme.write(README_CONTENT);
+//    readme.close();
+
+    return true;
+  }
+  else
+  {
+    VERIFY_FAT(err, false);
+  }
+
+  return true;
 }
+
 File FatFS::open (char const *filename, uint8_t mode)
 {
 }

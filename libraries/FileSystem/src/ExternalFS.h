@@ -39,6 +39,10 @@
 
 #include "FileIO.h"
 
+// External Flash uses Fat FS as file system
+// http://elm-chan.org/fsw/ff/00index_e.html
+#include "fatfs/source/ff.h"
+
 class FatFS: public BluefuritLib::FileSystemClass
 {
   public:
@@ -64,6 +68,11 @@ class FatFS: public BluefuritLib::FileSystemClass
     virtual File _f_openNextFile (void* fhdl, char const* cwd, uint8_t mode);
     virtual void _f_rewindDirectory (void* fhdl);
 
+  private:
+    FATFS* _fs;
+
 };
+
+extern FatFS ExternalFS;
 
 #endif /* EXTERNALFS_H_ */

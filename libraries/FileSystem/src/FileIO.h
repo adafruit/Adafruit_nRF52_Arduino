@@ -147,5 +147,6 @@ using namespace BluefuritLib;
 typedef BluefuritLib::File BluefruitFile;
 
 #include "InternalFS.h"
+#include "ExternalFS.h"
 
 #endif

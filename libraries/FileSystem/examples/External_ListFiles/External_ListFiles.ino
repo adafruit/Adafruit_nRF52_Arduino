@@ -31,7 +31,7 @@ void setup()
   Serial.println("ExternalFS List Files Example");
 
   // Initialize Internal File System
-  InternalFS.begin();
+  ExternalFS.begin();
 
   // Print whole directory tree of root whose level is 0
   printTreeDir("/", 0);
@@ -68,13 +68,13 @@ void loop()
 void printTreeDir(const char* cwd, uint8_t level)
 {
   // Open the input folder
-  File dir(cwd, FILE_READ, InternalFS);
+  File dir(cwd, FILE_READ, ExternalFS);
 
   // Print root
   if (level == 0) Serial.println("root");
  
   // File within folder
-  File item(InternalFS);
+  File item(ExternalFS);
 
   // Loop through the directory
   while( (item = dir.openNextFile(FILE_READ)) )
