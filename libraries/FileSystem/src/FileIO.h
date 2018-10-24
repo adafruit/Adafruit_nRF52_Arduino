@@ -35,7 +35,6 @@
 
 #define FILE_READ 0
 #define FILE_WRITE 1
-#define FILE_APPEND 2
 
 #define FILE_NAME_MAX 255
 

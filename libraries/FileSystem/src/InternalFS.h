@@ -65,7 +65,7 @@ class LittleFS: public BluefuritLib::FileSystemClass
     virtual uint32_t _f_position (void* fhdl);
     virtual uint32_t _f_size (void* fhdl);
 
-    virtual File _f_openNextFile (void* fhdl, char const* cwd, uint8_t mode);
+    virtual BluefuritLib::File _f_openNextFile (void* fhdl, char const* cwd, uint8_t mode);
     virtual void _f_rewindDirectory (void* fhdl);
 
   private:

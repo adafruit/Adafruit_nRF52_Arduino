@@ -216,8 +216,7 @@ BluefuritLib::File LittleFS::_open_file (char const *filepath, uint8_t mode)
   BluefuritLib::File file(*this);
 
   int flags = (mode == FILE_READ) ? LFS_O_RDONLY :
-              (mode == FILE_WRITE) ? (LFS_O_RDWR | LFS_O_CREAT) :
-              (mode == FILE_APPEND) ? (LFS_O_RDWR | LFS_O_CREAT | LFS_O_APPEND) : 0;
+              (mode == FILE_WRITE) ? (LFS_O_RDWR | LFS_O_CREAT) : 0;
 
   if ( flags )
   {
@@ -231,6 +230,9 @@ BluefuritLib::File LittleFS::_open_file (char const *filepath, uint8_t mode)
     }
     else
     {
+      // move to end of file
+      if ( mode == FILE_WRITE ) lfs_file_seek(&_lfs, fhdl, 0, LFS_SEEK_END);
+
       file._hdl = fhdl;
       file._is_dir = false;
 
