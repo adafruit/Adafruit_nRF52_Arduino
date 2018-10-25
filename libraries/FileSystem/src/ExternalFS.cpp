@@ -215,12 +215,16 @@ File FatFS::open (char const *filepath, uint8_t mode)
   BluefuritLib::File file(*this);
 
   FILINFO fno;
-  FRESULT rc = f_stat(filepath, &fno);
+  FRESULT rc = FR_OK;
+  bool is_root =  (filepath[0] == '/' && filepath[1] == 0);
+
+  // f_stat return FR_INVALID_NAME for root
+  if ( !is_root ) f_stat(filepath, &fno);
 
   if ( FR_OK == rc )
   {
     // file existed, open file or directory accordingly
-    file = (fno.fattrib & AM_DIR) ? _open_file(filepath, mode) : _open_dir(filepath);
+    file = (is_root || (fno.fattrib & AM_DIR)) ? _open_dir(filepath) : _open_file(filepath, mode);
   }
   else if ( FR_NO_FILE == rc )
   {
@@ -229,6 +233,7 @@ File FatFS::open (char const *filepath, uint8_t mode)
   }
   else
   {
+    PRINT_STR(filepath);
     PRINT_FAT_ERR(rc);
   }
 
@@ -306,7 +311,7 @@ File FatFS::_f_openNextFile (void* fhdl, char const* cwd, uint8_t mode)
     if ( !(cwd[0] == '/' && cwd[1] == 0) ) strcat(filepath, "/");    // only add '/' if cwd is not root
     strcat(filepath, fno.fname);
 
-    file = (fno.fattrib & AM_DIR) ? _open_file(filepath, mode) : _open_dir(filepath);
+    file = (fno.fattrib & AM_DIR) ? _open_dir(filepath) : _open_file(filepath, mode);
   }
 
   return file;
