@@ -57,7 +57,7 @@ uint32_t flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, u
   uint8_t const * src8 = (uint8_t const *) src;
   uint32_t remain = len;
 
-  // Program blocks up to page boundary each loop
+  // Program up to page boundary each loop
   while ( remain )
   {
     uint32_t const page_addr = page_addr_of(dst);
@@ -72,17 +72,8 @@ uint32_t flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, u
       flash_cache_flush(fc);
       fc->cache_addr = page_addr;
 
-      // read existing flash to cache except those we are writing
-      if ( offset )
-      {
-        fc->read(fc->cache_buf, page_addr, offset);
-      }
-
-      uint32_t const last_byte = offset + wr_bytes;
-      if ( last_byte < FLASH_CACHE_SIZE )
-      {
-        fc->read(fc->cache_buf + last_byte, page_addr + last_byte, FLASH_CACHE_SIZE - last_byte);
-      }
+      // read a whole page from flash
+      fc->read(fc->cache_buf, page_addr, FLASH_CACHE_SIZE);
     }
 
     memcpy(fc->cache_buf + offset, src8, wr_bytes);
@@ -90,6 +81,7 @@ uint32_t flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, u
     // adjust for next run
     src8 += wr_bytes;
     remain -= wr_bytes;
+    dst += wr_bytes;
   }
 
   return len - remain;
