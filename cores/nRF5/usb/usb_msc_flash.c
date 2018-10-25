@@ -109,22 +109,11 @@ int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* bu
 {
   (void) lun;
 
-#ifdef MICROPY_HW_LED_MSC
-  nrf_gpio_pin_write(MICROPY_HW_LED_MSC, MICROPY_HW_LED_MSC_ACTIVE_LEVEL);
-#endif
-
   uint32_t wrcount = flash_qspi_write(lba * CFG_TUD_MSC_BLOCK_SZ + offset, buffer, bufsize);
 
-// update fatfs's cache if address matches
-//    fs_user_mount_t* vfs = MP_STATE_VM(vfs_mount_table)->obj;
-//
-//    if ( (lba <= vfs->fatfs.winsect) && (vfs->fatfs.winsect <= (lba + bufsize / FLASH_API_BLOCK_SIZE)) ) {
-//        memcpy(vfs->fatfs.win, buffer + FLASH_API_BLOCK_SIZE * (vfs->fatfs.winsect - lba), FLASH_API_BLOCK_SIZE);
-//    }
-
-#ifdef MICROPY_HW_LED_MSC
-  nrf_gpio_pin_write(MICROPY_HW_LED_MSC, 1 - MICROPY_HW_LED_MSC_ACTIVE_LEVEL);
-#endif
+  // update fatfs's cache if address matches
+  extern ExternalFS_usbmsc_write (uint32_t lba, void const* buffer, uint32_t bufsize) ATTR_WEAK;
+  if ( ExternalFS_usbmsc_write ) ExternalFS_usbmsc_write(lba, buffer, bufsize);
 
   return wrcount;
 }

@@ -155,7 +155,10 @@ bool FatFS::begin (void)
 
 bool FatFS::format (bool eraseall)
 {
-  if ( eraseall ) VERIFY(flash_qspi_chiperase());
+  if ( eraseall )
+  {
+    VERIFY(flash_qspi_chiperase());
+  }
 
   uint8_t workbuf[FF_MAX_SS];
   VERIFY_FAT(f_mkfs("", FM_FAT | FM_SFD, 4096, workbuf, FF_MAX_SS), false);
@@ -359,6 +362,22 @@ void FatFS::_f_rewindDirectory (void* fhdl)
   VERIFY_FAT(f_rewinddir((DIR * ) fhdl),);
 }
 
+// for USB MSC to check and update fatfs sector cache
+void FatFS::_usbmsc_write (uint32_t lba, void const* buffer, uint32_t bufsize)
+{
+  VERIFY(_fs,);
+  if ( (lba <= _fs->winsect) && (_fs->winsect < (lba + bufsize / FF_MAX_SS)) )
+  {
+    memcpy(_fs->win, buffer + FF_MAX_SS * (_fs->winsect - lba), FF_MAX_SS);
+  }
+}
 
+extern "C"
+{
+void ExternalFS_usbmsc_write (uint32_t lba, void const* buffer, uint32_t bufsize)
+{
+  ExternalFS._usbmsc_write(lba, buffer, bufsize);
+}
+}
 
 #endif

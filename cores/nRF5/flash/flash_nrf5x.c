@@ -58,7 +58,7 @@ static uint32_t fal_program (uint32_t dst, void const * src, uint32_t len);
 static uint32_t fal_read (void* dst, uint32_t src, uint32_t len);
 static bool fal_verify (uint32_t addr, void const * buf, uint32_t len);
 
-uint8_t _cache_buffer[FLASH_CACHE_SIZE] __attribute__((aligned(4)));
+static uint8_t _cache_buffer[FLASH_CACHE_SIZE] __attribute__((aligned(4)));
 
 static flash_cache_t _cache = {
   .erase = fal_erase,

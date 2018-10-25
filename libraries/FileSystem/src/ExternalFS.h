@@ -69,6 +69,9 @@ class FatFS: public BluefuritLib::FileSystemClass
     virtual BluefuritLib::File _f_openNextFile (void* fhdl, char const* cwd, uint8_t mode);
     virtual void _f_rewindDirectory (void* fhdl);
 
+    // called when Flash contents is changed out of the awareness of ExternalFS such as USB MSC write
+    void _usbmsc_write (uint32_t lba, void const* buffer, uint32_t bufsize);
+
   private:
     FATFS* _fs;
     bool _begun;
@@ -78,5 +81,9 @@ class FatFS: public BluefuritLib::FileSystemClass
 };
 
 extern FatFS ExternalFS;
+
+// C to CPP call bridge for update fatfs cached sector
+extern "C" void ExternalFS_usbmsc_write (uint32_t lba, void const* buffer, uint32_t bufsize);
+
 
 #endif /* EXTERNALFS_H_ */
