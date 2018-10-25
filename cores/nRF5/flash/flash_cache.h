@@ -45,13 +45,13 @@
 
 typedef struct
 {
-  bool (*erase) (uint32_t addr);
-  uint32_t (*program) (uint32_t dst, void const * src, uint32_t len);
-  uint32_t (*read) (void* dst, uint32_t src, uint32_t len);
-  bool (*verify) (uint32_t addr, void const * buf, uint32_t len);
+    bool (*erase) (uint32_t addr);
+    uint32_t (*program) (uint32_t dst, void const * src, uint32_t len);
+    uint32_t (*read) (void* dst, uint32_t src, uint32_t len);
+    bool (*verify) (uint32_t addr, void const * buf, uint32_t len);
 
-  uint32_t cache_addr;
-  uint8_t cache_buf[FLASH_CACHE_SIZE] __attribute__((aligned(4)));
+    uint32_t cache_addr;
+    uint8_t* cache_buf;
 } flash_cache_t;
 
 #ifdef __cplusplus
