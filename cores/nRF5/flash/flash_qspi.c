@@ -252,7 +252,6 @@ static uint32_t fal_qspi_read (void* dst, uint32_t src, uint32_t len)
 static bool fal_qspi_verify (uint32_t addr, void const * buf, uint32_t len)
 {
   return false;
-//  return 0 == memcmp((void*) addr, buf, len);
 }
 
 #endif // valid pin
