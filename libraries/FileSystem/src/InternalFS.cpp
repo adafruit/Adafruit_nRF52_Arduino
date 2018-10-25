@@ -40,13 +40,13 @@
 #include "flash/flash_nrf5x.h"
 
 #ifdef NRF52840_XXAA
-#define LFS_FLASH_ADDR     0xED000
+#define LFS_FLASH_ADDR        0xED000
 #else
-#define LFS_FLASH_ADDR     0x6D000
+#define LFS_FLASH_ADDR        0x6D000
 #endif
 
-#define LFS_FLASH_SIZE     (7*FLASH_NRF52_PAGE_SIZE)
-#define LFS_BLOCK_SIZE     128
+#define LFS_FLASH_TOTAL_SIZE  (7*FLASH_NRF52_PAGE_SIZE)
+#define LFS_BLOCK_SIZE        128
 
 //--------------------------------------------------------------------+
 // LFS Disk IO
@@ -182,7 +182,7 @@ LittleFS::LittleFS (void)
   _lfs_cfg.read_size = LFS_BLOCK_SIZE;
   _lfs_cfg.prog_size = LFS_BLOCK_SIZE;
   _lfs_cfg.block_size = LFS_BLOCK_SIZE;
-  _lfs_cfg.block_count = LFS_FLASH_SIZE / LFS_BLOCK_SIZE;
+  _lfs_cfg.block_count = LFS_FLASH_TOTAL_SIZE / LFS_BLOCK_SIZE;
   _lfs_cfg.lookahead = 128;
 
   _begun = false;
@@ -204,9 +204,24 @@ bool LittleFS::begin (void)
   if ( LFS_ERR_CORRUPT == err )
   {
     LOG_LV1("IFLASH", "Format internal file system");
-    VERIFY_LFS(lfs_format(&_lfs, &_lfs_cfg), false);
-    VERIFY_LFS(lfs_mount(&_lfs, &_lfs_cfg), false);
+    this->format(false);
   }
+
+  return true;
+}
+
+bool LittleFS::format (bool eraseall)
+{
+  if ( eraseall )
+  {
+    for ( uint32_t addr = LFS_FLASH_ADDR; addr < LFS_FLASH_ADDR + LFS_FLASH_TOTAL_SIZE; addr += FLASH_NRF52_PAGE_SIZE )
+    {
+      flash_nrf5x_erase(addr);
+    }
+  }
+
+  VERIFY_LFS(lfs_format(&_lfs, &_lfs_cfg), false);
+  VERIFY_LFS(lfs_mount(&_lfs, &_lfs_cfg), false);
 
   return true;
 }

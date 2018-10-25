@@ -228,6 +228,13 @@ bool fal_qspi_erase (uint32_t addr)
   return true;
 }
 
+bool flash_qspi_chiperase (void)
+{
+  VERIFY(_flash_dev);
+  VERIFY(NRFX_SUCCESS == nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_ALL, 0));
+  return true;
+}
+
 static uint32_t fal_qspi_program (uint32_t dst, void const * src, uint32_t len)
 {
   VERIFY(_flash_dev, 0);

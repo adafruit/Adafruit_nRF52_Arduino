@@ -39,6 +39,7 @@
 #include <Arduino.h>
 #include <string.h>
 #include "ExternalFS.h"
+#include "flash/flash_qspi.h"
 
 // up to 11 characters
 #define VOLUME_LABEL    "BLUEFRUIT"
@@ -135,11 +136,7 @@ bool FatFS::begin (void)
   if ( FR_NO_FILESYSTEM == err )
   {
     LOG_LV1("FATFS", "No file system, format it");
-
-    uint8_t workbuf[FF_MAX_SS];
-    VERIFY_FAT(f_mkfs("", FM_FAT | FM_SFD, 4096, workbuf, FF_MAX_SS), false);
-
-    VERIFY_FAT(f_setlabel(VOLUME_LABEL), false);
+    this->format(false);
 
 //    FatFile readme;
 //    readme.open("readme.txt", FAT_FILE_WRITE | FAT_FILE_CREATE_ALWAYS);
@@ -152,6 +149,18 @@ bool FatFS::begin (void)
   {
     VERIFY_FAT(err, false);
   }
+
+  return true;
+}
+
+bool FatFS::format (bool eraseall)
+{
+  if ( eraseall ) VERIFY(flash_qspi_chiperase());
+
+  uint8_t workbuf[FF_MAX_SS];
+  VERIFY_FAT(f_mkfs("", FM_FAT | FM_SFD, 4096, workbuf, FF_MAX_SS), false);
+  VERIFY_FAT(f_setlabel(VOLUME_LABEL), false);
+  VERIFY_FAT(f_mount(_fs, "", 1), false);
 
   return true;
 }
