@@ -49,7 +49,7 @@ class FatFS: public BluefuritLib::FileSystemClass
     FatFS ();
     virtual ~FatFS ();
 
-    bool begin ();
+    bool begin (void);
     BluefuritLib::File open (char const *filepath, uint8_t mode = FILE_READ);
     bool exists (char const *filepath);
     bool mkdir (char const *filepath);

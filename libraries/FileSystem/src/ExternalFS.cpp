@@ -113,14 +113,14 @@ FatFS ExternalFS;
 FatFS::FatFS ()
 {
   _fs = NULL;
-  _begun = true;
+  _begun = false;
 }
 
 FatFS::~FatFS ()
 {
 }
 
-bool FatFS::begin ()
+bool FatFS::begin (void)
 {
   if ( _begun ) return true;
   _begun = true;
