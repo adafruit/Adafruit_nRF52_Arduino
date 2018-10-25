@@ -219,7 +219,7 @@ File FatFS::open (char const *filepath, uint8_t mode)
   bool is_root =  (filepath[0] == '/' && filepath[1] == 0);
 
   // f_stat return FR_INVALID_NAME for root
-  if ( !is_root ) f_stat(filepath, &fno);
+  if ( !is_root ) rc = f_stat(filepath, &fno);
 
   if ( FR_OK == rc )
   {
@@ -242,28 +242,53 @@ File FatFS::open (char const *filepath, uint8_t mode)
 
 bool FatFS::exists (char const *filepath)
 {
+  if ( filepath[0] == '/' && filepath[1] == 0 ) return true;    // root always exists
+
+  FILINFO fno;
+  return FR_OK == f_stat(filepath, &fno);
 }
+
 bool FatFS::mkdir (char const *filepath)
 {
+  VERIFY_FAT(f_mkdir(filepath), false);
+  return true;
 }
+
 bool FatFS::remove (char const *filepath)
 {
+  VERIFY_FAT(f_unlink(filepath), false);
+  return true;
 }
+
 bool FatFS::rmdir (char const *filepath)
 {
+  VERIFY_FAT(f_unlink(filepath), false);
+  return true;
 }
+
 bool FatFS::rmdir_r (char const *filepath)
 {
+  // not supported yet
+  return false;
 }
 
 size_t FatFS::_f_write (void* fhdl, uint8_t const *buf, size_t size)
 {
+  UINT byte_write = 0;
+  VERIFY_FAT(f_write((FIL* ) fhdl, buf, size, &byte_write), byte_write);
+  return byte_write;
 }
+
 int FatFS::_f_read (void* fhdl, void *buf, uint16_t nbyte)
 {
+  UINT byte_read = 0;
+  VERIFY_FAT(f_read((FIL* ) fhdl, buf, nbyte, &byte_read), byte_read);
+  return byte_read;
 }
+
 void FatFS::_f_flush (void* fhdl)
 {
+  VERIFY_FAT(f_sync((FIL* ) fhdl),);
 }
 
 void FatFS::_f_close (void* fhdl, bool is_dir)
@@ -280,10 +305,13 @@ void FatFS::_f_close (void* fhdl, bool is_dir)
 
 bool FatFS::_f_seek (void* fhdl, uint32_t pos)
 {
+  VERIFY_FAT(f_lseek((FIL* ) fhdl, pos), false);
+  return true;
 }
 
 uint32_t FatFS::_f_position (void* fhdl)
 {
+  return f_tell((FIL* ) fhdl);
 }
 
 uint32_t FatFS::_f_size (void* fhdl)
@@ -319,6 +347,7 @@ File FatFS::_f_openNextFile (void* fhdl, char const* cwd, uint8_t mode)
 
 void FatFS::_f_rewindDirectory (void* fhdl)
 {
+  VERIFY_FAT(f_rewinddir((DIR * ) fhdl),);
 }
 
 

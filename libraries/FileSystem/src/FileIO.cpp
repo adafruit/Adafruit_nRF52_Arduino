@@ -34,7 +34,7 @@
 */
 /**************************************************************************/
 
-#include "rtos.h"
+#include <Arduino.h>
 #include "FileIO.h"
 
 namespace BluefuritLib
@@ -62,9 +62,7 @@ File& File::operator = (const File &rhs)
 {
   // close if currently opened
   if ( _hdl ) close();
-
   memcpy(this, &rhs, sizeof(File));
-
   return *this;
 }
 
@@ -84,29 +82,36 @@ bool File::open (char const *filename, uint8_t mode)
 
 size_t File::write (uint8_t ch)
 {
+  VERIFY(!_is_dir, 0);
   return write(&ch, 1);
 }
 
 size_t File::write (uint8_t const *buf, size_t size)
 {
+  VERIFY(!_is_dir, 0);
   return _fs->_f_write(_hdl, buf, size);
 }
 
 int File::read (void)
 {
+  VERIFY(!_is_dir, -1);
   uint8_t ch;
   return (read(&ch, 1) > 0) ? ch : -1;
 }
 
 int File::read (void *buf, uint16_t nbyte)
 {
+  VERIFY(!_is_dir, 0);
   return _fs->_f_read(_hdl, buf, nbyte);
 }
 
 int File::peek (void)
 {
+  VERIFY(!_is_dir, -1);
+
   int ch = read();
-  seek((position() > 0) ? (position() - 1) : 0);
+  uint32_t pos = position();
+  seek((pos > 0) ? (pos - 1) : 0);
   return ch;
 }
 
@@ -117,21 +122,25 @@ int File::available (void)
 
 bool File::seek (uint32_t pos)
 {
+  VERIFY(!_is_dir, false);
   return _fs->_f_seek(_hdl, pos);
 }
 
 uint32_t File::position (void)
 {
+  VERIFY(!_is_dir, 0);
   return _fs->_f_position(_hdl);
 }
 
 uint32_t File::size (void)
 {
+  VERIFY(!_is_dir, 0);
   return _fs->_f_size(_hdl);
 }
 
 void File::flush (void)
 {
+  VERIFY(!_is_dir,);
   _fs->_f_flush(_hdl);
 }
 

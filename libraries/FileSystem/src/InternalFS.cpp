@@ -343,6 +343,9 @@ bool LittleFS::rmdir (char const *filepath)
 
 bool LittleFS::rmdir_r (char const *filepath)
 {
+  /* adafruit: lfs is modified to remove non-empty folder,
+   According to below issue, comment these 2 line won't corrupt filesystem
+   https://github.com/ARMmbed/littlefs/issues/43 */
   VERIFY_LFS(lfs_remove(&_lfs, filepath));
   return true;
 }
