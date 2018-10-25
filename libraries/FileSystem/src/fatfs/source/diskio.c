@@ -99,7 +99,7 @@ DRESULT disk_ioctl (
   switch ( cmd )
   {
     case GET_SECTOR_COUNT:
-      *((DWORD*) buff) = flash_qspi_size() / FF_MIN_SS;
+      *((DWORD*) buff) = (flash_qspi_size() / FF_MIN_SS);
     break;
 
     case GET_SECTOR_SIZE:
@@ -107,7 +107,7 @@ DRESULT disk_ioctl (
     break;
 
     case GET_BLOCK_SIZE:
-      *((DWORD*) buff) = FLASH_QSPI_PAGE_SIZE;
+      *((DWORD*) buff) = FLASH_QSPI_PAGE_SIZE / FF_MIN_SS;
     break;
 
     case CTRL_SYNC:

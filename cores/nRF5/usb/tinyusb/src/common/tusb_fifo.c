@@ -189,8 +189,7 @@ bool tu_fifo_peek_at(tu_fifo_t* f, uint16_t pos, void * p_buffer)
 /******************************************************************************/
 bool tu_fifo_write (tu_fifo_t* f, const void * p_data)
 {
-//  if ( tu_fifo_full(f) && !f->overwritable ) return false;
-  TU_ASSERT( !(tu_fifo_full(f) && !f->overwritable) );
+  if ( tu_fifo_full(f) && !f->overwritable ) return false;
 
   mutex_lock_if_needed(f);
 
