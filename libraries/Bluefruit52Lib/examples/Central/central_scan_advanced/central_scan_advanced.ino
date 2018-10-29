@@ -21,6 +21,7 @@
 void setup() 
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 Central ADV Scan Example");
   Serial.println("------------------------------------\n");

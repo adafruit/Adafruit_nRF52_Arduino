@@ -35,6 +35,7 @@ BLEClientCharacteristic bslc(UUID16_CHR_BODY_SENSOR_LOCATION);
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 Central Custom HRM Example");
   Serial.println("--------------------------------------\n");

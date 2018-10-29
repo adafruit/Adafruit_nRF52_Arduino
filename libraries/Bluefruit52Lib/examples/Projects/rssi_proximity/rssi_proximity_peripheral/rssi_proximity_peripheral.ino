@@ -51,6 +51,8 @@ BLEUuid uuid = BLEUuid(CUSTOM_UUID);
 void setup() 
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+
   Serial.println("Bluefruit52 Peripheral Proximity Example");
   Serial.println("----------------------------------------\n");
 

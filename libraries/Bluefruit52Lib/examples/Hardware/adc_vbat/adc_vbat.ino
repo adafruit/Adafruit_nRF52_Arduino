@@ -58,6 +58,7 @@ uint8_t mvToPercent(float mvolts) {
 
 void setup() {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   // Get a single ADC sample and throw it away
   readVBAT();

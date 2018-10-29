@@ -24,7 +24,7 @@ File file(InternalFS);
 void setup() 
 {
   Serial.begin(115200);
-  while ( !Serial ) {} // for nrf52840 with native usb
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Internal Read Write File Example");
   Serial.println();

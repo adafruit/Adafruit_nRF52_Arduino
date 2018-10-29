@@ -107,6 +107,7 @@ void test_homekit(void)
 void setup() 
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 Homekit Light Bulb Example");
   Serial.println("--------------------------------------\n");

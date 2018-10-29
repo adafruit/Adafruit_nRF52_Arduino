@@ -18,7 +18,7 @@
 void setup() 
 {
   Serial.begin(115200);
-  while ( !Serial ) delay(10); // for nrf52840 with native usb
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("InternalFS Format Example");
   Serial.println();
@@ -26,10 +26,7 @@ void setup()
   // Wait for user input to run.
   Serial.println("This sketch will destroy all of your data in External Flash!");
   Serial.print("Enter any keys to continue:");
-  while ( !Serial.available() )
-  {
-    delay(1);
-  }
+  while ( !Serial.available() ) delay(1);
   Serial.println();
   Serial.println();
 
@@ -37,13 +34,14 @@ void setup()
   InternalFS.begin();
 
   Serial.print("Formating ...");
-  delay(1);
+  Serial.flush();
   
   // Format without erase
+  // Pass true for full external flash erasing (take time)
   InternalFS.format(true);
 
   Serial.println("Done");
-  delay(1);
+  Serial.flush();
 }
 
 // the loop function runs over and over again forever

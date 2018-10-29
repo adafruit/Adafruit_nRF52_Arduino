@@ -37,6 +37,7 @@ bool keyPressedPreviously = false;
 void setup() 
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 HID Keyscan Example");
   Serial.println("-------------------------------\n");

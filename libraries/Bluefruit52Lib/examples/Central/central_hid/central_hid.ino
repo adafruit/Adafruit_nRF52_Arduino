@@ -30,6 +30,7 @@ hid_mouse_report_t last_mse_report = { 0 };
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 Central HID (Keyboard + Mouse) Example");
   Serial.println("--------------------------------------------------\n");

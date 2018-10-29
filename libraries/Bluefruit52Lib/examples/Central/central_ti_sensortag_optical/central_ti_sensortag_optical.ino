@@ -58,6 +58,7 @@ BLEClientCharacteristic opticalCharacteristicPeriod(SENSORTAG_OPTICAL_PERIOD_CHA
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 Central TI Sensor Tag Example");
   Serial.println("-----------------------------------------\n");

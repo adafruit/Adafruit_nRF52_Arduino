@@ -26,6 +26,7 @@ int off_count = 0;
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 BLEMIDI RX Test");
   Serial.println("---------------------------\n");

@@ -83,6 +83,7 @@ uint8_t connection_num = 0; // for blink pattern
 void setup() 
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   // Initialize blinkTimer for 100 ms and start it
   blinkTimer.begin(100, blink_timer_callback);

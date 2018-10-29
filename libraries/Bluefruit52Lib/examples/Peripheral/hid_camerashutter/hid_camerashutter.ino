@@ -29,6 +29,7 @@ void setup()
   pinMode(PIN_SHUTTER, INPUT_PULLUP);
 
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 HID Camera Shutter Example");
   Serial.println("--------------------------------------\n");

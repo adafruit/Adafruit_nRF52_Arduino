@@ -56,6 +56,7 @@ int pins[12] =
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   // Add 4 pins into a group
   // It is better to add Pin before call .begin()

@@ -36,6 +36,8 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason);
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+
   Serial.println("Bluefruit52 HRM Example");
   Serial.println("-----------------------\n");
 

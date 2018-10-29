@@ -33,6 +33,8 @@ BLEClientCts  bleCTime;
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+
   Serial.println("Bluefruit52 BLE Client Current Time Example");
   Serial.println("-------------------------------------------\n");
 

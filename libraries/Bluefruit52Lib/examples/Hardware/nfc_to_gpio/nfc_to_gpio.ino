@@ -17,6 +17,8 @@
 
 void setup() {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+  
   Serial.println("Bluefruit52 NFC to GPIO Pin Config");
   Serial.println("----------------------------------\n");
       if ((NRF_UICR->NFCPINS & UICR_NFCPINS_PROTECT_Msk) == (UICR_NFCPINS_PROTECT_NFC << UICR_NFCPINS_PROTECT_Pos)){
