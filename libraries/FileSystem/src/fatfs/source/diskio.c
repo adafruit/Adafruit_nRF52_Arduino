@@ -107,7 +107,7 @@ DRESULT disk_ioctl (
     break;
 
     case GET_BLOCK_SIZE:
-      *((DWORD*) buff) = FLASH_QSPI_PAGE_SIZE / FF_MIN_SS;
+      *((DWORD*) buff) = (FLASH_QSPI_PAGE_SIZE / FF_MIN_SS);
     break;
 
     case CTRL_SYNC:

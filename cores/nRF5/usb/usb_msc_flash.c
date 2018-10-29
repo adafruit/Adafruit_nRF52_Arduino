@@ -36,6 +36,9 @@
 #if NRF52840_XXAA
 
 #include "tusb.h"
+
+#if CFG_TUD_MSC
+
 #include "nrf_gpio.h"
 #include "flash/flash_qspi.h"
 
@@ -128,4 +131,5 @@ void tud_msc_write10_complete_cb (uint8_t lun)
   flash_qspi_flush();
 }
 
-#endif
+#endif // CFG_TUD_MSC
+#endif // nrf52840

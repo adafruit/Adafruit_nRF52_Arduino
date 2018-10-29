@@ -26,10 +26,7 @@ void setup()
   // Wait for user input to run.
   Serial.println("This sketch will destroy all of your data in External Flash!");
   Serial.print("Enter any keys to continue:");
-  while ( !Serial.available() )
-  {
-    delay(1);
-  }
+  while ( !Serial.available() )  delay(10);
   Serial.println();
   Serial.println();
 
@@ -37,13 +34,11 @@ void setup()
   ExternalFS.begin();
 
   Serial.print("Formating ...");
-  delay(1);
   
   // Format without erase
   ExternalFS.format(true);
 
   Serial.println("Done");
-  delay(1);
 }
 
 // the loop function runs over and over again forever
