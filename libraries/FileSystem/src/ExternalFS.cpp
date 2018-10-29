@@ -43,6 +43,18 @@
 
 // up to 11 characters
 #define VOLUME_LABEL    "BLUEFRUIT"
+const char README_CONTENT[] =
+                              "This drive can be used to add or remove files to the on-board \r\n"
+                              "SPI flash IC on the Adafruit Bluefruit nRF52 Feather.\r\n"
+                              "\r\n"
+                              "For information on how to use the Bluefruit nRF52 Feather, see the following links:\r\n"
+                              "\r\n"
+                              "Adafruit Bluefruit nRF52 Feather Learning Guide:\r\n"
+                              "https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide\r\n"
+                              "\r\n"
+                              "Adafruit Bluefruit nRF52 Feather Product Page:\r\n"
+                              "- https://www.adafruit.com/product/0000\r\n";
+
 
 //--------------------------------------------------------------------+
 //
@@ -138,11 +150,6 @@ bool FatFS::begin (void)
     LOG_LV1("FATFS", "No file system, format it");
     this->format(false);
 
-//    FatFile readme;
-//    readme.open("readme.txt", FAT_FILE_WRITE | FAT_FILE_CREATE_ALWAYS);
-//    readme.write(README_CONTENT);
-//    readme.close();
-
     return true;
   }
   else
@@ -165,6 +172,12 @@ bool FatFS::format (bool eraseall)
   VERIFY_FAT(f_mkfs("", FM_FAT | FM_SFD, 4096, workbuf, FF_MAX_SS), false);
   VERIFY_FAT(f_setlabel(VOLUME_LABEL), false);
   VERIFY_FAT(f_mount(_fs, "", 1), false);
+
+  // Always create README file when format
+  File readme("README.TXT", FILE_WRITE, *this);
+  readme.write(README_CONTENT);
+  readme.close();
+
 
   return true;
 }

@@ -34,7 +34,6 @@ void setup()
   ExternalFS.begin();
 
   Serial.print("Formating ...");
-  Serial.println(flash_qspi_size());
   Serial.flush();
   
   // Format without erase
