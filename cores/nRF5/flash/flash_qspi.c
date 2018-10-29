@@ -93,6 +93,7 @@ static flash_cache_t _cache = {
   .cache_buf = _cache_buffer
 };
 
+static SemaphoreHandle_t _qspi_mutex;
 
 //--------------------------------------------------------------------+
 // Application API
@@ -105,18 +106,44 @@ uint32_t flash_qspi_size (void)
 
 uint32_t flash_qspi_write (uint32_t dst, void const * src, uint32_t len)
 {
-  return flash_cache_write(&_cache, dst, src, len);
+  VERIFY(_flash_dev, 0);
+
+  xSemaphoreTake(_qspi_mutex, portMAX_DELAY);
+  uint32_t res = flash_cache_write(&_cache, dst, src, len);
+  xSemaphoreGive(_qspi_mutex);
+
+  return res;
 }
 
 uint32_t flash_qspi_read (void* dst, uint32_t src, uint32_t len)
 {
+  VERIFY(_flash_dev, 0);
+
+//  xSemaphoreTake(_qspi_mutex, portMAX_DELAY);
   flash_cache_read(&_cache, dst, src, len);
+//  xSemaphoreGive(_qspi_mutex);
+
   return len;
 }
 
 void flash_qspi_flush (void)
 {
+  VERIFY(_flash_dev,);
+
+  xSemaphoreTake(_qspi_mutex, portMAX_DELAY);
   flash_cache_flush(&_cache);
+  xSemaphoreGive(_qspi_mutex);
+}
+
+bool flash_qspi_chiperase (void)
+{
+  VERIFY(_flash_dev);
+
+  xSemaphoreTake(_qspi_mutex, portMAX_DELAY);
+  VERIFY(NRFX_SUCCESS == nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_ALL, 0));
+  xSemaphoreGive(_qspi_mutex);
+
+  return true;
 }
 
 void flash_qspi_init (void)
@@ -219,22 +246,18 @@ void flash_qspi_init (void)
     nrfx_qspi_cinstr_xfer(&cinstr_cfg, &_flash_dev->status_quad_enable, NULL);
 #endif
   }
+
+  // create mutex
+  _qspi_mutex = xSemaphoreCreateMutex();
 }
 
 //--------------------------------------------------------------------+
 // HAL for caching
 //--------------------------------------------------------------------+
-bool fal_qspi_erase (uint32_t addr)
+static bool fal_qspi_erase (uint32_t addr)
 {
   VERIFY(_flash_dev);
   VERIFY(NRFX_SUCCESS == nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_4KB, addr));
-  return true;
-}
-
-bool flash_qspi_chiperase (void)
-{
-  VERIFY(_flash_dev);
-  VERIFY(NRFX_SUCCESS == nrfx_qspi_erase(NRF_QSPI_ERASE_LEN_ALL, 0));
   return true;
 }
 
