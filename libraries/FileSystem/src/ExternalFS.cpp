@@ -157,6 +157,7 @@ bool FatFS::format (bool eraseall)
 {
   if ( eraseall )
   {
+    LOG_LV2("EFLASH", "full erasing");
     VERIFY(flash_qspi_chiperase());
   }
 

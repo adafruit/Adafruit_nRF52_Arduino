@@ -16,9 +16,6 @@
 #define ARDUINO_MAIN
 #include "Arduino.h"
 
-#define DBG_MEM_INFO              0
-#define DBG_MEM_INFO_INTERVAL     60000
-
 // DEBUG Level 1
 #if CFG_DEBUG
 // weak function to avoid compilation error with
@@ -61,22 +58,12 @@ static void loop_task(void* arg)
   {
     loop();
 
-    #ifdef NRF52840_XXAA
+#ifdef NRF52840_XXAA
     tud_cdc_write_flush();
-    #endif
+#endif
 
     // Serial events
     if (serialEvent && serialEventRun) serialEventRun();
-
-    #if CFG_DEBUG >= 2 && DBG_MEM_INFO
-    static uint32_t meminfo_ms = 0;
-    if (meminfo_ms + DBG_MEM_INFO_INTERVAL < millis())
-    {
-      meminfo_ms += millis();
-      Serial.printf("Memory Info (print every %d seconds)\n", DBG_MEM_INFO_INTERVAL/1000);
-      dbgMemInfo();
-    }
-    #endif
 
     // To compatible with most code where loop is not rtos-aware
     taskYIELD(); // vTaskDelay(1);

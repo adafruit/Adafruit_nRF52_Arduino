@@ -104,8 +104,12 @@ size_t USBSerial::write(const uint8_t *buffer, size_t size)
     size -= wrcount;
     buffer += wrcount;
 
-    // Write FIFO is full, flush and re-write
-    if ( size ) tud_cdc_write_flush();
+    // Write FIFO is full, flush and re-try
+    if ( size )
+    {
+      tud_cdc_write_flush();
+      delay(1);
+    }
   }
 }
 
