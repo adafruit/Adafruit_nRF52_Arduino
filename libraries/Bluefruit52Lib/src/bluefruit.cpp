@@ -722,7 +722,7 @@ void AdafruitBluefruit::printInfo(void)
   // Address
   Serial.printf(title_fmt, "Address");
   {
-  char const * type_str[] = { "Public", "Static", "Private Resolvable", "Private Non Resolvable" };
+    char const * type_str[] = { "Public", "Static", "Private Resolvable", "Private Non Resolvable" };
     uint8_t mac[6];
     uint8_t type = Gap.getAddr(mac);
 

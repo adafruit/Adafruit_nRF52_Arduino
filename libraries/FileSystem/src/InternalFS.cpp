@@ -66,6 +66,9 @@ static const char* dbg_strerr_lfs (int32_t err)
 {
   switch ( err )
   {
+    case LFS_ERR_OK:
+      return "LFS_ERR_OK";
+
     case LFS_ERR_IO:
       return "LFS_ERR_IO";
 
@@ -100,7 +103,11 @@ static const char* dbg_strerr_lfs (int32_t err)
       return "LFS_ERR_NOMEM";
 
     default:
-      return "Unlikely Error";
+    {
+      static char errcode[10];
+      sprintf(errcode, "%d", err);
+      return errcode;
+    }
   }
 }
 
@@ -236,6 +243,8 @@ BluefuritLib::File LittleFS::_open_file (char const *filepath, uint8_t mode)
   if ( flags )
   {
     lfs_file_t* fhdl = (lfs_file_t*) rtos_malloc(sizeof(lfs_file_t));
+    VERIFY(fhdl, file);
+
     int rc = lfs_file_open(&_lfs, fhdl, filepath, flags);
 
     if ( rc )

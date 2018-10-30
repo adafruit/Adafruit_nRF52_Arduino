@@ -38,7 +38,6 @@
 
 #include <Arduino.h>
 #include "ble.h"
-#include "ble_hci.h"
 #include "nrf_sdm.h"
 
 #include "utility/AdaMsg.h"

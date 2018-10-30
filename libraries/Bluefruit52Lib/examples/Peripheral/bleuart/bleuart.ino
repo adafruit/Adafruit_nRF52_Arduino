@@ -14,12 +14,9 @@
 #include <bluefruit.h>
 
 // BLE Service
-BLEDis  bledis;
-BLEUart bleuart;
-BLEBas  blebas;
-
-// Software Timer for blinking RED LED
-SoftwareTimer blinkTimer;
+BLEDis  bledis;  // device information
+BLEUart bleuart; // uart over ble
+BLEBas  blebas;  // battery
 
 void setup()
 {
@@ -28,10 +25,6 @@ void setup()
   
   Serial.println("Bluefruit52 BLEUART Example");
   Serial.println("---------------------------\n");
-
-  // Initialize blinkTimer for 1000 ms and start it
-  blinkTimer.begin(1000, blink_timer_callback);
-  blinkTimer.start();
 
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behaviour, but provided
@@ -123,6 +116,7 @@ void loop()
   waitForEvent();
 }
 
+// callback invoked when central connects
 void connect_callback(uint16_t conn_handle)
 {
   char central_name[32] = { 0 };
@@ -144,39 +138,4 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 
   Serial.println();
   Serial.println("Disconnected");
-}
-
-/**
- * Software Timer callback is invoked via a built-in FreeRTOS thread with
- * minimal stack size. Therefore it should be as simple as possible. If
- * a periodically heavy task is needed, please use Scheduler.startLoop() to
- * create a dedicated task for it.
- * 
- * More information http://www.freertos.org/RTOS-software-timer.html
- */
-void blink_timer_callback(TimerHandle_t xTimerID)
-{
-  (void) xTimerID;
-  digitalToggle(LED_RED);
-}
-
-/**
- * RTOS Idle callback is automatically invoked by FreeRTOS
- * when there are no active threads. E.g when loop() calls delay() and
- * there is no bluetooth or hw event. This is the ideal place to handle
- * background data.
- * 
- * NOTE: FreeRTOS is configured as tickless idle mode. After this callback
- * is executed, if there is time, freeRTOS kernel will go into low power mode.
- * Therefore waitForEvent() should not be called in this callback.
- * http://www.freertos.org/low-power-tickless-rtos.html
- * 
- * WARNING: This function MUST NOT call any blocking FreeRTOS API 
- * such as delay(), xSemaphoreTake() etc ... for more information
- * http://www.freertos.org/a00016.html
- */
-void rtos_idle_callback(void)
-{
-  // Don't call any other FreeRTOS blocking API()
-  // Perform background task(s) here
 }

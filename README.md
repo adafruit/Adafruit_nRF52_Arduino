@@ -142,8 +142,10 @@ but enter the `MSDEnable` command.
 This core is based on [Arduino-nRF5](https://github.com/sandeepmistry/arduino-nRF5) by Sandeep Mistry,
 which in turn is based on the [Arduino SAMD Core](https://github.com/arduino/ArduinoCore-samd).
 
-The following repos are used:
+The following libraries are used:
 
 - adafruit-nrfutil is based on Nordic Semiconductor ASA's [pc-nrfutil](https://github.com/NordicSemiconductor/pc-nrfutil)
 - [tinyusb](https://github.com/hathach/tinyusb) as usb stack
-- [nrfx](https://github.com/NordicSemiconductor/nrfx) for driver
+- [nrfx](https://github.com/NordicSemiconductor/nrfx) for peripherals driver
+- [littlefs](https://github.com/ARMmbed/littlefs) for internal file system
+- [fatfs by elm-chan](http://elm-chan.org/fsw/ff/00index_e.html) for external file system

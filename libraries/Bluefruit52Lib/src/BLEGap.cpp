@@ -181,7 +181,7 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
 
   xSemaphoreTake(peer->pair_sem, portMAX_DELAY);
 
-  // Failed to pair using centra stored keys, this happens when
+// Failed to pair using central stored keys, this happens when
   // Prph delete bonds while we did not --> let's remove the obsolete keyfile and move on
   if ( !peer->paired && (cntr_ediv != 0xffff) )
   {
@@ -333,7 +333,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
     case BLE_GAP_EVT_AUTH_STATUS:
     {
-      // Bonding process completed
+      // Pairing process completed
       ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
 
       // Pairing succeeded --> save encryption keys ( Bonding )
@@ -355,8 +355,9 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
     case BLE_GAP_EVT_SEC_INFO_REQUEST:
     {
-      // Reconnection. If bonded previously, Central will ask for stored keys.
-      // return security information. Otherwise NULL
+      // Central ask for the stored keys.
+      // - load key and return if bonded previously.
+      // - Else return NULL --> Initiate key exchange
       ble_gap_evt_sec_info_request_t* sec_req = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
 
       bond_data_t bdata;
@@ -379,10 +380,10 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       const ble_gap_conn_sec_t* conn_sec = &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
 
       // Connection is secured (paired)
+      // Occurs if bonded + reconnection, or we initiate the pairing process
       if ( !( conn_sec->sec_mode.sm == 1 && conn_sec->sec_mode.lv == 1) )
       {
-        // Previously bonded --> secure by re-connection process
-        // --> Load & Set Sys Attr (Apply Service Context)
+        // Previously bonded --> secure by re-connection process --> Load & Set Sys Attr (Apply Service Context)
         // Else Init Sys Attr
         bond_load_cccd(peer->role, conn_hdl, peer->ediv);
 
@@ -395,10 +396,9 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
     case BLE_GAP_EVT_PASSKEY_DISPLAY:
     {
-      //      ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
-      //
-      //      PRINT_INT(passkey_display->match_request);
-      //      PRINT_BUFFER(passkey_display->passkey, 6);
+      // ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
+      // PRINT_INT(passkey_display->match_request);
+      // PRINT_BUFFER(passkey_display->passkey, 6);
 
       // sd_ble_gap_auth_key_reply
     }
