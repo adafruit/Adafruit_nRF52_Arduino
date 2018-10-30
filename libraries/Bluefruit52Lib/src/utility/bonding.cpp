@@ -39,6 +39,14 @@
 #include "bonding.h"
 #include "bluefruit.h"
 
+#define BOND_DEBUG        0
+
+#if (CFG_DEBUG == 1 && BOND_DEBUG == 1) || (CFG_DEBUG >= 2)
+#define BOND_LOG(...)   LOG_LV1("BOND", __VA_ARGS__)
+#else
+#define BOND_LOG(...)
+#endif
+
 /*------------------------------------------------------------------*/
 /* Bond Key is saved in following layout
  * - Bond Data : 80 bytes
@@ -99,7 +107,7 @@ static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_data_t* bd
   file.write(namelen + 1);
   file.write((uint8_t*) devname, namelen + 1);
 
-  LOG_LV2("BOND", "Keys for \"%s\" is saved to file %s ( %d bytes )", devname, filename, file.size());
+  BOND_LOG("Saved keys for \"%s\" to file %s ( %d bytes )", devname, filename, file.size());
 
   file.close();
 }
@@ -131,7 +139,7 @@ bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata)
   file.read(bdata, keylen);
   file.close();
 
-  LOG_LV2("BOND", "Load Keys from file %s", filename);
+  BOND_LOG("Loaded keys from file %s", filename);
 
   return true;
 }
@@ -163,8 +171,7 @@ static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
   file.write((uint8_t) len);
   file.write(sys_attr, len);
 
-  LOG_LV2("BOND", "CCCD setting is saved to file %s ( offset = %d, len = %d bytes )", filename, file.size() - (len + 1),
-          len);
+  BOND_LOG("Saved CCCD setting to file %s ( offset = %d, len = %d bytes )", filename, file.size() - (len + 1), len);
 
   file.close();
 }
@@ -183,35 +190,37 @@ bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
 {
   bool loaded = false;
 
-  char filename[BOND_FNAME_LEN];
-  get_fname(filename, role, ediv);
-
-  File file(filename, FILE_READ, InternalFS);
-  VERIFY(file);
-
-  if ( file )
+  if ( ediv != 0xFFFF )
   {
-    file.seek(file.read() + file.position());    // skip key
-    file.seek(file.read() + file.position());    // skip name
+    char filename[BOND_FNAME_LEN];
+    get_fname(filename, role, ediv);
 
-    uint16_t len = file.read();
+    PRINT_STR(filename);
 
-    if ( len )
+    File file(filename, FILE_READ, InternalFS);
+
+    if ( file )
     {
-      uint8_t sys_attr[len];
+      file.seek(file.read() + file.position());    // skip key
+      file.seek(file.read() + file.position());    // skip name
 
-      file.read(sys_attr, len);
-
-      if ( ERROR_NONE == sd_ble_gatts_sys_attr_set(cond_hdl, sys_attr, len, SVC_CONTEXT_FLAG) )
+      int len = file.read();
+      if ( len > 0 )
       {
-        loaded = true;
-        LOG_LV2("BOND", "Load CCCD from file %s ( offset = %d, len = %d bytes )", filename, file.size() - (len + 1),
-                len);
+        uint8_t sys_attr[len];
+
+        file.read(sys_attr, len);
+
+        if ( ERROR_NONE == sd_ble_gatts_sys_attr_set(cond_hdl, sys_attr, len, SVC_CONTEXT_FLAG) )
+        {
+          loaded = true;
+          BOND_LOG("Loaded CCCD from file %s ( offset = %d, len = %d bytes )", filename, file.size() - (len + 1), len);
+        }
       }
     }
-  }
 
-  file.close();
+    file.close();
+  }
 
   if ( !loaded )
   {
@@ -233,18 +242,20 @@ void bond_print_list(uint8_t role)
   {
     file.seek(file.read() + file.position());    // skip key
 
-    uint8_t len = file.read();
+    int len = file.read();
+    if ( len > 0 )
+    {
+      char devname[len];
+      file.read(devname, len);
 
-    char devname[len];
-    file.read(devname, len);
-
-    cprintf("  %s : %s (%d bytes)\n", file.name(), devname, file.size());
-
+      cprintf("  %s : %s (%d bytes)\n", file.name(), devname, file.size());
+    }
     file.close();
   }
 
   cprintf("\n");
 
+  file.close();
   dir.close();
 }
 
@@ -259,7 +270,7 @@ bool bond_find_cntr(ble_gap_addr_t* addr, bond_data_t* bdata)
   while ( (file = dir.openNextFile(FILE_READ)) )
   {
     // Read bond data of each stored file
-    uint8_t keylen = file.read();
+    int keylen = file.read();
     if ( keylen == sizeof(bond_data_t) )
     {
       file.read((uint8_t*) bdata, keylen);
@@ -280,6 +291,7 @@ bool bond_find_cntr(ble_gap_addr_t* addr, bond_data_t* bdata)
     if ( found ) break;
   }
 
+  file.close();
   dir.close();
 
   return found;

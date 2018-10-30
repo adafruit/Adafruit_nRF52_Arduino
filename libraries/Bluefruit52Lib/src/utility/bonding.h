@@ -38,11 +38,11 @@
 
 #include "bluefruit_common.h"
 
-#define BOND_DIR_PRPH             "/adafruit/bond_prph"
-#define BOND_DIR_CNTR             "/adafruit/bond_cntr"
+#define BOND_DIR_PRPH     "/adafruit/bond_prph"
+#define BOND_DIR_CNTR     "/adafruit/bond_cntr"
 
-#define BOND_FNAME_PRPH           BOND_DIR_PRPH "/%04x"
-#define BOND_FNAME_CNTR           BOND_DIR_CNTR "/%04x"
+#define BOND_FNAME_PRPH   BOND_DIR_PRPH "/%04x"
+#define BOND_FNAME_CNTR   BOND_DIR_CNTR "/%04x"
 
 // Shared keys with bonded device, size = 80 bytes
 typedef struct
