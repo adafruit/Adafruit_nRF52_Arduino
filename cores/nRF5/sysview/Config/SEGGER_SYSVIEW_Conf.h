@@ -52,14 +52,14 @@
 *                                                                    *
 **********************************************************************
 *                                                                    *
-*       SystemView version: V2.50                                    *
+*       SystemView version: V2.52d                                    *
 *                                                                    *
 **********************************************************************
 -------------------------- END-OF-HEADER -----------------------------
 
 File    : SEGGER_SYSVIEW_Conf.h
 Purpose : SEGGER SystemView configuration.
-Revision: $Rev: 6249 $
+Revision: $Rev: 12706 $
 */
 
 #ifndef SEGGER_SYSVIEW_CONF_H
@@ -79,8 +79,8 @@ Revision: $Rev: 6249 $
 #define SEGGER_SYSVIEW_CORE_CM3     2 // Cortex-M3/M4/M7
 #define SEGGER_SYSVIEW_CORE_RX      3 // Renesas RX
 
-#if (defined __SES_ARM) || (defined __CROSSWORKS_ARM) || (defined __GNUC__)
-  #ifdef __ARM_ARCH_6M__
+#if (defined __SES_ARM) || (defined __CROSSWORKS_ARM) || (defined __GNUC__) || (defined __clang__)
+  #if (defined __ARM_ARCH_6M__) || (defined __ARM_ARCH_8M_BASE__)
     #define SEGGER_SYSVIEW_CORE SEGGER_SYSVIEW_CORE_CM0
   #elif (defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__))
     #define SEGGER_SYSVIEW_CORE SEGGER_SYSVIEW_CORE_CM3
@@ -123,7 +123,7 @@ Revision: $Rev: 6249 $
 *
 *       SystemView buffer configuration
 */
-#define SEGGER_SYSVIEW_RTT_BUFFER_SIZE      2*1024                                // Number of bytes that SystemView uses for the buffer.
+#define SEGGER_SYSVIEW_RTT_BUFFER_SIZE      1024                                // Number of bytes that SystemView uses for the buffer.
 #define SEGGER_SYSVIEW_RTT_CHANNEL          1                                   // The RTT channel that SystemView will use. 0: Auto selection
 
 #define SEGGER_SYSVIEW_USE_STATIC_BUFFER    1                                   // Use a static buffer to generate events instead of a buffer on the stack
@@ -157,7 +157,11 @@ Revision: $Rev: 6249 $
   #define SEGGER_SYSVIEW_GET_INTERRUPT_ID()   ((*(U32 *)(0xE000ED04)) & 0x1FF)  // Get the currently active interrupt Id. (i.e. read Cortex-M ICSR[8:0] = active vector)
 #elif SEGGER_SYSVIEW_CORE == SEGGER_SYSVIEW_CORE_CM0
   #if defined(__ICCARM__)
+    #if (__VER__ > 6100000)
     #define SEGGER_SYSVIEW_GET_INTERRUPT_ID()   (__get_IPSR())                  // Workaround for IAR, which might do a byte-access to 0xE000ED04. Read IPSR instead.
+    #else
+      #define SEGGER_SYSVIEW_GET_INTERRUPT_ID()   ((*(U32 *)(0xE000ED04)) & 0x3F) // Older versions of IAR do not include __get_IPSR, but might also not optimize to byte-access.
+    #endif
   #else
     #define SEGGER_SYSVIEW_GET_INTERRUPT_ID()   ((*(U32 *)(0xE000ED04)) & 0x3F) // Get the currently active interrupt Id. (i.e. read Cortex-M ICSR[5:0] = active vector)
   #endif
