@@ -196,7 +196,7 @@ bool bond_save_cccd (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
   return true;
 }
 
-bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
+bool bond_load_cccd(uint8_t role, uint16_t conn_hdl, uint16_t ediv)
 {
   bool loaded = false;
 
@@ -219,7 +219,7 @@ bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
 
         file.read(sys_attr, len);
 
-        if ( ERROR_NONE == sd_ble_gatts_sys_attr_set(cond_hdl, sys_attr, len, SVC_CONTEXT_FLAG) )
+        if ( ERROR_NONE == sd_ble_gatts_sys_attr_set(conn_hdl, sys_attr, len, SVC_CONTEXT_FLAG) )
         {
           loaded = true;
           BOND_LOG("Loaded CCCD from file %s ( offset = %d, len = %d bytes )", filename, file.size() - (len + 1), len);
@@ -233,7 +233,6 @@ bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
   if ( !loaded )
   {
     LOG_LV1("BOND", "CCCD setting not found");
-    sd_ble_gatts_sys_attr_set(cond_hdl, NULL, 0, 0);
   }
 
   return loaded;

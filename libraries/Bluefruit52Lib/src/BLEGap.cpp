@@ -181,7 +181,7 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
 
   xSemaphoreTake(peer->pair_sem, portMAX_DELAY);
 
-// Failed to pair using central stored keys, this happens when
+  // Failed to pair using central stored keys, this happens when
   // Prph delete bonds while we did not --> let's remove the obsolete keyfile and move on
   if ( !peer->paired && (cntr_ediv != 0xffff) )
   {
@@ -383,9 +383,12 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       // Occurs if bonded + reconnection, or we initiate the pairing process
       if ( !( conn_sec->sec_mode.sm == 1 && conn_sec->sec_mode.lv == 1) )
       {
-        // Previously bonded --> secure by re-connection process --> Load & Set Sys Attr (Apply Service Context)
-        // Else Init Sys Attr
-        bond_load_cccd(peer->role, conn_hdl, peer->ediv);
+        // Previously bonded --> secure by re-connection process --> Load & Set SysAttr (Apply Service Context)
+        // Else Init SysAttr (first bonded)
+        if ( !bond_load_cccd(peer->role, conn_hdl, peer->ediv) )
+        {
+          sd_ble_gatts_sys_attr_set(conn_hdl, NULL, 0, 0);
+        }
 
         peer->paired = true;
       }
