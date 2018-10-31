@@ -108,7 +108,6 @@ size_t USBSerial::write(const uint8_t *buffer, size_t size)
     if ( size )
     {
       tud_cdc_write_flush();
-      delay(1);
     }
   }
 }
