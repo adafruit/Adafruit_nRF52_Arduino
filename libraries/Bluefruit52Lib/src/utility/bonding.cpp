@@ -63,13 +63,19 @@ static void get_fname (char* fname, uint8_t role, uint16_t ediv)
   sprintf(fname, (role == BLE_GAP_ROLE_PERIPH) ? BOND_FNAME_PRPH : BOND_FNAME_CNTR, ediv);
 }
 
-static bool skip_data_field(File* f)
+static bool bdata_skip_field(File* file)
 {
-  int len = f->read();
+  int len = file->read();
   VERIFY(len > 0);
 
-  f->seek(len + f->position());
+  file->seek(len + file->position());
   return true;
+}
+
+static void bdata_write(File* file, void const* buffer, uint16_t bufsize)
+{
+  file->write( (uint8_t) bufsize );
+  file->write( (uint8_t const*) buffer, bufsize);
 }
 
 void bond_init(void)
@@ -98,8 +104,7 @@ static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_keys_t* bk
   VERIFY(file,);
 
   //------------- save keys -------------//
-  file.write(sizeof(bond_keys_t));
-  file.write((uint8_t*) bkeys, sizeof(bond_keys_t));
+  bdata_write(&file, bkeys, sizeof(bond_keys_t));
 
   //------------- save device name -------------//
   char devname[CFG_MAX_DEVNAME_LEN] = { 0 };
@@ -112,9 +117,7 @@ static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_keys_t* bk
     sprintf(devname, "%02X:%02X:%02X:%02X:%02X:%02X", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
   }
 
-  uint8_t const namelen = strlen(devname);
-  file.write(namelen + 1);
-  file.write((uint8_t*) devname, namelen + 1);
+  bdata_write(&file, devname, strlen(devname)+1); // save also null char
 
   BOND_LOG("Saved keys for \"%s\" to file %s ( %d bytes )", devname, filename, file.size());
 
@@ -161,10 +164,9 @@ static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
 {
   uint16_t len=0;
   sd_ble_gatts_sys_attr_get(conn_hdl, NULL, &len, SVC_CONTEXT_FLAG);
+  VERIFY(len, );
 
   uint8_t sys_attr[len];
-  VERIFY( sys_attr, );
-
   VERIFY_STATUS(sd_ble_gatts_sys_attr_get(conn_hdl, sys_attr, &len, SVC_CONTEXT_FLAG),);
 
   char filename[BOND_FNAME_LEN];
@@ -173,12 +175,11 @@ static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
   File file(filename, FILE_WRITE, InternalFS);
   VERIFY(file,);
 
-  file.seek(0);
-  file.seek(file.read() + file.position());    // skip key
-  file.seek(file.read() + file.position());    // skip name
+  file.seek(0); // write mode start at the end, seek to beginning
+  bdata_skip_field(&file); // skip key
+  bdata_skip_field(&file); // skip name
 
-  file.write((uint8_t) len);
-  file.write(sys_attr, len);
+  bdata_write(&file, sys_attr, len);
 
   BOND_LOG("Saved CCCD setting to file %s ( offset = %d, len = %d bytes )", filename, file.size() - (len + 1), len);
 
@@ -204,14 +205,12 @@ bool bond_load_cccd(uint8_t role, uint16_t cond_hdl, uint16_t ediv)
     char filename[BOND_FNAME_LEN];
     get_fname(filename, role, ediv);
 
-    PRINT_STR(filename);
-
     File file(filename, FILE_READ, InternalFS);
 
     if ( file )
     {
-      file.seek(file.read() + file.position());    // skip key
-      file.seek(file.read() + file.position());    // skip name
+      bdata_skip_field(&file); // skip key
+      bdata_skip_field(&file); // skip name
 
       int len = file.read();
       if ( len > 0 )
@@ -249,7 +248,7 @@ void bond_print_list(uint8_t role)
 
   while ( (file = dir.openNextFile(FILE_READ)) )
   {
-    if ( skip_data_field(&file) ) // skip key
+    if ( !file.isDirectory() && bdata_skip_field(&file) ) // skip key
     {
       int len = file.read();
       if ( len > 0 )
@@ -260,6 +259,7 @@ void bond_print_list(uint8_t role)
         cprintf("  %s : %s (%d bytes)\n", file.name(), devname, file.size());
       }
     }
+
     file.close();
   }
 
