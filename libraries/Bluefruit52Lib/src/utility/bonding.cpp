@@ -63,6 +63,15 @@ static void get_fname (char* fname, uint8_t role, uint16_t ediv)
   sprintf(fname, (role == BLE_GAP_ROLE_PERIPH) ? BOND_FNAME_PRPH : BOND_FNAME_CNTR, ediv);
 }
 
+static bool skip_data_field(File* f)
+{
+  int len = f->read();
+  VERIFY(len > 0);
+
+  f->seek(len + f->position());
+  return true;
+}
+
 void bond_init(void)
 {
   InternalFS.begin();
@@ -75,9 +84,9 @@ void bond_init(void)
 /*------------------------------------------------------------------*/
 /* Keys
  *------------------------------------------------------------------*/
-static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
+static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_keys_t* bkeys)
 {
-  uint16_t const ediv = (role == BLE_GAP_ROLE_PERIPH) ? bdata->own_enc.master_id.ediv : bdata->peer_enc.master_id.ediv;
+  uint16_t const ediv = (role == BLE_GAP_ROLE_PERIPH) ? bkeys->own_enc.master_id.ediv : bkeys->peer_enc.master_id.ediv;
 
   char filename[BOND_FNAME_LEN];
   get_fname(filename, role, ediv);
@@ -89,8 +98,8 @@ static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_data_t* bd
   VERIFY(file,);
 
   //------------- save keys -------------//
-  file.write(sizeof(bond_data_t));
-  file.write((uint8_t*) bdata, sizeof(bond_data_t));
+  file.write(sizeof(bond_keys_t));
+  file.write((uint8_t*) bkeys, sizeof(bond_keys_t));
 
   //------------- save device name -------------//
   char devname[CFG_MAX_DEVNAME_LEN] = { 0 };
@@ -99,7 +108,7 @@ static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_data_t* bd
   // If couldn't get devname then use peer mac address
   if ( !devname[0] )
   {
-    uint8_t* mac = bdata->peer_id.id_addr_info.addr;
+    uint8_t* mac = bkeys->peer_id.id_addr_info.addr;
     sprintf(devname, "%02X:%02X:%02X:%02X:%02X:%02X", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
   }
 
@@ -112,12 +121,12 @@ static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_data_t* bd
   file.close();
 }
 
-bool bond_save_keys (uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
+bool bond_save_keys (uint8_t role, uint16_t conn_hdl, bond_keys_t* bkeys)
 {
-  uint8_t* buf = (uint8_t*) rtos_malloc( sizeof(bond_data_t) );
+  uint8_t* buf = (uint8_t*) rtos_malloc( sizeof(bond_keys_t) );
   VERIFY(buf);
 
-  memcpy(buf, bdata, sizeof(bond_data_t));
+  memcpy(buf, bkeys, sizeof(bond_keys_t));
 
   // queue to execute in Ada Callback thread
   ada_callback(buf, bond_save_keys_dfr, role, conn_hdl, buf);
@@ -125,7 +134,7 @@ bool bond_save_keys (uint8_t role, uint16_t conn_hdl, bond_data_t* bdata)
   return true;
 }
 
-bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata)
+bool bond_load_keys(uint8_t role, uint16_t ediv, bond_keys_t* bkeys)
 {
   char filename[BOND_FNAME_LEN];
   get_fname(filename, role, ediv);
@@ -134,9 +143,9 @@ bool bond_load_keys(uint8_t role, uint16_t ediv, bond_data_t* bdata)
   VERIFY(file);
 
   int keylen = file.read();
-  VERIFY(keylen == sizeof(bond_data_t));
+  VERIFY(keylen == sizeof(bond_keys_t));
 
-  file.read(bdata, keylen);
+  file.read(bkeys, keylen);
   file.close();
 
   BOND_LOG("Loaded keys from file %s", filename);
@@ -240,15 +249,16 @@ void bond_print_list(uint8_t role)
 
   while ( (file = dir.openNextFile(FILE_READ)) )
   {
-    file.seek(file.read() + file.position());    // skip key
-
-    int len = file.read();
-    if ( len > 0 )
+    if ( skip_data_field(&file) ) // skip key
     {
-      char devname[len];
-      file.read(devname, len);
+      int len = file.read();
+      if ( len > 0 )
+      {
+        char devname[len];
+        file.read(devname, len);
 
-      cprintf("  %s : %s (%d bytes)\n", file.name(), devname, file.size());
+        cprintf("  %s : %s (%d bytes)\n", file.name(), devname, file.size());
+      }
     }
     file.close();
   }
@@ -260,7 +270,7 @@ void bond_print_list(uint8_t role)
 }
 
 
-bool bond_find_cntr(ble_gap_addr_t* addr, bond_data_t* bdata)
+bool bond_find_cntr(ble_gap_addr_t* addr, bond_keys_t* bkeys)
 {
   bool found = false;
 
@@ -271,12 +281,12 @@ bool bond_find_cntr(ble_gap_addr_t* addr, bond_data_t* bdata)
   {
     // Read bond data of each stored file
     int keylen = file.read();
-    if ( keylen == sizeof(bond_data_t) )
+    if ( keylen == sizeof(bond_keys_t) )
     {
-      file.read((uint8_t*) bdata, keylen);
+      file.read((uint8_t*) bkeys, keylen);
 
       // Compare static address
-      if ( !memcmp(addr->addr, bdata->peer_id.id_addr_info.addr, 6) )
+      if ( !memcmp(addr->addr, bkeys->peer_id.id_addr_info.addr, 6) )
       {
         found = true;
       }

@@ -159,13 +159,13 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
   if ( peer->role == BLE_GAP_ROLE_CENTRAL )
   {
     // Check to see if we did bonded with current prph previously
-    bond_data_t bdata;
+    bond_keys_t bkeys;
 
-    if ( bond_find_cntr(&peer->addr, &bdata) )
+    if ( bond_find_cntr(&peer->addr, &bkeys) )
     {
-      cntr_ediv = bdata.peer_enc.master_id.ediv;
+      cntr_ediv = bkeys.peer_enc.master_id.ediv;
       LOG_LV2("BOND", "Load Keys from file " BOND_FNAME_CNTR, cntr_ediv);
-      VERIFY_STATUS( sd_ble_gap_encrypt(conn_hdl, &bdata.peer_enc.master_id, &bdata.peer_enc.enc_info), false);
+      VERIFY_STATUS( sd_ble_gap_encrypt(conn_hdl, &bkeys.peer_enc.master_id, &bkeys.peer_enc.enc_info), false);
 
     }else
     {
@@ -284,11 +284,11 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
     {
       // Pairing in progress, Peer asking for our info
-      peer->bond_data = (bond_data_t*) rtos_malloc( sizeof(bond_data_t));
-      VERIFY(peer->bond_data, );
+      peer->bond_keys = (bond_keys_t*) rtos_malloc( sizeof(bond_keys_t));
+      VERIFY(peer->bond_keys, );
 
-      bond_data_t* bdata = peer->bond_data;
-      memclr(bdata, sizeof(bond_data_t));
+      bond_keys_t* bkeys = peer->bond_keys;
+      memclr(bkeys, sizeof(bond_keys_t));
 
       peer->ediv = 0xFFFF; // invalid value for ediv
 
@@ -309,15 +309,15 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       ble_gap_sec_keyset_t keyset =
       {
           .keys_own = {
-              .p_enc_key  = &bdata->own_enc,
+              .p_enc_key  = &bkeys->own_enc,
               .p_id_key   = NULL,
               .p_sign_key = NULL,
               .p_pk       = NULL
           },
 
           .keys_peer = {
-              .p_enc_key  = &bdata->peer_enc,
-              .p_id_key   = &bdata->peer_id,
+              .p_enc_key  = &bkeys->peer_enc,
+              .p_id_key   = &bkeys->peer_id,
               .p_sign_key = NULL,
               .p_pk       = NULL
           }
@@ -340,16 +340,16 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
         peer->paired = true;
-        peer->ediv   = peer->bond_data->own_enc.master_id.ediv;
+        peer->ediv   = peer->bond_keys->own_enc.master_id.ediv;
 
-        bond_save_keys(peer->role, conn_hdl, peer->bond_data);
+        bond_save_keys(peer->role, conn_hdl, peer->bond_keys);
       }else
       {
         PRINT_HEX(status->auth_status);
       }
 
-      rtos_free(peer->bond_data);
-      peer->bond_data = NULL;
+      rtos_free(peer->bond_keys);
+      peer->bond_keys = NULL;
     }
     break;
 
@@ -360,14 +360,14 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       // - Else return NULL --> Initiate key exchange
       ble_gap_evt_sec_info_request_t* sec_req = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
 
-      bond_data_t bdata;
-      varclr(&bdata);
+      bond_keys_t bkeys;
+      varclr(&bkeys);
 
-      if ( bond_load_keys(peer->role, sec_req->master_id.ediv, &bdata) )
+      if ( bond_load_keys(peer->role, sec_req->master_id.ediv, &bkeys) )
       {
-        sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &bdata.own_enc.enc_info, &bdata.peer_id.id_info, NULL);
+        sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
 
-        peer->ediv   = bdata.own_enc.master_id.ediv;
+        peer->ediv   = bkeys.own_enc.master_id.ediv;
       } else
       {
         sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
