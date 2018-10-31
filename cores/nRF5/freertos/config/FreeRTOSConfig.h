@@ -76,7 +76,7 @@
 #define configUSE_IDLE_HOOK                                      1
 #define configUSE_TICK_HOOK                                      0
 #define configCHECK_FOR_STACK_OVERFLOW                           1
-#define configUSE_MALLOC_FAILED_HOOK                             (CFG_DEBUG > 0 ? 1 : 0)
+#define configUSE_MALLOC_FAILED_HOOK                             1
 
 /* Run time and task stats gathering related definitions. */
 #define configGENERATE_RUN_TIME_STATS                            0

@@ -51,6 +51,7 @@ static void loop_task(void* arg)
   // If Serial is not begin(), call it to avoid hard fault
   if ( !Serial ) Serial.begin(115200);
   dbgPrintVersion();
+  // dbgMemInfo();
   Bluefruit_printInfo();
 #endif
 
@@ -64,9 +65,6 @@ static void loop_task(void* arg)
 
     // Serial events
     if (serialEvent && serialEventRun) serialEventRun();
-
-    // To compatible with most code where loop is not rtos-aware
-    taskYIELD(); // vTaskDelay(1);
   }
 }
 

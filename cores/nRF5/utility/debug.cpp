@@ -71,16 +71,6 @@ int cprintf(const char * format, ...)
   return len;
 }
 
-void vApplicationMallocFailedHook(void)
-{
-  cprintf("Failed to Malloc");
-}
-
-void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
-{
-  cprintf("%s Stack Overflow !!!", pcTaskName);
-}
-
 int dbgHeapTotal(void)
 {
   return ((uint32_t) __HeapLimit) - ((uint32_t) __HeapBase);

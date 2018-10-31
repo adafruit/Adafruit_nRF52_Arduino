@@ -43,7 +43,6 @@ void yield(void)
   taskYIELD();
 }
 
-
 static void _redirect_task(void* arg)
 {
   SchedulerRTOS::taskfunc_t taskfunc = (SchedulerRTOS::taskfunc_t) arg;
@@ -51,9 +50,6 @@ static void _redirect_task(void* arg)
   while(1)
   {
     taskfunc();
-
-    // yield() anyway just in case user forgot
-    taskYIELD();
   }
 }
 
@@ -90,6 +86,16 @@ bool SchedulerRTOS::startLoop(taskfunc_t task, const char* name, uint32_t stack_
 
 extern "C"
 {
+
+void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
+{
+  LOG_LV1("RTOS", "%s Stack Overflow !!!", pcTaskName);
+}
+
+void vApplicationMallocFailedHook(void)
+{
+  LOG_LV1("RTOS", "Failed to Malloc");
+}
 
 void vApplicationIdleHook( void )
 {
