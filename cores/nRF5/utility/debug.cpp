@@ -282,7 +282,7 @@ void dbgDumpMemoryCFormat(const char* str, void const *buf, uint16_t count)
 #include "ble_hci.h"
 
 /*------------------------------------------------------------------*/
-/* Event String
+/* BLE Event String
  *------------------------------------------------------------------*/
 static lookup_entry_t const _strevt_lookup[] =
 {

@@ -801,6 +801,7 @@ void adafruit_soc_task(void* arg)
             // Flash
             case NRF_EVT_FLASH_OPERATION_SUCCESS:
             case NRF_EVT_FLASH_OPERATION_ERROR:
+              LOG_LV1("SOC", "NRF_EVT_FLASH_OPERATION_%s", soc_evt == NRF_EVT_FLASH_OPERATION_SUCCESS ? "SUCCESS" : "ERROR");
               if ( flash_nrf5x_event_cb ) flash_nrf5x_event_cb(soc_evt);
             break;
 

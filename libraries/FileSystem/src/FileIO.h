@@ -58,6 +58,13 @@ class File: public Stream
 
     virtual size_t write (uint8_t ch);
     virtual size_t write (uint8_t const *buf, size_t size);
+    size_t write(const char *str) {
+      if (str == NULL) return 0;
+      return write((const uint8_t *)str, strlen(str));
+    }
+    size_t write(const char *buffer, size_t size) {
+      return write((const uint8_t *)buffer, size);
+    }
 
     virtual int read (void);
     int read (void *buf, uint16_t nbyte);
@@ -78,8 +85,6 @@ class File: public Stream
     bool isDirectory (void);
     File openNextFile (uint8_t mode = FILE_READ);
     void rewindDirectory (void);
-
-    using Print::write;
 
   private:
     FileSystemClass* _fs;

@@ -57,7 +57,9 @@ public:
 	virtual void flush(void);
 	virtual size_t write(uint8_t);
 	virtual size_t write(const uint8_t *buffer, size_t size);
-	using Print::write; // pull in write(str) from Print
+	size_t write(const char *buffer, size_t size) {
+	  return write((const uint8_t *)buffer, size);
+	}
 	operator bool();
 
 	size_t readBytes(char *buffer, size_t length);
