@@ -418,14 +418,14 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   VERIFY(_ble_event_sem, NRF_ERROR_NO_MEM);
 
   TaskHandle_t ble_task_hdl;
-  xTaskCreate( adafruit_ble_task, "SD BLE", CFG_BLE_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &ble_task_hdl);
+  xTaskCreate( adafruit_ble_task, "BLE", CFG_BLE_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &ble_task_hdl);
 
   // Create RTOS Semaphore & Task for SOC Event
   _soc_event_sem = xSemaphoreCreateBinary();
   VERIFY(_soc_event_sem, NRF_ERROR_NO_MEM);
 
   TaskHandle_t soc_task_hdl;
-  xTaskCreate( adafruit_soc_task, "SD SOC", CFG_SOC_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &soc_task_hdl);
+  xTaskCreate( adafruit_soc_task, "SOC", CFG_SOC_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &soc_task_hdl);
 
   NVIC_SetPriority(SD_EVT_IRQn, 6);
   NVIC_EnableIRQ(SD_EVT_IRQn);
@@ -629,142 +629,6 @@ bool AdafruitBluefruit::setPIN(const char* pin)
 }
 )
 
-void Bluefruit_printInfo(void)
-{
-  Bluefruit.printInfo();
-}
-
-void AdafruitBluefruit::printInfo(void)
-{
-  // Skip if Serial is not initialised
-  if ( !Serial ) return;
-
-  // Skip if Bluefruit.begin() is not called
-  if ( _ble_event_sem == NULL ) return;
-
-  Serial.println("--------- SoftDevice Config ---------");
-
-  char const * title_fmt = "%-16s: ";
-
-  /*------------- SoftDevice Config -------------*/
-  // Max uuid128
-  Serial.printf(title_fmt, "Max UUID128");
-  Serial.println(_sd_cfg.uuid128_max);
-
-  // ATTR Table Size
-  Serial.printf(title_fmt, "ATTR Table Size");
-  Serial.println(_sd_cfg.attr_table_size);
-
-  // Service Changed
-  Serial.printf(title_fmt, "Service Changed");
-  Serial.println(_sd_cfg.service_changed);
-
-  if ( _prph_count )
-  {
-    Serial.println("Peripheral Connect Setting");
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Max MTU");
-    Serial.println(Gap._cfg_prph.mtu_max);
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Event Length");
-    Serial.println(Gap._cfg_prph.event_len);
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "HVN Queue Size");
-    Serial.println(Gap._cfg_prph.hvn_tx_qsize);
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "WrCmd Queue Size");
-    Serial.println(Gap._cfg_prph.wr_cmd_qsize);
-  }
-
-  if ( _central_count )
-  {
-    Serial.println("Central Connect Setting");
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Max MTU");
-    Serial.println(Gap._cfg_central.mtu_max);
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Event Length");
-    Serial.println(Gap._cfg_central.event_len);
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "HVN Queue Size");
-    Serial.println(Gap._cfg_central.hvn_tx_qsize);
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "WrCmd Queue Size");
-    Serial.println(Gap._cfg_central.wr_cmd_qsize);
-  }
-
-  /*------------- Settings -------------*/
-  Serial.println("\n--------- BLE Settings ---------");
-  // Name
-  Serial.printf(title_fmt, "Name");
-  {
-    char name[32];
-    memclr(name, sizeof(name));
-    getName(name, sizeof(name));
-    Serial.printf(name);
-  }
-  Serial.println();
-
-  // Max Connections
-  Serial.printf(title_fmt, "Max Connections");
-  Serial.printf("Peripheral = %d, ", _prph_count ? 1 : 0);
-  Serial.printf("Central = %d ", _central_count ? BLE_CENTRAL_MAX_CONN : 0);
-  Serial.println();
-
-  // Address
-  Serial.printf(title_fmt, "Address");
-  {
-    char const * type_str[] = { "Public", "Static", "Private Resolvable", "Private Non Resolvable" };
-    uint8_t mac[6];
-    uint8_t type = Gap.getAddr(mac);
-
-    // MAC is in little endian --> print reverse
-    Serial.printBufferReverse(mac, 6, ':');
-    Serial.printf(" (%s)", type_str[type]);
-  }
-  Serial.println();
-
-  // Tx Power
-  Serial.printf(title_fmt, "TX Power");
-  Serial.printf("%d dBm", _tx_power);
-  Serial.println();
-
-  // Connection Intervals
-  Serial.printf(title_fmt, "Conn Intervals");
-  Serial.printf("min = %.2f ms, ", _ppcp_min_conn*1.25f);
-  Serial.printf("max = %.2f ms", _ppcp_max_conn*1.25f);
-  Serial.println();
-
-  Serial.printf(title_fmt, "Conn Timeout");
-  Serial.printf("%.2f ms", _ppcp_conn_sup_timeout*10.0f);
-  Serial.println();
-
-  /*------------- List the paried device -------------*/
-  if ( _prph_count )
-  {
-    Serial.printf(title_fmt, "Peripheral Paired Devices");
-    Serial.println();
-    bond_print_list(BLE_GAP_ROLE_PERIPH);
-  }
-
-  if ( _central_count )
-  {
-    Serial.printf(title_fmt, "Central Paired Devices");
-    Serial.println();
-    bond_print_list(BLE_GAP_ROLE_CENTRAL);
-  }
-
-  Serial.println();
-}
-
 /*------------------------------------------------------------------*/
 /* Thread & SoftDevice Event handler
  *------------------------------------------------------------------*/
@@ -776,7 +640,7 @@ void SD_EVT_IRQHandler(void)
 }
 
 /**
- * Handle SOC event such as FLASH opertion
+ * Handle SOC event such as FLASH operation
  */
 void adafruit_soc_task(void* arg)
 {
@@ -790,10 +654,8 @@ void adafruit_soc_task(void* arg)
       uint32_t err = ERROR_NONE;
 
       // until no more pending events
-      while ( NRF_ERROR_NOT_FOUND != err )
+      while ( NRF_ERROR_NOT_FOUND != (err = sd_evt_get(&soc_evt)) )
       {
-        err = sd_evt_get(&soc_evt);
-
         if (ERROR_NONE == err)
         {
           switch (soc_evt)
@@ -805,8 +667,8 @@ void adafruit_soc_task(void* arg)
               if ( flash_nrf5x_event_cb ) flash_nrf5x_event_cb(soc_evt);
             break;
 
+            #ifdef NRF52840_XXAA
             /*------------- usb power event handler -------------*/
-#ifdef NRF52840_XXAA
             case NRF_EVT_POWER_USB_DETECTED:
             case NRF_EVT_POWER_USB_POWER_READY:
             case NRF_EVT_POWER_USB_REMOVED:
@@ -818,7 +680,7 @@ void adafruit_soc_task(void* arg)
               if ( usbevt >= 0) tusb_hal_nrf_power_event(usbevt);
             }
             break;
-#endif
+            #endif
 
             default: break;
           }
@@ -998,3 +860,142 @@ void AdafruitBluefruit::clearBonds(void)
   bond_clear_prph();
 }
 
+//--------------------------------------------------------------------+
+//
+//--------------------------------------------------------------------+
+
+void Bluefruit_printInfo(void)
+{
+  Bluefruit.printInfo();
+}
+
+void AdafruitBluefruit::printInfo(void)
+{
+  // Skip if Serial is not initialised
+  if ( !Serial ) return;
+
+  // Skip if Bluefruit.begin() is not called
+  if ( _ble_event_sem == NULL ) return;
+
+  Serial.println("--------- SoftDevice Config ---------");
+
+  char const * title_fmt = "%-16s: ";
+
+  /*------------- SoftDevice Config -------------*/
+  // Max uuid128
+  Serial.printf(title_fmt, "Max UUID128");
+  Serial.println(_sd_cfg.uuid128_max);
+
+  // ATTR Table Size
+  Serial.printf(title_fmt, "ATTR Table Size");
+  Serial.println(_sd_cfg.attr_table_size);
+
+  // Service Changed
+  Serial.printf(title_fmt, "Service Changed");
+  Serial.println(_sd_cfg.service_changed);
+
+  if ( _prph_count )
+  {
+    Serial.println("Peripheral Connect Setting");
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "Max MTU");
+    Serial.println(Gap._cfg_prph.mtu_max);
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "Event Length");
+    Serial.println(Gap._cfg_prph.event_len);
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "HVN Queue Size");
+    Serial.println(Gap._cfg_prph.hvn_tx_qsize);
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "WrCmd Queue Size");
+    Serial.println(Gap._cfg_prph.wr_cmd_qsize);
+  }
+
+  if ( _central_count )
+  {
+    Serial.println("Central Connect Setting");
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "Max MTU");
+    Serial.println(Gap._cfg_central.mtu_max);
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "Event Length");
+    Serial.println(Gap._cfg_central.event_len);
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "HVN Queue Size");
+    Serial.println(Gap._cfg_central.hvn_tx_qsize);
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "WrCmd Queue Size");
+    Serial.println(Gap._cfg_central.wr_cmd_qsize);
+  }
+
+  /*------------- Settings -------------*/
+  Serial.println("\n--------- BLE Settings ---------");
+  // Name
+  Serial.printf(title_fmt, "Name");
+  {
+    char name[32];
+    memclr(name, sizeof(name));
+    getName(name, sizeof(name));
+    Serial.printf(name);
+  }
+  Serial.println();
+
+  // Max Connections
+  Serial.printf(title_fmt, "Max Connections");
+  Serial.printf("Peripheral = %d, ", _prph_count ? 1 : 0);
+  Serial.printf("Central = %d ", _central_count ? BLE_CENTRAL_MAX_CONN : 0);
+  Serial.println();
+
+  // Address
+  Serial.printf(title_fmt, "Address");
+  {
+    char const * type_str[] = { "Public", "Static", "Private Resolvable", "Private Non Resolvable" };
+    uint8_t mac[6];
+    uint8_t type = Gap.getAddr(mac);
+
+    // MAC is in little endian --> print reverse
+    Serial.printBufferReverse(mac, 6, ':');
+    Serial.printf(" (%s)", type_str[type]);
+  }
+  Serial.println();
+
+  // Tx Power
+  Serial.printf(title_fmt, "TX Power");
+  Serial.printf("%d dBm", _tx_power);
+  Serial.println();
+
+  // Connection Intervals
+  Serial.printf(title_fmt, "Conn Intervals");
+  Serial.printf("min = %.2f ms, ", _ppcp_min_conn*1.25f);
+  Serial.printf("max = %.2f ms", _ppcp_max_conn*1.25f);
+  Serial.println();
+
+  Serial.printf(title_fmt, "Conn Timeout");
+  Serial.printf("%.2f ms", _ppcp_conn_sup_timeout*10.0f);
+  Serial.println();
+
+  /*------------- List the paried device -------------*/
+  if ( _prph_count )
+  {
+    Serial.printf(title_fmt, "Peripheral Paired Devices");
+    Serial.println();
+    bond_print_list(BLE_GAP_ROLE_PERIPH);
+  }
+
+  if ( _central_count )
+  {
+    Serial.printf(title_fmt, "Central Paired Devices");
+    Serial.println();
+    bond_print_list(BLE_GAP_ROLE_CENTRAL);
+  }
+
+  Serial.println();
+}

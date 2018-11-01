@@ -227,6 +227,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
         _adamsg.complete();
       }
     }
+    break;
 
     case BLE_GATTS_EVT_HVC:
     {
