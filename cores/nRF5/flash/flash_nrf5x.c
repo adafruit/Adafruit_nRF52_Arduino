@@ -44,12 +44,11 @@
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
 static SemaphoreHandle_t _sem = NULL;
-static volatile uint32_t _op_result;
 
 void flash_nrf5x_event_cb (uint32_t event)
 {
-  _op_result = event;
-  xSemaphoreGive(_sem);
+//  if (event != NRF_EVT_FLASH_OPERATION_SUCCESS) LOG_LV1("IFLASH", "Flash op Failed");
+  if ( _sem ) xSemaphoreGive(_sem);
 }
 
 // Flash Abstraction Layer
@@ -101,52 +100,46 @@ bool flash_nrf5x_erase(uint32_t addr)
 bool fal_erase (uint32_t addr)
 {
   // Init semaphore for first call
-  if ( !_sem )
+  if ( _sem == NULL )
   {
-    _sem = xSemaphoreCreateBinary();
+    _sem = xSemaphoreCreateCounting(10, 0);
     VERIFY(_sem);
   }
 
-  // delay and retry if busy
+  // retry if busy
   uint32_t err;
   while ( NRF_ERROR_BUSY == (err = sd_flash_page_erase(addr / FLASH_NRF52_PAGE_SIZE)) )
   {
     delay(1);
   }
-  VERIFY_STATUS(err);
+  VERIFY_STATUS(err, false);
 
   // wait for async event if SD is enabled
   uint8_t sd_en = 0;
   (void) sd_softdevice_is_enabled(&sd_en);
 
-  if ( sd_en )
-  {
-    xSemaphoreTake(_sem, portMAX_DELAY);
-    VERIFY(_op_result == NRF_EVT_FLASH_OPERATION_SUCCESS);
-  }
-  
+  if ( sd_en ) xSemaphoreTake(_sem, portMAX_DELAY);
+
   return true;
 }
 
 static uint32_t fal_program (uint32_t dst, void const * src, uint32_t len)
 {
-  // delay and try again if busy
+  cprintf("Programming 0x%08X\n", dst);
+
+  // try again if busy
   uint32_t err;
   while ( NRF_ERROR_BUSY == (err = sd_flash_write((uint32_t*) dst, (uint32_t const *) src, len / 4)) )
   {
     delay(1);
   }
-  VERIFY_STATUS(err);
+  VERIFY_STATUS(err, 0);
 
   // wait for async event if SD is enabled
   uint8_t sd_en = 0;
   (void) sd_softdevice_is_enabled(&sd_en);
 
-  if ( sd_en )
-  {
-    xSemaphoreTake(_sem, portMAX_DELAY);
-    VERIFY(_op_result == NRF_EVT_FLASH_OPERATION_SUCCESS);
-  }
+  if ( sd_en ) xSemaphoreTake(_sem, portMAX_DELAY);
 
   return len;
 }
@@ -161,5 +154,3 @@ static bool fal_verify (uint32_t addr, void const * buf, uint32_t len)
 {
   return 0 == memcmp((void*) addr, buf, len);
 }
-
-
