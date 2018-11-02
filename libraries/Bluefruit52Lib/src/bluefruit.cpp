@@ -76,6 +76,26 @@ static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
   PRINT_INT(id);
   PRINT_HEX(pc);
   PRINT_HEX(info);
+
+  if ( id == NRF_FAULT_ID_SD_ASSERT && info != 0)
+  {
+    typedef struct
+    {
+        uint16_t        line_num;    /**< The line number where the error occurred. */
+        uint8_t const * p_file_name; /**< The file in which the error occurred. */
+    } assert_info_t;
+
+    assert_info_t* assert_info = (assert_info_t*) info;
+
+    LOG_LV1("SD Err", "assert at %s : %d", assert_info->p_file_name, assert_info->line_num);
+  }
+
+#if CFG_DEBUG
+  while(1)
+  {
+
+  }
+#endif
 }
 
 /**
@@ -427,7 +447,8 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   TaskHandle_t soc_task_hdl;
   xTaskCreate( adafruit_soc_task, "SOC", CFG_SOC_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &soc_task_hdl);
 
-  NVIC_SetPriority(SD_EVT_IRQn, 6);
+  // Interrupt priority has already been set by the stack.
+//  NVIC_SetPriority(SD_EVT_IRQn, 6);
   NVIC_EnableIRQ(SD_EVT_IRQn);
 
   // Create Timer for led advertising blinky
