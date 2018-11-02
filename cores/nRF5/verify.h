@@ -65,9 +65,9 @@ extern "C"
   #define VERIFY_MESS(_status, _funcstr) \
     do { \
       const char* (*_fstr)(int32_t) = _funcstr;\
-      cprintf("%s: %d: verify failed, error = ", __PRETTY_FUNCTION__, __LINE__);\
-      if (_fstr) cprintf(_fstr(_status)); else cprintf("%d", _status);\
-      cprintf("\n");\
+      printf("%s: %d: verify failed, error = ", __PRETTY_FUNCTION__, __LINE__);\
+      if (_fstr) printf(_fstr(_status)); else printf("%d", _status);\
+      printf("\n");\
     }while(0)
 #else
   #define VERIFY_MESS(_status, _funcstr)

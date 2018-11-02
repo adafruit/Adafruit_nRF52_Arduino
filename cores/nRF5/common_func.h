@@ -115,12 +115,11 @@
 // DEBUG HELPER
 //--------------------------------------------------------------------+
 #if CFG_DEBUG == 2
-  #define malloc_named( name, size )            ({ cprintf("[malloc] %s : %d\r\n", name, size); malloc(size); })
+  #define malloc_named( name, size )            ({ printf("[malloc] %s : %d\r\n", name, size); malloc(size); })
 #else
   #define malloc_named( name, size )            malloc ( size )
 #endif
 
-int cprintf(const char * format, ...);
 const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
 #if CFG_DEBUG
@@ -141,38 +140,38 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
 #if CFG_DEBUG
 
-#define PRINT_LOCATION()      cprintf("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)
-#define PRINT_MESS(x)         cprintf("%s: %d: %s \n"   , __FUNCTION__, __LINE__, (char*)(x))
-#define PRTNT_HEAP()          if (CFG_DEBUG == 3) cprintf("\n%s: %d: Heap free: %d\n", __FUNCTION__, __LINE__, util_heap_get_free_size())
-#define PRINT_STR(x)          cprintf("%s: %d: " #x " = %s\n"   , __FUNCTION__, __LINE__, (char*)(x) )
-#define PRINT_INT(x)          cprintf("%s: %d: " #x " = %ld\n"  , __FUNCTION__, __LINE__, (uint32_t) (x) )
+#define PRINT_LOCATION()      printf("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)
+#define PRINT_MESS(x)         printf("%s: %d: %s \n"   , __FUNCTION__, __LINE__, (char*)(x))
+#define PRTNT_HEAP()          if (CFG_DEBUG == 3) printf("\n%s: %d: Heap free: %d\n", __FUNCTION__, __LINE__, util_heap_get_free_size())
+#define PRINT_STR(x)          printf("%s: %d: " #x " = %s\n"   , __FUNCTION__, __LINE__, (char*)(x) )
+#define PRINT_INT(x)          printf("%s: %d: " #x " = %ld\n"  , __FUNCTION__, __LINE__, (uint32_t) (x) )
 
 #define PRINT_HEX(x) \
   do {\
-    cprintf("%s: %d: " #x " = 0x", __PRETTY_FUNCTION__, __LINE__);\
+    printf("%s: %d: " #x " = 0x", __PRETTY_FUNCTION__, __LINE__);\
     char fmt[] = "%00X\n";\
     fmt[2] += 2*sizeof(x); /* Hex with correct size */\
-    cprintf(fmt, (x) );\
+    printf(fmt, (x) );\
   }while(0)
 
 #define PRINT_BUFFER(buf, n) \
   do {\
     uint8_t const* p8 = (uint8_t const*) (buf);\
-    cprintf(#buf ": ");\
-    for(uint32_t i=0; i<(n); i++) cprintf("%02x ", p8[i]);\
-    cprintf("\n");\
+    printf(#buf ": ");\
+    for(uint32_t i=0; i<(n); i++) printf("%02x ", p8[i]);\
+    printf("\n");\
   }while(0)
 
 #define ADALOG(tag, ...) \
   do { \
-    if ( tag ) cprintf("[%-6s] ", tag);\
-    cprintf(__VA_ARGS__);\
-    cprintf("\n");\
+    if ( tag ) printf("[%-6s] ", tag);\
+    printf(__VA_ARGS__);\
+    printf("\n");\
   }while(0)
 
 #define ADALOG_BUFFER(_tag, _buf, _n) \
   do {\
-    if ( _tag ) cprintf("%-6s: len = %d\n", _tag, _n);\
+    if ( _tag ) printf("%-6s: len = %d\n", _tag, _n);\
     dbgDumpMemory(_buf, 1, _n, true);\
   }while(0)
 

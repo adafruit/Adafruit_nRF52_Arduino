@@ -255,14 +255,14 @@ void bond_print_list(uint8_t role)
         char devname[len];
         file.read(devname, len);
 
-        cprintf("  %s : %s (%d bytes)\n", file.name(), devname, file.size());
+        printf("  %s : %s (%d bytes)\n", file.name(), devname, file.size());
       }
     }
 
     file.close();
   }
 
-  cprintf("\n");
+  printf("\n");
 
   file.close();
   dir.close();

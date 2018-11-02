@@ -62,21 +62,12 @@ void HardFault_Handler(void)
   NVIC_SystemReset();
 }
 
-int cprintf(const char * format, ...)
+// nanolib printf() retarget
+int _write (int fd, const void *buf, size_t count)
 {
-  char buf[256];
-  int len;
+  (void) fd;
 
-  va_list ap;
-  va_start(ap, format);
-
-  len = vsnprintf(buf, 256, format, ap);
-
-//  SEGGER_SYSVIEW_Print(buf);
-  Serial.write(buf, len);
-
-  va_end(ap);
-  return len;
+  Serial.write( (const uint8_t *) buf, count);
 }
 
 int dbgHeapTotal(void)
@@ -123,14 +114,14 @@ static void printMemRegion(const char* name, uint32_t top, uint32_t bottom, uint
     sprintf(buffer, "%lu", top-bottom);
   }
 
-  cprintf("| %-5s| 0x%04X - 0x%04X | %-19s |\n", name, (uint16_t) bottom, (uint16_t) (top-1), buffer);
+  printf("| %-5s| 0x%04X - 0x%04X | %-19s |\n", name, (uint16_t) bottom, (uint16_t) (top-1), buffer);
 }
 
 void dbgMemInfo(void)
 {
-  cprintf(" ______________________________________________\n");
-  cprintf("| Name | Addr 0x2000xxxx | Usage               |\n");
-  cprintf("| ---------------------------------------------|\n");
+  printf(" ______________________________________________\n");
+  printf("| Name | Addr 0x2000xxxx | Usage               |\n");
+  printf("| ---------------------------------------------|\n");
 
   // Pritn SRAM used for Stack executed by S132 and ISR
   printMemRegion("Stack", ((uint32_t) __StackTop), ((uint32_t) __StackLimit), dbgStackUsed() );
@@ -144,8 +135,8 @@ void dbgMemInfo(void)
   // Print SRAM Used by SoftDevice
   printMemRegion("S132", (uint32_t) __data_start__, 0x20000000, 0);
 
-  cprintf("|______________________________________________|\n");
-  cprintf("\n");
+  printf("|______________________________________________|\n");
+  printf("\n");
 
   // Print Task list
   uint32_t tasknum = uxTaskGetNumberOfTasks();
@@ -153,20 +144,20 @@ void dbgMemInfo(void)
 
   vTaskList(buf);
 
-  cprintf("Task    State   Prio  StackLeft Num\n");
-  cprintf("-----------------------------------\n");
-  cprintf(buf);
-  cprintf("\n");
+  printf("Task    State   Prio  StackLeft Num\n");
+  printf("-----------------------------------\n");
+  printf(buf);
+  printf("\n");
   rtos_free(buf);
 }
 
 void dbgPrintVersion(void)
 {
-  cprintf("\n");
-  cprintf("BSP Library : " ARDUINO_BSP_VERSION "\n");
-  cprintf("Bootloader  : %s\n", getBootloaderVersion());
-  cprintf("Serial No   : %s\n", getMcuUniqueID());
-  cprintf("\n");
+  printf("\n");
+  printf("BSP Library : " ARDUINO_BSP_VERSION "\n");
+  printf("Bootloader  : %s\n", getBootloaderVersion());
+  printf("Serial No   : %s\n", getMcuUniqueID());
+  printf("\n");
 }
 
 /******************************************************************************/
@@ -180,7 +171,7 @@ static void dump_str_line(uint8_t const* buf, uint16_t count)
   for(int i=0; i<count; i++)
   {
     const char ch = buf[i];
-    cprintf("%c", isprint(ch) ? ch : '.');
+    printf("%c", isprint(ch) ? ch : '.');
   }
 }
 
@@ -188,7 +179,7 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
 {
   if ( !buf )
   {
-    cprintf("NULL\n");
+    printf("NULL\n");
     return;
   }
 
@@ -208,26 +199,26 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
       // Print Ascii
       if ( i != 0 )
       {
-        cprintf(" | ");
+        printf(" | ");
         dump_str_line(buf8-16, 16);
-        cprintf("\n");
+        printf("\n");
       }
 
       // print offset or absolute address
       if (printOffset)
       {
-        cprintf("%03lX: ", 16*i/item_per_line);
+        printf("%03lX: ", 16*i/item_per_line);
       }else
       {
-        cprintf("%08lX:", (uint32_t) buf8);
+        printf("%08lX:", (uint32_t) buf8);
       }
     }
 
     memcpy(&value, buf8, size);
     buf8 += size;
 
-    cprintf(" ");
-    cprintf(format, value);
+    printf(" ");
+    printf(format, value);
   }
 
   // fill up last row to 16 for printing ascii
@@ -238,16 +229,16 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
   {
     for(int i=0; i< 16-remain; i++)
     {
-      cprintf(" ");
-      for(int j=0; j<2*size; j++) cprintf(" ");
+      printf(" ");
+      for(int j=0; j<2*size; j++) printf(" ");
     }
   }
 
-  cprintf(" | ");
+  printf(" | ");
   dump_str_line(buf8-nback, nback);
-  cprintf("\n");
+  printf("\n");
 
-  cprintf("\n");
+  printf("\n");
 }
 
 
@@ -255,11 +246,11 @@ void dbgDumpMemoryCFormat(const char* str, void const *buf, uint16_t count)
 {
   if ( !buf )
   {
-    cprintf("NULL\n");
+    printf("NULL\n");
     return;
   }
 
-  cprintf("%s = \n{\n  ", str);
+  printf("%s = \n{\n  ", str);
 
   uint8_t const *buf8 = (uint8_t const *) buf;
 
@@ -269,17 +260,17 @@ void dbgDumpMemoryCFormat(const char* str, void const *buf, uint16_t count)
 
     if ( i%16 == 0 )
     {
-      if ( i != 0 ) cprintf(",\n  ");
+      if ( i != 0 ) printf(",\n  ");
     }else
     {
-      if ( i != 0 ) cprintf(", ");
+      if ( i != 0 ) printf(", ");
     }
 
-    cprintf("0x%02lX", *buf8);
+    printf("0x%02lX", *buf8);
     buf8++;
   }
 
-  cprintf("\n\};\n");
+  printf("\n\};\n");
 }
 
 

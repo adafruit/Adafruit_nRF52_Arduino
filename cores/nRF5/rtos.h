@@ -68,8 +68,8 @@ enum
 #define malloc_type(type)    rtos_malloc( sizeof(type) )
 
 #if 0
-#define rtos_malloc(_size)  ({ cprintf("[malloc] %s:%d : %d bytes\r\n", __PRETTY_FUNCTION__, __LINE__, _size); pvPortMalloc(_size); })
-#define rtos_free(ptr)      ({ cprintf("[free] %s:%d\r\n"    ,__PRETTY_FUNCTION__, __LINE__/*malloc_usable_size(ptr)*/); vPortFree(ptr); })
+#define rtos_malloc(_size)  ({ printf("[malloc] %s:%d : %d bytes\r\n", __PRETTY_FUNCTION__, __LINE__, _size); pvPortMalloc(_size); })
+#define rtos_free(ptr)      ({ printf("[free] %s:%d\r\n"    ,__PRETTY_FUNCTION__, __LINE__/*malloc_usable_size(ptr)*/); vPortFree(ptr); })
 #else
 
 #define rtos_malloc_type(_type)   (_type*) rtos_malloc(sizeof(_type))

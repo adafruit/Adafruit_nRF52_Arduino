@@ -125,8 +125,6 @@ bool fal_erase (uint32_t addr)
 
 static uint32_t fal_program (uint32_t dst, void const * src, uint32_t len)
 {
-  cprintf("Programming 0x%08X\n", dst);
-
   // wait for async event if SD is enabled
   uint8_t sd_en = 0;
   (void) sd_softdevice_is_enabled(&sd_en);

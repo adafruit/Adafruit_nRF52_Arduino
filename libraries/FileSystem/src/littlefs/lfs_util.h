@@ -41,7 +41,6 @@
 
 #if !defined(LFS_NO_DEBUG) || !defined(LFS_NO_WARN) || !defined(LFS_NO_ERROR)
 #include <stdio.h>
-int cprintf (const char * format, ...);
 #endif
 
 #ifdef __cplusplus
@@ -57,21 +56,21 @@ extern "C"
 // Logging functions
 #ifndef LFS_NO_DEBUG
 #define LFS_DEBUG(fmt, ...) \
-    cprintf("lfs debug:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+    printf("lfs debug:%d: " fmt "\n", __LINE__, __VA_ARGS__)
 #else
 #define LFS_DEBUG(fmt, ...)
 #endif
 
 #ifndef LFS_NO_WARN
 #define LFS_WARN(fmt, ...) \
-    cprintf("lfs warn:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+    printf("lfs warn:%d: " fmt "\n", __LINE__, __VA_ARGS__)
 #else
 #define LFS_WARN(fmt, ...)
 #endif
 
 #ifndef LFS_NO_ERROR
 #define LFS_ERROR(fmt, ...) \
-    cprintf("lfs error:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+    printf("lfs error:%d: " fmt "\n", __LINE__, __VA_ARGS__)
 #else
 #define LFS_ERROR(fmt, ...)
 #endif
