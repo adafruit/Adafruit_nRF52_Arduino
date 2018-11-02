@@ -127,19 +127,38 @@ static uint32_t fal_program (uint32_t dst, void const * src, uint32_t len)
 {
   cprintf("Programming 0x%08X\n", dst);
 
-  // try again if busy
+  // wait for async event if SD is enabled
+  uint8_t sd_en = 0;
+  (void) sd_softdevice_is_enabled(&sd_en);
+
   uint32_t err;
-  while ( NRF_ERROR_BUSY == (err = sd_flash_write((uint32_t*) dst, (uint32_t const *) src, len / 4)) )
+
+  // Somehow S140 v6.1.0 assert an error when writing a whole page
+  // https://devzone.nordicsemi.com/f/nordic-q-a/40088/sd_flash_write-cause-nrf_fault_id_sd_assert
+  // Workaround: write half page at a time.
+#if NRF52832_XXAA
+  while ( NRF_ERROR_BUSY == (err = sd_flash_write((uint32_t*) dst, (uint32_t const *) src, len/4)) )
   {
     delay(1);
   }
   VERIFY_STATUS(err, 0);
 
-  // wait for async event if SD is enabled
-  uint8_t sd_en = 0;
-  (void) sd_softdevice_is_enabled(&sd_en);
-
   if ( sd_en ) xSemaphoreTake(_sem, portMAX_DELAY);
+#else
+  while ( NRF_ERROR_BUSY == (err = sd_flash_write((uint32_t*) dst, (uint32_t const *) src, len/8)) )
+  {
+    delay(1);
+  }
+  VERIFY_STATUS(err, 0);
+  if ( sd_en ) xSemaphoreTake(_sem, portMAX_DELAY);
+
+  while ( NRF_ERROR_BUSY == (err = sd_flash_write((uint32_t*) (dst+ len/2), (uint32_t const *) (src + len/2), len/8)) )
+  {
+    delay(1);
+  }
+  VERIFY_STATUS(err, 0);
+  if ( sd_en ) xSemaphoreTake(_sem, portMAX_DELAY);
+#endif
 
   return len;
 }
