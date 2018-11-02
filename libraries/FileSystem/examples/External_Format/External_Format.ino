@@ -34,14 +34,12 @@ void setup()
   ExternalFS.begin();
 
   Serial.print("Formating ...");
-  Serial.flush();
   
   // Format without erase
   // Pass true for full external flash erasing (take time)
   ExternalFS.format(false);
 
   Serial.println("Done");
-  Serial.flush();
 }
 
 // the loop function runs over and over again forever

@@ -56,6 +56,12 @@ extern uint32_t __StackLimit[];
 extern "C"
 {
 
+void HardFault_Handler(void)
+{
+  // reset on hardfault
+  NVIC_SystemReset();
+}
+
 int cprintf(const char * format, ...)
 {
   char buf[256];
@@ -65,6 +71,8 @@ int cprintf(const char * format, ...)
   va_start(ap, format);
 
   len = vsnprintf(buf, 256, format, ap);
+
+//  SEGGER_SYSVIEW_Print(buf);
   Serial.write(buf, len);
 
   va_end(ap);
