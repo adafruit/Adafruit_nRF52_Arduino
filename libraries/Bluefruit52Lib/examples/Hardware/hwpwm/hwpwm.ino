@@ -28,7 +28,8 @@
 
 #include <Arduino.h>
 
-// Maximum 12 pins can be used for 3 PWM module ( 4 channel each )
+// Maximum 12 pins can be used for 3 PWM modules ( 4 channel each )
+// Note: nRF52832 has 3 PWM modules, nRF52840 has 4 PWM modules
 int pins[12] = 
 { 
   A0 , A1      , A2          , A3,

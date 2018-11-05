@@ -41,7 +41,17 @@ HardwarePWM HwPWM0(NRF_PWM0);
 HardwarePWM HwPWM1(NRF_PWM1);
 HardwarePWM HwPWM2(NRF_PWM2);
 
-HardwarePWM* HwPWMx[3] = { &HwPWM0, &HwPWM1, &HwPWM2 };
+#ifdef NRF52840_XXAA
+HardwarePWM HwPWM3(NRF_PWM3);
+#endif
+
+HardwarePWM* HwPWMx[] =
+{
+  &HwPWM0, &HwPWM1, &HwPWM2
+#ifdef NRF52840_XXAA
+  ,&HwPWM3
+#endif
+};
 
 HardwarePWM::HardwarePWM(NRF_PWM_Type* pwm)
 {

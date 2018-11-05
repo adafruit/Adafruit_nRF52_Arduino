@@ -64,7 +64,7 @@ void analogWriteResolution( uint8_t res )
  */
 void analogWrite( uint32_t pin, uint32_t value )
 {
-  for(int i=0; i<3; i++)
+  for(int i=0; i<HWPWM_MODULE_NUM; i++)
   {
     // Added by if needed
     if ( HwPWMx[i]->addPin(pin) )
