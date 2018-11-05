@@ -12,7 +12,8 @@
 - Added FileSystem Libraries base on SD File API
   - InternalFS use LittleFS to manage internal flash for bonding and other user data
   - ExternalFS use fatfs to manage external spi flash (nrf52840 only) for usb msc.
-- Replace cpritnf by std printf  
+- Replace cpritnf by std printf
+- Add HwPWM3 for nRF52840
 
 ## 0.8.6
 
