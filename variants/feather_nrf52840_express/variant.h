@@ -118,22 +118,6 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 #define PIN_WIRE_SDA         (25u)
 #define PIN_WIRE_SCL         (26u)
 
-
-// TODO remove
-static inline bool isPinValid(uint32_t pin)
-{
-  // 0, 1 is xtal
-  if (pin >= PINS_COUNT) return false;
-
-  const uint8_t forbid[] = { 0, 1, };
-  for(uint8_t i=0; i<sizeof(forbid); i++)
-  {
-    if ( pin == forbid[i] ) return false;
-  }
-
-  return true;
-}
-
 #ifdef __cplusplus
 }
 #endif

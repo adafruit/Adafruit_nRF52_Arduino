@@ -78,7 +78,7 @@ void HardwarePWM::setClockDiv(uint8_t div)
  */
 bool HardwarePWM::addPin(uint8_t pin)
 {
-  VERIFY( isPinValid(pin) && (_count <= MAX_CHANNELS) );
+  VERIFY( _count <= MAX_CHANNELS );
 
   // Check if pin is already configured
   for(uint8_t i=0; i<_count; i++)
