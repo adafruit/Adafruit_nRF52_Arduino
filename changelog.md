@@ -5,12 +5,14 @@
 - Feather nRF52840 support
 - Upgrade bootloader to v6.1.0 ( single bank only )
 - Upgrade freeRTOS from v8 to v10.0.1
+- Upgrade Segger SysView to 2.52d
 - Added nrfx to core
 - Added tinyusb stack to libraries
 - Added LittleFS to replace NFFS
 - Added FileSystem Libraries base on SD File API
   - InternalFS use LittleFS to manage internal flash for bonding and other user data
   - ExternalFS use fatfs to manage external spi flash (nrf52840 only) for usb msc.
+- Replace cpritnf by std printf  
 
 ## 0.8.6
 

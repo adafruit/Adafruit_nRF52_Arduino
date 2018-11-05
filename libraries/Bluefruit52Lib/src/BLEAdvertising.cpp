@@ -353,8 +353,8 @@ bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
       //.primary_phy, .secondary_phy, .set_id, .scan_req_notification
   };
 
-  // Configure Data
-  ble_gap_adv_data_t gap_adv =
+  // gap_adv long-live is required by SD v6
+  static ble_gap_adv_data_t gap_adv =
   {
       .adv_data      = { .p_data = _data, .len = _count },
       .scan_rsp_data = { .p_data = Bluefruit.ScanResponse.getData(), .len = Bluefruit.ScanResponse.count() }
