@@ -40,24 +40,16 @@ extern "C"
 #define NUM_ANALOG_OUTPUTS   (0u)
 
 // LEDs
-#define PIN_LED1                (17)
-#define PIN_LED2                (19)
+#define PIN_LED1             (17)
+#define PIN_LED2             (19)
 
-#define LED_BUILTIN             PIN_LED1
-#define LED_CONN                PIN_LED2
+#define LED_BUILTIN          PIN_LED1
+#define LED_CONN             PIN_LED2
 
-#define LED_RED                 PIN_LED1
-#define LED_BLUE                PIN_LED2
+#define LED_RED              PIN_LED1
+#define LED_BLUE             PIN_LED2
 
-#define LED_STATE_ON            1         // State when LED is litted
-
-// Buttons
-/*
-#define PIN_BUTTON1             (2)
-#define PIN_BUTTON2             (3)
-#define PIN_BUTTON3             (4)
-#define PIN_BUTTON4             (5)
-*/
+#define LED_STATE_ON         1         // State when LED is litted
 
 /*
  * Analog pins
