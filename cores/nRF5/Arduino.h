@@ -122,7 +122,7 @@ uint32_t setLoopStacksize(void);
 #define digitalPinToBitMask(P)     ( 1 << (P) )
 //#define analogInPinToBit(P)        ( )
 #define portOutputRegister(port)   ( &(port->OUT) )
-#define portInputRegister(port)    ( &(port->IN) )
+#define portInputRegister(port)    ( (volatile uint32_t*) &(port->IN) )
 #define portModeRegister(port)     ( &(port->DIR) )
 #define digitalPinHasPWM(P)        ( (P) > 1 )
 
