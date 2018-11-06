@@ -13,7 +13,9 @@
   - InternalFS use LittleFS to manage internal flash for bonding and other user data
   - ExternalFS use fatfs to manage external spi flash (nrf52840 only) for usb msc.
 - Replace cpritnf by std printf
-- Add HwPWM3 for nRF52840
+- Added HwPWM3 for nRF52840
+- Added ISR_DEFERRED for attachInterrupt() for deferring callback from ISR context
+  - Added digital_interrupt_deferred sketch for demo
 
 ## 0.8.6
 
