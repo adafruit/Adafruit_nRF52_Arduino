@@ -100,7 +100,7 @@ extern HardwarePWM HwPWM0;
 extern HardwarePWM HwPWM1;
 extern HardwarePWM HwPWM2;
 
-#ifdef NRF52840_XXAA
+#ifdef NRF_PWM3
 extern HardwarePWM HwPWM3;
 #endif
 

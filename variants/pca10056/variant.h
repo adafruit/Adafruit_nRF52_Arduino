@@ -60,8 +60,8 @@ extern "C"
 #define PIN_A3               (29)
 #define PIN_A4               (30)
 #define PIN_A5               (31)
-#define PIN_A6               (26)
-#define PIN_A7               (27)
+#define PIN_A6               (42)
+#define PIN_A7               (43)
 
 static const uint8_t A0  = PIN_A0 ;
 static const uint8_t A1  = PIN_A1 ;
@@ -92,9 +92,9 @@ static const uint8_t AREF = PIN_AREF;
  */
 #define SPI_INTERFACES_COUNT 1
 
-#define PIN_SPI_MISO         (47)
-#define PIN_SPI_MOSI         (46)
-#define PIN_SPI_SCK          (45)
+#define PIN_SPI_MISO         (46)
+#define PIN_SPI_MOSI         (45)
+#define PIN_SPI_SCK          (47)
 
 static const uint8_t SS   = 44 ;
 static const uint8_t MOSI = PIN_SPI_MOSI ;
@@ -106,8 +106,8 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
  */
 #define WIRE_INTERFACES_COUNT 1
 
-#define PIN_WIRE_SDA         (43)
-#define PIN_WIRE_SCL         (42)
+#define PIN_WIRE_SDA         (26)
+#define PIN_WIRE_SCL         (27)
 
 /*
  * QSPI interface for external flash
