@@ -93,6 +93,10 @@ class Uart : public HardwareSerial
 #define SERIAL_PORT_HARDWARE        Serial1
 #define SERIAL_PORT_HARDWARE_OPEN   Serial1
 
+// TODO need to update class Uart to work with UARTE
+//extern Uart Serial2;
+//#define HAVE_HWSERIAL2
+
 #else
 
 #define SERIAL_PORT_MONITOR         Serial
@@ -100,7 +104,4 @@ class Uart : public HardwareSerial
 
 #endif
 
-
-#ifdef __cplusplus
 extern Uart SERIAL_PORT_HARDWARE;
-#endif

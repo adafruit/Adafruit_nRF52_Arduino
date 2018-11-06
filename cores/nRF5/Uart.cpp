@@ -205,10 +205,12 @@ size_t Uart::write(const uint8_t data)
   return 1;
 }
 
+Uart SERIAL_PORT_HARDWARE( NRF_UART0, UARTE0_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX );
 
-#define NRF_UART0_IRQn UARTE0_UART0_IRQn
-
-Uart SERIAL_PORT_HARDWARE( NRF_UART0, NRF_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX );
+#ifdef HAVE_HWSERIAL2
+// TODO UART1 is UARTE only, need update class Uart to work
+Uart Serial2( NRF_UARTE1, UARTE1_IRQn, PIN_SERIAL2_RX, PIN_SERIAL2_TX );
+#endif
 
 extern "C"
 {
