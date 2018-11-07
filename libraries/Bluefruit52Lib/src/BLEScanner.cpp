@@ -36,8 +36,6 @@
 
 #include "bluefruit.h"
 
-static uint8_t _scan_data[BLE_GAP_SCAN_BUFFER_MAX];
-
 BLEScanner::BLEScanner(void)
 {
   _report_data.p_data  = _scan_data;
@@ -57,7 +55,7 @@ BLEScanner::BLEScanner(void)
   _rx_cb               = NULL;
   _stop_cb             = NULL;
 
-  _param  = (ble_gap_scan_params_t) {
+  _param  = ((ble_gap_scan_params_t) {
     // TODO Extended Adv on secondary channels
     .extended               = 0,
     .report_incomplete_evts = 0,
@@ -70,7 +68,7 @@ BLEScanner::BLEScanner(void)
     .window         = BLE_SCAN_WINDOW_DFLT,
     .timeout        = 0, // no timeout, in 10 ms units
     .channel_mask   = { 0, 0, 0, 0, 0 }
-  };
+  });
 }
 
 void BLEScanner::useActiveScan(bool enable)
@@ -117,11 +115,23 @@ ble_gap_scan_params_t* BLEScanner::getParams(void)
 
 bool BLEScanner::start(uint16_t timeout)
 {
-  _param.timeout = timeout;
-  VERIFY_STATUS( sd_ble_gap_scan_start(&_param, &_report_data), false );
+  _report_data.p_data  = _scan_data;
+  _report_data.len     = BLE_GAP_SCAN_BUFFER_MAX;
 
-  Bluefruit._startConnLed(); // start blinking
-  _runnning = true;
+  if (_runnning)
+  {
+    // resume scanning after received an report
+    VERIFY_STATUS( sd_ble_gap_scan_start(NULL, &_report_data), false );
+  }else
+  {
+    // start a new scan
+    _param.timeout = timeout;
+
+    VERIFY_STATUS( sd_ble_gap_scan_start(&_param, &_report_data), false );
+
+    Bluefruit._startConnLed(); // start blinking
+    _runnning = true;
+  }
 
   return true;
 }
@@ -393,6 +403,7 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_TIMEOUT:
       if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_SCAN)
       {
+        _runnning = false;
         if (_stop_cb) ada_callback(NULL, _stop_cb);
       }
     break;

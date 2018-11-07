@@ -17,7 +17,6 @@
  */
 
 #include <bluefruit.h>
-#include <Nffs.h>
 #include <utility/bonding.h>
 
 void setup() 

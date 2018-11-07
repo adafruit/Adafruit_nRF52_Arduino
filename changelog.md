@@ -2,8 +2,10 @@
 
 ## 0.9.0
 
-- Feather nRF52840 support
+- Added nRF52840-based board support (pca10056 and feather nRF52840 express)
 - Upgrade bootloader to v6.1.0 ( single bank only )
+- Upgrade BSP code to match SD v6
+  - Bluefruit.Scanner.start() must be called (often in callback) to resume scanning after received an report.
 - Upgrade freeRTOS from v8 to v10.0.1
 - Upgrade Segger SysView to 2.52d
 - Added nrfx to core
@@ -34,7 +36,7 @@
 ## 0.8.4
 
 - Fix #160: hardware PWM issue that cause Servo freq is 640 hz instead of 50hz
-- Fix #134:  hardcoded pulse limits with Servo
+- Fix #134: hardcoded pulse limits with Servo
 - Fix upload issue with windows when username has spaces
 - Support serialEvent()
 

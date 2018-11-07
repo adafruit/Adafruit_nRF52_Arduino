@@ -98,18 +98,21 @@ size_t USBSerial::write(uint8_t ch)
 
 size_t USBSerial::write(const uint8_t *buffer, size_t size)
 {
-  while ( size )
+  size_t remain = size;
+  while ( remain && tud_cdc_connected() )
   {
-    size_t wrcount = tud_cdc_write(buffer, size);
-    size -= wrcount;
+    size_t wrcount = tud_cdc_write(buffer, remain);
+    remain -= wrcount;
     buffer += wrcount;
 
     // Write FIFO is full, flush and re-try
-    if ( size )
+    if ( remain )
     {
       tud_cdc_write_flush();
     }
   }
+
+  return size - remain;
 }
 
 #endif // NRF52840_XXAA

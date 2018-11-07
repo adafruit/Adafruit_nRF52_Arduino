@@ -96,6 +96,7 @@ public:
   void _eventHandler(ble_evt_t* evt);
 
 private:
+  uint8_t    _scan_data[BLE_GAP_SCAN_BUFFER_MAX];
   ble_data_t _report_data;
 
   bool       _runnning;

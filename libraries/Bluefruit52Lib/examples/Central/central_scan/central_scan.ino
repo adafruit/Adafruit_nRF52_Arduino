@@ -51,7 +51,7 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   Serial.print(report->rssi);
   Serial.print("  ");
 
-  Serial.printBuffer(report->data, report->dlen, '-');
+  Serial.printBuffer(report->data.p_data, report->data.len, '-');
   Serial.println();
 
   // Check if advertising contain BleUart service
@@ -61,13 +61,13 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   }
 
   Serial.println();
+
+  // For Softdevice v6: after received a report, scanner will be paused
+  // We need to call Scanner start() to resume scanning
+  Bluefruit.Scanner.start();
 }
 
 void loop() 
 {
-  // Toggle both LEDs every 1 second
-  digitalToggle(LED_RED);
-
-  delay(1000);
+  // nothing to do
 }
-
