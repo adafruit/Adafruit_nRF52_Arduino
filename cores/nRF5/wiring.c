@@ -61,7 +61,10 @@ void init( void )
   NRF_RTC1->TASKS_CLEAR = 1;
 
   // Make sure all pin is set HIGH when pinmode() is called
-  NRF_GPIO->OUTSET = UINT32_MAX;
+  NRF_P0->OUTSET = UINT32_MAX;
+#ifdef NRF_P1
+  NRF_P1->OUTSET = UINT32_MAX;
+#endif
 }
 
 void enterUf2Dfu(void)
@@ -117,16 +120,9 @@ void systemOff(uint32_t pin, uint8_t wake_logic)
 //    NRF_POWER->RAM[i].POWERCLR = 0x03UL;
 //  }
 
-#if 0
-  // pin 0 & 1 is for XTAL
-  for(int i=2; i<PINS_COUNT; i++)
-  {
-    pinMode(i, INPUT);
-  }
-#endif
-
   pinMode(pin, wake_logic ? INPUT_PULLDOWN : INPUT_PULLUP);
-  NRF_GPIO->PIN_CNF[pin] |= ((uint32_t) (wake_logic ? GPIO_PIN_CNF_SENSE_High : GPIO_PIN_CNF_SENSE_Low) << GPIO_PIN_CNF_SENSE_Pos);
+
+  *digitalPinCnfRegister(pin) |= ((wake_logic ? GPIO_PIN_CNF_SENSE_High : GPIO_PIN_CNF_SENSE_Low) << GPIO_PIN_CNF_SENSE_Pos);
 
   uint8_t sd_en;
   (void) sd_softdevice_is_enabled(&sd_en);

@@ -67,7 +67,7 @@ void adafruit_soc_task(void* arg);
 static void bluefruit_blinky_cb( TimerHandle_t xTimer )
 {
   (void) xTimer;
-  ledToggle(LED_BLUE);
+  digitalToggle(LED_BLUE);
 }
 
 

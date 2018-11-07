@@ -25,7 +25,6 @@ setLoopStacksize	KEYWORD2
 
 ledOn	KEYWORD2
 ledOff	KEYWORD2
-ledToggle	KEYWORD2
 
 printf	KEYWORD2
 printBuffer	KEYWORD2

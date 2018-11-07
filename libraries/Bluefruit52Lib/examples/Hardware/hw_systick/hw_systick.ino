@@ -33,7 +33,7 @@ extern "C"
  */
 void SysTick_Handler(void)
 {
-  ledToggle(LED_RED);
+  digitalToggle(LED_RED);
 }
 
 } // extern C

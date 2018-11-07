@@ -64,11 +64,10 @@ extern void digitalWrite( uint32_t dwPin, uint32_t dwVal ) ;
  */
 extern int digitalRead( uint32_t ulPin ) ;
 
-extern int digitalToggle( uint32_t pin );
+extern void digitalToggle( uint32_t pin );
 
 void ledOn(uint32_t pin);
 void ledOff(uint32_t pin);
-int  ledToggle( uint32_t pin );
 
 #ifdef __cplusplus
 }
