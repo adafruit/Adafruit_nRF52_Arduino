@@ -65,7 +65,7 @@ enum {
 /*------------------------------------------------------------------*/
 /* MACRO TYPEDEF CONSTANT ENUM
  *------------------------------------------------------------------*/
-#define USB_NVIC_PRIO   7
+#define USB_NVIC_PRIO   2
 
 void tusb_hal_nrf_power_event(uint32_t event);
 
