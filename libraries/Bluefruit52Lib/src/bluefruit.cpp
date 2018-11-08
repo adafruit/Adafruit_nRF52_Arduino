@@ -250,6 +250,21 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
       .rc_temp_ctiv  = 0,
       .accuracy      = NRF_CLOCK_LF_ACCURACY_20_PPM
   };
+#elif defined( USE_LFRC )
+  nrf_clock_lf_cfg_t clock_cfg = 
+  {
+      // LXRC
+      .source        = NRF_CLOCK_LF_SRC_RC,
+      .rc_ctiv       = 16,
+      .rc_temp_ctiv  = 2,
+      #if SD_VER < 500
+      .xtal_accuracy = NRF_CLOCK_LF_XTAL_ACCURACY_250_PPM
+      #else
+      .accuracy      = NRF_CLOCK_LF_ACCURACY_250_PPM
+      #endif
+  };
+#else
+  #error Clock Source is not configured, define USE_LFXO or USE_LFRC according to your board
 #endif
 
   VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, nrf_error_cb) );
