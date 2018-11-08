@@ -99,12 +99,6 @@ void vApplicationMallocFailedHook(void)
 
 void vApplicationIdleHook( void )
 {
-  // Internal background task
-#ifdef NRF52840_XXAA
-  // flush cdc in case loop() is suspended for low-power
-  tud_cdc_write_flush();
-#endif
-
   // Call user callback if defined
   if ( rtos_idle_callback ) rtos_idle_callback();
 }
