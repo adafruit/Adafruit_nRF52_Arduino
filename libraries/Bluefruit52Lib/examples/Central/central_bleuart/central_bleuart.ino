@@ -75,6 +75,11 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
 
     // Connect to device with bleuart service in advertising
     Bluefruit.Central.connect(report);
+  }else
+  {      
+    // For Softdevice v6: after received a report, scanner will be paused
+    // We need to call Scanner start() to resume scanning
+    Bluefruit.Scanner.start();      
   }
 }
 
@@ -181,4 +186,3 @@ void loop()
     }
   }
 }
-

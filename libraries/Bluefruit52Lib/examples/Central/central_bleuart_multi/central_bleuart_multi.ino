@@ -117,12 +117,14 @@ void setup()
   /* Start Central Scanning
    * - Enable auto scan if disconnected
    * - Interval = 100 ms, window = 80 ms
+   * - Filter only accept bleuart service in advertising
    * - Don't use active scan (used to retrieve the optional scan response adv packet)
    * - Start(0) = will scan forever since no timeout is given
    */
   Bluefruit.Scanner.setRxCallback(scan_callback);
   Bluefruit.Scanner.restartOnDisconnect(true);
   Bluefruit.Scanner.setInterval(160, 80);       // in units of 0.625 ms
+  Bluefruit.Scanner.filterUuid(BLEUART_UUID_SERVICE);
   Bluefruit.Scanner.useActiveScan(false);       // Don't request scan response data
   Bluefruit.Scanner.start(0);                   // 0 = Don't stop scanning after n seconds
 }
@@ -133,14 +135,10 @@ void setup()
  */
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
-  // Check if advertising data contains the BleUart service UUID
-  if ( Bluefruit.Scanner.checkReportForUuid(report, BLEUART_UUID_SERVICE) )
-  {
-    Serial.print("BLE UART service detected. Connecting ... ");
-
-    // Connect to the device with bleuart service in advertising packet
-    Bluefruit.Central.connect(report);
-  }
+  // Since we configure the scanner with filterUuid()
+  // Scan callback only invoked for device with bleuart service advertised  
+  // Connect to the device with bleuart service in advertising packet
+  Bluefruit.Central.connect(report);
 }
 
 /**

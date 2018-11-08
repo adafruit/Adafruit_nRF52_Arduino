@@ -245,12 +245,12 @@ bool BLEScanner::checkReportForUuid(const ble_gap_evt_adv_report_t* report, BLEU
   return false;
 }
 
-bool BLEScanner::checkReportForService(const ble_gap_evt_adv_report_t* report, BLEClientService svc)
+bool BLEScanner::checkReportForService(const ble_gap_evt_adv_report_t* report, BLEClientService& svc)
 {
   return checkReportForUuid(report, svc.uuid);
 }
 
-bool BLEScanner::checkReportForService(const ble_gap_evt_adv_report_t* report, BLEService svc)
+bool BLEScanner::checkReportForService(const ble_gap_evt_adv_report_t* report, BLEService& svc)
 {
   return checkReportForUuid(report, svc.uuid);
 }
@@ -335,35 +335,50 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
   switch ( evt->header.evt_id  )
   {
     case BLE_GAP_EVT_ADV_REPORT:
-    { // evt_conn_hdl is equal to BLE_CONN_HANDLE_INVALID
+    {
       ble_gap_evt_adv_report_t const* evt_report = &evt->evt.gap_evt.params.adv_report;
+      bool invoke_cb = false;
 
-      // filter by rssi
-      if ( _filter_rssi > evt_report->rssi ) break;
-
-      // filter by uuid
-      if ( _filter_uuid_count )
+      do
       {
-        uint8_t i;
-        for(i=0; i<_filter_uuid_count; i++)
+        // filter by rssi
+        if ( _filter_rssi > evt_report->rssi ) break;
+
+        // filter by uuid
+        if ( _filter_uuid_count )
         {
-          if ( checkReportForUuid(evt_report, _filter_uuid[i]) ) break;
+          uint8_t i;
+          for(i=0; i<_filter_uuid_count; i++)
+          {
+            if ( checkReportForUuid(evt_report, _filter_uuid[i]) ) break;
+          }
+
+          // If there is no matched UUID in the list --> filter failed
+          if ( i == _filter_uuid_count ) break;
         }
 
-        // If there is no matched UUID in the list --> filter failed
-        if ( i ==  _filter_uuid_count ) break;
-      }
+        // filter by MSD if present
+        if ( _filter_msd_en )
+        {
+          uint16_t id;
+          if ( !(parseReportByType(evt_report, BLE_GAP_AD_TYPE_MANUFACTURER_SPECIFIC_DATA, (uint8_t*)&id, 2) && (id == _filter_msd_id)) ) break;
+        }
 
-      // filter by MSD if present
-      if ( _filter_msd_en )
+        invoke_cb = true;
+      } while(0); // for quick break
+
+      if ( invoke_cb )
       {
-        uint16_t id;
-        if ( !(parseReportByType(evt_report, BLE_GAP_AD_TYPE_MANUFACTURER_SPECIFIC_DATA, (uint8_t*)&id, 2) && (id == _filter_msd_id)) ) break;
-      }
+        ble_gap_evt_adv_report_t* adv_report = (ble_gap_evt_adv_report_t*) rtos_malloc( sizeof(ble_gap_evt_adv_report_t) );
+        VERIFY(adv_report,);
 
-      ble_gap_evt_adv_report_t* adv_report = (ble_gap_evt_adv_report_t*) rtos_malloc( sizeof(ble_gap_evt_adv_report_t) );
-      (*adv_report) = (*evt_report);
-      if (_rx_cb) ada_callback(adv_report, _rx_cb, adv_report);
+        (*adv_report) = (*evt_report);
+        if (_rx_cb) ada_callback(adv_report, _rx_cb, adv_report);
+      }else
+      {
+        // continue scanning since report is filtered and callback is not invoked
+        VERIFY_STATUS( sd_ble_gap_scan_start(NULL, &_report_data), );
+      }
     }
     break;
 

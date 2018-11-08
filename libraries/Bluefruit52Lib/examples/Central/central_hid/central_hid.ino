@@ -59,15 +59,15 @@ void setup()
    * - Enable auto scan if disconnected
    * - Interval = 100 ms, window = 80 ms
    * - Don't use active scan
+   * - Filter only accept HID service in advertising
    * - Start(timeout) with timeout = 0 will scan forever (until connected)
    */
   Bluefruit.Scanner.setRxCallback(scan_callback);
   Bluefruit.Scanner.restartOnDisconnect(true);
   Bluefruit.Scanner.setInterval(160, 80); // in unit of 0.625 ms
+  Bluefruit.Scanner.filterService(hid);   // only report HID service
   Bluefruit.Scanner.useActiveScan(false);
   Bluefruit.Scanner.start(0);             // 0 = Don't stop scanning after n seconds
-
-  Bluefruit.Scanner.filterService(hid);   // only report HID service
 }
 
 /**
@@ -76,7 +76,9 @@ void setup()
  */
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
-  // Connect to device
+  // Since we configure the scanner with filterUuid()
+  // Scan callback only invoked for device with hid service advertised  
+  // Connect to the device with hid service in advertising packet
   Bluefruit.Central.connect(report);
 }
 
@@ -221,4 +223,3 @@ void processKeyboardReport(hid_keyboard_report_t* report)
   // update last report
   memcpy(&last_kbd_report, report, sizeof(hid_keyboard_report_t));  
 }
-

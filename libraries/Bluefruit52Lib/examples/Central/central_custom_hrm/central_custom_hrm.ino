@@ -90,6 +90,8 @@ void loop()
  */
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
+  // Since we configure the scanner with filterUuid()
+  // Scan callback only invoked for device with hrm service advertised
   // Connect to device with HRM service in advertising
   Bluefruit.Central.connect(report);
 }

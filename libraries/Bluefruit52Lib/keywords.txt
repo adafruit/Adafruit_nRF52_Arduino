@@ -220,6 +220,7 @@ setIntervalMS	KEYWORD2
 filterRssi	KEYWORD2
 filterMSD	KEYWORD2
 filterUuid	KEYWORD2
+filterService	KEYWORD2
 clearFilters	KEYWORD2
 
 restartOnDisconnect	KEYWORD2
