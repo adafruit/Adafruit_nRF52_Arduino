@@ -99,6 +99,8 @@ Once the tools above have been installed and added to your system path, from the
 - Select `Tools > Programmer > J-Link for Feather52`
 - Select `Tools > Burn Bootloader` with the board and J-Link connected
 
+If you wish to modify bootloader to your own need, check out its repo here [Adafruit_nRF52_Bootloader](https://github.com/adafruit/Adafruit_nRF52_Bootloader)
+
 #### Manually Burning the Bootloader via nrfjprog
 
 The bootloader hex file can be found at `bin/bootloader` run the command as follows:
