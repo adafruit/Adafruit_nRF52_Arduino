@@ -110,7 +110,7 @@ feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.1.0
 feather52840.menu.softdevice.s140v6.build.sd_fwid=0x00AE
 feather52840.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_v6.ld
-feather52840.menu.softdevice.s140v6.upload.maximum_size=552960
+feather52840.menu.softdevice.s140v6.upload.maximum_size=815104
 feather52840.menu.softdevice.s140v6.upload.maximum_data_size=248832
 
 # Debug Menu
@@ -127,7 +127,7 @@ feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 #**********************************************
 # Nordic PCA10056
 #**********************************************
-pca10056.name=Bluefruit on PCA10056
+pca10056.name=Adafruit Bluefruit on nRF52840DK PCA10056
 
 pca10056.bootloader.tool=bootburn
 
@@ -155,7 +155,7 @@ pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.1.0
 pca10056.menu.softdevice.s140v6.build.sd_fwid=0x00AE
 pca10056.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_v6.ld
-pca10056.menu.softdevice.s140v6.upload.maximum_size=552960
+pca10056.menu.softdevice.s140v6.upload.maximum_size=815104
 pca10056.menu.softdevice.s140v6.upload.maximum_data_size=248832
 
 # Debug Menu
