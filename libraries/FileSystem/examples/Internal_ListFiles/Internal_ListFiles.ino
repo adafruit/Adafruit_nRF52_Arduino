@@ -15,7 +15,7 @@
 #include <bluefruit.h>
 #include <FileIO.h>
 
-/* This example  print out NFFS content up to
+/* This example  print out Internal Flash contents up to
  * MAX_LEVEL level of directories (including root)
  * WARNING: This example uses recursive call to print out directory tree
  * be extra careful, high number of MAX_LEVEL can cause memory overflow

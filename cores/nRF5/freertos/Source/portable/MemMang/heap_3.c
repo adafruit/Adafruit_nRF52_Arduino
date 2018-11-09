@@ -92,29 +92,3 @@ void vPortFree( void *pv )
 		( void ) xTaskResumeAll();
 	}
 }
-
-void *pvPortRealloc( void* pv, size_t new_size)
-{
-  void *pvReturn;
-
-	vTaskSuspendAll();
-	{
-		pvReturn = realloc( pv, new_size );
-		traceMALLOC( pvReturn, new_size );
-	}
-	( void ) xTaskResumeAll();
-
-	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
-	{
-		if( pvReturn == NULL )
-		{
-			extern void vApplicationMallocFailedHook( void );
-			vApplicationMallocFailedHook();
-		}
-	}
-	#endif
-
-	return pvReturn;
-}
-
-
