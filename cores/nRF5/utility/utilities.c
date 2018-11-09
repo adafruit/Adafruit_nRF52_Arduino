@@ -61,9 +61,9 @@ void const * lookup_find(lookup_table_t const* p_table, uint32_t key)
 /**
  * Format: SDname SDverion, bootloader version
  * e.g
- *    "S132 2.0.1, 0.5.0"
- *    "S132 5.0.0, 5.0.0 single bank"
- *    "S132 6.1.0 r0"
+ *    "s132 2.0.1, 0.5.0"
+ *    "s132 5.0.0, 5.0.0 single bank"
+ *    "s132 6.1.1 r0"
  * @return
  */
 const char* getBootloaderVersion(void)
