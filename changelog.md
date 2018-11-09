@@ -18,12 +18,15 @@
 - Added HwPWM3 for nRF52840
 - Added ISR_DEFERRED option for attachInterrupt() to defer callback from ISR context
   - Added digital_interrupt_deferred sketch for demo
+- Added support for using the Low Frequency RC oscillator ( PR #144 thanks to @jeremypoulter )
+  - USE_LFRC or USE_LFXO must be defined in board's variant.h
+- Fixed Scanner running state when timeout ( PR #186 thanks to @Ryscho )
 
 ## 0.8.6
 
 - Fixed dbgDumpMemory for buffer > 255 byte, thanks to @airbornemint
-- Added setConnSupervisionTimeout and setConnSupervisionTimeoutMS, thanks to @airbornemint
-- Decrease gpio's interrupt level to 2 to avoid conlfict with SD timing critical task, thanks to @Nenik
+- Added setConnSupervisionTimeout and setConnSupervisionTimeoutMS ( PR #177 thanks to @airbornemint )
+- Decrease gpio's interrupt level to 2 to avoid conlfict with SD timing critical task ( PR #179 thanks to @Nenik )
 - Fixed #174 window build error with Arduino 1.8.6 with verbose = off
 
 ## 0.8.5

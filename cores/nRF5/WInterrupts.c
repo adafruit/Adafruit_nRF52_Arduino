@@ -44,7 +44,7 @@ static void __initialize()
 
   NVIC_DisableIRQ(GPIOTE_IRQn);
   NVIC_ClearPendingIRQ(GPIOTE_IRQn);
-  NVIC_SetPriority(GPIOTE_IRQn, 2);
+  NVIC_SetPriority(GPIOTE_IRQn, 3);
   NVIC_EnableIRQ(GPIOTE_IRQn);
 }
 
