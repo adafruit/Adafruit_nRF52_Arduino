@@ -118,21 +118,20 @@ bool BLEScanner::start(uint16_t timeout)
   _report_data.p_data  = _scan_data;
   _report_data.len     = BLE_GAP_SCAN_BUFFER_MAX;
 
-  if (_runnning)
-  {
-    // resume scanning after received an report
-    VERIFY_STATUS( sd_ble_gap_scan_start(NULL, &_report_data), false );
-  }else
-  {
-    // start a new scan
-    _param.timeout = timeout;
+  _param.timeout = timeout;
 
-    VERIFY_STATUS( sd_ble_gap_scan_start(&_param, &_report_data), false );
+  VERIFY_STATUS( sd_ble_gap_scan_start(&_param, &_report_data), false );
 
-    Bluefruit._startConnLed(); // start blinking
-    _runnning = true;
-  }
+  Bluefruit._startConnLed(); // start blinking
+  _runnning = true;
 
+  return true;
+}
+
+bool BLEScanner::resume(void)
+{
+  // resume scanning after received an report
+  VERIFY_STATUS( sd_ble_gap_scan_start(NULL, &_report_data), false );
   return true;
 }
 
@@ -377,7 +376,7 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
       }else
       {
         // continue scanning since report is filtered and callback is not invoked
-        VERIFY_STATUS( sd_ble_gap_scan_start(NULL, &_report_data), );
+        this->resume();
       }
     }
     break;

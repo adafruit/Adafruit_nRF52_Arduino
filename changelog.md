@@ -5,7 +5,7 @@
 - Added nRF52840-based board support (pca10056 and feather nRF52840 express)
 - Upgrade bootloader to v6.1.0 ( single bank only )
 - Upgrade BSP code to match SD v6
-  - Bluefruit.Scanner.start() must be called (often in callback) to resume scanning after received an report.
+  - Bluefruit.Scanner.resume() must be called in scan callback to resume scanning after received an report.
 - Upgrade freeRTOS from v8 to v10.0.1
 - Upgrade Segger SysView to 2.52d
 - Added nrfx to core

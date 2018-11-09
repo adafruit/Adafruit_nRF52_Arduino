@@ -144,7 +144,7 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
     else
     {
       Serial.println("No Match");
-      Bluefruit.Scanner.start(); // continue scanning
+      Bluefruit.Scanner.resume(); // continue scanning
     } 
   } 
   else
@@ -152,8 +152,8 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
     Serial.println("Failed");
 
     // For Softdevice v6: after received a report, scanner will be paused
-    // We need to call Scanner start() to resume scanning
-    Bluefruit.Scanner.start();  
+    // We need to call Scanner resume() to continue scanning
+    Bluefruit.Scanner.resume();
   }  
 }
 

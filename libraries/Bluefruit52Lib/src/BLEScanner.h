@@ -74,6 +74,7 @@ public:
   void clearFilters(void);
 
   bool start(uint16_t timeout = 0);
+  bool resume(void);
   bool stop(void);
 
   /*------------- Callbacks -------------*/

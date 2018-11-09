@@ -181,8 +181,8 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   Serial.println();
 
   // For Softdevice v6: after received a report, scanner will be paused
-  // We need to call Scanner start() to resume scanning
-  Bluefruit.Scanner.start();  
+  // We need to call Scanner resume() to continue scanning
+  Bluefruit.Scanner.resume();
 }
 
 void printUuid16List(uint8_t* buffer, uint8_t len)
