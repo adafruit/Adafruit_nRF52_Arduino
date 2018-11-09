@@ -221,7 +221,7 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
     };
 
     _adamsg.prepare( (void*) data, len);
-    VERIFY_STATUS ( sd_ble_gattc_write(_service->connHandle(), &param) );
+    VERIFY_STATUS(sd_ble_gattc_write(_service->connHandle(), &param), 0);
 
     // len is always 0 in BLE_GATTC_EVT_WRITE_RSP for BLE_GATT_OP_WRITE_REQ
     count = (_adamsg.waitUntilComplete(BLE_GENERIC_TIMEOUT) < 0 ? 0 : len);
@@ -230,7 +230,6 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
   {
     /*------------- Long Write Sequence -------------*/
     // For BLE_GATT_OP_PREP_WRITE_REQ, 2 bytes are used for offset
-
     ble_gattc_write_params_t param =
     {
         .write_op = BLE_GATT_OP_PREP_WRITE_REQ,
@@ -242,7 +241,7 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
     };
 
     _adamsg.prepare( (void*) data, len);
-    VERIFY_STATUS ( sd_ble_gattc_write(_service->connHandle(), &param) );
+    VERIFY_STATUS(sd_ble_gattc_write(_service->connHandle(), &param), 0);
     count = _adamsg.waitUntilComplete( (len/(max_payload-2) + 1) * BLE_GENERIC_TIMEOUT );
 
     // delay to swallow last WRITE RESPONSE
@@ -284,7 +283,7 @@ uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
   while( remaining )
   {
     // TODO only Write without response consume a TX buffer
-    if ( !Bluefruit.Gap.getWriteCmdPacket(_service->connHandle()) )  return NRF_ERROR_RESOURCES; //BLE_ERROR_NO_TX_PACKETS;
+    if ( !Bluefruit.Gap.getWriteCmdPacket(_service->connHandle()) ) break;
 
     uint16_t packet_len = min16(max_payload, remaining);
 
@@ -304,7 +303,7 @@ uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
     u8data    += packet_len;
   }
 
-  return len;
+  return len-remaining;
 }
 
 uint16_t BLEClientCharacteristic::write8(uint8_t value)

@@ -21,6 +21,7 @@
 - Added support for using the Low Frequency RC oscillator ( PR #144 thanks to @jeremypoulter )
   - USE_LFRC or USE_LFXO must be defined in board's variant.h
 - Fixed Scanner running state when timeout ( PR #186 thanks to @Ryscho )
+- Fixed #192 Client Characteristic write() return number of writtent instead of error code
 
 ## 0.8.6
 
