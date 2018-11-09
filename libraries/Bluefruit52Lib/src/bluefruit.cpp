@@ -631,7 +631,7 @@ uint16_t AdafruitBluefruit::connHandle(void)
 
 bool AdafruitBluefruit::connPaired(void)
 {
-  return Gap.paired(_conn_hdl);
+  return ( _conn_hdl != BLE_CONN_HANDLE_INVALID ) && Gap.paired(_conn_hdl);
 }
 
 uint16_t AdafruitBluefruit::connInterval(void)

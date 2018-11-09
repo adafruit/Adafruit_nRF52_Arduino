@@ -141,7 +141,7 @@ pca10056.upload.wait_for_upload_port=true
 # Build
 pca10056.build.mcu=cortex-m4
 pca10056.build.f_cpu=64000000
-pca10056.build.board=NRF52840_FEATHER
+pca10056.build.board=NRF52840_PCA10056
 pca10056.build.core=nRF5
 pca10056.build.variant=pca10056
 pca10056.build.extra_flags=-DNRF52840_XXAA
