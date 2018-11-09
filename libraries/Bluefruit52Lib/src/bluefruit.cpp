@@ -140,6 +140,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _connect_cb    = NULL;
   _disconnect_cb = NULL;
+  _event_cb = NULL;
 
 COMMENT_OUT(
   _auth_type = BLE_GAP_AUTH_KEY_TYPE_NONE;
@@ -618,6 +619,11 @@ void AdafruitBluefruit::setDisconnectCallback( BLEGap::disconnect_callback_t fp 
   _disconnect_cb = fp;
 }
 
+void AdafruitBluefruit::setEventCallback ( void (*fp) (ble_evt_t*) )
+{
+  _event_cb = fp;
+}
+
 uint16_t AdafruitBluefruit::connHandle(void)
 {
   return _conn_hdl;
@@ -856,6 +862,9 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 
   // GATTs characteristics event handler
   Gatt._eventHandler(evt);
+
+  // User callback if set
+  if (_event_cb) _event_cb(evt);
 }
 
 /*------------------------------------------------------------------*/

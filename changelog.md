@@ -22,6 +22,7 @@
   - USE_LFRC or USE_LFXO must be defined in board's variant.h
 - Fixed Scanner running state when timeout ( PR #186 thanks to @Ryscho )
 - Fixed #192 Client Characteristic write() return number of writtent instead of error code
+- Added #181 Bluefruit.setEventCallback() for user to handle ble event
 
 ## 0.8.6
 
