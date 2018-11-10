@@ -37,22 +37,24 @@ extern "C"
 #endif // __cplusplus
 
 // Number of pins defined in PinDescription array
-#define PINS_COUNT           (32u)
-#define NUM_DIGITAL_PINS     (32u)
-#define NUM_ANALOG_INPUTS    (8u)
-#define NUM_ANALOG_OUTPUTS   (0u)
+#define PINS_COUNT           (64)
+#define NUM_DIGITAL_PINS     (64)
+#define NUM_ANALOG_INPUTS    (6)
+#define NUM_ANALOG_OUTPUTS   (0)
 
 // LEDs
-#define PIN_LED1                (13)
-#define PIN_LED2                (14)
+#define PIN_LED1             (13)
+#define PIN_LED2             (14)
+#define PIN_LED3             (15)
+#define PIN_NEOPIXEL         (16)
 
-#define LED_BUILTIN             PIN_LED1
-#define LED_CONN                PIN_LED2
+#define LED_BUILTIN          PIN_LED1
+#define LED_CONN             PIN_LED2
 
-#define LED_RED                 PIN_LED1
-#define LED_BLUE                PIN_LED2
+#define LED_RED              PIN_LED1
+#define LED_BLUE             PIN_LED2
 
-#define LED_STATE_ON            0         // State when LED is litted
+#define LED_STATE_ON         1         // State when LED is litted
 
 // Buttons
 /*
@@ -65,14 +67,14 @@ extern "C"
 /*
  * Analog pins
  */
-#define PIN_A0               (2)
-#define PIN_A1               (3)
-#define PIN_A2               (4)
-#define PIN_A3               (5)
-#define PIN_A4               (28)
-#define PIN_A5               (29)
-#define PIN_A6               (30)
-#define PIN_A7               (31)
+#define PIN_A0               (3)
+#define PIN_A1               (4)
+#define PIN_A2               (28)
+#define PIN_A3               (29)
+#define PIN_A4               (30)
+#define PIN_A5               (31)
+#define PIN_A6               (0xff)
+#define PIN_A7               (0xff)
 
 static const uint8_t A0  = PIN_A0 ;
 static const uint8_t A1  = PIN_A1 ;
@@ -85,8 +87,8 @@ static const uint8_t A7  = PIN_A7 ;
 #define ADC_RESOLUTION    14
 
 // Other pins
-#define PIN_AREF           (24)
-#define PIN_DFU            (20)
+#define PIN_AREF           (2)
+#define PIN_DFU            (11)
 #define PIN_NFC1           (9)
 #define PIN_NFC2           (10)
 
@@ -104,9 +106,9 @@ static const uint8_t AREF = PIN_AREF;
  */
 #define SPI_INTERFACES_COUNT 1
 
-#define PIN_SPI_MISO         (14)
-#define PIN_SPI_MOSI         (13)
-#define PIN_SPI_SCK          (12)
+#define PIN_SPI_MISO         (41)
+#define PIN_SPI_MOSI         (40)
+#define PIN_SPI_SCK          (7)
 
 static const uint8_t SS   = 18 ;
 static const uint8_t MOSI = PIN_SPI_MOSI ;
@@ -118,8 +120,22 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
  */
 #define WIRE_INTERFACES_COUNT 1
 
-#define PIN_WIRE_SDA         (25u)
-#define PIN_WIRE_SCL         (26u)
+#define PIN_WIRE_SDA         (26)
+#define PIN_WIRE_SCL         (27)
+
+/*
+ * QSPI interface for external flash
+ */
+#define PIN_QSPI_SCK         19
+#define PIN_QSPI_CS          17
+#define PIN_QSPI_DATA0       20
+#define PIN_QSPI_DATA1       21
+#define PIN_QSPI_DATA2       22
+#define PIN_QSPI_DATA3       23
+
+// On-board QSPI Flash
+// If EXTERNAL_FLASH_DEVICES is not defined, all supported devices will be used
+#define EXTERNAL_FLASH_DEVICES   GD25Q16
 
 #ifdef __cplusplus
 }
