@@ -110,7 +110,7 @@ static const uint8_t AREF = PIN_AREF;
 #define PIN_SPI_MOSI         (40)
 #define PIN_SPI_SCK          (7)
 
-static const uint8_t SS   = 18 ;
+static const uint8_t SS   = 44 ;
 static const uint8_t MOSI = PIN_SPI_MOSI ;
 static const uint8_t MISO = PIN_SPI_MISO ;
 static const uint8_t SCK  = PIN_SPI_SCK ;
@@ -135,7 +135,7 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 
 // On-board QSPI Flash
 // If EXTERNAL_FLASH_DEVICES is not defined, all supported devices will be used
-#define EXTERNAL_FLASH_DEVICES   GD25Q16
+#define EXTERNAL_FLASH_DEVICES   GD25Q16C
 
 #ifdef __cplusplus
 }
