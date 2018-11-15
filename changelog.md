@@ -1,5 +1,7 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.9.1
+
 ## 0.9.0
 
 - Added nRF52840-based board support (pca10056 and feather nRF52840 express)
