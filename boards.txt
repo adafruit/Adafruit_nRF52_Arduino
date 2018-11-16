@@ -168,4 +168,47 @@ pca10056.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
 pca10056.menu.debug.l3=Level 3 (Segger SystemView)
 pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 
+#**********************************************
+# Nordic PCA10059
+#**********************************************
 
+pca10059.name=Adafruit Bluefruit on nRF52840 Dongle PCA10059
+
+pca10059.bootloader.tool=bootburn
+
+# Upload
+pca10059.upload.tool=nrfutil
+pca10059.upload.protocol=nrfutil
+pca10059.upload.use_1200bps_touch=true
+pca10059.upload.wait_for_upload_port=true
+#pca10059.upload.native_usb=true
+
+# Build
+pca10059.build.mcu=cortex-m4
+pca10059.build.f_cpu=64000000
+pca10059.build.board=NRF52840_PCA10059
+pca10059.build.core=nRF5
+pca10059.build.variant=pca10059
+pca10059.build.extra_flags=-DNRF52840_XXAA
+
+# SofDevice Menu
+# Ram & ROM size varies depending on SoftDevice (check linker script)
+
+pca10059.menu.softdevice.s140v6=s140 6.1.1 r0
+pca10059.menu.softdevice.s140v6.build.sd_flags=-DS140
+pca10059.menu.softdevice.s140v6.build.sd_name=s140
+pca10059.menu.softdevice.s140v6.build.sd_version=6.1.1
+pca10059.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+pca10059.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_v6.ld
+pca10059.menu.softdevice.s140v6.upload.maximum_size=815104
+pca10059.menu.softdevice.s140v6.upload.maximum_data_size=248832
+
+# Debug Menu
+pca10059.menu.debug.l0=Level 0 (Release)
+pca10059.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0 -Os
+pca10059.menu.debug.l1=Level 1 (Error Message)
+pca10059.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1 -Os
+pca10059.menu.debug.l2=Level 2 (Full Debug)
+pca10059.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
+pca10059.menu.debug.l3=Level 3 (Segger SystemView)
+pca10059.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
