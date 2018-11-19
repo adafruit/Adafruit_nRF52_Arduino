@@ -2,7 +2,9 @@
 
 ## 0.9.1
 
-- rename FileIO.h to Bluefruit_FileIO to prevent conflict with other libraries.
+- Rename FileIO.h to Bluefruit_FileIO to prevent conflict with other libraries.
+- Minor upgrade for bootloader to prevent issue with WDT enabled by application
+- 52840: call cdc flush before delay()
 
 ## 0.9.0
 
