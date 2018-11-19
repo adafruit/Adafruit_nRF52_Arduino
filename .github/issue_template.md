@@ -13,5 +13,5 @@ and examples has useful information for you.
 
   - Your Board and BSP version
   - Your OS (mac/windows/linux) and its version
-  - Steps to reproduce, or better your (simplifed) sketch if possible
-  - Serial deubg log (enable IDE's Debug Mode to lv1 or lv2)  
+  - Steps to reproduce, or better your (simplified) sketch if possible
+  - Serial debug log (enable IDE's Debug Mode Level to 1 or 2)  
