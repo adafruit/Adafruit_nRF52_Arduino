@@ -37,20 +37,20 @@
 #ifndef EXTERNALFS_H_
 #define EXTERNALFS_H_
 
-#include "FileIO.h"
+#include "Bluefruit_FileIO.h"
 
 // External Flash uses Fat FS as file system
 // http://elm-chan.org/fsw/ff/00index_e.html
 #include "fatfs/source/ff.h"
 
-class FatFS: public BluefuritLib::FileSystemClass
+class FatFS: public BluefruitFS::FileSystemClass
 {
   public:
     FatFS ();
     virtual ~FatFS ();
 
     bool begin (void);
-    BluefuritLib::File open (char const *filepath, uint8_t mode = FILE_READ);
+    BluefruitFS::File open (char const *filepath, uint8_t mode = FILE_READ);
     bool exists (char const *filepath);
     bool mkdir (char const *filepath);
     bool remove (char const *filepath);
@@ -66,7 +66,7 @@ class FatFS: public BluefuritLib::FileSystemClass
     virtual uint32_t _f_position (void* fhdl);
     virtual uint32_t _f_size (void* fhdl);
 
-    virtual BluefuritLib::File _f_openNextFile (void* fhdl, char const* cwd, uint8_t mode);
+    virtual BluefruitFS::File _f_openNextFile (void* fhdl, char const* cwd, uint8_t mode);
     virtual void _f_rewindDirectory (void* fhdl);
 
     // called when Flash contents is changed out of the awareness of ExternalFS such as USB MSC write
@@ -76,8 +76,8 @@ class FatFS: public BluefuritLib::FileSystemClass
     FATFS* _fs;
     bool _begun;
 
-    BluefuritLib::File _open_file (char const *filepath, uint8_t mode);
-    BluefuritLib::File _open_dir (char const *filepath);
+    BluefruitFS::File _open_file (char const *filepath, uint8_t mode);
+    BluefruitFS::File _open_dir (char const *filepath);
 };
 
 extern FatFS ExternalFS;

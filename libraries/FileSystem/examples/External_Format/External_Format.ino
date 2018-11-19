@@ -12,7 +12,7 @@
  any redistribution
 *********************************************************************/
 
-#include <FileIO.h>
+#include <Bluefruit_FileIO.h>
 
 // the setup function runs once when you press reset or power the board
 void setup() 

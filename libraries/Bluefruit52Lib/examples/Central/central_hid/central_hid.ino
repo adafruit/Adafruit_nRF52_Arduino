@@ -13,8 +13,8 @@
 *********************************************************************/
 
 /*
- * This sketch demonstrate the central API(). A additional bluefruit
- * that has bleuart as peripheral is required for the demo.
+ * This sketch demonstrate the central API(). An additional bluefruit
+ * that has blehid as peripheral is required for the demo.
  */
 #include <bluefruit.h>
 

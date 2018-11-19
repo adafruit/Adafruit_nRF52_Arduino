@@ -18,7 +18,7 @@
 
 /**************************************************************************/
 /*!
-    @file     FileIO.h
+    @file     Bluefruit_FileIO.h
     @author   hathach (tinyusb.org)
 
     @section LICENSE
@@ -41,7 +41,7 @@
 class LittleFS;
 class FatFS;
 
-namespace BluefuritLib
+namespace BluefruitFS
 {
 
 class FileSystemClass;
@@ -144,16 +144,16 @@ class FileSystemClass
 
 }
 
-// We enclose File and FileSystem classes in namespace BluefuritLib to avoid
+// We enclose File and FileSystem classes in namespace BluefruitFS to avoid
 // conflicts with legacy SD library.
 
 // This ensure compatibility with older sketches that uses only Bridge lib
 // (the user can still use File instead of BridgeFile)
-using namespace BluefuritLib;
+using namespace BluefruitFS;
 
-// This allows sketches to use BluefuritLib::File together with SD library
+// This allows sketches to use BluefruitFS::File together with SD library
 // (you must use BridgeFile instead of File when needed to disambiguate)
-typedef BluefuritLib::File BluefruitFile;
+typedef BluefruitFS::File BluefruitFile;
 
 #include "InternalFS.h"
 #include "ExternalFS.h"

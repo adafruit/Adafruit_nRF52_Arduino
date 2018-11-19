@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*!
-    @file     FileIO.cpp
+    @file     Bluefruit_FileIO.cpp
     @author   hathach (tinyusb.org)
 
     @section LICENSE
@@ -35,9 +35,9 @@
 /**************************************************************************/
 
 #include <Arduino.h>
-#include "FileIO.h"
+#include "Bluefruit_FileIO.h"
 
-namespace BluefuritLib
+namespace BluefruitFS
 {
 
 File::File (FileSystemClass &fs)

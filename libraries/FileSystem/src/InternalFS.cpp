@@ -233,9 +233,9 @@ bool LittleFS::format (bool eraseall)
   return true;
 }
 
-BluefuritLib::File LittleFS::_open_file (char const *filepath, uint8_t mode)
+BluefruitFS::File LittleFS::_open_file (char const *filepath, uint8_t mode)
 {
-  BluefuritLib::File file(*this);
+  BluefruitFS::File file(*this);
 
   int flags = (mode == FILE_READ) ? LFS_O_RDONLY :
               (mode == FILE_WRITE) ? (LFS_O_RDWR | LFS_O_CREAT) : 0;
@@ -268,9 +268,9 @@ BluefuritLib::File LittleFS::_open_file (char const *filepath, uint8_t mode)
   return file;
 }
 
-BluefuritLib::File LittleFS::_open_dir (char const *filepath)
+BluefruitFS::File LittleFS::_open_dir (char const *filepath)
 {
-  BluefuritLib::File file(*this);
+  BluefruitFS::File file(*this);
 
   lfs_dir_t* fhdl = (lfs_dir_t*) rtos_malloc(sizeof(lfs_dir_t));
   int rc = lfs_dir_open(&_lfs, fhdl, filepath);
@@ -292,9 +292,9 @@ BluefuritLib::File LittleFS::_open_dir (char const *filepath)
   return file;
 }
 
-BluefuritLib::File LittleFS::open (char const *filepath, uint8_t mode)
+BluefruitFS::File LittleFS::open (char const *filepath, uint8_t mode)
 {
-  BluefuritLib::File file(*this);
+  BluefruitFS::File file(*this);
   struct lfs_info info;
 
   int rc = lfs_stat(&_lfs, filepath, &info);
@@ -423,7 +423,7 @@ void LittleFS::_f_close (void* fhdl, bool is_dir)
 
 File LittleFS::_f_openNextFile (void* fhdl, char const* cwd, uint8_t mode)
 {
-  BluefuritLib::File file(*this);
+  BluefruitFS::File file(*this);
   struct lfs_info info;
 
   int rc;

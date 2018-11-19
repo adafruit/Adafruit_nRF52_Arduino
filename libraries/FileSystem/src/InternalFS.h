@@ -37,20 +37,20 @@
 #ifndef INTERNALFS_H_
 #define INTERNALFS_H_
 
-#include "FileIO.h"
+#include "Bluefruit_FileIO.h"
 
 // Internal Flash uses ARM Little FileSystem
 // https://github.com/ARMmbed/littlefs
 #include "littlefs/lfs.h"
 
-class LittleFS: public BluefuritLib::FileSystemClass
+class LittleFS: public BluefruitFS::FileSystemClass
 {
   public:
     LittleFS (void);
     virtual ~LittleFS ();
 
     bool begin (void);
-    BluefuritLib::File open (char const *filepath, uint8_t mode = FILE_READ);
+    BluefruitFS::File open (char const *filepath, uint8_t mode = FILE_READ);
     bool exists (char const *filepath);
     bool mkdir (char const *filepath);
     bool remove (char const *filepath);
@@ -66,7 +66,7 @@ class LittleFS: public BluefuritLib::FileSystemClass
     virtual uint32_t _f_position (void* fhdl);
     virtual uint32_t _f_size (void* fhdl);
 
-    virtual BluefuritLib::File _f_openNextFile (void* fhdl, char const* cwd, uint8_t mode);
+    virtual BluefruitFS::File _f_openNextFile (void* fhdl, char const* cwd, uint8_t mode);
     virtual void _f_rewindDirectory (void* fhdl);
 
   private:
@@ -74,8 +74,8 @@ class LittleFS: public BluefuritLib::FileSystemClass
     lfs_t _lfs;
     bool _begun;
 
-    BluefuritLib::File _open_file (char const *filepath, uint8_t mode);
-    BluefuritLib::File _open_dir (char const *filepath);
+    BluefruitFS::File _open_file (char const *filepath, uint8_t mode);
+    BluefruitFS::File _open_dir (char const *filepath);
 };
 
 extern LittleFS InternalFS;

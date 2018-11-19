@@ -35,7 +35,7 @@
 /**************************************************************************/
 
 #include <Arduino.h>
-#include "FileIO.h"
+#include "Bluefruit_FileIO.h"
 #include "bonding.h"
 #include "bluefruit.h"
 

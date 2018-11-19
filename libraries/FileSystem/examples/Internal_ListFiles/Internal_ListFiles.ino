@@ -13,7 +13,7 @@
 *********************************************************************/
 
 #include <bluefruit.h>
-#include <FileIO.h>
+#include <Bluefruit_FileIO.h>
 
 /* This example  print out Internal Flash contents up to
  * MAX_LEVEL level of directories (including root)
