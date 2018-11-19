@@ -2,6 +2,8 @@
 
 ## 0.9.1
 
+- rename FileIO.h to Bluefruit_FileIO to prevent conflict with other libraries.
+
 ## 0.9.0
 
 - Added nRF52840-based board support (pca10056 and feather nRF52840 express)
