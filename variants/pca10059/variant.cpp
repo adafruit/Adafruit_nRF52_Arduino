@@ -24,7 +24,7 @@
 #include "nrf.h"
 #include "usb.h"
 
-//#include "flash/flash_qspi.h"
+#include "flash/flash_qspi.h"
 
 const uint32_t g_ADigitalPinMap[] =
 {
@@ -46,21 +46,21 @@ void initVariant()
 {
   // LED1 & LED2
   pinMode(PIN_LED1, OUTPUT);
-  ledOff(PIN_LED1);
+  ledOn(PIN_LED1);
 
   pinMode(PIN_LED2_R, OUTPUT);
-  ledOff(PIN_LED2_R);
+  ledOn(PIN_LED2_R);
 
   pinMode(PIN_LED2_G, OUTPUT);
-  ledOff(PIN_LED2_G);
+  ledOn(PIN_LED2_G);
 
   pinMode(PIN_LED2_B, OUTPUT);
-  ledOff(PIN_LED2_B);
+  ledOn(PIN_LED2_B);
 
   // Init External Flash
   //flash_qspi_init();  // Dongle does not have external flash
 
   // USB init  TODO may have trouble with ISR when SD is enabled
-  usb_init();
+  //usb_init();
 }
 

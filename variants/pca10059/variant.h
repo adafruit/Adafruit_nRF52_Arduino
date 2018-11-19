@@ -46,7 +46,7 @@ extern "C"
 #define PIN_LED1             (6)
 #define PIN_LED2_R           (8)
 #define PIN_LED2_G           (41)     //P1.09
-#define PIN_LED2_B           (44)     //P1.12
+#define PIN_LED2_B           (12)     //P0.12
 
 #define LED_BUILTIN          PIN_LED1
 #define LED_CONN             PIN_LED2_B
@@ -81,7 +81,7 @@ static const uint8_t A7  = PIN_A7 ;
 
 // Other pins
 #define PIN_AREF           (2)       //P0.02           
-//#define PIN_DFU            (11)
+#define PIN_DFU            (43)      //P1.11
 #define PIN_NFC1           (9)       //P0.09 
 #define PIN_NFC2           (10)      //P0.10 
 
@@ -90,8 +90,8 @@ static const uint8_t AREF = PIN_AREF;
 /*
  * Serial interfaces
  */
-//#define PIN_SERIAL_RX       (33)
-//#define PIN_SERIAL_TX       (34)
+#define PIN_SERIAL_RX       (11)     //P0.11 located on bottom
+#define PIN_SERIAL_TX       (14)     //P0.14 located on bottom
 
 //#define PIN_SERIAL2_RX      (8)
 //#define PIN_SERIAL2_TX      (6)
@@ -121,16 +121,16 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 /*
  * QSPI interface for external flash
  */
-//#define PIN_QSPI_SCK         19
-//#define PIN_QSPI_CS          17
-//#define PIN_QSPI_DATA0       20
-//#define PIN_QSPI_DATA1       21
-//#define PIN_QSPI_DATA2       22
-//#define PIN_QSPI_DATA3       23
+#define PIN_QSPI_SCK         16               //not connected
+#define PIN_QSPI_CS          17               //not connected
+#define PIN_QSPI_DATA0       27               //not connected
+#define PIN_QSPI_DATA1       7                //not connected
+#define PIN_QSPI_DATA2       34               //not connected
+#define PIN_QSPI_DATA3       27               //not connected
 
 // On-board QSPI Flash
 // If EXTERNAL_FLASH_DEVICES is not defined, all supported devices will be used
-
+#define EXTERNAL_FLASH_DEVICES   GD25Q16C
 
 #ifdef __cplusplus
 }
