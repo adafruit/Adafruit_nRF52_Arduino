@@ -114,21 +114,17 @@ uint32_t setLoopStacksize(void);
 #define bit(b) (1UL << (b))
 
 #ifdef NRF_P1
-#define digitalPinToPort(P)        ( ((P) < 32) ? NRF_P0 : NRF_P1 )
+#define digitalPinToPort(P)        ( (g_ADigitalPinMap[P] < 32) ? NRF_P0 : NRF_P1 )
 #else
 #define digitalPinToPort(P)        ( NRF_P0 )
 #endif
 
-#define digitalPinToBitMask(P)     ( 1UL << ( (P) < 32 ? (P) : ((P)-32) ) )
+#define digitalPinToBitMask(P)     ( 1UL << ( g_ADigitalPinMap[P] < 32 ? g_ADigitalPinMap[P] : (g_ADigitalPinMap[P]-32) ) )
 //#define analogInPinToBit(P)        ( )
 #define portOutputRegister(port)   ( &(port->OUT) )
 #define portInputRegister(port)    ( (volatile uint32_t*) &(port->IN) )
 #define portModeRegister(port)     ( &(port->DIR) )
-
-#define digitalPinHasPWM(P)        ( (P) > 1 )
-
-// PIN_CNF for nrf52
-#define digitalPinCnfRegister(P)   ( &(digitalPinToPort(P)->PIN_CNF[(P) < 32 ? (P): ((P)-32)]) )
+#define digitalPinHasPWM(P)        ( g_ADigitalPinMap[P] > 1 )
 
 void rtos_idle_callback(void) ATTR_WEAK;
 /*
