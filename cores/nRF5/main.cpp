@@ -103,3 +103,20 @@ void suspendLoop(void)
 {
   vTaskSuspend(_loopHandle);
 }
+
+extern "C"
+{
+
+// nanolib printf() retarget
+int _write (int fd, const void *buf, size_t count)
+{
+  (void) fd;
+
+  if ( Serial )
+  {
+    Serial.write( (const uint8_t *) buf, count);
+  }
+}
+
+}
+

@@ -62,14 +62,6 @@ void HardFault_Handler(void)
   NVIC_SystemReset();
 }
 
-// nanolib printf() retarget
-int _write (int fd, const void *buf, size_t count)
-{
-  (void) fd;
-
-  Serial.write( (const uint8_t *) buf, count);
-}
-
 int dbgHeapTotal(void)
 {
   return ((uint32_t) __HeapLimit) - ((uint32_t) __HeapBase);
