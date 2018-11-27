@@ -24,6 +24,7 @@
 #include "nrf.h"
 
 #include "usb.h"
+#include "flash/flash_qspi.h"
 
 const uint32_t g_ADigitalPinMap[] =
 {
@@ -80,7 +81,10 @@ void initVariant()
   pinMode(PIN_LED2, OUTPUT);
   ledOff(PIN_LED2);
 
-  // USB init  TODO may have trouble with ISR when SD is enabled
+  // Init External Flash
+  flash_qspi_init();
+
+  // USB init
   usb_init();
 }
 

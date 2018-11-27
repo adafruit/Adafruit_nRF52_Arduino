@@ -184,7 +184,7 @@ void flash_qspi_init (void)
   qspi_cfg.pins.io2_pin = g_ADigitalPinMap[PIN_QSPI_DATA2];
   qspi_cfg.pins.io3_pin = g_ADigitalPinMap[PIN_QSPI_DATA3];
   qspi_cfg.prot_if.readoc = NRF_QSPI_READOC_READ4IO;
-  qspi_cfg.prot_if.writeoc = NRF_QSPI_WRITEOC_PP4IO;
+  qspi_cfg.prot_if.writeoc = NRF_QSPI_WRITEOC_PP4O;
 #endif
 
   // No callback for blocking API

@@ -54,7 +54,7 @@ void initVariant()
   // Init External Flash
   flash_qspi_init();
 
-  // USB init  TODO may have trouble with ISR when SD is enabled
+  // USB init
   usb_init();
 }
 
