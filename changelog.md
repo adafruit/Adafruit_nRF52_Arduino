@@ -2,6 +2,10 @@
 
 ## 0.9.1
 
+- Rename FileIO.h to Bluefruit_FileIO to prevent conflict with other libraries.
+- Minor upgrade for bootloader to prevent issue with WDT enabled by application
+- 52840: call cdc flush before delay()
+
 ## 0.9.0
 
 - Added nRF52840-based board support (pca10056 and feather nRF52840 express)

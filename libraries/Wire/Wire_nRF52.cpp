@@ -61,7 +61,7 @@ void TwoWire::begin(void) {
   _p_twim->PSEL.SDA = _uc_pinSDA;
 
   NVIC_ClearPendingIRQ(_IRQn);
-  NVIC_SetPriority(_IRQn, 2);
+  NVIC_SetPriority(_IRQn, 3);
   NVIC_EnableIRQ(_IRQn);
 }
 
@@ -91,7 +91,7 @@ void TwoWire::begin(uint8_t address) {
   _p_twis->INTENSET = TWIS_INTEN_STOPPED_Msk | TWIS_INTEN_ERROR_Msk | TWIS_INTEN_WRITE_Msk | TWIS_INTEN_READ_Msk;
 
   NVIC_ClearPendingIRQ(_IRQn);
-  NVIC_SetPriority(_IRQn, 2);
+  NVIC_SetPriority(_IRQn, 3);
   NVIC_EnableIRQ(_IRQn);
 
   _p_twis->ENABLE = (TWIS_ENABLE_ENABLE_Enabled << TWIS_ENABLE_ENABLE_Pos);

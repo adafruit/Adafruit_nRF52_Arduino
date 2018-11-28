@@ -184,7 +184,7 @@ bool FatFS::format (bool eraseall)
 
 File FatFS::_open_file (char const *filepath, uint8_t mode)
 {
-  BluefuritLib::File file(*this);
+  BluefruitFS::File file(*this);
 
   int flags = (mode == FILE_READ) ? FA_READ :
               (mode == FILE_WRITE) ? (FA_READ | FA_WRITE | FA_OPEN_APPEND) : 0;
@@ -214,7 +214,7 @@ File FatFS::_open_file (char const *filepath, uint8_t mode)
 
 File FatFS::_open_dir (char const *filepath)
 {
-  BluefuritLib::File file(*this);
+  BluefruitFS::File file(*this);
 
   DIR* fhdl = (DIR*) rtos_malloc(sizeof(DIR));
   int rc = f_opendir(fhdl, filepath);
@@ -238,7 +238,7 @@ File FatFS::_open_dir (char const *filepath)
 
 File FatFS::open (char const *filepath, uint8_t mode)
 {
-  BluefuritLib::File file(*this);
+  BluefruitFS::File file(*this);
 
   FILINFO fno;
   FRESULT rc = FR_OK;
@@ -347,7 +347,7 @@ uint32_t FatFS::_f_size (void* fhdl)
 
 File FatFS::_f_openNextFile (void* fhdl, char const* cwd, uint8_t mode)
 {
-  BluefuritLib::File file(*this);
+  BluefruitFS::File file(*this);
 
   FILINFO fno;
   FRESULT rc;

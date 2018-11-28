@@ -12,7 +12,7 @@
  any redistribution
 *********************************************************************/
 
-#include <FileIO.h>
+#include <Bluefruit_FileIO.h>
 
 #define FILENAME    "/adafruit.txt"
 

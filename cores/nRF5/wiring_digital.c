@@ -31,7 +31,7 @@ void pinMode( uint32_t ulPin, uint32_t ulMode )
     return;
   }
 
-//  ulPin = g_ADigitalPinMap[ulPin];
+  ulPin = g_ADigitalPinMap[ulPin];
 
   // Set pin mode according to chapter '22.6.3 I/O Pin Configuration'
   switch ( ulMode )
@@ -84,7 +84,7 @@ void digitalWrite( uint32_t ulPin, uint32_t ulVal )
     return;
   }
 
-//  ulPin = g_ADigitalPinMap[ulPin];
+  ulPin = g_ADigitalPinMap[ulPin];
   NRF_GPIO_Type* nrf_port = (NRF_GPIO_Type*) digitalPinToPort(ulPin);
 
   switch ( ulVal )
@@ -105,7 +105,7 @@ int digitalRead( uint32_t ulPin )
     return 0;
   }
 
-//  ulPin = g_ADigitalPinMap[ulPin];
+  ulPin = g_ADigitalPinMap[ulPin];
 
   // Return bit in OUT or IN depending on configured direction
   NRF_GPIO_Type* nrf_port = (NRF_GPIO_Type*) digitalPinToPort(ulPin);
