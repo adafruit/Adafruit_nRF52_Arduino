@@ -52,6 +52,11 @@ class SoftwareTimer
       _handle = xTimerCreate(NULL, ms2tick(ms), true, NULL, callback);
     }
 
+    TimerHandle_t getHandle(void)
+    {
+      return _handle;
+    }
+
     void start(void) { xTimerStart(_handle, 0); }
     void stop (void) { xTimerStop (_handle, 0); }
 
