@@ -226,8 +226,8 @@ void flash_qspi_init (void)
   uint8_t mfgr_id = (uint8_t) ( NRF_QSPI->CINSTRDAT0 >> 24);
 
   // quick hack
-  printf("qspi mfgr id  : 0x%02X\n", mfgr_id);
-  printf("qspi device id: 0x%02X\n", dev_id);
+  //printf("qspi mfgr id  : 0x%02X\n", mfgr_id);
+  //printf("qspi device id: 0x%02X\n", dev_id);
 
   // Look up the flash device in supported array
   for ( int i = 0; i < FLASH_DEVICE_COUNT; i++ )
