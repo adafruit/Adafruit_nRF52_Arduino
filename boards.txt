@@ -16,7 +16,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-menu.softdevice=Bootloader
+menu.softdevice=Bootloader Version
 menu.debug=Debug Mode
 
 #**********************************************
@@ -43,7 +43,7 @@ feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-feather52832.menu.softdevice.s132v6=s132 6.1.1 r0
+feather52832.menu.softdevice.s132v6=0.2.5 (s132 6.1.1)
 feather52832.menu.softdevice.s132v6.build.sd_flags=-DS132
 feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.1.1
@@ -104,7 +104,7 @@ feather52840.build.extra_flags=-DNRF52840_XXAA
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-feather52840.menu.softdevice.s140v6=s140 6.1.1 r0
+feather52840.menu.softdevice.s140v6=0.2.5 (s140 6.1.1)
 feather52840.menu.softdevice.s140v6.build.sd_flags=-DS140
 feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.1.1
@@ -149,7 +149,7 @@ pca10056.build.extra_flags=-DNRF52840_XXAA
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-pca10056.menu.softdevice.s140v6=s140 6.1.1 r0
+pca10056.menu.softdevice.s140v6=0.2.5 (s140 6.1.1)
 pca10056.menu.softdevice.s140v6.build.sd_flags=-DS140
 pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.1.1
@@ -167,5 +167,3 @@ pca10056.menu.debug.l2=Level 2 (Full Debug)
 pca10056.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
 pca10056.menu.debug.l3=Level 3 (Segger SystemView)
 pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
-
-
