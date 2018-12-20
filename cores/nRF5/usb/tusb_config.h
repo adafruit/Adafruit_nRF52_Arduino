@@ -85,7 +85,14 @@
 
 //------------- CLASS -------------//
 #define CFG_TUD_CDC                 1
+
+// disable msc for feather nrf52840 for now until have a more stable QSPI driver
+#ifdef ARDUINO_NRF52840_FEATHER
+#define CFG_TUD_MSC                 0
+#else
 #define CFG_TUD_MSC                 1
+#endif
+
 
 #define CFG_TUD_HID                 0
 #define CFG_TUD_HID_KEYBOARD        0

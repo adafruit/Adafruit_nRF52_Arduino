@@ -72,6 +72,7 @@ const uint32_t g_ADigitalPinMap[] =
   48, 49, 50, 51, 52, 53, 54, 55,
   56, 57, 58, 59, 60, 61, 62, 63
 };
+
 void initVariant()
 {
   // LED1 & LED2
@@ -81,8 +82,11 @@ void initVariant()
   pinMode(PIN_LED2, OUTPUT);
   ledOff(PIN_LED2);
 
+#if 0 // disable QSPI flash for now
   // Init External Flash
   flash_qspi_init();
+#endif
+
 
   // USB init
   usb_init();
