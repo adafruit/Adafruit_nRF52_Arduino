@@ -117,14 +117,14 @@ void startAdv(void)
 
 void loop()
 {
-  /*-------------- San Pin Array and send report ---------------------*/
+  /*-------------- Scan Pin Array and send report ---------------------*/
   bool anyKeyPressed = false;
 
   uint8_t modifier = 0;
   uint8_t count=0;
   uint8_t keycode[6] = { 0 };
 
-  // scan mofidier key (only SHIFT), user implement ATL, CTRL, CMD if needed
+  // scan modifier key (only SHIFT), user implement ATL, CTRL, CMD if needed
   if ( 0 == digitalRead(shiftPin) )
   {
     modifier |= KEYBOARD_MODIFIER_LEFTSHIFT;

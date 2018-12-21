@@ -13,7 +13,7 @@
 *********************************************************************/
 
 /*
- * This sketch demotrate how to pass ISR_DEFFERED as additional parameter
+ * This sketch demonstrate how to pass ISR_DEFFERED as additional parameter
  * to defer callback from ISR context with attachInterrupt
  */
 #include <Arduino.h>

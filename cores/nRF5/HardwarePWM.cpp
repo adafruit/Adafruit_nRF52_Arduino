@@ -109,12 +109,12 @@ bool HardwarePWM::addPin(uint8_t pin)
   if ( enabled() )
   {
     _pwm->ENABLE = 0;
-    _pwm->PSEL.OUT[_count++] = pin;
+    _pwm->PSEL.OUT[_count++] = g_ADigitalPinMap[pin];
     _pwm->ENABLE = 1;
     _start();
   }else
   {
-    _pwm->PSEL.OUT[_count++] = pin;
+    _pwm->PSEL.OUT[_count++] = g_ADigitalPinMap[pin];
   }
 
   return true;

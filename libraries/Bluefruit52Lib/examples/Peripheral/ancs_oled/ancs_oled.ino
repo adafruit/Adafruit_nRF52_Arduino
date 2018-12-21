@@ -27,11 +27,24 @@
 #include <bluefruit.h>
 
 /*------------- OLED and Buttons -------------*/
+#if defined ARDUINO_NRF52_FEATHER
+// Feather nRF52832
 #define BUTTON_A    31
 #define BUTTON_B    30
 #define BUTTON_C    27
 
-#define OLED_RESET 4
+#elif defined ARDUINO_NRF52840_FEATHER
+// Feather nRF52840
+#define BUTTON_A    9
+#define BUTTON_B    6
+#define BUTTON_C    5
+
+#else
+#error board not supported
+#endif
+
+
+#define OLED_RESET 4 // TODO remove ?
 Adafruit_SSD1306 oled(OLED_RESET);
 
 

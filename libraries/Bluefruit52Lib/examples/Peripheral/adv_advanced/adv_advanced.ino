@@ -20,7 +20,7 @@
  */
 #include <bluefruit.h>
 
-#define PIN_ADV       11
+#define PIN_ADV       A0
 #define ADV_TIMEOUT   60 // seconds
 
 void setup() 
