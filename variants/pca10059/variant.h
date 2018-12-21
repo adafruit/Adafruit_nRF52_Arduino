@@ -43,10 +43,10 @@ extern "C"
 #define NUM_ANALOG_OUTPUTS   (0)
 
 // LEDs
-#define PIN_LED1             (6)
+#define PIN_LED1             (6)      // Primary LED in Bootloader
 #define PIN_LED2_R           (8)
 #define PIN_LED2_G           (41)     //P1.09
-#define PIN_LED2_B           (12)     //P0.12
+#define PIN_LED2_B           (12)     //P0.12 // Secondary in Bootloader
 
 #define LED_BUILTIN          PIN_LED1
 #define LED_CONN             PIN_LED2_B
@@ -81,7 +81,7 @@ static const uint8_t A7  = PIN_A7 ;
 
 // Other pins
 #define PIN_AREF           (2)       //P0.02           
-#define PIN_DFU            (43)      //P1.11
+#define PIN_DFU            (38)      //P1.06
 #define PIN_NFC1           (9)       //P0.09 
 #define PIN_NFC2           (10)      //P0.10 
 
@@ -90,8 +90,8 @@ static const uint8_t AREF = PIN_AREF;
 /*
  * Serial interfaces
  */
-#define PIN_SERIAL_RX       (11)     //P0.11 located on bottom
-#define PIN_SERIAL_TX       (14)     //P0.14 located on bottom
+#define PIN_SERIAL_RX       (20)     //P0.20 same ad bootloader
+#define PIN_SERIAL_TX       (17)     //P0.17 same ad bootloader
 
 //#define PIN_SERIAL2_RX      (8)
 //#define PIN_SERIAL2_TX      (6)
@@ -105,7 +105,7 @@ static const uint8_t AREF = PIN_AREF;
 #define PIN_SPI_MOSI         (45)            //P1.13
 #define PIN_SPI_SCK          (47)            //P1.15
 
-static const uint8_t SS   = 32;              //P1.00  
+static const uint8_t SS   = 40;              //P1.08  
 static const uint8_t MOSI = PIN_SPI_MOSI ;
 static const uint8_t MISO = PIN_SPI_MISO ;
 static const uint8_t SCK  = PIN_SPI_SCK ;
@@ -122,8 +122,8 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
  * QSPI interface for external flash
  */
 #define PIN_QSPI_SCK         16               //not connected
-#define PIN_QSPI_CS          17               //not connected
-#define PIN_QSPI_DATA0       27               //not connected
+#define PIN_QSPI_CS          5                //not connected
+#define PIN_QSPI_DATA0       3                //not connected
 #define PIN_QSPI_DATA1       7                //not connected
 #define PIN_QSPI_DATA2       34               //not connected
 #define PIN_QSPI_DATA3       27               //not connected
