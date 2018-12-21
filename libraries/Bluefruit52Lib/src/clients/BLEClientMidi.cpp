@@ -105,10 +105,55 @@ void BLEClientMidi::disconnect(void)
 void blemidi_central_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len)
 {
   BLEClientMidi& uart_svc = (BLEClientMidi&) chr->parentService();
-  uart_svc._rx_fifo.write(data, len);
+  //uart_svc._rx_fifo.write(data, len);
+  uart_svc._write_handler(data, len);
 
+
+  // RS: I toook this out (should be in _write_handler)
   // invoke callback
-  if ( uart_svc._rx_cb ) uart_svc._rx_cb(uart_svc);
+  //if ( uart_svc._rx_cb ) uart_svc._rx_cb(uart_svc);
+}
+
+void BLEClientMidi::_write_handler(uint8_t* data, uint16_t len)
+{
+  // drop the BLE MIDI header byte
+  data++;
+  len--;
+
+  while (len)
+  {
+
+    // timestamp low byte followed by a MIDI status,
+    // so we drop the timestamp low byte
+    if ( isStatusByte(data[0]) && isStatusByte(data[1]) )
+    {
+      data++;
+      len--;
+    }
+    // timestamp low byte on it's own (running status),
+    // so we drop the timestamp low byte
+    else if ( isStatusByte(data[0]) && ! isStatusByte(data[1]) )
+    {
+      data++;
+      len--;
+    }
+
+    // write the status or MIDI data to the FIFO
+    _rx_fifo.write(data++, 1);
+    len--;
+  }
+
+  // Call write callback if configured
+  if ( _rx_cb ) _rx_cb(*this);
+
+#ifdef MIDI_LIB_INCLUDED
+  // read while possible if configured
+  if ( _midilib_obj )
+  {
+    while( ((midi::MidiInterface<BLEMidi>*)_midilib_obj)->read() ) { }
+  }
+#endif
+
 }
 
 /*------------------------------------------------------------------*/
@@ -150,4 +195,55 @@ int BLEClientMidi::peek (void)
 void BLEClientMidi::flush (void)
 {
   _rx_fifo.clear();
+}
+
+/*------------------------------------------------------------------*/
+/* Message Type Helpers
+ *------------------------------------------------------------------*/
+bool BLEClientMidi::isStatusByte( uint8_t b )
+{
+  // if the bit 7 is set, then it's a MIDI status message
+  if (bitRead(b, 7))
+    return true;
+  else
+    return false;
+}
+
+bool BLEClientMidi::oneByteMessage( uint8_t status )
+{
+  // system messages
+  if (status >= 0xF4 && status <= 0xFF) return true;
+
+  // system common
+  if (status == 0xF1) return true;
+
+  // sysex end
+  if (status == 0xF7) return true;
+
+  return false;
+}
+
+bool BLEClientMidi::twoByteMessage( uint8_t status )
+{
+  // program change, aftertouch
+  if (status >= 0xC0 && status <= 0xDF) return true;
+
+  // song select
+  if (status == 0xF3) return true;
+
+  return false;
+}
+
+bool BLEClientMidi::threeByteMessage( uint8_t status )
+{
+  // note off, note on, aftertouch, control change
+  if (status >= 0x80 && status <= 0xBF) return true;
+
+  // pitch wheel change
+  if (status >= 0xE0 && status <= 0xEF) return true;
+
+  // song position pointer
+  if (status == 0xF2) return true;
+
+  return false;
 }

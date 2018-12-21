@@ -44,6 +44,8 @@
 
 #include "services/BLEMidi.h"
 
+#define MIDI_CREATE_BLE_INSTANCE(midiService)   MIDI_CREATE_INSTANCE(BLEClientMidi, midiService, MIDI)
+
 class BLEClientMidi : public BLEClientService, public Stream
 {
   public:
@@ -60,6 +62,12 @@ class BLEClientMidi : public BLEClientService, public Stream
 
     bool enableTXD(void);
     bool disableTXD(void);
+
+    // message type helpers
+    bool isStatusByte(uint8_t b);
+    bool oneByteMessage(uint8_t status);
+    bool twoByteMessage(uint8_t status);
+    bool threeByteMessage(uint8_t status);
 
     // Stream API
     virtual int       read       ( void );
@@ -83,6 +91,8 @@ class BLEClientMidi : public BLEClientService, public Stream
 
     Adafruit_FIFO     _rx_fifo;
     rx_callback_t     _rx_cb;
+
+    void _write_handler(uint8_t* data, uint16_t len);
 
     friend void blemidi_central_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
 };
