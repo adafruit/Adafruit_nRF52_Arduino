@@ -2,7 +2,9 @@
 
 ## 0.9.2
 
-
+- Fully support Feather nRF52840
+- Update bootloader with new led pattern
+- Fix #203: return software timer handle
 
 ## 0.9.1
 
