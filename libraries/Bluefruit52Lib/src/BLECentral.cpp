@@ -147,27 +147,61 @@ void BLECentral::clearBonds(void)
 void BLECentral::_event_handler(ble_evt_t* evt)
 {
   // conn handle has fixed offset regardless of event type
-  const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
+  const uint16_t conn_hdl = evt->evt.common_evt.conn_handle;
 
   /* PrPh handle connection is already filtered. Only handle Central events or
-   * connection handle is BLE_CONN_HANDLE_INVALID (e.g BLE_GAP_EVT_ADV_REPORT)
-   */
+   * connection handle is BLE_CONN_HANDLE_INVALID (e.g BLE_GAP_EVT_ADV_REPORT) */
   switch ( evt->header.evt_id  )
   {
     case BLE_GAP_EVT_CONNECTED:
-      if ( Bluefruit.Gap.getRole(evt_conn_hdl) == BLE_GAP_ROLE_CENTRAL)
+      if ( Bluefruit.Gap.getRole(conn_hdl) == BLE_GAP_ROLE_CENTRAL)
       {
         // Invoke callback
-        if ( _connect_cb) ada_callback(NULL, _connect_cb, evt_conn_hdl);
+        if ( _connect_cb) ada_callback(NULL, _connect_cb, conn_hdl);
       }
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
-      if ( Bluefruit.Gap.getRole(evt_conn_hdl) == BLE_GAP_ROLE_CENTRAL)
+      if ( Bluefruit.Gap.getRole(conn_hdl) == BLE_GAP_ROLE_CENTRAL)
       {
         // Invoke callback reason is BLE_HCI_STATUS code
-        if ( _disconnect_cb) ada_callback(NULL, _disconnect_cb, evt_conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
+        if ( _disconnect_cb) ada_callback(NULL, _disconnect_cb, conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
       }
+    break;
+
+    case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:
+    {
+      ble_gap_conn_params_t* request_param = &evt->evt.gap_evt.params.conn_param_update_request.conn_params;
+
+      PRINT_INT(request_param->min_conn_interval);
+      PRINT_INT(request_param->max_conn_interval);
+      PRINT_INT(request_param->slave_latency);
+      PRINT_INT(request_param->conn_sup_timeout);
+
+      // Accept request parameter if it is within our supported range, otherwise reject
+      if ( ( request_param->max_conn_interval < _ppcp_min_conn ) || ( request_param->min_conn_interval > _ppcp_max_conn ) )
+      {
+        LOG_LV1("GAP", "Reject Conn Param Update Request: our = ( %.2f,  %.2f ), request = ( %.2f,  %.2f )",
+                ppcp_min_conn*1.25f, _ppcp_max_conn*1.25f, request_param->min_conn_interval*1.25f, request_param->max_conn_interval*1.25f);
+
+        sd_ble_gap_conn_param_update(conn_hdl, NULL); // reject request
+      }else
+      {
+        uint16_t const conn_interval = max16(_ppcp_min_conn, request_param->min_conn_interval);
+
+        ble_gap_conn_params_t resp_param =
+        {
+          .min_conn_interval = conn_interval,
+          .max_conn_interval = conn_interval, // central set min = max
+          .slave_latency     = request_param->slave_latency, // TODO check save latency
+          .conn_sup_timeout  = request_param->conn_sup_timeout, // TODO check supervisor timeout
+        };
+
+        LOG_LV2("GAP", "Conn Interval is updated to %.2f ms", conn_interval*1.25f);
+
+        sd_ble_gap_conn_param_update(conn_hdl, &resp_param);
+      }
+    }
     break;
 
     default: break;
