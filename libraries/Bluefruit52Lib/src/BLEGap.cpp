@@ -263,6 +263,8 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       // Init transmission buffer for notification
       peer->hvn_tx_sem   = xSemaphoreCreateCounting(getHvnQueueSize(conn_hdl), getHvnQueueSize(conn_hdl));
       peer->wrcmd_tx_sem = xSemaphoreCreateCounting(getWriteCmdQueueSize(conn_hdl), getWriteCmdQueueSize(conn_hdl));
+
+      LOG_LV2("GAP", "Conn Interval= %f", para->conn_params.min_conn_interval*1.25f);
     }
     break;
 

@@ -203,9 +203,7 @@ class AdafruitBluefruit
     uint8_t _central_count;
 
     // Peripheral Preferred Connection Parameters (PPCP)
-    uint16_t _ppcp_min_conn;
-    uint16_t _ppcp_max_conn;
-    uint16_t _ppcp_conn_sup_timeout;
+    ble_gap_conn_params_t _ppcp;
 
     // Actual connection interval in use
     uint16_t _conn_interval;

@@ -42,8 +42,7 @@
  */
 BLECentral::BLECentral(void)
 {
-  _conn_param.min_conn_interval = 30; //BLE_GAP_CONN_MIN_INTERVAL_DFLT;
-  _conn_param.max_conn_interval = 30; //BLE_GAP_CONN_MAX_INTERVAL_DFLT;
+  _conn_param.min_conn_interval = _conn_param.max_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
   _conn_param.slave_latency = BLE_GAP_CONN_SLAVE_LATENCY;
   _conn_param.conn_sup_timeout = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS/10;
 
@@ -174,7 +173,10 @@ void BLECentral::_event_handler(ble_evt_t* evt)
 
       // Central could perform checks to accept or reject request
       // For now just accept parameter from prph
-      sd_ble_gap_conn_param_update(conn_hdl, request_param);
+      ble_gap_conn_params_t conn_param = *request_param;
+      conn_param.max_conn_interval = conn_param.min_conn_interval;
+
+      sd_ble_gap_conn_param_update(conn_hdl, &conn_param);
     }
     break;
 

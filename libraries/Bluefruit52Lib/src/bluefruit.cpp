@@ -133,9 +133,11 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _conn_hdl      = BLE_CONN_HANDLE_INVALID;
 
-  _ppcp_min_conn = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
-  _ppcp_max_conn = BLE_GAP_CONN_MAX_INTERVAL_DFLT;
-  _ppcp_conn_sup_timeout = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10; // in 10ms unit
+  _ppcp.min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
+  _ppcp.max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT;
+  _ppcp.slave_latency = 0;
+  _ppcp.conn_sup_timeout = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10; // in 10ms unit
+
   _conn_interval = 0;
 
   _connect_cb    = NULL;
@@ -417,15 +419,7 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   /*------------- Configure GAP  -------------*/
 
   // Peripheral Preferred Connection Parameters
-  ble_gap_conn_params_t   gap_conn_params =
-  {
-      .min_conn_interval = _ppcp_min_conn, // in 1.25ms unit
-      .max_conn_interval = _ppcp_max_conn, // in 1.25ms unit
-      .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
-      .conn_sup_timeout  = _ppcp_conn_sup_timeout, // in 10ms unit
-  };
-
-  VERIFY_STATUS( sd_ble_gap_ppcp_set(&gap_conn_params) );
+  VERIFY_STATUS( sd_ble_gap_ppcp_set(&_ppcp) );
 
   // Default device name
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
@@ -566,18 +560,10 @@ bool AdafruitBluefruit::disconnect(void)
 
 bool AdafruitBluefruit::setConnInterval(uint16_t min, uint16_t max)
 {
-  _ppcp_min_conn = min;
-  _ppcp_max_conn = max;
+  _ppcp.min_conn_interval = min;
+  _ppcp.max_conn_interval = max;
 
-  ble_gap_conn_params_t   gap_conn_params =
-  {
-      .min_conn_interval = _ppcp_min_conn, // in 1.25ms unit
-      .max_conn_interval = _ppcp_max_conn, // in 1.25ms unit
-      .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
-      .conn_sup_timeout  = _ppcp_conn_sup_timeout // in 10ms unit
-  };
-
-  VERIFY_STATUS( sd_ble_gap_ppcp_set(&gap_conn_params), false);
+  VERIFY_STATUS( sd_ble_gap_ppcp_set(&_ppcp), false);
 
   return true;
 }
@@ -589,17 +575,9 @@ bool AdafruitBluefruit::setConnIntervalMS(uint16_t min_ms, uint16_t max_ms)
 
 bool AdafruitBluefruit::setConnSupervisionTimeout(uint16_t timeout)
 {
-  _ppcp_conn_sup_timeout = timeout;
+  _ppcp.conn_sup_timeout = timeout;
 
-  ble_gap_conn_params_t   gap_conn_params =
-  {
-      .min_conn_interval = _ppcp_min_conn, // in 1.25ms unit
-      .max_conn_interval = _ppcp_max_conn, // in 1.25ms unit
-      .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
-      .conn_sup_timeout  = _ppcp_conn_sup_timeout // in 10ms unit
-  };
-
-  VERIFY_STATUS( sd_ble_gap_ppcp_set(&gap_conn_params), false);
+  VERIFY_STATUS( sd_ble_gap_ppcp_set(&_ppcp), false);
 
   return true;
 }
@@ -804,11 +782,9 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
           _conn_hdl      = evt->evt.gap_evt.conn_handle;
           _conn_interval = para->conn_params.min_conn_interval;
 
-          LOG_LV2("GAP", "Conn Interval= %f", _conn_interval*1.25f);
-
           // Connection interval set by Central is out of preferred range
           // Try to negotiate with Central using our preferred values
-          if ( !is_within(_ppcp_min_conn, para->conn_params.min_conn_interval, _ppcp_max_conn) )
+          if ( !is_within(_ppcp.min_conn_interval, para->conn_params.min_conn_interval, _ppcp.max_conn_interval) )
           {
             // Null, value is set by sd_ble_gap_ppcp_set will be used
             VERIFY_STATUS( sd_ble_gap_conn_param_update(_conn_hdl, NULL), );
@@ -1013,12 +989,12 @@ void AdafruitBluefruit::printInfo(void)
 
   // Connection Intervals
   Serial.printf(title_fmt, "Conn Intervals");
-  Serial.printf("min = %.2f ms, ", _ppcp_min_conn*1.25f);
-  Serial.printf("max = %.2f ms", _ppcp_max_conn*1.25f);
+  Serial.printf("min = %.2f ms, ", _ppcp.min_conn_interval*1.25f);
+  Serial.printf("max = %.2f ms", _ppcp.max_conn_interval*1.25f);
   Serial.println();
 
   Serial.printf(title_fmt, "Conn Timeout");
-  Serial.printf("%.2f ms", _ppcp_conn_sup_timeout*10.0f);
+  Serial.printf("%.2f ms", _ppcp.conn_sup_timeout*10.0f);
   Serial.println();
 
   /*------------- List the paried device -------------*/
