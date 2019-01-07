@@ -53,6 +53,6 @@ class BLEClientBas : public BLEClientService
 
   private:
     BLEClientCharacteristic _battery;
-}
+};
 
 #endif /* BLECLIENTBAS_H_ */
