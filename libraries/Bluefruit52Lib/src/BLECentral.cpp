@@ -168,7 +168,7 @@ void BLECentral::_event_handler(ble_evt_t* evt)
       // Peripheral request to change connection parameter
       ble_gap_conn_params_t* request_param = &evt->evt.gap_evt.params.conn_param_update_request.conn_params;
 
-      LOG_LV2("GAP", "Conn Param Update Request: (min, max, lattency, sup) = (%.2f,  %.2f, %d, %d)",
+      LOG_LV2("GAP", "Conn Param Update Request: (min, max, latency, sup) = (%.2f,  %.2f, %d, %d)",
               request_param->min_conn_interval*1.25f, request_param->max_conn_interval*1.25f, request_param->slave_latency, request_param->conn_sup_timeout*10);
 
       // Central could perform checks to accept or reject request

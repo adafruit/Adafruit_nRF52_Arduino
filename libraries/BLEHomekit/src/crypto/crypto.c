@@ -13,7 +13,7 @@
 //#include <pstorage.h>
 //#include <app_scheduler.h>
 #include <nrf_soc.h>
-#include "nffs/nffs.h"
+#include "Bluefruit_FileIO.h"
 #include "utility/debug.h"
 
 #include "rtos.h"
@@ -107,7 +107,13 @@ static uint8_t crypto_loadKeys(void)
   crypto_persistent_keys_t keys = {};
 
   uint32_t keylen = sizeof(keys);
-  fsutil_read_file(CRYPTO_KEYFILE, 0, keylen, &keys, &keylen);
+
+  File file(CRYPTO_KEYFILE, FILE_READ, InternalFS);
+  VERIFY(file, 0);
+
+  keylen = file.read(&keys, keylen);
+
+  file.close();
 
   if (keys.valid0 == 0x55 && keys.valid1 == 0xAA && keys.instance == CRYPTO_INSTANCE)
   {
@@ -156,7 +162,12 @@ void crypto_storeKeys(void)
     keys.valid0 = 0x55;
     keys.valid1 = 0xAA;
 
-    fsutil_write_file(CRYPTO_KEYFILE, &keys, sizeof(keys));
+    File file(CRYPTO_KEYFILE, FILE_WRITE, InternalFS);
+    VERIFY(file,);
+
+    file.write(&keys, sizeof(keys));
+
+    file.close();
 
 //    err_code = pstorage_update(&handle, (uint8_t*)&keys, sizeof(keys), 0);
 //    APP_ERROR_CHECK(err_code);
