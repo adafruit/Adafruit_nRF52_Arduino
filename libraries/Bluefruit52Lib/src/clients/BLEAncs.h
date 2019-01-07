@@ -162,9 +162,6 @@ class BLEAncs : public BLEClientService
     bool     actPositive       (uint32_t uid);
     bool     actNegative       (uint32_t uid);
 
-  protected:
-    virtual void  disconnect(void);
-
   private:
     BLEClientCharacteristic _control;
     BLEClientCharacteristic _notification;

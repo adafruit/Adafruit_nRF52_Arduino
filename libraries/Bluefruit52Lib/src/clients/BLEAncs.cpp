@@ -78,7 +78,7 @@ BLEAncs::BLEAncs(void)
     _notification(BLEANCS_UUID_CHR_NOTIFICATION), _data(BLEANCS_UUID_CHR_DATA),
     _adamsg()
 {
-  _notif_cb    = NULL;
+  _notif_cb = NULL;
 }
 
 bool BLEAncs::begin(void)
@@ -114,11 +114,6 @@ bool BLEAncs::discover(uint16_t conn_handle)
 
   _conn_hdl = conn_handle;
   return true;
-}
-
-void BLEAncs::disconnect(void)
-{
-  BLEClientService::disconnect();
 }
 
 void BLEAncs::setNotificationCallback(notification_callback_t fp)

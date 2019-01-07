@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
-    @file     BLEClientDis.h
+    @file     BLEClientBas.cpp
     @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2018, Adafruit Industries (adafruit.com)
+    Copyright (c) 2019, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -34,36 +34,38 @@
 */
 /**************************************************************************/
 
-#ifndef BLECLIENTDIS_H_
-#define BLECLIENTDIS_H_
+#include "bluefruit.h"
 
-#include "bluefruit_common.h"
-#include "BLEClientCharacteristic.h"
-#include "BLEClientService.h"
-
-class BLEClientDis : public BLEClientService
+BLEClientBas::BLEClientBas(void)
+  : BLEClientService(UUID16_SVC_BATTERY), _battery(UUID16_CHR_BATTERY_LEVEL)
 {
-  public:
-    BLEClientDis(void);
 
-    virtual bool  begin(void);
-    virtual bool  discover(uint16_t conn_handle);
+}
 
-    uint16_t getChars(uint16_t uuid, char* buffer, uint16_t bufsize);
+bool BLEClientBas::begin(void)
+{
+  // Invoke base class begin()
+  BLEClientService::begin();
 
-    uint16_t getModel       (char* buffer, uint16_t bufsize);
-    uint16_t getSerial      (char* buffer, uint16_t bufsize);
-    uint16_t getFirmwareRev (char* buffer, uint16_t bufsize);
-    uint16_t getHardwareRev (char* buffer, uint16_t bufsize);
-    uint16_t getSoftwareRev (char* buffer, uint16_t bufsize);
-    uint16_t getManufacturer(char* buffer, uint16_t bufsize);
+  _battery.begin(this);
 
-  private:
+  return true;
+}
 
-    // BLE DIS has several characteristics but is often used one or two times
-    // It is better to implement get() with on-the-fly BLEClientCharacteristic
-};
+bool BLEClientBas::discover(uint16_t conn_handle)
+{
+  // Call BLECentralService discover
+  VERIFY( BLEClientService::discover(conn_handle) );
+  _conn_hdl = BLE_CONN_HANDLE_INVALID; // make as invalid until we found all chars
 
+  // Discover TXD, RXD characteristics
+  VERIFY( 1 == Bluefruit.Discovery.discoverCharacteristic(conn_handle, _battery) );
 
+  _conn_hdl = conn_handle;
+  return true;
+}
 
-#endif /* BLECLIENTDIS_H_ */
+uint8_t BLEClientBas::read(void)
+{
+  return _battery.read8();
+}

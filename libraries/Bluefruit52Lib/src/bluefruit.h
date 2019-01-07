@@ -81,6 +81,7 @@
 #include "clients/BLEClientDis.h"
 #include "clients/BLEClientCts.h"
 #include "clients/BLEClientHidAdafruit.h"
+#include "clients/BLEClientBas.h"
 
 #include "utility/AdaCallback.h"
 #include "utility/bonding.h"
