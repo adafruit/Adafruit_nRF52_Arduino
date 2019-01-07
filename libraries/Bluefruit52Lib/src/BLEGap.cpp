@@ -281,6 +281,13 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     }
     break;
 
+    case BLE_GAP_EVT_CONN_PARAM_UPDATE:
+    {
+      ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
+      LOG_LV2("GAP", "Conn Interval= %f", param->min_conn_interval*1.25f);
+    }
+    break;
+
     case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
     {
       // Pairing in progress, Peer asking for our info

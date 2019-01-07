@@ -825,8 +825,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         // min conn = max conn = actual used interval
         ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
         _conn_interval = param->min_conn_interval;
-
-        LOG_LV2("GAP", "Conn Interval= %f", _conn_interval*1.25f);
       }
       break;
 

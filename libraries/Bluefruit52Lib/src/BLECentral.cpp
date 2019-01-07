@@ -42,8 +42,10 @@
  */
 BLECentral::BLECentral(void)
 {
-  _ppcp_min_conn = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
-  _ppcp_max_conn = BLE_GAP_CONN_MAX_INTERVAL_DFLT;
+  _conn_param.min_conn_interval = 30; //BLE_GAP_CONN_MIN_INTERVAL_DFLT;
+  _conn_param.max_conn_interval = 30; //BLE_GAP_CONN_MAX_INTERVAL_DFLT;
+  _conn_param.slave_latency = BLE_GAP_CONN_SLAVE_LATENCY;
+  _conn_param.conn_sup_timeout = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS/10;
 
   _connect_cb    = NULL;
   _disconnect_cb = NULL;
@@ -60,8 +62,8 @@ void BLECentral::begin(void)
  *------------------------------------------------------------------*/
 bool BLECentral::setConnInterval(uint16_t min, uint16_t max)
 {
-  _ppcp_min_conn = min;
-  _ppcp_max_conn = max;
+  _conn_param.min_conn_interval = min;
+  _conn_param.max_conn_interval = max;
 
   return true;
 }
@@ -73,15 +75,8 @@ bool BLECentral::setConnIntervalMS (uint16_t min_ms, uint16_t max_ms)
 
 bool BLECentral::connect(const ble_gap_addr_t* peer_addr)
 {
-  ble_gap_conn_params_t gap_conn_params =
-  {
-      .min_conn_interval = _ppcp_min_conn, // in 1.25ms unit
-      .max_conn_interval = _ppcp_max_conn, // in 1.25ms unit
-      .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
-      .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
-  };
-
-  VERIFY_STATUS( sd_ble_gap_connect(peer_addr, Bluefruit.Scanner.getParams(), &gap_conn_params, CONN_CFG_CENTRAL), false );
+  // Connect with default connection parameter
+  VERIFY_STATUS( sd_ble_gap_connect(peer_addr, Bluefruit.Scanner.getParams(), &_conn_param, CONN_CFG_CENTRAL), false );
 
   return true;
 }
@@ -171,36 +166,15 @@ void BLECentral::_event_handler(ble_evt_t* evt)
 
     case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:
     {
+      // Peripheral request to change connection parameter
       ble_gap_conn_params_t* request_param = &evt->evt.gap_evt.params.conn_param_update_request.conn_params;
 
-      PRINT_INT(request_param->min_conn_interval);
-      PRINT_INT(request_param->max_conn_interval);
-      PRINT_INT(request_param->slave_latency);
-      PRINT_INT(request_param->conn_sup_timeout);
+      LOG_LV2("GAP", "Conn Param Update Request: (min, max, lattency, sup) = (%.2f,  %.2f, %d, %d)",
+              request_param->min_conn_interval*1.25f, request_param->max_conn_interval*1.25f, request_param->slave_latency, request_param->conn_sup_timeout*10);
 
-      // Accept request parameter if it is within our supported range, otherwise reject
-      if ( ( request_param->max_conn_interval < _ppcp_min_conn ) || ( request_param->min_conn_interval > _ppcp_max_conn ) )
-      {
-        LOG_LV1("GAP", "Reject Conn Param Update Request: our = ( %.2f,  %.2f ), request = ( %.2f,  %.2f )",
-                ppcp_min_conn*1.25f, _ppcp_max_conn*1.25f, request_param->min_conn_interval*1.25f, request_param->max_conn_interval*1.25f);
-
-        sd_ble_gap_conn_param_update(conn_hdl, NULL); // reject request
-      }else
-      {
-        uint16_t const conn_interval = max16(_ppcp_min_conn, request_param->min_conn_interval);
-
-        ble_gap_conn_params_t resp_param =
-        {
-          .min_conn_interval = conn_interval,
-          .max_conn_interval = conn_interval, // central set min = max
-          .slave_latency     = request_param->slave_latency, // TODO check save latency
-          .conn_sup_timeout  = request_param->conn_sup_timeout, // TODO check supervisor timeout
-        };
-
-        LOG_LV2("GAP", "Conn Interval is updated to %.2f ms", conn_interval*1.25f);
-
-        sd_ble_gap_conn_param_update(conn_hdl, &resp_param);
-      }
+      // Central could perform checks to accept or reject request
+      // For now just accept parameter from prph
+      sd_ble_gap_conn_param_update(conn_hdl, request_param);
     }
     break;
 

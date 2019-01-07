@@ -118,7 +118,6 @@ void connect_callback(uint16_t conn_handle)
 
   // Once HRM service is found, we continue to discover its characteristic
   Serial.println("Found it");
-
   
   Serial.print("Discovering Measurement characteristic ... ");
   if ( !hrmc.discover() )
