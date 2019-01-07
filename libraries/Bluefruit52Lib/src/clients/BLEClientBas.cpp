@@ -69,3 +69,19 @@ uint8_t BLEClientBas::read(void)
 {
   return _battery.read8();
 }
+
+bool BLEClientBas::enableNotify(void)
+{
+  return _battery.enableNotify();
+}
+
+bool BLEClientBas::disableNotify(void)
+{
+  return _battery.disableNotify();
+}
+
+void BLEClientBas::setNotifyCallback(BLEClientCharacteristic::notify_cb_t fp, bool useAdaCallback)
+{
+  return _battery.setNotifyCallback(fp, useAdaCallback);
+}
+

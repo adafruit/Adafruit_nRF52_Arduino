@@ -51,6 +51,11 @@ class BLEClientBas : public BLEClientService
 
     uint8_t read(void);
 
+    bool enableNotify(void);
+    bool disableNotify(void);
+
+    void setNotifyCallback(BLEClientCharacteristic::notify_cb_t fp, bool useAdaCallback = true);
+
   private:
     BLEClientCharacteristic _battery;
 };
