@@ -17,26 +17,16 @@
  * that has bleuart as peripheral is required for the demo.
  */
 #include <bluefruit.h>
-#include <MIDI.h>
-
-bool MIDILOG = false;
 
 BLEClientDis  clientDis;
 BLEClientMidi clientMidi;
 
-MIDI_CREATE_BLE_INSTANCE(clientMidi);
-
-int clockPin = 7;
-
 void setup()
 {
-  pinMode(clockPin, OUTPUT);
-  pinMode(LED_RED, OUTPUT);
-  
   Serial.begin(115200);
   while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
-  Serial.println("Bluefruit52 Central BLEUART Example");
+  Serial.println("Bluefruit52 Central BLEMidi Example");
   Serial.println("-----------------------------------\n");
   
   // Initialize Bluefruit with maximum connections as Peripheral = 0, Central = 1
@@ -48,9 +38,9 @@ void setup()
   // Configure DIS client
   clientDis.begin();
 
-  // Init BLE Central Uart Serivce
+  // Init BLE Central MIDI Service
   clientMidi.begin();
-  clientMidi.setRxCallback(bleuart_rx_callback);
+  clientMidi.setRxCallback(blemidi_rx_callback);
 
   // Increase Blink rate to different from PrPh advertising mode
   Bluefruit.setConnLedInterval(250);
@@ -68,14 +58,8 @@ void setup()
   Bluefruit.Scanner.setRxCallback(scan_callback);
   Bluefruit.Scanner.restartOnDisconnect(true);
   Bluefruit.Scanner.setInterval(160, 80); // in unit of 0.625 ms
-  Bluefruit.Scanner.useActiveScan(true);
+  Bluefruit.Scanner.useActiveScan(false);
   Bluefruit.Scanner.start(0);                   // // 0 = Don't stop scanning after n seconds
-
-  //try Midi Things
-  MIDI.begin(MIDI_CHANNEL_OMNI);
-  MIDI.setHandleNoteOn(handleNoteOn);
-  MIDI.setHandleNoteOff(handleNoteOff);
-
 }
 
 /**
@@ -84,12 +68,12 @@ void setup()
  */
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
-  // Check if advertising contain BleUart service
+  // Check if advertising contain BleMidi service
   if ( Bluefruit.Scanner.checkReportForService(report, clientMidi) )
   {
     Serial.print("BLE MIDI service detected. Connecting ... ");
 
-    // Connect to device with bleuart service in advertising
+    // Connect to device with blemidi service in advertising
     Bluefruit.Central.connect(report);
   }else
   {      
@@ -132,20 +116,20 @@ void connect_callback(uint16_t conn_handle)
     Serial.println();
   }  
 
-  Serial.print("Discovering BLE Uart Service ... ");
+  Serial.print("Discovering BLE MIDI Service ... ");
 
   if ( clientMidi.discover(conn_handle) )
   {
     Serial.println("Found it");
 
-    // Request to pair
+  // Request to pair
     if ( !Bluefruit.Gap.requestPairing(conn_handle) )
     {
       Serial.print("Failed to paired");
       return;
     }
     Serial.println("Paired");
-
+    
     Serial.println("Enable TXD's notify");
     clientMidi.enableTXD();
 
@@ -154,7 +138,7 @@ void connect_callback(uint16_t conn_handle)
   {
     Serial.println("Found NONE");
     
-    // disconect since we couldn't find bleuart service
+    // disconect since we couldn't find blemidi service
     Bluefruit.Central.disconnect(conn_handle);
   }  
 }
@@ -173,82 +157,40 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 }
 
 /**
- * Callback invoked when uart received data
- * @param uart_svc Reference object to the service where the data 
+ * Callback invoked when MIDI received data
+ * @param midi_svc Reference object to the service where the data 
  * arrived. In this example it is clientMidi
  */
-void bleuart_rx_callback(BLEClientMidi& uart_svc)
+void blemidi_rx_callback(BLEClientMidi& midi_svc)
 {
-  //Serial.print("[RX]: ");
-
- 
-  if ( uart_svc.available() && Serial.available())
+  Serial.print("[RX]: ");
+  
+  while ( midi_svc.available() )
   {
-      //delay(2);
-      MIDI.read();
-//    Serial.print( (char) uart_svc.read() );
-  }
-//
-//  Serial.println();
-}
-
-bool on16 = true;
-
-void handleNoteOn(byte channel, byte pitch, byte velocity)
-{
-  if(MIDILOG){
-    // Log when a note is pressed.
-    Serial.printf("Note on: channel = %d, pitch = %d, velocity - %d", channel, pitch, velocity);
-    Serial.println();
+    Serial.print( (char) midi_svc.read(), HEX );
   }
 
-  //make any note event on channel 16 a trig out
-  if(channel == 16 && !on16){
-    on16 = true;
-    digitalWrite(LED_RED, HIGH);
-    digitalWrite(clockPin, HIGH);
-    delay(5);
-    digitalWrite(LED_RED, LOW);
-    digitalWrite(clockPin, LOW);
-    
-  }
-
-}
-
-void handleNoteOff(byte channel, byte pitch, byte velocity)
-{
-  if(MIDILOG){
-    // Log when a note is released.
-    Serial.printf("Note off: channel = %d, pitch = %d, velocity - %d", channel, pitch, velocity);
-    Serial.println();
-  }
-
-  if(channel == 16){
-    on16 = false;
-  }
+  Serial.println();
 }
 
 void loop()
 {
   if ( Bluefruit.Central.connected() )
   {
-    MIDI.read();
     // Not discovered yet
     if ( clientMidi.discovered() )
     {
       // Discovered means in working state
       // Get Serial input and send to Peripheral
-//      if ( Serial.available() )
-//      {
-//        delay(2); // delay a bit for all characters to arrive
-//        
-//        char str[20+1] = { 0 };
-//        Serial.readBytes(str, 20);
-//        
-//        clientMidi.print( str );
-//      }
-
-      
+      if ( Serial.available() )
+      {
+        delay(2); // delay a bit for all characters to arrive
+        
+        char str[20+1] = { 0 };
+        Serial.readBytes(str, 20);
+        
+        clientMidi.print( str );
+      }
     }
   }
 }
