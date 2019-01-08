@@ -39,7 +39,7 @@
 void blemidi_central_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
 
 BLEClientMidi::BLEClientMidi(uint16_t fifo_depth)
-  : BLEClientService(BLEMIDI_UUID_SERVICE), _txd(BLEMIDI_UUID_CHR_IO), //_rxd(blemidi_UUID_CHR_RXD),
+  : BLEClientService(BLEMIDI_UUID_SERVICE), _txd(BLEMIDI_UUID_CHR_IO),
     _rx_fifo(1, fifo_depth)
 {
   _rx_cb = NULL;
@@ -52,7 +52,6 @@ bool BLEClientMidi::begin(void)
   // Invoke base class begin()
   BLEClientService::begin();
 
-  //_rxd.begin(this);
   _txd.begin(this);
 
   // set up notify callback
@@ -105,13 +104,7 @@ void BLEClientMidi::disconnect(void)
 void blemidi_central_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len)
 {
   BLEClientMidi& uart_svc = (BLEClientMidi&) chr->parentService();
-  //uart_svc._rx_fifo.write(data, len);
   uart_svc._write_handler(data, len);
-
-
-  // RS: I toook this out (should be in _write_handler)
-  // invoke callback
-  //if ( uart_svc._rx_cb ) uart_svc._rx_cb(uart_svc);
 }
 
 void BLEClientMidi::_write_handler(uint8_t* data, uint16_t len)

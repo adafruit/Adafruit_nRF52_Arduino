@@ -87,7 +87,6 @@ class BLEClientMidi : public BLEClientService, public Stream
 
   private:
     BLEClientCharacteristic _txd;
-    //BLEClientCharacteristic _rxd;
 
     Adafruit_FIFO     _rx_fifo;
     rx_callback_t     _rx_cb;
