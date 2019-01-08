@@ -138,6 +138,14 @@ void connect_callback(uint16_t conn_handle)
   {
     Serial.println("Found it");
 
+    // Request to pair
+    if ( !Bluefruit.Gap.requestPairing(conn_handle) )
+    {
+      Serial.print("Failed to paired");
+      return;
+    }
+    Serial.println("Paired");
+
     Serial.println("Enable TXD's notify");
     clientMidi.enableTXD();
 
