@@ -11,7 +11,7 @@ import unittest
 # Constants and other config values.
 SIGNATURE_EXTENSION = '_signature.bin'
 BANK_VALID_APP      = 0x01
-BANK_VALID_SD       = 0xA5
+BANK_VALID_SD       = 0xB7
 BANK_VALID_BOOT     = 0xAA
 BANK_ERASED         = 0xFE
 BANK_INVALID_APP    = 0xFF
