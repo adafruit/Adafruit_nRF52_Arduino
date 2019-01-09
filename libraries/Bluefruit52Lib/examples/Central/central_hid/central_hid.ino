@@ -13,8 +13,8 @@
 *********************************************************************/
 
 /*
- * This sketch demonstrate the central API(). A additional bluefruit
- * that has bleuart as peripheral is required for the demo.
+ * This sketch demonstrate the central API(). An additional bluefruit
+ * that has blehid as peripheral is required for the demo.
  */
 #include <bluefruit.h>
 
@@ -30,6 +30,7 @@ hid_mouse_report_t last_mse_report = { 0 };
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 Central HID (Keyboard + Mouse) Example");
   Serial.println("--------------------------------------------------\n");
@@ -58,15 +59,15 @@ void setup()
    * - Enable auto scan if disconnected
    * - Interval = 100 ms, window = 80 ms
    * - Don't use active scan
+   * - Filter only accept HID service in advertising
    * - Start(timeout) with timeout = 0 will scan forever (until connected)
    */
   Bluefruit.Scanner.setRxCallback(scan_callback);
   Bluefruit.Scanner.restartOnDisconnect(true);
   Bluefruit.Scanner.setInterval(160, 80); // in unit of 0.625 ms
+  Bluefruit.Scanner.filterService(hid);   // only report HID service
   Bluefruit.Scanner.useActiveScan(false);
   Bluefruit.Scanner.start(0);             // 0 = Don't stop scanning after n seconds
-
-  Bluefruit.Scanner.filterService(hid);   // only report HID service
 }
 
 /**
@@ -75,7 +76,9 @@ void setup()
  */
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
-  // Connect to device
+  // Since we configure the scanner with filterUuid()
+  // Scan callback only invoked for device with hid service advertised  
+  // Connect to the device with hid service in advertising packet
   Bluefruit.Central.connect(report);
 }
 
@@ -131,7 +134,7 @@ void connect_callback(uint16_t conn_handle)
 /**
  * Callback invoked when a connection is dropped
  * @param conn_handle
- * @param reason
+ * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
  */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
@@ -220,4 +223,3 @@ void processKeyboardReport(hid_keyboard_report_t* report)
   // update last report
   memcpy(&last_kbd_report, report, sizeof(hid_keyboard_report_t));  
 }
-

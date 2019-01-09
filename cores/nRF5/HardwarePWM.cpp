@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     HardwarePWM.cpp
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,17 @@ HardwarePWM HwPWM0(NRF_PWM0);
 HardwarePWM HwPWM1(NRF_PWM1);
 HardwarePWM HwPWM2(NRF_PWM2);
 
-HardwarePWM* HwPWMx[3] = { &HwPWM0, &HwPWM1, &HwPWM2 };
+#ifdef NRF_PWM3
+HardwarePWM HwPWM3(NRF_PWM3);
+#endif
+
+HardwarePWM* HwPWMx[] =
+{
+  &HwPWM0, &HwPWM1, &HwPWM2
+#ifdef NRF_PWM3
+  ,&HwPWM3
+#endif
+};
 
 HardwarePWM::HardwarePWM(NRF_PWM_Type* pwm)
 {
@@ -78,7 +88,7 @@ void HardwarePWM::setClockDiv(uint8_t div)
  */
 bool HardwarePWM::addPin(uint8_t pin)
 {
-  VERIFY( isPinValid(pin) && (_count <= MAX_CHANNELS) );
+  VERIFY( _count <= MAX_CHANNELS );
 
   // Check if pin is already configured
   for(uint8_t i=0; i<_count; i++)
@@ -99,12 +109,12 @@ bool HardwarePWM::addPin(uint8_t pin)
   if ( enabled() )
   {
     _pwm->ENABLE = 0;
-    _pwm->PSEL.OUT[_count++] = pin;
+    _pwm->PSEL.OUT[_count++] = g_ADigitalPinMap[pin];
     _pwm->ENABLE = 1;
     _start();
   }else
   {
-    _pwm->PSEL.OUT[_count++] = pin;
+    _pwm->PSEL.OUT[_count++] = g_ADigitalPinMap[pin];
   }
 
   return true;

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*!
     @file     BLEClientHidAdafruit.h
-    @author   hathach (tinyusb.org)
+    @author   hathach (tinyusb.org) (tinyusb.org)
 
     @section LICENSE
 

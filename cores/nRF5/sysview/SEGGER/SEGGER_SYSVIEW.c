@@ -52,14 +52,14 @@
 *                                                                    *
 **********************************************************************
 *                                                                    *
-*       SystemView version: V2.50                                    *
+*       SystemView version: V2.52d                                    *
 *                                                                    *
 **********************************************************************
 -------------------------- END-OF-HEADER -----------------------------
 
 File    : SEGGER_SYSVIEW.c
 Purpose : System visualization API implementation.
-Revision: $Rev: 6414 $
+Revision: $Rev: 12706 $
 
 Additional information:
   Packet format:
@@ -1195,7 +1195,7 @@ static void _VPrintTarget(const char* sFormat, U32 Options, va_list* pParamList)
 
 /*********************************************************************
 *
-*       Public functions
+*       Public code
 *
 **********************************************************************
 */
@@ -2831,6 +2831,31 @@ void SEGGER_SYSVIEW_EnableEvents(U32 EnableMask) {
 */
 void SEGGER_SYSVIEW_DisableEvents(U32 DisableMask) {
   _SYSVIEW_Globals.DisabledEvents |= DisableMask;
+}
+
+/*********************************************************************
+*
+*       SEGGER_SYSVIEW_IsStarted()
+*
+*  Function description
+*    Handle incoming packets if any and check if recording is started.
+*
+*  Return value
+*      0: Recording not started.
+*    > 0: Recording started.
+*/
+int SEGGER_SYSVIEW_IsStarted(void) {
+  //
+  // Check if host is sending data which needs to be processed.
+  //
+  if (SEGGER_RTT_HASDATA(CHANNEL_ID_DOWN)) {
+    if (_SYSVIEW_Globals.RecursionCnt == 0) {   // Avoid uncontrolled nesting. This way, this routine can call itself once, but no more often than that.
+      _SYSVIEW_Globals.RecursionCnt = 1;
+      _HandleIncomingPacket();
+      _SYSVIEW_Globals.RecursionCnt = 0;
+    }
+  }
+  return _SYSVIEW_Globals.EnableState;
 }
 
 

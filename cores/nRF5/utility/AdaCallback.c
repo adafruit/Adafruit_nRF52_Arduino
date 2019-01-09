@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     AdaCallback.cpp
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,7 @@ void adafruit_callback_task(void* arg)
         case 4: ((adacb_4arg_t) func)(args[0], args[1], args[2], args[3]);          break;
         case 5: ((adacb_5arg_t) func)(args[0], args[1], args[2], args[3], args[4]); break;
 
-        default: VERIFY_MESS(NRF_ERROR_INVALID_PARAM); break;
+        default: VERIFY_MESS(NRF_ERROR_INVALID_PARAM, dbg_err_str); break;
       }
 
       // free up resource
@@ -72,9 +72,9 @@ void adafruit_callback_task(void* arg)
   }
 }
 
-void ada_callback_queue(ada_callback_t* cb_data)
+void ada_callback_queue(ada_callback_t* cb_data, bool from_isr)
 {
-  if ( cb_data->from_isr )
+  if ( from_isr )
   {
     xQueueSendFromISR(_cb_queue, (void*) &cb_data, NULL);
   }else

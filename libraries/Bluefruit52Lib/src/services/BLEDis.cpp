@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLEDis.cpp
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2016, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,12 @@
 BLEDis::BLEDis(void)
   : BLEService(UUID16_SVC_DEVICE_INFORMATION)
 {
-  _model        = "Bluefruit Feather 52";
+#ifdef NRF52840_XXAA
+  _model        = "Bluefruit Feather nRF52840";
+#else
+  _model        = "Bluefruit Feather nRF52832";
+#endif
+
   _serial       = NULL;
   _firmware_rev = NULL;
   _hardware_rev = NULL;
@@ -74,7 +79,7 @@ err_t BLEDis::begin(void)
   VERIFY_STATUS( BLEService::begin() );
 
   _serial       = getMcuUniqueID();
-  _firmware_rev = getFirmwareVersion();
+  _firmware_rev = getBootloaderVersion();
 
   for(uint8_t i=0; i<arrcount(_strarr); i++)
   {

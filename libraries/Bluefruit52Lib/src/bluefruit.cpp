@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     bluefruit.cpp
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2016, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -35,8 +35,12 @@
 /**************************************************************************/
 
 #include "bluefruit.h"
-#include <Nffs.h>
 #include "utility/bonding.h"
+
+#ifdef NRF52840_XXAA
+#include "nrfx_power.h"
+#include "usb/usb.h"
+#endif
 
 #define CFG_BLE_TX_POWER_LEVEL           0
 #define CFG_DEFAULT_NAME                 "Bluefruit52"
@@ -51,7 +55,7 @@ AdafruitBluefruit Bluefruit;
  *------------------------------------------------------------------*/
 extern "C"
 {
-  void hal_flash_event_cb(uint32_t event) ATTR_WEAK;
+void flash_nrf5x_event_cb (uint32_t event) ATTR_WEAK;
 }
 
 void adafruit_ble_task(void* arg);
@@ -63,7 +67,7 @@ void adafruit_soc_task(void* arg);
 static void bluefruit_blinky_cb( TimerHandle_t xTimer )
 {
   (void) xTimer;
-  ledToggle(LED_BLUE);
+  digitalToggle(LED_BLUE);
 }
 
 
@@ -72,6 +76,26 @@ static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
   PRINT_INT(id);
   PRINT_HEX(pc);
   PRINT_HEX(info);
+
+  if ( id == NRF_FAULT_ID_SD_ASSERT && info != 0)
+  {
+    typedef struct
+    {
+        uint16_t        line_num;    /**< The line number where the error occurred. */
+        uint8_t const * p_file_name; /**< The file in which the error occurred. */
+    } assert_info_t;
+
+    assert_info_t* assert_info = (assert_info_t*) info;
+
+    LOG_LV1("SD Err", "assert at %s : %d", assert_info->p_file_name, assert_info->line_num);
+  }
+
+#if CFG_DEBUG
+  while(1)
+  {
+
+  }
+#endif
 }
 
 /**
@@ -94,21 +118,20 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _sd_cfg.attr_table_size = 0x800;
   _sd_cfg.uuid128_max     = BLE_UUID_VS_COUNT_DEFAULT;
-  _sd_cfg.service_changed = 0;
-
+  _sd_cfg.service_changed = 1;
 
   _prph_count    = 0;
   _central_count = 0;
 
-  _ble_event_sem    = NULL;
-  _soc_event_sem    = NULL;
+  _ble_event_sem = NULL;
+  _soc_event_sem = NULL;
 
-  _led_blink_th     = NULL;
-  _led_conn         = true;
+  _led_blink_th  = NULL;
+  _led_conn      = true;
 
-  _tx_power  = 0;
+  _tx_power      = CFG_BLE_TX_POWER_LEVEL;
 
-  _conn_hdl  = BLE_CONN_HANDLE_INVALID;
+  _conn_hdl      = BLE_CONN_HANDLE_INVALID;
 
   _ppcp_min_conn = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
   _ppcp_max_conn = BLE_GAP_CONN_MAX_INTERVAL_DFLT;
@@ -117,6 +140,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _connect_cb    = NULL;
   _disconnect_cb = NULL;
+  _event_cb = NULL;
 
 COMMENT_OUT(
   _auth_type = BLE_GAP_AUTH_KEY_TYPE_NONE;
@@ -151,7 +175,6 @@ void AdafruitBluefruit::configCentralConn(uint16_t mtu_max, uint8_t event_len, u
 
 void AdafruitBluefruit::configPrphBandwidth(uint8_t bw)
 {
-#if SD_VER >= 500
   /* Note default value from SoftDevice are
    * MTU = 23, Event Len = 3, HVN QSize = 1, WrCMD QSize =1
    */
@@ -177,12 +200,10 @@ void AdafruitBluefruit::configPrphBandwidth(uint8_t bw)
 
     default: break;
   }
-#endif
 }
 
 void AdafruitBluefruit::configCentralBandwidth(uint8_t bw)
 {
-#if SD_VER >= 500
   /* Note default value from SoftDevice are
    * MTU = 23, Event Len = 3, HVN QSize = 1, WrCMD QSize =1
    */
@@ -195,20 +216,19 @@ void AdafruitBluefruit::configCentralBandwidth(uint8_t bw)
     // TODO Bandwidth auto
     case BANDWIDTH_AUTO:
     case BANDWIDTH_NORMAL:
-      configCentralConn(BLE_GATT_ATT_MTU_DEFAULT, BLE_GAP_EVENT_LENGTH_DEFAULT, BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT, 3);
+      configCentralConn(BLE_GATT_ATT_MTU_DEFAULT, BLE_GAP_EVENT_LENGTH_DEFAULT, BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
     break;
 
     case BANDWIDTH_HIGH:
-      configCentralConn(128, 6, 1, 3);
+      configCentralConn(128, 6, 2, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
     break;
 
     case BANDWIDTH_MAX:
-      configCentralConn(247, 6, 1, 3);
+      configCentralConn(247, 6, 3, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
     break;
 
     default: break;
   }
-#endif
 }
 
 
@@ -216,6 +236,10 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 {
   _prph_count    = prph_count;
   _central_count = central_count;
+
+#ifdef NRF52840_XXAA
+  usb_softdevice_pre_enable();
+#endif
 
   // Configure Clock
 #if defined( USE_LFXO )
@@ -225,15 +249,26 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
       .source        = NRF_CLOCK_LF_SRC_XTAL,
       .rc_ctiv       = 0,
       .rc_temp_ctiv  = 0,
-      #if SD_VER < 500
-      .xtal_accuracy = NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM
-      #else
       .accuracy      = NRF_CLOCK_LF_ACCURACY_20_PPM
-      #endif
   };
+#elif defined( USE_LFRC )
+  nrf_clock_lf_cfg_t clock_cfg = 
+  {
+      // LXRC
+      .source        = NRF_CLOCK_LF_SRC_RC,
+      .rc_ctiv       = 16,
+      .rc_temp_ctiv  = 2,
+      .accuracy      = NRF_CLOCK_LF_ACCURACY_250_PPM
+  };
+#else
+  #error Clock Source is not configured, define USE_LFXO or USE_LFRC according to your board in variant.h
 #endif
 
   VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, nrf_error_cb) );
+
+#ifdef NRF52840_XXAA
+  usb_softdevice_post_enable();
+#endif
 
   /*------------------------------------------------------------------*/
   /*  SoftDevice Default Configuration depending on the number of
@@ -272,26 +307,6 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   /*------------- Configure BLE params  -------------*/
   extern uint32_t  __data_start__[]; // defined in linker
   uint32_t ram_start = (uint32_t) __data_start__;
-
-#if SD_VER < 500
-  // Configure BLE params & ATTR Size
-  ble_enable_params_t params =
-  {
-      .common_enable_params = { .vs_uuid_count = _sd_cfg.uuid128_max },
-      .gap_enable_params = {
-          .periph_conn_count  = (uint8_t) (_prph_count    ? 1 : 0),
-          .central_conn_count = (uint8_t) (_central_count ? BLE_CENTRAL_MAX_CONN : 0),
-          .central_sec_count  = (uint8_t) (_central_count ? BLE_CENTRAL_MAX_SECURE_CONN : 0),
-      },
-      .gatts_enable_params = {
-          .service_changed = 1,
-          .attr_tab_size   = _sd_cfg.attr_table_size
-      }
-  };
-
-  // Enable BLE stack
-  VERIFY_STATUS( sd_ble_enable(&params, &ram_start) );
-#else
 
   ble_cfg_t blecfg;
 
@@ -394,13 +409,10 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 
   /*------------- Configure BLE Option -------------*/
   ble_opt_t  opt;
-
   varclr(&opt);
+
   opt.common_opt.conn_evt_ext.enable = 1; // enable Data Length Extension
-
   VERIFY_STATUS( sd_ble_opt_set(BLE_COMMON_OPT_CONN_EVT_EXT, &opt) );
-#endif
-
 
   /*------------- Configure GAP  -------------*/
 
@@ -417,10 +429,16 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 
   // Default device name
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
-  VERIFY_STATUS ( sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)) );
+  VERIFY_STATUS(sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)));
 
   VERIFY_STATUS( sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN) );
-  VERIFY_STATUS( sd_ble_gap_tx_power_set( CFG_BLE_TX_POWER_LEVEL ) );
+
+  //------------- USB -------------//
+#if NRF52840_XXAA
+  sd_power_usbdetected_enable(true);
+  sd_power_usbpwrrdy_enable(true);
+  sd_power_usbremoved_enable(true);
+#endif
 
   /*------------- DFU OTA as built-in service -------------*/
   _dfu_svc.begin();
@@ -432,16 +450,17 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   VERIFY(_ble_event_sem, NRF_ERROR_NO_MEM);
 
   TaskHandle_t ble_task_hdl;
-  xTaskCreate( adafruit_ble_task, "SD BLE", CFG_BLE_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &ble_task_hdl);
+  xTaskCreate( adafruit_ble_task, "BLE", CFG_BLE_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &ble_task_hdl);
 
   // Create RTOS Semaphore & Task for SOC Event
   _soc_event_sem = xSemaphoreCreateBinary();
   VERIFY(_soc_event_sem, NRF_ERROR_NO_MEM);
 
   TaskHandle_t soc_task_hdl;
-  xTaskCreate( adafruit_soc_task, "SD SOC", CFG_SOC_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &soc_task_hdl);
+  xTaskCreate( adafruit_soc_task, "SOC", CFG_SOC_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &soc_task_hdl);
 
-  NVIC_SetPriority(SD_EVT_IRQn, 6);
+  // Interrupt priority has already been set by the stack.
+//  NVIC_SetPriority(SD_EVT_IRQn, 6);
   NVIC_EnableIRQ(SD_EVT_IRQn);
 
   // Create Timer for led advertising blinky
@@ -456,10 +475,10 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 /*------------------------------------------------------------------*/
 /* General Functions
  *------------------------------------------------------------------*/
-void AdafruitBluefruit::setName(const char* str)
+void AdafruitBluefruit::setName (char const * str)
 {
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
-  sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) str, strlen(str));
+sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) str, strlen(str));
 }
 
 uint8_t AdafruitBluefruit::getName(char* name, uint16_t bufsize)
@@ -470,9 +489,13 @@ uint8_t AdafruitBluefruit::getName(char* name, uint16_t bufsize)
 
 bool AdafruitBluefruit::setTxPower(int8_t power)
 {
-  // Check if TX Power is valid value
-  const int8_t accepted[] = { -40, -30, -20, -16, -12, -8, -4, 0, 4 };
+#if defined(NRF52832_XXAA)
+int8_t const accepted[] = { -40, -20, -16, -12, -8, -4, 0, 3, 4 };
+#elif defined( NRF52840_XXAA)
+int8_t const accepted[] = { -40, -20, -16, -12, -8, -4, 0, 2, 3, 4, 5, 6, 7, 8 };
+#endif
 
+  // Check if TX Power is valid value
   uint32_t i;
   for (i=0; i<sizeof(accepted); i++)
   {
@@ -480,8 +503,11 @@ bool AdafruitBluefruit::setTxPower(int8_t power)
   }
   VERIFY(i < sizeof(accepted));
 
-  // Apply
-  VERIFY_STATUS( sd_ble_gap_tx_power_set(power), false);
+  // Apply if connected
+  if ( _conn_hdl != BLE_CONN_HANDLE_INVALID )
+  {
+    VERIFY_STATUS( sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_CONN, _conn_hdl, power), false );
+  }
   _tx_power = power;
 
   return true;
@@ -561,7 +587,6 @@ bool AdafruitBluefruit::setConnIntervalMS(uint16_t min_ms, uint16_t max_ms)
   return setConnInterval( MS100TO125(min_ms), MS100TO125(max_ms) );
 }
 
-
 bool AdafruitBluefruit::setConnSupervisionTimeout(uint16_t timeout)
 {
   _ppcp_conn_sup_timeout = timeout;
@@ -594,6 +619,11 @@ void AdafruitBluefruit::setDisconnectCallback( BLEGap::disconnect_callback_t fp 
   _disconnect_cb = fp;
 }
 
+void AdafruitBluefruit::setEventCallback ( void (*fp) (ble_evt_t*) )
+{
+  _event_cb = fp;
+}
+
 uint16_t AdafruitBluefruit::connHandle(void)
 {
   return _conn_hdl;
@@ -601,7 +631,7 @@ uint16_t AdafruitBluefruit::connHandle(void)
 
 bool AdafruitBluefruit::connPaired(void)
 {
-  return Gap.paired(_conn_hdl);
+  return ( _conn_hdl != BLE_CONN_HANDLE_INVALID ) && Gap.paired(_conn_hdl);
 }
 
 uint16_t AdafruitBluefruit::connInterval(void)
@@ -637,138 +667,6 @@ bool AdafruitBluefruit::setPIN(const char* pin)
 }
 )
 
-void Bluefruit_printInfo(void)
-{
-  Bluefruit.printInfo();
-}
-
-void AdafruitBluefruit::printInfo(void)
-{
-  // Skip if Serial is not initialised
-  if ( !Serial.started() ) return;
-
-  // Skip if Bluefruit.begin() is not called
-  if ( _ble_event_sem == NULL ) return;
-
-  Serial.println("--------- SoftDevice Config ---------");
-
-  const char* title_fmt = "%-16s: ";
-
-  /*------------- SoftDevice Config -------------*/
-  // Max uuid128
-  Serial.printf(title_fmt, "Max UUID128");
-  Serial.println(_sd_cfg.uuid128_max);
-
-  // ATTR Table Size
-  Serial.printf(title_fmt, "ATTR Table Size");
-  Serial.println(_sd_cfg.attr_table_size);
-
-  // Service Changed
-  Serial.printf(title_fmt, "Service Changed");
-  Serial.println(_sd_cfg.service_changed);
-
-#if SD_VER >= 500
-  if ( _prph_count )
-  {
-    Serial.println("Peripheral Connect Setting");
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Max MTU");
-    Serial.println(Gap._cfg_prph.mtu_max);
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Event Length");
-    Serial.println(Gap._cfg_prph.event_len);
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "HVN Queue Size");
-    Serial.println(Gap._cfg_prph.hvn_tx_qsize);
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "WrCmd Queue Size");
-    Serial.println(Gap._cfg_prph.wr_cmd_qsize);
-  }
-
-  if ( _central_count )
-  {
-    Serial.println("Central Connect Setting");
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Max MTU");
-    Serial.println(Gap._cfg_central.mtu_max);
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Event Length");
-    Serial.println(Gap._cfg_central.event_len);
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "HVN Queue Size");
-    Serial.println(Gap._cfg_central.hvn_tx_qsize);
-
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "WrCmd Queue Size");
-    Serial.println(Gap._cfg_central.wr_cmd_qsize);
-  }
-#endif
-
-  /*------------- Settings -------------*/
-  Serial.println("\n--------- BLE Settings ---------");
-  // Name
-  Serial.printf(title_fmt, "Name");
-  {
-    char name[32];
-    memclr(name, sizeof(name));
-    getName(name, sizeof(name));
-    Serial.printf(name);
-  }
-  Serial.println();
-
-  // Max Connections
-  Serial.printf(title_fmt, "Max Connections");
-  Serial.printf("Peripheral = %d, ", _prph_count ? 1 : 0);
-  Serial.printf("Central = %d ", _central_count ? BLE_CENTRAL_MAX_CONN : 0);
-  Serial.println();
-
-  // Address
-  Serial.printf(title_fmt, "Address");
-  {
-    const char* type_str[] = { "Public", "Static", "Private Resolvable", "Private Non Resolvable" };
-    uint8_t mac[6];
-    uint8_t type = Gap.getAddr(mac);
-
-    // MAC is in little endian --> print reverse
-    Serial.printBufferReverse(mac, 6, ':');
-    Serial.printf(" (%s)", type_str[type]);
-  }
-  Serial.println();
-
-  // Tx Power
-  Serial.printf(title_fmt, "TX Power");
-  Serial.printf("%d dBm", _tx_power);
-  Serial.println();
-
-  // Connection Intervals
-  Serial.printf(title_fmt, "Conn Intervals");
-  Serial.printf("min = %.2f ms, ", _ppcp_min_conn*1.25f);
-  Serial.printf("max = %.2f ms", _ppcp_max_conn*1.25f);
-  Serial.println();
-
-  Serial.printf(title_fmt, "Conn Timeout");
-  Serial.printf("%.2f ms, ", _ppcp_conn_sup_timeout*10.0f);
-  Serial.println();
-
-  /*------------- List the paried device -------------*/
-  Serial.printf(title_fmt, "Peripheral Paired Devices");
-  Serial.println();
-  bond_print_list(BLE_GAP_ROLE_PERIPH);
-
-  Serial.printf(title_fmt, "Central Paired Devices");
-  Serial.println();
-  bond_print_list(BLE_GAP_ROLE_CENTRAL);
-
-  Serial.println();
-}
-
 /*------------------------------------------------------------------*/
 /* Thread & SoftDevice Event handler
  *------------------------------------------------------------------*/
@@ -780,7 +678,7 @@ void SD_EVT_IRQHandler(void)
 }
 
 /**
- * Handle SOC event such as FLASH opertion
+ * Handle SOC event such as FLASH operation
  */
 void adafruit_soc_task(void* arg)
 {
@@ -794,18 +692,33 @@ void adafruit_soc_task(void* arg)
       uint32_t err = ERROR_NONE;
 
       // until no more pending events
-      while ( NRF_ERROR_NOT_FOUND != err )
+      while ( NRF_ERROR_NOT_FOUND != (err = sd_evt_get(&soc_evt)) )
       {
-        err = sd_evt_get(&soc_evt);
-
         if (ERROR_NONE == err)
         {
           switch (soc_evt)
           {
+            // Flash
             case NRF_EVT_FLASH_OPERATION_SUCCESS:
             case NRF_EVT_FLASH_OPERATION_ERROR:
-              if (hal_flash_event_cb) hal_flash_event_cb(soc_evt);
+              LOG_LV1("SOC", "NRF_EVT_FLASH_OPERATION_%s", soc_evt == NRF_EVT_FLASH_OPERATION_SUCCESS ? "SUCCESS" : "ERROR");
+              if ( flash_nrf5x_event_cb ) flash_nrf5x_event_cb(soc_evt);
             break;
+
+            #ifdef NRF52840_XXAA
+            /*------------- usb power event handler -------------*/
+            case NRF_EVT_POWER_USB_DETECTED:
+            case NRF_EVT_POWER_USB_POWER_READY:
+            case NRF_EVT_POWER_USB_REMOVED:
+            {
+              int32_t usbevt = (soc_evt == NRF_EVT_POWER_USB_DETECTED   ) ? NRFX_POWER_USB_EVT_DETECTED:
+                               (soc_evt == NRF_EVT_POWER_USB_POWER_READY) ? NRFX_POWER_USB_EVT_READY   :
+                               (soc_evt == NRF_EVT_POWER_USB_REMOVED    ) ? NRFX_POWER_USB_EVT_REMOVED : -1;
+
+              if ( usbevt >= 0) tusb_hal_nrf_power_event(usbevt);
+            }
+            break;
+            #endif
 
             default: break;
           }
@@ -822,9 +735,7 @@ void adafruit_ble_task(void* arg)
 {
   (void) arg;
 
-#if SD_VER >= 500
   uint8_t * ev_buf = (uint8_t*) rtos_malloc(BLE_EVT_LEN_MAX(BLE_GATT_ATT_MTU_MAX));
-#endif
 
   while (1)
   {
@@ -835,12 +746,7 @@ void adafruit_ble_task(void* arg)
       // Until no pending events
       while( NRF_ERROR_NOT_FOUND != err )
       {
-#if SD_VER < 500
-        __ALIGN(4) uint8_t ev_buf[ sizeof(ble_evt_t) + (BLE_GATT_ATT_MTU_DEFAULT) ];
-        uint16_t ev_len = sizeof(ev_buf);
-#else
         uint16_t ev_len = BLE_EVT_LEN_MAX(BLE_GATT_ATT_MTU_MAX);
-#endif
 
         // Get BLE Event
         err = sd_ble_evt_get(ev_buf, &ev_len);
@@ -862,7 +768,7 @@ void adafruit_ble_task(void* arg)
 void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 {
   // conn handle has fixed offset regardless of event type
-  const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
+  uint16_t const evt_conn_hdl = evt->evt.common_evt.conn_handle;
 
   LOG_LV1("BLE", "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), evt_conn_hdl);
 
@@ -956,6 +862,9 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 
   // GATTs characteristics event handler
   Gatt._eventHandler(evt);
+
+  // User callback if set
+  if (_event_cb) _event_cb(evt);
 }
 
 /*------------------------------------------------------------------*/
@@ -992,3 +901,142 @@ void AdafruitBluefruit::clearBonds(void)
   bond_clear_prph();
 }
 
+//--------------------------------------------------------------------+
+//
+//--------------------------------------------------------------------+
+
+void Bluefruit_printInfo(void)
+{
+  Bluefruit.printInfo();
+}
+
+void AdafruitBluefruit::printInfo(void)
+{
+  // Skip if Serial is not initialised
+  if ( !Serial ) return;
+
+  // Skip if Bluefruit.begin() is not called
+  if ( _ble_event_sem == NULL ) return;
+
+  Serial.println("--------- SoftDevice Config ---------");
+
+  char const * title_fmt = "%-16s: ";
+
+  /*------------- SoftDevice Config -------------*/
+  // Max uuid128
+  Serial.printf(title_fmt, "Max UUID128");
+  Serial.println(_sd_cfg.uuid128_max);
+
+  // ATTR Table Size
+  Serial.printf(title_fmt, "ATTR Table Size");
+  Serial.println(_sd_cfg.attr_table_size);
+
+  // Service Changed
+  Serial.printf(title_fmt, "Service Changed");
+  Serial.println(_sd_cfg.service_changed);
+
+  if ( _prph_count )
+  {
+    Serial.println("Peripheral Connect Setting");
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "Max MTU");
+    Serial.println(Gap._cfg_prph.mtu_max);
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "Event Length");
+    Serial.println(Gap._cfg_prph.event_len);
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "HVN Queue Size");
+    Serial.println(Gap._cfg_prph.hvn_tx_qsize);
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "WrCmd Queue Size");
+    Serial.println(Gap._cfg_prph.wr_cmd_qsize);
+  }
+
+  if ( _central_count )
+  {
+    Serial.println("Central Connect Setting");
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "Max MTU");
+    Serial.println(Gap._cfg_central.mtu_max);
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "Event Length");
+    Serial.println(Gap._cfg_central.event_len);
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "HVN Queue Size");
+    Serial.println(Gap._cfg_central.hvn_tx_qsize);
+
+    Serial.print("  - ");
+    Serial.printf(title_fmt, "WrCmd Queue Size");
+    Serial.println(Gap._cfg_central.wr_cmd_qsize);
+  }
+
+  /*------------- Settings -------------*/
+  Serial.println("\n--------- BLE Settings ---------");
+  // Name
+  Serial.printf(title_fmt, "Name");
+  {
+    char name[32];
+    memclr(name, sizeof(name));
+    getName(name, sizeof(name));
+    Serial.printf(name);
+  }
+  Serial.println();
+
+  // Max Connections
+  Serial.printf(title_fmt, "Max Connections");
+  Serial.printf("Peripheral = %d, ", _prph_count ? 1 : 0);
+  Serial.printf("Central = %d ", _central_count ? BLE_CENTRAL_MAX_CONN : 0);
+  Serial.println();
+
+  // Address
+  Serial.printf(title_fmt, "Address");
+  {
+    char const * type_str[] = { "Public", "Static", "Private Resolvable", "Private Non Resolvable" };
+    uint8_t mac[6];
+    uint8_t type = Gap.getAddr(mac);
+
+    // MAC is in little endian --> print reverse
+    Serial.printBufferReverse(mac, 6, ':');
+    Serial.printf(" (%s)", type_str[type]);
+  }
+  Serial.println();
+
+  // Tx Power
+  Serial.printf(title_fmt, "TX Power");
+  Serial.printf("%d dBm", _tx_power);
+  Serial.println();
+
+  // Connection Intervals
+  Serial.printf(title_fmt, "Conn Intervals");
+  Serial.printf("min = %.2f ms, ", _ppcp_min_conn*1.25f);
+  Serial.printf("max = %.2f ms", _ppcp_max_conn*1.25f);
+  Serial.println();
+
+  Serial.printf(title_fmt, "Conn Timeout");
+  Serial.printf("%.2f ms", _ppcp_conn_sup_timeout*10.0f);
+  Serial.println();
+
+  /*------------- List the paried device -------------*/
+  if ( _prph_count )
+  {
+    Serial.printf(title_fmt, "Peripheral Paired Devices");
+    Serial.println();
+    bond_print_list(BLE_GAP_ROLE_PERIPH);
+  }
+
+  if ( _central_count )
+  {
+    Serial.printf(title_fmt, "Central Paired Devices");
+    Serial.println();
+    bond_print_list(BLE_GAP_ROLE_CENTRAL);
+  }
+
+  Serial.println();
+}

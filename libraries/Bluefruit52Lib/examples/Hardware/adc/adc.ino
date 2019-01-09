@@ -4,6 +4,7 @@ float mv_per_lsb = 3600.0F/1024.0F; // 10-bit ADC with 3.6V input range
 
 void setup() {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 }
 
 void loop() {

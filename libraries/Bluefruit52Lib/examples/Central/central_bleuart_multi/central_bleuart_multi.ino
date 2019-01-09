@@ -83,6 +83,7 @@ uint8_t connection_num = 0; // for blink pattern
 void setup() 
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   // Initialize blinkTimer for 100 ms and start it
   blinkTimer.begin(100, blink_timer_callback);
@@ -116,12 +117,14 @@ void setup()
   /* Start Central Scanning
    * - Enable auto scan if disconnected
    * - Interval = 100 ms, window = 80 ms
+   * - Filter only accept bleuart service in advertising
    * - Don't use active scan (used to retrieve the optional scan response adv packet)
    * - Start(0) = will scan forever since no timeout is given
    */
   Bluefruit.Scanner.setRxCallback(scan_callback);
   Bluefruit.Scanner.restartOnDisconnect(true);
   Bluefruit.Scanner.setInterval(160, 80);       // in units of 0.625 ms
+  Bluefruit.Scanner.filterUuid(BLEUART_UUID_SERVICE);
   Bluefruit.Scanner.useActiveScan(false);       // Don't request scan response data
   Bluefruit.Scanner.start(0);                   // 0 = Don't stop scanning after n seconds
 }
@@ -132,14 +135,10 @@ void setup()
  */
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
-  // Check if advertising data contains the BleUart service UUID
-  if ( Bluefruit.Scanner.checkReportForUuid(report, BLEUART_UUID_SERVICE) )
-  {
-    Serial.print("BLE UART service detected. Connecting ... ");
-
-    // Connect to the device with bleuart service in advertising packet
-    Bluefruit.Central.connect(report);
-  }
+  // Since we configure the scanner with filterUuid()
+  // Scan callback only invoked for device with bleuart service advertised  
+  // Connect to the device with bleuart service in advertising packet
+  Bluefruit.Central.connect(report);
 }
 
 /**
@@ -188,7 +187,7 @@ void connect_callback(uint16_t conn_handle)
 /**
  * Callback invoked when a connection is dropped
  * @param conn_handle
- * @param reason
+ * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
  */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {

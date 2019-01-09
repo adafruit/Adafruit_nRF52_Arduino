@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLECentral.cpp
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -81,11 +81,8 @@ bool BLECentral::connect(const ble_gap_addr_t* peer_addr)
       .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
   };
 
-#if SD_VER < 500
-  VERIFY_STATUS( sd_ble_gap_connect(peer_addr, Bluefruit.Scanner.getParams(), &gap_conn_params), false );
-#else
   VERIFY_STATUS( sd_ble_gap_connect(peer_addr, Bluefruit.Scanner.getParams(), &gap_conn_params, CONN_CFG_CENTRAL), false );
-#endif
+
   return true;
 }
 
@@ -168,7 +165,7 @@ void BLECentral::_event_handler(ble_evt_t* evt)
     case BLE_GAP_EVT_DISCONNECTED:
       if ( Bluefruit.Gap.getRole(evt_conn_hdl) == BLE_GAP_ROLE_CENTRAL)
       {
-        // Invoke callback
+        // Invoke callback reason is BLE_HCI_STATUS code
         if ( _disconnect_cb) ada_callback(NULL, _disconnect_cb, evt_conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
       }
     break;

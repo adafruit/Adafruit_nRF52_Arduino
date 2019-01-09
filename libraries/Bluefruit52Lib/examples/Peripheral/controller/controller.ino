@@ -27,6 +27,8 @@ extern uint8_t packetbuffer[];
 void setup(void)
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+
   Serial.println(F("Adafruit Bluefruit52 Controller App Example"));
   Serial.println(F("-------------------------------------------"));
 

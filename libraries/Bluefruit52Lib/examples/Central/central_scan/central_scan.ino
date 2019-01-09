@@ -17,6 +17,7 @@
 void setup() 
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 Central Scan Example");
   Serial.println("--------------------------------\n");
@@ -50,7 +51,7 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   Serial.print(report->rssi);
   Serial.print("  ");
 
-  Serial.printBuffer(report->data, report->dlen, '-');
+  Serial.printBuffer(report->data.p_data, report->data.len, '-');
   Serial.println();
 
   // Check if advertising contain BleUart service
@@ -60,13 +61,13 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   }
 
   Serial.println();
+
+  // For Softdevice v6: after received a report, scanner will be paused
+  // We need to call Scanner resume() to continue scanning
+  Bluefruit.Scanner.resume();
 }
 
 void loop() 
 {
-  // Toggle both LEDs every 1 second
-  digitalToggle(LED_RED);
-
-  delay(1000);
+  // nothing to do
 }
-

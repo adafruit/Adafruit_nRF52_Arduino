@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     common_func.h
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2016, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -115,13 +115,12 @@
 // DEBUG HELPER
 //--------------------------------------------------------------------+
 #if CFG_DEBUG == 2
-  #define malloc_named( name, size )            ({ cprintf("[malloc] %s : %d\r\n", name, size); malloc(size); })
+  #define malloc_named( name, size )            ({ printf("[malloc] %s : %d\r\n", name, size); malloc(size); })
 #else
   #define malloc_named( name, size )            malloc ( size )
 #endif
 
-int cprintf(const char * format, ...);
-const char* dbg_err_str(uint32_t err_id); // TODO move to other place
+const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
 #if CFG_DEBUG
 #define LOG_LV1(...)          ADALOG(__VA_ARGS__)
@@ -141,38 +140,38 @@ const char* dbg_err_str(uint32_t err_id); // TODO move to other place
 
 #if CFG_DEBUG
 
-#define PRINT_LOCATION()      cprintf("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)
-#define PRINT_MESS(x)         cprintf("%s: %d: %s \n"   , __PRETTY_FUNCTION__, __LINE__, (char*)(x))
-#define PRTNT_HEAP()          if (CFG_DEBUG == 3) cprintf("\n%s: %d: Heap free: %d\n", __PRETTY_FUNCTION__, __LINE__, util_heap_get_free_size())
-#define PRINT_STR(x)          cprintf("%s: %d: " #x " = %s\n"   , __PRETTY_FUNCTION__, __LINE__, (char*)(x) )
-#define PRINT_INT(x)          cprintf("%s: %d: " #x " = %ld\n"  , __PRETTY_FUNCTION__, __LINE__, (uint32_t) (x) )
+#define PRINT_LOCATION()      printf("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)
+#define PRINT_MESS(x)         printf("%s: %d: %s \n"   , __FUNCTION__, __LINE__, (char*)(x))
+#define PRTNT_HEAP()          if (CFG_DEBUG == 3) printf("\n%s: %d: Heap free: %d\n", __FUNCTION__, __LINE__, util_heap_get_free_size())
+#define PRINT_STR(x)          printf("%s: %d: " #x " = %s\n"   , __FUNCTION__, __LINE__, (char*)(x) )
+#define PRINT_INT(x)          printf("%s: %d: " #x " = %ld\n"  , __FUNCTION__, __LINE__, (uint32_t) (x) )
 
 #define PRINT_HEX(x) \
   do {\
-    cprintf("%s: %d: " #x " = 0x", __PRETTY_FUNCTION__, __LINE__);\
+    printf("%s: %d: " #x " = 0x", __PRETTY_FUNCTION__, __LINE__);\
     char fmt[] = "%00X\n";\
     fmt[2] += 2*sizeof(x); /* Hex with correct size */\
-    cprintf(fmt, (x) );\
+    printf(fmt, (x) );\
   }while(0)
 
 #define PRINT_BUFFER(buf, n) \
   do {\
     uint8_t const* p8 = (uint8_t const*) (buf);\
-    cprintf(#buf ": ");\
-    for(uint32_t i=0; i<(n); i++) cprintf("%02x ", p8[i]);\
-    cprintf("\n");\
+    printf(#buf ": ");\
+    for(uint32_t i=0; i<(n); i++) printf("%02x ", p8[i]);\
+    printf("\n");\
   }while(0)
 
 #define ADALOG(tag, ...) \
   do { \
-    if ( tag ) cprintf("[%-6s] ", tag);\
-    cprintf(__VA_ARGS__);\
-    cprintf("\n");\
+    if ( tag ) printf("[%-6s] ", tag);\
+    printf(__VA_ARGS__);\
+    printf("\n");\
   }while(0)
 
 #define ADALOG_BUFFER(_tag, _buf, _n) \
   do {\
-    if ( _tag ) cprintf("[%-6s] ", _tag);\
+    if ( _tag ) printf("%-6s: len = %d\n", _tag, _n);\
     dbgDumpMemory(_buf, 1, _n, true);\
   }while(0)
 
@@ -276,32 +275,6 @@ static inline uint32_t offset4k(uint32_t value)
 static inline bool is_within(uint32_t lower, uint32_t value, uint32_t upper)
 {
   return (lower <= value) && (value <= upper);
-}
-
-static inline uint8_t log2_of(uint32_t value)
-{
-  uint8_t result = 0; // log2 of a value is its MSB's position
-  while (value >>= 1) result++;
-
-  return result;
-}
-
-// return the number of set bits in value
-static inline uint8_t cardinality_of(uint32_t value)
-{
-  // Brian Kernighan's method goes through as many iterations as there are set bits. So if we have a 32-bit word with only
-  // the high bit set, then it will only go once through the loop
-  // Published in 1988, the C Programming Language 2nd Ed. (by Brian W. Kernighan and Dennis M. Ritchie)
-  // mentions this in exercise 2-9. On April 19, 2006 Don Knuth pointed out to me that this method
-  // "was first published by Peter Wegner in CACM 3 (1960), 322. (Also discovered independently by Derrick Lehmer and
-  // published in 1964 in a book edited by Beckenbach.)"
-  uint8_t count;
-  for (count = 0; value; count++)
-  {
-    value &= value - 1; // clear the least significant bit set
-  }
-
-  return count;
 }
 
 #ifdef __cplusplus

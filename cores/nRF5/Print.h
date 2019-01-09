@@ -45,11 +45,12 @@ class Print
     void clearWriteError() { setWriteError(0); }
 
     virtual size_t write(uint8_t) = 0;
+    virtual size_t write(const uint8_t *buffer, size_t size);
+
     size_t write(const char *str) {
       if (str == NULL) return 0;
       return write((const uint8_t *)str, strlen(str));
     }
-    virtual size_t write(const uint8_t *buffer, size_t size);
     size_t write(const char *buffer, size_t size) {
       return write((const uint8_t *)buffer, size);
     }
@@ -81,16 +82,16 @@ class Print
 
     size_t printf(const char * format, ...);
 
-    size_t printBuffer(uint8_t const buffer[], int len, char delim=' ');
-    size_t printBuffer(char const buffer[], int size, char delim=' ')
+    size_t printBuffer(uint8_t const buffer[], int len, char delim=' ', int byteline = 0);
+    size_t printBuffer(char const buffer[], int size, char delim=' ', int byteline = 0)
     {
-      return printBuffer((uint8_t const*) buffer, size, delim);
+      return printBuffer((uint8_t const*) buffer, size, delim, byteline);
     }
 
-    size_t printBufferReverse(uint8_t const buffer[], int len, char delim=' ');
-    size_t printBufferReverse(char const buffer[], int size, char delim=' ')
+    size_t printBufferReverse(uint8_t const buffer[], int len, char delim=' ', int byteline = 0);
+    size_t printBufferReverse(char const buffer[], int size, char delim=' ', int byteline = 0)
     {
-      return printBufferReverse((uint8_t const*) buffer, size, delim);
+      return printBufferReverse((uint8_t const*) buffer, size, delim, byteline);
     }
 };
 

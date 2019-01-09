@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 name=Adafruit nRF52 Boards
-version=0.8.5
+version=0.9.2
 
 # Compile variables
 # -----------------
@@ -53,19 +53,14 @@ compiler.size.cmd=arm-none-eabi-size
 build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16 -u _printf_float
 build.debug_flags=-DCFG_DEBUG=0 -Os
 
-build.ldscript=bluefruit52_{build.sd_name}_{build.sd_version}.ld
-
-# compatiable with other lib only, would remove in the future
-build.extra_flags=-DARDUINO_FEATHER52
-
 # common compiler for nrf
-nrf.sdk.path={build.core.path}/SDK
 rtos.path={build.core.path}/freertos
-nffs.path={runtime.platform.path}/libraries/nffs/src
+nordic.path={build.core.path}/nordic
 
-nffs.includes="-I{nffs.path}/fs/nffs/include" "-I{nffs.path}/fs/fs/include"  "-I{nffs.path}/fs/disk/include" "-I{nffs.path}/util/crc/include" "-I{nffs.path}/kernel/os/include" "-I{nffs.path}/kernel/os/include/os/arch/cortex_m4" "-I{nffs.path}/hw/hal/include" "-I{nffs.path}/sys/flash_map/include" "-I{nffs.path}/sys/defs/include"
+# ARDUINO_FEATHER52 is defined for backward compatiable with other lib only
+# should be replaced by ARDUINO_NRF52_ADAFRUIT in the future
 
-compiler.nrf.flags=-DARDUINO_NRF52_ADAFRUIT -DNRF5 -DNRF52 -DNRF52832_XXAA -DUSE_LFXO {build.sd_flags} {build.debug_flags} "-I{nrf.sdk.path}/components/toolchain/" "-I{nrf.sdk.path}/components/toolchain/cmsis/include" "-I{nrf.sdk.path}/components/toolchain/gcc/" "-I{nrf.sdk.path}/components/device/" "-I{nrf.sdk.path}/components/drivers_nrf/delay/" "-I{nrf.sdk.path}/components/drivers_nrf/hal/" "-I{nrf.sdk.path}/components/libraries/util/" "-I{build.core.path}/softdevice/{build.sd_name}/{build.sd_version}/headers/" "-I{rtos.path}/source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" {nffs.includes}
+compiler.nrf.flags= -DARDUINO_FEATHER52 -DARDUINO_NRF52_ADAFRUIT -DNRF52_SERIES {build.sd_flags} {build.debug_flags} "-I{build.core.path}/cmsis/include" "-I{nordic.path}" "-I{nordic.path}/nrfx" "-I{nordic.path}/nrfx/hal" "-I{nordic.path}/nrfx/mdk" "-I{nordic.path}/nrfx/soc" "-I{nordic.path}/nrfx/drivers/include" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include" "-I{rtos.path}/Source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" "-I{build.core.path}/usb" "-I{build.core.path}/usb/tinyusb/src"
 
 # These can be overridden in platform.local.txt
 compiler.c.extra_flags=
@@ -93,7 +88,7 @@ recipe.S.o.pattern="{compiler.path}{compiler.S.cmd}" {compiler.S.flags} -DF_CPU=
 recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} {compiler.ar.extra_flags} "{archive_file_path}" "{object_file}"
 
 ## Combine gc-sections, archives, and objects
-recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} "-L{build.variant.path}" "-L{build.core.path}/linker" "-T{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" {compiler.ldflags} -o "{build.path}/{build.project_name}.elf" {object_files} -Wl,--start-group -lm "{build.path}/{archive_file}" -Wl,--end-group
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} "-L{build.core.path}/linker" "-T{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" {compiler.ldflags} -o "{build.path}/{build.project_name}.elf" {object_files} -Wl,--start-group -lm "{build.path}/{archive_file}" -Wl,--end-group
 
 ## Create output (bin file)
 #recipe.objcopy.bin.pattern="{compiler.path}{compiler.elf2bin.cmd}" {compiler.elf2bin.flags} {compiler.elf2bin.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.bin"
@@ -101,8 +96,11 @@ recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}"  "-L{build.path}"
 ## Create output (hex file)
 recipe.objcopy.hex.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} {compiler.elf2hex.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.hex"
 
-## Creat dfu package zip file
+## Create dfu package zip file
 recipe.objcopy.zip.pattern="{tools.nrfutil.cmd}" dfu genpkg --dev-type 0x0052 --sd-req {build.sd_fwid} --application "{build.path}/{build.project_name}.hex" "{build.path}/{build.project_name}.zip"
+
+## Create uf2 file
+#recipe.objcopy.uf2.pattern=python "{runtime.platform.path}/tools/uf2conv/uf2conv.py" -f 0xADA52840 -c -o "{build.path}/{build.project_name}.uf2" "{build.path}/{build.project_name}.hex"
 
 ## Save bin
 recipe.output.tmp_file_bin={build.project_name}.bin
@@ -133,7 +131,15 @@ tools.nrfutil.cmd.macosx={runtime.platform.path}/tools/adafruit-nrfutil/macos/ad
 
 tools.nrfutil.upload.params.verbose=--verbose
 tools.nrfutil.upload.params.quiet=
-tools.nrfutil.upload.pattern="{cmd}" {upload.verbose} dfu serial -pkg "{build.path}/{build.project_name}.zip" -p {serial.port} -b 115200
+tools.nrfutil.upload.pattern="{cmd}" {upload.verbose} dfu serial -pkg "{build.path}/{build.project_name}.zip" -p {serial.port} -b 115200 --singlebank
+
+#***************************************************
+# Jlink for programming
+#***************************************************
+
+#tools.nrfutil.upload.pattern=nrfjprog --reset --program "{build.path}/{build.project_name}.hex" --sectorerase -f nrf52
+# && nrfjprog --erasepage {upload.BOOT_SETTING_ADDR} -f nrf52 && nrfjprog --memwr {upload.BOOT_SETTING_ADDR} --val 0x00000001 -f nrf52 && nrfjprog --reset -f nrf52
+# tools.nrfutil.upload.BOOT_SETTING_ADDR=0xFF000
 
 #***************************************************
 # Burning bootloader with either jlink or nrfutil

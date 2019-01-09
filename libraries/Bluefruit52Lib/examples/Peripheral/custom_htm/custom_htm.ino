@@ -34,6 +34,8 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason);
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+
   Serial.println("Bluefruit52 Heath Thermometer Example");
   Serial.println("-------------------------------------\n");
 
@@ -156,6 +158,11 @@ void connect_callback(uint16_t conn_handle)
   Serial.println(central_name);
 }
 
+/**
+ * Callback invoked when a connection is dropped
+ * @param conn_handle connection where this event happens
+ * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
+ */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
   (void) conn_handle;

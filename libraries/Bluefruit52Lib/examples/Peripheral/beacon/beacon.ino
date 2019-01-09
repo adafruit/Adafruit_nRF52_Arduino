@@ -34,6 +34,7 @@ BLEBeacon beacon(beaconUuid, 0x0000, 0x0000, -54);
 void setup() 
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 Beacon Example");
   Serial.println("--------------------------\n");
@@ -90,4 +91,3 @@ void loop()
 {
   // loop is already suspended, CPU will not run loop() at all
 }
-

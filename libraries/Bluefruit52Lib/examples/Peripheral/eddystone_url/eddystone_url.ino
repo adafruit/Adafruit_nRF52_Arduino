@@ -21,6 +21,7 @@ EddyStoneUrl eddyUrl(-40, URL);
 void setup() 
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 EddyStone URL Example");
   Serial.println("---------------------------------\n");

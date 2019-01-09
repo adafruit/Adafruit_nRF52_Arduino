@@ -24,6 +24,7 @@ BLEClientUart clientUart;
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 Central BLEUART Example");
   Serial.println("-----------------------------------\n");
@@ -74,6 +75,11 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
 
     // Connect to device with bleuart service in advertising
     Bluefruit.Central.connect(report);
+  }else
+  {      
+    // For Softdevice v6: after received a report, scanner will be paused
+    // We need to call Scanner resume() to continue scanning
+    Bluefruit.Scanner.resume();
   }
 }
 
@@ -132,7 +138,7 @@ void connect_callback(uint16_t conn_handle)
 /**
  * Callback invoked when a connection is dropped
  * @param conn_handle
- * @param reason
+ * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
  */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
@@ -180,4 +186,3 @@ void loop()
     }
   }
 }
-

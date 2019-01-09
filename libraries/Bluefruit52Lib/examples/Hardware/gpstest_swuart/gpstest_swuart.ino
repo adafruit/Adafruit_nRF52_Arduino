@@ -32,6 +32,8 @@ void setup() {
 
   // Init hardware UART <-> Serial Monitor
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+
   Serial.println("GPS echo test");
 
   // Init Software Uart <-> GPS FeatherWing

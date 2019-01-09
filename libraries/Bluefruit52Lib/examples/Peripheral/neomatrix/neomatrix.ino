@@ -67,8 +67,10 @@ BLEUart bleuart;
 void setup()
 {
   Serial.begin(115200);
-  Serial.println(F("Adafruit Bluefruit NeoMatrix"));
-  Serial.println(F("----------------------------"));
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+
+  Serial.println("Adafruit Bluefruit NeoMatrix");
+  Serial.println("----------------------------");
 
   Serial.println();
   Serial.println("Please connect using Bluefruit Connect LE application");

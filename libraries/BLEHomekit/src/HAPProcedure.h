@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     HAPProcedure.h
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -48,24 +48,24 @@ enum HAPOpcode_t
 
 enum HAPParamType_t
 {
-  HAP_PARAM_VALUE = 1                     ,
-  HAP_PARAM_ADDITIONAL_AUTHORIZATION_DATA ,
-  HAP_PARAM_ORIGIN                        , // local vs remote
-  HAP_PARAM_CHR_TYPE                      ,
-  HAP_PARAM_CHR_ID                        ,
-  HAP_PARAM_SVC_TYPE                      ,
-  HAP_PARAM_SVC_ID                        ,
-  HAP_PARAM_TTL                           ,
-  HAP_PARAM_RETURN_RESP                   ,
-  HAP_PARAM_HAP_CHR_PROPERTIES_DESC       ,
-  HAP_PARAM_GATT_USR_DESC                 ,
-  HAP_PARAM_GATT_FORMAT_DESC              ,
-  HAP_PARAM_GATT_VALID_RANGE              ,
-  HAP_PARAM_HAP_STEP_VALUE_DESC           ,
-  HAP_PARAM_HAP_SVC_PROPERTIES            ,
-  HAP_PARAM_HAP_LINKED_SVC                ,
-  HAP_PARAM_HAP_VALID_VALUES_DESC         ,
-  HAP_PARAM_HAP_VALID_VALUES_RANGE_DESC
+  HAP_PARAM_VALUE = 1                     , // 1
+  HAP_PARAM_ADDITIONAL_AUTHORIZATION_DATA , // 2
+  HAP_PARAM_ORIGIN                        , // 3 local vs remote
+  HAP_PARAM_CHR_TYPE                      , // 4
+  HAP_PARAM_CHR_ID                        , // 5
+  HAP_PARAM_SVC_TYPE                      , // 6
+  HAP_PARAM_SVC_ID                        , // 7
+  HAP_PARAM_TTL                           , // 8
+  HAP_PARAM_RETURN_RESP                   , // 9
+  HAP_PARAM_HAP_CHR_PROPERTIES_DESC       , // 10
+  HAP_PARAM_GATT_USR_DESC                 , // 11
+  HAP_PARAM_GATT_FORMAT_DESC              , // 12
+  HAP_PARAM_GATT_VALID_RANGE              , // 13
+  HAP_PARAM_HAP_STEP_VALUE_DESC           , // 14
+  HAP_PARAM_HAP_SVC_PROPERTIES            , // 15
+  HAP_PARAM_HAP_LINKED_SVC                , // 16
+  HAP_PARAM_HAP_VALID_VALUES_DESC         , // 17
+  HAP_PARAM_HAP_VALID_VALUES_RANGE_DESC     // 18
 };
 
 enum HAPStatusCode_t
@@ -86,11 +86,11 @@ enum HAPPduType_t
 };
 
 
-typedef struct ATTR_PACKED
+typedef struct
 {
-  uint8_t type;
-  uint8_t len;
-  const void* value; // need serialization, not reflect physical layout
+  uint8_t  type;
+  uint16_t len;
+  const void* value;
 }TLV8_t;
 
 
@@ -147,7 +147,12 @@ typedef struct ATTR_PACKED
 } HAPResponse_t;
 
 
+TLV8_t   tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len);
+void     tlv8_decode_cleanup(TLV8_t tlv);
+uint8_t  tlv8_decode_n(uint8_t const* buf, uint16_t bufsize, TLV8_t tlv[], uint8_t count);
 
-TLV8_t tlv8_decode_next(uint8_t const** pp_data, uint16_t* p_len);
+bool     tlv8_encode_next(uint8_t** pp_buf, uint16_t* p_buflen, TLV8_t tlv);
+uint16_t tlv8_encode_n(uint8_t* buf, uint16_t bufsize, TLV8_t tlv[], uint8_t count);
+uint16_t tlv8_encode_calculate_len(TLV8_t tlv_para[], uint8_t count);
 
 #endif /* HAPPROCEDURE_H_ */

@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     utilities.h
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,7 @@ typedef struct
 
 void const *  lookup_find(lookup_table_t const* p_table, uint32_t key);
 
-const char* getFirmwareVersion(void);
+const char* getBootloaderVersion(void);
 const char* getMcuUniqueID(void);
 
 #ifdef __cplusplus

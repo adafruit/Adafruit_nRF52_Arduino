@@ -37,6 +37,7 @@ bool keyPressedPreviously = false;
 void setup() 
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 HID Keyscan Example");
   Serial.println("-------------------------------\n");
@@ -116,14 +117,14 @@ void startAdv(void)
 
 void loop()
 {
-  /*-------------- San Pin Array and send report ---------------------*/
+  /*-------------- Scan Pin Array and send report ---------------------*/
   bool anyKeyPressed = false;
 
   uint8_t modifier = 0;
   uint8_t count=0;
   uint8_t keycode[6] = { 0 };
 
-  // scan mofidier key (only SHIFT), user implement ATL, CTRL, CMD if needed
+  // scan modifier key (only SHIFT), user implement ATL, CTRL, CMD if needed
   if ( 0 == digitalRead(shiftPin) )
   {
     modifier |= KEYBOARD_MODIFIER_LEFTSHIFT;

@@ -1,65 +1,14 @@
 /*********************************************************************
-*                SEGGER Microcontroller GmbH & Co. KG                *
+*            (c) 1995 - 2018 SEGGER Microcontroller GmbH             *
 *                        The Embedded Experts                        *
+*                           www.segger.com                           *
 **********************************************************************
-*                                                                    *
-*       (c) 2015 - 2017  SEGGER Microcontroller GmbH & Co. KG        *
-*                                                                    *
-*       www.segger.com     Support: support@segger.com               *
-*                                                                    *
-**********************************************************************
-*                                                                    *
-*       SEGGER SystemView * Real-time application analysis           *
-*                                                                    *
-**********************************************************************
-*                                                                    *
-* All rights reserved.                                               *
-*                                                                    *
-* SEGGER strongly recommends to not make any changes                 *
-* to or modify the source code of this software in order to stay     *
-* compatible with the RTT protocol and J-Link.                       *
-*                                                                    *
-* Redistribution and use in source and binary forms, with or         *
-* without modification, are permitted provided that the following    *
-* conditions are met:                                                *
-*                                                                    *
-* o Redistributions of source code must retain the above copyright   *
-*   notice, this list of conditions and the following disclaimer.    *
-*                                                                    *
-* o Redistributions in binary form must reproduce the above          *
-*   copyright notice, this list of conditions and the following      *
-*   disclaimer in the documentation and/or other materials provided  *
-*   with the distribution.                                           *
-*                                                                    *
-* o Neither the name of SEGGER Microcontroller GmbH & Co. KG         *
-*   nor the names of its contributors may be used to endorse or      *
-*   promote products derived from this software without specific     *
-*   prior written permission.                                        *
-*                                                                    *
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND             *
-* CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,        *
-* INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF           *
-* MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE           *
-* DISCLAIMED. IN NO EVENT SHALL SEGGER Microcontroller BE LIABLE FOR *
-* ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR           *
-* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT  *
-* OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;    *
-* OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF      *
-* LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT          *
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE  *
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH   *
-* DAMAGE.                                                            *
-*                                                                    *
-**********************************************************************
-*                                                                    *
-*       SystemView version: V2.50                                    *
-*                                                                    *
-**********************************************************************
+
 -------------------------- END-OF-HEADER -----------------------------
 
 File    : SEGGER_SYSVIEW_FreeRTOS.c
 Purpose : Interface between FreeRTOS and SystemView.
-Revision: $Rev: 3734 $
+Revision: $Rev: 7947 $
 */
 #include "FreeRTOS.h"
 #include "task.h"
@@ -189,6 +138,47 @@ void SYSVIEW_UpdateTask(U32 xHandle, const char* pcTaskName, unsigned uxCurrentP
 
 /*********************************************************************
 *
+*       SYSVIEW_DeleteTask()
+*
+*  Function description
+*    Delete a task from the internal list.
+*/
+void SYSVIEW_DeleteTask(U32 xHandle) {
+  unsigned n;
+  
+  if (_NumTasks == 0) {
+    return; // Early out
+  }  
+  for (n = 0; n < _NumTasks; n++) {
+    if (_aTasks[n].xHandle == xHandle) {
+      break;
+    }
+  }
+  if (n == (_NumTasks - 1)) {  
+    //
+    // Task is last item in list.
+    // Simply zero the item and decrement number of tasks.
+    //
+    memset(&_aTasks[n], 0, sizeof(_aTasks[n]));
+    _NumTasks--;
+  } else if (n < _NumTasks) {
+    //
+    // Task is in the middle of the list.
+    // Move last item to current position and decrement number of tasks.
+    // Order of tasks does not really matter, so no need to move all following items.
+    //
+    _aTasks[n].xHandle             = _aTasks[_NumTasks - 1].xHandle;
+    _aTasks[n].pcTaskName          = _aTasks[_NumTasks - 1].pcTaskName;
+    _aTasks[n].uxCurrentPriority   = _aTasks[_NumTasks - 1].uxCurrentPriority;
+    _aTasks[n].pxStack             = _aTasks[_NumTasks - 1].pxStack;
+    _aTasks[n].uStackHighWaterMark = _aTasks[_NumTasks - 1].uStackHighWaterMark;
+    memset(&_aTasks[_NumTasks - 1], 0, sizeof(_aTasks[_NumTasks - 1]));
+    _NumTasks--;
+  }
+}
+
+/*********************************************************************
+*
 *       SYSVIEW_SendTaskInfo()
 *
 *  Function description
@@ -204,47 +194,6 @@ void SYSVIEW_SendTaskInfo(U32 TaskID, const char* sName, unsigned Prio, U32 Stac
   TaskInfo.StackBase  = StackBase;
   TaskInfo.StackSize  = StackSize;
   SEGGER_SYSVIEW_SendTaskInfo(&TaskInfo);
-}
-
-/*********************************************************************
-*
-*       SYSVIEW_RecordU32x4()
-*
-*  Function description
-*    Record an event with 4 parameters
-*/
-void SYSVIEW_RecordU32x4(unsigned Id, U32 Para0, U32 Para1, U32 Para2, U32 Para3) {
-      U8  aPacket[SEGGER_SYSVIEW_INFO_SIZE + 4 * SEGGER_SYSVIEW_QUANTA_U32];
-      U8* pPayload;
-      //
-      pPayload = SEGGER_SYSVIEW_PREPARE_PACKET(aPacket);                // Prepare the packet for SystemView
-      pPayload = SEGGER_SYSVIEW_EncodeU32(pPayload, Para0);             // Add the first parameter to the packet
-      pPayload = SEGGER_SYSVIEW_EncodeU32(pPayload, Para1);             // Add the second parameter to the packet
-      pPayload = SEGGER_SYSVIEW_EncodeU32(pPayload, Para2);             // Add the third parameter to the packet
-      pPayload = SEGGER_SYSVIEW_EncodeU32(pPayload, Para3);             // Add the fourth parameter to the packet
-      //
-      SEGGER_SYSVIEW_SendPacket(&aPacket[0], pPayload, Id);             // Send the packet
-}
-
-/*********************************************************************
-*
-*       SYSVIEW_RecordU32x5()
-*
-*  Function description
-*    Record an event with 5 parameters
-*/
-void SYSVIEW_RecordU32x5(unsigned Id, U32 Para0, U32 Para1, U32 Para2, U32 Para3, U32 Para4) {
-      U8  aPacket[SEGGER_SYSVIEW_INFO_SIZE + 5 * SEGGER_SYSVIEW_QUANTA_U32];
-      U8* pPayload;
-      //
-      pPayload = SEGGER_SYSVIEW_PREPARE_PACKET(aPacket);                // Prepare the packet for SystemView
-      pPayload = SEGGER_SYSVIEW_EncodeU32(pPayload, Para0);             // Add the first parameter to the packet
-      pPayload = SEGGER_SYSVIEW_EncodeU32(pPayload, Para1);             // Add the second parameter to the packet
-      pPayload = SEGGER_SYSVIEW_EncodeU32(pPayload, Para2);             // Add the third parameter to the packet
-      pPayload = SEGGER_SYSVIEW_EncodeU32(pPayload, Para3);             // Add the fourth parameter to the packet
-      pPayload = SEGGER_SYSVIEW_EncodeU32(pPayload, Para4);             // Add the fifth parameter to the packet
-      //
-      SEGGER_SYSVIEW_SendPacket(&aPacket[0], pPayload, Id);             // Send the packet
 }
 
 /*********************************************************************

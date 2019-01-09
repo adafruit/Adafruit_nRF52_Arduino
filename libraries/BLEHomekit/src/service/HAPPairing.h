@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     HAPPairing.h
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,6 @@ class HAPPairing : public HAPService
 {
   public:
     HAPPairing(void);
-
     virtual err_t begin(void);
 
   private:
@@ -51,6 +50,27 @@ class HAPPairing : public HAPService
     HAPCharacteristic _verify;
     HAPCharacteristic _features;
     HAPCharacteristic _pairing;
+
+    uint8_t _pair_id[17]; // Device ID in string format e.g "aa:bb:cc:dd:ee"
+
+    void setDeviceID(uint8_t dev_id[6]);
+
+    void createSrpResponse(uint16_t conn_hdl, uint8_t status, TLV8_t ktlv[], uint8_t count);
+
+    void pair_setup_m1(uint16_t conn_hdl, HAPRequest_t const* hap_req);
+    void pair_setup_m3(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t pubkey, TLV8_t proof);
+    void pair_setup_m5(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t encrypted);
+
+
+    void pair_verify_m1(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t pubkey);
+    void pair_verify_m3(uint16_t conn_hdl, HAPRequest_t const* hap_req, TLV8_t encrypted);
+
+    friend void _pair_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req);
+    friend void _pair_verify_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req);
+
+#if CFG_DEBUG
+    friend void test_homekit(void);
+#endif
 };
 
 

@@ -19,13 +19,17 @@
 
 #include "Arduino.h"
 #include "nrf.h"
+#include "nrf_nvic.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define BOOTLOADER_DFU_SERIAL_MAGIC         0x4e
-#define BOOTLOADER_DFU_OTA_FULLRESET_MAGIC  0xA8
+nrf_nvic_state_t nrf_nvic_state;
+
+#define DFU_MAGIC_SERIAL_ONLY_RESET   0x4e
+#define DFU_MAGIC_UF2_RESET           0x57
+#define DFU_MAGIC_OTA_RESET           0xA8
 
 // Must match temp register in bootloader
 #define BOOTLOADER_VERSION_REGISTER     NRF_TIMER2->CC[0]
@@ -57,18 +61,27 @@ void init( void )
   NRF_RTC1->TASKS_CLEAR = 1;
 
   // Make sure all pin is set HIGH when pinmode() is called
-  NRF_GPIO->OUTSET = UINT32_MAX;
+  NRF_P0->OUTSET = UINT32_MAX;
+#ifdef NRF_P1
+  NRF_P1->OUTSET = UINT32_MAX;
+#endif
+}
+
+void enterUf2Dfu(void)
+{
+  NRF_POWER->GPREGRET = DFU_MAGIC_UF2_RESET;
+  NVIC_SystemReset();
 }
 
 void enterSerialDfu(void)
 {
-  NRF_POWER->GPREGRET = BOOTLOADER_DFU_SERIAL_MAGIC;
+  NRF_POWER->GPREGRET = DFU_MAGIC_SERIAL_ONLY_RESET;
   NVIC_SystemReset();
 }
 
 void enterOTADfu(void)
 {
-  NRF_POWER->GPREGRET = BOOTLOADER_DFU_OTA_FULLRESET_MAGIC;
+  NRF_POWER->GPREGRET = DFU_MAGIC_OTA_RESET;
   NVIC_SystemReset();
 }
 
@@ -107,16 +120,15 @@ void systemOff(uint32_t pin, uint8_t wake_logic)
 //    NRF_POWER->RAM[i].POWERCLR = 0x03UL;
 //  }
 
-#if 0
-  // pin 0 & 1 is for XTAL
-  for(int i=2; i<PINS_COUNT; i++)
-  {
-    pinMode(i, INPUT);
-  }
-#endif
+  pin = g_ADigitalPinMap[pin];
 
-  pinMode(pin, wake_logic ? INPUT_PULLDOWN : INPUT_PULLUP);
-  NRF_GPIO->PIN_CNF[pin] |= ((uint32_t) (wake_logic ? GPIO_PIN_CNF_SENSE_High : GPIO_PIN_CNF_SENSE_Low) << GPIO_PIN_CNF_SENSE_Pos);
+  if ( wake_logic )
+  {
+    nrf_gpio_cfg_sense_input(pin, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
+  }else
+  {
+    nrf_gpio_cfg_sense_input(pin, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+  }
 
   uint8_t sd_en;
   (void) sd_softdevice_is_enabled(&sd_en);

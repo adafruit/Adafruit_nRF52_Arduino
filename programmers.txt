@@ -8,11 +8,10 @@ nrfjprog.program.path=
 nrfjprog.program.cmd=nrfjprog
 nrfjprog.program.cmd.windows=nrfjprog.exe
 
-nrfjprog.program.pattern="{program.path}{program.cmd}" --program "{runtime.platform.path}/bin/bootloader/{build.variant}/{build.bootfile}.hex" -f nrf52 --chiperase --reset
+nrfjprog.program.pattern="{program.path}{program.cmd}" --program "{runtime.platform.path}/bootloader/{build.variant}/{build.variant}_bootloader-0.2.6_{build.sd_name}_{build.sd_version}.hex" -f nrf52 --chiperase --reset
 
 #**********************************************
-# nrfutil to upgrade bootloader
-# # Note : For MacOS, make a symlink to /usr/local/bin/nrfutil if installed to other location
+# adafruit-nrfutil to upgrade bootloader
 #**********************************************
 nrfutil_boot.name=Bootloader DFU for Bluefruit nRF52
 nrfutil_boot.program.tool=bootburn
@@ -20,4 +19,4 @@ nrfutil_boot.program.cmd=adafruit-nrfutil
 nrfutil_boot.program.cmd.windows={runtime.platform.path}/tools/adafruit-nrfutil/win32/adafruit-nrfutil.exe
 nrfutil_boot.program.cmd.macosx={runtime.platform.path}/tools/adafruit-nrfutil/macos/adafruit-nrfutil
 
-nrfutil_boot.program.pattern="{program.cmd}" --verbose dfu serial -pkg "{runtime.platform.path}/bin/bootloader/{build.variant}/{build.bootfile}.zip" -p {serial.port} -b 115200
+nrfutil_boot.program.pattern={program.cmd} --verbose dfu serial -pkg "{runtime.platform.path}/bootloader/{build.variant}/{build.variant}_bootloader-0.2.6_{build.sd_name}_{build.sd_version}.zip" -p {serial.port} -b 115200 --touch 1200

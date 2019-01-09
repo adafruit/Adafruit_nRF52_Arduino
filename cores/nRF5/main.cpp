@@ -16,9 +16,6 @@
 #define ARDUINO_MAIN
 #include "Arduino.h"
 
-#define DBG_MEM_INFO              0
-#define DBG_MEM_INFO_INTERVAL     60000
-
 // DEBUG Level 1
 #if CFG_DEBUG
 // weak function to avoid compilation error with
@@ -52,8 +49,9 @@ static void loop_task(void* arg)
 
 #if CFG_DEBUG
   // If Serial is not begin(), call it to avoid hard fault
-  if ( !Serial.started() ) Serial.begin(115200);
+  if ( !Serial ) Serial.begin(115200);
   dbgPrintVersion();
+  // dbgMemInfo();
   Bluefruit_printInfo();
 #endif
 
@@ -61,20 +59,12 @@ static void loop_task(void* arg)
   {
     loop();
 
+#ifdef NRF52840_XXAA
+    tud_cdc_write_flush();
+#endif
+
+    // Serial events
     if (serialEvent && serialEventRun) serialEventRun();
-
-    #if CFG_DEBUG >= 2 && DBG_MEM_INFO
-    static uint32_t meminfo_ms = 0;
-    if (meminfo_ms + DBG_MEM_INFO_INTERVAL < millis())
-    {
-      meminfo_ms += millis();
-      Serial.printf("Memory Info (print every %d seconds)\n", DBG_MEM_INFO_INTERVAL/1000);
-      dbgMemInfo();
-    }
-    #endif
-
-    // To compatible with most code where loop is not rtos-aware
-    taskYIELD(); // vTaskDelay(1);
   }
 }
 
@@ -113,3 +103,20 @@ void suspendLoop(void)
 {
   vTaskSuspend(_loopHandle);
 }
+
+extern "C"
+{
+
+// nanolib printf() retarget
+int _write (int fd, const void *buf, size_t count)
+{
+  (void) fd;
+
+  if ( Serial )
+  {
+    Serial.write( (const uint8_t *) buf, count);
+  }
+}
+
+}
+

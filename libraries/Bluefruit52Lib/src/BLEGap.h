@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLEGap.h
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -100,7 +100,7 @@ class BLEGap
       ble_gap_addr_t addr;
 
       uint16_t         ediv;
-      bond_data_t*     bond_data; // Shared keys with bonded device, size ~ 80 bytes
+      bond_keys_t*     bond_keys; // Shared keys with bonded device, size ~ 80 bytes
 
       SemaphoreHandle_t hvn_tx_sem;
       SemaphoreHandle_t wrcmd_tx_sem;
@@ -127,7 +127,6 @@ class BLEGap
     ble_gap_sec_params_t _sec_param;
 
     friend class AdafruitBluefruit;
-//    friend class BLEGatt;
 };
 
 #endif /* BLEGAP_H_ */

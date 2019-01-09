@@ -27,11 +27,24 @@
 #include <bluefruit.h>
 
 /*------------- OLED and Buttons -------------*/
+#if defined ARDUINO_NRF52_FEATHER
+// Feather nRF52832
 #define BUTTON_A    31
 #define BUTTON_B    30
 #define BUTTON_C    27
 
-#define OLED_RESET 4
+#elif defined ARDUINO_NRF52840_FEATHER
+// Feather nRF52840
+#define BUTTON_A    9
+#define BUTTON_B    6
+#define BUTTON_C    5
+
+#else
+#error board not supported
+#endif
+
+
+#define OLED_RESET 4 // TODO remove ?
 Adafruit_SSD1306 oled(OLED_RESET);
 
 
@@ -76,6 +89,11 @@ void setup()
 
   oled.setTextSize(1);// max is 4 line, 21 chars each
   oled.setTextColor(WHITE);
+
+  // Config the peripheral connection with maximum bandwidth
+  // more SRAM required by SoftDevice
+  // Note: All config***() function must be called before begin()
+  //Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
 
   Bluefruit.begin();
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
@@ -358,6 +376,11 @@ void ancs_notification_callback(AncsNotification_t* notif)
   }
 }
 
+/**
+ * Callback invoked when a connection is dropped
+ * @param conn_handle connection where this event happens
+ * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
+ */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
   (void) conn_handle;
