@@ -539,7 +539,8 @@ bool BLECharacteristic::notify(const void* data, uint16_t len)
     while ( remaining )
     {
       // TODO multiple connection support
-      if ( !Bluefruit.Gap.getHvnPacket( Bluefruit.connHandle() ) )  return NRF_ERROR_RESOURCES; //BLE_ERROR_NO_TX_PACKETS;
+      // With no free buffers, give the app a channce to retry gracefully
+      if ( !Bluefruit.Gap.getHvnPacket( Bluefruit.connHandle() ) )  return false;
 
       uint16_t packet_len = min16(max_payload, remaining);
 
