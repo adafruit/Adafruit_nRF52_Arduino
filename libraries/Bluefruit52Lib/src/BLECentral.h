@@ -78,7 +78,6 @@ class BLECentral
     void setDisconnectCallback( BLEGap::disconnect_callback_t fp);
 
   private:
-    // Peripheral Preferred Connection Parameters (PPCP)
     ble_gap_conn_params_t _conn_param;
 
     BLEGap::connect_callback_t    _connect_cb;
