@@ -17,12 +17,13 @@
  */
 
 #include <bluefruit.h>
-#include <Nffs.h>
 #include <utility/bonding.h>
 
 void setup() 
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+
   Serial.println("Bluefruit52 Clear Bonds Example");
   Serial.println("-------------------------------\n");
 

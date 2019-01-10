@@ -27,15 +27,11 @@ BLEBas blebas;    // BAS (Battery Service) helper class instance
 
 uint8_t  bps = 0;
 
-// Advanced function prototypes
-void startAdv(void);
-void setupHRM(void);
-void connect_callback(uint16_t conn_handle);
-void disconnect_callback(uint16_t conn_handle, uint8_t reason);
-
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+
   Serial.println("Bluefruit52 HRM Example");
   Serial.println("-----------------------\n");
 
@@ -172,6 +168,12 @@ void connect_callback(uint16_t conn_handle)
   Serial.println(central_name);
 }
 
+/**
+ * Callback invoked when a connection is dropped
+ * @param conn_handle connection where this event happens
+ * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
+ * https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/master/cores/nRF5/nordic/softdevice/s140_nrf52_6.1.1_API/include/ble_hci.h
+ */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
   (void) conn_handle;
@@ -219,25 +221,4 @@ void loop()
 
   // Only send update once per second
   delay(1000);
-}
-
-/**
- * RTOS Idle callback is automatically invoked by FreeRTOS
- * when there are no active threads. E.g when loop() calls delay() and
- * there is no bluetooth or hw event. This is the ideal place to handle
- * background data.
- * 
- * NOTE: FreeRTOS is configured as tickless idle mode. After this callback
- * is executed, if there is time, freeRTOS kernel will go into low power mode.
- * Therefore waitForEvent() should not be called in this callback.
- * http://www.freertos.org/low-power-tickless-rtos.html
- * 
- * WARNING: This function MUST NOT call any blocking FreeRTOS API 
- * such as delay(), xSemaphoreTake() etc ... for more information
- * http://www.freertos.org/a00016.html
- */
-void rtos_idle_callback(void)
-{
-  // Don't call any other FreeRTOS blocking API()
-  // Perform background task(s) here
 }

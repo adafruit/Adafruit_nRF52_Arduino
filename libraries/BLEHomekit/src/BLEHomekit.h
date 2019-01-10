@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLEHomekit.h
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -87,6 +87,10 @@ class BLEHomekit : public Advertisable
     HAPPairing  _pairing;
 
     HAPLightBulb _lightbulb;
+
+#if CFG_DEBUG
+    friend void test_homekit(void);
+#endif
 };
 
 #endif /* BLEHOMEKIT_H_ */

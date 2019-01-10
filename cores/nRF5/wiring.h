@@ -31,6 +31,8 @@ extern void init(void);
 
 void enterSerialDfu(void);
 void enterOTADfu(void);
+void enterUf2Dfu(void);
+
 void waitForEvent(void);
 void systemOff(uint32_t pin, uint8_t wake_logic);
 

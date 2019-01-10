@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     rtos.h
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <malloc.h>
 
 #include "common_func.h"
 
@@ -61,11 +60,16 @@ enum
   TASK_PRIO_HIGHEST = 4,
 };
 
-#define malloc_type(type)     rtos_malloc( sizeof(type) )
+#define ms2tick              pdMS_TO_TICKS
+
+#define tick2ms(tck)         ( ( ((uint64_t)(tck)) * 1000) / configTICK_RATE_HZ )
+#define tick2us(tck)         ( ( ((uint64_t)(tck)) * 1000000) / configTICK_RATE_HZ )
+
+#define malloc_type(type)    rtos_malloc( sizeof(type) )
 
 #if 0
-#define rtos_malloc(_size)  ({ cprintf("[malloc] %s:%d : %d bytes\r\n", __PRETTY_FUNCTION__, __LINE__, _size); pvPortMalloc(_size); })
-#define rtos_free(ptr)      ({ cprintf("[free] %s:%d\r\n"    ,__PRETTY_FUNCTION__, __LINE__/*malloc_usable_size(ptr)*/); vPortFree(ptr); })
+#define rtos_malloc(_size)  ({ printf("[malloc] %s:%d : %d bytes\r\n", __PRETTY_FUNCTION__, __LINE__, _size); pvPortMalloc(_size); })
+#define rtos_free(ptr)      ({ printf("[free] %s:%d\r\n"    ,__PRETTY_FUNCTION__, __LINE__/*malloc_usable_size(ptr)*/); vPortFree(ptr); })
 #else
 
 #define rtos_malloc_type(_type)   (_type*) rtos_malloc(sizeof(_type))
@@ -80,10 +84,6 @@ static inline void rtos_free( void *pv )
   return (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) ? free(pv) : vPortFree(pv);
 }
 
-static inline void* rtos_realloc(void* pv, size_t new_size)
-{
-  return (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) ? realloc(pv, new_size) : pvPortRealloc(pv, new_size);
-}
 #endif
 
 #ifdef __cplusplus // Visible only with cplusplus

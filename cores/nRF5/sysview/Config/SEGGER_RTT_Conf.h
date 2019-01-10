@@ -52,7 +52,7 @@
 *                                                                    *
 **********************************************************************
 *                                                                    *
-*       SystemView version: V2.50                                    *
+*       SystemView version: V2.52d                                    *
 *                                                                    *
 **********************************************************************
 ---------------------------END-OF-HEADER------------------------------
@@ -60,7 +60,7 @@ File    : SEGGER_RTT_Conf.h
 Purpose : Implementation of SEGGER real-time transfer (RTT) which
           allows real-time communication on targets which support
           debugger memory accesses while the CPU is running.
-Revision: $Rev: 6249 $
+Revision: $Rev: 12706 $
 
 */
 
@@ -88,6 +88,28 @@ Revision: $Rev: 6249 $
 
 #define SEGGER_RTT_MODE_DEFAULT                   SEGGER_RTT_MODE_NO_BLOCK_SKIP // Mode for pre-initialized terminal channel (buffer 0)
 
+#define USE_RTT_ASM                               (0)     // Use assembler version of SEGGER_RTT.c when 1 
+
+/*********************************************************************
+*
+*       RTT memcpy configuration
+*
+*       memcpy() is good for large amounts of data, 
+*       but the overhead is big for small amounts, which are usually stored via RTT.
+*       With SEGGER_RTT_MEMCPY_USE_BYTELOOP a simple byte loop can be used instead.
+*
+*       SEGGER_RTT_MEMCPY() can be used to replace standard memcpy() in RTT functions.
+*       This is may be required with memory access restrictions, 
+*       such as on Cortex-A devices with MMU.
+*/
+#define SEGGER_RTT_MEMCPY_USE_BYTELOOP              0 // 0: Use memcpy/SEGGER_RTT_MEMCPY, 1: Use a simple byte-loop
+//
+// Example definition of SEGGER_RTT_MEMCPY to external memcpy with GCC toolchains and Cortex-A targets
+//
+//#if ((defined __SES_ARM) || (defined __CROSSWORKS_ARM) || (defined __GNUC__)) && (defined (__ARM_ARCH_7A__))  
+//  #define SEGGER_RTT_MEMCPY(pDest, pSrc, NumBytes)      SEGGER_memcpy((pDest), (pSrc), (NumBytes))
+//#endif
+
 //
 // Target is not allowed to perform other RTT operations while string still has not been stored completely.
 // Otherwise we would probably end up with a mixed string in the buffer.
@@ -103,7 +125,7 @@ Revision: $Rev: 6249 $
 // or define SEGGER_RTT_LOCK() to completely disable interrupts.
 //
 
-#define SEGGER_RTT_MAX_INTERRUPT_PRIORITY         (0x20)   // Interrupt priority to lock on SEGGER_RTT_LOCK on Cortex-M3/4 (Default: 0x20)
+#define SEGGER_RTT_MAX_INTERRUPT_PRIORITY         (2 << 5)   // Interrupt priority to lock on SEGGER_RTT_LOCK on Cortex-M3/4 (Default: 0x20)
 
 /*********************************************************************
 *
@@ -111,7 +133,7 @@ Revision: $Rev: 6249 $
 *       Rowley CrossStudio and GCC
 */
 #if (defined __SES_ARM) || (defined __CROSSWORKS_ARM) || (defined __GNUC__)
-  #ifdef __ARM_ARCH_6M__
+  #if (defined __ARM_ARCH_6M__) || (defined __ARM_ARCH_8M_BASE__)
     #define SEGGER_RTT_LOCK()   {                                                                   \
                                     unsigned int LockState;                                         \
                                   __asm volatile ("mrs   %0, primask  \n\t"                         \
@@ -213,6 +235,20 @@ Revision: $Rev: 6249 $
 #ifdef __ICCRX__
   #define SEGGER_RTT_LOCK()   {                                                                     \
                                 unsigned long LockState;                                            \
+                                LockState = __get_interrupt_state();                                \
+                                __disable_interrupt();
+
+  #define SEGGER_RTT_UNLOCK()   __set_interrupt_state(LockState);                                   \
+                              }
+#endif
+
+/*********************************************************************
+*
+*       RTT lock configuration for IAR RL78
+*/
+#ifdef __ICCRL78__
+  #define SEGGER_RTT_LOCK()   {                                                                     \
+                                __istate_t LockState;                                               \
                                 LockState = __get_interrupt_state();                                \
                                 __disable_interrupt();
 

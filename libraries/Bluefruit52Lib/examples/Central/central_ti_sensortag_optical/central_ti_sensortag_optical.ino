@@ -58,6 +58,7 @@ BLEClientCharacteristic opticalCharacteristicPeriod(SENSORTAG_OPTICAL_PERIOD_CHA
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 Central TI Sensor Tag Example");
   Serial.println("-----------------------------------------\n");
@@ -121,7 +122,7 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   
   /* Choose a peripheral to connect with by searching for an advertisement packet with a 
   Complete Local Name matching our target device*/
-  uint8_t buffer[BLE_GAP_ADV_MAX_SIZE] = { 0 };
+  uint8_t buffer[BLE_GAP_ADV_SET_DATA_SIZE_MAX] = { 0 };
 
   Serial.print("Parsing report for Local Name ... ");
   if(Bluefruit.Scanner.parseReportByType(report, BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME, buffer, sizeof(buffer)))
@@ -130,7 +131,7 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
     Serial.printf("%14s %s\n", "Local Name:", buffer);
 
     Serial.print("   Local Name data: ");
-    printHexList(buffer, BLE_GAP_ADV_MAX_SIZE ); 
+    printHexList(buffer, BLE_GAP_ADV_SET_DATA_SIZE_MAX ); 
 
     Serial.print("Determining Local Name Match ... ");
     if ( !memcmp( buffer, SENSORTAG_ADV_COMPLETE_LOCAL_NAME, sizeof(SENSORTAG_ADV_COMPLETE_LOCAL_NAME)) )
@@ -143,11 +144,16 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
     else
     {
       Serial.println("No Match");
+      Bluefruit.Scanner.resume(); // continue scanning
     } 
   } 
   else
   {
-    Serial.println("Failed"); 
+    Serial.println("Failed");
+
+    // For Softdevice v6: after received a report, scanner will be paused
+    // We need to call Scanner resume() to continue scanning
+    Bluefruit.Scanner.resume();
   }  
 }
 
@@ -162,7 +168,7 @@ void connect_callback(uint16_t conn_handle)
   Serial.println( conn_handle );
    
   /* Complete Local Name */
-  uint8_t buffer[BLE_GAP_ADV_MAX_SIZE] = { 0 };
+  uint8_t buffer[BLE_GAP_ADV_SET_DATA_SIZE_MAX] = { 0 };
   
   // If Service is not found, disconnect and return
   Serial.print("Discovering Optical Service ... ");
@@ -231,7 +237,8 @@ void connect_callback(uint16_t conn_handle)
 /**
  * Callback invoked when a connection is dropped
  * @param conn_handle
- * @param reason
+ * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
+ * https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/master/cores/nRF5/nordic/softdevice/s140_nrf52_6.1.1_API/include/ble_hci.h
  */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
@@ -288,15 +295,15 @@ void printReport( const ble_gap_evt_adv_report_t* report )
   Serial.print( "  rssi: " );
   Serial.println( report->rssi );
   Serial.print( "  scan_rsp: " );
-  Serial.println( report->scan_rsp );
-  Serial.print( "  type: " );
-  Serial.println( report->type );
+  Serial.println( report->type.scan_response );
+//  Serial.print( "  type: " );
+//  Serial.println( report->type );
   Serial.print( "  dlen: " );
-  Serial.println( report->dlen );  
+  Serial.println( report->data.len );  
   Serial.print( "  data: " );
-  for( int i = 0; i < report->dlen; i+= sizeof(uint8_t) )
+  for( int i = 0; i < report->data.len; i+= sizeof(uint8_t) )
   {
-    Serial.printf( "%02X-", report->data[ i ] );
+    Serial.printf( "%02X-", report->data.p_data[ i ] );
   }
   Serial.println(""); 
 }

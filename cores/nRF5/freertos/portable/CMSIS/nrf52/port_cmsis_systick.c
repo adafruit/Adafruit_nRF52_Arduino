@@ -1,77 +1,37 @@
 /*
-    FreeRTOS V8.2.1 - Copyright (C) 2015 Real Time Engineers Ltd.
-    All rights reserved
-
-    VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
-
-    This file is part of the FreeRTOS distribution.
-
-    FreeRTOS is free software; you can redistribute it and/or modify it under
-    the terms of the GNU General Public License (version 2) as published by the
-    Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
-
-    ***************************************************************************
-    >>!   NOTE: The modification to the GPL is included to allow you to     !<<
-    >>!   distribute a combined work that includes FreeRTOS without being   !<<
-    >>!   obliged to provide the source code for proprietary components     !<<
-    >>!   outside of the FreeRTOS kernel.                                   !<<
-    ***************************************************************************
-
-    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
-    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE.  Full license text is available on the following
-    link: http://www.freertos.org/a00114.html
-
-    ***************************************************************************
-     *                                                                       *
-     *    FreeRTOS provides completely free yet professionally developed,    *
-     *    robust, strictly quality controlled, supported, and cross          *
-     *    platform software that is more than just the market leader, it     *
-     *    is the industry's de facto standard.                               *
-     *                                                                       *
-     *    Help yourself get started quickly while simultaneously helping     *
-     *    to support the FreeRTOS project by purchasing a FreeRTOS           *
-     *    tutorial book, reference manual, or both:                          *
-     *    http://www.FreeRTOS.org/Documentation                              *
-     *                                                                       *
-    ***************************************************************************
-
-    http://www.FreeRTOS.org/FAQHelp.html - Having a problem?  Start by reading
-    the FAQ page "My application does not run, what could be wrong?".  Have you
-    defined configASSERT()?
-
-    http://www.FreeRTOS.org/support - In return for receiving this top quality
-    embedded software for free we request you assist our global community by
-    participating in the support forum.
-
-    http://www.FreeRTOS.org/training - Investing in training allows your team to
-    be as productive as possible as early as possible.  Now you can receive
-    FreeRTOS training directly from Richard Barry, CEO of Real Time Engineers
-    Ltd, and the world's leading authority on the world's leading RTOS.
-
-    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
-    including FreeRTOS+Trace - an indispensable productivity tool, a DOS
-    compatible FAT file system, and our tiny thread aware UDP/IP stack.
-
-    http://www.FreeRTOS.org/labs - Where new FreeRTOS products go to incubate.
-    Come and try FreeRTOS+TCP, our new open source TCP/IP stack for FreeRTOS.
-
-    http://www.OpenRTOS.com - Real Time Engineers ltd. license FreeRTOS to High
-    Integrity Systems ltd. to sell under the OpenRTOS brand.  Low cost OpenRTOS
-    licenses offer ticketed support, indemnification and commercial middleware.
-
-    http://www.SafeRTOS.com - High Integrity Systems also provide a safety
-    engineered and independently SIL3 certified version for use in safety and
-    mission critical applications that require provable dependability.
-
-    1 tab == 4 spaces!
-*/
+ * FreeRTOS Kernel V10.0.0
+ * Copyright (C) 2017 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software. If you wish to use our Amazon
+ * FreeRTOS name, please do so in a fair use way that does not cause confusion.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * http://www.FreeRTOS.org
+ * http://aws.amazon.com/freertos
+ *
+ * 1 tab == 4 spaces!
+ */
 
 /* Scheduler includes. */
 #include "FreeRTOS.h"
 #include "task.h"
 //#include "app_util.h"
 //#include "nrf_log.h"
+#include "nrf_nvic.h"
 
 #define ROUNDED_DIV(A, B) (((A) + ((B) / 2)) / (B))
 
@@ -84,72 +44,11 @@
  * Implementation of functions defined in portable.h for the ARM CM4F port.
  * CMSIS compatible layer to menage SysTick ticking source.
  *----------------------------------------------------------*/
-
-#if configTICK_SOURCE == FREERTOS_USE_SYSTICK
-
-
-#ifndef configSYSTICK_CLOCK_HZ
-    #define configSYSTICK_CLOCK_HZ configCPU_CLOCK_HZ
-    /* Ensure the SysTick is clocked at the same frequency as the core. */
-    #define portNVIC_SYSTICK_CLK_BIT    ( SysTick_CTRL_CLKSOURCE_Msk )
-#else
-    /* The way the SysTick is clocked is not modified in case it is not the same
-    as the core. */
-    #define portNVIC_SYSTICK_CLK_BIT    ( 0 )
-#endif
-
-
-#if configUSE_TICKLESS_IDLE == 1
-    #error SysTick port for RF52 does not support tickless idle. Use RTC mode instead.
-#endif /* configUSE_TICKLESS_IDLE */
-
-/*-----------------------------------------------------------*/
-
-void xPortSysTickHandler( void )
-{
-    /* The SysTick runs at the lowest interrupt priority, so when this interrupt
-    executes all interrupts must be unmasked.  There is therefore no need to
-    save and then restore the interrupt mask value as its value is already
-    known. */
-    ( void ) portSET_INTERRUPT_MASK_FROM_ISR();
-    {
-        /* Increment the RTOS tick. */
-        if ( xTaskIncrementTick() != pdFALSE )
-        {
-            /* A context switch is required.  Context switching is performed in
-            the PendSV interrupt.  Pend the PendSV interrupt. */
-            SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
-            __SEV();
-        }
-    }
-    portCLEAR_INTERRUPT_MASK_FROM_ISR( 0 );
-}
-
-/*-----------------------------------------------------------*/
-
-/*
- * Setup the systick timer to generate the tick interrupts at the required
- * frequency.
- */
-void vPortSetupTimerInterrupt( void )
-{
-    /* Set interrupt priority */
-    NVIC_SetPriority(SysTick_IRQn, configKERNEL_INTERRUPT_PRIORITY);
-    /* Configure SysTick to interrupt at the requested rate. */
-    SysTick->LOAD = ROUNDED_DIV(configSYSTICK_CLOCK_HZ, configTICK_RATE_HZ) - 1UL;
-    SysTick->CTRL = ( portNVIC_SYSTICK_CLK_BIT | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk );
-}
-
-/*-----------------------------------------------------------*/
-
-#elif configTICK_SOURCE == FREERTOS_USE_RTC
-
 #if configUSE_16_BIT_TICKS == 1
 #error This port does not support 16 bit ticks.
 #endif
 
 #include "nrf_rtc.h"
-//#include "nrf_drv_clock.h"
 
 /*-----------------------------------------------------------*/
 
@@ -277,6 +176,7 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
         configPRE_SLEEP_PROCESSING( xModifiableIdleTime );
         if ( xModifiableIdleTime > 0 )
         {
+#if 0  // With FreeRTOS sd_app_evt_wait increases power consumption with FreeRTOS compared to _WFE (NRFFOSDK-11174)
 #ifdef SOFTDEVICE_PRESENT // TODO
             uint8_t sd_en = 0;
             (void) sd_softdevice_is_enabled(&sd_en);
@@ -287,6 +187,7 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
             }
             else
 #endif
+#endif // (NRFFOSDK-11174)
             {
                 /* No SD -  we would just block interrupts globally.
                 * BASEPRI cannot be used for that because it would prevent WFE from wake up.
@@ -335,7 +236,3 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
 }
 
 #endif // configUSE_TICKLESS_IDLE
-
-#else // configTICK_SOURCE
-    #error  Unsupported configTICK_SOURCE value
-#endif // configTICK_SOURCE == FREERTOS_USE_SYSTICK

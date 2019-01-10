@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     bluefruit.h
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2016, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -43,15 +43,9 @@
 
 /* Note changing these parameters will affect APP_RAM_BASE
  * --> need to update RAM region in linker file
- * - BLEGATT_ATT_MTU_MAX from 23 (default) to 247
+ * - BLE_GATT_ATT_MTU_MAX from 23 (default) to 247
  */
-
-#if SD_VER < 500
-#define BLEGATT_ATT_MTU_MAX             BLE_GATT_ATT_MTU_DEFAULT
-#else
-#define BLEGATT_ATT_MTU_MAX             247
-#endif
-
+#define BLE_GATT_ATT_MTU_MAX            247
 #define BLE_PRPH_MAX_CONN               1
 #define BLE_CENTRAL_MAX_CONN            4
 #define BLE_CENTRAL_MAX_SECURE_CONN     1 // should be enough
@@ -87,6 +81,7 @@
 #include "clients/BLEClientDis.h"
 #include "clients/BLEClientCts.h"
 #include "clients/BLEClientHidAdafruit.h"
+#include "clients/BLEClientBas.h"
 
 #include "utility/AdaCallback.h"
 #include "utility/bonding.h"
@@ -163,6 +158,8 @@ class AdafruitBluefruit
 
     bool     setConnInterval   (uint16_t min, uint16_t max);
     bool     setConnIntervalMS (uint16_t min_ms, uint16_t max_ms);
+    bool     setConnSupervisionTimeout(uint16_t timeout);
+    bool     setConnSupervisionTimeoutMS(uint16_t timeout_ms);
 
     uint16_t connHandle        (void);
     bool     connPaired        (void);
@@ -181,6 +178,8 @@ class AdafruitBluefruit
      *------------------------------------------------------------------*/
     void setConnectCallback   ( BLEGap::connect_callback_t    fp);
     void setDisconnectCallback( BLEGap::disconnect_callback_t fp);
+
+    void setEventCallback ( void (*fp) (ble_evt_t*) );
 
     COMMENT_OUT ( bool setPIN(const char* pin); )
 
@@ -205,8 +204,7 @@ class AdafruitBluefruit
     uint8_t _central_count;
 
     // Peripheral Preferred Connection Parameters (PPCP)
-    uint16_t _ppcp_min_conn;
-    uint16_t _ppcp_max_conn;
+    ble_gap_conn_params_t _ppcp;
 
     // Actual connection interval in use
     uint16_t _conn_interval;
@@ -225,6 +223,8 @@ class AdafruitBluefruit
 
     BLEGap::connect_callback_t    _connect_cb;
     BLEGap::disconnect_callback_t _disconnect_cb;
+
+    void (*_event_cb) (ble_evt_t*);
 
 COMMENT_OUT(
     uint8_t _auth_type;

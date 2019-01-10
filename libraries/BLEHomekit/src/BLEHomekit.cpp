@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLEHomekit.cpp
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -36,8 +36,6 @@
 
 #include <bluefruit.h>
 #include "BLEHomekit.h"
-
-#define HOMEKIT_PROTOCOL_VERION           2
 
 uint16_t BLEHomekit::_gInstanceID = 1;
 
@@ -95,18 +93,18 @@ bool BLEHomekit::setAdv(BLEAdvertisingData& adv_ref)
     uint16_t category;
     uint16_t gsn;
     uint8_t  config_num;
-    uint8_t  compatible_verion;
+    uint8_t  compatible_version;
   }data =
   {
-      .company_id        = UUID16_COMPANY_ID_APPLE,
-      .type              = 0x06,
-      .adv_int_len       = ail,
-      .status_flag       = 1, // bit0 = HAP Pairing Status Flag (1 not paired)
-      .dev_id            = { 0x00},
-      .category          = HAP_CAT_LIGHTBULB,
-      .gsn               = 1,
-      .config_num        = 1,
-      .compatible_verion = HOMEKIT_PROTOCOL_VERION
+      .company_id         = UUID16_COMPANY_ID_APPLE,
+      .type               = 0x06,
+      .adv_int_len        = ail,
+      .status_flag        = 1, // bit0 = HAP Pairing Status Flag (1 not paired)
+      .dev_id             = { 0x00},
+      .category           = HAP_CAT_LIGHTBULB,
+      .gsn                = 1,
+      .config_num         = 1,
+      .compatible_version = 2 // protocol version
   };
 
   Bluefruit.Gap.getAddr(data.dev_id);
@@ -114,6 +112,15 @@ bool BLEHomekit::setAdv(BLEAdvertisingData& adv_ref)
   VERIFY_STATIC( sizeof(data) == 17);
 
   adv.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  return adv.addManufacturerData(&data, sizeof(data));
+  adv.addManufacturerData(&data, sizeof(data));
+
+  // Full name is not added, added full name to scan response
+  if ( !adv.addName() )
+  {
+    Bluefruit.ScanResponse.clearData();
+    Bluefruit.ScanResponse.addName();
+  }
+
+  return true;
 }
 

@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLEAncs.h
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -161,9 +161,6 @@ class BLEAncs : public BLEClientService
 
     bool     actPositive       (uint32_t uid);
     bool     actNegative       (uint32_t uid);
-
-  protected:
-    virtual void  disconnect(void);
 
   private:
     BLEClientCharacteristic _control;

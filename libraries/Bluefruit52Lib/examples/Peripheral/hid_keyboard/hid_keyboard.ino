@@ -21,6 +21,7 @@ bool hasKeyPressed = false;
 void setup() 
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 HID Keyboard Example");
   Serial.println("--------------------------------\n");
@@ -51,6 +52,9 @@ void setup()
    * connection interval to 11.25  ms and 15 ms respectively for best performance.
    */
   blehid.begin();
+
+  // Set callback for set LED from central
+  blehid.setKeyboardLedCallback(set_keyboard_led);
 
   /* Set connection interval (min, max) to your perferred value.
    * Note: It is already set by BLEHidAdafruit::begin() to 11.25ms - 15ms
@@ -122,22 +126,21 @@ void loop()
 }
 
 /**
- * RTOS Idle callback is automatically invoked by FreeRTOS
- * when there are no active threads. E.g when loop() calls delay() and
- * there is no bluetooth or hw event. This is the ideal place to handle
- * background data.
- * 
- * NOTE: FreeRTOS is configured as tickless idle mode. After this callback
- * is executed, if there is time, freeRTOS kernel will go into low power mode.
- * Therefore waitForEvent() should not be called in this callback.
- * http://www.freertos.org/low-power-tickless-rtos.html
- * 
- * WARNING: This function MUST NOT call any blocking FreeRTOS API 
- * such as delay(), xSemaphoreTake() etc ... for more information
- * http://www.freertos.org/a00016.html
+ * Callback invoked when received Set LED from central.
+ * Must be set previously with setKeyboardLedCallback()
+ *
+ * The LED bit map is as follows: (also defined by KEYBOARD_LED_* )
+ *    Kana (4) | Compose (3) | ScrollLock (2) | CapsLock (1) | Numlock (0)
  */
-void rtos_idle_callback(void)
+void set_keyboard_led(uint8_t led_bitmap)
 {
-  // Don't call any other FreeRTOS blocking API()
-  // Perform background task(s) here
+  // light up Red Led if any bits is set
+  if ( led_bitmap )
+  {
+    ledOn( LED_RED );
+  }
+  else
+  {
+    ledOff( LED_RED );
+  }
 }

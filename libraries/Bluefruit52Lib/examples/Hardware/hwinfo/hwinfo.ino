@@ -10,6 +10,7 @@ typedef volatile uint32_t REG32;
 
 void setup() {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit 52 HW Info");
   Serial.println("");

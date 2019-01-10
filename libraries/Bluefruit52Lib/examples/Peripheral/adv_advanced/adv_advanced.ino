@@ -20,11 +20,8 @@
  */
 #include <bluefruit.h>
 
-#define PIN_ADV       11
+#define PIN_ADV       A0
 #define ADV_TIMEOUT   60 // seconds
-
-// Software Timer for blinking RED LED
-SoftwareTimer blinkTimer;
 
 void setup() 
 {
@@ -32,12 +29,10 @@ void setup()
   pinMode(PIN_ADV, INPUT_PULLUP);
   
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+
   Serial.println("Bluefruit52 Advanced Advertising Example");
   Serial.println("----------------------------------------\n");
-
-  // Initialize blinkTimer for 1000 ms and start it
-  blinkTimer.begin(1000, blink_timer_callback);
-  blinkTimer.start();
 
   Bluefruit.begin();
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
@@ -94,18 +89,3 @@ void adv_stop_callback(void)
 {
   Serial.println("Advertising time passed, advertising will now stop.");
 }
-
-/**
- * Software Timer callback is invoked via a built-in FreeRTOS thread with
- * minimal stack size. Therefore it should be as simple as possible. If
- * a periodically heavy task is needed, please use Scheduler.startLoop() to
- * create a dedicated task for it.
- * 
- * More information http://www.freertos.org/RTOS-software-timer.html
- */
-void blink_timer_callback(TimerHandle_t xTimerID)
-{
-  (void) xTimerID;
-  digitalToggle(LED_RED);
-}
-

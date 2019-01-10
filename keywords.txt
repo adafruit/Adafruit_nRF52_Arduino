@@ -25,7 +25,6 @@ setLoopStacksize	KEYWORD2
 
 ledOn	KEYWORD2
 ledOff	KEYWORD2
-ledToggle	KEYWORD2
 
 printf	KEYWORD2
 printBuffer	KEYWORD2
@@ -38,7 +37,6 @@ delay_ns	KEYWORD2
 # RTOS
 rtos_malloc	KEYWORD2
 rtos_free	KEYWORD2
-rtos_realloc	KEYWORD2
 
 nrf52_flash_init	KEYWORD2
 nrf52_flash_erase_sector	KEYWORD2
@@ -124,3 +122,4 @@ PIN_SPI_SCK	LITERAL1
 PIN_WIRE_SDA	LITERAL1
 PIN_WIRE_SCL	LITERAL1
 
+ISR_DEFERRED	LITERAL1

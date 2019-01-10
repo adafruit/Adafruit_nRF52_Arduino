@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLECharacteristic.h
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2016, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -128,7 +128,7 @@ class BLECharacteristic
 
 
     /*------------- Read -------------*/
-    uint16_t read(void* buffer, uint16_t bufsize);
+    uint16_t read(void* buffer, uint16_t bufsize, uint16_t offset = 0);
 
     uint8_t  read8 (void);
     uint16_t read16(void);

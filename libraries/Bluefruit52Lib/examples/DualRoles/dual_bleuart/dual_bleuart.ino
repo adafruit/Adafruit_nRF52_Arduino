@@ -30,6 +30,7 @@ BLEClientUart clientUart;
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 Dual Role BLEUART Example");
   Serial.println("-------------------------------------\n");
@@ -153,14 +154,10 @@ void prph_bleuart_rx_callback(void)
  *------------------------------------------------------------------*/
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
-  // Check if advertising contain BleUart service
-  if ( Bluefruit.Scanner.checkReportForService(report, clientUart) )
-  {
-    Serial.println("BLE UART service detected. Connecting ... ");
-
-    // Connect to device with bleuart service in advertising
-    Bluefruit.Central.connect(report);
-  }
+  // Since we configure the scanner with filterUuid()
+  // Scan callback only invoked for device with bleuart service advertised  
+  // Connect to the device with bleuart service in advertising packet  
+  Bluefruit.Central.connect(report);
 }
 
 void cent_connect_callback(uint16_t conn_handle)
@@ -213,4 +210,3 @@ void cent_bleuart_rx_callback(BLEClientUart& cent_uart)
     clientUart.println("[Cent] Peripheral role not connected");
   }  
 }
-

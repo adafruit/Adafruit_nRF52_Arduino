@@ -33,6 +33,7 @@ unsigned long prev_off = millis();
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 BLEMIDI TX Test");
   Serial.println("---------------------------\n");

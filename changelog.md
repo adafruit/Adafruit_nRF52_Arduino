@@ -1,5 +1,70 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+# 0.9.3
+
+- Correct bootloader version text in IDE to 0.2.6
+- Fixed #173  ( PR #178 thanks Nenik)
+- Added Client Battery support BLEClientBas
+- Added BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST event support for Central
+- Added Jlink as programmer to upload sketch (#133)
+
+## 0.9.2
+
+- Fully support Feather nRF52840
+- Update bootloader with new led pattern
+- Fix #203: return software timer handle
+
+## 0.9.1
+
+- Rename FileIO.h to Bluefruit_FileIO to prevent conflict with other libraries.
+- Minor upgrade for bootloader to prevent issue with WDT enabled by application
+- 52840: call cdc flush before delay()
+
+## 0.9.0
+
+- Added nRF52840-based board support (pca10056 and feather nRF52840 express)
+- Upgrade bootloader to v6.1.1 ( single bank only )
+- Upgrade BSP code to match SD v6
+  - Bluefruit.Scanner.resume() must be called in scan callback to resume scanning after received an report.
+- Upgrade freeRTOS from v8 to v10.0.1
+- Upgrade Segger SysView to 2.52d
+- Added nrfx to core
+- Added tinyusb stack to libraries
+- Added LittleFS to replace NFFS
+- Added FileSystem Libraries base on SD File API
+  - InternalFS use LittleFS to manage internal flash for bonding and other user data
+  - ExternalFS use fatfs to manage external spi flash (nrf52840 only) for usb msc.
+- Replace cpritnf by std printf
+- Added HwPWM3 for nRF52840
+- Added ISR_DEFERRED option for attachInterrupt() to defer callback from ISR context
+  - Added digital_interrupt_deferred sketch for demo
+- Added support for using the Low Frequency RC oscillator ( PR #144 thanks to @jeremypoulter )
+  - USE_LFRC or USE_LFXO must be defined in board's variant.h
+- Fixed Scanner running state when timeout ( PR #186 thanks to @Ryscho )
+- Fixed #192 Client Characteristic write() return number of writtent instead of error code
+- Added #181 Bluefruit.setEventCallback() for user to handle ble event
+
+## 0.8.6
+
+- Fixed dbgDumpMemory for buffer > 255 byte, thanks to @airbornemint
+- Added setConnSupervisionTimeout and setConnSupervisionTimeoutMS ( PR #177 thanks to @airbornemint )
+- Decrease gpio's interrupt level to 2 to avoid conlfict with SD timing critical task ( PR #179 thanks to @Nenik )
+- Fixed #174 window build error with Arduino 1.8.6 with verbose = off
+
+## 0.8.5
+
+- Migrate nrfutil to adafruit-nrfutil, executable binaries for windows and macOS are included.
+- Implement #166 BLE HID Keyboard LED receive from Central, update hid_keyscan & hid_keyboard example.
+- Add hardware's systick sketch example
+- Add software timer's sketch example
+
+## 0.8.4
+
+- Fix #160: hardware PWM issue that cause Servo freq is 640 hz instead of 50hz
+- Fix #134: hardcoded pulse limits with Servo
+- Fix upload issue with windows when username has spaces
+- Support serialEvent()
+
 ## 0.8.3
 
 - Enhanced indicate API() to wait for confirm or timeout from peer.

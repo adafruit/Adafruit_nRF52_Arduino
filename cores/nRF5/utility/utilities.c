@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     utilities.c
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -42,17 +42,6 @@
 #include "nrf_sdm.h"
 #include "nrf52/nrf_mbr.h"
 
-static lookup_entry_t const sd_lookup_items[] =
-{
-    { .key = 0x0088, .data = "S132 2.0.1" },
-    { .key = 0x00A5, .data = "S132 5.1.0" },
-};
-
-static const lookup_table_t sd_lookup_table =
-{
-    .count = sizeof(sd_lookup_items)/sizeof(lookup_entry_t),
-    .items = sd_lookup_items
-};
 
 /******************************************************************************/
 /*!
@@ -72,46 +61,27 @@ void const * lookup_find(lookup_table_t const* p_table, uint32_t key)
 /**
  * Format: SDname SDverion, bootloader version
  * e.g
- *    "S132 2.0.1, 0.5.0"
- *    "S132 5.0.0, 5.0.0 single bank"
- *    "S132 5.0.0, 5.0.0 dual banks"
+ *    "s132 2.0.1, 0.5.0"
+ *    "s132 5.0.0, 5.0.0 single bank"
+ *    "s132 6.1.1 r0"
  * @return
  */
-const char* getFirmwareVersion(void)
+const char* getBootloaderVersion(void)
 {
   static char fw_str[30+1] = { 0 };
 
   // Skip if already created
   if ( fw_str[0] == 0 )
   {
-    uint32_t sd_id = SD_FWID_GET(MBR_SIZE) & 0x0000ffff;
-    char const* p_lookup = (char const*) lookup_find(&sd_lookup_table, sd_id);
+    uint32_t const sd_id      = SD_ID_GET(MBR_SIZE);
+    uint32_t const sd_version = SD_VERSION_GET(MBR_SIZE);
 
-#if SD_VER < 500
-    if (p_lookup)
-    {
-      sprintf(fw_str, "%s, %d.%d.%d dual banks", p_lookup,
-              U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion), U32_BYTE4(bootloaderVersion));
-    }else
-    {
-      // Unknown SD ID --> display ID
-      sprintf(fw_str, "0x%04X, %d.%d.%d dual banks", (uint16_t) sd_id,
-              U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion), U32_BYTE4(bootloaderVersion));
-    }
-#else
-    if (p_lookup)
-    {
-      sprintf(fw_str, "%s, %d.%d.%d %s", p_lookup,
-              U32_BYTE1(bootloaderVersion), U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion),
-              U32_BYTE4(bootloaderVersion) ? "single bank" : "dual banks");
-    }else
-    {
-      // Unknown SD ID --> display ID
-      sprintf(fw_str, "0x%04X, %d.%d.%d %s", (uint16_t) sd_id,
-              U32_BYTE1(bootloaderVersion), U32_BYTE2(bootloaderVersion), U32_BYTE3(bootloaderVersion),
-              U32_BYTE4(bootloaderVersion) ? "single bank" : "dual banks");
-    }
-#endif
+    uint32_t const ver1 = sd_version / 1000000;
+    uint32_t const ver2 = (sd_version % 1000000)/1000;
+    uint32_t const ver3 = sd_version % 1000;
+
+    sprintf(fw_str, "s%d %d.%d.%d r%d", sd_id,
+                    ver1, ver2, ver3, U32_BYTE4(bootloaderVersion) );
   }
 
   return fw_str;
@@ -130,13 +100,3 @@ const char* getMcuUniqueID(void)
   return serial_str;
 }
 
-/*
- * nrfjprog --family NRF52 --memrd 0x0000300C
- *
-  SoftDevice          |  FWID  | memory address |
-  --------------------|--------|----------------
-  S132 v2.0.1         | 0x0088 |   0x0000300C   |
-  S132 v5.0.0         | 0x009D |                |
-  Development/any     | 0xFFFE |                |
-  ----------------------------
- */

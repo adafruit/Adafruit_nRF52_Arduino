@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLECharacteristic.cpp
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2016, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -455,12 +455,12 @@ uint16_t BLECharacteristic::write32(int num)
  * @param offset  offset of value (dfeault is 0)
  * @return  number of read bytes
  */
-uint16_t BLECharacteristic::read(void* buffer, uint16_t bufsize)
+uint16_t BLECharacteristic::read(void* buffer, uint16_t bufsize, uint16_t offset)
 {
   ble_gatts_value_t value =
   {
       .len     = bufsize,
-      .offset  = 0, // TODO gatts long read
+      .offset  = offset,
       .p_value = (uint8_t*) buffer
   };
 
@@ -539,7 +539,8 @@ bool BLECharacteristic::notify(const void* data, uint16_t len)
     while ( remaining )
     {
       // TODO multiple connection support
-      if ( !Bluefruit.Gap.getHvnPacket( Bluefruit.connHandle() ) )  return NRF_ERROR_RESOURCES; //BLE_ERROR_NO_TX_PACKETS;
+      // Failed if there is no free buffer
+      if ( !Bluefruit.Gap.getHvnPacket( Bluefruit.connHandle() ) )  return false;
 
       uint16_t packet_len = min16(max_payload, remaining);
 

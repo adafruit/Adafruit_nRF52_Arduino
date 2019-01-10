@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLEScanner.h
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -74,6 +74,7 @@ public:
   void clearFilters(void);
 
   bool start(uint16_t timeout = 0);
+  bool resume(void);
   bool stop(void);
 
   /*------------- Callbacks -------------*/
@@ -85,8 +86,8 @@ public:
   uint8_t parseReportByType(const ble_gap_evt_adv_report_t* report, uint8_t type, uint8_t* buf, uint8_t bufsize = 0);
 
   bool    checkReportForUuid(const ble_gap_evt_adv_report_t* report, BLEUuid ble_uuid);
-  bool    checkReportForService(const ble_gap_evt_adv_report_t* report, BLEClientService svc);
-  bool    checkReportForService(const ble_gap_evt_adv_report_t* report, BLEService svc);
+  bool    checkReportForService(const ble_gap_evt_adv_report_t* report, BLEClientService& svc);
+  bool    checkReportForService(const ble_gap_evt_adv_report_t* report, BLEService& svc);
 
   /*------------------------------------------------------------------*/
   /* INTERNAL USAGE ONLY
@@ -96,15 +97,18 @@ public:
   void _eventHandler(ble_evt_t* evt);
 
 private:
-  bool     _runnning;
-  bool     _start_if_disconnect;
+  uint8_t    _scan_data[BLE_GAP_SCAN_BUFFER_MAX];
+  ble_data_t _report_data;
 
-  int8_t   _filter_rssi;
-  bool     _filter_msd_en; // since all value of manufacturer id is valid (0-FFFF)
-  uint16_t _filter_msd_id;
+  bool       _runnning;
+  bool       _start_if_disconnect;
 
-  BLEUuid* _filter_uuid;
-  uint8_t  _filter_uuid_count;
+  int8_t     _filter_rssi;
+  bool       _filter_msd_en; // since all value of manufacturer id is valid (0-FFFF)
+  uint16_t   _filter_msd_id;
+
+  BLEUuid*   _filter_uuid;
+  uint8_t    _filter_uuid_count;
 
   rx_callback_t   _rx_cb;
   stop_callback_t _stop_cb;

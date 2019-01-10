@@ -31,6 +31,8 @@ extern "C" {
 #define FALLING 3
 #define RISING 4
 
+#define ISR_DEFERRED  0x0100
+
 #define DEFAULT 1
 #define EXTERNAL 0
 

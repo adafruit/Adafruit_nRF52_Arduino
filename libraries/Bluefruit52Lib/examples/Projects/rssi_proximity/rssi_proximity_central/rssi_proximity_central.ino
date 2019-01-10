@@ -139,6 +139,8 @@ node_record_t records[ARRAY_SIZE];
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+
   Serial.println("Bluefruit52 Central Proximity Example");
   Serial.println("-------------------------------------\n");
 
@@ -362,6 +364,10 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
 
   Serial.println();
 #endif
+
+  // For Softdevice v6: after received a report, scanner will be paused
+  // We need to call Scanner resume() to continue scanning
+  Bluefruit.Scanner.resume();
 }
 
 #if ENABLE_TFT

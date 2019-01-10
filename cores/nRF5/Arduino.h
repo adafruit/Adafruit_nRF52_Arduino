@@ -57,17 +57,24 @@ uint32_t setLoopStacksize(void);
   #include "pulse.h"
   #include "HardwarePWM.h"
   #include "utility/SoftwareTimer.h"
+
+  #include "Uart.h"
 #endif
 
 #include "delay.h"
 #include "binary.h"
-#include "debug.h"
 #include "common_inc.h"
+#include "utility/debug.h"
 #include "utility/utilities.h"
 #include "utility/AdaCallback.h"
 
+#ifdef NRF52840_XXAA
+  #include "tusb.h"
+
 #ifdef __cplusplus
-  #include "Uart.h"
+  #include "USBSerial.h"
+#endif
+
 #endif
 
 // Include board variant
@@ -106,13 +113,18 @@ uint32_t setLoopStacksize(void);
 
 #define bit(b) (1UL << (b))
 
-#define digitalPinToPort(P)        ( &(NRF_GPIO[P]) )
-#define digitalPinToBitMask(P)     ( 1 << g_ADigitalPinMap[P] )
+#ifdef NRF_P1
+#define digitalPinToPort(P)        ( (g_ADigitalPinMap[P] < 32) ? NRF_P0 : NRF_P1 )
+#else
+#define digitalPinToPort(P)        ( NRF_P0 )
+#endif
+
+#define digitalPinToBitMask(P)     ( 1UL << ( g_ADigitalPinMap[P] < 32 ? g_ADigitalPinMap[P] : (g_ADigitalPinMap[P]-32) ) )
 //#define analogInPinToBit(P)        ( )
-#define portOutputRegister(port)   ( &(NRF_GPIO->OUT) )
-#define portInputRegister(port)    ( &(NRF_GPIO->IN) )
-#define portModeRegister(port)     ( &(NRF_GPIO->DIRSET) )
-#define digitalPinHasPWM(P)        ( (P) > 1 )
+#define portOutputRegister(port)   ( &(port->OUT) )
+#define portInputRegister(port)    ( (volatile uint32_t*) &(port->IN) )
+#define portModeRegister(port)     ( &(port->DIR) )
+#define digitalPinHasPWM(P)        ( g_ADigitalPinMap[P] > 1 )
 
 void rtos_idle_callback(void) ATTR_WEAK;
 /*

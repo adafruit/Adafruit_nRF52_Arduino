@@ -1,0 +1,15 @@
+#ifndef NRFX_CONFIG_H__
+#define NRFX_CONFIG_H__
+
+#define NRFX_POWER_ENABLED 1
+#define NRFX_POWER_CONFIG_IRQ_PRIORITY 7
+
+//#define NRFX_CLOCK_ENABLED 0
+
+#ifdef NRF52840_XXAA
+#define NRFX_QSPI_ENABLED   1
+#else
+#define NRFX_QSPI_ENABLED   0
+#endif
+
+#endif // NRFX_CONFIG_H__

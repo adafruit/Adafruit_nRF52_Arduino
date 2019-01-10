@@ -29,7 +29,7 @@ extern "C" {
 /*
  * \brief SAMD products have only one reference for ADC
  */
-#ifdef NRF52
+#if defined(NRF52) || defined(NRF52_SERIES)
 typedef enum _eAnalogReference
 {
   AR_DEFAULT,

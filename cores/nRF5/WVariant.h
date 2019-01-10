@@ -23,6 +23,7 @@
 #include "nrf.h"
 #include "nrf_soc.h"
 #include "nrf_sdm.h"
+#include "nrf_gpio.h"
 
 #ifdef __cplusplus
 extern "C" {

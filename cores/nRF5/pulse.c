@@ -33,14 +33,14 @@ uint32_t pulseIn(uint32_t pin, uint32_t state, uint32_t timeout)
   // pulse width measuring loop and achieve finer resolution.  calling
   // digitalRead() instead yields much coarser resolution.
   // PinDescription p = g_APinDescription[pin];
-  uint32_t bit = 1 << pin; //p.ulPin;
+  uint32_t bit = digitalPinToBitMask(pin); //p.ulPin;
   uint32_t stateMask = state ? bit : 0;
 
   // convert the timeout from microseconds to a number of times through
   // the initial loop; it takes (roughly) 13 clock cycles per iteration.
   uint32_t maxloops = microsecondsToClockCycles(timeout) / 13;
 
-  uint32_t width = countPulseASM(&(NRF_GPIO->IN), bit, stateMask, maxloops);
+  uint32_t width = countPulseASM(portInputRegister(digitalPinToPort(pin)), bit, stateMask, maxloops);
 
   // convert the reading to microseconds. The loop has been determined
   // to be 13 clock cycles long and have about 16 clocks between the edge

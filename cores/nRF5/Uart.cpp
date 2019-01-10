@@ -21,6 +21,12 @@
 #include "Arduino.h"
 #include "wiring_private.h"
 
+
+void serialEventRun(void)
+{
+  if (serialEvent && Serial.available() ) serialEvent();
+}
+
 Uart::Uart(NRF_UART_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pinTX)
 {
   nrfUart = _nrfUart;
@@ -60,6 +66,9 @@ void Uart::begin(unsigned long baudrate)
 
 void Uart::begin(unsigned long baudrate, uint16_t /*config*/)
 {
+  // skip if already begun
+  if ( _begun ) return;
+
   nrfUart->PSELTXD = uc_pinTX;
   nrfUart->PSELRXD = uc_pinRX;
 
@@ -71,10 +80,8 @@ void Uart::begin(unsigned long baudrate, uint16_t /*config*/)
     nrfUart->CONFIG = (UART_CONFIG_PARITY_Excluded << UART_CONFIG_PARITY_Pos) | UART_CONFIG_HWFC_Disabled;
   }
 
-
   uint32_t nrfBaudRate;
 
-#ifdef NRF52
   if (baudrate <= 1200) {
     nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud1200;
   } else if (baudrate <= 2400) {
@@ -108,41 +115,6 @@ void Uart::begin(unsigned long baudrate, uint16_t /*config*/)
   } else {
     nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud1M;
   }
-#else
-  if (baudrate <= 1200) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud1200;
-  } else if (baudrate <= 2400) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud2400;
-  } else if (baudrate <= 4800) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud4800;
-  } else if (baudrate <= 9600) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud9600;
-  } else if (baudrate <= 14400) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud14400;
-  } else if (baudrate <= 19200) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud19200;
-  } else if (baudrate <= 28800) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud28800;
-  } else if (baudrate <= 38400) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud38400;
-  } else if (baudrate <= 57600) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud57600;
-  } else if (baudrate <= 76800) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud76800;
-  } else if (baudrate <= 115200) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud115200;
-  } else if (baudrate <= 230400) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud230400;
-  } else if (baudrate <= 250000) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud250000;
-  } else if (baudrate <= 460800) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud460800;
-  } else if (baudrate <= 921600) {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud921600;
-  } else {
-    nrfBaudRate = UART_BAUDRATE_BAUDRATE_Baud1M;
-  }
-#endif
 
   nrfUart->BAUDRATE = nrfBaudRate;
 
@@ -182,6 +154,10 @@ void Uart::end()
   nrfUart->PSELCTS = 0xFFFFFFFF;
 
   rxBuffer.clear();
+
+  vSemaphoreDelete(_mutex);
+  _mutex = NULL;
+  _begun = false;
 }
 
 void Uart::flush()
@@ -194,7 +170,6 @@ void Uart::IrqHandler()
   if (nrfUart->EVENTS_RXDRDY)
   {
     nrfUart->EVENTS_RXDRDY = 0x0UL;
-
     rxBuffer.store_char(nrfUart->RXD);
   }
 }
@@ -229,32 +204,17 @@ size_t Uart::write(const uint8_t data)
   return 1;
 }
 
-#if defined(NRF52)
-  #define NRF_UART0_IRQn UARTE0_UART0_IRQn
-#elif defined(NRF51)
-  #define NRF_UART0_IRQn UART0_IRQn
+Uart SERIAL_PORT_HARDWARE( NRF_UART0, UARTE0_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX );
+
+#ifdef HAVE_HWSERIAL2
+// TODO UART1 is UARTE only, need update class Uart to work
+Uart Serial2( NRF_UARTE1, UARTE1_IRQn, PIN_SERIAL2_RX, PIN_SERIAL2_TX );
 #endif
 
-#if defined(PIN_SERIAL_CTS) && defined(PIN_SERIAL_RTS)
-  Uart Serial( NRF_UART0, NRF_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX, PIN_SERIAL_CTS, PIN_SERIAL_RTS );
-#else
-  Uart Serial( NRF_UART0, NRF_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX );
-#endif
-
-#if defined(NRF52)
 extern "C"
 {
   void UARTE0_UART0_IRQHandler()
   {
-    Serial.IrqHandler();
+    SERIAL_PORT_HARDWARE.IrqHandler();
   }
 }
-#elif defined(NRF51)
-extern "C"
-{
-  void UART0_IRQHandler()
-  {
-    Serial.IrqHandler();
-  }
-}
-#endif

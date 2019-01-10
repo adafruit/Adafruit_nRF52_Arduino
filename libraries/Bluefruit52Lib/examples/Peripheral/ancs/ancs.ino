@@ -37,13 +37,21 @@ const char* CAT_STR  [] =
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+
   Serial.println("Bluefruit52 BLE ANCS Example");
   Serial.println("----------------------------\n");
 
   Serial.println("Go to iOS's Bluetooth settings and connect to Bluefruit52");
   Serial.println("It may appear up as 'Accessory' depending on your OS version.");
 
+  // Config the peripheral connection with maximum bandwidth
+  // more SRAM required by SoftDevice
+  // Note: All config***() function must be called before begin()
+  Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
+
   Bluefruit.begin();
+  
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
   Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52");
@@ -194,6 +202,12 @@ void ancs_notification_callback(AncsNotification_t* notif)
   }
 }
 
+/**
+ * Callback invoked when a connection is dropped
+ * @param conn_handle
+ * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
+ * https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/master/cores/nRF5/nordic/softdevice/s140_nrf52_6.1.1_API/include/ble_hci.h
+ */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
   (void) reason;

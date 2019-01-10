@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLEMidi.h
-    @author   hathach & toddtreece
+    @author   hathach (tinyusb.org) & toddtreece
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com) All rights reserved.
+    Copyright (c) 2018, Adafruit Industries (adafruit.com) All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions are met:

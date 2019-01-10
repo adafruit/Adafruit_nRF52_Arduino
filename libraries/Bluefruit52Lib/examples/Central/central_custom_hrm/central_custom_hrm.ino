@@ -35,6 +35,7 @@ BLEClientCharacteristic bslc(UUID16_CHR_BODY_SENSOR_LOCATION);
 void setup()
 {
   Serial.begin(115200);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 Central Custom HRM Example");
   Serial.println("--------------------------------------\n");
@@ -89,6 +90,8 @@ void loop()
  */
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
+  // Since we configure the scanner with filterUuid()
+  // Scan callback only invoked for device with hrm service advertised
   // Connect to device with HRM service in advertising
   Bluefruit.Central.connect(report);
 }
@@ -115,7 +118,6 @@ void connect_callback(uint16_t conn_handle)
 
   // Once HRM service is found, we continue to discover its characteristic
   Serial.println("Found it");
-
   
   Serial.print("Discovering Measurement characteristic ... ");
   if ( !hrmc.discover() )
@@ -162,7 +164,8 @@ void connect_callback(uint16_t conn_handle)
 /**
  * Callback invoked when a connection is dropped
  * @param conn_handle
- * @param reason
+ * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
+ * https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/master/cores/nRF5/nordic/softdevice/s140_nrf52_6.1.1_API/include/ble_hci.h
  */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {

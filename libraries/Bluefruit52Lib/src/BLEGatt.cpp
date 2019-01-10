@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLEGatt.cpp
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -67,7 +67,7 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
     count = _adamsg.waitUntilComplete(5*BLE_GENERIC_TIMEOUT);
   }else
   {
-    VERIFY_MESS(err);
+    VERIFY_MESS(err, dbg_err_str);
   }
   _adamsg.stop();
 
@@ -217,20 +217,17 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
 
       if (rd_rsp->count)
       {
-        #if SD_VER < 500
-          _adamsg.feed(rd_rsp->handle_value[0].p_value, rd_rsp->value_len);
-        #else
-          ble_gattc_handle_value_t hdl_value;
+        ble_gattc_handle_value_t hdl_value;
 
-          if ( ERROR_NONE == sd_ble_gattc_evt_char_val_by_uuid_read_rsp_iter(&evt->evt.gattc_evt, &hdl_value) )
-          {
-            _adamsg.feed(hdl_value.p_value, rd_rsp->value_len);
-          }
-        #endif
+        if ( ERROR_NONE == sd_ble_gattc_evt_char_val_by_uuid_read_rsp_iter(&evt->evt.gattc_evt, &hdl_value) )
+        {
+          _adamsg.feed(hdl_value.p_value, rd_rsp->value_len);
+        }
 
         _adamsg.complete();
       }
     }
+    break;
 
     case BLE_GATTS_EVT_HVC:
     {

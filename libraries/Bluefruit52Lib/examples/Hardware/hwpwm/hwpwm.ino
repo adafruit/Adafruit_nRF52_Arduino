@@ -28,25 +28,14 @@
 
 #include <Arduino.h>
 
-// Maximum 12 pins can be used for 3 PWM module ( 4 channel each )
-#if defined ARDUINO_NRF52_FEATHER
+// Maximum 12 pins can be used for 3 PWM modules ( 4 channel each )
+// Note: nRF52832 has 3 PWM modules, nRF52840 has 4 PWM modules
 int pins[12] = 
 { 
   A0 , A1      , A2          , A3,
   A4 , A5      , A6          , LED_RED, /* avoid A7 (VBAT)  */
   27 , LED_BLUE, PIN_WIRE_SDA, PIN_WIRE_SCL
 };
-
-#elif defined ARDUINO_NRF52_METRO
-
-int pins[12] =
-{
-  D0, D1      , D2, D3,
-  D4, D5      , D6, LED_RED,
-  D7, LED_BLUE, D8, D9
-};
-
-#endif
 
 /**************************************************************************/
 /*!
@@ -55,8 +44,6 @@ int pins[12] =
 /**************************************************************************/
 void setup()
 {
-  Serial.begin(115200);
-
   // Add 4 pins into a group
   // It is better to add Pin before call .begin()
   for (int i=0; i<12; i++)

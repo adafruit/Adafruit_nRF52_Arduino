@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLEDfu.cpp
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2016, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -118,6 +118,8 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
         uint16_t          crc16;
       }peer_data_t;
 
+      VERIFY_STATIC(offsetof(peer_data_t, crc16) == 60);
+
       /* Save Peer data
        * Peer data address is defined in bootloader linker @0x20007F80
        * - If bonded : save Security information
@@ -137,13 +139,13 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
 
       if ( Bluefruit.Gap.paired(conn_hdl) )
       {
-        bond_data_t bdata;
+        bond_keys_t bkeys;
 
-        if ( bond_load_keys( BLE_GAP_ROLE_PERIPH, Bluefruit.Gap._get_peer(conn_hdl)->ediv, &bdata ) )
+        if ( bond_load_keys( BLE_GAP_ROLE_PERIPH, Bluefruit.Gap._get_peer(conn_hdl)->ediv, &bkeys ) )
         {
-          peer_data->addr    = bdata.peer_id.id_addr_info;
-          peer_data->irk     = bdata.peer_id.id_info;
-          peer_data->enc_key = bdata.own_enc;
+          peer_data->addr    = bkeys.peer_id.id_addr_info;
+          peer_data->irk     = bkeys.peer_id.id_info;
+          peer_data->enc_key = bkeys.own_enc;
         }
       }
 
@@ -151,31 +153,36 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
       peer_data->crc16 = crc16((uint8_t*) peer_data, offsetof(peer_data_t, crc16));
 
       // Initiate DFU Sequence and reboot into DFU OTA mode
+      Bluefruit.Advertising.restartOnDisconnect(false);
       Bluefruit.disconnect();
-      Bluefruit.Advertising.stop();
 
       // Set GPReset to DFU OTA
       enum { DFU_OTA_MAGIC = 0xB1 };
-#if SD_VER < 500
-      sd_power_gpregret_clr(0xFF);
-      VERIFY_STATUS( sd_power_gpregret_set(DFU_OTA_MAGIC), RETURN_VOID);
-#else
-      sd_power_gpregret_clr(0, 0xFF);
-      VERIFY_STATUS( sd_power_gpregret_set(0, DFU_OTA_MAGIC), RETURN_VOID);
-#endif
-      VERIFY_STATUS( sd_softdevice_disable(), RETURN_VOID );
 
-      // Disable Systick to prevent Interrupt happens after changing vector table
-      bitClear(SysTick->CTRL, SysTick_CTRL_ENABLE_Pos);
+      sd_power_gpregret_clr(0, 0xFF);
+      VERIFY_STATUS( sd_power_gpregret_set(0, DFU_OTA_MAGIC), );
+      VERIFY_STATUS( sd_softdevice_disable(),  );
 
       // Disable all interrupts
+      #if defined(NRF52832_XXAA)
+      #define MAX_NUMBER_INTERRUPTS  39
+      #elif defined(NRF52840_XXAA)
+      #define MAX_NUMBER_INTERRUPTS  48
+      #endif
+
       NVIC_ClearPendingIRQ(SD_EVT_IRQn);
-      for(int i=0; i <= FPU_IRQn; i++)
+      for(int i=0; i < MAX_NUMBER_INTERRUPTS; i++)
       {
         NVIC_DisableIRQ( (IRQn_Type) i );
       }
 
-      VERIFY_STATUS( sd_softdevice_vector_table_base_set(NRF_UICR->NRFFW[0]), RETURN_VOID);
+      // Clear RTC1 timer to prevent Interrupt happens after changing vector table
+//      NRF_RTC1->EVTENCLR    = RTC_EVTEN_COMPARE0_Msk;
+//      NRF_RTC1->INTENCLR    = RTC_INTENSET_COMPARE0_Msk;
+//      NRF_RTC1->TASKS_STOP  = 1;
+//      NRF_RTC1->TASKS_CLEAR = 1;
+
+      VERIFY_STATUS( sd_softdevice_vector_table_base_set(NRF_UICR->NRFFW[0]), );
 
       __set_CONTROL(0); // switch to MSP, required if using FreeRTOS
       bootloader_util_app_start(NRF_UICR->NRFFW[0]);

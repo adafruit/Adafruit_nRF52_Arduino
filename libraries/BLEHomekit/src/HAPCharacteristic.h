@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     HAPCharacteristic.h
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,8 @@ enum HAPChrProperties_t
 class HAPCharacteristic : public BLECharacteristic
 {
   public:
-    typedef HAPResponse_t* (*hap_write_cb_t) (HAPCharacteristic& chr, ble_gatts_evt_write_t const* gatt_req, HAPRequest_t const* hap_req);
+    typedef void (*hap_write_cb_t) (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req);
+    typedef void (*hap_read_cb_t ) (uint16_t conn_hdl, HAPCharacteristic* chr);
     static BLEUuid _g_uuid_cid;
 
     HAPCharacteristic(BLEUuid bleuuid, uint8_t format, uint16_t unit = UUID16_UNIT_UNITLESS);
@@ -70,17 +71,25 @@ class HAPCharacteristic : public BLECharacteristic
 
     // Callbacks
     void setHapWriteCallback(hap_write_cb_t fp);
-
-    HAPResponse_t* createHapResponse(uint8_t tid, uint8_t status, TLV8_t tlv_para[] = NULL, uint8_t count = 0);
+    void setHapReadCallback(hap_read_cb_t fp);
 
     /*------------- Internal Functions -------------*/
     virtual void _eventHandler(ble_evt_t* event);
+
+    void createHapResponse(uint16_t conn_hdl, uint8_t status, TLV8_t tlv_para[] = NULL, uint8_t count = 0);
 
   private:
     uint16_t _cid;
     uint16_t _hap_props;
 
-    uint16_t _resp_len;
+    // HAP request & response
+    HAPRequest_t* _hap_req;
+    uint16_t      _hap_reqlen;
+    uint8_t       _tid;
+
+    HAPResponse_t* _hap_resp;
+    uint16_t       _hap_resplen;
+    uint16_t       _hap_resplen_sent;
 
     // Char value is read by HAP procedure, not exposed via GATT
     void*    _value;
@@ -88,12 +97,18 @@ class HAPCharacteristic : public BLECharacteristic
 
     // Callbacks
     hap_write_cb_t _hap_wr_cb;
+    hap_read_cb_t  _hap_rd_cb;
 
     err_t _addChrIdDescriptor(void);
 
-    HAPResponse_t* processChrSignatureRead(HAPRequest_t* hap_req);
-    HAPResponse_t* processChrRead(HAPRequest_t* hap_req);
+    void processGattWrite(uint16_t conn_hdl, ble_gatts_evt_write_t* gatt_req);
+    void processGattRead(uint16_t conn_hdl, ble_gatts_evt_read_t* gatt_req);
 
+    void processHapRequest(uint16_t conn_hdl, HAPRequest_t* hap_req);
+    void processChrSignatureRead(uint16_t conn_hdl, HAPRequest_t* hap_req);
+    void processChrRead(uint16_t conn_hdl, HAPRequest_t* hap_req);
+
+    friend void test_homekit(void);
 };
 
 #endif /* HAPCHARACTERISTIC_H_ */

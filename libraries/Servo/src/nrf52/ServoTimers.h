@@ -28,9 +28,12 @@
  * NRF52 Only definitions
  * ---------------------
  */
-
-#define MIN_PULSE 55
-#define MAX_PULSE 284
+//PWM_PRESCALER_PRESCALER_DIV_128 -> NRF_PWM_CLK_125kHz -> resolution 8µs
+//MaxValue = 2500 -> PWM period = 20ms
+//20ms - 50Hz
+#define DUTY_CYCLE_RESOLUTION 8
+#define MAXVALUE 2500
+#define CLOCKDIV PWM_PRESCALER_PRESCALER_DIV_128
 
 // define one timer in order to have MAX_SERVOS = 12
 typedef enum { _timer1, _Nbr_16timers } timer16_Sequence_t;

@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLEHidAdafruit.cpp
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -197,6 +197,7 @@ BLEHidAdafruit::BLEHidAdafruit(void)
   : BLEHidGeneric(3, 1, 0)
 {
   _mse_buttons = 0;
+  _kbd_led_cb = NULL;
 }
 
 err_t BLEHidAdafruit::begin(void)
@@ -211,7 +212,7 @@ err_t BLEHidAdafruit::begin(void)
 
   VERIFY_STATUS( BLEHidGeneric::begin() );
 
-  // Attemp to change the connection interval to 11.25-15 ms when starting HID
+  // Attempt to change the connection interval to 11.25-15 ms when starting HID
   Bluefruit.setConnInterval(9, 12);
 
   return ERROR_NONE;
@@ -220,6 +221,27 @@ err_t BLEHidAdafruit::begin(void)
 /*------------------------------------------------------------------*/
 /* Keyboard
  *------------------------------------------------------------------*/
+
+void blehid_ada_keyboard_output_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
+{
+  LOG_LV2("HID", "Keyboard LED : 0x%02X", data[0]);
+  VERIFY(len == 1, );
+
+  BLEHidAdafruit& svc = (BLEHidAdafruit&) chr.parentService();
+  if ( svc._kbd_led_cb ) svc._kbd_led_cb(data[0]);
+}
+
+void BLEHidAdafruit::setKeyboardLedCallback(kbd_led_cb_t fp)
+{
+  _kbd_led_cb = fp;
+
+  // Report mode
+  this->setOutputReportCallback(REPORT_ID_KEYBOARD, fp ? blehid_ada_keyboard_output_cb : NULL);
+
+  // Boot mode
+  _chr_boot_keyboard_output->setWriteCallback(fp ? blehid_ada_keyboard_output_cb : NULL);
+}
+
 bool BLEHidAdafruit::keyboardReport(hid_keyboard_report_t* report)
 {
   if ( isBootMode() )
@@ -285,7 +307,7 @@ bool BLEHidAdafruit::keySequence(const char* str, int interal)
     delay(interal);
 
     /* Only need to empty report if the next character is NULL or the same with
-     * the current one, or no need to send */
+     * the current one, else no need to send */
     if ( lookahead == ch || lookahead == 0 )
     {
       keyRelease();

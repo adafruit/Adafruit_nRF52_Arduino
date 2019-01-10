@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     BLEGap.cpp
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,6 @@ BLEGap::BLEGap(void)
   _cfg_prph.mtu_max         = BLE_GATT_ATT_MTU_DEFAULT;
   _cfg_central.mtu_max      = BLE_GATT_ATT_MTU_DEFAULT;
 
-#if SD_VER >= 500
   _cfg_prph.event_len       = BLE_GAP_EVENT_LENGTH_DEFAULT;
   _cfg_prph.hvn_tx_qsize    = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
   _cfg_prph.wr_cmd_qsize    = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
@@ -51,7 +50,6 @@ BLEGap::BLEGap(void)
   _cfg_central.event_len    = BLE_GAP_EVENT_LENGTH_DEFAULT;
   _cfg_central.hvn_tx_qsize = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
   _cfg_central.wr_cmd_qsize = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
-#endif
 
   _sec_param = (ble_gap_sec_params_t)
                 {
@@ -71,20 +69,16 @@ BLEGap::BLEGap(void)
 
 void BLEGap::configPrphConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
 {
-  _cfg_prph.mtu_max = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);
-#if SD_VER >= 500
-  _cfg_prph.event_len = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
-#endif
+  _cfg_prph.mtu_max      = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);
+  _cfg_prph.event_len    = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
   _cfg_prph.hvn_tx_qsize = hvn_qsize;
   _cfg_prph.wr_cmd_qsize = wrcmd_qsize;
 }
 
 void BLEGap::configCentralConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
 {
-  _cfg_central.mtu_max = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);
-#if SD_VER >= 500
-  _cfg_central.event_len = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
-#endif
+  _cfg_central.mtu_max      = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);
+  _cfg_central.event_len    = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
   _cfg_central.hvn_tx_qsize = hvn_qsize;
   _cfg_central.wr_cmd_qsize = wrcmd_qsize;
 }
@@ -120,12 +114,7 @@ uint8_t BLEGap::getAddr(uint8_t mac[6])
 {
   ble_gap_addr_t addr;
 
-#if SD_VER < 500
-  sd_ble_gap_address_get(&addr);
-#else
   sd_ble_gap_addr_get(&addr);
-#endif
-
   memcpy(mac, addr.addr, 6);
 
   return addr.addr_type;
@@ -142,15 +131,9 @@ bool BLEGap::setAddr(uint8_t mac[6], uint8_t type)
   ble_gap_addr_t addr;
   addr.addr_type = type;
 
-  VERIFY (type == BLE_GAP_ADDR_TYPE_PUBLIC || type == BLE_GAP_ADDR_TYPE_RANDOM_STATIC);
-
   memcpy(addr.addr, mac, 6);
-
-#if SD_VER < 500
-  VERIFY_STATUS( sd_ble_gap_address_set(BLE_GAP_ADDR_CYCLE_MODE_NONE, &addr), false );
-#else
   VERIFY_STATUS( sd_ble_gap_addr_set(&addr), false );
-#endif
+
   return true;
 }
 
@@ -176,13 +159,13 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
   if ( peer->role == BLE_GAP_ROLE_CENTRAL )
   {
     // Check to see if we did bonded with current prph previously
-    bond_data_t bdata;
+    bond_keys_t bkeys;
 
-    if ( bond_find_cntr(&peer->addr, &bdata) )
+    if ( bond_find_cntr(&peer->addr, &bkeys) )
     {
-      cntr_ediv = bdata.peer_enc.master_id.ediv;
+      cntr_ediv = bkeys.peer_enc.master_id.ediv;
       LOG_LV2("BOND", "Load Keys from file " BOND_FNAME_CNTR, cntr_ediv);
-      VERIFY_STATUS( sd_ble_gap_encrypt(conn_hdl, &bdata.peer_enc.master_id, &bdata.peer_enc.enc_info), false);
+      VERIFY_STATUS( sd_ble_gap_encrypt(conn_hdl, &bkeys.peer_enc.master_id, &bkeys.peer_enc.enc_info), false);
 
     }else
     {
@@ -198,7 +181,7 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
 
   xSemaphoreTake(peer->pair_sem, portMAX_DELAY);
 
-  // Failed to pair using centra stored keys, this happens when
+  // Failed to pair using central stored keys, this happens when
   // Prph delete bonds while we did not --> let's remove the obsolete keyfile and move on
   if ( !peer->paired && (cntr_ediv != 0xffff) )
   {
@@ -241,12 +224,8 @@ bool BLEGap::getHvnPacket(uint16_t conn_hdl)
 
 bool BLEGap::getWriteCmdPacket(uint16_t conn_hdl)
 {
-#if SD_VER < 500
-  return getHvnPacket(conn_hdl);
-#else
   VERIFY( (conn_hdl < BLE_MAX_CONN) && (_peers[conn_hdl].wrcmd_tx_sem != NULL) );
   return xSemaphoreTake(_peers[conn_hdl].wrcmd_tx_sem, ms2tick(BLE_GENERIC_TIMEOUT));
-#endif
 }
 
 uint16_t BLEGap::getMTU (uint16_t conn_hdl)
@@ -282,15 +261,10 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       peer->att_mtu   = BLE_GATT_ATT_MTU_DEFAULT;
 
       // Init transmission buffer for notification
-      #if SD_VER < 500
-      uint8_t txbuf_max;
-      (void) sd_ble_tx_packet_count_get(conn_hdl, &txbuf_max);
-      peer->hvn_tx_sem = xSemaphoreCreateCounting(txbuf_max, txbuf_max);
-      #else
       peer->hvn_tx_sem   = xSemaphoreCreateCounting(getHvnQueueSize(conn_hdl), getHvnQueueSize(conn_hdl));
-      #endif
-
       peer->wrcmd_tx_sem = xSemaphoreCreateCounting(getWriteCmdQueueSize(conn_hdl), getWriteCmdQueueSize(conn_hdl));
+
+      LOG_LV2("GAP", "Conn Interval= %f", para->conn_params.min_conn_interval*1.25f);
     }
     break;
 
@@ -309,14 +283,21 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     }
     break;
 
+    case BLE_GAP_EVT_CONN_PARAM_UPDATE:
+    {
+      ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
+      LOG_LV2("GAP", "Conn Interval= %f", param->min_conn_interval*1.25f);
+    }
+    break;
+
     case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
     {
       // Pairing in progress, Peer asking for our info
-      peer->bond_data = (bond_data_t*) rtos_malloc( sizeof(bond_data_t));
-      VERIFY(peer->bond_data, );
+      peer->bond_keys = (bond_keys_t*) rtos_malloc( sizeof(bond_keys_t));
+      VERIFY(peer->bond_keys, );
 
-      bond_data_t* bdata = peer->bond_data;
-      memclr(bdata, sizeof(bond_data_t));
+      bond_keys_t* bkeys = peer->bond_keys;
+      memclr(bkeys, sizeof(bond_keys_t));
 
       peer->ediv = 0xFFFF; // invalid value for ediv
 
@@ -337,15 +318,15 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       ble_gap_sec_keyset_t keyset =
       {
           .keys_own = {
-              .p_enc_key  = &bdata->own_enc,
+              .p_enc_key  = &bkeys->own_enc,
               .p_id_key   = NULL,
               .p_sign_key = NULL,
               .p_pk       = NULL
           },
 
           .keys_peer = {
-              .p_enc_key  = &bdata->peer_enc,
-              .p_id_key   = &bdata->peer_id,
+              .p_enc_key  = &bkeys->peer_enc,
+              .p_id_key   = &bkeys->peer_id,
               .p_sign_key = NULL,
               .p_pk       = NULL
           }
@@ -361,40 +342,41 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
     case BLE_GAP_EVT_AUTH_STATUS:
     {
-      // Bonding process completed
+      // Pairing process completed
       ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
 
       // Pairing succeeded --> save encryption keys ( Bonding )
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
         peer->paired = true;
-        peer->ediv   = peer->bond_data->own_enc.master_id.ediv;
+        peer->ediv   = peer->bond_keys->own_enc.master_id.ediv;
 
-        bond_save_keys(peer->role, conn_hdl, peer->bond_data);
+        bond_save_keys(peer->role, conn_hdl, peer->bond_keys);
       }else
       {
         PRINT_HEX(status->auth_status);
       }
 
-      rtos_free(peer->bond_data);
-      peer->bond_data = NULL;
+      rtos_free(peer->bond_keys);
+      peer->bond_keys = NULL;
     }
     break;
 
     case BLE_GAP_EVT_SEC_INFO_REQUEST:
     {
-      // Reconnection. If bonded previously, Central will ask for stored keys.
-      // return security information. Otherwise NULL
+      // Central ask for the stored keys.
+      // - load key and return if bonded previously.
+      // - Else return NULL --> Initiate key exchange
       ble_gap_evt_sec_info_request_t* sec_req = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
 
-      bond_data_t bdata;
-      varclr(&bdata);
+      bond_keys_t bkeys;
+      varclr(&bkeys);
 
-      if ( bond_load_keys(peer->role, sec_req->master_id.ediv, &bdata) )
+      if ( bond_load_keys(peer->role, sec_req->master_id.ediv, &bkeys) )
       {
-        sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &bdata.own_enc.enc_info, &bdata.peer_id.id_info, NULL);
+        sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
 
-        peer->ediv   = bdata.own_enc.master_id.ediv;
+        peer->ediv   = bkeys.own_enc.master_id.ediv;
       } else
       {
         sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
@@ -407,12 +389,15 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       const ble_gap_conn_sec_t* conn_sec = &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
 
       // Connection is secured (paired)
+      // Occurs if bonded + reconnection, or we initiate the pairing process
       if ( !( conn_sec->sec_mode.sm == 1 && conn_sec->sec_mode.lv == 1) )
       {
-        // Previously bonded --> secure by re-connection process
-        // --> Load & Set Sys Attr (Apply Service Context)
-        // Else Init Sys Attr
-        bond_load_cccd(peer->role, conn_hdl, peer->ediv);
+        // Previously bonded --> secure by re-connection process --> Load & Set SysAttr (Apply Service Context)
+        // Else Init SysAttr (first bonded)
+        if ( !bond_load_cccd(peer->role, conn_hdl, peer->ediv) )
+        {
+          sd_ble_gatts_sys_attr_set(conn_hdl, NULL, 0, 0);
+        }
 
         peer->paired = true;
       }
@@ -423,27 +408,14 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
     case BLE_GAP_EVT_PASSKEY_DISPLAY:
     {
-      //      ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
-      //
-      //      PRINT_INT(passkey_display->match_request);
-      //      PRINT_BUFFER(passkey_display->passkey, 6);
+      // ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
+      // PRINT_INT(passkey_display->match_request);
+      // PRINT_BUFFER(passkey_display->passkey, 6);
 
       // sd_ble_gap_auth_key_reply
     }
     break;
 
-#if SD_VER < 500
-    case BLE_EVT_TX_COMPLETE:
-      if ( peer->hvn_tx_sem )
-      {
-        for(uint8_t i=0; i<evt->evt.common_evt.params.tx_complete.count; i++)
-        {
-          xSemaphoreGive(peer->hvn_tx_sem);
-        }
-      }
-    break;
-
-#else
     case BLE_GATTS_EVT_HVN_TX_COMPLETE:
       if ( peer->hvn_tx_sem )
       {
@@ -523,8 +495,6 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       LOG_LV1("GAP", "ATT MTU is changed to %d", peer->att_mtu);
     }
     break;
-
-#endif
 
     default: break;
   }

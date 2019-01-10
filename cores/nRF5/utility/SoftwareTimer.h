@@ -1,13 +1,13 @@
 /**************************************************************************/
 /*!
     @file     SoftwareTimer.h
-    @author   hathach
+    @author   hathach (tinyusb.org)
 
     @section LICENSE
 
     Software License Agreement (BSD License)
 
-    Copyright (c) 2017, Adafruit Industries (adafruit.com)
+    Copyright (c) 2018, Adafruit Industries (adafruit.com)
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -44,11 +44,17 @@ class SoftwareTimer
     TimerHandle_t _handle;
 
   public:
-    SoftwareTimer() { _handle = NULL; }
+    SoftwareTimer()          { _handle = NULL; }
+    virtual ~SoftwareTimer() { if(_handle != NULL) xTimerDelete(_handle, 0); }
 
     void begin(uint32_t ms, TimerCallbackFunction_t callback)
     {
       _handle = xTimerCreate(NULL, ms2tick(ms), true, NULL, callback);
+    }
+
+    TimerHandle_t getHandle(void)
+    {
+      return _handle;
     }
 
     void start(void) { xTimerStart(_handle, 0); }

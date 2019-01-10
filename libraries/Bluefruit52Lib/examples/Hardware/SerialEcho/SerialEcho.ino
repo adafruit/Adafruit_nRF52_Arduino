@@ -28,8 +28,6 @@ void setup()
   Serial.println("Serial Echo demo");
   Serial.print("Badurate : ");
   Serial.println(baudrate);
-
-  
 }
 
 /**************************************************************************/
@@ -38,9 +36,7 @@ void setup()
 */
 /**************************************************************************/
 void loop()
-{
-  char ch;
-  
+{ 
   // From Serial monitor to All
   if ( Serial.available() )
   {
