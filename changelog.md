@@ -6,6 +6,7 @@
 - Fixed #173  ( PR #178 thanks Nenik)
 - Added Client Battery support BLEClientBas
 - Added BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST event support for Central
+- Added Jlink as programmer to upload sketch (#133)
 
 ## 0.9.2
 
