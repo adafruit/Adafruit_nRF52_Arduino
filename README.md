@@ -149,7 +149,7 @@ which in turn is based on the [Arduino SAMD Core](https://github.com/arduino/Ard
 The following libraries are used:
 
 - adafruit-nrfutil is based on Nordic Semiconductor ASA's [pc-nrfutil](https://github.com/NordicSemiconductor/pc-nrfutil)
-- freeRTOS as operating system
+- [freeRTOS](https://www.freertos.org/) as operating system
 - [tinyusb](https://github.com/hathach/tinyusb) as usb stack
 - [nrfx](https://github.com/NordicSemiconductor/nrfx) for peripherals driver
 - [littlefs](https://github.com/ARMmbed/littlefs) for internal file system

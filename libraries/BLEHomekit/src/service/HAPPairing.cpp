@@ -37,7 +37,7 @@
 #include <bluefruit.h>
 #include "HAPUuid.h"
 #include "HAPPairing.h"
-#include <Nffs.h>
+#include "Bluefruit_FileIO.h"
 
 #include "crypto/crypto.h"
 
@@ -159,7 +159,8 @@ err_t HAPPairing::begin(void)
   setDeviceID(mac);
 
   // Init cryptography
-  Nffs.mkdir_p("/adafruit/homekit");
+  if ( !InternalFS.exists("/adafruit/homekit") ) InternalFS.mkdir("/adafruit/homekit");
+
   crypto_init();
 
   return ERROR_NONE;

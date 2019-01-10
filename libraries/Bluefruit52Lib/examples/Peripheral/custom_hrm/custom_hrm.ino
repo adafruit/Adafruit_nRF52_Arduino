@@ -27,12 +27,6 @@ BLEBas blebas;    // BAS (Battery Service) helper class instance
 
 uint8_t  bps = 0;
 
-// Advanced function prototypes
-void startAdv(void);
-void setupHRM(void);
-void connect_callback(uint16_t conn_handle);
-void disconnect_callback(uint16_t conn_handle, uint8_t reason);
-
 void setup()
 {
   Serial.begin(115200);
@@ -178,6 +172,7 @@ void connect_callback(uint16_t conn_handle)
  * Callback invoked when a connection is dropped
  * @param conn_handle connection where this event happens
  * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
+ * https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/master/cores/nRF5/nordic/softdevice/s140_nrf52_6.1.1_API/include/ble_hci.h
  */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {

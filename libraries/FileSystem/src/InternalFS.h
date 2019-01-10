@@ -58,6 +58,7 @@ class LittleFS: public BluefruitFS::FileSystemClass
     bool rmdir_r (char const *filepath);
     bool format (bool eraseall);
 
+    // Internal API: shouldn't be used by Arduino sketch
     virtual size_t _f_write (void* fhdl, uint8_t const *buf, size_t size);
     virtual int _f_read (void* fhdl, void *buf, uint16_t nbyte);
     virtual void _f_flush (void* fhdl);

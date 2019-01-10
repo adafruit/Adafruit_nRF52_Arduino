@@ -18,8 +18,9 @@
  */
 #include <bluefruit.h>
 
-BLEClientDis  clientDis;
-BLEClientUart clientUart;
+BLEClientBas  clientBas;  // battery client
+BLEClientDis  clientDis;  // device information client
+BLEClientUart clientUart; // bleuart client
 
 void setup()
 {
@@ -34,6 +35,9 @@ void setup()
   Bluefruit.begin(0, 1);
   
   Bluefruit.setName("Bluefruit52 Central");
+
+  // Configure Battyer client
+  clientBas.begin();  
 
   // Configure DIS client
   clientDis.begin();
@@ -91,7 +95,7 @@ void connect_callback(uint16_t conn_handle)
 {
   Serial.println("Connected");
 
-  Serial.print("Dicovering DIS ... ");
+  Serial.print("Dicovering Device Information ... ");
   if ( clientDis.discover(conn_handle) )
   {
     Serial.println("Found it");
@@ -114,10 +118,19 @@ void connect_callback(uint16_t conn_handle)
     }
 
     Serial.println();
-  }  
+  }
+
+  Serial.print("Dicovering Battery ... ");
+  if ( clientBas.discover(conn_handle) )
+  {
+    Serial.println("Found it");
+    Serial.print("Battery level: ");
+    Serial.print(clientBas.read());
+    Serial.println("%");
+  }
+  
 
   Serial.print("Discovering BLE Uart Service ... ");
-
   if ( clientUart.discover(conn_handle) )
   {
     Serial.println("Found it");
@@ -139,6 +152,7 @@ void connect_callback(uint16_t conn_handle)
  * Callback invoked when a connection is dropped
  * @param conn_handle
  * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
+ * https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/master/cores/nRF5/nordic/softdevice/s140_nrf52_6.1.1_API/include/ble_hci.h
  */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {

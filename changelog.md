@@ -1,5 +1,13 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+# 0.9.3
+
+- Correct bootloader version text in IDE to 0.2.6
+- Fixed #173  ( PR #178 thanks Nenik)
+- Added Client Battery support BLEClientBas
+- Added BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST event support for Central
+- Added Jlink as programmer to upload sketch (#133)
+
 ## 0.9.2
 
 - Fully support Feather nRF52840

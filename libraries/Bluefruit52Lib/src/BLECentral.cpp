@@ -42,8 +42,9 @@
  */
 BLECentral::BLECentral(void)
 {
-  _ppcp_min_conn = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
-  _ppcp_max_conn = BLE_GAP_CONN_MAX_INTERVAL_DFLT;
+  _conn_param.min_conn_interval = _conn_param.max_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
+  _conn_param.slave_latency = BLE_GAP_CONN_SLAVE_LATENCY;
+  _conn_param.conn_sup_timeout = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS/10;
 
   _connect_cb    = NULL;
   _disconnect_cb = NULL;
@@ -60,8 +61,8 @@ void BLECentral::begin(void)
  *------------------------------------------------------------------*/
 bool BLECentral::setConnInterval(uint16_t min, uint16_t max)
 {
-  _ppcp_min_conn = min;
-  _ppcp_max_conn = max;
+  _conn_param.min_conn_interval = min;
+  _conn_param.max_conn_interval = max;
 
   return true;
 }
@@ -73,15 +74,8 @@ bool BLECentral::setConnIntervalMS (uint16_t min_ms, uint16_t max_ms)
 
 bool BLECentral::connect(const ble_gap_addr_t* peer_addr)
 {
-  ble_gap_conn_params_t gap_conn_params =
-  {
-      .min_conn_interval = _ppcp_min_conn, // in 1.25ms unit
-      .max_conn_interval = _ppcp_max_conn, // in 1.25ms unit
-      .slave_latency     = BLE_GAP_CONN_SLAVE_LATENCY,
-      .conn_sup_timeout  = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10 // in 10ms unit
-  };
-
-  VERIFY_STATUS( sd_ble_gap_connect(peer_addr, Bluefruit.Scanner.getParams(), &gap_conn_params, CONN_CFG_CENTRAL), false );
+  // Connect with default connection parameter
+  VERIFY_STATUS( sd_ble_gap_connect(peer_addr, Bluefruit.Scanner.getParams(), &_conn_param, CONN_CFG_CENTRAL), false );
 
   return true;
 }
@@ -147,27 +141,43 @@ void BLECentral::clearBonds(void)
 void BLECentral::_event_handler(ble_evt_t* evt)
 {
   // conn handle has fixed offset regardless of event type
-  const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
+  const uint16_t conn_hdl = evt->evt.common_evt.conn_handle;
 
   /* PrPh handle connection is already filtered. Only handle Central events or
-   * connection handle is BLE_CONN_HANDLE_INVALID (e.g BLE_GAP_EVT_ADV_REPORT)
-   */
+   * connection handle is BLE_CONN_HANDLE_INVALID (e.g BLE_GAP_EVT_ADV_REPORT) */
   switch ( evt->header.evt_id  )
   {
     case BLE_GAP_EVT_CONNECTED:
-      if ( Bluefruit.Gap.getRole(evt_conn_hdl) == BLE_GAP_ROLE_CENTRAL)
+      if ( Bluefruit.Gap.getRole(conn_hdl) == BLE_GAP_ROLE_CENTRAL)
       {
         // Invoke callback
-        if ( _connect_cb) ada_callback(NULL, _connect_cb, evt_conn_hdl);
+        if ( _connect_cb) ada_callback(NULL, _connect_cb, conn_hdl);
       }
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
-      if ( Bluefruit.Gap.getRole(evt_conn_hdl) == BLE_GAP_ROLE_CENTRAL)
+      if ( Bluefruit.Gap.getRole(conn_hdl) == BLE_GAP_ROLE_CENTRAL)
       {
         // Invoke callback reason is BLE_HCI_STATUS code
-        if ( _disconnect_cb) ada_callback(NULL, _disconnect_cb, evt_conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
+        if ( _disconnect_cb) ada_callback(NULL, _disconnect_cb, conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
       }
+    break;
+
+    case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:
+    {
+      // Peripheral request to change connection parameter
+      ble_gap_conn_params_t* request_param = &evt->evt.gap_evt.params.conn_param_update_request.conn_params;
+
+      LOG_LV2("GAP", "Conn Param Update Request: (min, max, latency, sup) = (%.2f,  %.2f, %d, %d)",
+              request_param->min_conn_interval*1.25f, request_param->max_conn_interval*1.25f, request_param->slave_latency, request_param->conn_sup_timeout*10);
+
+      // Central could perform checks to accept or reject request
+      // For now just accept parameter from prph
+      ble_gap_conn_params_t conn_param = *request_param;
+      conn_param.max_conn_interval = conn_param.min_conn_interval;
+
+      sd_ble_gap_conn_param_update(conn_hdl, &conn_param);
+    }
     break;
 
     default: break;

@@ -12,7 +12,6 @@
  any redistribution
 *********************************************************************/
 
-#include <Nffs.h>
 #include <bluefruit.h>
 #include <BLEHomekit.h>
 
@@ -126,8 +125,10 @@ void setup()
   Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52");
 
-  //Nffs.remove(CRYPTO_KEYFILE);
-  //fsutil_write_file(CRYPTO_KEYFILE, &test_keys, sizeof(test_keys));
+  //InternalFS.remove(CRYPTO_KEYFILE);
+  //File file(CRYPTO_KEYFILE, FILE_WRITE, InternalFS);
+  //file.write(&test_keys, sizeof(test_keys));
+  //file.close();
   
   homekit.begin();
 
@@ -186,4 +187,3 @@ void loop()
   digitalToggle(LED_RED);
   delay(1000);
 }
-
