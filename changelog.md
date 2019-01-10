@@ -3,10 +3,12 @@
 # 0.9.3
 
 - Correct bootloader version text in IDE to 0.2.6
-- Fixed #173  ( PR #178 thanks Nenik)
+- Fixed #173 bleuart return incorrect value when failed to send (PR #178 thanks Nenik)
 - Added Client Battery support BLEClientBas
 - Added BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST event support for Central
-- Added Jlink as programmer to upload sketch (#133)
+- Added Jlink as programmer to upload sketch #133
+- Fixed issue with high speed uart baud ~ 1 Mbps (PR #158 thanks Ureloc)
+- Add HardwardPWM removePin(), refactor hwpwm.ino sketch
 
 ## 0.9.2
 
