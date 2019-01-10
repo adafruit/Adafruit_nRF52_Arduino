@@ -51,7 +51,6 @@ class HardwarePWM
     enum { MAX_CHANNELS = 4 }; // Max channel per group
     NRF_PWM_Type* _pwm;
 
-    uint8_t  _count;
     uint16_t _seq0[MAX_CHANNELS];
 
     uint16_t  _max_value;
@@ -69,9 +68,12 @@ class HardwarePWM
     void setClockDiv(uint8_t div);      // value is PWM_PRESCALER_PRESCALER_DIV_x, DIV1 is 16Mhz
 
     bool addPin     (uint8_t pin);
+    bool removePin  (uint8_t pin);
+
     int  pin2channel(uint8_t pin)
     {
-      for(int i=0; i<_count; i++)
+      pin = g_ADigitalPinMap[pin];
+      for(int i=0; i<MAX_CHANNELS; i++)
       {
         if ( _pwm->PSEL.OUT[i] == pin ) return i;
       }
