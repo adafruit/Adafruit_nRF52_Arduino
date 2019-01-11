@@ -9,6 +9,7 @@
 - Added Jlink as programmer to upload sketch #133
 - Fixed issue with high speed uart baud ~ 1 Mbps (PR #158 thanks Ureloc)
 - Add HardwardPWM removePin(), refactor hwpwm.ino sketch
+- fix print float with precision > 10
 
 ## 0.9.2
 

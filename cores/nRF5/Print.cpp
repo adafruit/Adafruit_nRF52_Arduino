@@ -229,10 +229,7 @@ size_t Print::printFloat(double number, uint8_t digits)
   char buf[256];
   size_t s=0;
 
-  char format[] = "%.0f";
-  format[2] += digits;
-
-  s = snprintf(buf, 256, format, number);
+  s = snprintf(buf, 256, "%.*f", digits, number);
   s = write(buf, s);
   return s;
 }
