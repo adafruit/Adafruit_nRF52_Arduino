@@ -125,10 +125,10 @@ void connect_callback(uint16_t conn_handle)
   // Request to pair
     if ( !Bluefruit.Gap.requestPairing(conn_handle) )
     {
-      Serial.print("Failed to paired");
-      return;
+      Serial.print("Pairing failed");
+    } else {
+      Serial.println("Paired");
     }
-    Serial.println("Paired");
     
     Serial.println("Enable TXD's notify");
     clientMidi.enableTXD();
