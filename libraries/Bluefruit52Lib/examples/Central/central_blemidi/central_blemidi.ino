@@ -125,7 +125,7 @@ void connect_callback(uint16_t conn_handle)
   // Request to pair
     if ( !Bluefruit.Gap.requestPairing(conn_handle) )
     {
-      Serial.print("Pairing failed");
+      Serial.println("Pairing failed");
     } else {
       Serial.println("Paired");
     }
