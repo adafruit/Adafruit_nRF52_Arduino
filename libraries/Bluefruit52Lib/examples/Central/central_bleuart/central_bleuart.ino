@@ -118,6 +118,9 @@ void connect_callback(uint16_t conn_handle)
     }
 
     Serial.println();
+  }else
+  {
+    Serial.println("Found NONE");
   }
 
   Serial.print("Dicovering Battery ... ");
@@ -127,8 +130,10 @@ void connect_callback(uint16_t conn_handle)
     Serial.print("Battery level: ");
     Serial.print(clientBas.read());
     Serial.println("%");
+  }else
+  {
+    Serial.println("Found NONE");
   }
-  
 
   Serial.print("Discovering BLE Uart Service ... ");
   if ( clientUart.discover(conn_handle) )

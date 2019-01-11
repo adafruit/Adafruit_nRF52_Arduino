@@ -132,9 +132,9 @@ void loop(void)
     Serial.println(" bytes ...");
 
     start = millis();
-    while (remaining > 0)
+    while ( (remaining > 0) && Bluefruit.connected() && bleuart.notifyEnabled() )
     {
-      bleuart.print(TEST_STRING);
+      if ( !bleuart.print(TEST_STRING) ) break;
 
       sent      += TEST_STRLEN;
       remaining -= TEST_STRLEN;
