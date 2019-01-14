@@ -1,5 +1,7 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+# 0.9.4 
+
 # 0.9.3
 
 - Correct bootloader version text in IDE to 0.2.6
