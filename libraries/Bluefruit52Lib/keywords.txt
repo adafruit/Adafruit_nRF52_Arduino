@@ -109,8 +109,6 @@ configPrphConn	KEYWORD2
 configCentralConn	KEYWORD2
 getMaxMtuByConnCfg	KEYWORD2
 getMaxMtu	KEYWORD2
-getHvnQueueSize	KEYWORD2
-getWriteCmdQueueSize	KEYWORD2
 getMTU	KEYWORD2
 
 getHvnPacket	KEYWORD2

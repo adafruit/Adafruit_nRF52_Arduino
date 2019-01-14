@@ -55,39 +55,42 @@ class BLEGap
 
     BLEGap(void);
 
-    uint8_t        getAddr               (uint8_t mac[6]);
-    bool           setAddr               (uint8_t mac[6], uint8_t type);
+    uint8_t  getAddr              (uint8_t mac[6]);
+    bool     setAddr              (uint8_t mac[6], uint8_t type);
 //    bool    setPrivacy                ();  sd_ble_gap_privacy_set()
 
-    bool           connected            (uint16_t conn_hdl);
-    bool           paired               (uint16_t conn_hdl);
-    bool           requestPairing       (uint16_t conn_hdl);
+    bool     connected            (uint16_t conn_hdl);
+    bool     paired               (uint16_t conn_hdl);
+    bool     requestPairing       (uint16_t conn_hdl);
 
-    uint8_t        getRole              (uint16_t conn_hdl);
+    uint8_t  getRole              (uint16_t conn_hdl);
 
-    uint8_t        getPeerAddr          (uint16_t conn_hdl, uint8_t addr[6]);
-    ble_gap_addr_t getPeerAddr          (uint16_t conn_hdl);
-    uint16_t       getPeerName          (uint16_t conn_hdl, char* buf, uint16_t bufsize);
+    uint8_t        getPeerAddr    (uint16_t conn_hdl, uint8_t addr[6]);
+    ble_gap_addr_t getPeerAddr    (uint16_t conn_hdl);
+    uint16_t       getPeerName    (uint16_t conn_hdl, char* buf, uint16_t bufsize);
 
-    uint16_t       getMTU               (uint16_t conn_hdl);
-    uint16_t       getMaxMtuByConnCfg   (uint8_t conn_cfg);
-    uint16_t       getMaxMtu            (uint8_t conn_hdl);
+    uint16_t getMTU               (uint16_t conn_hdl);
+    uint16_t getMaxMtu            (uint8_t conn_hdl);
+    uint16_t getMaxMtuByConnCfg   (uint8_t conn_cfg);
 
-    uint8_t        getHvnQueueSize      (uint8_t conn_hdl);
-    uint8_t        getWriteCmdQueueSize (uint8_t conn_hdl);
+    bool     getHvnPacket         (uint16_t conn_hdl);
+    bool     getWriteCmdPacket    (uint16_t conn_hdl);
 
-    bool           getHvnPacket         (uint16_t conn_hdl);
-    bool           getWriteCmdPacket    (uint16_t conn_hdl);
+    void     configPrphConn       (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    void     configCentralConn    (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
 
-    void           configPrphConn       (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
-    void           configCentralConn    (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+//    bool     startRssi(uint16_t conn_hdl, uint8_t );
+//    bool     stopRssi(uint16_t conn_hdl);
+//    int8_t   getRssi(uint16_t conn_hdl);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal
      * code. User should not call these directly
      *------------------------------------------------------------------*/
-    void _eventHandler(ble_evt_t* evt);
+    void     _eventHandler(ble_evt_t* evt);
+    uint8_t  _getHvnQueueSize      (uint8_t conn_hdl);
+    uint8_t  _getWriteCmdQueueSize (uint8_t conn_hdl);
 
     // Array of TX Packet semaphore, indexed by connection handle
     // Peer info where conn_hdl serves as index

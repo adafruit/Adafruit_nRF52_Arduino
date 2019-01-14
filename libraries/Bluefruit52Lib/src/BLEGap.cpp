@@ -94,12 +94,12 @@ uint16_t BLEGap::getMaxMtu (uint8_t conn_hdl)
   return (getRole(conn_hdl) == BLE_GAP_ROLE_PERIPH) ? _cfg_prph.mtu_max : _cfg_central.mtu_max;
 }
 
-uint8_t BLEGap::getHvnQueueSize (uint8_t conn_hdl)
+uint8_t BLEGap::_getHvnQueueSize (uint8_t conn_hdl)
 {
   return (getRole(conn_hdl) == BLE_GAP_ROLE_PERIPH) ? _cfg_prph.hvn_tx_qsize : _cfg_central.hvn_tx_qsize;
 }
 
-uint8_t BLEGap::getWriteCmdQueueSize (uint8_t conn_hdl)
+uint8_t BLEGap::_getWriteCmdQueueSize (uint8_t conn_hdl)
 {
   return (getRole(conn_hdl) == BLE_GAP_ROLE_PERIPH) ? _cfg_prph.wr_cmd_qsize : _cfg_central.wr_cmd_qsize;
 }
@@ -261,8 +261,8 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       peer->att_mtu   = BLE_GATT_ATT_MTU_DEFAULT;
 
       // Init transmission buffer for notification
-      peer->hvn_tx_sem   = xSemaphoreCreateCounting(getHvnQueueSize(conn_hdl), getHvnQueueSize(conn_hdl));
-      peer->wrcmd_tx_sem = xSemaphoreCreateCounting(getWriteCmdQueueSize(conn_hdl), getWriteCmdQueueSize(conn_hdl));
+      peer->hvn_tx_sem   = xSemaphoreCreateCounting(_getHvnQueueSize(conn_hdl), _getHvnQueueSize(conn_hdl));
+      peer->wrcmd_tx_sem = xSemaphoreCreateCounting(_getWriteCmdQueueSize(conn_hdl), _getWriteCmdQueueSize(conn_hdl));
 
       LOG_LV2("GAP", "Conn Interval= %f", para->conn_params.min_conn_interval*1.25f);
     }
