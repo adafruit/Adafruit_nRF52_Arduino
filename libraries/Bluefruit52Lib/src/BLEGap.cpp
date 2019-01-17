@@ -147,11 +147,6 @@ bool BLEGap::connected(uint16_t conn_hdl)
   return _connection[conn_hdl] != NULL;
 }
 
-bool BLEGap::paired(uint16_t conn_hdl)
-{
-  return _connection[conn_hdl]->paired;
-}
-
 bool BLEGap::requestPairing(uint16_t conn_hdl)
 {
   gap_peer_t* peer = &_peers[conn_hdl];
@@ -159,7 +154,7 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
   VERIFY(conn);
 
   // skip if already paired
-  if ( conn->paired ) return true;
+  if ( conn->_paired ) return true;
 
   uint16_t cntr_ediv = 0xFFFF;
 
@@ -190,7 +185,7 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
 
   // Failed to pair using central stored keys, this happens when
   // Prph delete bonds while we did not --> let's remove the obsolete keyfile and move on
-  if ( !conn->paired && (cntr_ediv != 0xffff) )
+  if ( !conn->_paired && (cntr_ediv != 0xffff) )
   {
     bond_remove_key(BLE_GAP_ROLE_CENTRAL, cntr_ediv);
 
@@ -203,7 +198,7 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
   vSemaphoreDelete(conn->pair_sem);
   conn->pair_sem = NULL;
 
-  return conn->paired;
+  return conn->_paired;
 }
 
 uint8_t BLEGap::getRole(uint16_t conn_hdl)
@@ -379,7 +374,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       // Pairing succeeded --> save encryption keys ( Bonding )
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
-        conn->paired = true;
+        conn->_paired = true;
         conn->ediv   = conn->bond_keys->own_enc.master_id.ediv;
 
         bond_save_keys(conn->role, conn_hdl, conn->bond_keys);
@@ -430,7 +425,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
           sd_ble_gatts_sys_attr_set(conn_hdl, NULL, 0, 0);
         }
 
-        conn->paired = true;
+        conn->_paired = true;
       }
 
       if (conn->pair_sem) xSemaphoreGive(conn->pair_sem);

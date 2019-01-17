@@ -55,10 +55,8 @@ class BLEGapConnection
   public:
     ble_gap_addr_t _addr;
     uint16_t att_mtu;
-    bool paired;
+    bool _paired;
     uint8_t  role;
-
-    SemaphoreHandle_t pair_sem;
 
     SemaphoreHandle_t hvn_tx_sem;
     SemaphoreHandle_t wrcmd_tx_sem;
@@ -67,14 +65,16 @@ class BLEGapConnection
     SemaphoreHandle_t hvc_sem;
     bool              hvc_received;
 
+    SemaphoreHandle_t pair_sem;
+
     uint16_t         ediv;
     bond_keys_t*     bond_keys; // Shared keys with bonded device, size ~ 80 bytes
 
-    BLEGapConnection(void) { _conn_hdl = BLE_CONN_HANDLE_INVALID; }
     BLEGapConnection(uint16_t conn_hdl) { _conn_hdl = conn_hdl; }
 
     uint16_t handle(void) { return _conn_hdl; }
     bool     connected(void);
+    bool     paired(void) { return _paired; }
     uint8_t  getRole(void);
 
     uint16_t getMTU (void)
@@ -120,15 +120,13 @@ class BLEGap
 
     BLEGapConnection* getConnection(uint16_t conn_hdl)
     {
-      return _connection[conn_hdl];
+      return  ( conn_hdl != BLE_CONN_HANDLE_INVALID ) ?_connection[conn_hdl] : NULL;
     }
 
     bool     connected            (uint16_t conn_hdl);
-    bool     paired               (uint16_t conn_hdl);
     bool     requestPairing       (uint16_t conn_hdl);
 
     uint8_t  getRole              (uint16_t conn_hdl);
-
     uint16_t getPeerName    (uint16_t conn_hdl, char* buf, uint16_t bufsize);
 
     uint16_t getMaxMtuByConnCfg   (uint8_t conn_cfg);
