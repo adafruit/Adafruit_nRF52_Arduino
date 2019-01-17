@@ -91,10 +91,7 @@ static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
   }
 
 #if CFG_DEBUG
-  while(1)
-  {
-
-  }
+  while(1) { }
 #endif
 }
 
@@ -139,9 +136,6 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _ppcp.conn_sup_timeout = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10; // in 10ms unit
 
   _conn_interval = 0;
-
-  _connect_cb    = NULL;
-  _disconnect_cb = NULL;
   _event_cb = NULL;
 
 COMMENT_OUT(
@@ -589,12 +583,12 @@ bool AdafruitBluefruit::setConnSupervisionTimeoutMS(uint16_t timeout_ms)
 
 void AdafruitBluefruit::setConnectCallback( BLEGap::connect_callback_t fp )
 {
-  _connect_cb = fp;
+  Gap._prph_setConnectCallback(fp);
 }
 
 void AdafruitBluefruit::setDisconnectCallback( BLEGap::disconnect_callback_t fp )
 {
-  _disconnect_cb = fp;
+  Gap._prph_setDisconnectCallback(fp);
 }
 
 void AdafruitBluefruit::setEventCallback ( void (*fp) (ble_evt_t*) )
@@ -789,8 +783,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
             // Null, value is set by sd_ble_gap_ppcp_set will be used
             VERIFY_STATUS( sd_ble_gap_conn_param_update(_conn_hdl, NULL), );
           }
-
-          if (_connect_cb) ada_callback(NULL, _connect_cb, _conn_hdl);
         }
       }
       break;
@@ -805,10 +797,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       break;
 
       case BLE_GAP_EVT_DISCONNECTED:
-        if (_disconnect_cb) ada_callback(NULL, _disconnect_cb, _conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
-
-        LOG_LV2("GAP", "Disconnect Reason 0x%02X", evt->evt.gap_evt.params.disconnected.reason);
-
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
       break;
 

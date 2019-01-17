@@ -403,13 +403,9 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
     {
       ble_gap_evt_connected_t const * para = &evt->evt.gap_evt.params.connected;
 
-      if ( para->role == BLE_GAP_ROLE_PERIPH)
+      if ( para->role == BLE_GAP_ROLE_PERIPH )
       {
         _runnning = false;
-
-        // Turn on Conn LED
-        Bluefruit._stopConnLed();
-        Bluefruit._setConnLed(true);
       }
     }
     break;
@@ -417,11 +413,8 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_DISCONNECTED:
       if ( BLE_GAP_ROLE_PERIPH == Bluefruit.Gap.getRole(evt->evt.common_evt.conn_handle) )
       {
-        // Turn off Conn LED
-        Bluefruit._setConnLed(false);
-
         // Auto start if enabled
-        if ( _start_if_disconnect ) start(_stop_timeout);
+        if ( !_runnning && _start_if_disconnect ) start(_stop_timeout);
       }
     break;
 

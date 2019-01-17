@@ -39,6 +39,9 @@
 BLEGap::BLEGap(void)
 {
   memclr(_peers, sizeof(_peers));
+  memclr(_connection, sizeof(_connection));
+  varclr(&_prph);
+  varclr(&_central);
 
   _cfg_prph.mtu_max         = BLE_GATT_ATT_MTU_DEFAULT;
   _cfg_central.mtu_max      = BLE_GATT_ATT_MTU_DEFAULT;
@@ -83,6 +86,26 @@ void BLEGap::configCentralConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_
   _cfg_central.wr_cmd_qsize = wrcmd_qsize;
 }
 
+void BLEGap::_prph_setConnectCallback( connect_callback_t fp)
+{
+  _prph.connect_cb = fp;
+}
+
+void BLEGap::_prph_setDisconnectCallback( disconnect_callback_t fp)
+{
+  _prph.disconnect_cb = fp;
+}
+
+void BLEGap::_central_setConnectCallback( connect_callback_t fp)
+{
+  _central.connect_cb = fp;
+}
+
+void BLEGap::_central_setDisconnectCallback( disconnect_callback_t fp)
+{
+  _central.disconnect_cb = fp;
+}
+
 
 uint16_t BLEGap::getMaxMtuByConnCfg(uint8_t conn_cfg)
 {
@@ -93,17 +116,6 @@ uint16_t BLEGap::getMaxMtu (uint8_t conn_hdl)
 {
   return (getRole(conn_hdl) == BLE_GAP_ROLE_PERIPH) ? _cfg_prph.mtu_max : _cfg_central.mtu_max;
 }
-
-uint8_t BLEGap::_getHvnQueueSize (uint8_t conn_hdl)
-{
-  return (getRole(conn_hdl) == BLE_GAP_ROLE_PERIPH) ? _cfg_prph.hvn_tx_qsize : _cfg_central.hvn_tx_qsize;
-}
-
-uint8_t BLEGap::_getWriteCmdQueueSize (uint8_t conn_hdl)
-{
-  return (getRole(conn_hdl) == BLE_GAP_ROLE_PERIPH) ? _cfg_prph.wr_cmd_qsize : _cfg_central.wr_cmd_qsize;
-}
-
 
 /**
  * Get current Mac address and its type
@@ -139,29 +151,31 @@ bool BLEGap::setAddr(uint8_t mac[6], uint8_t type)
 
 bool BLEGap::connected(uint16_t conn_hdl)
 {
-  return _peers[conn_hdl].connected;
+  return _connection[conn_hdl] != NULL;
 }
 
 bool BLEGap::paired(uint16_t conn_hdl)
 {
-  return _peers[conn_hdl].paired;
+  return _connection[conn_hdl]->paired;
 }
 
 bool BLEGap::requestPairing(uint16_t conn_hdl)
 {
   gap_peer_t* peer = &_peers[conn_hdl];
+  BLEGapConnection* conn = _connection[conn_hdl];
+  VERIFY(conn);
 
   // skip if already paired
-  if ( peer->paired ) return true;
+  if ( conn->paired ) return true;
 
   uint16_t cntr_ediv = 0xFFFF;
 
-  if ( peer->role == BLE_GAP_ROLE_CENTRAL )
+  if ( conn->role == BLE_GAP_ROLE_CENTRAL )
   {
     // Check to see if we did bonded with current prph previously
     bond_keys_t bkeys;
 
-    if ( bond_find_cntr(&peer->addr, &bkeys) )
+    if ( bond_find_cntr(&conn->addr, &bkeys) )
     {
       cntr_ediv = bkeys.peer_enc.master_id.ediv;
       LOG_LV2("BOND", "Load Keys from file " BOND_FNAME_CNTR, cntr_ediv);
@@ -177,60 +191,76 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
   }
 
   // Wait for pairing process using on-the-fly semaphore
-  peer->pair_sem = xSemaphoreCreateBinary();
+  conn->pair_sem = xSemaphoreCreateBinary();
 
-  xSemaphoreTake(peer->pair_sem, portMAX_DELAY);
+  xSemaphoreTake(conn->pair_sem, portMAX_DELAY);
 
   // Failed to pair using central stored keys, this happens when
   // Prph delete bonds while we did not --> let's remove the obsolete keyfile and move on
-  if ( !peer->paired && (cntr_ediv != 0xffff) )
+  if ( !conn->paired && (cntr_ediv != 0xffff) )
   {
     bond_remove_key(BLE_GAP_ROLE_CENTRAL, cntr_ediv);
 
     // Re-try with a fresh session
     VERIFY_STATUS( sd_ble_gap_authenticate(conn_hdl, &_sec_param ), false);
 
-    xSemaphoreTake(peer->pair_sem, portMAX_DELAY);
+    xSemaphoreTake(conn->pair_sem, portMAX_DELAY);
   }
 
-  vSemaphoreDelete(peer->pair_sem);
-  peer->pair_sem = NULL;
+  vSemaphoreDelete(conn->pair_sem);
+  conn->pair_sem = NULL;
 
-  return peer->paired;
+  return conn->paired;
 }
 
 uint8_t BLEGap::getRole(uint16_t conn_hdl)
 {
+//  return _connection[conn_hdl]->role;
   return _peers[conn_hdl].role;
 }
 
 uint8_t BLEGap::getPeerAddr(uint16_t conn_hdl, uint8_t addr[6])
 {
-  memcpy(addr, _peers[conn_hdl].addr.addr, BLE_GAP_ADDR_LEN);
-  return _peers[conn_hdl].addr.addr_type;
+  BLEGapConnection* conn = _connection[conn_hdl];
+  if (conn)
+  {
+    memcpy(addr, conn->addr.addr, BLE_GAP_ADDR_LEN);
+    return conn->addr.addr_type;
+  }else
+  {
+    memclr(addr, BLE_GAP_ADDR_LEN);
+    return 0;
+  }
 }
 
 ble_gap_addr_t BLEGap::getPeerAddr(uint16_t conn_hdl)
 {
-  return _peers[conn_hdl].addr;
+  BLEGapConnection* conn = _connection[conn_hdl];
+  return conn ? conn->addr :  ((ble_gap_addr_t) {0});
 }
 
 bool BLEGap::getHvnPacket(uint16_t conn_hdl)
 {
-  VERIFY( (conn_hdl < BLE_MAX_CONN) && (_peers[conn_hdl].hvn_tx_sem != NULL) );
+  BLEGapConnection* conn = _connection[conn_hdl];
+  VERIFY(conn && conn->hvn_tx_sem != NULL);
 
-  return xSemaphoreTake(_peers[conn_hdl].hvn_tx_sem, ms2tick(BLE_GENERIC_TIMEOUT));
+  return xSemaphoreTake(conn->hvn_tx_sem, ms2tick(BLE_GENERIC_TIMEOUT));
 }
 
 bool BLEGap::getWriteCmdPacket(uint16_t conn_hdl)
 {
-  VERIFY( (conn_hdl < BLE_MAX_CONN) && (_peers[conn_hdl].wrcmd_tx_sem != NULL) );
-  return xSemaphoreTake(_peers[conn_hdl].wrcmd_tx_sem, ms2tick(BLE_GENERIC_TIMEOUT));
+  BLEGapConnection* conn = _connection[conn_hdl];
+  VERIFY(conn && (conn->wrcmd_tx_sem != NULL));
+
+  return xSemaphoreTake(conn->wrcmd_tx_sem, ms2tick(BLE_GENERIC_TIMEOUT));
 }
 
 uint16_t BLEGap::getMTU (uint16_t conn_hdl)
 {
-  return _peers[conn_hdl].att_mtu;
+  BLEGapConnection* conn = _connection[conn_hdl];
+  VERIFY(conn, 0);
+
+  return conn->att_mtu;
 }
 
 uint16_t BLEGap::getPeerName(uint16_t conn_hdl, char* buf, uint16_t bufsize)
@@ -248,23 +278,52 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
   const uint16_t conn_hdl = evt->evt.common_evt.conn_handle;
 
   gap_peer_t* peer = (conn_hdl == BLE_CONN_HANDLE_INVALID) ? NULL : &_peers[conn_hdl];
+  BLEGapConnection* conn = (conn_hdl == BLE_CONN_HANDLE_INVALID) ? NULL : _connection[conn_hdl];
 
   switch(evt->header.evt_id)
   {
     case BLE_GAP_EVT_CONNECTED:
     {
+      // Turn on Conn LED
+      Bluefruit._stopConnLed();
+      Bluefruit._setConnLed(true);
+
       ble_gap_evt_connected_t const * para = &evt->evt.gap_evt.params.connected;
 
-      peer->connected = true;
-      peer->role      = para->role;
-      peer->addr      = para->peer_addr;
-      peer->att_mtu   = BLE_GATT_ATT_MTU_DEFAULT;
+      if ( _connection[conn_hdl] )
+      {
+        LOG_LV1("GAP", "Connection is already in used, something wrong !!");
+        delete _connection[conn_hdl];
+        _connection[conn_hdl] = NULL;
+      }
 
-      // Init transmission buffer for notification
-      peer->hvn_tx_sem   = xSemaphoreCreateCounting(_getHvnQueueSize(conn_hdl), _getHvnQueueSize(conn_hdl));
-      peer->wrcmd_tx_sem = xSemaphoreCreateCounting(_getWriteCmdQueueSize(conn_hdl), _getWriteCmdQueueSize(conn_hdl));
+      _connection[conn_hdl] = new BLEGapConnection(conn_hdl);
+      conn = _connection[conn_hdl];
+
+      varclr(conn);
+
+      conn->addr    = para->peer_addr;
+      conn->att_mtu = BLE_GATT_ATT_MTU_DEFAULT;
+      conn->role    = para->role;
+
+      peer->role = para->role;
+
+      // Transmission buffer sem pool
+      uint16_t const hvn_qsize = (para->role == BLE_GAP_ROLE_PERIPH) ? _cfg_prph.hvn_tx_qsize : _cfg_central.hvn_tx_qsize;
+      conn->hvn_tx_sem   = xSemaphoreCreateCounting(hvn_qsize, hvn_qsize);
+
+      uint16_t const wrcmd_qsize = (para->role == BLE_GAP_ROLE_PERIPH) ? _cfg_prph.wr_cmd_qsize : _cfg_central.wr_cmd_qsize;
+      conn->wrcmd_tx_sem = xSemaphoreCreateCounting(wrcmd_qsize, wrcmd_qsize);
 
       LOG_LV2("GAP", "Conn Interval= %f", para->conn_params.min_conn_interval*1.25f);
+
+      if ( conn->role == BLE_GAP_ROLE_PERIPH )
+      {
+        if ( _prph.connect_cb ) ada_callback(NULL, _prph.connect_cb, conn_hdl);
+      }else
+      {
+        if ( _central.connect_cb ) ada_callback(NULL, _central.connect_cb, conn_hdl);
+      }
     }
     break;
 
@@ -272,14 +331,38 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     {
       ble_gap_evt_disconnected_t const* para = &evt->evt.gap_evt.params.disconnected;
 
+      LOG_LV2("GAP", "Disconnect Reason 0x%02X", evt->evt.gap_evt.params.disconnected.reason);
       // mark as disconnected, but keep the role for sub sequence event handler
-      peer->connected = peer->paired = false;
 
-      vSemaphoreDelete( peer->hvn_tx_sem );
-      peer->hvn_tx_sem = NULL;
+      vSemaphoreDelete( conn->hvn_tx_sem );
+      conn->hvn_tx_sem = NULL;
 
-      vSemaphoreDelete( peer->wrcmd_tx_sem );
-      peer->wrcmd_tx_sem = NULL;
+      vSemaphoreDelete( conn->wrcmd_tx_sem );
+      conn->wrcmd_tx_sem = NULL;
+
+      if ( conn->role == BLE_GAP_ROLE_PERIPH )
+      {
+        if ( _prph.disconnect_cb ) ada_callback(NULL, _prph.disconnect_cb, conn_hdl, para->reason);
+      }else
+      {
+        if ( _central.disconnect_cb ) ada_callback(NULL, _central.disconnect_cb, conn_hdl, para->reason);
+      }
+
+      delete _connection[conn_hdl];
+      _connection[conn_hdl] = NULL;
+
+      bool still_connected = false;
+      for (uint8_t i=0; i<BLE_MAX_CONN; i++)
+      {
+        if ( _connection[i] )
+        {
+          still_connected = true;
+          break;
+        }
+      }
+
+      // No connected at all, turn off conn led
+      if ( !still_connected ) Bluefruit._setConnLed(false);
     }
     break;
 
@@ -334,7 +417,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
       VERIFY_STATUS(sd_ble_gap_sec_params_reply(conn_hdl,
                                                 BLE_GAP_SEC_STATUS_SUCCESS,
-                                                peer->role == BLE_GAP_ROLE_PERIPH ? &_sec_param : NULL,
+                                                conn->role == BLE_GAP_ROLE_PERIPH ? &_sec_param : NULL,
                                                 &keyset),
       );
     }
@@ -348,10 +431,10 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       // Pairing succeeded --> save encryption keys ( Bonding )
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
-        peer->paired = true;
+        conn->paired = true;
         peer->ediv   = peer->bond_keys->own_enc.master_id.ediv;
 
-        bond_save_keys(peer->role, conn_hdl, peer->bond_keys);
+        bond_save_keys(conn->role, conn_hdl, peer->bond_keys);
       }else
       {
         PRINT_HEX(status->auth_status);
@@ -372,7 +455,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       bond_keys_t bkeys;
       varclr(&bkeys);
 
-      if ( bond_load_keys(peer->role, sec_req->master_id.ediv, &bkeys) )
+      if ( bond_load_keys(conn->role, sec_req->master_id.ediv, &bkeys) )
       {
         sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
 
@@ -394,15 +477,15 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       {
         // Previously bonded --> secure by re-connection process --> Load & Set SysAttr (Apply Service Context)
         // Else Init SysAttr (first bonded)
-        if ( !bond_load_cccd(peer->role, conn_hdl, peer->ediv) )
+        if ( !bond_load_cccd(conn->role, conn_hdl, peer->ediv) )
         {
           sd_ble_gatts_sys_attr_set(conn_hdl, NULL, 0, 0);
         }
 
-        peer->paired = true;
+        conn->paired = true;
       }
 
-      if (peer->pair_sem) xSemaphoreGive(peer->pair_sem);
+      if (conn->pair_sem) xSemaphoreGive(conn->pair_sem);
     }
     break;
 
@@ -417,22 +500,16 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     break;
 
     case BLE_GATTS_EVT_HVN_TX_COMPLETE:
-      if ( peer->hvn_tx_sem )
+      if ( conn->hvn_tx_sem )
       {
-        for(uint8_t i=0; i<evt->evt.gatts_evt.params.hvn_tx_complete.count; i++)
-        {
-          xSemaphoreGive(peer->hvn_tx_sem);
-        }
+        for(uint8_t i=0; i<evt->evt.gatts_evt.params.hvn_tx_complete.count; i++) xSemaphoreGive(conn->hvn_tx_sem);
       }
     break;
 
     case BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE:
-      if ( peer->wrcmd_tx_sem )
+      if ( conn->wrcmd_tx_sem )
       {
-        for(uint8_t i=0; i<evt->evt.gattc_evt.params.write_cmd_tx_complete.count; i++)
-        {
-          xSemaphoreGive(peer->wrcmd_tx_sem);
-        }
+        for(uint8_t i=0; i<evt->evt.gattc_evt.params.write_cmd_tx_complete.count; i++) xSemaphoreGive(conn->wrcmd_tx_sem);
       }
     break;
 
@@ -489,10 +566,10 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
     case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
     {
-      peer->att_mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, getMaxMtu(conn_hdl));
-      VERIFY_STATUS( sd_ble_gatts_exchange_mtu_reply(conn_hdl, peer->att_mtu), );
+      conn->att_mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, getMaxMtu(conn_hdl));
+      VERIFY_STATUS( sd_ble_gatts_exchange_mtu_reply(conn_hdl, conn->att_mtu), );
 
-      LOG_LV1("GAP", "ATT MTU is changed to %d", peer->att_mtu);
+      LOG_LV1("GAP", "ATT MTU is changed to %d", conn->att_mtu);
     }
     break;
 

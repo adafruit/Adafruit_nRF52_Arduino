@@ -45,9 +45,6 @@ BLECentral::BLECentral(void)
   _conn_param.min_conn_interval = _conn_param.max_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
   _conn_param.slave_latency = BLE_GAP_CONN_SLAVE_LATENCY;
   _conn_param.conn_sup_timeout = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS/10;
-
-  _connect_cb    = NULL;
-  _disconnect_cb = NULL;
 }
 
 void BLECentral::begin(void)
@@ -121,12 +118,12 @@ bool BLECentral::connected(void)
 
 void BLECentral::setConnectCallback( BLEGap::connect_callback_t fp)
 {
-  _connect_cb = fp;
+  Bluefruit.Gap._central_setConnectCallback(fp);
 }
 
 void BLECentral::setDisconnectCallback( BLEGap::disconnect_callback_t fp)
 {
-  _disconnect_cb = fp;
+  Bluefruit.Gap._central_setDisconnectCallback(fp);
 }
 
 void BLECentral::clearBonds(void)
@@ -148,19 +145,9 @@ void BLECentral::_event_handler(ble_evt_t* evt)
   switch ( evt->header.evt_id  )
   {
     case BLE_GAP_EVT_CONNECTED:
-      if ( Bluefruit.Gap.getRole(conn_hdl) == BLE_GAP_ROLE_CENTRAL)
-      {
-        // Invoke callback
-        if ( _connect_cb) ada_callback(NULL, _connect_cb, conn_hdl);
-      }
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
-      if ( Bluefruit.Gap.getRole(conn_hdl) == BLE_GAP_ROLE_CENTRAL)
-      {
-        // Invoke callback reason is BLE_HCI_STATUS code
-        if ( _disconnect_cb) ada_callback(NULL, _disconnect_cb, conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
-      }
     break;
 
     case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:

@@ -221,9 +221,6 @@ class AdafruitBluefruit
 
     uint16_t _conn_hdl;
 
-    BLEGap::connect_callback_t    _connect_cb;
-    BLEGap::disconnect_callback_t _disconnect_cb;
-
     void (*_event_cb) (ble_evt_t*);
 
 COMMENT_OUT(

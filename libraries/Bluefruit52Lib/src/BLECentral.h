@@ -80,9 +80,6 @@ class BLECentral
   private:
     ble_gap_conn_params_t _conn_param;
 
-    BLEGap::connect_callback_t    _connect_cb;
-    BLEGap::disconnect_callback_t _disconnect_cb;
-
     void     _event_handler(ble_evt_t* evt);
 
     friend class AdafruitBluefruit;

@@ -47,6 +47,33 @@ enum
   CONN_CFG_CENTRAL = 2,
 };
 
+class BLEGapConnection
+{
+  private:
+    uint16_t _conn_hdl;
+
+  public:
+    BLEGapConnection(void) { _conn_hdl = BLE_CONN_HANDLE_INVALID; }
+    BLEGapConnection(uint16_t conn_hdl) { _conn_hdl = conn_hdl; }
+
+    uint16_t handle(void) { return _conn_hdl; }
+    bool     connected(void);
+    uint8_t  getRole(void);
+
+//    bool    getHvnPacket     (void);
+//    bool    getWriteCmdPacket(void);
+
+    ble_gap_addr_t addr;
+    uint16_t att_mtu;
+    bool paired;
+    uint8_t  role;
+
+    SemaphoreHandle_t pair_sem;
+
+    SemaphoreHandle_t hvn_tx_sem;
+    SemaphoreHandle_t wrcmd_tx_sem;
+};
+
 class BLEGap
 {
   public:
@@ -89,30 +116,24 @@ class BLEGap
      * code. User should not call these directly
      *------------------------------------------------------------------*/
     void     _eventHandler(ble_evt_t* evt);
-    uint8_t  _getHvnQueueSize      (uint8_t conn_hdl);
-    uint8_t  _getWriteCmdQueueSize (uint8_t conn_hdl);
+
+    void _prph_setConnectCallback   ( connect_callback_t    fp);
+    void _prph_setDisconnectCallback( disconnect_callback_t fp);
+
+    void _central_setConnectCallback   ( connect_callback_t    fp);
+    void _central_setDisconnectCallback( disconnect_callback_t fp);
 
     // Array of TX Packet semaphore, indexed by connection handle
     // Peer info where conn_hdl serves as index
     typedef struct {
-      bool     connected;
-      bool     paired;
-      uint8_t  role;
-      uint16_t att_mtu;
-
-      ble_gap_addr_t addr;
-
       uint16_t         ediv;
       bond_keys_t*     bond_keys; // Shared keys with bonded device, size ~ 80 bytes
 
-      SemaphoreHandle_t hvn_tx_sem;
-      SemaphoreHandle_t wrcmd_tx_sem;
-
       bool              hvc_received;
+      uint8_t role;
 
       // On-demand semaphore that are created on the fly
       SemaphoreHandle_t hvc_sem;
-      SemaphoreHandle_t pair_sem;
     } gap_peer_t;
 
     gap_peer_t* _get_peer(uint16_t conn_hdl) { return &_peers[conn_hdl]; }
@@ -128,6 +149,13 @@ class BLEGap
     gap_peer_t _peers[BLE_MAX_CONN];
 
     ble_gap_sec_params_t _sec_param;
+
+    BLEGapConnection* _connection[BLE_MAX_CONN];
+
+    struct {
+        connect_callback_t connect_cb;
+        disconnect_callback_t disconnect_cb;
+    }_prph, _central;
 
     friend class AdafruitBluefruit;
 };

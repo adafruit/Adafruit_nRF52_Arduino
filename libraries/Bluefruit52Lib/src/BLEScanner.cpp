@@ -388,10 +388,6 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
       if ( para->role == BLE_GAP_ROLE_CENTRAL)
       {
         _runnning = false;
-
-        // Turn on Conn LED
-        Bluefruit._stopConnLed();
-        Bluefruit._setConnLed(true);
       }
     }
     break;
@@ -399,18 +395,8 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_DISCONNECTED:
       if ( BLE_GAP_ROLE_CENTRAL == Bluefruit.Gap.getRole(evt->evt.common_evt.conn_handle) )
       {
-        // skip if already running
-        if ( !_runnning )
-        {
-          // Turn off Conn LED
-          Bluefruit._setConnLed(false);
-
-          // Auto start if enabled
-          if ( _start_if_disconnect )
-          {
-            start(_param.timeout);
-          }
-        }
+        // Auto start if enabled
+        if ( !_runnning && _start_if_disconnect ) start(_param.timeout);
       }
     break;
 
