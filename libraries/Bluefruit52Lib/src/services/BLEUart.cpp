@@ -263,8 +263,10 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
     uint16_t written = _tx_fifo->write(content, len);
 
     // TODO multiple prph connections
+    BLEGapConnection* conn = Bluefruit.Gap.getConnection( Bluefruit.connHandle() );
+
     // Not up to GATT MTU, notify will be sent later by TXD timer handler
-    if ( _tx_fifo->count() < (Bluefruit.Gap.getMTU( Bluefruit.connHandle() ) - 3) )
+    if ( _tx_fifo->count() < (conn->getMTU() - 3) )
     {
       return len;
     }
@@ -302,12 +304,15 @@ void BLEUart::flush (void)
 
 bool BLEUart::flush_tx_buffered(void)
 {
-  uint16_t max_hvx = Bluefruit.Gap.getMTU( Bluefruit.connHandle() ) - 3;
-  uint8_t* ff_data = (uint8_t*) rtos_malloc( max_hvx );
+  // TODO multiple prph connections
+  BLEGapConnection* conn = Bluefruit.Gap.getConnection( Bluefruit.connHandle() );
+
+  uint16_t const gatt_mtu = conn->getMTU() - 3;
+  uint8_t* ff_data = (uint8_t*) rtos_malloc( gatt_mtu );
 
   if (!ff_data) return false;
 
-  uint16_t len = _tx_fifo->read(ff_data, max_hvx);
+  uint16_t len = _tx_fifo->read(ff_data, gatt_mtu);
   bool result = true;
 
   if ( len )

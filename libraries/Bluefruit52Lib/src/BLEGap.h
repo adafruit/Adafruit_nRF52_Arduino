@@ -53,16 +53,6 @@ class BLEGapConnection
     uint16_t _conn_hdl;
 
   public:
-    BLEGapConnection(void) { _conn_hdl = BLE_CONN_HANDLE_INVALID; }
-    BLEGapConnection(uint16_t conn_hdl) { _conn_hdl = conn_hdl; }
-
-    uint16_t handle(void) { return _conn_hdl; }
-    bool     connected(void);
-    uint8_t  getRole(void);
-
-//    bool    getHvnPacket     (void);
-//    bool    getWriteCmdPacket(void);
-
     ble_gap_addr_t addr;
     uint16_t att_mtu;
     bool paired;
@@ -79,6 +69,30 @@ class BLEGapConnection
 
     uint16_t         ediv;
     bond_keys_t*     bond_keys; // Shared keys with bonded device, size ~ 80 bytes
+
+    BLEGapConnection(void) { _conn_hdl = BLE_CONN_HANDLE_INVALID; }
+    BLEGapConnection(uint16_t conn_hdl) { _conn_hdl = conn_hdl; }
+
+    uint16_t handle(void) { return _conn_hdl; }
+    bool     connected(void);
+    uint8_t  getRole(void);
+
+    uint16_t getMTU (void)
+    {
+      return att_mtu;
+    }
+
+    bool    getHvnPacket     (void)
+    {
+      VERIFY(hvn_tx_sem != NULL);
+      return xSemaphoreTake(hvn_tx_sem, ms2tick(BLE_GENERIC_TIMEOUT));
+    }
+
+    bool    getWriteCmdPacket(void)
+    {
+      VERIFY(wrcmd_tx_sem != NULL);
+      return xSemaphoreTake(wrcmd_tx_sem, ms2tick(BLE_GENERIC_TIMEOUT));
+    }
 };
 
 class BLEGap
@@ -93,6 +107,11 @@ class BLEGap
     bool     setAddr              (uint8_t mac[6], uint8_t type);
 //    bool    setPrivacy                ();  sd_ble_gap_privacy_set()
 
+    BLEGapConnection* getConnection(uint16_t conn_hdl)
+    {
+      return _connection[conn_hdl];
+    }
+
     bool     connected            (uint16_t conn_hdl);
     bool     paired               (uint16_t conn_hdl);
     bool     requestPairing       (uint16_t conn_hdl);
@@ -103,11 +122,7 @@ class BLEGap
     ble_gap_addr_t getPeerAddr    (uint16_t conn_hdl);
     uint16_t       getPeerName    (uint16_t conn_hdl, char* buf, uint16_t bufsize);
 
-    uint16_t getMTU               (uint16_t conn_hdl);
     uint16_t getMaxMtuByConnCfg   (uint8_t conn_cfg);
-
-    bool     getHvnPacket         (uint16_t conn_hdl);
-    bool     getWriteCmdPacket    (uint16_t conn_hdl);
 
     void     configPrphConn       (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
     void     configCentralConn    (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
@@ -135,10 +150,7 @@ class BLEGap
       uint8_t role;
     } gap_peer_t;
 
-    BLEGapConnection* _get_connection(uint16_t conn_hdl)
-    {
-      return _connection[conn_hdl];
-    }
+
 
   private:
     struct {

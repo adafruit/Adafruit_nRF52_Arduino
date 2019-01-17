@@ -168,7 +168,10 @@ uint16_t BLEClientCharacteristic::read(void* buffer, uint16_t bufsize)
 {
   VERIFY( _chr.char_props.read, 0 );
 
-  uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+  BLEGapConnection* conn = Bluefruit.Gap.getConnection( _service->connHandle() );
+  VERIFY(conn, 0);
+
+  uint16_t const max_payload = conn->getMTU() - 3;
 
   _adamsg.prepare(buffer, bufsize);
   VERIFY_STATUS( sd_ble_gattc_read(_service->connHandle(), _chr.handle_value, 0), 0);
@@ -202,7 +205,10 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
 {
   VERIFY( _chr.char_props.write, 0 );
 
-  uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+  BLEGapConnection* conn = Bluefruit.Gap.getConnection( _service->connHandle() );
+  VERIFY(conn, 0);
+
+  uint16_t const max_payload = conn->getMTU() - 3;
 
   const bool long_write = (len > max_payload);
   int32_t count = 0;
@@ -275,7 +281,10 @@ uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
 {
 //  VERIFY( _chr.char_props.write_wo_resp, 0 );
 
-  uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+  BLEGapConnection* conn = Bluefruit.Gap.getConnection( _service->connHandle() );
+  VERIFY(conn, 0);
+
+  uint16_t const max_payload = conn->getMTU() - 3;
   const uint8_t* u8data = (const uint8_t*) data;
 
   // Break into multiple packet if needed
@@ -283,7 +292,7 @@ uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
   while( remaining )
   {
     // TODO only Write without response consume a TX buffer
-    if ( !Bluefruit.Gap.getWriteCmdPacket(_service->connHandle()) ) break;
+    if ( !conn->getWriteCmdPacket() ) break;
 
     uint16_t packet_len = min16(max_payload, remaining);
 
@@ -354,7 +363,8 @@ bool BLEClientCharacteristic::writeCCCD(uint16_t value)
   };
 
   // TODO only Write without response consume a TX buffer
-  if ( !Bluefruit.Gap.getWriteCmdPacket(conn_handle) )  return NRF_ERROR_RESOURCES; //BLE_ERROR_NO_TX_PACKETS;
+  BLEGapConnection* conn = Bluefruit.Gap.getConnection(conn_handle);
+  VERIFY( conn->getWriteCmdPacket() );
 
   VERIFY_STATUS( sd_ble_gattc_write(conn_handle, &param), false );
 
@@ -461,9 +471,12 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
       {
         // len is known to be zero for WRITE_REQ
         _adamsg.complete();
-      }else if ( wr_rsp->write_op == BLE_GATT_OP_PREP_WRITE_REQ)
+      }
+      else if ( wr_rsp->write_op == BLE_GATT_OP_PREP_WRITE_REQ)
       {
-        uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+        BLEGapConnection* conn = Bluefruit.Gap.getConnection( _service->connHandle() );
+
+        uint16_t const max_payload = conn->getMTU() - 3;
         uint16_t packet_len = min16(_adamsg.remaining, max_payload-2);
 
         // still has data, continue to prepare
@@ -511,7 +524,9 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
 
     case BLE_GATTC_EVT_READ_RSP:
     {
-      uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+      BLEGapConnection* conn = Bluefruit.Gap.getConnection( _service->connHandle() );
+
+      uint16_t const max_payload = conn->getMTU() - 3;
       ble_gattc_evt_read_rsp_t* rd_rsp = (ble_gattc_evt_read_rsp_t*) &evt->evt.gattc_evt.params.read_rsp;
 
       // Give up if failed (BLE_GATT_STATUS_ATTERR_INVALID_OFFSET usually)

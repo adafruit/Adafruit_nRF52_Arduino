@@ -533,14 +533,17 @@ bool BLECharacteristic::notify(const void* data, uint16_t len)
 
   if ( notifyEnabled() )
   {
-    uint16_t const max_payload = Bluefruit.Gap.getMTU( Bluefruit.connHandle() ) - 3;
+    // TODO multiple connection support
+    BLEGapConnection* conn = Bluefruit.Gap.getConnection( Bluefruit.connHandle() );
+    VERIFY(conn);
+
+    uint16_t const max_payload = conn->getMTU() - 3;
     const uint8_t* u8data = (const uint8_t*) data;
 
     while ( remaining )
     {
-      // TODO multiple connection support
       // Failed if there is no free buffer
-      if ( !Bluefruit.Gap.getHvnPacket( Bluefruit.connHandle() ) )  return false;
+      if ( !conn->getHvnPacket() ) return false;
 
       uint16_t packet_len = min16(max_payload, remaining);
 
@@ -613,8 +616,9 @@ bool BLECharacteristic::indicate(const void* data, uint16_t len)
   if ( indicateEnabled() )
   {
     uint16_t conn_hdl = Bluefruit.connHandle();
+    BLEGapConnection* conn = Bluefruit.Gap.getConnection( conn_hdl );
 
-    uint16_t const max_payload = Bluefruit.Gap.getMTU( conn_hdl ) - 3;
+    uint16_t const max_payload = conn->getMTU() - 3;
     const uint8_t* u8data = (const uint8_t*) data;
 
     while ( remaining )

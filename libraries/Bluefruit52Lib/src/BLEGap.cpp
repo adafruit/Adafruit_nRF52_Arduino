@@ -232,30 +232,6 @@ ble_gap_addr_t BLEGap::getPeerAddr(uint16_t conn_hdl)
   return conn ? conn->addr :  ((ble_gap_addr_t) {0});
 }
 
-bool BLEGap::getHvnPacket(uint16_t conn_hdl)
-{
-  BLEGapConnection* conn = _connection[conn_hdl];
-  VERIFY(conn && conn->hvn_tx_sem != NULL);
-
-  return xSemaphoreTake(conn->hvn_tx_sem, ms2tick(BLE_GENERIC_TIMEOUT));
-}
-
-bool BLEGap::getWriteCmdPacket(uint16_t conn_hdl)
-{
-  BLEGapConnection* conn = _connection[conn_hdl];
-  VERIFY(conn && (conn->wrcmd_tx_sem != NULL));
-
-  return xSemaphoreTake(conn->wrcmd_tx_sem, ms2tick(BLE_GENERIC_TIMEOUT));
-}
-
-uint16_t BLEGap::getMTU (uint16_t conn_hdl)
-{
-  BLEGapConnection* conn = _connection[conn_hdl];
-  VERIFY(conn, 0);
-
-  return conn->att_mtu;
-}
-
 uint16_t BLEGap::getPeerName(uint16_t conn_hdl, char* buf, uint16_t bufsize)
 {
   return Bluefruit.Gatt.readCharByUuid(conn_hdl, BLEUuid(BLE_UUID_GAP_CHARACTERISTIC_DEVICE_NAME), buf, bufsize);
