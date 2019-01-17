@@ -168,7 +168,7 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
     // Check to see if we did bonded with current prph previously
     bond_keys_t bkeys;
 
-    if ( bond_find_cntr(&conn->addr, &bkeys) )
+    if ( bond_find_cntr(&conn->_addr, &bkeys) )
     {
       cntr_ediv = bkeys.peer_enc.master_id.ediv;
       LOG_LV2("BOND", "Load Keys from file " BOND_FNAME_CNTR, cntr_ediv);
@@ -212,26 +212,6 @@ uint8_t BLEGap::getRole(uint16_t conn_hdl)
   return _peers[conn_hdl].role;
 }
 
-uint8_t BLEGap::getPeerAddr(uint16_t conn_hdl, uint8_t addr[6])
-{
-  BLEGapConnection* conn = _connection[conn_hdl];
-  if (conn)
-  {
-    memcpy(addr, conn->addr.addr, BLE_GAP_ADDR_LEN);
-    return conn->addr.addr_type;
-  }else
-  {
-    memclr(addr, BLE_GAP_ADDR_LEN);
-    return 0;
-  }
-}
-
-ble_gap_addr_t BLEGap::getPeerAddr(uint16_t conn_hdl)
-{
-  BLEGapConnection* conn = _connection[conn_hdl];
-  return conn ? conn->addr :  ((ble_gap_addr_t) {0});
-}
-
 uint16_t BLEGap::getPeerName(uint16_t conn_hdl, char* buf, uint16_t bufsize)
 {
   return Bluefruit.Gatt.readCharByUuid(conn_hdl, BLEUuid(BLE_UUID_GAP_CHARACTERISTIC_DEVICE_NAME), buf, bufsize);
@@ -239,7 +219,6 @@ uint16_t BLEGap::getPeerName(uint16_t conn_hdl, char* buf, uint16_t bufsize)
 
 /**
  * Event handler
- * @param evt
  */
 void BLEGap::_eventHandler(ble_evt_t* evt)
 {
@@ -271,7 +250,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
       varclr(conn);
 
-      conn->addr    = para->peer_addr;
+      conn->_addr   = para->peer_addr;
       conn->att_mtu = BLE_GATT_ATT_MTU_DEFAULT;
       conn->role    = para->role;
 

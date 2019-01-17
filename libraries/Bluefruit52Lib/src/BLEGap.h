@@ -53,7 +53,7 @@ class BLEGapConnection
     uint16_t _conn_hdl;
 
   public:
-    ble_gap_addr_t addr;
+    ble_gap_addr_t _addr;
     uint16_t att_mtu;
     bool paired;
     uint8_t  role;
@@ -80,6 +80,17 @@ class BLEGapConnection
     uint16_t getMTU (void)
     {
       return att_mtu;
+    }
+
+    ble_gap_addr_t getPeerAddr(void)
+    {
+      return _addr;
+    }
+
+    uint8_t getPeerAddr(uint8_t addr[6])
+    {
+      memcpy(addr, _addr.addr, BLE_GAP_ADDR_LEN);
+      return _addr.addr_type;
     }
 
     bool    getHvnPacket     (void)
@@ -118,9 +129,7 @@ class BLEGap
 
     uint8_t  getRole              (uint16_t conn_hdl);
 
-    uint8_t        getPeerAddr    (uint16_t conn_hdl, uint8_t addr[6]);
-    ble_gap_addr_t getPeerAddr    (uint16_t conn_hdl);
-    uint16_t       getPeerName    (uint16_t conn_hdl, char* buf, uint16_t bufsize);
+    uint16_t getPeerName    (uint16_t conn_hdl, char* buf, uint16_t bufsize);
 
     uint16_t getMaxMtuByConnCfg   (uint8_t conn_cfg);
 
@@ -149,8 +158,6 @@ class BLEGap
     typedef struct {
       uint8_t role;
     } gap_peer_t;
-
-
 
   private:
     struct {

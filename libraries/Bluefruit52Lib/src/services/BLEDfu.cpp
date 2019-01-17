@@ -94,6 +94,8 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
   {
     uint16_t conn_hdl = Bluefruit.connHandle();
 
+    BLEGapConnection* conn = Bluefruit.Gap.getConnection(conn_hdl);
+
     ble_gatts_rw_authorize_reply_params_t reply = { .type = BLE_GATTS_AUTHORIZE_TYPE_WRITE };
 
     if ( !chr.notifyEnabled() )
@@ -135,7 +137,7 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
       sd_ble_gatts_sys_attr_get(conn_hdl, peer_data->sys_attr, &sysattr_len, BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS);
 
       // Get Bond Data or using Address if not bonded
-      peer_data->addr = Bluefruit.Gap.getPeerAddr(conn_hdl);
+      peer_data->addr = conn->getPeerAddr();
 
       if ( Bluefruit.Gap.paired(conn_hdl) )
       {
