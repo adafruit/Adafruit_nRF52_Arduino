@@ -104,7 +104,6 @@ class BLEGap
     uint16_t       getPeerName    (uint16_t conn_hdl, char* buf, uint16_t bufsize);
 
     uint16_t getMTU               (uint16_t conn_hdl);
-    uint16_t getMaxMtu            (uint8_t conn_hdl);
     uint16_t getMaxMtuByConnCfg   (uint8_t conn_cfg);
 
     bool     getHvnPacket         (uint16_t conn_hdl);
@@ -122,7 +121,7 @@ class BLEGap
      * Although declare as public, it is meant to be invoked by internal
      * code. User should not call these directly
      *------------------------------------------------------------------*/
-    void     _eventHandler(ble_evt_t* evt);
+    void _eventHandler(ble_evt_t* evt);
 
     void _prph_setConnectCallback   ( connect_callback_t    fp);
     void _prph_setDisconnectCallback( disconnect_callback_t fp);

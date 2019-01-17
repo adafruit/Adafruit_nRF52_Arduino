@@ -110,11 +110,6 @@ uint16_t BLEGap::getMaxMtuByConnCfg(uint8_t conn_cfg)
   return (conn_cfg == CONN_CFG_PERIPHERAL) ? _prph.mtu_max : _central.mtu_max;
 }
 
-uint16_t BLEGap::getMaxMtu (uint8_t conn_hdl)
-{
-  return (getRole(conn_hdl) == BLE_GAP_ROLE_PERIPH) ? _prph.mtu_max : _central.mtu_max;
-}
-
 /**
  * Get current Mac address and its type
  * @param mac address
@@ -564,7 +559,8 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
     case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
     {
-      conn->att_mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, getMaxMtu(conn_hdl));
+      uint16_t const mtu_max = (conn->role == BLE_GAP_ROLE_PERIPH) ? _prph.mtu_max : _central.mtu_max;
+      conn->att_mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, mtu_max);
       VERIFY_STATUS( sd_ble_gatts_exchange_mtu_reply(conn_hdl, conn->att_mtu), );
 
       LOG_LV1("GAP", "ATT MTU is changed to %d", conn->att_mtu);
