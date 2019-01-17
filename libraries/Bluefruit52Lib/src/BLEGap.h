@@ -72,6 +72,13 @@ class BLEGapConnection
 
     SemaphoreHandle_t hvn_tx_sem;
     SemaphoreHandle_t wrcmd_tx_sem;
+
+    // On-demand semaphore that are created on the fly
+    SemaphoreHandle_t hvc_sem;
+    bool              hvc_received;
+
+    uint16_t         ediv;
+    bond_keys_t*     bond_keys; // Shared keys with bonded device, size ~ 80 bytes
 };
 
 class BLEGap
@@ -126,36 +133,31 @@ class BLEGap
     // Array of TX Packet semaphore, indexed by connection handle
     // Peer info where conn_hdl serves as index
     typedef struct {
-      uint16_t         ediv;
-      bond_keys_t*     bond_keys; // Shared keys with bonded device, size ~ 80 bytes
-
-      bool              hvc_received;
       uint8_t role;
-
-      // On-demand semaphore that are created on the fly
-      SemaphoreHandle_t hvc_sem;
     } gap_peer_t;
 
-    gap_peer_t* _get_peer(uint16_t conn_hdl) { return &_peers[conn_hdl]; }
+    BLEGapConnection* _get_connection(uint16_t conn_hdl)
+    {
+      return _connection[conn_hdl];
+    }
 
   private:
     struct {
-        uint16_t mtu_max;
-        uint8_t  event_len;
-        uint8_t  hvn_tx_qsize;
-        uint8_t  wr_cmd_qsize;
-    } _cfg_prph, _cfg_central;
+      // Bandwidth configuration
+      uint16_t mtu_max;
+      uint8_t  event_len;
+      uint8_t  hvn_qsize;
+      uint8_t  wrcmd_qsize;
+
+      connect_callback_t connect_cb;
+      disconnect_callback_t disconnect_cb;
+    } _prph, _central;
 
     gap_peer_t _peers[BLE_MAX_CONN];
 
     ble_gap_sec_params_t _sec_param;
 
     BLEGapConnection* _connection[BLE_MAX_CONN];
-
-    struct {
-        connect_callback_t connect_cb;
-        disconnect_callback_t disconnect_cb;
-    }_prph, _central;
 
     friend class AdafruitBluefruit;
 };

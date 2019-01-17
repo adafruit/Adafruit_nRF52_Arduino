@@ -141,7 +141,7 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
       {
         bond_keys_t bkeys;
 
-        if ( bond_load_keys( BLE_GAP_ROLE_PERIPH, Bluefruit.Gap._get_peer(conn_hdl)->ediv, &bkeys ) )
+        if ( bond_load_keys( BLE_GAP_ROLE_PERIPH, Bluefruit.Gap._get_connection(conn_hdl)->ediv, &bkeys ) )
         {
           peer_data->addr    = bkeys.peer_id.id_addr_info;
           peer_data->irk     = bkeys.peer_id.id_info;

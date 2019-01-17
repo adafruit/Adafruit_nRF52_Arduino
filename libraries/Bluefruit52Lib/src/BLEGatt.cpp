@@ -77,17 +77,17 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
 
 bool BLEGatt::waitForIndicateConfirm(uint16_t conn_hdl)
 {
-  BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(conn_hdl);
+  BLEGapConnection* conn = Bluefruit.Gap._get_connection(conn_hdl);
 
   // hvi confirm semaphore is created on the fly
-  peer->hvc_sem = xSemaphoreCreateBinary();
+  conn->hvc_sem = xSemaphoreCreateBinary();
 
-  xSemaphoreTake(peer->hvc_sem, portMAX_DELAY);
+  xSemaphoreTake(conn->hvc_sem, portMAX_DELAY);
 
-  vSemaphoreDelete(peer->hvc_sem);
-  peer->hvc_sem = NULL;
+  vSemaphoreDelete(conn->hvc_sem);
+  conn->hvc_sem = NULL;
 
-  return peer->hvc_received;
+  return conn->hvc_received;
 }
 
 void BLEGatt::_eventHandler(ble_evt_t* evt)
@@ -95,6 +95,8 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
   // conn handle has fixed offset regardless of event type
   const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
   const uint16_t evt_id       = evt->header.evt_id;
+
+  BLEGapConnection* conn = (evt_conn_hdl == BLE_CONN_HANDLE_INVALID) ? NULL : Bluefruit.Gap._get_connection(evt_conn_hdl);
 
   /*------------- Server service -------------*/
   // TODO multiple peripherals
@@ -146,8 +148,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
         // Save CCCD if paired
         if ( Bluefruit.connPaired() && (evt_id == BLE_GATTS_EVT_WRITE) && (req_handle == chr->handles().cccd_handle) )
         {
-          BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(evt_conn_hdl);
-          bond_save_cccd( Bluefruit.Gap.getRole(evt_conn_hdl), evt_conn_hdl, peer->ediv);
+          bond_save_cccd( Bluefruit.Gap.getRole(evt_conn_hdl), evt_conn_hdl, conn->ediv);
         }
       }
     }
@@ -232,10 +233,9 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
     case BLE_GATTS_EVT_HVC:
     {
       LOG_LV2("GATTS", "Confirm received handle = 0x%04X", evt->evt.gatts_evt.params.hvc.handle);
-      BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(evt_conn_hdl);
 
-      if ( peer->hvc_sem ) xSemaphoreGive(peer->hvc_sem);
-      peer->hvc_received = true;
+      if ( conn->hvc_sem ) xSemaphoreGive(conn->hvc_sem);
+      conn->hvc_received = true;
     }
     break;
 
@@ -243,10 +243,8 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
     {
       LOG_LV2("GATTS", "Timeout Source = %d", evt->evt.gatts_evt.params.timeout.src);
 
-      BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(evt_conn_hdl);
-
-      if ( peer->hvc_sem ) xSemaphoreGive(peer->hvc_sem);
-      peer->hvc_received = false;
+      if ( conn->hvc_sem ) xSemaphoreGive(conn->hvc_sem);
+      conn->hvc_received = false;
     }
     break;
 

@@ -40,19 +40,17 @@ BLEGap::BLEGap(void)
 {
   memclr(_peers, sizeof(_peers));
   memclr(_connection, sizeof(_connection));
-  varclr(&_prph);
-  varclr(&_central);
 
-  _cfg_prph.mtu_max         = BLE_GATT_ATT_MTU_DEFAULT;
-  _cfg_central.mtu_max      = BLE_GATT_ATT_MTU_DEFAULT;
+  _prph.mtu_max         = BLE_GATT_ATT_MTU_DEFAULT;
+  _central.mtu_max      = BLE_GATT_ATT_MTU_DEFAULT;
 
-  _cfg_prph.event_len       = BLE_GAP_EVENT_LENGTH_DEFAULT;
-  _cfg_prph.hvn_tx_qsize    = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
-  _cfg_prph.wr_cmd_qsize    = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
+  _prph.event_len       = BLE_GAP_EVENT_LENGTH_DEFAULT;
+  _prph.hvn_qsize    = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
+  _prph.wrcmd_qsize    = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
 
-  _cfg_central.event_len    = BLE_GAP_EVENT_LENGTH_DEFAULT;
-  _cfg_central.hvn_tx_qsize = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
-  _cfg_central.wr_cmd_qsize = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
+  _central.event_len    = BLE_GAP_EVENT_LENGTH_DEFAULT;
+  _central.hvn_qsize = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
+  _central.wrcmd_qsize = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
 
   _sec_param = (ble_gap_sec_params_t)
                 {
@@ -72,18 +70,18 @@ BLEGap::BLEGap(void)
 
 void BLEGap::configPrphConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
 {
-  _cfg_prph.mtu_max      = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);
-  _cfg_prph.event_len    = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
-  _cfg_prph.hvn_tx_qsize = hvn_qsize;
-  _cfg_prph.wr_cmd_qsize = wrcmd_qsize;
+  _prph.mtu_max      = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);
+  _prph.event_len    = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
+  _prph.hvn_qsize = hvn_qsize;
+  _prph.wrcmd_qsize = wrcmd_qsize;
 }
 
 void BLEGap::configCentralConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
 {
-  _cfg_central.mtu_max      = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);
-  _cfg_central.event_len    = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
-  _cfg_central.hvn_tx_qsize = hvn_qsize;
-  _cfg_central.wr_cmd_qsize = wrcmd_qsize;
+  _central.mtu_max      = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);
+  _central.event_len    = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
+  _central.hvn_qsize = hvn_qsize;
+  _central.wrcmd_qsize = wrcmd_qsize;
 }
 
 void BLEGap::_prph_setConnectCallback( connect_callback_t fp)
@@ -109,12 +107,12 @@ void BLEGap::_central_setDisconnectCallback( disconnect_callback_t fp)
 
 uint16_t BLEGap::getMaxMtuByConnCfg(uint8_t conn_cfg)
 {
-  return (conn_cfg == CONN_CFG_PERIPHERAL) ? _cfg_prph.mtu_max : _cfg_central.mtu_max;
+  return (conn_cfg == CONN_CFG_PERIPHERAL) ? _prph.mtu_max : _central.mtu_max;
 }
 
 uint16_t BLEGap::getMaxMtu (uint8_t conn_hdl)
 {
-  return (getRole(conn_hdl) == BLE_GAP_ROLE_PERIPH) ? _cfg_prph.mtu_max : _cfg_central.mtu_max;
+  return (getRole(conn_hdl) == BLE_GAP_ROLE_PERIPH) ? _prph.mtu_max : _central.mtu_max;
 }
 
 /**
@@ -309,10 +307,10 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       peer->role = para->role;
 
       // Transmission buffer sem pool
-      uint16_t const hvn_qsize = (para->role == BLE_GAP_ROLE_PERIPH) ? _cfg_prph.hvn_tx_qsize : _cfg_central.hvn_tx_qsize;
+      uint8_t const hvn_qsize = (para->role == BLE_GAP_ROLE_PERIPH) ? _prph.hvn_qsize : _central.hvn_qsize;
       conn->hvn_tx_sem   = xSemaphoreCreateCounting(hvn_qsize, hvn_qsize);
 
-      uint16_t const wrcmd_qsize = (para->role == BLE_GAP_ROLE_PERIPH) ? _cfg_prph.wr_cmd_qsize : _cfg_central.wr_cmd_qsize;
+      uint8_t const wrcmd_qsize = (para->role == BLE_GAP_ROLE_PERIPH) ? _prph.wrcmd_qsize : _central.wrcmd_qsize;
       conn->wrcmd_tx_sem = xSemaphoreCreateCounting(wrcmd_qsize, wrcmd_qsize);
 
       LOG_LV2("GAP", "Conn Interval= %f", para->conn_params.min_conn_interval*1.25f);
@@ -376,13 +374,13 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
     {
       // Pairing in progress, Peer asking for our info
-      peer->bond_keys = (bond_keys_t*) rtos_malloc( sizeof(bond_keys_t));
-      VERIFY(peer->bond_keys, );
+      conn->bond_keys = (bond_keys_t*) rtos_malloc( sizeof(bond_keys_t));
+      VERIFY(conn->bond_keys, );
 
-      bond_keys_t* bkeys = peer->bond_keys;
+      bond_keys_t* bkeys = conn->bond_keys;
       memclr(bkeys, sizeof(bond_keys_t));
 
-      peer->ediv = 0xFFFF; // invalid value for ediv
+      conn->ediv = 0xFFFF; // invalid value for ediv
 
       /* Step 1: Pairing/Bonding
        * - Central supplies its parameters
@@ -432,16 +430,16 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
         conn->paired = true;
-        peer->ediv   = peer->bond_keys->own_enc.master_id.ediv;
+        conn->ediv   = conn->bond_keys->own_enc.master_id.ediv;
 
-        bond_save_keys(conn->role, conn_hdl, peer->bond_keys);
+        bond_save_keys(conn->role, conn_hdl, conn->bond_keys);
       }else
       {
         PRINT_HEX(status->auth_status);
       }
 
-      rtos_free(peer->bond_keys);
-      peer->bond_keys = NULL;
+      rtos_free(conn->bond_keys);
+      conn->bond_keys = NULL;
     }
     break;
 
@@ -459,7 +457,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       {
         sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
 
-        peer->ediv   = bkeys.own_enc.master_id.ediv;
+        conn->ediv   = bkeys.own_enc.master_id.ediv;
       } else
       {
         sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
@@ -477,7 +475,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       {
         // Previously bonded --> secure by re-connection process --> Load & Set SysAttr (Apply Service Context)
         // Else Init SysAttr (first bonded)
-        if ( !bond_load_cccd(conn->role, conn_hdl, peer->ediv) )
+        if ( !bond_load_cccd(conn->role, conn_hdl, conn->ediv) )
         {
           sd_ble_gatts_sys_attr_set(conn_hdl, NULL, 0, 0);
         }

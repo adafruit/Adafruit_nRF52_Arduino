@@ -338,26 +338,26 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
     // ATT MTU
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_PERIPHERAL;
-    blecfg.conn_cfg.params.gatt_conn_cfg.att_mtu = Gap._cfg_prph.mtu_max;
+    blecfg.conn_cfg.params.gatt_conn_cfg.att_mtu = Gap._prph.mtu_max;
     VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATT, &blecfg, ram_start) );
 
     // Event length and max connection for this config
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_PERIPHERAL;
     blecfg.conn_cfg.params.gap_conn_cfg.conn_count   = _prph_count;
-    blecfg.conn_cfg.params.gap_conn_cfg.event_length = Gap._cfg_prph.event_len;
+    blecfg.conn_cfg.params.gap_conn_cfg.event_length = Gap._prph.event_len;
     VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GAP, &blecfg, ram_start) );
 
     // HVN queue size
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_PERIPHERAL;
-    blecfg.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = Gap._cfg_prph.hvn_tx_qsize;
+    blecfg.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = Gap._prph.hvn_qsize;
     VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &blecfg, ram_start) );
 
     // WRITE COMMAND queue size
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_PERIPHERAL;
-    blecfg.conn_cfg.params.gattc_conn_cfg.write_cmd_tx_queue_size = Gap._cfg_prph.wr_cmd_qsize;
+    blecfg.conn_cfg.params.gattc_conn_cfg.write_cmd_tx_queue_size = Gap._prph.wrcmd_qsize;
     VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTC, &blecfg, ram_start) );
   }
 
@@ -366,26 +366,26 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
     // ATT MTU
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_CENTRAL;
-    blecfg.conn_cfg.params.gatt_conn_cfg.att_mtu = Gap._cfg_central.mtu_max;
+    blecfg.conn_cfg.params.gatt_conn_cfg.att_mtu = Gap._central.mtu_max;
     VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATT, &blecfg, ram_start) );
 
     // Event length and max connection for this config
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_CENTRAL;
     blecfg.conn_cfg.params.gap_conn_cfg.conn_count   = _central_count;
-    blecfg.conn_cfg.params.gap_conn_cfg.event_length = Gap._cfg_central.event_len;
+    blecfg.conn_cfg.params.gap_conn_cfg.event_length = Gap._central.event_len;
     VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GAP, &blecfg, ram_start) );
 
     // HVN queue size
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_CENTRAL;
-    blecfg.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = Gap._cfg_central.hvn_tx_qsize;
+    blecfg.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = Gap._central.hvn_qsize;
     VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &blecfg, ram_start) );
 
     // WRITE COMMAND queue size
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_CENTRAL;
-    blecfg.conn_cfg.params.gattc_conn_cfg.write_cmd_tx_queue_size = Gap._cfg_central.wr_cmd_qsize;
+    blecfg.conn_cfg.params.gattc_conn_cfg.write_cmd_tx_queue_size = Gap._central.wrcmd_qsize;
     VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTC, &blecfg, ram_start) );
   }
 
@@ -903,19 +903,19 @@ void AdafruitBluefruit::printInfo(void)
 
     Serial.print("  - ");
     Serial.printf(title_fmt, "Max MTU");
-    Serial.println(Gap._cfg_prph.mtu_max);
+    Serial.println(Gap._prph.mtu_max);
 
     Serial.print("  - ");
     Serial.printf(title_fmt, "Event Length");
-    Serial.println(Gap._cfg_prph.event_len);
+    Serial.println(Gap._prph.event_len);
 
     Serial.print("  - ");
     Serial.printf(title_fmt, "HVN Queue Size");
-    Serial.println(Gap._cfg_prph.hvn_tx_qsize);
+    Serial.println(Gap._prph.hvn_qsize);
 
     Serial.print("  - ");
     Serial.printf(title_fmt, "WrCmd Queue Size");
-    Serial.println(Gap._cfg_prph.wr_cmd_qsize);
+    Serial.println(Gap._prph.wrcmd_qsize);
   }
 
   if ( _central_count )
@@ -924,19 +924,19 @@ void AdafruitBluefruit::printInfo(void)
 
     Serial.print("  - ");
     Serial.printf(title_fmt, "Max MTU");
-    Serial.println(Gap._cfg_central.mtu_max);
+    Serial.println(Gap._central.mtu_max);
 
     Serial.print("  - ");
     Serial.printf(title_fmt, "Event Length");
-    Serial.println(Gap._cfg_central.event_len);
+    Serial.println(Gap._central.event_len);
 
     Serial.print("  - ");
     Serial.printf(title_fmt, "HVN Queue Size");
-    Serial.println(Gap._cfg_central.hvn_tx_qsize);
+    Serial.println(Gap._central.hvn_qsize);
 
     Serial.print("  - ");
     Serial.printf(title_fmt, "WrCmd Queue Size");
-    Serial.println(Gap._cfg_central.wr_cmd_qsize);
+    Serial.println(Gap._central.wrcmd_qsize);
   }
 
   /*------------- Settings -------------*/
