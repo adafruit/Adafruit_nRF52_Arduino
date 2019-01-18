@@ -46,11 +46,11 @@ class BLEConnection
   private:
     uint16_t _conn_hdl;
     uint16_t _mtu;
+    uint8_t  _role;
 
   public:
     ble_gap_addr_t _addr;
     bool _paired;
-    uint8_t  role;
 
     SemaphoreHandle_t hvn_sem;
     SemaphoreHandle_t wrcmd_sem;

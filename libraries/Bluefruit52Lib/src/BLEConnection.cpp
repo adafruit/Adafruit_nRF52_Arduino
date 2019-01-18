@@ -47,7 +47,7 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
 
   _addr = evt_connected->peer_addr;
   _mtu = BLE_GATT_ATT_MTU_DEFAULT;
-  role = evt_connected->role;
+  _role = evt_connected->role;
 }
 
 uint16_t BLEConnection::handle (void)

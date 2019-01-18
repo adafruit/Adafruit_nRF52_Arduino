@@ -158,7 +158,7 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
 
   uint16_t cntr_ediv = 0xFFFF;
 
-  if ( conn->role == BLE_GAP_ROLE_CENTRAL )
+  if ( conn->getRole() == BLE_GAP_ROLE_CENTRAL )
   {
     // Check to see if we did bonded with current prph previously
     bond_keys_t bkeys;
@@ -255,7 +255,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
       LOG_LV2("GAP", "Conn Interval= %f", para->conn_params.min_conn_interval*1.25f);
 
-      if ( conn->role == BLE_GAP_ROLE_PERIPH )
+      if ( conn->getRole() == BLE_GAP_ROLE_PERIPH )
       {
         if ( _prph.connect_cb ) ada_callback(NULL, _prph.connect_cb, conn_hdl);
       }else
@@ -278,7 +278,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       vSemaphoreDelete( conn->wrcmd_sem );
       conn->wrcmd_sem = NULL;
 
-      if ( conn->role == BLE_GAP_ROLE_PERIPH )
+      if ( conn->getRole() == BLE_GAP_ROLE_PERIPH )
       {
         if ( _prph.disconnect_cb ) ada_callback(NULL, _prph.disconnect_cb, conn_hdl, para->reason);
       }else
@@ -355,7 +355,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
       VERIFY_STATUS(sd_ble_gap_sec_params_reply(conn_hdl,
                                                 BLE_GAP_SEC_STATUS_SUCCESS,
-                                                conn->role == BLE_GAP_ROLE_PERIPH ? &_sec_param : NULL,
+                                                conn->getRole() == BLE_GAP_ROLE_PERIPH ? &_sec_param : NULL,
                                                 &keyset),
       );
     }
@@ -372,7 +372,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
         conn->_paired = true;
         conn->ediv   = conn->bond_keys->own_enc.master_id.ediv;
 
-        bond_save_keys(conn->role, conn_hdl, conn->bond_keys);
+        bond_save_keys(conn->getRole(), conn_hdl, conn->bond_keys);
       }else
       {
         PRINT_HEX(status->auth_status);
@@ -393,7 +393,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       bond_keys_t bkeys;
       varclr(&bkeys);
 
-      if ( bond_load_keys(conn->role, sec_req->master_id.ediv, &bkeys) )
+      if ( bond_load_keys(conn->getRole(), sec_req->master_id.ediv, &bkeys) )
       {
         sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
 
@@ -415,7 +415,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       {
         // Previously bonded --> secure by re-connection process --> Load & Set SysAttr (Apply Service Context)
         // Else Init SysAttr (first bonded)
-        if ( !bond_load_cccd(conn->role, conn_hdl, conn->ediv) )
+        if ( !bond_load_cccd(conn->getRole(), conn_hdl, conn->ediv) )
         {
           sd_ble_gatts_sys_attr_set(conn_hdl, NULL, 0, 0);
         }
@@ -504,7 +504,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
     case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
     {
-      uint16_t mtu = (conn->role == BLE_GAP_ROLE_PERIPH) ? _prph.mtu_max : _central.mtu_max;
+      uint16_t mtu = (conn->getRole() == BLE_GAP_ROLE_PERIPH) ? _prph.mtu_max : _central.mtu_max;
       mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, mtu);
 
       conn->setMTU(mtu);
