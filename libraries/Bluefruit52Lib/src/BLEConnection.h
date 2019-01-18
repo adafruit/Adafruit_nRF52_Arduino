@@ -52,14 +52,13 @@ class BLEConnection
     SemaphoreHandle_t _hvn_sem;
     SemaphoreHandle_t _wrcmd_sem;
 
-  public:
-    bool _paired;
-
     // On-demand semaphore that are created on the fly
-    SemaphoreHandle_t hvc_sem;
-    bool              hvc_received;
+    SemaphoreHandle_t _hvc_sem;
+    bool              _hvc_received;
 
+  public:
     SemaphoreHandle_t pair_sem;
+    bool _paired;
 
     uint16_t         ediv;
     bond_keys_t*     bond_keys; // Shared keys with bonded device, size ~ 80 bytes
@@ -80,6 +79,8 @@ class BLEConnection
 
     bool getHvnPacket(void);
     bool getWriteCmdPacket(void);
+
+    bool waitForIndicateConfirm(void);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY

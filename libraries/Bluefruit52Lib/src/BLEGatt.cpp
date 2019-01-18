@@ -78,16 +78,7 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
 bool BLEGatt::waitForIndicateConfirm(uint16_t conn_hdl)
 {
   BLEConnection* conn = Bluefruit.Gap.getConnection(conn_hdl);
-
-  // hvi confirm semaphore is created on the fly
-  conn->hvc_sem = xSemaphoreCreateBinary();
-
-  xSemaphoreTake(conn->hvc_sem, portMAX_DELAY);
-
-  vSemaphoreDelete(conn->hvc_sem);
-  conn->hvc_sem = NULL;
-
-  return conn->hvc_received;
+  return conn->waitForIndicateConfirm();
 }
 
 void BLEGatt::_eventHandler(ble_evt_t* evt)
@@ -227,24 +218,6 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
 
         _adamsg.complete();
       }
-    }
-    break;
-
-    case BLE_GATTS_EVT_HVC:
-    {
-      LOG_LV2("GATTS", "Confirm received handle = 0x%04X", evt->evt.gatts_evt.params.hvc.handle);
-
-      if ( conn->hvc_sem ) xSemaphoreGive(conn->hvc_sem);
-      conn->hvc_received = true;
-    }
-    break;
-
-    case BLE_GATTS_EVT_TIMEOUT:
-    {
-      LOG_LV2("GATTS", "Timeout Source = %d", evt->evt.gatts_evt.params.timeout.src);
-
-      if ( conn->hvc_sem ) xSemaphoreGive(conn->hvc_sem);
-      conn->hvc_received = false;
     }
     break;
 

@@ -53,8 +53,8 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
   _wrcmd_sem = xSemaphoreCreateCounting(wrcmd_qsize, wrcmd_qsize);
 
   _paired = false;
-  hvc_sem = NULL;
-  hvc_received = false;
+  _hvc_sem = NULL;
+  _hvc_received = false;
   pair_sem = NULL;
   ediv = 0xFFFF; // invalid ediv value
   bond_keys = NULL;
@@ -64,6 +64,8 @@ BLEConnection::~BLEConnection()
 {
   vSemaphoreDelete( _hvn_sem );
   vSemaphoreDelete( _wrcmd_sem );
+
+  if ( _hvc_sem ) vSemaphoreDelete( _hvc_sem );
 }
 
 uint16_t BLEConnection::handle (void)
@@ -112,6 +114,20 @@ bool BLEConnection::getWriteCmdPacket (void)
   return xSemaphoreTake(_wrcmd_sem, ms2tick(BLE_GENERIC_TIMEOUT));
 }
 
+bool BLEConnection::waitForIndicateConfirm(void)
+{
+  // on the fly semaphore
+  _hvc_sem = xSemaphoreCreateBinary();
+
+  _hvc_received = false;
+  xSemaphoreTake(_hvc_sem, portMAX_DELAY);
+
+  vSemaphoreDelete(_hvc_sem);
+  _hvc_sem = NULL;
+
+  return _hvc_received;
+}
+
 void BLEConnection::_eventHandler(ble_evt_t* evt)
 {
   switch(evt->header.evt_id)
@@ -122,6 +138,28 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
 
     case BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE:
       for(uint8_t i=0; i<evt->evt.gattc_evt.params.write_cmd_tx_complete.count; i++) xSemaphoreGive(_wrcmd_sem);
+    break;
+
+    case BLE_GATTS_EVT_HVC:
+    {
+      LOG_LV2("GATTS", "Confirm received handle = 0x%04X", evt->evt.gatts_evt.params.hvc.handle);
+
+      _hvc_received = true;
+      if ( _hvc_sem ) xSemaphoreGive(_hvc_sem);
+    }
+    break;
+
+    case BLE_GATTS_EVT_TIMEOUT:
+    {
+      uint8_t timeout_src = evt->evt.gatts_evt.params.timeout.src;
+      LOG_LV2("GATTS", "Timeout Source = %d", timeout_src);
+
+      if (BLE_GATT_TIMEOUT_SRC_PROTOCOL == timeout_src)
+      {
+        _hvc_received = false;
+        if ( _hvc_sem ) xSemaphoreGive(_hvc_sem);
+      }
+    }
     break;
 
     default: break;
