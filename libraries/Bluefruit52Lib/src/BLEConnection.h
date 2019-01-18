@@ -45,10 +45,10 @@ class BLEConnection
 {
   private:
     uint16_t _conn_hdl;
+    uint16_t _mtu;
 
   public:
     ble_gap_addr_t _addr;
-    uint16_t att_mtu;
     bool _paired;
     uint8_t  role;
 
@@ -64,40 +64,21 @@ class BLEConnection
     uint16_t         ediv;
     bond_keys_t*     bond_keys; // Shared keys with bonded device, size ~ 80 bytes
 
-    BLEConnection(uint16_t conn_hdl) { _conn_hdl = conn_hdl; }
+    BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const * evt_connected);
 
-    uint16_t handle(void) { return _conn_hdl; }
+    uint16_t handle(void);
     bool     connected(void);
-    bool     paired(void) { return _paired; }
+    bool     paired(void);
     uint8_t  getRole(void);
 
-    uint16_t getMTU (void)
-    {
-      return att_mtu;
-    }
+    uint16_t getMTU (void);
+    void     setMTU (uint16_t mtu);
 
-    ble_gap_addr_t getPeerAddr(void)
-    {
-      return _addr;
-    }
+    ble_gap_addr_t getPeerAddr(void);
+    uint8_t getPeerAddr(uint8_t addr[6]);
 
-    uint8_t getPeerAddr(uint8_t addr[6])
-    {
-      memcpy(addr, _addr.addr, BLE_GAP_ADDR_LEN);
-      return _addr.addr_type;
-    }
-
-    bool    getHvnPacket     (void)
-    {
-      VERIFY(hvn_sem != NULL);
-      return xSemaphoreTake(hvn_sem, ms2tick(BLE_GENERIC_TIMEOUT));
-    }
-
-    bool    getWriteCmdPacket(void)
-    {
-      VERIFY(wrcmd_sem != NULL);
-      return xSemaphoreTake(wrcmd_sem, ms2tick(BLE_GENERIC_TIMEOUT));
-    }
+    bool getHvnPacket     (void);
+    bool getWriteCmdPacket(void);
 };
 
 

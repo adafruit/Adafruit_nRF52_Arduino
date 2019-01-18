@@ -34,9 +34,65 @@
 */
 /**************************************************************************/
 
+#include "BLEConnection.h"
+
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
 
 
-//------------- IMPLEMENTATION -------------//
+BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* evt_connected)
+{
+  _conn_hdl = conn_hdl;
+
+  _addr = evt_connected->peer_addr;
+  _mtu = BLE_GATT_ATT_MTU_DEFAULT;
+  role = evt_connected->role;
+}
+
+uint16_t BLEConnection::handle (void)
+{
+  return _conn_hdl;
+}
+
+bool BLEConnection::paired (void)
+{
+  return _paired;
+}
+uint8_t BLEConnection::getRole (void)
+{
+
+}
+
+uint16_t BLEConnection::getMTU (void)
+{
+  return _mtu;
+}
+
+void BLEConnection::setMTU (uint16_t mtu)
+{
+  _mtu = mtu;
+}
+
+ble_gap_addr_t BLEConnection::getPeerAddr (void)
+{
+  return _addr;
+}
+
+uint8_t BLEConnection::getPeerAddr (uint8_t addr[6])
+{
+  memcpy(addr, _addr.addr, BLE_GAP_ADDR_LEN);
+  return _addr.addr_type;
+}
+
+bool BLEConnection::getHvnPacket (void)
+{
+  VERIFY(hvn_sem != NULL);
+  return xSemaphoreTake(hvn_sem, ms2tick(BLE_GENERIC_TIMEOUT));
+}
+
+bool BLEConnection::getWriteCmdPacket (void)
+{
+  VERIFY(wrcmd_sem != NULL);
+  return xSemaphoreTake(wrcmd_sem, ms2tick(BLE_GENERIC_TIMEOUT));
+}

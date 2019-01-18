@@ -240,14 +240,9 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
         _connection[conn_hdl] = NULL;
       }
 
-      _connection[conn_hdl] = new BLEConnection(conn_hdl);
+      _connection[conn_hdl] = new BLEConnection(conn_hdl, para);
       conn = _connection[conn_hdl];
 
-      varclr(conn);
-
-      conn->_addr   = para->peer_addr;
-      conn->att_mtu = BLE_GATT_ATT_MTU_DEFAULT;
-      conn->role    = para->role;
 
       peer->role = para->role;
 
@@ -509,11 +504,13 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
     case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
     {
-      uint16_t const mtu_max = (conn->role == BLE_GAP_ROLE_PERIPH) ? _prph.mtu_max : _central.mtu_max;
-      conn->att_mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, mtu_max);
-      VERIFY_STATUS( sd_ble_gatts_exchange_mtu_reply(conn_hdl, conn->att_mtu), );
+      uint16_t mtu = (conn->role == BLE_GAP_ROLE_PERIPH) ? _prph.mtu_max : _central.mtu_max;
+      mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, mtu);
 
-      LOG_LV1("GAP", "ATT MTU is changed to %d", conn->att_mtu);
+      conn->setMTU(mtu);
+      VERIFY_STATUS( sd_ble_gatts_exchange_mtu_reply(conn_hdl, mtu), );
+
+      LOG_LV1("GAP", "ATT MTU is changed to %d", mtu);
     }
     break;
 
