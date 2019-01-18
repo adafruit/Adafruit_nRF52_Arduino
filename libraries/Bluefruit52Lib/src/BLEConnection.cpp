@@ -66,16 +66,6 @@ BLEConnection::~BLEConnection()
   vSemaphoreDelete( _wrcmd_sem );
 }
 
-void BLEConnection::giveHvnPacket(uint8_t count)
-{
-  for(uint8_t i=0; i<count; i++) xSemaphoreGive(_hvn_sem);
-}
-
-void BLEConnection::giveWriteCmdPacket(uint8_t count)
-{
-  for(uint8_t i=0; i<count; i++) xSemaphoreGive(_wrcmd_sem);
-}
-
 uint16_t BLEConnection::handle (void)
 {
   return _conn_hdl;
@@ -120,4 +110,20 @@ bool BLEConnection::getHvnPacket (void)
 bool BLEConnection::getWriteCmdPacket (void)
 {
   return xSemaphoreTake(_wrcmd_sem, ms2tick(BLE_GENERIC_TIMEOUT));
+}
+
+void BLEConnection::_eventHandler(ble_evt_t* evt)
+{
+  switch(evt->header.evt_id)
+  {
+    case BLE_GATTS_EVT_HVN_TX_COMPLETE:
+      for(uint8_t i=0; i<evt->evt.gatts_evt.params.hvn_tx_complete.count; i++) xSemaphoreGive(_hvn_sem);
+    break;
+
+    case BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE:
+      for(uint8_t i=0; i<evt->evt.gattc_evt.params.write_cmd_tx_complete.count; i++) xSemaphoreGive(_wrcmd_sem);
+    break;
+
+    default: break;
+  }
 }

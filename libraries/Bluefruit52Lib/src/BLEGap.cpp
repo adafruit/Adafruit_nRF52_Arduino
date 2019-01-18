@@ -219,9 +219,10 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 {
   // conn handle has fixed offset regardless of event type
   const uint16_t conn_hdl = evt->evt.common_evt.conn_handle;
-
-  gap_peer_t* peer = (conn_hdl == BLE_CONN_HANDLE_INVALID) ? NULL : &_peers[conn_hdl];
   BLEConnection* conn = (conn_hdl == BLE_CONN_HANDLE_INVALID) ? NULL : _connection[conn_hdl];
+
+  // Connection handler
+  if ( conn ) conn->_eventHandler(evt);
 
   switch(evt->header.evt_id)
   {
@@ -247,7 +248,8 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       _connection[conn_hdl] = new BLEConnection(conn_hdl, para, hvn_qsize, wrcmd_qsize);
       conn = _connection[conn_hdl];
 
-      peer->role = para->role;
+      // FIXME to remove
+      _peers[conn_hdl].role = para->role;
 
       LOG_LV2("GAP", "Conn Interval= %f", para->conn_params.min_conn_interval*1.25f);
 
@@ -428,14 +430,6 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
       // sd_ble_gap_auth_key_reply
     }
-    break;
-
-    case BLE_GATTS_EVT_HVN_TX_COMPLETE:
-      if ( conn ) conn->giveHvnPacket(evt->evt.gatts_evt.params.hvn_tx_complete.count);
-    break;
-
-    case BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE:
-      if ( conn ) conn->giveWriteCmdPacket(evt->evt.gattc_evt.params.write_cmd_tx_complete.count);
     break;
 
     case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:

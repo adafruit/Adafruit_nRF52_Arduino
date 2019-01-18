@@ -79,10 +79,13 @@ class BLEConnection
     uint8_t getPeerAddr(uint8_t addr[6]);
 
     bool getHvnPacket(void);
-    void giveHvnPacket(uint8_t count);
-
     bool getWriteCmdPacket(void);
-    void giveWriteCmdPacket(uint8_t count);
+
+    /*------------------------------------------------------------------*/
+    /* INTERNAL USAGE ONLY
+     * Although declare as public, it is meant to be invoked by internal code.
+     *------------------------------------------------------------------*/
+    void _eventHandler(ble_evt_t* evt);
 };
 
 

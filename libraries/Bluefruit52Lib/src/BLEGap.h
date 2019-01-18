@@ -83,8 +83,7 @@ class BLEGap
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
-     * Although declare as public, it is meant to be invoked by internal
-     * code. User should not call these directly
+     * Although declare as public, it is meant to be invoked by internal code.
      *------------------------------------------------------------------*/
     void _eventHandler(ble_evt_t* evt);
 
