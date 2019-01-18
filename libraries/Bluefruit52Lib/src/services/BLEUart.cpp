@@ -266,7 +266,7 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
     BLEConnection* conn = Bluefruit.Gap.getConnection( Bluefruit.connHandle() );
 
     // Not up to GATT MTU, notify will be sent later by TXD timer handler
-    if ( _tx_fifo->count() < (conn->getMTU() - 3) )
+    if ( _tx_fifo->count() < (conn->getMtu() - 3) )
     {
       return len;
     }
@@ -307,7 +307,7 @@ bool BLEUart::flush_tx_buffered(void)
   // TODO multiple prph connections
   BLEConnection* conn = Bluefruit.Gap.getConnection( Bluefruit.connHandle() );
 
-  uint16_t const gatt_mtu = conn->getMTU() - 3;
+  uint16_t const gatt_mtu = conn->getMtu() - 3;
   uint8_t* ff_data = (uint8_t*) rtos_malloc( gatt_mtu );
 
   if (!ff_data) return false;

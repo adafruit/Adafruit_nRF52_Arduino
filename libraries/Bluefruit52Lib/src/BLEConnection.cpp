@@ -82,7 +82,7 @@ uint8_t BLEConnection::getRole (void)
   return _role;
 }
 
-uint16_t BLEConnection::getMTU (void)
+uint16_t BLEConnection::getMtu (void)
 {
   return _mtu;
 }

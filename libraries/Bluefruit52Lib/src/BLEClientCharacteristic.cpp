@@ -171,7 +171,7 @@ uint16_t BLEClientCharacteristic::read(void* buffer, uint16_t bufsize)
   BLEConnection* conn = Bluefruit.Gap.getConnection( _service->connHandle() );
   VERIFY(conn, 0);
 
-  uint16_t const max_payload = conn->getMTU() - 3;
+  uint16_t const max_payload = conn->getMtu() - 3;
 
   _adamsg.prepare(buffer, bufsize);
   VERIFY_STATUS( sd_ble_gattc_read(_service->connHandle(), _chr.handle_value, 0), 0);
@@ -208,7 +208,7 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
   BLEConnection* conn = Bluefruit.Gap.getConnection( _service->connHandle() );
   VERIFY(conn, 0);
 
-  uint16_t const max_payload = conn->getMTU() - 3;
+  uint16_t const max_payload = conn->getMtu() - 3;
 
   const bool long_write = (len > max_payload);
   int32_t count = 0;
@@ -284,7 +284,7 @@ uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
   BLEConnection* conn = Bluefruit.Gap.getConnection( _service->connHandle() );
   VERIFY(conn, 0);
 
-  uint16_t const max_payload = conn->getMTU() - 3;
+  uint16_t const max_payload = conn->getMtu() - 3;
   const uint8_t* u8data = (const uint8_t*) data;
 
   // Break into multiple packet if needed
@@ -476,7 +476,7 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
       {
         BLEConnection* conn = Bluefruit.Gap.getConnection( _service->connHandle() );
 
-        uint16_t const max_payload = conn->getMTU() - 3;
+        uint16_t const max_payload = conn->getMtu() - 3;
         uint16_t packet_len = min16(_adamsg.remaining, max_payload-2);
 
         // still has data, continue to prepare
@@ -526,7 +526,7 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
     {
       BLEConnection* conn = Bluefruit.Gap.getConnection( _service->connHandle() );
 
-      uint16_t const max_payload = conn->getMTU() - 3;
+      uint16_t const max_payload = conn->getMtu() - 3;
       ble_gattc_evt_read_rsp_t* rd_rsp = (ble_gattc_evt_read_rsp_t*) &evt->evt.gattc_evt.params.read_rsp;
 
       // Give up if failed (BLE_GATT_STATUS_ATTERR_INVALID_OFFSET usually)

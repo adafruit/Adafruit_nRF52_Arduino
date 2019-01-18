@@ -201,7 +201,7 @@ void HAPCharacteristic::createHapResponse(uint16_t conn_hdl, uint8_t status, TLV
   uint16_t body_len = tlv8_encode_calculate_len(tlv_para, count);
 
   // Determine the response length including fragmentation scheme
-  uint16_t const gatt_mtu = conn->getMTU() - 3;
+  uint16_t const gatt_mtu = conn->getMtu() - 3;
   uint16_t resp_len = sizeof(HAPResponseHeader_t) + 2 + body_len;
 
   uint16_t nfrag = 0; // number of fragments (excluding the first)
@@ -359,7 +359,7 @@ void HAPCharacteristic::processGattWrite(uint16_t conn_hdl, ble_gatts_evt_write_
   LOG_LV2_BUFFER(NULL, gatt_req->data, gatt_req->len);
 
   BLEConnection* conn = Bluefruit.Gap.getConnection( conn_hdl );
-  uint16_t const gatt_mtu = conn->getMTU() - 3;
+  uint16_t const gatt_mtu = conn->getMtu() - 3;
 
   ble_gatts_rw_authorize_reply_params_t reply =
   {
@@ -463,7 +463,7 @@ void HAPCharacteristic::processGattWrite(uint16_t conn_hdl, ble_gatts_evt_write_
 void HAPCharacteristic::processGattRead(uint16_t conn_hdl, ble_gatts_evt_read_t* gatt_req)
 {
   BLEConnection* conn = Bluefruit.Gap.getConnection( conn_hdl );
-  uint16_t const gatt_mtu = conn->getMTU() - 3;
+  uint16_t const gatt_mtu = conn->getMtu() - 3;
 
   LOG_LV2("GATTS", "Read uuid = 0x%04X, offset = %d", gatt_req->uuid.uuid, gatt_req->offset);
 
