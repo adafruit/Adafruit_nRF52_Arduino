@@ -77,7 +77,7 @@ class BLEGap
     uint8_t  getRole             (uint16_t conn_hdl);
     uint16_t getPeerName         (uint16_t conn_hdl, char* buf, uint16_t bufsize);
 
-    uint16_t getMaxMtuByConnCfg  (uint8_t conn_cfg);
+    uint16_t getMaxMtu(uint8_t role);
 
     void     configPrphConn      (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
     void     configCentralConn   (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);

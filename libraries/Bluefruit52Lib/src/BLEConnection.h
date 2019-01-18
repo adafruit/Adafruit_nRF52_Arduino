@@ -46,6 +46,7 @@ class BLEConnection
   private:
     uint16_t _conn_hdl;
     uint16_t _mtu;
+    uint16_t _conn_interval;
     ble_gap_addr_t _addr;
     uint8_t  _role;
 
@@ -74,7 +75,6 @@ class BLEConnection
     uint8_t  getRole(void);
 
     uint16_t getMTU (void);
-    void     setMTU (uint16_t mtu);
 
     ble_gap_addr_t getPeerAddr(void);
     uint8_t getPeerAddr(uint8_t addr[6]);

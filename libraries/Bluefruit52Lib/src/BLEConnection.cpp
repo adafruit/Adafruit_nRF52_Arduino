@@ -87,11 +87,6 @@ uint16_t BLEConnection::getMTU (void)
   return _mtu;
 }
 
-void BLEConnection::setMTU (uint16_t mtu)
-{
-  _mtu = mtu;
-}
-
 ble_gap_addr_t BLEConnection::getPeerAddr (void)
 {
   return _addr;
@@ -320,6 +315,29 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
       }
 
       if (_pair_sem) xSemaphoreGive(_pair_sem);
+    }
+    break;
+
+    //--------------------------------------------------------------------+
+    // GAP parameter negotiation
+    //--------------------------------------------------------------------+
+    case BLE_GAP_EVT_CONN_PARAM_UPDATE:
+    {
+      ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
+      _conn_interval = param->max_conn_interval;
+
+      LOG_LV2("GAP", "Conn Interval= %f", _conn_interval*1.25f);
+    }
+    break;
+
+    case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
+    {
+      uint16_t const max_mtu = Bluefruit.Gap.getMaxMtu(_role);
+      _mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, max_mtu);
+
+      VERIFY_STATUS( sd_ble_gatts_exchange_mtu_reply(_conn_hdl, _mtu), );
+
+      LOG_LV1("GAP", "ATT MTU is changed to %d", _mtu);
     }
     break;
 

@@ -105,9 +105,9 @@ void BLEGap::_central_setDisconnectCallback( disconnect_callback_t fp)
 }
 
 
-uint16_t BLEGap::getMaxMtuByConnCfg(uint8_t conn_cfg)
+uint16_t BLEGap::getMaxMtu(uint8_t role)
 {
-  return (conn_cfg == CONN_CFG_PERIPHERAL) ? _prph.mtu_max : _central.mtu_max;
+  return (role == BLE_GAP_ROLE_PERIPH) ? _prph.mtu_max : _central.mtu_max;
 }
 
 /**
@@ -253,13 +253,6 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     }
     break;
 
-    case BLE_GAP_EVT_CONN_PARAM_UPDATE:
-    {
-      ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
-      LOG_LV2("GAP", "Conn Interval= %f", param->min_conn_interval*1.25f);
-    }
-    break;
-
     case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
     {
       ble_gap_data_length_params_t* param = &evt->evt.gap_evt.params.data_length_update_request.peer_params;
@@ -308,18 +301,6 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
         LOG_LV1("GAP", "PHY active tx: %s, rx: %s", phy_str[active_phy->tx_phy], phy_str[active_phy->rx_phy]);
       }
       #endif
-    }
-    break;
-
-    case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
-    {
-      uint16_t mtu = (conn->getRole() == BLE_GAP_ROLE_PERIPH) ? _prph.mtu_max : _central.mtu_max;
-      mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, mtu);
-
-      conn->setMTU(mtu);
-      VERIFY_STATUS( sd_ble_gatts_exchange_mtu_reply(conn_hdl, mtu), );
-
-      LOG_LV1("GAP", "ATT MTU is changed to %d", mtu);
     }
     break;
 
