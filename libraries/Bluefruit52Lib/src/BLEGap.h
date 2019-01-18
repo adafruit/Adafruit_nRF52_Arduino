@@ -61,6 +61,11 @@ class BLEGap
     bool     setAddr              (uint8_t mac[6], uint8_t type);
 //    bool    setPrivacy                ();  sd_ble_gap_privacy_set()
 
+    ble_gap_sec_params_t getSecureParam(void)
+    {
+      return _sec_param;
+    }
+
     BLEConnection* getConnection(uint16_t conn_hdl)
     {
       return  ( conn_hdl != BLE_CONN_HANDLE_INVALID ) ?_connection[conn_hdl] : NULL;

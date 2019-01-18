@@ -269,7 +269,7 @@ void bond_print_list(uint8_t role)
 }
 
 
-bool bond_find_cntr(ble_gap_addr_t* addr, bond_keys_t* bkeys)
+bool bond_find_cntr(ble_gap_addr_t const * addr, bond_keys_t* bkeys)
 {
   bool found = false;
 

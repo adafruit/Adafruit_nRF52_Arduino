@@ -62,6 +62,7 @@
 #include "BLEClientCharacteristic.h"
 #include "BLEClientService.h"
 #include "BLEDiscovery.h"
+#include "BLEConnection.h"
 #include "BLEGap.h"
 #include "BLEGatt.h"
 

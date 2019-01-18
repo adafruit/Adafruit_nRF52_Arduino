@@ -52,16 +52,18 @@ class BLEConnection
     SemaphoreHandle_t _hvn_sem;
     SemaphoreHandle_t _wrcmd_sem;
 
-    // On-demand semaphore that are created on the fly
+    bool _paired;
+    bool _hvc_received;
+
+    // On-demand semaphore/data that are created on the fly
     SemaphoreHandle_t _hvc_sem;
-    bool              _hvc_received;
+
+    SemaphoreHandle_t _pair_sem;
+    bond_keys_t*     _bond_keys; // Shared keys with bonded device, size ~ 80 bytes
 
   public:
-    SemaphoreHandle_t pair_sem;
-    bool _paired;
 
-    uint16_t         ediv;
-    bond_keys_t*     bond_keys; // Shared keys with bonded device, size ~ 80 bytes
+    uint16_t         _ediv;
 
     BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const * evt_connected, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
     virtual ~BLEConnection();
@@ -80,6 +82,7 @@ class BLEConnection
     bool getHvnPacket(void);
     bool getWriteCmdPacket(void);
 
+    bool requestPairing(void);
     bool waitForIndicateConfirm(void);
 
     /*------------------------------------------------------------------*/
