@@ -46,14 +46,14 @@ class BLEConnection
   private:
     uint16_t _conn_hdl;
     uint16_t _mtu;
+    ble_gap_addr_t _addr;
     uint8_t  _role;
 
-  public:
-    ble_gap_addr_t _addr;
-    bool _paired;
+    SemaphoreHandle_t _hvn_sem;
+    SemaphoreHandle_t _wrcmd_sem;
 
-    SemaphoreHandle_t hvn_sem;
-    SemaphoreHandle_t wrcmd_sem;
+  public:
+    bool _paired;
 
     // On-demand semaphore that are created on the fly
     SemaphoreHandle_t hvc_sem;
@@ -64,7 +64,8 @@ class BLEConnection
     uint16_t         ediv;
     bond_keys_t*     bond_keys; // Shared keys with bonded device, size ~ 80 bytes
 
-    BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const * evt_connected);
+    BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const * evt_connected, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    virtual ~BLEConnection();
 
     uint16_t handle(void);
     bool     connected(void);
@@ -77,8 +78,11 @@ class BLEConnection
     ble_gap_addr_t getPeerAddr(void);
     uint8_t getPeerAddr(uint8_t addr[6]);
 
-    bool getHvnPacket     (void);
+    bool getHvnPacket(void);
+    void giveHvnPacket(uint8_t count);
+
     bool getWriteCmdPacket(void);
+    void giveWriteCmdPacket(uint8_t count);
 };
 
 

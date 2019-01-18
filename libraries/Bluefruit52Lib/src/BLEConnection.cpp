@@ -41,13 +41,39 @@
 //--------------------------------------------------------------------+
 
 
-BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* evt_connected)
+BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* evt_connected, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
 {
   _conn_hdl = conn_hdl;
 
-  _addr = evt_connected->peer_addr;
   _mtu = BLE_GATT_ATT_MTU_DEFAULT;
+  _addr = evt_connected->peer_addr;
   _role = evt_connected->role;
+
+  _hvn_sem   = xSemaphoreCreateCounting(hvn_qsize, hvn_qsize);
+  _wrcmd_sem = xSemaphoreCreateCounting(wrcmd_qsize, wrcmd_qsize);
+
+  _paired = false;
+  hvc_sem = NULL;
+  hvc_received = false;
+  pair_sem = NULL;
+  ediv = 0xFFFF; // invalid ediv value
+  bond_keys = NULL;
+}
+
+BLEConnection::~BLEConnection()
+{
+  vSemaphoreDelete( _hvn_sem );
+  vSemaphoreDelete( _wrcmd_sem );
+}
+
+void BLEConnection::giveHvnPacket(uint8_t count)
+{
+  for(uint8_t i=0; i<count; i++) xSemaphoreGive(_hvn_sem);
+}
+
+void BLEConnection::giveWriteCmdPacket(uint8_t count)
+{
+  for(uint8_t i=0; i<count; i++) xSemaphoreGive(_wrcmd_sem);
 }
 
 uint16_t BLEConnection::handle (void)
@@ -59,9 +85,10 @@ bool BLEConnection::paired (void)
 {
   return _paired;
 }
+
 uint8_t BLEConnection::getRole (void)
 {
-
+  return _role;
 }
 
 uint16_t BLEConnection::getMTU (void)
@@ -87,12 +114,10 @@ uint8_t BLEConnection::getPeerAddr (uint8_t addr[6])
 
 bool BLEConnection::getHvnPacket (void)
 {
-  VERIFY(hvn_sem != NULL);
-  return xSemaphoreTake(hvn_sem, ms2tick(BLE_GENERIC_TIMEOUT));
+  return xSemaphoreTake(_hvn_sem, ms2tick(BLE_GENERIC_TIMEOUT));
 }
 
 bool BLEConnection::getWriteCmdPacket (void)
 {
-  VERIFY(wrcmd_sem != NULL);
-  return xSemaphoreTake(wrcmd_sem, ms2tick(BLE_GENERIC_TIMEOUT));
+  return xSemaphoreTake(_wrcmd_sem, ms2tick(BLE_GENERIC_TIMEOUT));
 }

@@ -149,12 +149,11 @@ bool BLEGap::connected(uint16_t conn_hdl)
 
 bool BLEGap::requestPairing(uint16_t conn_hdl)
 {
-  gap_peer_t* peer = &_peers[conn_hdl];
   BLEConnection* conn = _connection[conn_hdl];
   VERIFY(conn);
 
   // skip if already paired
-  if ( conn->_paired ) return true;
+  if ( conn->paired() ) return true;
 
   uint16_t cntr_ediv = 0xFFFF;
 
@@ -162,8 +161,9 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
   {
     // Check to see if we did bonded with current prph previously
     bond_keys_t bkeys;
+    ble_gap_addr_t peer_addr = conn->getPeerAddr();
 
-    if ( bond_find_cntr(&conn->_addr, &bkeys) )
+    if ( bond_find_cntr(&peer_addr, &bkeys) )
     {
       cntr_ediv = bkeys.peer_enc.master_id.ediv;
       LOG_LV2("BOND", "Load Keys from file " BOND_FNAME_CNTR, cntr_ediv);
@@ -185,7 +185,7 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
 
   // Failed to pair using central stored keys, this happens when
   // Prph delete bonds while we did not --> let's remove the obsolete keyfile and move on
-  if ( !conn->_paired && (cntr_ediv != 0xffff) )
+  if ( !conn->paired() && (cntr_ediv != 0xffff) )
   {
     bond_remove_key(BLE_GAP_ROLE_CENTRAL, cntr_ediv);
 
@@ -198,7 +198,7 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
   vSemaphoreDelete(conn->pair_sem);
   conn->pair_sem = NULL;
 
-  return conn->_paired;
+  return conn->paired();
 }
 
 uint8_t BLEGap::getRole(uint16_t conn_hdl)
@@ -240,21 +240,18 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
         _connection[conn_hdl] = NULL;
       }
 
-      _connection[conn_hdl] = new BLEConnection(conn_hdl, para);
-      conn = _connection[conn_hdl];
+      // Transmission buffer pool
+      uint8_t const hvn_qsize = (para->role == BLE_GAP_ROLE_PERIPH) ? _prph.hvn_qsize : _central.hvn_qsize;
+      uint8_t const wrcmd_qsize = (para->role == BLE_GAP_ROLE_PERIPH) ? _prph.wrcmd_qsize : _central.wrcmd_qsize;
 
+      _connection[conn_hdl] = new BLEConnection(conn_hdl, para, hvn_qsize, wrcmd_qsize);
+      conn = _connection[conn_hdl];
 
       peer->role = para->role;
 
-      // Transmission buffer sem pool
-      uint8_t const hvn_qsize = (para->role == BLE_GAP_ROLE_PERIPH) ? _prph.hvn_qsize : _central.hvn_qsize;
-      conn->hvn_sem   = xSemaphoreCreateCounting(hvn_qsize, hvn_qsize);
-
-      uint8_t const wrcmd_qsize = (para->role == BLE_GAP_ROLE_PERIPH) ? _prph.wrcmd_qsize : _central.wrcmd_qsize;
-      conn->wrcmd_sem = xSemaphoreCreateCounting(wrcmd_qsize, wrcmd_qsize);
-
       LOG_LV2("GAP", "Conn Interval= %f", para->conn_params.min_conn_interval*1.25f);
 
+      // Invoke connect callback
       if ( conn->getRole() == BLE_GAP_ROLE_PERIPH )
       {
         if ( _prph.connect_cb ) ada_callback(NULL, _prph.connect_cb, conn_hdl);
@@ -270,14 +267,10 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       ble_gap_evt_disconnected_t const* para = &evt->evt.gap_evt.params.disconnected;
 
       LOG_LV2("GAP", "Disconnect Reason 0x%02X", evt->evt.gap_evt.params.disconnected.reason);
-      // mark as disconnected, but keep the role for sub sequence event handler
 
-      vSemaphoreDelete( conn->hvn_sem );
-      conn->hvn_sem = NULL;
+      // FIXME role is still required for sub sequence event handler such as Gatt
 
-      vSemaphoreDelete( conn->wrcmd_sem );
-      conn->wrcmd_sem = NULL;
-
+      // Invoke disconnect callback
       if ( conn->getRole() == BLE_GAP_ROLE_PERIPH )
       {
         if ( _prph.disconnect_cb ) ada_callback(NULL, _prph.disconnect_cb, conn_hdl, para->reason);
@@ -397,7 +390,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       {
         sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
 
-        conn->ediv   = bkeys.own_enc.master_id.ediv;
+        conn->ediv = bkeys.own_enc.master_id.ediv;
       } else
       {
         sd_ble_gap_sec_info_reply(evt->evt.gap_evt.conn_handle, NULL, NULL, NULL);
@@ -438,17 +431,11 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     break;
 
     case BLE_GATTS_EVT_HVN_TX_COMPLETE:
-      if ( conn->hvn_sem )
-      {
-        for(uint8_t i=0; i<evt->evt.gatts_evt.params.hvn_tx_complete.count; i++) xSemaphoreGive(conn->hvn_sem);
-      }
+      if ( conn ) conn->giveHvnPacket(evt->evt.gatts_evt.params.hvn_tx_complete.count);
     break;
 
     case BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE:
-      if ( conn->wrcmd_sem )
-      {
-        for(uint8_t i=0; i<evt->evt.gattc_evt.params.write_cmd_tx_complete.count; i++) xSemaphoreGive(conn->wrcmd_sem);
-      }
+      if ( conn ) conn->giveWriteCmdPacket(evt->evt.gattc_evt.params.write_cmd_tx_complete.count);
     break;
 
     case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
