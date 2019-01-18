@@ -38,6 +38,7 @@
 
 #include <Arduino.h>
 #include "bluefruit_common.h"
+#include "BLEConnection.h"
 #include "BLEUuid.h"
 #include "utility/bonding.h"
 
@@ -47,64 +48,6 @@ enum
   CONN_CFG_CENTRAL = 2,
 };
 
-class BLEGapConnection
-{
-  private:
-    uint16_t _conn_hdl;
-
-  public:
-    ble_gap_addr_t _addr;
-    uint16_t att_mtu;
-    bool _paired;
-    uint8_t  role;
-
-    SemaphoreHandle_t hvn_tx_sem;
-    SemaphoreHandle_t wrcmd_tx_sem;
-
-    // On-demand semaphore that are created on the fly
-    SemaphoreHandle_t hvc_sem;
-    bool              hvc_received;
-
-    SemaphoreHandle_t pair_sem;
-
-    uint16_t         ediv;
-    bond_keys_t*     bond_keys; // Shared keys with bonded device, size ~ 80 bytes
-
-    BLEGapConnection(uint16_t conn_hdl) { _conn_hdl = conn_hdl; }
-
-    uint16_t handle(void) { return _conn_hdl; }
-    bool     connected(void);
-    bool     paired(void) { return _paired; }
-    uint8_t  getRole(void);
-
-    uint16_t getMTU (void)
-    {
-      return att_mtu;
-    }
-
-    ble_gap_addr_t getPeerAddr(void)
-    {
-      return _addr;
-    }
-
-    uint8_t getPeerAddr(uint8_t addr[6])
-    {
-      memcpy(addr, _addr.addr, BLE_GAP_ADDR_LEN);
-      return _addr.addr_type;
-    }
-
-    bool    getHvnPacket     (void)
-    {
-      VERIFY(hvn_tx_sem != NULL);
-      return xSemaphoreTake(hvn_tx_sem, ms2tick(BLE_GENERIC_TIMEOUT));
-    }
-
-    bool    getWriteCmdPacket(void)
-    {
-      VERIFY(wrcmd_tx_sem != NULL);
-      return xSemaphoreTake(wrcmd_tx_sem, ms2tick(BLE_GENERIC_TIMEOUT));
-    }
-};
 
 class BLEGap
 {
@@ -118,21 +61,21 @@ class BLEGap
     bool     setAddr              (uint8_t mac[6], uint8_t type);
 //    bool    setPrivacy                ();  sd_ble_gap_privacy_set()
 
-    BLEGapConnection* getConnection(uint16_t conn_hdl)
+    BLEConnection* getConnection(uint16_t conn_hdl)
     {
       return  ( conn_hdl != BLE_CONN_HANDLE_INVALID ) ?_connection[conn_hdl] : NULL;
     }
 
-    bool     connected            (uint16_t conn_hdl);
-    bool     requestPairing       (uint16_t conn_hdl);
+    bool     connected           (uint16_t conn_hdl);
+    bool     requestPairing      (uint16_t conn_hdl);
 
-    uint8_t  getRole              (uint16_t conn_hdl);
-    uint16_t getPeerName    (uint16_t conn_hdl, char* buf, uint16_t bufsize);
+    uint8_t  getRole             (uint16_t conn_hdl);
+    uint16_t getPeerName         (uint16_t conn_hdl, char* buf, uint16_t bufsize);
 
-    uint16_t getMaxMtuByConnCfg   (uint8_t conn_cfg);
+    uint16_t getMaxMtuByConnCfg  (uint8_t conn_cfg);
 
-    void     configPrphConn       (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
-    void     configCentralConn    (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    void     configPrphConn      (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    void     configCentralConn   (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
 
 //    bool     startRssi(uint16_t conn_hdl, uint8_t );
 //    bool     stopRssi(uint16_t conn_hdl);
@@ -173,7 +116,7 @@ class BLEGap
 
     ble_gap_sec_params_t _sec_param;
 
-    BLEGapConnection* _connection[BLE_MAX_CONN];
+    BLEConnection* _connection[BLE_MAX_CONN];
 
     friend class AdafruitBluefruit;
 };

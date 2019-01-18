@@ -613,13 +613,13 @@ uint16_t AdafruitBluefruit::connInterval(void)
 
 ble_gap_addr_t AdafruitBluefruit::getPeerAddr(void)
 {
-  BLEGapConnection* conn = Gap.getConnection(_conn_hdl);
+  BLEConnection* conn = Gap.getConnection(_conn_hdl);
   return conn ? conn->getPeerAddr() : ((ble_gap_addr_t) {0});
 }
 
 uint8_t AdafruitBluefruit::getPeerAddr(uint8_t addr[6])
 {
-  BLEGapConnection* conn = Gap.getConnection(_conn_hdl);
+  BLEConnection* conn = Gap.getConnection(_conn_hdl);
   if ( conn )
   {
     return conn->getPeerAddr(addr);

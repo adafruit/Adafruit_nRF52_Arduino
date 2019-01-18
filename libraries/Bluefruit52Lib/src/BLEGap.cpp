@@ -150,7 +150,7 @@ bool BLEGap::connected(uint16_t conn_hdl)
 bool BLEGap::requestPairing(uint16_t conn_hdl)
 {
   gap_peer_t* peer = &_peers[conn_hdl];
-  BLEGapConnection* conn = _connection[conn_hdl];
+  BLEConnection* conn = _connection[conn_hdl];
   VERIFY(conn);
 
   // skip if already paired
@@ -221,7 +221,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
   const uint16_t conn_hdl = evt->evt.common_evt.conn_handle;
 
   gap_peer_t* peer = (conn_hdl == BLE_CONN_HANDLE_INVALID) ? NULL : &_peers[conn_hdl];
-  BLEGapConnection* conn = (conn_hdl == BLE_CONN_HANDLE_INVALID) ? NULL : _connection[conn_hdl];
+  BLEConnection* conn = (conn_hdl == BLE_CONN_HANDLE_INVALID) ? NULL : _connection[conn_hdl];
 
   switch(evt->header.evt_id)
   {
@@ -240,7 +240,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
         _connection[conn_hdl] = NULL;
       }
 
-      _connection[conn_hdl] = new BLEGapConnection(conn_hdl);
+      _connection[conn_hdl] = new BLEConnection(conn_hdl);
       conn = _connection[conn_hdl];
 
       varclr(conn);
@@ -253,10 +253,10 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
       // Transmission buffer sem pool
       uint8_t const hvn_qsize = (para->role == BLE_GAP_ROLE_PERIPH) ? _prph.hvn_qsize : _central.hvn_qsize;
-      conn->hvn_tx_sem   = xSemaphoreCreateCounting(hvn_qsize, hvn_qsize);
+      conn->hvn_sem   = xSemaphoreCreateCounting(hvn_qsize, hvn_qsize);
 
       uint8_t const wrcmd_qsize = (para->role == BLE_GAP_ROLE_PERIPH) ? _prph.wrcmd_qsize : _central.wrcmd_qsize;
-      conn->wrcmd_tx_sem = xSemaphoreCreateCounting(wrcmd_qsize, wrcmd_qsize);
+      conn->wrcmd_sem = xSemaphoreCreateCounting(wrcmd_qsize, wrcmd_qsize);
 
       LOG_LV2("GAP", "Conn Interval= %f", para->conn_params.min_conn_interval*1.25f);
 
@@ -277,11 +277,11 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       LOG_LV2("GAP", "Disconnect Reason 0x%02X", evt->evt.gap_evt.params.disconnected.reason);
       // mark as disconnected, but keep the role for sub sequence event handler
 
-      vSemaphoreDelete( conn->hvn_tx_sem );
-      conn->hvn_tx_sem = NULL;
+      vSemaphoreDelete( conn->hvn_sem );
+      conn->hvn_sem = NULL;
 
-      vSemaphoreDelete( conn->wrcmd_tx_sem );
-      conn->wrcmd_tx_sem = NULL;
+      vSemaphoreDelete( conn->wrcmd_sem );
+      conn->wrcmd_sem = NULL;
 
       if ( conn->role == BLE_GAP_ROLE_PERIPH )
       {
@@ -443,16 +443,16 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
     break;
 
     case BLE_GATTS_EVT_HVN_TX_COMPLETE:
-      if ( conn->hvn_tx_sem )
+      if ( conn->hvn_sem )
       {
-        for(uint8_t i=0; i<evt->evt.gatts_evt.params.hvn_tx_complete.count; i++) xSemaphoreGive(conn->hvn_tx_sem);
+        for(uint8_t i=0; i<evt->evt.gatts_evt.params.hvn_tx_complete.count; i++) xSemaphoreGive(conn->hvn_sem);
       }
     break;
 
     case BLE_GATTC_EVT_WRITE_CMD_TX_COMPLETE:
-      if ( conn->wrcmd_tx_sem )
+      if ( conn->wrcmd_sem )
       {
-        for(uint8_t i=0; i<evt->evt.gattc_evt.params.write_cmd_tx_complete.count; i++) xSemaphoreGive(conn->wrcmd_tx_sem);
+        for(uint8_t i=0; i<evt->evt.gattc_evt.params.write_cmd_tx_complete.count; i++) xSemaphoreGive(conn->wrcmd_sem);
       }
     break;
 

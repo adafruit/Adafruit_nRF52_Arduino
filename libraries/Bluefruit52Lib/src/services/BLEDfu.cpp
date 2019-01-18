@@ -94,7 +94,7 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
   {
     uint16_t conn_hdl = Bluefruit.connHandle();
 
-    BLEGapConnection* conn = Bluefruit.Gap.getConnection(conn_hdl);
+    BLEConnection* conn = Bluefruit.Gap.getConnection(conn_hdl);
 
     ble_gatts_rw_authorize_reply_params_t reply = { .type = BLE_GATTS_AUTHORIZE_TYPE_WRITE };
 

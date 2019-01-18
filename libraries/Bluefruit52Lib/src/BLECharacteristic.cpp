@@ -534,7 +534,7 @@ bool BLECharacteristic::notify(const void* data, uint16_t len)
   if ( notifyEnabled() )
   {
     // TODO multiple connection support
-    BLEGapConnection* conn = Bluefruit.Gap.getConnection( Bluefruit.connHandle() );
+    BLEConnection* conn = Bluefruit.Gap.getConnection( Bluefruit.connHandle() );
     VERIFY(conn);
 
     uint16_t const max_payload = conn->getMTU() - 3;
@@ -616,7 +616,7 @@ bool BLECharacteristic::indicate(const void* data, uint16_t len)
   if ( indicateEnabled() )
   {
     uint16_t conn_hdl = Bluefruit.connHandle();
-    BLEGapConnection* conn = Bluefruit.Gap.getConnection( conn_hdl );
+    BLEConnection* conn = Bluefruit.Gap.getConnection( conn_hdl );
 
     uint16_t const max_payload = conn->getMTU() - 3;
     const uint8_t* u8data = (const uint8_t*) data;
