@@ -47,7 +47,7 @@ uint8_t Servo::attach(int pin, int min, int max)
     pinMode(pin, OUTPUT);                                   // set servo pin to output
     servos[this->servoIndex].Pin.nbr = pin;
 
-    if(min < MIN_PULSE_WIDTH) min = MIN_PULSE_WIDTH;
+    if (min < MIN_PULSE_WIDTH) min = MIN_PULSE_WIDTH;
     if (max > MAX_PULSE_WIDTH) max = MAX_PULSE_WIDTH;
 
     //fix min if conversion to pulse cycle value is too low
@@ -77,8 +77,12 @@ uint8_t Servo::attach(int pin, int min, int max)
 
 void Servo::detach()
 {
+  uint8_t const pin = servos[this->servoIndex].Pin.nbr;
+
 	servos[this->servoIndex].Pin.isActive = false;
-	// TODO Adafruit remove pin from HW PWM
+
+	// remove pin from HW PWM
+	this->pwm->removePin(pin);
 }
 
 
@@ -108,7 +112,7 @@ int Servo::read() // return the value as degrees
 
 int Servo::readMicroseconds()
 {	
-	uint8_t pin=servos[this->servoIndex].Pin.nbr;
+	uint8_t pin = servos[this->servoIndex].Pin.nbr;
 
 	if ( this->pwm ) return this->pwm->readPin(pin)*DUTY_CYCLE_RESOLUTION;
 
