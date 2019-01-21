@@ -538,8 +538,6 @@ uint16_t AdafruitBluefruit::getApperance(void)
 
 uint8_t AdafruitBluefruit::connected(void)
 {
-  return ( _conn_hdl != BLE_CONN_HANDLE_INVALID );
-
   uint8_t count = 0;
   for (uint16_t c=0; c<BLE_MAX_CONNECTION; c++)
   {
