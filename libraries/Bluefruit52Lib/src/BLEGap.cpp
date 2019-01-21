@@ -110,6 +110,12 @@ uint16_t BLEGap::getMaxMtu(uint8_t role)
   return (role == BLE_GAP_ROLE_PERIPH) ? _prph.mtu_max : _central.mtu_max;
 }
 
+
+BLEConnection* BLEGap::getConnection(uint16_t conn_hdl)
+{
+  return  ( conn_hdl != BLE_CONN_HANDLE_INVALID ) ?_connection[conn_hdl] : NULL;
+}
+
 /**
  * Get current Mac address and its type
  * @param mac address
@@ -157,8 +163,8 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
 
 uint8_t BLEGap::getRole(uint16_t conn_hdl)
 {
-//  return _connection[conn_hdl]->role;
-  return _peers[conn_hdl].role;
+  VERIFY(_connection[conn_hdl], BLE_GAP_ROLE_INVALID);
+  return _connection[conn_hdl]->getRole();
 }
 
 uint16_t BLEGap::getPeerName(uint16_t conn_hdl, char* buf, uint16_t bufsize)

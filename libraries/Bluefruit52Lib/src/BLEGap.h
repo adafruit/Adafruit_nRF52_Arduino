@@ -66,11 +66,7 @@ class BLEGap
       return _sec_param;
     }
 
-    BLEConnection* getConnection(uint16_t conn_hdl)
-    {
-      return  ( conn_hdl != BLE_CONN_HANDLE_INVALID ) ?_connection[conn_hdl] : NULL;
-    }
-
+    BLEConnection* getConnection(uint16_t conn_hdl);
     bool     connected           (uint16_t conn_hdl);
     bool     requestPairing      (uint16_t conn_hdl);
 

@@ -154,7 +154,8 @@ class AdafruitBluefruit
     /*------------------------------------------------------------------*/
     /* GAP, Connections and Bonding
      *------------------------------------------------------------------*/
-    bool     connected         (void);
+    bool     connected         (void); // connected with any central
+    bool     connected         (uint16_t conn_hdl); // connected to a specific central
     bool     disconnect        (void);
 
     bool     setConnInterval   (uint16_t min, uint16_t max);
