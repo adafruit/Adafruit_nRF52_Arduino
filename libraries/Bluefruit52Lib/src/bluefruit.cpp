@@ -763,7 +763,7 @@ void adafruit_ble_task(void* arg)
  */
 void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 {
-  // conn handle has fixed offset regardless of event type
+  // conn handle has fixed offset for all events
   uint16_t const evt_conn_hdl = evt->evt.common_evt.conn_handle;
 
   LOG_LV1("BLE", "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), evt_conn_hdl);
