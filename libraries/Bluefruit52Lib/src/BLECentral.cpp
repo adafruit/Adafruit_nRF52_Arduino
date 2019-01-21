@@ -110,7 +110,7 @@ bool BLECentral::connected(void)
     BLEConnection* conn = Bluefruit.Gap.getConnection(c);
 
     // skip Peripheral Role handle
-    if ( conn && (conn->getRole() == BLE_GAP_ROLE_CENTRAL) )
+    if ( conn && conn->connected() && (conn->getRole() == BLE_GAP_ROLE_CENTRAL) )
     {
       return true;
     }

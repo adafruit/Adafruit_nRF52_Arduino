@@ -544,7 +544,7 @@ bool AdafruitBluefruit::connected(void)
 bool AdafruitBluefruit::connected(uint16_t conn_hdl)
 {
   BLEConnection* conn = Gap.getConnection(conn_hdl);
-  return conn && (conn->getRole() == BLE_GAP_ROLE_PERIPH);
+  return conn && conn->connected() && (conn->getRole() == BLE_GAP_ROLE_PERIPH);
 }
 
 bool AdafruitBluefruit::disconnect(void)

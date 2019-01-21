@@ -150,7 +150,7 @@ bool BLEGap::setAddr(uint8_t mac[6], uint8_t type)
 
 bool BLEGap::connected(uint16_t conn_hdl)
 {
-  return _connection[conn_hdl] != NULL;
+  return (_connection[conn_hdl] != NULL) && (_connection[conn_hdl]->connected());
 }
 
 bool BLEGap::requestPairing(uint16_t conn_hdl)

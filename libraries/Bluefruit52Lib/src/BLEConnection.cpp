@@ -43,6 +43,7 @@
 BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* evt_connected, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
 {
   _conn_hdl = conn_hdl;
+  _connected = true;
 
   _mtu = BLE_GATT_ATT_MTU_DEFAULT;
   _addr = evt_connected->peer_addr;
@@ -70,6 +71,11 @@ BLEConnection::~BLEConnection()
 uint16_t BLEConnection::handle (void)
 {
   return _conn_hdl;
+}
+
+bool BLEConnection::connected(void)
+{
+  return _connected;
 }
 
 bool BLEConnection::paired (void)
@@ -190,6 +196,11 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
 {
   switch(evt->header.evt_id)
   {
+    case BLE_GAP_EVT_DISCONNECTED:
+      // mark as disconnected
+      _connected = false;
+    break;
+
     //--------------------------------------------------------------------+
     /* First-time Pairing
      * 1. Either we or peer initiate the process

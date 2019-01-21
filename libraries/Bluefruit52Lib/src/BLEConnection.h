@@ -49,6 +49,7 @@ class BLEConnection
     uint16_t _conn_interval;
     uint16_t _ediv;
     uint8_t  _role;
+    bool _connected;
     bool _paired;
     bool _hvc_received;
 
