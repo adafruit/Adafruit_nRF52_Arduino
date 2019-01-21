@@ -112,8 +112,6 @@ class BLEGap
       disconnect_callback_t disconnect_cb;
     } _prph, _central;
 
-    gap_peer_t _peers[BLE_MAX_CONN];
-
     ble_gap_sec_params_t _sec_param;
 
     BLEConnection* _connection[BLE_MAX_CONN];

@@ -38,7 +38,6 @@
 
 BLEGap::BLEGap(void)
 {
-  memclr(_peers, sizeof(_peers));
   memclr(_connection, sizeof(_connection));
 
   _prph.mtu_max         = BLE_GATT_ATT_MTU_DEFAULT;
@@ -207,9 +206,6 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
       _connection[conn_hdl] = new BLEConnection(conn_hdl, para, hvn_qsize, wrcmd_qsize);
       conn = _connection[conn_hdl];
-
-      // FIXME to remove
-      _peers[conn_hdl].role = para->role;
 
       LOG_LV2("GAP", "Conn Interval= %f", para->conn_params.min_conn_interval*1.25f);
 
