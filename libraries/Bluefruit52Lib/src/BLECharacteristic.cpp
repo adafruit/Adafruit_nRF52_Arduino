@@ -638,7 +638,7 @@ bool BLECharacteristic::indicate(const void* data, uint16_t len)
 
       // Blocking wait until receiving confirmation from peer
       VERIFY_STATUS( sd_ble_gatts_hvx( conn_hdl, &hvx_params), false );
-      VERIFY ( Bluefruit.Gatt.waitForIndicateConfirm(conn_hdl) );
+      VERIFY ( conn->waitForIndicateConfirm() );
 
       remaining -= packet_len;
       u8data    += packet_len;

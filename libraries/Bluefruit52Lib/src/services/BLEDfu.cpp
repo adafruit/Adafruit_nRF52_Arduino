@@ -143,7 +143,7 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
       {
         bond_keys_t bkeys;
 
-        if ( conn->_loadKeys(&bkeys) )
+        if ( conn->loadKeys(&bkeys) )
         {
           peer_data->addr    = bkeys.peer_id.id_addr_info;
           peer_data->irk     = bkeys.peer_id.id_info;

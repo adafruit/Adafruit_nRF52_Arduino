@@ -47,15 +47,15 @@ class BLEConnection
     uint16_t _conn_hdl;
     uint16_t _mtu;
     uint16_t _conn_interval;
-    ble_gap_addr_t _addr;
+    uint16_t _ediv;
     uint8_t  _role;
+    bool _paired;
+    bool _hvc_received;
+
+    ble_gap_addr_t _addr;
 
     SemaphoreHandle_t _hvn_sem;
     SemaphoreHandle_t _wrcmd_sem;
-
-    uint16_t         _ediv;
-    bool _paired;
-    bool _hvc_received;
 
     // On-demand semaphore/data that are created on the fly
     SemaphoreHandle_t _hvc_sem;
@@ -79,10 +79,11 @@ class BLEConnection
 
     bool getHvnPacket(void);
     bool getWriteCmdPacket(void);
-
-    bool requestPairing(void);
     bool waitForIndicateConfirm(void);
 
+    bool requestPairing(void);
+    bool storeCccd(void);
+    bool loadKeys(bond_keys_t* bkeys);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
@@ -90,8 +91,6 @@ class BLEConnection
      *------------------------------------------------------------------*/
     void _eventHandler(ble_evt_t* evt);
 
-    bool _storeCccd(void);
-    bool _loadKeys(bond_keys_t* bkeys);
 };
 
 

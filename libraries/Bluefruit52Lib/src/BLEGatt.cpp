@@ -75,12 +75,6 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
   return (count < 0) ? 0 : count;
 }
 
-bool BLEGatt::waitForIndicateConfirm(uint16_t conn_hdl)
-{
-  BLEConnection* conn = Bluefruit.Gap.getConnection(conn_hdl);
-  return conn->waitForIndicateConfirm();
-}
-
 void BLEGatt::_eventHandler(ble_evt_t* evt)
 {
   // conn handle has fixed offset regardless of event type
@@ -139,7 +133,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
         // Save CCCD if paired
         if ( conn->paired() && (evt_id == BLE_GATTS_EVT_WRITE) && (req_handle == chr->handles().cccd_handle) )
         {
-          conn->_storeCccd();
+          conn->storeCccd();
         }
       }
     }
