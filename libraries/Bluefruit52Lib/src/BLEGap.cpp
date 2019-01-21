@@ -241,7 +241,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       _connection[conn_hdl] = NULL;
 
       bool still_connected = false;
-      for (uint8_t i=0; i<BLE_MAX_CONN; i++)
+      for (uint8_t i=0; i<BLE_MAX_CONNECTION; i++)
       {
         if ( _connection[i] )
         {

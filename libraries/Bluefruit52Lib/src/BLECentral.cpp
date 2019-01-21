@@ -104,7 +104,7 @@ bool BLECentral::connected(uint16_t conn_hdl)
 uint8_t BLECentral::connected(void)
 {
   uint8_t count = 0;
-  for (uint16_t c=0; c<BLE_MAX_CONN; c++)
+  for (uint16_t c=0; c<BLE_MAX_CONNECTION; c++)
   {
     if ( this->connected(c) ) count++;
   }

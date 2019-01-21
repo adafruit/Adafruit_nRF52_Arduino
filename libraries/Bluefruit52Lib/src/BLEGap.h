@@ -114,7 +114,7 @@ class BLEGap
 
     ble_gap_sec_params_t _sec_param;
 
-    BLEConnection* _connection[BLE_MAX_CONN];
+    BLEConnection* _connection[BLE_MAX_CONNECTION];
 
     friend class AdafruitBluefruit;
 };

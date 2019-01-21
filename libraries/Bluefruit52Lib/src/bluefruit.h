@@ -39,18 +39,14 @@
 #include <Arduino.h>
 #include "bluefruit_common.h"
 
-#define CFG_ADV_BLINKY_INTERVAL          500
+#define CFG_ADV_BLINKY_INTERVAL   500
 
 /* Note changing these parameters will affect APP_RAM_BASE
  * --> need to update RAM region in linker file
  * - BLE_GATT_ATT_MTU_MAX from 23 (default) to 247
  */
-#define BLE_GATT_ATT_MTU_MAX            247
-#define BLE_PRPH_MAX_CONN               1
-#define BLE_CENTRAL_MAX_CONN            4
-#define BLE_CENTRAL_MAX_SECURE_CONN     1 // should be enough
-
-#define BLE_MAX_CONN                    (BLE_CENTRAL_MAX_CONN+BLE_PRPH_MAX_CONN)
+#define BLE_GATT_ATT_MTU_MAX      247
+#define BLE_MAX_CONNECTION        20 // SD support up to 20 connections
 
 #include "BLEUuid.h"
 #include "BLEAdvertising.h"

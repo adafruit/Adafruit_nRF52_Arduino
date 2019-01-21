@@ -314,8 +314,8 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   // Roles
   varclr(&blecfg);
   blecfg.gap_cfg.role_count_cfg.periph_role_count  = _prph_count;
-  blecfg.gap_cfg.role_count_cfg.central_role_count = _central_count; // ? BLE_CENTRAL_MAX_CONN : 0);
-  blecfg.gap_cfg.role_count_cfg.central_sec_count  = (_central_count ? 1 : 0); // should be enough
+  blecfg.gap_cfg.role_count_cfg.central_role_count = _central_count;
+  blecfg.gap_cfg.role_count_cfg.central_sec_count  = (_central_count ? 1 : 0); // 1 should be enough
   VERIFY_STATUS( sd_ble_cfg_set(BLE_GAP_CFG_ROLE_COUNT, &blecfg, ram_start) );
 
   // Device Name
@@ -541,7 +541,7 @@ uint8_t AdafruitBluefruit::connected(void)
   return ( _conn_hdl != BLE_CONN_HANDLE_INVALID );
 
   uint8_t count = 0;
-  for (uint16_t c=0; c<BLE_MAX_CONN; c++)
+  for (uint16_t c=0; c<BLE_MAX_CONNECTION; c++)
   {
     // skip Peripheral Role handle
     if ( this->connected(c) ) count++;
@@ -977,8 +977,8 @@ void AdafruitBluefruit::printInfo(void)
 
   // Max Connections
   Serial.printf(title_fmt, "Max Connections");
-  Serial.printf("Peripheral = %d, ", _prph_count ? 1 : 0);
-  Serial.printf("Central = %d ", _central_count ? BLE_CENTRAL_MAX_CONN : 0);
+  Serial.printf("Peripheral = %d, ", _prph_count);
+  Serial.printf("Central = %d ", _central_count);
   Serial.println();
 
   // Address
