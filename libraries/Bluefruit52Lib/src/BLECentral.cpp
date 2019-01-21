@@ -95,28 +95,21 @@ bool BLECentral::disconnect(uint16_t conn_hdl)
 bool BLECentral::connected(uint16_t conn_hdl)
 {
   BLEConnection* conn = Bluefruit.Gap.getConnection(conn_hdl);
-  return conn && (conn->getRole() == BLE_GAP_ROLE_CENTRAL);
+  return conn && conn->connected() && (conn->getRole() == BLE_GAP_ROLE_CENTRAL);
 }
 
 /**
- * Check if connected to ANY peripherals
- * @param conn_handle
- * @return
+ * @return number of peripherals
  */
-bool BLECentral::connected(void)
+uint8_t BLECentral::connected(void)
 {
-  for (uint8_t c=0; c<BLE_MAX_CONN; c++)
+  uint8_t count = 0;
+  for (uint16_t c=0; c<BLE_MAX_CONN; c++)
   {
-    BLEConnection* conn = Bluefruit.Gap.getConnection(c);
-
-    // skip Peripheral Role handle
-    if ( conn && conn->connected() && (conn->getRole() == BLE_GAP_ROLE_CENTRAL) )
-    {
-      return true;
-    }
+    if ( this->connected(c) ) count++;
   }
 
-  return false;
+  return count;
 }
 
 void BLECentral::setConnectCallback( BLEGap::connect_callback_t fp)

@@ -536,9 +536,18 @@ uint16_t AdafruitBluefruit::getApperance(void)
 /* GAP, Connections and Bonding
  *------------------------------------------------------------------*/
 
-bool AdafruitBluefruit::connected(void)
+uint8_t AdafruitBluefruit::connected(void)
 {
   return ( _conn_hdl != BLE_CONN_HANDLE_INVALID );
+
+  uint8_t count = 0;
+  for (uint16_t c=0; c<BLE_MAX_CONN; c++)
+  {
+    // skip Peripheral Role handle
+    if ( this->connected(c) ) count++;
+  }
+
+  return count;
 }
 
 bool AdafruitBluefruit::connected(uint16_t conn_hdl)
