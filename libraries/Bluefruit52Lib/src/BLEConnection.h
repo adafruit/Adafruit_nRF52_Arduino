@@ -53,6 +53,7 @@ class BLEConnection
     SemaphoreHandle_t _hvn_sem;
     SemaphoreHandle_t _wrcmd_sem;
 
+    uint16_t         _ediv;
     bool _paired;
     bool _hvc_received;
 
@@ -63,9 +64,6 @@ class BLEConnection
     bond_keys_t*     _bond_keys; // Shared keys with bonded device, size ~ 80 bytes
 
   public:
-
-    uint16_t         _ediv;
-
     BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const * evt_connected, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
     virtual ~BLEConnection();
 
@@ -85,11 +83,15 @@ class BLEConnection
     bool requestPairing(void);
     bool waitForIndicateConfirm(void);
 
+
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal code.
      *------------------------------------------------------------------*/
     void _eventHandler(ble_evt_t* evt);
+
+    bool _storeCccd(void);
+    bool _loadKeys(bond_keys_t* bkeys);
 };
 
 

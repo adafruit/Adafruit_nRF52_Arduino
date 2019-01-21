@@ -108,6 +108,16 @@ bool BLEConnection::getWriteCmdPacket (void)
   return xSemaphoreTake(_wrcmd_sem, ms2tick(BLE_GENERIC_TIMEOUT));
 }
 
+bool BLEConnection::_storeCccd(void)
+{
+  return bond_save_cccd( _role, _conn_hdl, _ediv);
+}
+
+bool BLEConnection::_loadKeys(bond_keys_t* bkeys)
+{
+  return bond_load_keys(_role, _ediv, bkeys);
+}
+
 bool BLEConnection::requestPairing(void)
 {
   // skip if already paired
