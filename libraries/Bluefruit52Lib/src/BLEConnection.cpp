@@ -110,6 +110,17 @@ bool BLEConnection::monitorRssi(uint8_t threshold, uint8_t skip_count)
   return true;
 }
 
+int8_t BLEConnection::getRssi(void)
+{
+  int8_t rssi;
+  uint8_t channel_idx;
+
+  VERIFY_STATUS(sd_ble_gap_rssi_get(_conn_hdl, &rssi, &channel_idx), 0);
+  (void) channel_idx;
+
+  return rssi;
+}
+
 void BLEConnection::stopRssi(void)
 {
   sd_ble_gap_rssi_stop(_conn_hdl);

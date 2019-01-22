@@ -78,6 +78,7 @@ class BLEConnection
     uint8_t getPeerAddr(uint8_t addr[6]);
 
     bool monitorRssi(uint8_t threshold = BLE_GAP_RSSI_THRESHOLD_INVALID, uint8_t skip_count = 0);
+    int8_t getRssi(void);
     void stopRssi(void);
 
     bool getHvnPacket(void);
