@@ -264,6 +264,7 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
 
     // TODO multiple prph connections
     BLEConnection* conn = Bluefruit.Gap.Connection( Bluefruit.connHandle() );
+    VERIFY(conn, 0);
 
     // Not up to GATT MTU, notify will be sent later by TXD timer handler
     if ( _tx_fifo->count() < (conn->getMtu() - 3) )

@@ -93,7 +93,6 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
        (request->op != BLE_GATTS_OP_EXEC_WRITE_REQ_CANCEL))
   {
     uint16_t conn_hdl = Bluefruit.connHandle();
-
     BLEConnection* conn = Bluefruit.Gap.Connection(conn_hdl);
 
     ble_gatts_rw_authorize_reply_params_t reply = { .type = BLE_GATTS_AUTHORIZE_TYPE_WRITE };

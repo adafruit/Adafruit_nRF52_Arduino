@@ -364,7 +364,7 @@ bool BLEClientCharacteristic::writeCCCD(uint16_t value)
 
   // TODO only Write without response consume a TX buffer
   BLEConnection* conn = Bluefruit.Gap.Connection(conn_handle);
-  VERIFY( conn->getWriteCmdPacket() );
+  VERIFY( conn && conn->getWriteCmdPacket() );
 
   VERIFY_STATUS( sd_ble_gattc_write(conn_handle, &param), false );
 

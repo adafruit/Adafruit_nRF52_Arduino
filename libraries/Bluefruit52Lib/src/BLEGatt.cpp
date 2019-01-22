@@ -81,7 +81,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
   const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
   const uint16_t evt_id       = evt->header.evt_id;
 
-  BLEConnection* conn = (evt_conn_hdl == BLE_CONN_HANDLE_INVALID) ? NULL : Bluefruit.Gap.Connection(evt_conn_hdl);
+  BLEConnection* conn = Bluefruit.Gap.Connection(evt_conn_hdl);
 
   /*------------- Server service -------------*/
   // TODO multiple peripherals

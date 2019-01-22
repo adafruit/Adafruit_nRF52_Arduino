@@ -115,7 +115,7 @@ uint16_t BLEGap::getMaxMtu(uint8_t role)
 }
 
 
-BLEConnection* BLEGap::getConnection(uint16_t conn_hdl)
+BLEConnection* BLEGap::Connection(uint16_t conn_hdl)
 {
   return (conn_hdl < BLE_MAX_CONNECTION) ?_connection[conn_hdl] : NULL;
 }
@@ -152,11 +152,6 @@ bool BLEGap::setAddr(uint8_t mac[6], uint8_t type)
   return true;
 }
 
-bool BLEGap::connected(uint16_t conn_hdl)
-{
-  return (_connection[conn_hdl] != NULL) && (_connection[conn_hdl]->connected());
-}
-
 bool BLEGap::requestPairing(uint16_t conn_hdl)
 {
   BLEConnection* conn = _connection[conn_hdl];
@@ -182,7 +177,7 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 {
   // conn handle has fixed offset regardless of event type
   const uint16_t conn_hdl = evt->evt.common_evt.conn_handle;
-  BLEConnection* conn = (conn_hdl == BLE_CONN_HANDLE_INVALID) ? NULL : _connection[conn_hdl];
+  BLEConnection* conn = this->Connection(conn_hdl);
 
   // Connection handler
   if ( conn ) conn->_eventHandler(evt);

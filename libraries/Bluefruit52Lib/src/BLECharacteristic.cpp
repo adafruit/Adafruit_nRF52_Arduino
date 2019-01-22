@@ -617,6 +617,7 @@ bool BLECharacteristic::indicate(const void* data, uint16_t len)
   {
     uint16_t conn_hdl = Bluefruit.connHandle();
     BLEConnection* conn = Bluefruit.Gap.Connection( conn_hdl );
+    VERIFY(conn);
 
     uint16_t const max_payload = conn->getMtu() - 3;
     const uint8_t* u8data = (const uint8_t*) data;
