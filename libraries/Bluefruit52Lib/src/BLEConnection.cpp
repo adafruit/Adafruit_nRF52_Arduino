@@ -104,9 +104,10 @@ uint8_t BLEConnection::getPeerAddr (uint8_t addr[6])
   return _addr.addr_type;
 }
 
-bool BLEConnection::monitorRssi(uint8_t threshold, uint8_t skip_count)
+bool BLEConnection::monitorRssi(uint8_t threshold)
 {
-  VERIFY_STATUS(sd_ble_gap_rssi_start(_conn_hdl, threshold, skip_count), false);
+  // number of samples is 3
+  VERIFY_STATUS(sd_ble_gap_rssi_start(_conn_hdl, threshold, 3), false);
   return true;
 }
 

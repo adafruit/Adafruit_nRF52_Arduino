@@ -5,6 +5,8 @@
 - Fixed Servo detach issue
 - Enhance Gap, add BLEConnection class to mange peer connection
   - Remove Gap.connected(), Gap.getRole() in prefer to BLEConnection API
+- Added setRssiCallback(), monitorRssi(), getRssi(), stopRssi() for tracking rssi of a connection
+  - rssi_poll and rssi_callback example sketches are added 
 
 # 0.9.3
 
