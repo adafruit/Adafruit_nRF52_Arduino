@@ -104,6 +104,17 @@ uint8_t BLEConnection::getPeerAddr (uint8_t addr[6])
   return _addr.addr_type;
 }
 
+bool BLEConnection::monitorRssi(uint8_t threshold, uint8_t skip_count)
+{
+  VERIFY_STATUS(sd_ble_gap_rssi_start(_conn_hdl, threshold, skip_count), false);
+  return true;
+}
+
+void BLEConnection::stopRssi(void)
+{
+  sd_ble_gap_rssi_stop(_conn_hdl);
+}
+
 bool BLEConnection::getHvnPacket (void)
 {
   return xSemaphoreTake(_hvn_sem, ms2tick(BLE_GENERIC_TIMEOUT));

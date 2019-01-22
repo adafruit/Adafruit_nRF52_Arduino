@@ -72,11 +72,13 @@ class BLEConnection
     bool     connected(void);
     bool     paired(void);
     uint8_t  getRole(void);
-
     uint16_t getMtu (void);
 
     ble_gap_addr_t getPeerAddr(void);
     uint8_t getPeerAddr(uint8_t addr[6]);
+
+    bool monitorRssi(uint8_t threshold = BLE_GAP_RSSI_THRESHOLD_INVALID, uint8_t skip_count = 0);
+    void stopRssi(void);
 
     bool getHvnPacket(void);
     bool getWriteCmdPacket(void);
@@ -91,7 +93,6 @@ class BLEConnection
      * Although declare as public, it is meant to be invoked by internal code.
      *------------------------------------------------------------------*/
     void _eventHandler(ble_evt_t* evt);
-
 };
 
 
