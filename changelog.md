@@ -2,6 +2,10 @@
 
 # 0.9.4 
 
+- Fixed Servo detach issue
+- Enhance Gap, add BLEConnection class to mange peer connection
+  - Remove Gap.connected(), Gap.getRole() in prefer to BLEConnection API
+
 # 0.9.3
 
 - Correct bootloader version text in IDE to 0.2.6

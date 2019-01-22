@@ -38,18 +38,23 @@
 
 BLEGap::BLEGap(void)
 {
+  _prph.mtu_max          = BLE_GATT_ATT_MTU_DEFAULT;
+  _prph.event_len        = BLE_GAP_EVENT_LENGTH_DEFAULT;
+  _prph.hvn_qsize        = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
+  _prph.wrcmd_qsize      = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
+  _prph.connect_cb       = NULL;
+  _prph.disconnect_cb    = NULL;
+
+  _central.mtu_max       = BLE_GATT_ATT_MTU_DEFAULT;
+  _central.event_len     = BLE_GAP_EVENT_LENGTH_DEFAULT;
+  _central.hvn_qsize     = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
+  _central.wrcmd_qsize   = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
+  _central.connect_cb    = NULL;
+  _central.disconnect_cb = NULL;
+
   memclr(_connection, sizeof(_connection));
 
-  _prph.mtu_max         = BLE_GATT_ATT_MTU_DEFAULT;
-  _central.mtu_max      = BLE_GATT_ATT_MTU_DEFAULT;
-
-  _prph.event_len       = BLE_GAP_EVENT_LENGTH_DEFAULT;
-  _prph.hvn_qsize    = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
-  _prph.wrcmd_qsize    = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
-
-  _central.event_len    = BLE_GAP_EVENT_LENGTH_DEFAULT;
-  _central.hvn_qsize = BLE_GATTS_HVN_TX_QUEUE_SIZE_DEFAULT;
-  _central.wrcmd_qsize = BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT;
+  _rssi_cb = NULL;
 
   _sec_param = (ble_gap_sec_params_t)
                 {
@@ -112,7 +117,7 @@ uint16_t BLEGap::getMaxMtu(uint8_t role)
 
 BLEConnection* BLEGap::getConnection(uint16_t conn_hdl)
 {
-  return  ( conn_hdl != BLE_CONN_HANDLE_INVALID ) ?_connection[conn_hdl] : NULL;
+  return (conn_hdl < BLE_MAX_CONNECTION) ?_connection[conn_hdl] : NULL;
 }
 
 /**
@@ -160,15 +165,14 @@ bool BLEGap::requestPairing(uint16_t conn_hdl)
   return conn->requestPairing();
 }
 
-uint8_t BLEGap::getRole(uint16_t conn_hdl)
-{
-  VERIFY(_connection[conn_hdl], BLE_GAP_ROLE_INVALID);
-  return _connection[conn_hdl]->getRole();
-}
-
 uint16_t BLEGap::getPeerName(uint16_t conn_hdl, char* buf, uint16_t bufsize)
 {
   return Bluefruit.Gatt.readCharByUuid(conn_hdl, BLEUuid(BLE_UUID_GAP_CHARACTERISTIC_DEVICE_NAME), buf, bufsize);
+}
+
+void BLEGap::setRssiCallback(rssi_callback_t fp)
+{
+  _rssi_cb = fp;
 }
 
 /**
@@ -226,7 +230,20 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
 
       LOG_LV2("GAP", "Disconnect Reason 0x%02X", evt->evt.gap_evt.params.disconnected.reason);
 
-      // FIXME role is still required for sub sequence event handler such as Gatt
+      delete _connection[conn_hdl];
+      _connection[conn_hdl] = NULL;
+
+      // Turn off Conn LED If not connected at all
+      bool still_connected = false;
+      for (uint8_t i=0; i<BLE_MAX_CONNECTION; i++)
+      {
+        if ( _connection[i] && _connection[i]->connected() )
+        {
+          still_connected = true;
+          break;
+        }
+      }
+      if ( !still_connected ) Bluefruit._setConnLed(false);
 
       // Invoke disconnect callback
       if ( conn->getRole() == BLE_GAP_ROLE_PERIPH )
@@ -236,22 +253,16 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       {
         if ( _central.disconnect_cb ) ada_callback(NULL, _central.disconnect_cb, conn_hdl, para->reason);
       }
+    }
+    break;
 
-      delete _connection[conn_hdl];
-      _connection[conn_hdl] = NULL;
-
-      bool still_connected = false;
-      for (uint8_t i=0; i<BLE_MAX_CONNECTION; i++)
+    case BLE_GAP_EVT_RSSI_CHANGED:
+    {
+      ble_gap_evt_rssi_changed_t const * rssi_changed = &evt->evt.gap_evt.params.rssi_changed;
+      if ( _rssi_cb )
       {
-        if ( _connection[i] )
-        {
-          still_connected = true;
-          break;
-        }
+         ada_callback(NULL, _rssi_cb, conn_hdl, rssi_changed->rssi);
       }
-
-      // No connected at all, turn off conn led
-      if ( !still_connected ) Bluefruit._setConnLed(false);
     }
     break;
 

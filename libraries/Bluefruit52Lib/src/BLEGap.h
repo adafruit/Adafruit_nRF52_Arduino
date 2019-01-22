@@ -54,11 +54,15 @@ class BLEGap
   public:
     typedef void (*connect_callback_t    ) (uint16_t conn_hdl);
     typedef void (*disconnect_callback_t ) (uint16_t conn_hdl, uint8_t reason);
+    typedef void (*rssi_callback_t       ) (uint16_t conn_hdl, int8_t rssi);
 
     BLEGap(void);
 
-    uint8_t  getAddr              (uint8_t mac[6]);
-    bool     setAddr              (uint8_t mac[6], uint8_t type);
+    void     configPrphConn   (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    void     configCentralConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+
+    uint8_t  getAddr          (uint8_t mac[6]);
+    bool     setAddr          (uint8_t mac[6], uint8_t type);
 //    bool    setPrivacy                ();  sd_ble_gap_privacy_set()
 
     ble_gap_sec_params_t getSecureParam(void)
@@ -67,16 +71,12 @@ class BLEGap
     }
 
     BLEConnection* getConnection(uint16_t conn_hdl);
-    bool     connected           (uint16_t conn_hdl);
-    bool     requestPairing      (uint16_t conn_hdl);
-
-    uint8_t  getRole             (uint16_t conn_hdl);
-    uint16_t getPeerName         (uint16_t conn_hdl, char* buf, uint16_t bufsize);
-
     uint16_t getMaxMtu(uint8_t role);
 
-    void     configPrphConn      (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
-    void     configCentralConn   (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    bool     requestPairing     (uint16_t conn_hdl);
+    uint16_t getPeerName        (uint16_t conn_hdl, char* buf, uint16_t bufsize);
+
+    void     setRssiCallback(rssi_callback_t fp);
 
 //    bool     startRssi(uint16_t conn_hdl, uint8_t );
 //    bool     stopRssi(uint16_t conn_hdl);
@@ -94,12 +94,6 @@ class BLEGap
     void _central_setConnectCallback   ( connect_callback_t    fp);
     void _central_setDisconnectCallback( disconnect_callback_t fp);
 
-    // Array of TX Packet semaphore, indexed by connection handle
-    // Peer info where conn_hdl serves as index
-    typedef struct {
-      uint8_t role;
-    } gap_peer_t;
-
   private:
     struct {
       // Bandwidth configuration
@@ -115,6 +109,8 @@ class BLEGap
     ble_gap_sec_params_t _sec_param;
 
     BLEConnection* _connection[BLE_MAX_CONNECTION];
+
+    rssi_callback_t _rssi_cb;
 
     friend class AdafruitBluefruit;
 };
