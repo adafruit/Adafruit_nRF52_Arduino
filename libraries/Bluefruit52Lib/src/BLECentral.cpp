@@ -94,7 +94,7 @@ bool BLECentral::disconnect(uint16_t conn_hdl)
  */
 bool BLECentral::connected(uint16_t conn_hdl)
 {
-  BLEConnection* conn = Bluefruit.Gap.getConnection(conn_hdl);
+  BLEConnection* conn = Bluefruit.Gap.Connection(conn_hdl);
   return conn && conn->connected() && (conn->getRole() == BLE_GAP_ROLE_CENTRAL);
 }
 

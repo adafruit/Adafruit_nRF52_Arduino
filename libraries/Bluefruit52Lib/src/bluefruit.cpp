@@ -550,7 +550,7 @@ uint8_t AdafruitBluefruit::connected(void)
 
 bool AdafruitBluefruit::connected(uint16_t conn_hdl)
 {
-  BLEConnection* conn = Gap.getConnection(conn_hdl);
+  BLEConnection* conn = Gap.Connection(conn_hdl);
   return conn && conn->connected() && (conn->getRole() == BLE_GAP_ROLE_PERIPH);
 }
 
@@ -616,7 +616,7 @@ uint16_t AdafruitBluefruit::connHandle(void)
 
 bool AdafruitBluefruit::connPaired(void)
 {
-  return ( _conn_hdl != BLE_CONN_HANDLE_INVALID ) && Gap.getConnection(_conn_hdl)->paired();
+  return ( _conn_hdl != BLE_CONN_HANDLE_INVALID ) && Gap.Connection(_conn_hdl)->paired();
 }
 
 uint16_t AdafruitBluefruit::connInterval(void)
@@ -626,13 +626,13 @@ uint16_t AdafruitBluefruit::connInterval(void)
 
 ble_gap_addr_t AdafruitBluefruit::getPeerAddr(void)
 {
-  BLEConnection* conn = Gap.getConnection(_conn_hdl);
+  BLEConnection* conn = Gap.Connection(_conn_hdl);
   return conn ? conn->getPeerAddr() : ((ble_gap_addr_t) {0});
 }
 
 uint8_t AdafruitBluefruit::getPeerAddr(uint8_t addr[6])
 {
-  BLEConnection* conn = Gap.getConnection(_conn_hdl);
+  BLEConnection* conn = Gap.Connection(_conn_hdl);
   if ( conn )
   {
     return conn->getPeerAddr(addr);

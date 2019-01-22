@@ -70,7 +70,7 @@ class BLEGap
       return _sec_param;
     }
 
-    BLEConnection* getConnection(uint16_t conn_hdl);
+    BLEConnection* Connection(uint16_t conn_hdl);
     uint16_t getMaxMtu(uint8_t role);
 
     bool     requestPairing     (uint16_t conn_hdl);
