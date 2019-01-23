@@ -75,7 +75,6 @@ class BLEConnection
     uint16_t getMtu (void);
 
     ble_gap_addr_t getPeerAddr(void);
-    uint8_t getPeerAddr(uint8_t addr[6]);
 
     bool disconnect(void);
 

@@ -7,6 +7,8 @@
 - Introduce BLEPeriph
   - setConnInterval(), setConnIntervalMS(), setConnSupervisionTimeout(), setConnSupervisionTimeoutMS()
   - setDisconnectCallback(), setDisconnectCallback()
+- Bluefruit
+  - remove getPeerAddr(uint8_t[6]) variant
 - Enhance Gap, add BLEConnection class to mange peer connection
   - Remove Gap.connected(), Gap.getRole() in prefer to BLEConnection API
 - Added setRssiCallback(), monitorRssi(), getRssi(), stopRssi() for tracking rssi of a connection

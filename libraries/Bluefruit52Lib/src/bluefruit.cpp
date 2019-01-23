@@ -586,19 +586,6 @@ ble_gap_addr_t AdafruitBluefruit::getPeerAddr(void)
   return conn ? conn->getPeerAddr() : ((ble_gap_addr_t) {0});
 }
 
-uint8_t AdafruitBluefruit::getPeerAddr(uint8_t addr[6])
-{
-  BLEConnection* conn = Gap.Connection(_conn_hdl);
-  if ( conn )
-  {
-    return conn->getPeerAddr(addr);
-  }else
-  {
-    memclr(addr, BLE_GAP_ADDR_LEN);
-    return 0;
-  }
-}
-
 COMMENT_OUT (
 bool AdafruitBluefruit::setPIN(const char* pin)
 {

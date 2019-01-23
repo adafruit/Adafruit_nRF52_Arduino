@@ -98,12 +98,6 @@ ble_gap_addr_t BLEConnection::getPeerAddr (void)
   return _addr;
 }
 
-uint8_t BLEConnection::getPeerAddr (uint8_t addr[6])
-{
-  memcpy(addr, _addr.addr, BLE_GAP_ADDR_LEN);
-  return _addr.addr_type;
-}
-
 bool BLEConnection::disconnect(void)
 {
   return ERROR_NONE == sd_ble_gap_disconnect(_conn_hdl, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);

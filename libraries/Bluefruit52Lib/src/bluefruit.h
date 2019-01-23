@@ -150,8 +150,8 @@ class AdafruitBluefruit
     /* GAP, Connections and Bonding
      *------------------------------------------------------------------*/
     uint8_t  connected         (void); // Number of connected central
-    bool     connected         (uint16_t conn_hdl); // connected to a specific central
 
+    bool     connected         (uint16_t conn_hdl); // connected to a specific central
     bool     disconnect        (uint16_t conn_hdl);
 
     uint16_t connHandle        (void);
@@ -162,7 +162,6 @@ class AdafruitBluefruit
     void     clearBonds        (void);
 
     ble_gap_addr_t getPeerAddr (void);
-    uint8_t        getPeerAddr (uint8_t addr[6]);
 
     void     printInfo(void);
 
