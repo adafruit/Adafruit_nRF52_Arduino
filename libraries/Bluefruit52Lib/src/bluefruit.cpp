@@ -838,12 +838,12 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
     if (evt_conn_hdl != _conn_hdl ||
         evt_conn_hdl == BLE_CONN_HANDLE_INVALID)
     {
-      Central._event_handler(evt);
+      Central._eventHandler(evt);
     }
   }
 
   // Discovery Event Handler
-  if ( Discovery.begun() ) Discovery._event_handler(evt);
+  if ( Discovery.begun() ) Discovery._eventHandler(evt);
 
   // GATTs characteristics event handler
   Gatt._eventHandler(evt);

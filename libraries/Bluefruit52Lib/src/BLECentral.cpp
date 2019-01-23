@@ -131,7 +131,7 @@ void BLECentral::clearBonds(void)
  * Event is forwarded from Bluefruit Poll() method
  * @param event
  */
-void BLECentral::_event_handler(ble_evt_t* evt)
+void BLECentral::_eventHandler(ble_evt_t* evt)
 {
   // conn handle has fixed offset regardless of event type
   const uint16_t conn_hdl = evt->evt.common_evt.conn_handle;

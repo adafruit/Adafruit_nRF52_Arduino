@@ -80,7 +80,7 @@ class BLECentral
   private:
     ble_gap_conn_params_t _conn_param;
 
-    void     _event_handler(ble_evt_t* evt);
+    void     _eventHandler(ble_evt_t* evt);
 
     friend class AdafruitBluefruit;
 };

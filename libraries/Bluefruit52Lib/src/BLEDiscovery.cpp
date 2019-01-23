@@ -196,7 +196,7 @@ uint16_t BLEDiscovery::_discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_d
 }
 
 
-void BLEDiscovery::_event_handler(ble_evt_t* evt)
+void BLEDiscovery::_eventHandler(ble_evt_t* evt)
 {
   ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
 
