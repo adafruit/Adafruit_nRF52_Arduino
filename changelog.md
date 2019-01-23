@@ -7,7 +7,8 @@
   - Remove Gap.connected(), Gap.getRole() in prefer to BLEConnection API
 - Added setRssiCallback(), monitorRssi(), getRssi(), stopRssi() for tracking rssi of a connection
   - rssi_poll and rssi_callback example sketches are added 
-- Change BLECharacteristic callback signature  BLECharacteristic& to BLECharacteristic*
+- Change BLECharacteristic callback signature BLECharacteristic& to BLECharacteristic*
+- Use AdaCallback thread for BLECharacteristic callbacks
 
 # 0.9.3
 
