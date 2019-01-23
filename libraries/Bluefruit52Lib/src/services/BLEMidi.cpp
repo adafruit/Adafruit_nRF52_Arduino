@@ -153,7 +153,7 @@ err_t BLEMidi::begin(void)
   VERIFY_STATUS( _io.begin() );
 
   // Attempt to change the connection interval to 11.25-15 ms when starting HID
-  Bluefruit.setConnInterval(9, 12);
+  Bluefruit.Periph.setConnInterval(9, 12);
 
   return ERROR_NONE;
 }

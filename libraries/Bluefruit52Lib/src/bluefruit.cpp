@@ -130,11 +130,6 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _conn_hdl      = BLE_CONN_HANDLE_INVALID;
 
-  _ppcp.min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
-  _ppcp.max_conn_interval = BLE_GAP_CONN_MAX_INTERVAL_DFLT;
-  _ppcp.slave_latency = 0;
-  _ppcp.conn_sup_timeout = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS / 10; // in 10ms unit
-
   _conn_interval = 0;
   _event_cb = NULL;
 
@@ -412,14 +407,11 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 
   /*------------- Configure GAP  -------------*/
 
-  // Peripheral Preferred Connection Parameters
-  VERIFY_STATUS( sd_ble_gap_ppcp_set(&_ppcp), false );
+  VERIFY( Periph.begin() );
 
   // Default device name
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
   VERIFY_STATUS(sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)), false);
-
-  VERIFY_STATUS( sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN), false );
 
   //------------- USB -------------//
 #if NRF52840_XXAA
@@ -563,35 +555,6 @@ bool AdafruitBluefruit::disconnect(void)
   }
 
   return true; // not connected still return true
-}
-
-bool AdafruitBluefruit::setConnInterval(uint16_t min, uint16_t max)
-{
-  _ppcp.min_conn_interval = min;
-  _ppcp.max_conn_interval = max;
-
-  VERIFY_STATUS( sd_ble_gap_ppcp_set(&_ppcp), false);
-
-  return true;
-}
-
-bool AdafruitBluefruit::setConnIntervalMS(uint16_t min_ms, uint16_t max_ms)
-{
-  return setConnInterval( MS100TO125(min_ms), MS100TO125(max_ms) );
-}
-
-bool AdafruitBluefruit::setConnSupervisionTimeout(uint16_t timeout)
-{
-  _ppcp.conn_sup_timeout = timeout;
-
-  VERIFY_STATUS( sd_ble_gap_ppcp_set(&_ppcp), false);
-
-  return true;
-}
-
-bool AdafruitBluefruit::setConnSupervisionTimeoutMS(uint16_t timeout_ms)
-{
-  return setConnSupervisionTimeout(timeout_ms / 10); // 10ms unit
 }
 
 void AdafruitBluefruit::setConnectCallback( BLEGap::connect_callback_t fp )
@@ -763,14 +726,16 @@ void adafruit_ble_task(void* arg)
 void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 {
   // conn handle has fixed offset for all events
-  uint16_t const evt_conn_hdl = evt->evt.common_evt.conn_handle;
+  uint16_t const conn_hdl = evt->evt.common_evt.conn_handle;
 
-  LOG_LV1("BLE", "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), evt_conn_hdl);
+  LOG_LV1("BLE", "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), conn_hdl);
 
   // GAP handler
   Gap._eventHandler(evt);
   Advertising._eventHandler(evt);
   Scanner._eventHandler(evt);
+
+  Periph._eventHandler(evt);
 
   /*------------- BLE Peripheral Events -------------*/
   /* Only handle Peripheral events with matched connection handle
@@ -784,7 +749,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
    * Reconnect to a paired device
    * - Connect -> SEC_INFO_REQUEST -> CONN_SEC_UPDATE
    */
-  if ( evt_conn_hdl       == _conn_hdl             ||
+  if ( conn_hdl       == _conn_hdl             ||
        evt->header.evt_id == BLE_GAP_EVT_CONNECTED ||
        evt->header.evt_id == BLE_GAP_EVT_TIMEOUT )
   {
@@ -798,14 +763,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         {
           _conn_hdl      = evt->evt.gap_evt.conn_handle;
           _conn_interval = para->conn_params.min_conn_interval;
-
-          // Connection interval set by Central is out of preferred range
-          // Try to negotiate with Central using our preferred values
-          if ( !is_within(_ppcp.min_conn_interval, para->conn_params.min_conn_interval, _ppcp.max_conn_interval) )
-          {
-            // Null, value is set by sd_ble_gap_ppcp_set will be used
-            VERIFY_STATUS( sd_ble_gap_conn_param_update(_conn_hdl, NULL), );
-          }
         }
       }
       break;
@@ -835,8 +792,8 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   if (_central_count)
   {
     // Skip if not central connection
-    if (evt_conn_hdl != _conn_hdl ||
-        evt_conn_hdl == BLE_CONN_HANDLE_INVALID)
+    if (conn_hdl != _conn_hdl ||
+        conn_hdl == BLE_CONN_HANDLE_INVALID)
     {
       Central._eventHandler(evt);
     }
@@ -998,15 +955,7 @@ void AdafruitBluefruit::printInfo(void)
   Serial.printf("%d dBm", _tx_power);
   Serial.println();
 
-  // Connection Intervals
-  Serial.printf(title_fmt, "Conn Intervals");
-  Serial.printf("min = %.2f ms, ", _ppcp.min_conn_interval*1.25f);
-  Serial.printf("max = %.2f ms", _ppcp.max_conn_interval*1.25f);
-  Serial.println();
-
-  Serial.printf(title_fmt, "Conn Timeout");
-  Serial.printf("%.2f ms", _ppcp.conn_sup_timeout*10.0f);
-  Serial.println();
+  Periph.printInfo();
 
   /*------------- List the paried device -------------*/
   if ( _prph_count )

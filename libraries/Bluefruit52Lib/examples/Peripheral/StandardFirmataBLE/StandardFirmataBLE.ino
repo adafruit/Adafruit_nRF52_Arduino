@@ -797,7 +797,7 @@ void setup()
   
   // try to go as fast as possible, could be rejected by some central, increase it if needed
   // iOS won't negotitate and will mostly use 30ms
-  Bluefruit.setConnInterval(9, 24); // min = 9*1.25=11.25 ms, max = 23*1.25=30ms
+  Bluefruit.Periph.setConnInterval(9, 24); // min = 9*1.25=11.25 ms, max = 23*1.25=30ms
   
   // Configure and Start BLE Uart Service
   // Firmata use several small write(1) --> buffering TXD is required to run smoothly

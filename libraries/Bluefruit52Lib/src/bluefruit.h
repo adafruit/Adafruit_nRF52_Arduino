@@ -52,8 +52,8 @@
 #include "BLEAdvertising.h"
 #include "BLECharacteristic.h"
 #include "BLEService.h"
-
 #include "BLEScanner.h"
+#include "BLEPeriph.h"
 #include "BLECentral.h"
 #include "BLEClientCharacteristic.h"
 #include "BLEClientService.h"
@@ -111,6 +111,7 @@ class AdafruitBluefruit
     BLEAdvertising     Advertising;
     BLEAdvertisingData ScanResponse;
     BLEScanner         Scanner;
+    BLEPeriph          Periph;
     BLECentral         Central;
     BLEDiscovery       Discovery;
 
@@ -151,11 +152,6 @@ class AdafruitBluefruit
     uint8_t  connected         (void); // Number of connected central
     bool     connected         (uint16_t conn_hdl); // connected to a specific central
     bool     disconnect        (void);
-
-    bool     setConnInterval   (uint16_t min, uint16_t max);
-    bool     setConnIntervalMS (uint16_t min_ms, uint16_t max_ms);
-    bool     setConnSupervisionTimeout(uint16_t timeout);
-    bool     setConnSupervisionTimeoutMS(uint16_t timeout_ms);
 
     uint16_t connHandle        (void);
     bool     connPaired        (void);
@@ -198,9 +194,6 @@ class AdafruitBluefruit
 
     uint8_t _prph_count;
     uint8_t _central_count;
-
-    // Peripheral Preferred Connection Parameters (PPCP)
-    ble_gap_conn_params_t _ppcp;
 
     // Actual connection interval in use
     uint16_t _conn_interval;
