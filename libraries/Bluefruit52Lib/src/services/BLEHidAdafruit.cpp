@@ -222,12 +222,12 @@ err_t BLEHidAdafruit::begin(void)
 /* Keyboard
  *------------------------------------------------------------------*/
 
-void blehid_ada_keyboard_output_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
+void blehid_ada_keyboard_output_cb(BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset)
 {
   LOG_LV2("HID", "Keyboard LED : 0x%02X", data[0]);
   VERIFY(len == 1, );
 
-  BLEHidAdafruit& svc = (BLEHidAdafruit&) chr.parentService();
+  BLEHidAdafruit& svc = (BLEHidAdafruit&) chr->parentService();
   if ( svc._kbd_led_cb ) svc._kbd_led_cb(data[0]);
 }
 

@@ -345,12 +345,12 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
 
       if ( (request->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE) && (_wr_authorize_cb != NULL))
       {
-        _wr_authorize_cb(*this, &request->request.write);
+        _wr_authorize_cb(this, &request->request.write);
       }
 
       if ( (request->type == BLE_GATTS_AUTHORIZE_TYPE_READ) && (_rd_authorize_cb != NULL))
       {
-        _rd_authorize_cb(*this, &request->request.read);
+        _rd_authorize_cb(this, &request->request.read);
       }
     }
     break;
@@ -376,7 +376,7 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
 //          }else
           {
             // invoke directly if cannot allocate memory for data
-            _wr_cb(*this, request->data, request->len, request->offset);
+            _wr_cb(this, request->data, request->len, request->offset);
           }
         }
       }
@@ -392,7 +392,7 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
         {
           uint16_t value;
           memcpy(&value, request->data, 2);
-          _cccd_wr_cb(*this, value);
+          _cccd_wr_cb(this, value);
         }
       }
     }

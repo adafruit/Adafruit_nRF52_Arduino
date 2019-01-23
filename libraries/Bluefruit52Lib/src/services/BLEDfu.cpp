@@ -85,9 +85,9 @@ static uint16_t crc16(const uint8_t* data_p, uint8_t length)
   return crc;
 }
 
-static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
+static void bledfu_control_wr_authorize_cb(BLECharacteristic* chr, ble_gatts_evt_write_t* request)
 {
-  if ( (request->handle == chr.handles().value_handle)  &&
+  if ( (request->handle == chr->handles().value_handle)  &&
        (request->op != BLE_GATTS_OP_PREP_WRITE_REQ)     &&
        (request->op != BLE_GATTS_OP_EXEC_WRITE_REQ_NOW) &&
        (request->op != BLE_GATTS_OP_EXEC_WRITE_REQ_CANCEL))
@@ -97,7 +97,7 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
 
     ble_gatts_rw_authorize_reply_params_t reply = { .type = BLE_GATTS_AUTHORIZE_TYPE_WRITE };
 
-    if ( !chr.notifyEnabled() )
+    if ( !chr->notifyEnabled() )
     {
       reply.params.write.gatt_status = BLE_GATT_STATUS_ATTERR_CPS_CCCD_CONFIG_ERROR;
       sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);

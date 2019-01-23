@@ -556,7 +556,7 @@ void HAPCharacteristic::_eventHandler(ble_evt_t* event)
         {
           uint16_t value;
           memcpy(&value, request->data, 2);
-          _cccd_wr_cb(*this, value);
+          _cccd_wr_cb(this, value);
         }
       }
     }

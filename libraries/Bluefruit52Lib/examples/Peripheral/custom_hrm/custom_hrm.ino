@@ -183,7 +183,7 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   Serial.println("Advertising!");
 }
 
-void cccd_callback(BLECharacteristic& chr, uint16_t cccd_value)
+void cccd_callback(BLECharacteristic* chr, uint16_t cccd_value)
 {
     // Display the raw request packet
     Serial.print("CCCD Updated: ");
@@ -193,8 +193,8 @@ void cccd_callback(BLECharacteristic& chr, uint16_t cccd_value)
 
     // Check the characteristic this CCCD update is associated with in case
     // this handler is used for multiple CCCD records.
-    if (chr.uuid == hrmc.uuid) {
-        if (chr.notifyEnabled()) {
+    if (chr->uuid == hrmc.uuid) {
+        if (chr->notifyEnabled()) {
             Serial.println("Heart Rate Measurement 'Notify' enabled");
         } else {
             Serial.println("Heart Rate Measurement 'Notify' disabled");

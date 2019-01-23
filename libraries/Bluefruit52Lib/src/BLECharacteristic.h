@@ -74,10 +74,10 @@ class BLECharacteristic
 {
   public:
     /*--------- Callback Signatures ----------*/
-    typedef void (*read_authorize_cb_t)  (BLECharacteristic& chr, ble_gatts_evt_read_t * request);
-    typedef void (*write_authorize_cb_t) (BLECharacteristic& chr, ble_gatts_evt_write_t* request);
-    typedef void (*write_cb_t)           (BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
-    typedef void (*write_cccd_cb_t)      (BLECharacteristic& chr, uint16_t value);
+    typedef void (*read_authorize_cb_t)  (BLECharacteristic* chr, ble_gatts_evt_read_t * request);
+    typedef void (*write_authorize_cb_t) (BLECharacteristic* chr, ble_gatts_evt_write_t* request);
+    typedef void (*write_cb_t)           (BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset);
+    typedef void (*write_cccd_cb_t)      (BLECharacteristic* chr, uint16_t value);
 
     BLEUuid uuid;
 
@@ -125,7 +125,6 @@ class BLECharacteristic
     uint16_t write16   (uint16_t num);
     uint16_t write32   (uint32_t num);
     uint16_t write32   (int      num);
-
 
     /*------------- Read -------------*/
     uint16_t read(void* buffer, uint16_t bufsize, uint16_t offset = 0);

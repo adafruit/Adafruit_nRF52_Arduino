@@ -90,11 +90,11 @@ BLEUart::~BLEUart()
  * @param len
  * @param offset
  */
-void bleuart_rxd_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
+void bleuart_rxd_cb(BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset)
 {
   (void) offset;
 
-  BLEUart& svc = (BLEUart&) chr.parentService();
+  BLEUart& svc = (BLEUart&) chr->parentService();
   svc._rx_fifo->write(data, len);
 
 #if CFG_DEBUG >= 2
@@ -121,9 +121,9 @@ void bleuart_txd_buffered_hdlr(TimerHandle_t timer)
   (void) svc->flush_tx_buffered();
 }
 
-void bleuart_txd_cccd_cb(BLECharacteristic& chr, uint16_t value)
+void bleuart_txd_cccd_cb(BLECharacteristic* chr, uint16_t value)
 {
-  BLEUart& svc = (BLEUart&) chr.parentService();
+  BLEUart& svc = (BLEUart&) chr->parentService();
 
   if ( svc._buffered_th == NULL) return;
 
