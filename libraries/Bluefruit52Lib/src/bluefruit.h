@@ -122,15 +122,15 @@ class AdafruitBluefruit
     void     configUuid128Count   (uint8_t  uuid128_max);
     void     configAttrTableSize  (uint32_t attr_table_size);
 
-    // Config Bandwidth for connections
+    // Configure Bandwidth for connections
     void     configPrphConn        (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
     void     configCentralConn     (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
 
-    // Convenient function to config connection
+    // Convenient function to configure bandwidth connection
     void     configPrphBandwidth   (uint8_t bw);
     void     configCentralBandwidth(uint8_t bw);
 
-    err_t    begin(uint8_t prph_count = 1, uint8_t central_count = 0);
+    bool     begin(uint8_t prph_count = 1, uint8_t central_count = 0);
 
     /*------------------------------------------------------------------*/
     /* General Functions

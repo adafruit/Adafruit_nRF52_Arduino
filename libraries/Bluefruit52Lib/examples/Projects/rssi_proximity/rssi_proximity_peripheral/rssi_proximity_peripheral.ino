@@ -60,12 +60,9 @@ void setup()
   blinkTimer.begin(1000, blink_timer_callback);
   blinkTimer.start();
 
-  err_t err = Bluefruit.begin();
-  if (err)
+  if (Bluefruit.begin())
   {
-    Serial.print("Unable to init Bluefruit (ERROR CODE: ");
-    Serial.print(err);
-    Serial.println(")");
+    Serial.println("Unable to init Bluefruit");
     while(1)
     {
       digitalToggle(LED_RED);

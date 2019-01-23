@@ -228,7 +228,7 @@ void AdafruitBluefruit::configCentralBandwidth(uint8_t bw)
 }
 
 
-err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
+bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 {
   _prph_count    = prph_count;
   _central_count = central_count;
@@ -260,7 +260,7 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   #error Clock Source is not configured, define USE_LFXO or USE_LFRC according to your board in variant.h
 #endif
 
-  VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, nrf_error_cb) );
+  VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, nrf_error_cb), false );
 
 #ifdef NRF52840_XXAA
   usb_softdevice_post_enable();
@@ -309,14 +309,14 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   // Vendor UUID count
   varclr(&blecfg);
   blecfg.common_cfg.vs_uuid_cfg.vs_uuid_count = _sd_cfg.uuid128_max;
-  VERIFY_STATUS ( sd_ble_cfg_set(BLE_COMMON_CFG_VS_UUID, &blecfg, ram_start) );
+  VERIFY_STATUS ( sd_ble_cfg_set(BLE_COMMON_CFG_VS_UUID, &blecfg, ram_start), false );
 
   // Roles
   varclr(&blecfg);
   blecfg.gap_cfg.role_count_cfg.periph_role_count  = _prph_count;
   blecfg.gap_cfg.role_count_cfg.central_role_count = _central_count;
   blecfg.gap_cfg.role_count_cfg.central_sec_count  = (_central_count ? 1 : 0); // 1 should be enough
-  VERIFY_STATUS( sd_ble_cfg_set(BLE_GAP_CFG_ROLE_COUNT, &blecfg, ram_start) );
+  VERIFY_STATUS( sd_ble_cfg_set(BLE_GAP_CFG_ROLE_COUNT, &blecfg, ram_start), false );
 
   // Device Name
 //  varclr(&blecfg);
@@ -325,12 +325,12 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 
   varclr(&blecfg);
   blecfg.gatts_cfg.service_changed.service_changed = _sd_cfg.service_changed;
-  VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_SERVICE_CHANGED, &blecfg, ram_start) );
+  VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_SERVICE_CHANGED, &blecfg, ram_start), false );
 
   // ATTR Table Size
   varclr(&blecfg);
   blecfg.gatts_cfg.attr_tab_size.attr_tab_size = _sd_cfg.attr_table_size;
-  VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_ATTR_TAB_SIZE, &blecfg, ram_start) );
+  VERIFY_STATUS ( sd_ble_cfg_set(BLE_GATTS_CFG_ATTR_TAB_SIZE, &blecfg, ram_start), false );
 
   /*------------- Event Length + MTU + HVN queue + WRITE CMD queue setting affecting bandwidth -------------*/
   if ( _prph_count )
@@ -339,26 +339,26 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_PERIPHERAL;
     blecfg.conn_cfg.params.gatt_conn_cfg.att_mtu = Gap._prph.mtu_max;
-    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATT, &blecfg, ram_start) );
+    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATT, &blecfg, ram_start), false );
 
     // Event length and max connection for this config
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_PERIPHERAL;
     blecfg.conn_cfg.params.gap_conn_cfg.conn_count   = _prph_count;
     blecfg.conn_cfg.params.gap_conn_cfg.event_length = Gap._prph.event_len;
-    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GAP, &blecfg, ram_start) );
+    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GAP, &blecfg, ram_start), false );
 
     // HVN queue size
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_PERIPHERAL;
     blecfg.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = Gap._prph.hvn_qsize;
-    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &blecfg, ram_start) );
+    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &blecfg, ram_start), false );
 
     // WRITE COMMAND queue size
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_PERIPHERAL;
     blecfg.conn_cfg.params.gattc_conn_cfg.write_cmd_tx_queue_size = Gap._prph.wrcmd_qsize;
-    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTC, &blecfg, ram_start) );
+    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTC, &blecfg, ram_start), false );
   }
 
   if ( _central_count)
@@ -367,26 +367,26 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_CENTRAL;
     blecfg.conn_cfg.params.gatt_conn_cfg.att_mtu = Gap._central.mtu_max;
-    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATT, &blecfg, ram_start) );
+    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATT, &blecfg, ram_start), false );
 
     // Event length and max connection for this config
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_CENTRAL;
     blecfg.conn_cfg.params.gap_conn_cfg.conn_count   = _central_count;
     blecfg.conn_cfg.params.gap_conn_cfg.event_length = Gap._central.event_len;
-    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GAP, &blecfg, ram_start) );
+    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GAP, &blecfg, ram_start), false );
 
     // HVN queue size
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_CENTRAL;
     blecfg.conn_cfg.params.gatts_conn_cfg.hvn_tx_queue_size = Gap._central.hvn_qsize;
-    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &blecfg, ram_start) );
+    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTS, &blecfg, ram_start), false );
 
     // WRITE COMMAND queue size
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_CENTRAL;
     blecfg.conn_cfg.params.gattc_conn_cfg.write_cmd_tx_queue_size = Gap._central.wrcmd_qsize;
-    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTC, &blecfg, ram_start) );
+    VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTC, &blecfg, ram_start), false );
   }
 
   // Enable BLE stack
@@ -401,25 +401,25 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   }
 
   LOG_LV1("CFG", "SoftDevice's RAM requires: 0x%08X", ram_start);
-  VERIFY_STATUS(err);
+  VERIFY_STATUS(err, false);
 
   /*------------- Configure BLE Option -------------*/
   ble_opt_t  opt;
   varclr(&opt);
 
   opt.common_opt.conn_evt_ext.enable = 1; // enable Data Length Extension
-  VERIFY_STATUS( sd_ble_opt_set(BLE_COMMON_OPT_CONN_EVT_EXT, &opt) );
+  VERIFY_STATUS( sd_ble_opt_set(BLE_COMMON_OPT_CONN_EVT_EXT, &opt), false );
 
   /*------------- Configure GAP  -------------*/
 
   // Peripheral Preferred Connection Parameters
-  VERIFY_STATUS( sd_ble_gap_ppcp_set(&_ppcp) );
+  VERIFY_STATUS( sd_ble_gap_ppcp_set(&_ppcp), false );
 
   // Default device name
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
-  VERIFY_STATUS(sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)));
+  VERIFY_STATUS(sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)), false);
 
-  VERIFY_STATUS( sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN) );
+  VERIFY_STATUS( sd_ble_gap_appearance_set(BLE_APPEARANCE_UNKNOWN), false );
 
   //------------- USB -------------//
 #if NRF52840_XXAA
@@ -435,14 +435,14 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 
   // Create RTOS Semaphore & Task for BLE Event
   _ble_event_sem = xSemaphoreCreateBinary();
-  VERIFY(_ble_event_sem, NRF_ERROR_NO_MEM);
+  VERIFY(_ble_event_sem);
 
   TaskHandle_t ble_task_hdl;
   xTaskCreate( adafruit_ble_task, "BLE", CFG_BLE_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &ble_task_hdl);
 
   // Create RTOS Semaphore & Task for SOC Event
   _soc_event_sem = xSemaphoreCreateBinary();
-  VERIFY(_soc_event_sem, NRF_ERROR_NO_MEM);
+  VERIFY(_soc_event_sem);
 
   TaskHandle_t soc_task_hdl;
   xTaskCreate( adafruit_soc_task, "SOC", CFG_SOC_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &soc_task_hdl);
@@ -457,7 +457,7 @@ err_t AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   // Initialize bonding
   bond_init();
 
-  return ERROR_NONE;
+  return true;
 }
 
 /*------------------------------------------------------------------*/
