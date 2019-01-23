@@ -1,6 +1,6 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-# 0.9.4 
+# 0.9.5
 
 - Fixed Servo detach issue
 - Fixed pulseIn() compile issue: implement countPulseASM() using C instead of ASM
