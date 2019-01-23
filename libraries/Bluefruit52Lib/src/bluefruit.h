@@ -151,7 +151,8 @@ class AdafruitBluefruit
      *------------------------------------------------------------------*/
     uint8_t  connected         (void); // Number of connected central
     bool     connected         (uint16_t conn_hdl); // connected to a specific central
-    bool     disconnect        (void);
+
+    bool     disconnect        (uint16_t conn_hdl);
 
     uint16_t connHandle        (void);
     bool     connPaired        (void);

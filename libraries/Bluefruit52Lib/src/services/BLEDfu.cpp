@@ -155,7 +155,7 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic* chr, ble_gatts_evt
 
       // Initiate DFU Sequence and reboot into DFU OTA mode
       Bluefruit.Advertising.restartOnDisconnect(false);
-      Bluefruit.disconnect();
+      conn->disconnect();
 
       // Set GPReset to DFU OTA
       enum { DFU_OTA_MAGIC = 0xB1 };

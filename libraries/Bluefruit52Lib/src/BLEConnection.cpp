@@ -104,6 +104,11 @@ uint8_t BLEConnection::getPeerAddr (uint8_t addr[6])
   return _addr.addr_type;
 }
 
+bool BLEConnection::disconnect(void)
+{
+  return ERROR_NONE == sd_ble_gap_disconnect(_conn_hdl, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+}
+
 bool BLEConnection::monitorRssi(uint8_t threshold)
 {
   // number of samples is 3

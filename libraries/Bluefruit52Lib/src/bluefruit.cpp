@@ -546,12 +546,14 @@ bool AdafruitBluefruit::connected(uint16_t conn_hdl)
   return conn && conn->connected() && (conn->getRole() == BLE_GAP_ROLE_PERIPH);
 }
 
-bool AdafruitBluefruit::disconnect(void)
+bool AdafruitBluefruit::disconnect(uint16_t conn_hdl)
 {
+  BLEConnection* conn = Gap.Connection(conn_hdl);
+
   // disconnect if connected
-  if ( connected() )
+  if ( conn && conn->connected() )
   {
-    return ERROR_NONE == sd_ble_gap_disconnect(_conn_hdl, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+    return conn->disconnect();
   }
 
   return true; // not connected still return true
