@@ -40,6 +40,8 @@
 #include <Arduino.h>
 #include "bluefruit_common.h"
 
+#include "BLEGap.h"
+
 class BLEPeriph
 {
   public:
@@ -52,6 +54,8 @@ class BLEPeriph
     bool setConnSupervisionTimeout(uint16_t timeout);
     bool setConnSupervisionTimeoutMS(uint16_t timeout_ms);
 
+    void setConnectCallback   ( BLEGap::connect_callback_t    fp);
+    void setDisconnectCallback( BLEGap::disconnect_callback_t fp);
 
     void printInfo(void);
 

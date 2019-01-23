@@ -557,16 +557,6 @@ bool AdafruitBluefruit::disconnect(void)
   return true; // not connected still return true
 }
 
-void AdafruitBluefruit::setConnectCallback( BLEGap::connect_callback_t fp )
-{
-  Gap._prph_setConnectCallback(fp);
-}
-
-void AdafruitBluefruit::setDisconnectCallback( BLEGap::disconnect_callback_t fp )
-{
-  Gap._prph_setDisconnectCallback(fp);
-}
-
 void AdafruitBluefruit::setEventCallback ( void (*fp) (ble_evt_t*) )
 {
   _event_cb = fp;

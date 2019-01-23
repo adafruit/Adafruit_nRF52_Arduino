@@ -41,8 +41,8 @@ void setup()
   Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52");
   //Bluefruit.setName(getMcuUniqueID()); // useful testing with multiple central connections
-  Bluefruit.setConnectCallback(connect_callback);
-  Bluefruit.setDisconnectCallback(disconnect_callback);
+  Bluefruit.Periph.setConnectCallback(connect_callback);
+  Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");

@@ -44,8 +44,8 @@ void setup()
   Bluefruit.setName("Bluefruit52 HRM");
 
   // Set the connect/disconnect callback handlers
-  Bluefruit.setConnectCallback(connect_callback);
-  Bluefruit.setDisconnectCallback(disconnect_callback);
+  Bluefruit.Periph.setConnectCallback(connect_callback);
+  Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
 
   // Configure and Start the Device Information Service
   Serial.println("Configuring the Device Information Service");

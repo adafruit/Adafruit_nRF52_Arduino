@@ -168,9 +168,6 @@ class AdafruitBluefruit
     /*------------------------------------------------------------------*/
     /* Callbacks
      *------------------------------------------------------------------*/
-    void setConnectCallback   ( BLEGap::connect_callback_t    fp);
-    void setDisconnectCallback( BLEGap::disconnect_callback_t fp);
-
     void setEventCallback ( void (*fp) (ble_evt_t*) );
 
     COMMENT_OUT ( bool setPIN(const char* pin); )

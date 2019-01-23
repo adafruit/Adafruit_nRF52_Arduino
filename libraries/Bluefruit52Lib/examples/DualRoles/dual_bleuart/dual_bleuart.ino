@@ -43,8 +43,8 @@ void setup()
   Bluefruit.setName("Bluefruit52 duo");
 
   // Callbacks for Peripheral
-  Bluefruit.setConnectCallback(prph_connect_callback);
-  Bluefruit.setDisconnectCallback(prph_disconnect_callback);
+  Bluefruit.Periph.setConnectCallback(prph_connect_callback);
+  Bluefruit.Periph.setDisconnectCallback(prph_disconnect_callback);
 
   // Callbacks for Central
   Bluefruit.Central.setConnectCallback(cent_connect_callback);

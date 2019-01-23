@@ -88,7 +88,6 @@ bool BLEPeriph::setConnIntervalMS (uint16_t min_ms, uint16_t max_ms)
   return setConnInterval( MS100TO125(min_ms), MS100TO125(max_ms) );
 }
 
-
 bool BLEPeriph::setConnSupervisionTimeout(uint16_t timeout)
 {
   _ppcp.conn_sup_timeout = timeout;
@@ -102,6 +101,17 @@ bool BLEPeriph::setConnSupervisionTimeoutMS(uint16_t timeout_ms)
 {
   return setConnSupervisionTimeout(timeout_ms / 10); // 10ms unit
 }
+
+void BLEPeriph::setConnectCallback( BLEGap::connect_callback_t fp )
+{
+  Bluefruit.Gap._prph_setConnectCallback(fp);
+}
+
+void BLEPeriph::setDisconnectCallback( BLEGap::disconnect_callback_t fp )
+{
+  Bluefruit.Gap._prph_setDisconnectCallback(fp);
+}
+
 
 void BLEPeriph::_eventHandler(ble_evt_t* evt)
 {

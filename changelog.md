@@ -6,6 +6,7 @@
 - Fixed pulseIn() compile issue: implement countPulseASM() using C instead of ASM
 - Introduce BLEPeriph
   - setConnInterval(), setConnIntervalMS(), setConnSupervisionTimeout(), setConnSupervisionTimeoutMS()
+  - setDisconnectCallback(), setDisconnectCallback()
 - Enhance Gap, add BLEConnection class to mange peer connection
   - Remove Gap.connected(), Gap.getRole() in prefer to BLEConnection API
 - Added setRssiCallback(), monitorRssi(), getRssi(), stopRssi() for tracking rssi of a connection
