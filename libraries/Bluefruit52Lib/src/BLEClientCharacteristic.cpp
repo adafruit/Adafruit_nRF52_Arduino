@@ -335,7 +335,6 @@ uint16_t BLEClientCharacteristic::write32(int value)
   return write32( (uint32_t) value);
 }
 
-
 void BLEClientCharacteristic::setNotifyCallback(notify_cb_t fp, bool useAdaCallback)
 {
   _notify_cb = fp;
@@ -418,7 +417,7 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
               if (!data) return;
               memcpy(data, hvx->data, hvx->len);
 
-              // data is free by callback
+              // data is free after callback
               ada_callback(data, _notify_cb, this, data, hvx->len);
             }else
             {

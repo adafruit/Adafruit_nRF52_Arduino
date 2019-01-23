@@ -123,7 +123,6 @@ class BLEClientCharacteristic
       uint8_t indicate : 1;
     } _use_ada_cb;
 
-
     void  _init         (void);
     void  _eventHandler (ble_evt_t* event);
 
