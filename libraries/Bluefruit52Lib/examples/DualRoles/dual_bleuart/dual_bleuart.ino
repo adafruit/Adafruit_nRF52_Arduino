@@ -174,8 +174,8 @@ void cent_connect_callback(uint16_t conn_handle)
     clientUart.enableTXD();
   }else
   {
-    // disconect since we couldn't find bleuart service
-    Bluefruit.Central.disconnect(conn_handle);
+    // disconnect since we couldn't find bleuart service
+    Bluefruit.disconnect(conn_handle);
   }  
 }
 

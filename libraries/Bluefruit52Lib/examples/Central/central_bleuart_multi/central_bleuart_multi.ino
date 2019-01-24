@@ -177,8 +177,8 @@ void connect_callback(uint16_t conn_handle)
   {
     Serial.println("Found ... NOTHING!");
 
-    // disconect since we couldn't find bleuart service
-    Bluefruit.Central.disconnect(conn_handle);
+    // disconnect since we couldn't find bleuart service
+    Bluefruit.disconnect(conn_handle);
   }  
 
   connection_num++;

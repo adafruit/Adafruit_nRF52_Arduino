@@ -82,11 +82,6 @@ bool BLECentral::connect(const ble_gap_evt_adv_report_t* adv_report)
   return connect(&adv_report->peer_addr);
 }
 
-bool BLECentral::disconnect(uint16_t conn_hdl)
-{
-  return ERROR_NONE == sd_ble_gap_disconnect(conn_hdl, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-}
-
 /**
  * Check if connected to a specific peripheral
  * @param conn_handle

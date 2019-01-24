@@ -66,7 +66,6 @@ class BLECentral
 
     bool connect(const ble_gap_evt_adv_report_t* adv_report);
     bool connect(const ble_gap_addr_t *peer_addr);
-    bool disconnect(uint16_t conn_hdl);
 
     bool    connected(uint16_t conn_hdl); // Connected as central to this connection
     uint8_t connected(void);              // Number of connected Peripherals

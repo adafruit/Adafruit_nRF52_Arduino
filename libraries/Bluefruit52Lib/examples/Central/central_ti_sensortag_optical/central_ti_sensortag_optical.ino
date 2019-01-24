@@ -176,8 +176,8 @@ void connect_callback(uint16_t conn_handle)
   {
     Serial.println("No Service Found");
 
-    // disconect since we couldn't find service
-    Bluefruit.Central.disconnect(conn_handle);
+    // disconnect since we couldn't find service
+    Bluefruit.disconnect(conn_handle);
 
     return;
   } 
@@ -189,7 +189,7 @@ void connect_callback(uint16_t conn_handle)
   {
     // Measurement chr is mandatory, if it is not found (valid), then disconnect
     Serial.println("No Characteristic Found. Characteristic is mandatory but not found. ");
-    Bluefruit.Central.disconnect(conn_handle);
+    Bluefruit.disconnect(conn_handle);
     return;
   }
   Serial.println("Characteristic Found");
@@ -201,7 +201,7 @@ void connect_callback(uint16_t conn_handle)
   if ( !opticalCharacteristicDataCollectionEnabler.discover() )
   {
     Serial.println("No Characteristic Found. Characteristic is mandatory but not found.");   
-    Bluefruit.Central.disconnect(conn_handle);
+    Bluefruit.disconnect(conn_handle);
     return;
   }
   Serial.println("Characteristic Found"); 
