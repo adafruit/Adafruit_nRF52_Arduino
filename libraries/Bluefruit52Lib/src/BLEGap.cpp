@@ -119,11 +119,6 @@ BLEConnection* BLEGap::Connection(uint16_t conn_hdl)
   return (conn_hdl < BLE_MAX_CONNECTION) ?_connection[conn_hdl] : NULL;
 }
 
-uint16_t BLEGap::getPeerName(uint16_t conn_hdl, char* buf, uint16_t bufsize)
-{
-  return Bluefruit.Gatt.readCharByUuid(conn_hdl, BLEUuid(BLE_UUID_GAP_CHARACTERISTIC_DEVICE_NAME), buf, bufsize);
-}
-
 void BLEGap::setRssiCallback(rssi_callback_t fp)
 {
   _rssi_cb = fp;

@@ -166,6 +166,9 @@ class AdafruitBluefruit
     ble_gap_addr_t getPeerAddr (uint16_t conn_hdl);
     bool     requestPairing    (uint16_t conn_hdl);
 
+    uint16_t getPeerName       (uint16_t conn_hdl, char* buf, uint16_t bufsize);
+
+
     void     printInfo(void);
 
     /*------------------------------------------------------------------*/

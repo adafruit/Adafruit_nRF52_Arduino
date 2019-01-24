@@ -70,13 +70,7 @@ class BLEGap
 
     BLEConnection* Connection(uint16_t conn_hdl);
     uint16_t getMaxMtu(uint8_t role);
-    uint16_t getPeerName        (uint16_t conn_hdl, char* buf, uint16_t bufsize);
-
     void     setRssiCallback(rssi_callback_t fp);
-
-//    bool     startRssi(uint16_t conn_hdl, uint8_t );
-//    bool     stopRssi(uint16_t conn_hdl);
-//    int8_t   getRssi(uint16_t conn_hdl);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY

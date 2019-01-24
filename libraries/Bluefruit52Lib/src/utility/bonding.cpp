@@ -108,7 +108,7 @@ static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_keys_t* bk
 
   //------------- save device name -------------//
   char devname[CFG_MAX_DEVNAME_LEN] = { 0 };
-  Bluefruit.Gap.getPeerName(conn_hdl, devname, CFG_MAX_DEVNAME_LEN);
+  Bluefruit.getPeerName(conn_hdl, devname, CFG_MAX_DEVNAME_LEN);
 
   // If couldn't get devname then use peer mac address
   if ( !devname[0] )

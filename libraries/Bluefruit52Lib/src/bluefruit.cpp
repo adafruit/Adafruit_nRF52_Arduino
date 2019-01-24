@@ -583,6 +583,11 @@ bool AdafruitBluefruit::disconnect(uint16_t conn_hdl)
   return true; // not connected still return true
 }
 
+uint16_t AdafruitBluefruit::getPeerName(uint16_t conn_hdl, char* buf, uint16_t bufsize)
+{
+  return Gatt.readCharByUuid(conn_hdl, BLEUuid(BLE_UUID_GAP_CHARACTERISTIC_DEVICE_NAME), buf, bufsize);
+}
+
 void AdafruitBluefruit::setEventCallback ( void (*fp) (ble_evt_t*) )
 {
   _event_cb = fp;
