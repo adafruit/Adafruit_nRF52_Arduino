@@ -72,8 +72,6 @@ class BLEGap
 
     BLEConnection* Connection(uint16_t conn_hdl);
     uint16_t getMaxMtu(uint8_t role);
-
-    bool     requestPairing     (uint16_t conn_hdl);
     uint16_t getPeerName        (uint16_t conn_hdl, char* buf, uint16_t bufsize);
 
     void     setRssiCallback(rssi_callback_t fp);

@@ -97,7 +97,7 @@ void connect_callback(uint16_t conn_handle)
     Serial.println("Found it");
 
     // HID device mostly require pairing/bonding
-    if ( !Bluefruit.Gap.requestPairing(conn_handle) )
+    if ( !Bluefruit.requestPairing(conn_handle) )
     {
       Serial.print("Failed to paired");
       return;

@@ -276,7 +276,7 @@ void connect_callback(uint16_t conn_handle)
 
     oled.display();
 
-    if ( Bluefruit.requestPairing() )
+    if ( Bluefruit.requestPairing(conn_handle) )
     {
       oled.println("OK");
 

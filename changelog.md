@@ -11,6 +11,7 @@
   - remove getPeerAddr(uint8_t[6]) variant
   - remove connInterval() is replaced by BLEConnection's getConnInterval()
   - Central.disconnect() is repalced by Bluefruit.disconnect()
+  - add conn_handle to Bluefruit.requestPairing(), remove Gap.requestPairing()
 - Enhance Gap, add BLEConnection class to mange peer connection
   - Remove Gap.connected(), Gap.getRole() in prefer to BLEConnection API
 - Added setRssiCallback(), monitorRssi(), getRssi(), stopRssi() for tracking rssi of a connection

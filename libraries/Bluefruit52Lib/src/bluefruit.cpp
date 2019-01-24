@@ -794,9 +794,12 @@ void AdafruitBluefruit::_setConnLed (bool on_off)
 /*------------------------------------------------------------------*/
 /* Bonds
  *------------------------------------------------------------------*/
-bool AdafruitBluefruit::requestPairing(void)
+bool AdafruitBluefruit::requestPairing(uint16_t conn_hdl)
 {
-  return Gap.requestPairing(_conn_hdl);
+  BLEConnection* conn = Gap.Connection(conn_hdl);
+  VERIFY(conn);
+
+  return conn->requestPairing();
 }
 
 void AdafruitBluefruit::clearBonds(void)

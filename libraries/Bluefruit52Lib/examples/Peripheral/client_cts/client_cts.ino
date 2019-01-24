@@ -120,7 +120,7 @@ void connect_callback(uint16_t conn_handle)
     
     // iOS requires pairing to work, it makes sense to request security here as well
     Serial.print("Attempting to PAIR with the iOS device, please press PAIR on your phone ... ");
-    if ( Bluefruit.requestPairing() )
+    if ( Bluefruit.requestPairing(conn_handle) )
     {
       Serial.println("Done");
       Serial.println("Enabling Time Adjust Notify");

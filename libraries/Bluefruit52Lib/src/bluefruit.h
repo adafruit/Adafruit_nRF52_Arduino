@@ -151,16 +151,16 @@ class AdafruitBluefruit
      *------------------------------------------------------------------*/
     uint8_t  connected         (void); // Number of connected
 
-    bool     connected         (uint16_t conn_hdl);
-    bool     disconnect        (uint16_t conn_hdl);
-    ble_gap_addr_t getPeerAddr (uint16_t conn_hdl);
-
     uint16_t connHandle        (void);
     bool     connPaired        (void);
 
-    bool     requestPairing    (void);
     void     clearBonds        (void);
 
+    // Alias to BLEConnection API()
+    bool     connected         (uint16_t conn_hdl);
+    bool     disconnect        (uint16_t conn_hdl);
+    ble_gap_addr_t getPeerAddr (uint16_t conn_hdl);
+    bool     requestPairing    (uint16_t conn_hdl);
 
     void     printInfo(void);
 

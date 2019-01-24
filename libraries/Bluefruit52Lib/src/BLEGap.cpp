@@ -152,14 +152,6 @@ bool BLEGap::setAddr(uint8_t mac[6], uint8_t type)
   return true;
 }
 
-bool BLEGap::requestPairing(uint16_t conn_hdl)
-{
-  BLEConnection* conn = _connection[conn_hdl];
-  VERIFY(conn);
-
-  return conn->requestPairing();
-}
-
 uint16_t BLEGap::getPeerName(uint16_t conn_hdl, char* buf, uint16_t bufsize)
 {
   return Bluefruit.Gatt.readCharByUuid(conn_hdl, BLEUuid(BLE_UUID_GAP_CHARACTERISTIC_DEVICE_NAME), buf, bufsize);
