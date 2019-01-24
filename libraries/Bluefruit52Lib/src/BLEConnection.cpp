@@ -46,6 +46,7 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
   _connected = true;
 
   _mtu = BLE_GATT_ATT_MTU_DEFAULT;
+  _conn_interval = 0;
   _addr = evt_connected->peer_addr;
   _role = evt_connected->role;
 
@@ -101,6 +102,29 @@ uint16_t BLEConnection::getConnInterval(void)
 ble_gap_addr_t BLEConnection::getPeerAddr (void)
 {
   return _addr;
+}
+
+static inline bool is_tx_power_valid(int8_t power)
+{
+#if defined(NRF52832_XXAA)
+  int8_t const accepted[] = { -40, -20, -16, -12, -8, -4, 0, 3, 4 };
+#elif defined( NRF52840_XXAA)
+  int8_t const accepted[] = { -40, -20, -16, -12, -8, -4, 0, 2, 3, 4, 5, 6, 7, 8 };
+#endif
+
+  for (uint32_t i=0; i<sizeof(accepted); i++)
+  {
+    if (accepted[i] == power) return true;
+  }
+
+  return false;
+}
+
+bool BLEConnection::setTxPower(int8_t power)
+{
+  VERIFY(is_tx_power_valid(power));
+  VERIFY_STATUS(sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_CONN, _conn_hdl, power), false);
+  return true;
 }
 
 bool BLEConnection::disconnect(void)

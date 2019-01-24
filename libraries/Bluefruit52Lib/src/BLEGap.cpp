@@ -160,8 +160,6 @@ void BLEGap::_eventHandler(ble_evt_t* evt)
       _connection[conn_hdl] = new BLEConnection(conn_hdl, para, hvn_qsize, wrcmd_qsize);
       conn = _connection[conn_hdl];
 
-      LOG_LV2("GAP", "Conn Interval= %f", para->conn_params.min_conn_interval*1.25f);
-
       // Invoke connect callback
       if ( conn->getRole() == BLE_GAP_ROLE_PERIPH )
       {

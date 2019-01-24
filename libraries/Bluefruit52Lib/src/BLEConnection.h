@@ -49,6 +49,7 @@ class BLEConnection
     uint16_t _conn_interval;
     uint16_t _ediv;
     uint8_t  _role;
+
     bool _connected;
     bool _paired;
     bool _hvc_received;
@@ -75,10 +76,11 @@ class BLEConnection
     uint8_t  getRole(void);
     uint16_t getMtu (void);
     uint16_t getConnInterval(void);
-
     ble_gap_addr_t getPeerAddr(void);
 
     bool disconnect(void);
+
+    bool setTxPower(int8_t power);
 
     bool monitorRssi(uint8_t threshold = BLE_GAP_RSSI_THRESHOLD_INVALID);
     int8_t getRssi(void);
