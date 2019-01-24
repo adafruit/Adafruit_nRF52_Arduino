@@ -751,8 +751,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
    * - Connect -> SEC_INFO_REQUEST -> CONN_SEC_UPDATE
    */
   if ( conn_hdl       == _conn_hdl             ||
-       evt->header.evt_id == BLE_GAP_EVT_CONNECTED ||
-       evt->header.evt_id == BLE_GAP_EVT_TIMEOUT )
+       evt->header.evt_id == BLE_GAP_EVT_CONNECTED)
   {
     switch ( evt->header.evt_id  )
     {
@@ -762,17 +761,13 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 
         if (para->role == BLE_GAP_ROLE_PERIPH)
         {
-          _conn_hdl      = evt->evt.gap_evt.conn_handle;
+          _conn_hdl = evt->evt.gap_evt.conn_handle;
         }
       }
       break;
 
       case BLE_GAP_EVT_DISCONNECTED:
         _conn_hdl = BLE_CONN_HANDLE_INVALID;
-      break;
-
-      case BLE_GATTS_EVT_SYS_ATTR_MISSING:
-        sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
       break;
 
       default: break;

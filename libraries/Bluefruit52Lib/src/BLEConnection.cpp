@@ -446,6 +446,10 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
     }
     break;
 
+    case BLE_GATTS_EVT_SYS_ATTR_MISSING:
+      sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
+    break;
+
     default: break;
   }
 }
