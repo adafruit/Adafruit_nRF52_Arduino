@@ -93,6 +93,11 @@ uint16_t BLEConnection::getMtu (void)
   return _mtu;
 }
 
+uint16_t BLEConnection::getConnInterval(void)
+{
+  return _conn_interval;
+}
+
 ble_gap_addr_t BLEConnection::getPeerAddr (void)
 {
   return _addr;

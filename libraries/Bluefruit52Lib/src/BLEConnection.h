@@ -71,8 +71,10 @@ class BLEConnection
     uint16_t handle(void);
     bool     connected(void);
     bool     paired(void);
+
     uint8_t  getRole(void);
     uint16_t getMtu (void);
+    uint16_t getConnInterval(void);
 
     ble_gap_addr_t getPeerAddr(void);
 

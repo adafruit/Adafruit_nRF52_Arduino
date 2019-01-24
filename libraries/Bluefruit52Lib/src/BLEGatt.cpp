@@ -50,10 +50,11 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
   int32_t count = 0;
   ble_gattc_handle_range_t hdl_range = { .start_handle = start_hdl, .end_handle = end_hdl };
 
+  BLEConnection* conn = Bluefruit.Gap.Connection(conn_hdl);
+
   while( _adamsg.isWaiting() )
   {
-    // TODO multiple peripherals
-    delay( Bluefruit.connInterval() );
+    delay( conn->getConnInterval() );
   }
 
   _adamsg.begin(true);
