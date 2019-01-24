@@ -493,29 +493,27 @@ uint8_t AdafruitBluefruit::getName(char* name, uint16_t bufsize)
   return bufsize;
 }
 
-bool AdafruitBluefruit::setTxPower(int8_t power)
+
+static inline bool is_tx_power_valid(int8_t power)
 {
 #if defined(NRF52832_XXAA)
-int8_t const accepted[] = { -40, -20, -16, -12, -8, -4, 0, 3, 4 };
+  int8_t const accepted[] = { -40, -20, -16, -12, -8, -4, 0, 3, 4 };
 #elif defined( NRF52840_XXAA)
-int8_t const accepted[] = { -40, -20, -16, -12, -8, -4, 0, 2, 3, 4, 5, 6, 7, 8 };
+  int8_t const accepted[] = { -40, -20, -16, -12, -8, -4, 0, 2, 3, 4, 5, 6, 7, 8 };
 #endif
 
-  // Check if TX Power is valid value
-  uint32_t i;
-  for (i=0; i<sizeof(accepted); i++)
+  for (uint32_t i=0; i<sizeof(accepted); i++)
   {
-    if (accepted[i] == power) break;
+    if (accepted[i] == power) return true;
   }
-  VERIFY(i < sizeof(accepted));
 
-  // Apply if connected
-  if ( _conn_hdl != BLE_CONN_HANDLE_INVALID )
-  {
-    VERIFY_STATUS( sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_CONN, _conn_hdl, power), false );
-  }
+  return false;
+}
+
+bool AdafruitBluefruit::setTxPower(int8_t power)
+{
+  VERIFY(is_tx_power_valid(power));
   _tx_power = power;
-
   return true;
 }
 
