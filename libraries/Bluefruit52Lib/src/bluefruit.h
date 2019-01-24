@@ -157,7 +157,6 @@ class AdafruitBluefruit
 
     uint16_t connHandle        (void);
     bool     connPaired        (void);
-    uint16_t connInterval      (void);
 
     bool     requestPairing    (void);
     void     clearBonds        (void);
@@ -191,9 +190,6 @@ class AdafruitBluefruit
 
     uint8_t _prph_count;
     uint8_t _central_count;
-
-    // Actual connection interval in use
-    uint16_t _conn_interval;
 
     int8_t _tx_power;
 

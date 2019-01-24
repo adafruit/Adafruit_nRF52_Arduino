@@ -130,7 +130,6 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _conn_hdl      = BLE_CONN_HANDLE_INVALID;
 
-  _conn_interval = 0;
   _event_cb = NULL;
 
 COMMENT_OUT(
@@ -573,11 +572,6 @@ bool AdafruitBluefruit::connPaired(void)
   return conn && conn->paired();
 }
 
-uint16_t AdafruitBluefruit::connInterval(void)
-{
-  return _conn_interval;
-}
-
 ble_gap_addr_t AdafruitBluefruit::getPeerAddr(uint16_t conn_hdl)
 {
   BLEConnection* conn = Gap.Connection(conn_hdl);
@@ -733,23 +727,13 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
     switch ( evt->header.evt_id  )
     {
       case BLE_GAP_EVT_CONNECTED:
-      { // Note callback is invoked by BLEGap
+      {
         ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
 
         if (para->role == BLE_GAP_ROLE_PERIPH)
         {
           _conn_hdl      = evt->evt.gap_evt.conn_handle;
-          _conn_interval = para->conn_params.min_conn_interval;
         }
-      }
-      break;
-
-      case BLE_GAP_EVT_CONN_PARAM_UPDATE:
-      {
-        // Connection Parameter after negotiating with Central
-        // min conn = max conn = actual used interval
-        ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
-        _conn_interval = param->min_conn_interval;
       }
       break;
 
