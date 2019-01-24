@@ -61,8 +61,6 @@ class BLEGap
     void     configPrphConn   (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
     void     configCentralConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
 
-    uint8_t  getAddr          (uint8_t mac[6]);
-    bool     setAddr          (uint8_t mac[6], uint8_t type);
 //    bool    setPrivacy                ();  sd_ble_gap_privacy_set()
 
     ble_gap_sec_params_t getSecureParam(void)

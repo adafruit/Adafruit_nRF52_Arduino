@@ -107,7 +107,7 @@ bool BLEHomekit::setAdv(BLEAdvertisingData& adv_ref)
       .compatible_version = 2 // protocol version
   };
 
-  Bluefruit.Gap.getAddr(data.dev_id);
+  Bluefruit.getAddr(data.dev_id);
 
   VERIFY_STATIC( sizeof(data) == 17);
 

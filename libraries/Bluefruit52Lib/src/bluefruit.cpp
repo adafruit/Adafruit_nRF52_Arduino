@@ -454,6 +454,33 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 /*------------------------------------------------------------------*/
 /* General Functions
  *------------------------------------------------------------------*/
+ble_gap_addr_t AdafruitBluefruit::getAddr (void)
+{
+  ble_gap_addr_t gap_addr;
+  sd_ble_gap_addr_get(&gap_addr);
+  return gap_addr;
+}
+
+/**
+ * Get current Mac address and its type
+ * @param mac address
+ * @return Address type e.g BLE_GAP_ADDR_TYPE_RANDOM_STATIC
+ */
+uint8_t AdafruitBluefruit::getAddr (uint8_t mac[6])
+{
+  ble_gap_addr_t gap_addr;
+  sd_ble_gap_addr_get(&gap_addr);
+
+  memcpy(mac, gap_addr.addr, 6);
+  return gap_addr.addr_type;
+}
+
+bool AdafruitBluefruit::setAddr (ble_gap_addr_t* gap_addr)
+{
+  VERIFY_STATUS( sd_ble_gap_addr_set(gap_addr), false );
+  return true;
+}
+
 void AdafruitBluefruit::setName (char const * str)
 {
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
@@ -905,12 +932,11 @@ void AdafruitBluefruit::printInfo(void)
   Serial.printf(title_fmt, "Address");
   {
     char const * type_str[] = { "Public", "Static", "Private Resolvable", "Private Non Resolvable" };
-    uint8_t mac[6];
-    uint8_t type = Gap.getAddr(mac);
+    ble_gap_addr_t gap_addr = this->getAddr();
 
     // MAC is in little endian --> print reverse
-    Serial.printBufferReverse(mac, 6, ':');
-    Serial.printf(" (%s)", type_str[type]);
+    Serial.printBufferReverse(gap_addr.addr, 6, ':');
+    Serial.printf(" (%s)", type_str[gap_addr.addr_type]);
   }
   Serial.println();
 

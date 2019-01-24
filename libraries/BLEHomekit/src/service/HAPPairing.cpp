@@ -155,7 +155,7 @@ err_t HAPPairing::begin(void)
 
   // Make PairID based on MAC address
   uint8_t mac[6];
-  Bluefruit.Gap.getAddr(mac);
+  Bluefruit.getAddr(mac);
   setDeviceID(mac);
 
   // Init cryptography

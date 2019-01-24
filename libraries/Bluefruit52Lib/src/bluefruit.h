@@ -134,6 +134,10 @@ class AdafruitBluefruit
     /*------------------------------------------------------------------*/
     /* General Functions
      *------------------------------------------------------------------*/
+    ble_gap_addr_t  getAddr(void);
+    uint8_t         getAddr(uint8_t mac[6]);
+    bool            setAddr(ble_gap_addr_t* gap_addr);
+
     void     setName            (const char* str);
     uint8_t  getName            (char* name, uint16_t bufsize);
 

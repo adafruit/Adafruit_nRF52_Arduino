@@ -114,42 +114,9 @@ uint16_t BLEGap::getMaxMtu(uint8_t role)
   return (role == BLE_GAP_ROLE_PERIPH) ? _prph.mtu_max : _central.mtu_max;
 }
 
-
 BLEConnection* BLEGap::Connection(uint16_t conn_hdl)
 {
   return (conn_hdl < BLE_MAX_CONNECTION) ?_connection[conn_hdl] : NULL;
-}
-
-/**
- * Get current Mac address and its type
- * @param mac address
- * @return Address type e.g BLE_GAP_ADDR_TYPE_RANDOM_STATIC
- */
-uint8_t BLEGap::getAddr(uint8_t mac[6])
-{
-  ble_gap_addr_t addr;
-
-  sd_ble_gap_addr_get(&addr);
-  memcpy(mac, addr.addr, 6);
-
-  return addr.addr_type;
-}
-
-/**
- * Set the MAC address
- * @param mac   Bluetooth MAC Address
- * @param type  Must be either BLE_GAP_ADDR_TYPE_PUBLIC or BLE_GAP_ADDR_TYPE_RANDOM_STATIC
- * @return true if success
- */
-bool BLEGap::setAddr(uint8_t mac[6], uint8_t type)
-{
-  ble_gap_addr_t addr;
-  addr.addr_type = type;
-
-  memcpy(addr.addr, mac, 6);
-  VERIFY_STATUS( sd_ble_gap_addr_set(&addr), false );
-
-  return true;
 }
 
 uint16_t BLEGap::getPeerName(uint16_t conn_hdl, char* buf, uint16_t bufsize)
