@@ -59,6 +59,23 @@ bool BLEPeriph::begin(void)
   return true;
 }
 
+bool BLEPeriph::connected (uint16_t conn_hdl)
+{
+  BLEConnection* conn = Bluefruit.Gap.Connection(conn_hdl);
+  return conn && conn->connected() && (conn->getRole() == BLE_GAP_ROLE_PERIPH);
+}
+
+uint8_t BLEPeriph::connected (void)
+{
+  uint8_t count = 0;
+  for (uint16_t c=0; c<BLE_MAX_CONNECTION; c++)
+  {
+    if ( this->connected(c) ) count++;
+  }
+
+  return count;
+}
+
 void BLEPeriph::printInfo(void)
 {
   char const * title_fmt = "%-16s: ";
