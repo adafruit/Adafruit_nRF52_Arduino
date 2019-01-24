@@ -580,9 +580,9 @@ uint16_t AdafruitBluefruit::connInterval(void)
   return _conn_interval;
 }
 
-ble_gap_addr_t AdafruitBluefruit::getPeerAddr(void)
+ble_gap_addr_t AdafruitBluefruit::getPeerAddr(uint16_t conn_hdl)
 {
-  BLEConnection* conn = Gap.Connection(_conn_hdl);
+  BLEConnection* conn = Gap.Connection(conn_hdl);
   return conn ? conn->getPeerAddr() : ((ble_gap_addr_t) {0});
 }
 

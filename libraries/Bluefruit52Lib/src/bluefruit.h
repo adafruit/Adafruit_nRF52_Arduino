@@ -153,6 +153,7 @@ class AdafruitBluefruit
 
     bool     connected         (uint16_t conn_hdl); // connected to a specific central
     bool     disconnect        (uint16_t conn_hdl);
+    ble_gap_addr_t getPeerAddr (uint16_t conn_hdl);
 
     uint16_t connHandle        (void);
     bool     connPaired        (void);
@@ -161,7 +162,6 @@ class AdafruitBluefruit
     bool     requestPairing    (void);
     void     clearBonds        (void);
 
-    ble_gap_addr_t getPeerAddr (void);
 
     void     printInfo(void);
 
