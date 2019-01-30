@@ -150,6 +150,9 @@ class AdafruitBluefruit
     void     autoConnLed        (bool enabled);
     void     setConnLedInterval (uint32_t ms);
 
+    bool     setPhy             (int8_t phy);
+    int8_t   getPhy             (void);
+
     /*------------------------------------------------------------------*/
     /* GAP, Connections and Bonding
      *------------------------------------------------------------------*/
@@ -217,6 +220,7 @@ class AdafruitBluefruit
     TimerHandle_t _led_blink_th;
     bool _led_conn;
 
+    int8_t _phy;
     BLEDfu _dfu_svc;
 
     uint16_t _conn_hdl;
