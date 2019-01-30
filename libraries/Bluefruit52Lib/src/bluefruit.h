@@ -147,6 +147,11 @@ class AdafruitBluefruit
     bool     setApperance       (uint16_t appear);
     uint16_t getApperance       (void);
 
+    ble_gap_sec_params_t getSecureParam(void)
+    {
+      return _sec_param;
+    }
+
     void     autoConnLed        (bool enabled);
     void     setConnLedInterval (uint32_t ms);
 
@@ -199,6 +204,8 @@ class AdafruitBluefruit
     uint8_t _central_count;
 
     int8_t _tx_power;
+
+    ble_gap_sec_params_t _sec_param;
 
     SemaphoreHandle_t _ble_event_sem;
     SemaphoreHandle_t _soc_event_sem;
