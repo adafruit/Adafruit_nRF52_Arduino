@@ -254,6 +254,7 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
 
     //--------------------------------------------------------------------+
     /* First-time Pairing
+     * Connect -> SEC_PARAMS_REQUEST -> CONN_SEC_UPDATE -> AUTH_STATUS
      * 1. Either we or peer initiate the process
      * 2. Peer ask for Secure Parameter ( I/O Caps ) BLE_GAP_EVT_SEC_PARAMS_REQUEST
      * 3. Pair Key exchange ( PIN code)
@@ -261,6 +262,7 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
      * 5. Long term Keys exchanged BLE_GAP_EVT_AUTH_STATUS
      *
      * Reconnect using bonded key
+     * Connect -> SEC_INFO_REQUEST -> CONN_SEC_UPDATE
      * 1. Either we or peer initiate the process
      * 2. Peer ask for Secure Info ( bond keys ) BLE_GAP_EVT_SEC_INFO_REQUEST
      * 3. Connection is secured BLE_GAP_EVT_CONN_SEC_UPDATE

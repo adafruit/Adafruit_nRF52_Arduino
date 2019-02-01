@@ -924,12 +924,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
    * or a few special one
    * - Connected event
    * - Advertising timeout (could be connected and advertising at the same time)
-   *
-   * Pairing procedure
-   * - Connect -> SEC_PARAMS_REQUEST -> CONN_SEC_UPDATE -> AUTH_STATUS
-   *
-   * Reconnect to a paired device
-   * - Connect -> SEC_INFO_REQUEST -> CONN_SEC_UPDATE
    */
   if ( conn_hdl       == _conn_hdl             ||
        evt->header.evt_id == BLE_GAP_EVT_CONNECTED)
@@ -955,18 +949,17 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
     }
   }
 
-  // Central Event Handler
-  if (_central_count)
+  // Periph event handler, skip if it is central connection
+  if ( _prph_count && !(conn && (conn->getRole() == BLE_GAP_ROLE_CENTRAL)) )
   {
-    // Skip if not central connection
-    if (conn_hdl != _conn_hdl ||
-        conn_hdl == BLE_CONN_HANDLE_INVALID)
-    {
-      Central._eventHandler(evt);
-    }
+    Periph._eventHandler(evt);
   }
 
-  Periph._eventHandler(evt);
+  // Central Event Handler, skip if it is peripheral connection
+  if ( _central_count && !(conn && (conn->getRole() == BLE_GAP_ROLE_PERIPH)) )
+  {
+    Central._eventHandler(evt);
+  }
 
   // Discovery Event Handler
   if ( Discovery.begun() ) Discovery._eventHandler(evt);
