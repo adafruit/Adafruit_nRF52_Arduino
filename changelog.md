@@ -23,6 +23,7 @@
 - Use AdaCallback thread for BLECharacteristic callbacks
 - Update bootloader to 0.2.7 which fixed OTA issue with latest BLE5 central such as iPhone X
 - Added Metro nRF52840 Board support
+- Added enableOTA(bool) to disable/enable OTA service (default is enable)
 
 # 0.9.3
 

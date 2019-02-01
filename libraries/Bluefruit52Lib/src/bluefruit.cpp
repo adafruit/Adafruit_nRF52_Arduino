@@ -137,6 +137,8 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _led_blink_th  = NULL;
   _led_conn      = true;
 
+  _ota_en = true;
+
   _tx_power      = CFG_BLE_TX_POWER_LEVEL;
 
   _conn_hdl      = BLE_CONN_HANDLE_INVALID;
@@ -254,6 +256,10 @@ void AdafruitBluefruit::configCentralBandwidth(uint8_t bw)
   }
 }
 
+void AdafruitBluefruit::enableOTA(bool en)
+{
+  _ota_en = en;
+}
 
 bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 {
@@ -452,8 +458,8 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   sd_power_usbremoved_enable(true);
 #endif
 
-  /*------------- DFU OTA as built-in service -------------*/
-  _dfu_svc.begin();
+  // Add DFU OTA service if enabled
+  if ( _ota_en ) _dfu_svc.begin();
 
   if (_central_count)  Central.begin(); // Init Central
 
