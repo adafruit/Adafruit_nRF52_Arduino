@@ -21,6 +21,8 @@
   - rssi_poll and rssi_callback example sketches are added 
 - Change BLECharacteristic callback signature BLECharacteristic& to BLECharacteristic*
 - Use AdaCallback thread for BLECharacteristic callbacks
+- Update bootloader to 0.2.7 which fixed OTA issue with latest BLE5 central such as iPhone X
+- Added Metro nRF52840 Board support
 
 # 0.9.3
 
