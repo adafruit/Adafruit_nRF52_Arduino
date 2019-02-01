@@ -39,6 +39,8 @@
 // Constructor
 BLEPeriph::BLEPeriph(void)
 {
+  _connect_cb = NULL;
+  _disconnect_cb = NULL;
 
   _ppcp = ((ble_gap_conn_params_t) {
     .min_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT,
@@ -61,7 +63,7 @@ bool BLEPeriph::begin(void)
 
 bool BLEPeriph::connected (uint16_t conn_hdl)
 {
-  BLEConnection* conn = Bluefruit.Gap.Connection(conn_hdl);
+  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
   return conn && conn->connected() && (conn->getRole() == BLE_GAP_ROLE_PERIPH);
 }
 
@@ -74,20 +76,6 @@ uint8_t BLEPeriph::connected (void)
   }
 
   return count;
-}
-
-void BLEPeriph::printInfo(void)
-{
-  char const * title_fmt = "%-16s: ";
-
-  Serial.printf(title_fmt, "Conn Intervals");
-  Serial.printf("min = %.2f ms, ", _ppcp.min_conn_interval*1.25f);
-  Serial.printf("max = %.2f ms", _ppcp.max_conn_interval*1.25f);
-  Serial.println();
-
-  Serial.printf(title_fmt, "Conn Timeout");
-  Serial.printf("%.2f ms", _ppcp.conn_sup_timeout*10.0f);
-  Serial.println();
 }
 
 bool BLEPeriph::setConnInterval (uint16_t min, uint16_t max)
@@ -119,14 +107,14 @@ bool BLEPeriph::setConnSupervisionTimeoutMS(uint16_t timeout_ms)
   return setConnSupervisionTimeout(timeout_ms / 10); // 10ms unit
 }
 
-void BLEPeriph::setConnectCallback( BLEGap::connect_callback_t fp )
+void BLEPeriph::setConnectCallback( ble_connect_callback_t fp )
 {
-  Bluefruit.Gap._prph_setConnectCallback(fp);
+  _connect_cb = fp;
 }
 
-void BLEPeriph::setDisconnectCallback( BLEGap::disconnect_callback_t fp )
+void BLEPeriph::setDisconnectCallback( ble_disconnect_callback_t fp )
 {
-  Bluefruit.Gap._prph_setDisconnectCallback(fp);
+  _disconnect_cb = fp;
 }
 
 
@@ -159,3 +147,18 @@ void BLEPeriph::_eventHandler(ble_evt_t* evt)
     default: break;
   }
 }
+
+void BLEPeriph::printInfo(void)
+{
+  char const * title_fmt = "%-16s: ";
+
+  Serial.printf(title_fmt, "Conn Intervals");
+  Serial.printf("min = %.2f ms, ", _ppcp.min_conn_interval*1.25f);
+  Serial.printf("max = %.2f ms", _ppcp.max_conn_interval*1.25f);
+  Serial.println();
+
+  Serial.printf(title_fmt, "Conn Timeout");
+  Serial.printf("%.2f ms", _ppcp.conn_sup_timeout*10.0f);
+  Serial.println();
+}
+

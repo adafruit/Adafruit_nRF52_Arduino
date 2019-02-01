@@ -39,23 +39,12 @@
 #include <Arduino.h>
 #include "bluefruit_common.h"
 
-#include "BLEGap.h"
-#include "BLEGatt.h"
-
-#include "BLEUuid.h"
-#include "BLECharacteristic.h"
-#include "BLEClientCharacteristic.h"
-#include "BLEService.h"
-
-#include "BLEClientService.h"
-
 class AdafruitBluefruit;
 
 class BLECentral
 {
   public:
     BLECentral(void); // Constructor
-
     void begin(void);
 
     /*------------------------------------------------------------------*/
@@ -73,13 +62,20 @@ class BLECentral
     void clearBonds (void);
 
     /*------------- Callbacks -------------*/
-    void setConnectCallback   ( BLEGap::connect_callback_t    fp);
-    void setDisconnectCallback( BLEGap::disconnect_callback_t fp);
+    void setConnectCallback   ( ble_connect_callback_t    fp);
+    void setDisconnectCallback( ble_disconnect_callback_t fp);
+
+    /*------------------------------------------------------------------*/
+    /* INTERNAL USAGE ONLY
+     * Although declare as public, it is meant to be invoked by internal code.
+     *------------------------------------------------------------------*/
+    void _eventHandler(ble_evt_t* evt);
 
   private:
     ble_gap_conn_params_t _conn_param;
 
-    void     _eventHandler(ble_evt_t* evt);
+    ble_connect_callback_t _connect_cb;
+    ble_disconnect_callback_t _disconnect_cb;
 
     friend class AdafruitBluefruit;
 };

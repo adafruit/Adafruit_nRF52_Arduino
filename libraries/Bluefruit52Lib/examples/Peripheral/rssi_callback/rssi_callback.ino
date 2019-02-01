@@ -44,7 +44,7 @@ void setup()
   bleuart.begin();
 
   // Set up Rssi changed callback
-  Bluefruit.Gap.setRssiCallback(rssi_changed_callback);
+  Bluefruit.setRssiCallback(rssi_changed_callback);
 
   // Set up and start advertising
   startAdv();
@@ -90,7 +90,7 @@ void connect_callback(uint16_t conn_handle)
   Serial.println("Connected");
 
   // Get the reference to current connection
-  BLEConnection* conn = Bluefruit.Gap.Connection(conn_handle);
+  BLEConnection* conn = Bluefruit.Connection(conn_handle);
 
   // Start monitoring rssi of this connection
   // This function should be called in connect callback

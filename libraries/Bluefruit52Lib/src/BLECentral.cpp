@@ -42,6 +42,9 @@
  */
 BLECentral::BLECentral(void)
 {
+  _connect_cb = NULL;
+  _disconnect_cb = NULL;
+
   _conn_param.min_conn_interval = _conn_param.max_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
   _conn_param.slave_latency = BLE_GAP_CONN_SLAVE_LATENCY;
   _conn_param.conn_sup_timeout = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS/10;
@@ -89,7 +92,7 @@ bool BLECentral::connect(const ble_gap_evt_adv_report_t* adv_report)
  */
 bool BLECentral::connected(uint16_t conn_hdl)
 {
-  BLEConnection* conn = Bluefruit.Gap.Connection(conn_hdl);
+  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
   return conn && conn->connected() && (conn->getRole() == BLE_GAP_ROLE_CENTRAL);
 }
 
@@ -107,14 +110,14 @@ uint8_t BLECentral::connected(void)
   return count;
 }
 
-void BLECentral::setConnectCallback( BLEGap::connect_callback_t fp)
+void BLECentral::setConnectCallback( ble_connect_callback_t fp )
 {
-  Bluefruit.Gap._central_setConnectCallback(fp);
+  _connect_cb = fp;
 }
 
-void BLECentral::setDisconnectCallback( BLEGap::disconnect_callback_t fp)
+void BLECentral::setDisconnectCallback( ble_disconnect_callback_t fp )
 {
-  Bluefruit.Gap._central_setDisconnectCallback(fp);
+  _disconnect_cb = fp;
 }
 
 void BLECentral::clearBonds(void)

@@ -16,6 +16,7 @@
   - Gap.getPeerName() is replaced by Bluefruit.getPeerName()
 - Enhance Gap, add BLEConnection class to mange peer connection
   - Remove Gap.connected(), Gap.getRole() in prefer to BLEConnection API
+  - Remove BLEGap, API function is taken by Bluefruit, BLEPeriph, BLECentral
 - Added setRssiCallback(), monitorRssi(), getRssi(), stopRssi() for tracking rssi of a connection
   - rssi_poll and rssi_callback example sketches are added 
 - Change BLECharacteristic callback signature BLECharacteristic& to BLECharacteristic*
@@ -27,7 +28,7 @@
 - Fixed #173 bleuart return incorrect value when failed to send (PR #178 thanks Nenik)
 - Added Client Battery support BLEClientBas
 - Added BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST event support for Central
-- Added Jlink as programmer to upload sketch #133
+- Added Jlink as programmer to upload sketch #133. Though at least one serial DFU upload is needed to disable firmware crc checking
 - Fixed issue with high speed uart baud ~ 1 Mbps (PR #158 thanks Ureloc)
 - Add HardwardPWM removePin(), refactor hwpwm.ino sketch
 - Fixed print float issue with precision > 10

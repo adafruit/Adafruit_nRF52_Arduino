@@ -85,7 +85,7 @@ void loop()
     uint16_t conn_hdl = Bluefruit.connHandle();
 
     // Get the reference to current connected connection 
-    BLEConnection* conn = Bluefruit.Gap.Connection(conn_hdl);
+    BLEConnection* conn = Bluefruit.Connection(conn_hdl);
 
     // get the RSSI value of this connection
     // monitorRssi() must be called previously (in callback)
@@ -104,7 +104,7 @@ void connect_callback(uint16_t conn_handle)
   Serial.println("Connected");
 
   // Get the reference to current connection
-  BLEConnection* conn = Bluefruit.Gap.Connection(conn_handle);
+  BLEConnection* conn = Bluefruit.Connection(conn_handle);
 
   // Start monitoring rssi of this connection
   // This function should be called in connect callback

@@ -40,8 +40,6 @@
 #include <Arduino.h>
 #include "bluefruit_common.h"
 
-#include "BLEGap.h"
-
 class BLEPeriph
 {
   public:
@@ -57,19 +55,25 @@ class BLEPeriph
     bool setConnSupervisionTimeout(uint16_t timeout);
     bool setConnSupervisionTimeoutMS(uint16_t timeout_ms);
 
-    void setConnectCallback   ( BLEGap::connect_callback_t    fp);
-    void setDisconnectCallback( BLEGap::disconnect_callback_t fp);
+    //------------- Callbacks -------------//
+    void setConnectCallback   ( ble_connect_callback_t    fp);
+    void setDisconnectCallback( ble_disconnect_callback_t fp);
 
-    void printInfo(void);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal code.
      *------------------------------------------------------------------*/
     void _eventHandler(ble_evt_t* evt);
+    void printInfo(void);
 
   private:
     ble_gap_conn_params_t _ppcp;
+
+    ble_connect_callback_t _connect_cb;
+    ble_disconnect_callback_t _disconnect_cb;
+
+    friend class AdafruitBluefruit;
 };
 
 #endif /* BLEPERIPH_H_ */

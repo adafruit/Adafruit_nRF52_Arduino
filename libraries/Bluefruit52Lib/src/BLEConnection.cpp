@@ -180,7 +180,7 @@ bool BLEConnection::requestPairing(void)
   // skip if already paired
   if ( _paired ) return true;
 
-  ble_gap_sec_params_t sec_param = Bluefruit.Gap.getSecureParam();
+  ble_gap_sec_params_t sec_param = Bluefruit.getSecureParam();
 
   // on-the-fly semaphore
   _pair_sem = xSemaphoreCreateBinary();
@@ -306,7 +306,7 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
           }
       };
 
-      ble_gap_sec_params_t sec_param = Bluefruit.Gap.getSecureParam();
+      ble_gap_sec_params_t sec_param = Bluefruit.getSecureParam();
       VERIFY_STATUS(sd_ble_gap_sec_params_reply(_conn_hdl,
                                                 BLE_GAP_SEC_STATUS_SUCCESS,
                                                 _role == BLE_GAP_ROLE_PERIPH ? &sec_param : NULL,
@@ -404,7 +404,7 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
 
     case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
     {
-      uint16_t const max_mtu = Bluefruit.Gap.getMaxMtu(_role);
+      uint16_t const max_mtu = Bluefruit.getMaxMtu(_role);
       _mtu = minof(evt->evt.gatts_evt.params.exchange_mtu_request.client_rx_mtu, max_mtu);
 
       VERIFY_STATUS( sd_ble_gatts_exchange_mtu_reply(_conn_hdl, _mtu), );

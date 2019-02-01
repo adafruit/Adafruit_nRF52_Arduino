@@ -168,7 +168,7 @@ uint16_t BLEClientCharacteristic::read(void* buffer, uint16_t bufsize)
 {
   VERIFY( _chr.char_props.read, 0 );
 
-  BLEConnection* conn = Bluefruit.Gap.Connection( _service->connHandle() );
+  BLEConnection* conn = Bluefruit.Connection( _service->connHandle() );
   VERIFY(conn, 0);
 
   uint16_t const max_payload = conn->getMtu() - 3;
@@ -205,7 +205,7 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
 {
   VERIFY( _chr.char_props.write, 0 );
 
-  BLEConnection* conn = Bluefruit.Gap.Connection( _service->connHandle() );
+  BLEConnection* conn = Bluefruit.Connection( _service->connHandle() );
   VERIFY(conn, 0);
 
   uint16_t const max_payload = conn->getMtu() - 3;
@@ -281,7 +281,7 @@ uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
 {
 //  VERIFY( _chr.char_props.write_wo_resp, 0 );
 
-  BLEConnection* conn = Bluefruit.Gap.Connection( _service->connHandle() );
+  BLEConnection* conn = Bluefruit.Connection( _service->connHandle() );
   VERIFY(conn, 0);
 
   uint16_t const max_payload = conn->getMtu() - 3;
@@ -362,7 +362,7 @@ bool BLEClientCharacteristic::writeCCCD(uint16_t value)
   };
 
   // TODO only Write without response consume a TX buffer
-  BLEConnection* conn = Bluefruit.Gap.Connection(conn_handle);
+  BLEConnection* conn = Bluefruit.Connection(conn_handle);
   VERIFY( conn && conn->getWriteCmdPacket() );
 
   VERIFY_STATUS( sd_ble_gattc_write(conn_handle, &param), false );
@@ -473,7 +473,7 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
       }
       else if ( wr_rsp->write_op == BLE_GATT_OP_PREP_WRITE_REQ)
       {
-        BLEConnection* conn = Bluefruit.Gap.Connection( _service->connHandle() );
+        BLEConnection* conn = Bluefruit.Connection( _service->connHandle() );
 
         uint16_t const max_payload = conn->getMtu() - 3;
         uint16_t packet_len = min16(_adamsg.remaining, max_payload-2);
@@ -523,7 +523,7 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
 
     case BLE_GATTC_EVT_READ_RSP:
     {
-      BLEConnection* conn = Bluefruit.Gap.Connection( _service->connHandle() );
+      BLEConnection* conn = Bluefruit.Connection( _service->connHandle() );
 
       uint16_t const max_payload = conn->getMtu() - 3;
       ble_gattc_evt_read_rsp_t* rd_rsp = (ble_gattc_evt_read_rsp_t*) &evt->evt.gattc_evt.params.read_rsp;

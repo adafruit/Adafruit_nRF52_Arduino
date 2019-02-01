@@ -50,7 +50,7 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
   int32_t count = 0;
   ble_gattc_handle_range_t hdl_range = { .start_handle = start_hdl, .end_handle = end_hdl };
 
-  BLEConnection* conn = Bluefruit.Gap.Connection(conn_hdl);
+  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
 
   while( _adamsg.isWaiting() )
   {
@@ -82,7 +82,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
   const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
   const uint16_t evt_id       = evt->header.evt_id;
 
-  BLEConnection* conn = Bluefruit.Gap.Connection(evt_conn_hdl);
+  BLEConnection* conn = Bluefruit.Connection(evt_conn_hdl);
 
   /*------------- Server service -------------*/
   // TODO multiple peripherals

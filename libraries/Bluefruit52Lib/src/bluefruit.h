@@ -59,7 +59,6 @@
 #include "BLEClientService.h"
 #include "BLEDiscovery.h"
 #include "BLEConnection.h"
-#include "BLEGap.h"
 #include "BLEGatt.h"
 
 // Services
@@ -92,6 +91,12 @@ enum
   BANDWIDTH_MAX,
 };
 
+enum
+{
+  CONN_CFG_PERIPHERAL = 1,
+  CONN_CFG_CENTRAL = 2,
+};
+
 extern "C"
 {
   void SD_EVT_IRQHandler(void);
@@ -100,12 +105,13 @@ extern "C"
 class AdafruitBluefruit
 {
   public:
+    typedef void (*rssi_callback_t       ) (uint16_t conn_hdl, int8_t rssi);
+
     AdafruitBluefruit(void); // Constructor
 
     /*------------------------------------------------------------------*/
     /* Lower Level Classes (Bluefruit.Advertising.*, etc.)
      *------------------------------------------------------------------*/
-    BLEGap             Gap;
     BLEGatt            Gatt;
 
     BLEAdvertising     Advertising;
@@ -173,12 +179,14 @@ class AdafruitBluefruit
 
     uint16_t getPeerName       (uint16_t conn_hdl, char* buf, uint16_t bufsize);
 
+    uint16_t getMaxMtu(uint8_t role);
 
-    void     printInfo(void);
+    BLEConnection* Connection(uint16_t conn_hdl);
 
     /*------------------------------------------------------------------*/
     /* Callbacks
      *------------------------------------------------------------------*/
+    void setRssiCallback(rssi_callback_t fp);
     void setEventCallback ( void (*fp) (ble_evt_t*) );
 
     COMMENT_OUT ( bool setPIN(const char* pin); )
@@ -188,9 +196,11 @@ class AdafruitBluefruit
      * Although declare as public, it is meant to be invoked by internal
      * code. User should not call these directly
      *------------------------------------------------------------------*/
-    void _startConnLed       (void);
-    void _stopConnLed        (void);
-    void _setConnLed         (bool on_off);
+    void _startConnLed (void);
+    void _stopConnLed  (void);
+    void _setConnLed   (bool on_off);
+
+    void printInfo(void);
 
   private:
     /*------------- SoftDevice Configuration -------------*/
@@ -198,6 +208,14 @@ class AdafruitBluefruit
       uint32_t attr_table_size;
       uint8_t  service_changed;
       uint8_t  uuid128_max;
+
+      // Bandwidth configuration
+      struct {
+        uint16_t mtu_max;
+        uint8_t  event_len;
+        uint8_t  hvn_qsize;
+        uint8_t  wrcmd_qsize;
+      }prph, central;
     }_sd_cfg;
 
     uint8_t _prph_count;
@@ -217,6 +235,9 @@ class AdafruitBluefruit
 
     uint16_t _conn_hdl;
 
+    BLEConnection* _connection[BLE_MAX_CONNECTION];
+
+    rssi_callback_t _rssi_cb;
     void (*_event_cb) (ble_evt_t*);
 
 COMMENT_OUT(

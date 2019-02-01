@@ -160,7 +160,7 @@ void BLEUart::bufferTXD(uint8_t enable)
     if ( _tx_fifo == NULL )
     {
       _tx_fifo = new Adafruit_FIFO(1);
-      _tx_fifo->begin( Bluefruit.Gap.getMaxMtu(BLE_GAP_ROLE_PERIPH) );
+      _tx_fifo->begin( Bluefruit.getMaxMtu(BLE_GAP_ROLE_PERIPH) );
     }
   }else
   {
@@ -178,7 +178,7 @@ err_t BLEUart::begin(void)
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
 
-  uint16_t max_mtu = Bluefruit.Gap.getMaxMtu(BLE_GAP_ROLE_PERIPH);
+  uint16_t max_mtu = Bluefruit.getMaxMtu(BLE_GAP_ROLE_PERIPH);
 
   // Add TXD Characteristic
   _txd.setProperties(CHR_PROPS_NOTIFY);
@@ -263,7 +263,7 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
     uint16_t written = _tx_fifo->write(content, len);
 
     // TODO multiple prph connections
-    BLEConnection* conn = Bluefruit.Gap.Connection( Bluefruit.connHandle() );
+    BLEConnection* conn = Bluefruit.Connection( Bluefruit.connHandle() );
     VERIFY(conn, 0);
 
     // Not up to GATT MTU, notify will be sent later by TXD timer handler
@@ -306,7 +306,7 @@ void BLEUart::flush (void)
 bool BLEUart::flush_tx_buffered(void)
 {
   // TODO multiple prph connections
-  BLEConnection* conn = Bluefruit.Gap.Connection( Bluefruit.connHandle() );
+  BLEConnection* conn = Bluefruit.Connection( Bluefruit.connHandle() );
 
   uint16_t const gatt_mtu = conn->getMtu() - 3;
   uint8_t* ff_data = (uint8_t*) rtos_malloc( gatt_mtu );
