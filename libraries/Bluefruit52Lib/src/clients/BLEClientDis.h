@@ -33,6 +33,7 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 /**************************************************************************/
+
 #ifndef BLECLIENTDIS_H_
 #define BLECLIENTDIS_H_
 

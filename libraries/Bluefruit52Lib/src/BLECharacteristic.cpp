@@ -38,6 +38,7 @@
 
 void BLECharacteristic::_init(void)
 {
+  varclr(&_use_ada_cb);
   _is_temp = false;
   _max_len = BLE_GATT_ATT_MTU_DEFAULT-3;
   _service = NULL;
@@ -134,26 +135,32 @@ void BLECharacteristic::setPermission(BleSecurityMode read_perm, BleSecurityMode
   memcpy(&_attr_meta.write_perm, &write_perm, 1);
 }
 
-void BLECharacteristic::setWriteCallback(write_cb_t fp)
+void BLECharacteristic::setWriteCallback(write_cb_t fp, bool useAdaCallback)
 {
   _wr_cb = fp;
+  _use_ada_cb.write = useAdaCallback;
 }
 
-void BLECharacteristic::setCccdWriteCallback(write_cccd_cb_t fp)
+void BLECharacteristic::setCccdWriteCallback(write_cccd_cb_t fp, bool useAdaCallback)
 {
   _cccd_wr_cb = fp;
+  _use_ada_cb.cccd_write = useAdaCallback;
 }
 
-void BLECharacteristic::setReadAuthorizeCallback(read_authorize_cb_t fp)
+void BLECharacteristic::setReadAuthorizeCallback(read_authorize_cb_t fp, bool useAdaCallback)
 {
   _attr_meta.rd_auth = (fp  ? 1 : 0);
   _rd_authorize_cb = fp;
+
+  _use_ada_cb.read_authorize = useAdaCallback;
 }
 
-void BLECharacteristic::setWriteAuthorizeCallback(write_authorize_cb_t fp)
+void BLECharacteristic::setWriteAuthorizeCallback(write_authorize_cb_t fp, bool useAdaCallback)
 {
   _attr_meta.wr_auth = (fp ? 1 : 0);
   _wr_authorize_cb = fp;
+
+  _use_ada_cb.write_authorize = useAdaCallback;
 }
 
 void BLECharacteristic::setUserDescriptor(const char* descriptor)
@@ -345,12 +352,37 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
 
       if ( (request->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE) && (_wr_authorize_cb != NULL))
       {
-        _wr_authorize_cb(*this, &request->request.write);
+        if ( _use_ada_cb.write_authorize )
+        {
+          uint8_t* data = (uint8_t*) rtos_malloc(sizeof(request->request.write));
+          VERIFY(data,);
+
+          memcpy(data, &request->request.write, sizeof(request->request.write));
+
+          // data is free after callback
+          ada_callback(data, _wr_authorize_cb, this, data);
+        }else
+        {
+          _wr_authorize_cb(this, &request->request.write);
+        }
       }
 
       if ( (request->type == BLE_GATTS_AUTHORIZE_TYPE_READ) && (_rd_authorize_cb != NULL))
       {
-        _rd_authorize_cb(*this, &request->request.read);
+        if ( _use_ada_cb.read_authorize )
+        {
+          uint8_t* data = (uint8_t*) rtos_malloc(sizeof(request->request.read));
+          VERIFY(data,);
+
+          memcpy(data, &request->request.read, sizeof(request->request.read));
+
+          // data is free after callback
+          ada_callback(data, _rd_authorize_cb, this, data);
+        }
+        else
+        {
+          _rd_authorize_cb(this, &request->request.read);
+        }
       }
     }
     break;
@@ -365,18 +397,19 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
         LOG_LV2("GATTS", "attr's value, uuid = 0x%04X", request->uuid.uuid);
         LOG_LV2_BUFFER(NULL, request->data, request->len);
 
-        // TODO Ada callback
         if (_wr_cb)
         {
-//          uint8_t* data = (uint8_t*) rtos_malloc(request->len);
-//
-//          if (data)
-//          {
-//            ada_callback(data, _wr_cb, *this, data, request->len, request->offset);
-//          }else
+          if (_use_ada_cb.write)
+          {
+            uint8_t* data = (uint8_t*) rtos_malloc(request->len);
+            VERIFY(data,);
+            memcpy(data, request->data, request->len);
+
+            ada_callback(data, _wr_cb, this, data, request->len, request->offset);
+          }else
           {
             // invoke directly if cannot allocate memory for data
-            _wr_cb(*this, request->data, request->len, request->offset);
+            _wr_cb(this, request->data, request->len, request->offset);
           }
         }
       }
@@ -387,12 +420,19 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
         LOG_LV2("GATTS", "attr's cccd");
         LOG_LV2_BUFFER(NULL, request->data, request->len);
 
-        // Invoke callback if set
         if (_cccd_wr_cb)
         {
           uint16_t value;
           memcpy(&value, request->data, 2);
-          _cccd_wr_cb(*this, value);
+
+          if ( _use_ada_cb.cccd_write )
+          {
+            ada_callback(NULL, _cccd_wr_cb, this, value);
+          }
+          else
+          {
+            _cccd_wr_cb(this, value);
+          }
         }
       }
     }
@@ -533,13 +573,17 @@ bool BLECharacteristic::notify(const void* data, uint16_t len)
 
   if ( notifyEnabled() )
   {
-    uint16_t const max_payload = Bluefruit.Gap.getMTU( Bluefruit.connHandle() ) - 3;
+    // TODO multiple connection support
+    BLEConnection* conn = Bluefruit.Connection( Bluefruit.connHandle() );
+    VERIFY(conn);
+
+    uint16_t const max_payload = conn->getMtu() - 3;
     const uint8_t* u8data = (const uint8_t*) data;
 
     while ( remaining )
     {
-      // TODO multiple connection support
-      if ( !Bluefruit.Gap.getHvnPacket( Bluefruit.connHandle() ) )  return NRF_ERROR_RESOURCES; //BLE_ERROR_NO_TX_PACKETS;
+      // Failed if there is no free buffer
+      if ( !conn->getHvnPacket() ) return false;
 
       uint16_t packet_len = min16(max_payload, remaining);
 
@@ -612,8 +656,10 @@ bool BLECharacteristic::indicate(const void* data, uint16_t len)
   if ( indicateEnabled() )
   {
     uint16_t conn_hdl = Bluefruit.connHandle();
+    BLEConnection* conn = Bluefruit.Connection( conn_hdl );
+    VERIFY(conn);
 
-    uint16_t const max_payload = Bluefruit.Gap.getMTU( conn_hdl ) - 3;
+    uint16_t const max_payload = conn->getMtu() - 3;
     const uint8_t* u8data = (const uint8_t*) data;
 
     while ( remaining )
@@ -633,7 +679,7 @@ bool BLECharacteristic::indicate(const void* data, uint16_t len)
 
       // Blocking wait until receiving confirmation from peer
       VERIFY_STATUS( sd_ble_gatts_hvx( conn_hdl, &hvx_params), false );
-      VERIFY ( Bluefruit.Gatt.waitForIndicateConfirm(conn_hdl) );
+      VERIFY ( conn->waitForIndicateConfirm() );
 
       remaining -= packet_len;
       u8data    += packet_len;

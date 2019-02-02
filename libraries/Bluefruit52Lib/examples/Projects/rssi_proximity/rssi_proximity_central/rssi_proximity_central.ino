@@ -170,12 +170,9 @@ void setup()
   }
 
   /* Enable both peripheral and central modes */
-  err_t err = Bluefruit.begin(true, true);
-  if (err)
+  if ( !Bluefruit.begin(1, 1) )
   {
-    Serial.print("Unable to init Bluefruit (ERROR CODE: ");
-    Serial.print(err);
-    Serial.println(")");
+    Serial.println("Unable to init Bluefruit");
     while(1)
     {
       digitalToggle(LED_RED);

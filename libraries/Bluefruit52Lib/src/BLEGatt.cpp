@@ -50,10 +50,11 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
   int32_t count = 0;
   ble_gattc_handle_range_t hdl_range = { .start_handle = start_hdl, .end_handle = end_hdl };
 
+  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
+
   while( _adamsg.isWaiting() )
   {
-    // TODO multiple peripherals
-    delay( Bluefruit.connInterval() );
+    delay( conn->getConnInterval() );
   }
 
   _adamsg.begin(true);
@@ -75,26 +76,13 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
   return (count < 0) ? 0 : count;
 }
 
-bool BLEGatt::waitForIndicateConfirm(uint16_t conn_hdl)
-{
-  BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(conn_hdl);
-
-  // hvi confirm semaphore is created on the fly
-  peer->hvc_sem = xSemaphoreCreateBinary();
-
-  xSemaphoreTake(peer->hvc_sem, portMAX_DELAY);
-
-  vSemaphoreDelete(peer->hvc_sem);
-  peer->hvc_sem = NULL;
-
-  return peer->hvc_received;
-}
-
 void BLEGatt::_eventHandler(ble_evt_t* evt)
 {
   // conn handle has fixed offset regardless of event type
   const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
   const uint16_t evt_id       = evt->header.evt_id;
+
+  BLEConnection* conn = Bluefruit.Connection(evt_conn_hdl);
 
   /*------------- Server service -------------*/
   // TODO multiple peripherals
@@ -144,10 +132,9 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
         chr->_eventHandler(evt);
 
         // Save CCCD if paired
-        if ( Bluefruit.connPaired() && (evt_id == BLE_GATTS_EVT_WRITE) && (req_handle == chr->handles().cccd_handle) )
+        if ( conn->paired() && (evt_id == BLE_GATTS_EVT_WRITE) && (req_handle == chr->handles().cccd_handle) )
         {
-          BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(evt_conn_hdl);
-          bond_save_cccd( peer->role, evt_conn_hdl, peer->ediv);
+          conn->storeCccd();
         }
       }
     }
@@ -226,27 +213,6 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
 
         _adamsg.complete();
       }
-    }
-    break;
-
-    case BLE_GATTS_EVT_HVC:
-    {
-      LOG_LV2("GATTS", "Confirm received handle = 0x%04X", evt->evt.gatts_evt.params.hvc.handle);
-      BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(evt_conn_hdl);
-
-      if ( peer->hvc_sem ) xSemaphoreGive(peer->hvc_sem);
-      peer->hvc_received = true;
-    }
-    break;
-
-    case BLE_GATTS_EVT_TIMEOUT:
-    {
-      LOG_LV2("GATTS", "Timeout Source = %d", evt->evt.gatts_evt.params.timeout.src);
-
-      BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(evt_conn_hdl);
-
-      if ( peer->hvc_sem ) xSemaphoreGive(peer->hvc_sem);
-      peer->hvc_received = false;
     }
     break;
 

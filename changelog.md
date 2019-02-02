@@ -1,5 +1,47 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+# 0.9.5
+
+- Fixed Servo detach issue
+- Fixed pulseIn() compile issue: implement countPulseASM() using C instead of ASM
+- Introduce BLEPeriph
+  - setConnInterval(), setConnIntervalMS(), setConnSupervisionTimeout(), setConnSupervisionTimeoutMS()
+  - setDisconnectCallback(), setDisconnectCallback()
+- Bluefruit
+  - remove getPeerAddr(uint8_t[6]) variant
+  - remove connInterval() is replaced by BLEConnection's getConnInterval()
+  - Central.disconnect() is repalced by Bluefruit.disconnect()
+  - add conn_handle to Bluefruit.requestPairing(), remove Gap.requestPairing()
+  - Gap.setAddr()/getAddr() are replaced by Bluefruit's setAddr()/getAddr()
+  - Gap.getPeerName() is replaced by Bluefruit.getPeerName()
+- Enhance Gap, add BLEConnection class to mange peer connection
+  - Remove Gap.connected(), Gap.getRole() in prefer to BLEConnection API
+  - Remove BLEGap, API function is taken by Bluefruit, BLEPeriph, BLECentral
+- Added setRssiCallback(), monitorRssi(), getRssi(), stopRssi() for tracking rssi of a connection
+  - rssi_poll and rssi_callback example sketches are added 
+- Change BLECharacteristic callback signature BLECharacteristic& to BLECharacteristic*
+- Use AdaCallback thread for BLECharacteristic callbacks
+- Update bootloader to 0.2.7 which fixed OTA issue with latest BLE5 central such as iPhone X
+- Added Metro nRF52840 Board support
+- Added enableOTA(bool) to disable/enable OTA service (default is enable)
+
+# 0.9.3
+
+- Correct bootloader version text in IDE to 0.2.6
+- Fixed #173 bleuart return incorrect value when failed to send (PR #178 thanks Nenik)
+- Added Client Battery support BLEClientBas
+- Added BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST event support for Central
+- Added Jlink as programmer to upload sketch #133. Though at least one serial DFU upload is needed to disable firmware crc checking
+- Fixed issue with high speed uart baud ~ 1 Mbps (PR #158 thanks Ureloc)
+- Add HardwardPWM removePin(), refactor hwpwm.ino sketch
+- Fixed print float issue with precision > 10
+
+## 0.9.2
+
+- Fully support Feather nRF52840
+- Update bootloader with new led pattern
+- Fix #203: return software timer handle
+
 ## 0.9.1
 
 - Rename FileIO.h to Bluefruit_FileIO to prevent conflict with other libraries.

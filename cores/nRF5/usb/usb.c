@@ -63,6 +63,8 @@ void usb_init(void)
 
   nrfx_power_usbevt_enable();
 
+  NVIC_SetPriority(USBD_IRQn, 2);
+
   // USB power may already be ready at this time -> no event generated
   // We need to invoke the handler based on the status initially
   uint32_t usb_reg = NRF_POWER->USBREGSTATUS;

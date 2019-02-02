@@ -27,12 +27,6 @@ BLEBas blebas;    // BAS (Battery Service) helper class instance
 
 uint8_t  bps = 0;
 
-// Advanced function prototypes
-void startAdv(void);
-void setupHRM(void);
-void connect_callback(uint16_t conn_handle);
-void disconnect_callback(uint16_t conn_handle, uint8_t reason);
-
 void setup()
 {
   Serial.begin(115200);
@@ -50,8 +44,8 @@ void setup()
   Bluefruit.setName("Bluefruit52 HRM");
 
   // Set the connect/disconnect callback handlers
-  Bluefruit.setConnectCallback(connect_callback);
-  Bluefruit.setDisconnectCallback(disconnect_callback);
+  Bluefruit.Periph.setConnectCallback(connect_callback);
+  Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
 
   // Configure and Start the Device Information Service
   Serial.println("Configuring the Device Information Service");
@@ -168,7 +162,7 @@ void setupHRM(void)
 void connect_callback(uint16_t conn_handle)
 {
   char central_name[32] = { 0 };
-  Bluefruit.Gap.getPeerName(conn_handle, central_name, sizeof(central_name));
+  Bluefruit.getPeerName(conn_handle, central_name, sizeof(central_name));
 
   Serial.print("Connected to ");
   Serial.println(central_name);
@@ -178,6 +172,7 @@ void connect_callback(uint16_t conn_handle)
  * Callback invoked when a connection is dropped
  * @param conn_handle connection where this event happens
  * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
+ * https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/master/cores/nRF5/nordic/softdevice/s140_nrf52_6.1.1_API/include/ble_hci.h
  */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
@@ -188,7 +183,7 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   Serial.println("Advertising!");
 }
 
-void cccd_callback(BLECharacteristic& chr, uint16_t cccd_value)
+void cccd_callback(BLECharacteristic* chr, uint16_t cccd_value)
 {
     // Display the raw request packet
     Serial.print("CCCD Updated: ");
@@ -198,8 +193,8 @@ void cccd_callback(BLECharacteristic& chr, uint16_t cccd_value)
 
     // Check the characteristic this CCCD update is associated with in case
     // this handler is used for multiple CCCD records.
-    if (chr.uuid == hrmc.uuid) {
-        if (chr.notifyEnabled()) {
+    if (chr->uuid == hrmc.uuid) {
+        if (chr->notifyEnabled()) {
             Serial.println("Heart Rate Measurement 'Notify' enabled");
         } else {
             Serial.println("Heart Rate Measurement 'Notify' disabled");

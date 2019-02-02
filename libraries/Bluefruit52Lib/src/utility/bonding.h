@@ -67,7 +67,7 @@ bool bond_load_cccd (uint8_t role, uint16_t conn_hdl, uint16_t ediv);
 
 void bond_print_list(uint8_t role);
 
-bool bond_find_cntr(ble_gap_addr_t* addr, bond_keys_t* bkeys);
+bool bond_find_cntr(ble_gap_addr_t const * addr, bond_keys_t* bkeys);
 
 
 

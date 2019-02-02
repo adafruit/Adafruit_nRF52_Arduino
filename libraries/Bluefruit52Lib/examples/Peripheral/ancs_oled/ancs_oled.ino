@@ -27,11 +27,24 @@
 #include <bluefruit.h>
 
 /*------------- OLED and Buttons -------------*/
+#if defined ARDUINO_NRF52_FEATHER
+// Feather nRF52832
 #define BUTTON_A    31
 #define BUTTON_B    30
 #define BUTTON_C    27
 
-#define OLED_RESET 4
+#elif defined ARDUINO_NRF52840_FEATHER
+// Feather nRF52840
+#define BUTTON_A    9
+#define BUTTON_B    6
+#define BUTTON_C    5
+
+#else
+#error board not supported
+#endif
+
+
+#define OLED_RESET 4 // TODO remove ?
 Adafruit_SSD1306 oled(OLED_RESET);
 
 
@@ -86,8 +99,8 @@ void setup()
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
   Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52");
-  Bluefruit.setConnectCallback(connect_callback);
-  Bluefruit.setDisconnectCallback(disconnect_callback);
+  Bluefruit.Periph.setConnectCallback(connect_callback);
+  Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
 
   // Configure and Start Service
   bleancs.begin();
@@ -263,7 +276,7 @@ void connect_callback(uint16_t conn_handle)
 
     oled.display();
 
-    if ( Bluefruit.requestPairing() )
+    if ( Bluefruit.requestPairing(conn_handle) )
     {
       oled.println("OK");
 
@@ -367,6 +380,7 @@ void ancs_notification_callback(AncsNotification_t* notif)
  * Callback invoked when a connection is dropped
  * @param conn_handle connection where this event happens
  * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
+ * https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/master/cores/nRF5/nordic/softdevice/s140_nrf52_6.1.1_API/include/ble_hci.h
  */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {

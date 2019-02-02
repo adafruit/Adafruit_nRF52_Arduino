@@ -52,7 +52,7 @@ class BLEDiscovery
     AdaMsg _adamsg;
     bool   _begun;
 
-    void  _event_handler(ble_evt_t* evt);
+    void  _eventHandler(ble_evt_t* evt);
 
   public:
     BLEDiscovery(void);

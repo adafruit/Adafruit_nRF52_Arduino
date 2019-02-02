@@ -100,6 +100,8 @@ private:
   uint8_t    _scan_data[BLE_GAP_SCAN_BUFFER_MAX];
   ble_data_t _report_data;
 
+  uint32_t   _conn_mask;
+
   bool       _runnning;
   bool       _start_if_disconnect;
 

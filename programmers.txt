@@ -1,17 +1,25 @@
 #**********************************************
-# Jlink with nrfjprog to burn bootloader
+# Jlink with nrfjprog
 #**********************************************
 nrfjprog.name=J-Link for Bluefruit nRF52
 nrfjprog.program.tool=bootburn
-#nrfjprog.program.path={runtime.tools.nrfjprog.path}/
-nrfjprog.program.path=
 nrfjprog.program.cmd=nrfjprog
 nrfjprog.program.cmd.windows=nrfjprog.exe
 
-nrfjprog.program.pattern="{program.path}{program.cmd}" --program "{runtime.platform.path}/bootloader/{build.variant}/{build.sd_version}r0/{build.variant}_bootloader_{build.sd_name}_{build.sd_version}r0.hex" -f nrf52 --chiperase --reset
+# Burn bootloader pattern
+nrfjprog.program.bootfile={runtime.platform.path}/bootloader/{build.variant}/{build.variant}_bootloader-0.2.7_{build.sd_name}_{build.sd_version}.hex
+nrfjprog.program.burn_pattern="{program.cmd}" --program "{program.bootfile}" -f nrf52 --chiperase --reset
+
+# Jlink to upload sketch
+nrfjprog.program.params.quiet=
+nrfjprog.program.params.verbose=
+nrfjprog.program.pattern="{program.cmd}" --reset --program "{build.path}/{build.project_name}.hex" --sectorerase -f nrf52
+
+# && nrfjprog --erasepage {upload.BOOT_SETTING_ADDR} -f nrf52 && nrfjprog --memwr {upload.BOOT_SETTING_ADDR} --val 0x00000001 -f nrf52 && nrfjprog --reset -f nrf52
+# tools.nrfutil.upload.BOOT_SETTING_ADDR=0xFF000
 
 #**********************************************
-# adafruit-nrfutil to upgrade bootloader
+# adafruit-nrfutil
 #**********************************************
 nrfutil_boot.name=Bootloader DFU for Bluefruit nRF52
 nrfutil_boot.program.tool=bootburn
@@ -19,4 +27,11 @@ nrfutil_boot.program.cmd=adafruit-nrfutil
 nrfutil_boot.program.cmd.windows={runtime.platform.path}/tools/adafruit-nrfutil/win32/adafruit-nrfutil.exe
 nrfutil_boot.program.cmd.macosx={runtime.platform.path}/tools/adafruit-nrfutil/macos/adafruit-nrfutil
 
-nrfutil_boot.program.pattern={program.cmd} --verbose dfu serial -pkg "{runtime.platform.path}/bootloader/{build.variant}/{build.sd_version}r0/{build.variant}_bootloader_{build.sd_name}_{build.sd_version}r0.zip" -p {serial.port} -b 115200 --touch 1200
+# Burn bootloader pattern
+nrfutil_boot.program.bootfile={runtime.platform.path}/bootloader/{build.variant}/{build.variant}_bootloader-0.2.7_{build.sd_name}_{build.sd_version}.zip
+nrfutil_boot.program.burn_pattern={program.cmd} --verbose dfu serial -pkg "{program.bootfile}" -p {serial.port} -b 115200 --touch 1200
+
+# Remind user to select Jlink when used to upload sketch
+nrfutil_boot.program.params.quiet=
+nrfutil_boot.program.params.verbose=
+nrfutil_boot.program.pattern=echo Please select <J-Link for Bluefruit nRF52> as programmer

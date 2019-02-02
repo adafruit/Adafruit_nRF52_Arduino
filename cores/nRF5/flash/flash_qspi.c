@@ -152,9 +152,9 @@ void flash_qspi_init (void)
   nrfx_qspi_config_t qspi_cfg = {
     .xip_offset = 0,
     .pins = {
-      .sck_pin = PIN_QSPI_SCK,
-      .csn_pin = PIN_QSPI_CS,
-      .io0_pin = PIN_QSPI_DATA0,
+      .sck_pin = g_ADigitalPinMap[PIN_QSPI_SCK],
+      .csn_pin = g_ADigitalPinMap[PIN_QSPI_CS],
+      .io0_pin = g_ADigitalPinMap[PIN_QSPI_DATA0],
       .io1_pin = NRF_QSPI_PIN_NOT_CONNECTED,
       .io2_pin = NRF_QSPI_PIN_NOT_CONNECTED,
       .io3_pin = NRF_QSPI_PIN_NOT_CONNECTED,
@@ -175,16 +175,16 @@ void flash_qspi_init (void)
     .irq_priority = 7,
   };
 
-#if QSPI_FLASH_MODE > 1
-  qspi_cfg.pins.io1_pin = PIN_QSPI_DATA1;
+#if QSPI_FLASH_MODE == 2
+  qspi_cfg.pins.io1_pin = g_ADigitalPinMap[PIN_QSPI_DATA1];
   qspi_cfg.prot_if.readoc = NRF_QSPI_READOC_READ2IO;
   qspi_cfg.prot_if.writeoc = NRF_QSPI_WRITEOC_PP2O;
-#if QSPI_FLASH_MODE > 2
-  qspi_cfg.pins.io2_pin = PIN_QSPI_DATA2;
-  qspi_cfg.pins.io3_pin = PIN_QSPI_DATA3;
+#elif QSPI_FLASH_MODE == 4
+  qspi_cfg.pins.io1_pin = g_ADigitalPinMap[PIN_QSPI_DATA1];
+  qspi_cfg.pins.io2_pin = g_ADigitalPinMap[PIN_QSPI_DATA2];
+  qspi_cfg.pins.io3_pin = g_ADigitalPinMap[PIN_QSPI_DATA3];
   qspi_cfg.prot_if.readoc = NRF_QSPI_READOC_READ4IO;
-  qspi_cfg.prot_if.writeoc = NRF_QSPI_WRITEOC_PP4IO;
-#endif
+  qspi_cfg.prot_if.writeoc = NRF_QSPI_WRITEOC_PP4O;
 #endif
 
   // No callback for blocking API
@@ -224,6 +224,10 @@ void flash_qspi_init (void)
   // Due to the bug, we collect data manually
   uint8_t dev_id = (uint8_t) NRF_QSPI->CINSTRDAT1;
   uint8_t mfgr_id = (uint8_t) ( NRF_QSPI->CINSTRDAT0 >> 24);
+
+  // quick hack
+  //printf("qspi mfgr id  : 0x%02X\n", mfgr_id);
+  //printf("qspi device id: 0x%02X\n", dev_id);
 
   // Look up the flash device in supported array
   for ( int i = 0; i < FLASH_DEVICE_COUNT; i++ )

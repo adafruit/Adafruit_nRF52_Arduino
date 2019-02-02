@@ -120,9 +120,15 @@ void systemOff(uint32_t pin, uint8_t wake_logic)
 //    NRF_POWER->RAM[i].POWERCLR = 0x03UL;
 //  }
 
-  pinMode(pin, wake_logic ? INPUT_PULLDOWN : INPUT_PULLUP);
+  pin = g_ADigitalPinMap[pin];
 
-  *digitalPinCnfRegister(pin) |= ((wake_logic ? GPIO_PIN_CNF_SENSE_High : GPIO_PIN_CNF_SENSE_Low) << GPIO_PIN_CNF_SENSE_Pos);
+  if ( wake_logic )
+  {
+    nrf_gpio_cfg_sense_input(pin, NRF_GPIO_PIN_PULLDOWN, NRF_GPIO_PIN_SENSE_HIGH);
+  }else
+  {
+    nrf_gpio_cfg_sense_input(pin, NRF_GPIO_PIN_PULLUP, NRF_GPIO_PIN_SENSE_LOW);
+  }
 
   uint8_t sd_en;
   (void) sd_softdevice_is_enabled(&sd_en);

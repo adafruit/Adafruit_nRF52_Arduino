@@ -176,8 +176,8 @@ void connect_callback(uint16_t conn_handle)
   {
     Serial.println("No Service Found");
 
-    // disconect since we couldn't find service
-    Bluefruit.Central.disconnect(conn_handle);
+    // disconnect since we couldn't find service
+    Bluefruit.disconnect(conn_handle);
 
     return;
   } 
@@ -189,7 +189,7 @@ void connect_callback(uint16_t conn_handle)
   {
     // Measurement chr is mandatory, if it is not found (valid), then disconnect
     Serial.println("No Characteristic Found. Characteristic is mandatory but not found. ");
-    Bluefruit.Central.disconnect(conn_handle);
+    Bluefruit.disconnect(conn_handle);
     return;
   }
   Serial.println("Characteristic Found");
@@ -201,7 +201,7 @@ void connect_callback(uint16_t conn_handle)
   if ( !opticalCharacteristicDataCollectionEnabler.discover() )
   {
     Serial.println("No Characteristic Found. Characteristic is mandatory but not found.");   
-    Bluefruit.Central.disconnect(conn_handle);
+    Bluefruit.disconnect(conn_handle);
     return;
   }
   Serial.println("Characteristic Found"); 
@@ -237,7 +237,8 @@ void connect_callback(uint16_t conn_handle)
 /**
  * Callback invoked when a connection is dropped
  * @param conn_handle
- * @param reason
+ * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
+ * https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/master/cores/nRF5/nordic/softdevice/s140_nrf52_6.1.1_API/include/ble_hci.h
  */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {

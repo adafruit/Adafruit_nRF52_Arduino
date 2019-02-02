@@ -3,9 +3,10 @@
 This repository contains the Arduino BSP for Adafruit nRF52 series:
 
 - [Bluefruit Feather nRF52832](https://www.adafruit.com/product/3406)
-- Bluefruit Feather nRF52840 Express (coming soon)
+- [Bluefruit Feather nRF52840](https://www.adafruit.com/product/4062)
 - [Nordic nRF52840 DK PCA10056](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-DK)
 - [Nordic nRF52840 Dongle PCA10059](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-Dongle)
+
 
 ## BSP Installation
 
@@ -25,11 +26,11 @@ There are two methods that you can use to install this BSP. We highly recommend 
 
  1. Install BSP via Board Manager as above to install compiler & tools.
  2. Delete the core folder `nrf52` installed by Board Manager in Adruino15, depending on your OS. It could be
-  * OS X   : `~/Library/Arduino15/packages/adafruit/hardware/nrf52`
+  * macOS  : `~/Library/Arduino15/packages/adafruit/hardware/nrf52`
   * Linux  : `~/.arduino15/packages/adafruit/hardware/nrf52`
   * Windows: `%APPDATA%\Local\Arduino15\packages\adafruit\hardware\nrf52`
  3. `cd <SKETCHBOOK>`, where `<SKETCHBOOK>` is your Arduino Sketch folder:
-  * OS X   : `~/Documents/Arduino`
+  * macOS  : `~/Documents/Arduino`
   * Linux  : `~/Arduino`
   * Windows: `~/Documents/Arduino`
  4. Create a folder named `hardware/Adafruit`, if it does not exist, and change directories to it
@@ -66,7 +67,7 @@ examples sketched for the selected board.
 
 ## Bootloader Support
 
-### Upgrade existiting Bootloader
+### Upgrade existing Bootloader
 
 Bluefruit's Bootloader is self-upgradable, you could upgrade to the latest Bootloader + Softdevice using the serial port within Arduino IDE.
 
@@ -77,7 +78,7 @@ Bluefruit's Bootloader is self-upgradable, you could upgrade to the latest Bootl
 
 Note: close the Serial Monitor before you click "Burn Bootloader". Afterwards, you shouldn't close the Arduino IDE, unplug the Feather, launch Serial Monitor etc ... to abort the process. There is a high chance it will brick your device! Do this with care and caution.
 
-### Burnning new Bootloader
+### Burning new Bootloader
 
 To burn the bootloader from within the Arduino IDE, you will need the following tools installed
 on your system and available in the system path:
@@ -87,7 +88,7 @@ on your system and available in the system path:
 
 Check to make sure you can run `nrfjprog` from your terminal/command prompt
 
-**OS X Note** At present, you will need to create a symlink in `/usr/local/bin` to the
+**macOS Note** At present, you will need to create a symlink in `/usr/local/bin` to the
 `nrfjprog` tool wherever you have added it. You can run the following command, for example:
 
 ```
@@ -114,9 +115,9 @@ $ nrfjprog --reset -f nrf52
 
 ## Misc Notes
 
-#### nRF52DK Jlink Issue on OS X
+#### nRF52DK Jlink Issue on macOS
 
-If developping with the nRF52DK on OS X, there is a bug where only 64 bytes can be sent
+If developing with the nRF52DK on macOS, there is a bug where only 64 bytes can be sent
 over the USB CDC interface, which will prevent you from using the serial bootloader from
 the Arduino IDE with an error like this:
 
@@ -150,7 +151,7 @@ which in turn is based on the [Arduino SAMD Core](https://github.com/arduino/Ard
 The following libraries are used:
 
 - adafruit-nrfutil is based on Nordic Semiconductor ASA's [pc-nrfutil](https://github.com/NordicSemiconductor/pc-nrfutil)
-- freeRTOS as operating system
+- [freeRTOS](https://www.freertos.org/) as operating system
 - [tinyusb](https://github.com/hathach/tinyusb) as usb stack
 - [nrfx](https://github.com/NordicSemiconductor/nrfx) for peripherals driver
 - [littlefs](https://github.com/ARMmbed/littlefs) for internal file system

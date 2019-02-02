@@ -37,7 +37,7 @@
 #include <bluefruit.h>
 #include "HAPUuid.h"
 #include "HAPPairing.h"
-#include <Nffs.h>
+#include "Bluefruit_FileIO.h"
 
 #include "crypto/crypto.h"
 
@@ -105,8 +105,7 @@ static const char* pairing_type_str[] =
 void _pair_setup_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req);
 void _pair_verify_write_cb (uint16_t conn_hdl, HAPCharacteristic* chr, HAPRequest_t const* hap_req);
 
-// TODO add connection handle parameter
-void gatt_reply_now(void)
+void gatt_reply_now(uint16_t conn_hdl)
 {
   ble_gatts_rw_authorize_reply_params_t reply =
   {
@@ -118,7 +117,7 @@ void gatt_reply_now(void)
           }
       }
   };
-  VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(Bluefruit.connHandle(), &reply), );
+  VERIFY_STATUS( sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply), );
 }
 
 HAPPairing::HAPPairing(void)
@@ -155,11 +154,12 @@ err_t HAPPairing::begin(void)
 
   // Make PairID based on MAC address
   uint8_t mac[6];
-  Bluefruit.Gap.getAddr(mac);
+  Bluefruit.getAddr(mac);
   setDeviceID(mac);
 
   // Init cryptography
-  Nffs.mkdir_p("/adafruit/homekit");
+  if ( !InternalFS.exists("/adafruit/homekit") ) InternalFS.mkdir("/adafruit/homekit");
+
   crypto_init();
 
   return ERROR_NONE;
@@ -242,7 +242,7 @@ void HAPPairing::pair_setup_m3(uint16_t conn_hdl, HAPRequest_t const* hap_req, T
   #endif
 
   // Set iOS public key
-  srp_setA( (uint8_t*) pubkey.value, pubkey.len, gatt_reply_now);
+  srp_setA( (uint8_t*) pubkey.value, pubkey.len, gatt_reply_now, conn_hdl);
 
   // Check proof
   if ( srp_checkM1( (uint8_t*) proof.value, proof.len) )

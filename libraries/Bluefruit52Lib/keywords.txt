@@ -109,8 +109,6 @@ configPrphConn	KEYWORD2
 configCentralConn	KEYWORD2
 getMaxMtuByConnCfg	KEYWORD2
 getMaxMtu	KEYWORD2
-getHvnQueueSize	KEYWORD2
-getWriteCmdQueueSize	KEYWORD2
 getMTU	KEYWORD2
 
 getHvnPacket	KEYWORD2
@@ -441,9 +439,7 @@ LED_CONN	LITERAL1
 #######################################
 # BLE Constants (LITERAL1)
 #######################################
-BLE_MAX_CONN	LITERAL1
-BLE_CENTRAL_MAX_CONN	LITERAL1
-BLE_PRPH_MAX_CONN	LITERAL1
+BLE_MAX_CONNECTION	LITERAL1
 
 BLE_CONN_HANDLE_INVALID	LITERAL1
 

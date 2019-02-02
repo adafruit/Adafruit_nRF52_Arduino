@@ -130,9 +130,9 @@ void BLEHidGeneric::setOutputReportCallback(uint8_t reportID, BLECharacteristic:
 /*------------------------------------------------------------------*/
 /* Callbacks
  *------------------------------------------------------------------*/
-void blehid_generic_protocol_mode_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
+void blehid_generic_protocol_mode_cb(BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset)
 {
-  BLEHidGeneric& svc = (BLEHidGeneric&) chr.parentService();
+  BLEHidGeneric& svc = (BLEHidGeneric&) chr->parentService();
   svc._protocol_mode = *data;
 
   LOG_LV2("HID", "Protocol Mode : %d (0 Boot, 1 Report)", *data);

@@ -255,6 +255,8 @@ BLEAdvertising::BLEAdvertising(void)
   _start_if_disconnect = true;
   _runnning            = false;
 
+  _conn_mask           = 0;
+
   _fast_interval       = BLE_ADV_INTERVAL_FAST_DFLT;
   _slow_interval       = BLE_ADV_INTERVAL_SLOW_DFLT;
   _active_interval     = _fast_interval;
@@ -397,31 +399,31 @@ bool BLEAdvertising::stop(void)
 
 void BLEAdvertising::_eventHandler(ble_evt_t* evt)
 {
+  // conn handle has fixed offset for all events
+  uint16_t const conn_hdl = evt->evt.common_evt.conn_handle;
+
   switch ( evt->header.evt_id  )
   {
     case BLE_GAP_EVT_CONNECTED:
     {
       ble_gap_evt_connected_t const * para = &evt->evt.gap_evt.params.connected;
 
-      if ( para->role == BLE_GAP_ROLE_PERIPH)
+      if ( para->role == BLE_GAP_ROLE_PERIPH )
       {
-        _runnning = false;
+        bitSet(_conn_mask, conn_hdl);
 
-        // Turn on Conn LED
-        Bluefruit._stopConnLed();
-        Bluefruit._setConnLed(true);
+        _runnning = false;
       }
     }
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
-      if ( BLE_GAP_ROLE_PERIPH == Bluefruit.Gap.getRole(evt->evt.common_evt.conn_handle) )
+      if ( bitRead(_conn_mask, conn_hdl) && (0 == Bluefruit.connected()) )
       {
-        // Turn off Conn LED
-        Bluefruit._setConnLed(false);
+        bitClear(_conn_mask, conn_hdl);
 
-        // Auto start if enabled
-        if ( _start_if_disconnect ) start(_stop_timeout);
+        // Auto start if enabled and not connected to any central
+        if ( !_runnning && _start_if_disconnect ) start(_stop_timeout);
       }
     break;
 

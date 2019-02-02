@@ -43,8 +43,8 @@ void setup()
   Bluefruit.setName("Bluefruit52 duo");
 
   // Callbacks for Peripheral
-  Bluefruit.setConnectCallback(prph_connect_callback);
-  Bluefruit.setDisconnectCallback(prph_disconnect_callback);
+  Bluefruit.Periph.setConnectCallback(prph_connect_callback);
+  Bluefruit.Periph.setDisconnectCallback(prph_disconnect_callback);
 
   // Callbacks for Central
   Bluefruit.Central.setConnectCallback(cent_connect_callback);
@@ -116,7 +116,7 @@ void loop()
 void prph_connect_callback(uint16_t conn_handle)
 {
   char peer_name[32] = { 0 };
-  Bluefruit.Gap.getPeerName(conn_handle, peer_name, sizeof(peer_name));
+  Bluefruit.getPeerName(conn_handle, peer_name, sizeof(peer_name));
 
   Serial.print("[Prph] Connected to ");
   Serial.println(peer_name);
@@ -163,7 +163,7 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
 void cent_connect_callback(uint16_t conn_handle)
 {
   char peer_name[32] = { 0 };
-  Bluefruit.Gap.getPeerName(conn_handle, peer_name, sizeof(peer_name));
+  Bluefruit.getPeerName(conn_handle, peer_name, sizeof(peer_name));
 
   Serial.print("[Cent] Connected to ");
   Serial.println(peer_name);;
@@ -174,8 +174,8 @@ void cent_connect_callback(uint16_t conn_handle)
     clientUart.enableTXD();
   }else
   {
-    // disconect since we couldn't find bleuart service
-    Bluefruit.Central.disconnect(conn_handle);
+    // disconnect since we couldn't find bleuart service
+    Bluefruit.disconnect(conn_handle);
   }  
 }
 

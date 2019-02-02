@@ -85,18 +85,19 @@ static uint16_t crc16(const uint8_t* data_p, uint8_t length)
   return crc;
 }
 
-static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt_write_t* request)
+static void bledfu_control_wr_authorize_cb(BLECharacteristic* chr, ble_gatts_evt_write_t* request)
 {
-  if ( (request->handle == chr.handles().value_handle)  &&
+  if ( (request->handle == chr->handles().value_handle)  &&
        (request->op != BLE_GATTS_OP_PREP_WRITE_REQ)     &&
        (request->op != BLE_GATTS_OP_EXEC_WRITE_REQ_NOW) &&
        (request->op != BLE_GATTS_OP_EXEC_WRITE_REQ_CANCEL))
   {
     uint16_t conn_hdl = Bluefruit.connHandle();
+    BLEConnection* conn = Bluefruit.Connection(conn_hdl);
 
     ble_gatts_rw_authorize_reply_params_t reply = { .type = BLE_GATTS_AUTHORIZE_TYPE_WRITE };
 
-    if ( !chr.notifyEnabled() )
+    if ( !chr->notifyEnabled() )
     {
       reply.params.write.gatt_status = BLE_GATT_STATUS_ATTERR_CPS_CCCD_CONFIG_ERROR;
       sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
@@ -135,13 +136,13 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
       sd_ble_gatts_sys_attr_get(conn_hdl, peer_data->sys_attr, &sysattr_len, BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS);
 
       // Get Bond Data or using Address if not bonded
-      peer_data->addr = Bluefruit.Gap.getPeerAddr(conn_hdl);
+      peer_data->addr = conn->getPeerAddr();
 
-      if ( Bluefruit.Gap.paired(conn_hdl) )
+      if ( conn->paired() )
       {
         bond_keys_t bkeys;
 
-        if ( bond_load_keys( BLE_GAP_ROLE_PERIPH, Bluefruit.Gap._get_peer(conn_hdl)->ediv, &bkeys ) )
+        if ( conn->loadKeys(&bkeys) )
         {
           peer_data->addr    = bkeys.peer_id.id_addr_info;
           peer_data->irk     = bkeys.peer_id.id_info;
@@ -154,7 +155,7 @@ static void bledfu_control_wr_authorize_cb(BLECharacteristic& chr, ble_gatts_evt
 
       // Initiate DFU Sequence and reboot into DFU OTA mode
       Bluefruit.Advertising.restartOnDisconnect(false);
-      Bluefruit.disconnect();
+      conn->disconnect();
 
       // Set GPReset to DFU OTA
       enum { DFU_OTA_MAGIC = 0xB1 };

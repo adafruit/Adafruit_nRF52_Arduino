@@ -54,14 +54,14 @@ void HwRotaryEncoder::begin(uint8_t pina, uint8_t pinb, int8_t pinled)
   pinMode(pina, INPUT_PULLUP);
   pinMode(pinb, INPUT_PULLUP);
 
-  NRF_QDEC->PSEL.A = pina;
-  NRF_QDEC->PSEL.B = pinb;
+  NRF_QDEC->PSEL.A = g_ADigitalPinMap[pina];
+  NRF_QDEC->PSEL.B = g_ADigitalPinMap[pinb];
 
   if ( pinled >= 0 )
   {
     pinMode(pinled, INPUT);
 
-    NRF_QDEC->PSEL.LED = pinled;
+    NRF_QDEC->PSEL.LED = g_ADigitalPinMap[pinled];
   }
 
   // Disable debounce by default

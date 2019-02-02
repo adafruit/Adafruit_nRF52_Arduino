@@ -53,7 +53,7 @@ const char README_CONTENT[] =
                               "https://learn.adafruit.com/bluefruit-nrf52-feather-learning-guide\r\n"
                               "\r\n"
                               "Adafruit Bluefruit nRF52 Feather Product Page:\r\n"
-                              "- https://www.adafruit.com/product/0000\r\n";
+                              "- https://www.adafruit.com/product/4062\r\n";
 
 
 //--------------------------------------------------------------------+

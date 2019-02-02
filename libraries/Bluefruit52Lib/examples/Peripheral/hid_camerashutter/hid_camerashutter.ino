@@ -22,7 +22,7 @@
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
-#define PIN_SHUTTER   11
+#define PIN_SHUTTER   A0
 
 void setup()
 {
@@ -66,7 +66,7 @@ void setup()
    * Note: It is already set by BLEHidAdafruit::begin() to 11.25ms - 15ms
    * min = 9*1.25=11.25 ms, max = 12*1.25= 15 ms
    */
-  /* Bluefruit.setConnInterval(9, 12); */
+  /* Bluefruit.Periph.setConnInterval(9, 12); */
 
   // Set up and start advertising
   startAdv();

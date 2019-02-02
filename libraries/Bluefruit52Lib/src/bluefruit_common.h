@@ -64,4 +64,8 @@
 // Converts an integer of 625ms units to msecs
 #define MS625TO1000(u625) ( ((u625)*5) / 8 )
 
+
+typedef void (*ble_connect_callback_t    ) (uint16_t conn_hdl);
+typedef void (*ble_disconnect_callback_t ) (uint16_t conn_hdl, uint8_t reason);
+
 #endif /* BLUEFRUIT_COMMON_H_ */

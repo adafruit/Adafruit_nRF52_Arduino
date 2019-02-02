@@ -82,7 +82,11 @@ bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLEClientService& svc,
   int32_t bytecount = _adamsg.waitUntilComplete(BLE_DISCOVERY_TIMEOUT);
 
   // timeout or has no data (due to GATT Error)
-  if ( bytecount <= 0 ) return false;
+  if ( bytecount <= 0 )
+  {
+    LOG_LV1("DISC", "[SVC] timeout or error", start_handle);
+    return false;
+  }
 
   // Check the discovered UUID with input one
   if ( (disc_svc.count) && (svc.uuid == disc_svc.services[0].uuid) )
@@ -192,7 +196,7 @@ uint16_t BLEDiscovery::_discoverDescriptor(uint16_t conn_handle, ble_gattc_evt_d
 }
 
 
-void BLEDiscovery::_event_handler(ble_evt_t* evt)
+void BLEDiscovery::_eventHandler(ble_evt_t* evt)
 {
   ble_gattc_evt_t* gattc = &evt->evt.gattc_evt;
 

@@ -39,53 +39,43 @@
 #include <Arduino.h>
 #include "bluefruit_common.h"
 
-#include "BLEGap.h"
-#include "BLEGatt.h"
-
-#include "BLEUuid.h"
-#include "BLECharacteristic.h"
-#include "BLEClientCharacteristic.h"
-#include "BLEService.h"
-
-#include "BLEClientService.h"
-
 class AdafruitBluefruit;
 
 class BLECentral
 {
   public:
     BLECentral(void); // Constructor
-
     void begin(void);
 
     /*------------------------------------------------------------------*/
     /* GAP
      *------------------------------------------------------------------*/
-    bool     setConnInterval(uint16_t min, uint16_t max);
-    bool     setConnIntervalMS (uint16_t min_ms, uint16_t max_ms);
+    bool setConnInterval(uint16_t min, uint16_t max);
+    bool setConnIntervalMS(uint16_t min_ms, uint16_t max_ms);
 
-    bool     connect(const ble_gap_evt_adv_report_t* adv_report);
-    bool     connect(const ble_gap_addr_t *peer_addr);
-    bool     disconnect(uint16_t conn_handle);
+    bool connect(const ble_gap_evt_adv_report_t* adv_report);
+    bool connect(const ble_gap_addr_t *peer_addr);
 
-    bool     connected (uint16_t conn_handle); // If connected to a specific peripheral
-    bool     connected (void);                 // If connected to any peripherals
+    bool    connected(uint16_t conn_hdl); // Connected as central to this connection
+    uint8_t connected(void);              // Number of connected Peripherals
 
-    void     clearBonds        (void);
+    void clearBonds (void);
 
     /*------------- Callbacks -------------*/
-    void setConnectCallback   ( BLEGap::connect_callback_t    fp);
-    void setDisconnectCallback( BLEGap::disconnect_callback_t fp);
+    void setConnectCallback   ( ble_connect_callback_t    fp);
+    void setDisconnectCallback( ble_disconnect_callback_t fp);
+
+    /*------------------------------------------------------------------*/
+    /* INTERNAL USAGE ONLY
+     * Although declare as public, it is meant to be invoked by internal code.
+     *------------------------------------------------------------------*/
+    void _eventHandler(ble_evt_t* evt);
 
   private:
-    // Peripheral Preferred Connection Parameters (PPCP)
-    uint16_t _ppcp_min_conn;
-    uint16_t _ppcp_max_conn;
+    ble_gap_conn_params_t _conn_param;
 
-    BLEGap::connect_callback_t    _connect_cb;
-    BLEGap::disconnect_callback_t _disconnect_cb;
-
-    void     _event_handler(ble_evt_t* evt);
+    ble_connect_callback_t _connect_cb;
+    ble_disconnect_callback_t _disconnect_cb;
 
     friend class AdafruitBluefruit;
 };

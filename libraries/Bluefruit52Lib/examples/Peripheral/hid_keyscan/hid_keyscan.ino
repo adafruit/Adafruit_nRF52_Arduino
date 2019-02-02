@@ -81,7 +81,7 @@ void setup()
    * Note: It is already set by BLEHidAdafruit::begin() to 11.25ms - 15ms
    * min = 9*1.25=11.25 ms, max = 12*1.25= 15 ms 
    */
-  /* Bluefruit.setConnInterval(9, 12); */
+  /* Bluefruit.Periph.setConnInterval(9, 12); */
 
   // Set up and start advertising
   startAdv();
@@ -117,14 +117,14 @@ void startAdv(void)
 
 void loop()
 {
-  /*-------------- San Pin Array and send report ---------------------*/
+  /*-------------- Scan Pin Array and send report ---------------------*/
   bool anyKeyPressed = false;
 
   uint8_t modifier = 0;
   uint8_t count=0;
   uint8_t keycode[6] = { 0 };
 
-  // scan mofidier key (only SHIFT), user implement ATL, CTRL, CMD if needed
+  // scan modifier key (only SHIFT), user implement ATL, CTRL, CMD if needed
   if ( 0 == digitalRead(shiftPin) )
   {
     modifier |= KEYBOARD_MODIFIER_LEFTSHIFT;

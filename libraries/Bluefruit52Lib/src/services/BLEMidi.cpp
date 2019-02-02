@@ -106,7 +106,7 @@ typedef struct ATTR_PACKED
 
 VERIFY_STATIC ( sizeof(midi_split_packet_t) == (BLE_MIDI_TX_BUFFER_SIZE + 1) );
 
-void blemidi_write_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
+void blemidi_write_cb(BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset);
 
 /*------------------------------------------------------------------*/
 /* IMPLEMENTATION
@@ -153,7 +153,7 @@ err_t BLEMidi::begin(void)
   VERIFY_STATUS( _io.begin() );
 
   // Attempt to change the connection interval to 11.25-15 ms when starting HID
-  Bluefruit.setConnInterval(9, 12);
+  Bluefruit.Periph.setConnInterval(9, 12);
 
   return ERROR_NONE;
 }
@@ -161,12 +161,12 @@ err_t BLEMidi::begin(void)
 /*------------------------------------------------------------------*/
 /* Callbacks
  *------------------------------------------------------------------*/
-void blemidi_write_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
+void blemidi_write_cb(BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset)
 {
   (void) offset;
   if ( len < 3 ) return;
 
-  BLEMidi& midi_svc = (BLEMidi&) chr.parentService();
+  BLEMidi& midi_svc = (BLEMidi&) chr->parentService();
   midi_svc._write_handler(data, len);
 }
 
