@@ -79,8 +79,7 @@ void startAdv(void)
 
 void loop()
 {
-  // Forward data from HW Serial to BLEUART
-  while (Bluefruit.connected())
+  if ( Bluefruit.connected() )
   {
     uint16_t conn_hdl = Bluefruit.connHandle();
 
