@@ -184,6 +184,12 @@ class BLECharacteristic
     ble_gatts_attr_md_t       _attr_meta;
     ble_gatts_char_handles_t  _handles;
 
+    struct {
+        uint8_t* buffer;
+        uint16_t bufsize;
+        uint16_t count;
+    }_long_wr;
+
     /*------------- Callback pointers -------------*/
     read_authorize_cb_t       _rd_authorize_cb;
     write_authorize_cb_t      _wr_authorize_cb;

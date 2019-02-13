@@ -169,7 +169,7 @@ static void dump_str_line(uint8_t const* buf, uint16_t count)
 
 void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffset)
 {
-  if ( !buf )
+  if ( !buf || !count )
   {
     printf("NULL\n");
     return;

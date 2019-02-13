@@ -59,6 +59,10 @@ void BLECharacteristic::_init(void)
   _handles.sccd_handle      = BLE_GATT_HANDLE_INVALID;
   _handles.cccd_handle      = BLE_GATT_HANDLE_INVALID;
 
+  _long_wr.buffer = NULL;
+  _long_wr.bufsize = 0;
+  _long_wr.count = 0;
+
   _rd_authorize_cb = NULL;
   _wr_authorize_cb = NULL;
   _wr_cb           = NULL;
@@ -344,26 +348,98 @@ err_t BLECharacteristic::addDescriptor(BLEUuid bleuuid, void const * content, ui
  */
 void BLECharacteristic::_eventHandler(ble_evt_t* event)
 {
+  uint16_t const conn_hdl = event->evt.common_evt.conn_handle;
+
   switch(event->header.evt_id)
   {
     case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
     {
       ble_gatts_evt_rw_authorize_request_t * request = &event->evt.gatts_evt.params.authorize_request;
 
-      if ( (request->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE) && (_wr_authorize_cb != NULL))
+      if (request->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE)
       {
-        if ( _use_ada_cb.write_authorize )
-        {
-          uint8_t* data = (uint8_t*) rtos_malloc(sizeof(request->request.write));
-          VERIFY(data,);
+        ble_gatts_evt_write_t * wr_req = &request->request.write;
 
-          memcpy(data, &request->request.write, sizeof(request->request.write));
-
-          // data is free after callback
-          ada_callback(data, _wr_authorize_cb, this, data);
-        }else
+        switch(wr_req->op)
         {
-          _wr_authorize_cb(this, &request->request.write);
+          case BLE_GATTS_OP_PREP_WRITE_REQ:
+          {
+            // Prepare Long Write
+            if ( !_long_wr.buffer )
+            {
+              // Allocate long write buffer if not previously
+              _long_wr.bufsize = 1024; // TODO bufsize is 10x MTU
+              _long_wr.buffer = (uint8_t*) rtos_malloc(_long_wr.bufsize);
+              _long_wr.count = 0;
+            }
+
+            ble_gatts_rw_authorize_reply_params_t reply = { .type = BLE_GATTS_AUTHORIZE_TYPE_WRITE };
+
+            if ( wr_req->offset + wr_req->len > _long_wr.bufsize )
+            {
+              reply.params.write.gatt_status = BLE_GATT_STATUS_ATTERR_PREPARE_QUEUE_FULL;
+            }else
+            {
+              reply.params.write = ((ble_gatts_authorize_params_t) {
+                  .gatt_status = BLE_GATT_STATUS_SUCCESS,
+                  .update      = 1,
+                  .offset      = wr_req->offset,
+                  .len         = wr_req->len,
+                  .p_data      = wr_req->data
+              });
+
+              memcpy(_long_wr.buffer+wr_req->offset, wr_req->data, wr_req->len);
+              _long_wr.count = max16(_long_wr.count, wr_req->offset + wr_req->len);
+            }
+
+            sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
+          }
+          break;
+
+          case BLE_GATTS_OP_EXEC_WRITE_REQ_NOW:
+            // Execute Long Write
+            if ( _long_wr.buffer )
+            {
+              ble_gatts_rw_authorize_reply_params_t reply = { .type = BLE_GATTS_AUTHORIZE_TYPE_WRITE };
+              reply.params.write.gatt_status = BLE_GATT_STATUS_SUCCESS;
+
+              sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
+
+              // Long write complete, call write callback if set
+              if (_wr_cb) _wr_cb(this, _long_wr.buffer, _long_wr.count, 0);
+
+              // free up memory
+              rtos_free(_long_wr.buffer);
+              _long_wr.buffer = NULL;
+              _long_wr.bufsize = _long_wr.count = 0;
+            }
+          break;
+
+          case BLE_GATTS_OP_EXEC_WRITE_REQ_CANCEL:
+            // Cancel Long Write
+          break;
+
+          case BLE_GATTS_OP_WRITE_REQ:
+            // Write Request with authorization
+            if (_wr_authorize_cb != NULL) 
+            {
+              if ( _use_ada_cb.write_authorize )
+              {
+                uint8_t* data = (uint8_t*) rtos_malloc(sizeof(request->request.write));
+                VERIFY(data,);
+
+                memcpy(data, &request->request.write, sizeof(request->request.write));
+
+                // data is free after callback
+                ada_callback(data, _wr_authorize_cb, this, data);
+              }else
+              {
+                _wr_authorize_cb(this, &request->request.write);
+              }
+            }
+          break;
+
+          default: break;
         }
       }
 
@@ -391,11 +467,12 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
     {
       ble_gatts_evt_write_t* request = &event->evt.gatts_evt.params.write;
 
+      LOG_LV2_BUFFER(NULL, request->data, request->len);
+
       // Value write
       if (request->handle == _handles.value_handle)
       {
         LOG_LV2("GATTS", "attr's value, uuid = 0x%04X", request->uuid.uuid);
-        LOG_LV2_BUFFER(NULL, request->data, request->len);
 
         if (_wr_cb)
         {
@@ -418,7 +495,6 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
       if ( request->handle == _handles.cccd_handle )
       {
         LOG_LV2("GATTS", "attr's cccd");
-        LOG_LV2_BUFFER(NULL, request->data, request->len);
 
         if (_cccd_wr_cb)
         {
