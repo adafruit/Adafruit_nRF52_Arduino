@@ -816,6 +816,15 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
       break;
 
+      case BLE_EVT_USER_MEM_REQUEST:
+        // We will handle Long Write sequence (RW Authorize PREP_WRITE_REQ)
+        sd_ble_user_mem_reply(evt_conn_hdl, NULL);
+      break;
+
+      case BLE_EVT_USER_MEM_RELEASE:
+        // nothing to do
+      break;
+
       default: break;
     }
   }

@@ -461,15 +461,15 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
       {
         // len is known to be zero for WRITE_REQ
         _adamsg.complete();
-      }else if ( wr_rsp->write_op == BLE_GATT_OP_PREP_WRITE_REQ)
+      }
+      else if ( wr_rsp->write_op == BLE_GATT_OP_PREP_WRITE_REQ)
       {
         uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
         uint16_t packet_len = min16(_adamsg.remaining, max_payload-2);
 
-        // still has data, continue to prepare
         if ( packet_len )
         {
-          // Long Write Prepare
+          // still has data, continue to prepare Long Write sequence
           ble_gattc_write_params_t param =
           {
               .write_op = BLE_GATT_OP_PREP_WRITE_REQ,
@@ -487,7 +487,7 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
           }
         }else
         {
-          // Long Write Execute
+          // All data is prepared, execute Long Write
           ble_gattc_write_params_t param =
           {
               .write_op = BLE_GATT_OP_EXEC_WRITE_REQ,
