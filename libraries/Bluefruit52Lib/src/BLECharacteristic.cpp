@@ -356,12 +356,42 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
     {
       ble_gatts_evt_rw_authorize_request_t * request = &event->evt.gatts_evt.params.authorize_request;
 
+      // Read authorization
+      if ( (request->type == BLE_GATTS_AUTHORIZE_TYPE_READ) && (_rd_authorize_cb != NULL))
+      {
+        ble_gatts_evt_read_t * rd_req = &request->request.read;
+
+        if ( _use_ada_cb.read_authorize )
+        {
+          ada_callback(rd_req, sizeof(*rd_req), _rd_authorize_cb, this, rd_req);
+        }
+        else
+        {
+          _rd_authorize_cb(this, rd_req);
+        }
+      }
+
+      // Write Authorization and Long Write sequence handling
       if (request->type == BLE_GATTS_AUTHORIZE_TYPE_WRITE)
       {
         ble_gatts_evt_write_t * wr_req = &request->request.write;
 
         switch(wr_req->op)
         {
+          case BLE_GATTS_OP_WRITE_REQ:
+            // Write Request with authorization
+            if (_wr_authorize_cb != NULL)
+            {
+              if ( _use_ada_cb.write_authorize )
+              {
+                ada_callback(wr_req, sizeof(*wr_req), _wr_authorize_cb, this, wr_req);
+              }else
+              {
+                _wr_authorize_cb(this, wr_req);
+              }
+            }
+          break;
+
           case BLE_GATTS_OP_PREP_WRITE_REQ:
           {
             // Prepare Long Write
@@ -406,7 +436,16 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
               sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
 
               // Long write complete, call write callback if set
-              if (_wr_cb) _wr_cb(this, _long_wr.buffer, _long_wr.count, 0);
+              if (_wr_cb)
+              {
+                if (_use_ada_cb.write)
+                {
+                  ada_callback(_long_wr.buffer, _long_wr.count, _wr_cb, this, _long_wr.buffer, _long_wr.count, 0);
+                }else
+                {
+                  _wr_cb(this, _long_wr.buffer, _long_wr.count, 0);
+                }
+              }
 
               // free up memory
               rtos_free(_long_wr.buffer);
@@ -419,35 +458,7 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
             // Cancel Long Write
           break;
 
-          case BLE_GATTS_OP_WRITE_REQ:
-            // Write Request with authorization
-            if (_wr_authorize_cb != NULL) 
-            {
-              if ( _use_ada_cb.write_authorize )
-              {
-                ada_callback(wr_req, sizeof(*wr_req), _wr_authorize_cb, this, wr_req);
-              }else
-              {
-                _wr_authorize_cb(this, wr_req);
-              }
-            }
-          break;
-
           default: break;
-        }
-      }
-
-      if ( (request->type == BLE_GATTS_AUTHORIZE_TYPE_READ) && (_rd_authorize_cb != NULL))
-      {
-        ble_gatts_evt_read_t * rd_req = &request->request.read;
-
-        if ( _use_ada_cb.read_authorize )
-        {
-          ada_callback(rd_req, sizeof(*rd_req), _rd_authorize_cb, this, rd_req);
-        }
-        else
-        {
-          _rd_authorize_cb(this, rd_req);
         }
       }
     }
