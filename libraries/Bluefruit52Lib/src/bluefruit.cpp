@@ -817,10 +817,10 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       // Invoke connect callback
       if ( conn->getRole() == BLE_GAP_ROLE_PERIPH )
       {
-        if ( Periph._connect_cb ) ada_callback(NULL, Periph._connect_cb, conn_hdl);
+        if ( Periph._connect_cb ) ada_callback(NULL, 0, Periph._connect_cb, conn_hdl);
       }else
       {
-        if ( Central._connect_cb ) ada_callback(NULL, Central._connect_cb, conn_hdl);
+        if ( Central._connect_cb ) ada_callback(NULL, 0, Central._connect_cb, conn_hdl);
       }
     }
     break;
@@ -846,10 +846,10 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       // Invoke disconnect callback
       if ( conn->getRole() == BLE_GAP_ROLE_PERIPH )
       {
-        if ( Periph._disconnect_cb ) ada_callback(NULL, Periph._disconnect_cb, conn_hdl, para->reason);
+        if ( Periph._disconnect_cb ) ada_callback(NULL, 0, Periph._disconnect_cb, conn_hdl, para->reason);
       }else
       {
-        if ( Central._disconnect_cb ) ada_callback(NULL, Central._disconnect_cb, conn_hdl, para->reason);
+        if ( Central._disconnect_cb ) ada_callback(NULL, 0, Central._disconnect_cb, conn_hdl, para->reason);
       }
 
       delete _connection[conn_hdl];
@@ -863,7 +863,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       ble_gap_evt_rssi_changed_t const * rssi_changed = &evt->evt.gap_evt.params.rssi_changed;
       if ( _rssi_cb )
       {
-         ada_callback(NULL, _rssi_cb, conn_hdl, rssi_changed->rssi);
+         ada_callback(NULL, 0, _rssi_cb, conn_hdl, rssi_changed->rssi);
       }
     }
     break;

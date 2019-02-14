@@ -425,16 +425,10 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
             {
               if ( _use_ada_cb.write_authorize )
               {
-                uint8_t* data = (uint8_t*) rtos_malloc(sizeof(request->request.write));
-                VERIFY(data,);
-
-                memcpy(data, &request->request.write, sizeof(request->request.write));
-
-                // data is free after callback
-                ada_callback(data, _wr_authorize_cb, this, data);
+                ada_callback(wr_req, sizeof(*wr_req), _wr_authorize_cb, this, wr_req);
               }else
               {
-                _wr_authorize_cb(this, &request->request.write);
+                _wr_authorize_cb(this, wr_req);
               }
             }
           break;
@@ -445,19 +439,15 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
 
       if ( (request->type == BLE_GATTS_AUTHORIZE_TYPE_READ) && (_rd_authorize_cb != NULL))
       {
+        ble_gatts_evt_read_t * rd_req = &request->request.read;
+
         if ( _use_ada_cb.read_authorize )
         {
-          uint8_t* data = (uint8_t*) rtos_malloc(sizeof(request->request.read));
-          VERIFY(data,);
-
-          memcpy(data, &request->request.read, sizeof(request->request.read));
-
-          // data is free after callback
-          ada_callback(data, _rd_authorize_cb, this, data);
+          ada_callback(rd_req, sizeof(*rd_req), _rd_authorize_cb, this, rd_req);
         }
         else
         {
-          _rd_authorize_cb(this, &request->request.read);
+          _rd_authorize_cb(this, rd_req);
         }
       }
     }
@@ -478,14 +468,9 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
         {
           if (_use_ada_cb.write)
           {
-            uint8_t* data = (uint8_t*) rtos_malloc(request->len);
-            VERIFY(data,);
-            memcpy(data, request->data, request->len);
-
-            ada_callback(data, _wr_cb, this, data, request->len, request->offset);
+            ada_callback(request->data, request->len, _wr_cb, this, request->data, request->len, request->offset);
           }else
           {
-            // invoke directly if cannot allocate memory for data
             _wr_cb(this, request->data, request->len, request->offset);
           }
         }
@@ -503,7 +488,7 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
 
           if ( _use_ada_cb.cccd_write )
           {
-            ada_callback(NULL, _cccd_wr_cb, this, value);
+            ada_callback(NULL, 0, _cccd_wr_cb, this, value);
           }
           else
           {

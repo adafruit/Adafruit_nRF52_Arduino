@@ -370,11 +370,7 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
 
       if ( invoke_cb )
       {
-        ble_gap_evt_adv_report_t* adv_report = (ble_gap_evt_adv_report_t*) rtos_malloc( sizeof(ble_gap_evt_adv_report_t) );
-        VERIFY(adv_report,);
-
-        (*adv_report) = (*evt_report);
-        if (_rx_cb) ada_callback(adv_report, _rx_cb, adv_report);
+        if (_rx_cb) ada_callback(evt_report, sizeof(*evt_report), _rx_cb, evt_report);
       }else
       {
         // continue scanning since report is filtered and callback is not invoked
@@ -410,7 +406,7 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
       if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_SCAN)
       {
         _runnning = false;
-        if (_stop_cb) ada_callback(NULL, _stop_cb);
+        if (_stop_cb) ada_callback(NULL, 0, _stop_cb);
       }
     break;
 

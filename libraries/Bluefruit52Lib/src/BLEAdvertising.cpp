@@ -457,7 +457,7 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
             Bluefruit._stopConnLed(); // stop blinking
 
             // invoke stop callback
-            if (_stop_cb) ada_callback(NULL, _stop_cb);
+            if (_stop_cb) ada_callback(NULL, 0, _stop_cb);
           }
         }
       }
