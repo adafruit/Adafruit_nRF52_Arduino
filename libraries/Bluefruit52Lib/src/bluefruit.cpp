@@ -318,20 +318,6 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
    *  Note: Value is left as it is if already configured by user.
    */
   /*------------------------------------------------------------------*/
-//  if ( _prph_count )
-//  {
-//    // If not configured by user, set Attr Table Size large enough for
-//    // most peripheral applications
-//    if ( _sd_cfg.attr_table_size == 0 ) _sd_cfg.attr_table_size = 0x800;
-//  }
-//
-//  if ( _central_count)
-//  {
-//
-//  }
-//
-//  // Not configure, default value are used
-//  if ( _sd_cfg.attr_table_size == 0 ) _sd_cfg.attr_table_size = BLE_GATTS_ATTR_TAB_SIZE_DEFAULT;
 
   /*------------- Configure BLE params  -------------*/
   extern uint32_t  __data_start__[]; // defined in linker
@@ -443,8 +429,7 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   opt.common_opt.conn_evt_ext.enable = 1; // enable Data Length Extension
   VERIFY_STATUS( sd_ble_opt_set(BLE_COMMON_OPT_CONN_EVT_EXT, &opt), false );
 
-  /*------------- Configure GAP  -------------*/
-
+  // Init Peripheral role
   VERIFY( Periph.begin() );
 
   // Default device name
@@ -461,7 +446,8 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   // Add DFU OTA service if enabled
   if ( _ota_en ) _dfu_svc.begin();
 
-  if (_central_count)  Central.begin(); // Init Central
+  // Init Central role
+  if (_central_count)  Central.begin();
 
   // Create RTOS Semaphore & Task for BLE Event
   _ble_event_sem = xSemaphoreCreateBinary();
