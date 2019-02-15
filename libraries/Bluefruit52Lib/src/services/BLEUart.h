@@ -95,8 +95,8 @@ class BLEUart : public BLEService, public Stream
     virtual void _disconnect_cb(void);
     virtual void _connect_cb(void);
 
-    friend void bleuart_rxd_cb(BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset);
-    friend void bleuart_txd_cccd_cb(BLECharacteristic* chr, uint16_t value);
+    friend void bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset);
+    friend void bleuart_txd_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value);
     friend void bleuart_txd_buffered_hdlr(TimerHandle_t timer);
 };
 

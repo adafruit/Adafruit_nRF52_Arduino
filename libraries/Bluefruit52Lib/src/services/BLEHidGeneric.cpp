@@ -130,8 +130,9 @@ void BLEHidGeneric::setOutputReportCallback(uint8_t reportID, BLECharacteristic:
 /*------------------------------------------------------------------*/
 /* Callbacks
  *------------------------------------------------------------------*/
-void blehid_generic_protocol_mode_cb(BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset)
+void blehid_generic_protocol_mode_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset)
 {
+  (void) conn_hdl;
   BLEHidGeneric& svc = (BLEHidGeneric&) chr->parentService();
   svc._protocol_mode = *data;
 

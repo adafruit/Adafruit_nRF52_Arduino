@@ -149,7 +149,7 @@ class BLEHidGeneric : public BLEService
 
     BLECharacteristic _chr_control;
 
-    friend void blehid_generic_protocol_mode_cb(BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset);
+    friend void blehid_generic_protocol_mode_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset);
 };
 
 //--------------------------------------------------------------------+

@@ -106,7 +106,7 @@ typedef struct ATTR_PACKED
 
 VERIFY_STATIC ( sizeof(midi_split_packet_t) == (BLE_MIDI_TX_BUFFER_SIZE + 1) );
 
-void blemidi_write_cb(BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset);
+void blemidi_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset);
 
 /*------------------------------------------------------------------*/
 /* IMPLEMENTATION
@@ -161,8 +161,9 @@ err_t BLEMidi::begin(void)
 /*------------------------------------------------------------------*/
 /* Callbacks
  *------------------------------------------------------------------*/
-void blemidi_write_cb(BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset)
+void blemidi_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset)
 {
+  (void) conn_hdl;
   (void) offset;
   if ( len < 3 ) return;
 

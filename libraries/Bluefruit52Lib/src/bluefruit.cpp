@@ -950,14 +950,14 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
     }
   }
 
-  // Periph event handler, skip if it is central connection
-  if ( _prph_count && !(conn && (conn->getRole() == BLE_GAP_ROLE_CENTRAL)) )
+  // Periph event handler (also handle generic non-connection event)
+  if ( (conn == NULL) || (conn->getRole() == BLE_GAP_ROLE_PERIPH) )
   {
     Periph._eventHandler(evt);
   }
 
-  // Central Event Handler, skip if it is peripheral connection
-  if ( _central_count && !(conn && (conn->getRole() == BLE_GAP_ROLE_PERIPH)) )
+  // Central Event Handler (also handle generic non-connection event)
+  if ( (conn == NULL) || (conn->getRole() == BLE_GAP_ROLE_CENTRAL) )
   {
     Central._eventHandler(evt);
   }

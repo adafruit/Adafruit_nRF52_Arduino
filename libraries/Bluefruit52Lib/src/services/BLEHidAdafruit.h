@@ -84,7 +84,7 @@ class BLEHidAdafruit : public BLEHidGeneric
     uint8_t _mse_buttons;
     kbd_led_cb_t _kbd_led_cb;
 
-    friend void blehid_ada_keyboard_output_cb(BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset);
+    friend void blehid_ada_keyboard_output_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset);
 };
 
 #endif /* BLEHIDADAFRUIT_H_ */

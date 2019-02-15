@@ -90,8 +90,9 @@ BLEUart::~BLEUart()
  * @param len
  * @param offset
  */
-void bleuart_rxd_cb(BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset)
+void bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset)
 {
+  (void) conn_hdl;
   (void) offset;
 
   BLEUart& svc = (BLEUart&) chr->parentService();
@@ -121,7 +122,7 @@ void bleuart_txd_buffered_hdlr(TimerHandle_t timer)
   (void) svc->flush_tx_buffered();
 }
 
-void bleuart_txd_cccd_cb(BLECharacteristic* chr, uint16_t value)
+void bleuart_txd_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value)
 {
   BLEUart& svc = (BLEUart&) chr->parentService();
 
@@ -156,7 +157,7 @@ void BLEUart::bufferTXD(uint8_t enable)
     // enable cccd callback to start timer when enabled
     _txd.setCccdWriteCallback(bleuart_txd_cccd_cb);
 
-    // Create FIFO for TX TODO Larger MTU Size
+    // Create FIFO for TX
     if ( _tx_fifo == NULL )
     {
       _tx_fifo = new Adafruit_FIFO(1);

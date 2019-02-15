@@ -363,11 +363,11 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
 
         if ( _use_ada_cb.read_authorize )
         {
-          ada_callback(rd_req, sizeof(*rd_req), _rd_authorize_cb, this, rd_req);
+          ada_callback(rd_req, sizeof(*rd_req), _rd_authorize_cb, conn_hdl, this, rd_req);
         }
         else
         {
-          _rd_authorize_cb(this, rd_req);
+          _rd_authorize_cb(conn_hdl, this, rd_req);
         }
       }
 
@@ -384,10 +384,10 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
             {
               if ( _use_ada_cb.write_authorize )
               {
-                ada_callback(wr_req, sizeof(*wr_req), _wr_authorize_cb, this, wr_req);
+                ada_callback(wr_req, sizeof(*wr_req), _wr_authorize_cb, conn_hdl, this, wr_req);
               }else
               {
-                _wr_authorize_cb(this, wr_req);
+                _wr_authorize_cb(conn_hdl, this, wr_req);
               }
             }
           break;
@@ -440,10 +440,10 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
               {
                 if (_use_ada_cb.write)
                 {
-                  ada_callback(_long_wr.buffer, _long_wr.count, _wr_cb, this, _long_wr.buffer, _long_wr.count, 0);
+                  ada_callback(_long_wr.buffer, _long_wr.count, _wr_cb, conn_hdl, this, _long_wr.buffer, _long_wr.count, 0);
                 }else
                 {
-                  _wr_cb(this, _long_wr.buffer, _long_wr.count, 0);
+                  _wr_cb(conn_hdl, this, _long_wr.buffer, _long_wr.count, 0);
                 }
               }
 
@@ -479,10 +479,10 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
         {
           if (_use_ada_cb.write)
           {
-            ada_callback(request->data, request->len, _wr_cb, this, request->data, request->len, request->offset);
+            ada_callback(request->data, request->len, _wr_cb, conn_hdl, this, request->data, request->len, request->offset);
           }else
           {
-            _wr_cb(this, request->data, request->len, request->offset);
+            _wr_cb(conn_hdl, this, request->data, request->len, request->offset);
           }
         }
       }
@@ -499,11 +499,11 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
 
           if ( _use_ada_cb.cccd_write )
           {
-            ada_callback(NULL, 0, _cccd_wr_cb, this, value);
+            ada_callback(NULL, 0, _cccd_wr_cb, conn_hdl, this, value);
           }
           else
           {
-            _cccd_wr_cb(this, value);
+            _cccd_wr_cb(conn_hdl, this, value);
           }
         }
       }
@@ -601,9 +601,12 @@ uint32_t BLECharacteristic::read32(void)
 }
 
 
-uint16_t BLECharacteristic::getCccd(void)
+uint16_t BLECharacteristic::getCccd(uint16_t conn_hdl)
 {
-  VERIFY( Bluefruit.connected() && (_handles.cccd_handle != BLE_GATT_HANDLE_INVALID), 0 );
+  // use default conn handle if not passed
+  if ( conn_hdl == BLE_CONN_HANDLE_INVALID ) conn_hdl = Bluefruit.connHandle();
+
+  VERIFY( Bluefruit.connected(conn_hdl) && (_handles.cccd_handle != BLE_GATT_HANDLE_INVALID), 0 );
 
   uint16_t cccd;
   ble_gatts_value_t value =
@@ -613,7 +616,7 @@ uint16_t BLECharacteristic::getCccd(void)
       .p_value = (uint8_t*) &cccd
   };
 
-  err_t err = sd_ble_gatts_value_get(Bluefruit.connHandle(), _handles.cccd_handle, &value);
+  err_t err = sd_ble_gatts_value_get(conn_hdl, _handles.cccd_handle, &value);
 
   // CCCD is not set, count as not enabled
   if ( BLE_ERROR_GATTS_SYS_ATTR_MISSING == err )
@@ -630,23 +633,25 @@ uint16_t BLECharacteristic::getCccd(void)
 /*------------------------------------------------------------------*/
 /* NOTIFY
  *------------------------------------------------------------------*/
-bool BLECharacteristic::notifyEnabled(void)
+bool BLECharacteristic::notifyEnabled(uint16_t conn_hdl)
 {
   VERIFY( _properties.notify );
-  return  (getCccd() & BLE_GATT_HVX_NOTIFICATION);
+  return  (getCccd(conn_hdl) & BLE_GATT_HVX_NOTIFICATION);
 }
 
-bool BLECharacteristic::notify(const void* data, uint16_t len)
+bool BLECharacteristic::notify(const void* data, uint16_t len, uint16_t conn_hdl)
 {
   VERIFY( _properties.notify );
+
+  // use default conn handle if not passed
+  if ( conn_hdl == BLE_CONN_HANDLE_INVALID ) conn_hdl = Bluefruit.connHandle();
 
   // could not exceed max len
   uint16_t remaining = min16(len, _max_len);
 
-  if ( notifyEnabled() )
+  if ( notifyEnabled(conn_hdl) )
   {
-    // TODO multiple connection support
-    BLEConnection* conn = Bluefruit.Connection( Bluefruit.connHandle() );
+    BLEConnection* conn = Bluefruit.Connection( conn_hdl );
     VERIFY(conn);
 
     uint16_t const max_payload = conn->getMtu() - 3;
@@ -669,7 +674,7 @@ bool BLECharacteristic::notify(const void* data, uint16_t len)
       };
 
       LOG_LV2("CHR", "Notify %d bytes", packet_len);
-      VERIFY_STATUS( sd_ble_gatts_hvx(Bluefruit.connHandle(), &hvx_params), false );
+      VERIFY_STATUS( sd_ble_gatts_hvx(conn_hdl, &hvx_params), false );
 
       remaining -= packet_len;
       u8data    += packet_len;
@@ -684,50 +689,52 @@ bool BLECharacteristic::notify(const void* data, uint16_t len)
   return true;
 }
 
-bool BLECharacteristic::notify(const char * str)
+bool BLECharacteristic::notify(const char * str, uint16_t conn_hdl)
 {
-  return notify( (const uint8_t*) str, strlen(str) );
+  return notify((const uint8_t*) str, strlen(str), conn_hdl);
 }
 
-bool BLECharacteristic::notify8(uint8_t num)
+bool BLECharacteristic::notify8(uint8_t num, uint16_t conn_hdl)
 {
-  return notify( (uint8_t*) &num, sizeof(num));
+  return notify((uint8_t*) &num, sizeof(num), conn_hdl);
 }
 
-bool BLECharacteristic::notify16(uint16_t num)
+bool BLECharacteristic::notify16(uint16_t num, uint16_t conn_hdl)
 {
-  return notify( (uint8_t*) &num, sizeof(num));
+  return notify((uint8_t*) &num, sizeof(num), conn_hdl);
 }
 
-bool BLECharacteristic::notify32(uint32_t num)
+bool BLECharacteristic::notify32(uint32_t num, uint16_t conn_hdl)
 {
-  return notify( (uint8_t*) &num, sizeof(num));
+  return notify((uint8_t*) &num, sizeof(num), conn_hdl);
 }
 
-bool BLECharacteristic::notify32(int num)
+bool BLECharacteristic::notify32(int num, uint16_t conn_hdl)
 {
-  return notify32( (uint32_t) num);
+  return notify32((uint32_t) num, conn_hdl);
 }
 
 /*------------------------------------------------------------------*/
 /* INDICATE
  *------------------------------------------------------------------*/
-bool BLECharacteristic::indicateEnabled(void)
+bool BLECharacteristic::indicateEnabled(uint16_t conn_hdl)
 {
   VERIFY( _properties.indicate );
-  return  (getCccd() & BLE_GATT_HVX_INDICATION);
+  return  (getCccd(conn_hdl) & BLE_GATT_HVX_INDICATION);
 }
 
-bool BLECharacteristic::indicate(const void* data, uint16_t len)
+bool BLECharacteristic::indicate(const void* data, uint16_t len, uint16_t conn_hdl)
 {
   VERIFY( _properties.indicate );
+
+  // use default conn handle if not passed
+  if ( conn_hdl == BLE_CONN_HANDLE_INVALID ) conn_hdl = Bluefruit.connHandle();
 
   // could not exceed max len
   uint16_t remaining = min16(len, _max_len);
 
-  if ( indicateEnabled() )
+  if ( indicateEnabled(conn_hdl) )
   {
-    uint16_t conn_hdl = Bluefruit.connHandle();
     BLEConnection* conn = Bluefruit.Connection( conn_hdl );
     VERIFY(conn);
 
@@ -750,7 +757,7 @@ bool BLECharacteristic::indicate(const void* data, uint16_t len)
       LOG_LV2("CHR", "Indicate %d bytes", packet_len);
 
       // Blocking wait until receiving confirmation from peer
-      VERIFY_STATUS( sd_ble_gatts_hvx( conn_hdl, &hvx_params), false );
+      VERIFY_STATUS( sd_ble_gatts_hvx(conn_hdl, &hvx_params), false );
       VERIFY ( conn->waitForIndicateConfirm() );
 
       remaining -= packet_len;
@@ -766,27 +773,27 @@ bool BLECharacteristic::indicate(const void* data, uint16_t len)
   return true;
 }
 
-bool BLECharacteristic::indicate(const char * str)
+bool BLECharacteristic::indicate(const char * str, uint16_t conn_hdl)
 {
-  return indicate( (const uint8_t*) str, strlen(str) );
+  return indicate((const uint8_t*) str, strlen(str), conn_hdl);
 }
 
-bool BLECharacteristic::indicate8(uint8_t num)
+bool BLECharacteristic::indicate8(uint8_t num, uint16_t conn_hdl)
 {
-  return indicate( (uint8_t*) &num, sizeof(num));
+  return indicate((uint8_t*) &num, sizeof(num), conn_hdl);
 }
 
-bool BLECharacteristic::indicate16(uint16_t num)
+bool BLECharacteristic::indicate16(uint16_t num, uint16_t conn_hdl)
 {
-  return indicate( (uint8_t*) &num, sizeof(num));
+  return indicate((uint8_t*) &num, sizeof(num), conn_hdl);
 }
 
-bool BLECharacteristic::indicate32(uint32_t num)
+bool BLECharacteristic::indicate32(uint32_t num, uint16_t conn_hdl)
 {
-  return indicate( (uint8_t*) &num, sizeof(num));
+  return indicate((uint8_t*) &num, sizeof(num), conn_hdl);
 }
 
-bool BLECharacteristic::indicate32(int num)
+bool BLECharacteristic::indicate32(int num, uint16_t conn_hdl)
 {
-  return indicate32( (uint32_t) num);
+  return indicate32((uint32_t) num, conn_hdl);
 }

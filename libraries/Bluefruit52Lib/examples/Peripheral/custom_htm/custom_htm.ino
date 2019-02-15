@@ -173,7 +173,7 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   Serial.println("Advertising!");
 }
 
-void cccd_callback(BLECharacteristic* chr, uint16_t cccd_value)
+void cccd_callback(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t cccd_value)
 {
     // Display the raw request packet
     Serial.print("CCCD Updated: ");
@@ -184,7 +184,7 @@ void cccd_callback(BLECharacteristic* chr, uint16_t cccd_value)
     // Check the characteristic this CCCD update is associated with in case
     // this handler is used for multiple CCCD records.
     if (chr->uuid == htmc.uuid) {
-        if (chr->indicateEnabled()) {
+        if (chr->indicateEnabled(conn_hdl)) {
             Serial.println("Temperature Measurement 'Indicate' enabled");
         } else {
             Serial.println("Temperature Measurement 'Indicate' disabled");
@@ -203,8 +203,8 @@ void loop()
     
     // Note: We use .indicate instead of .write!
     // If it is connected but CCCD is not enabled
-    // The characteristic's value is still updated although notification is not sent
-    if ( htmc.indicate(htmdata, sizeof(htmdata)) ){
+    // The characteristic's value is still updated although indicate is not sent
+    if ( htmc.indicate(0, htmdata, sizeof(htmdata)) ){
       Serial.print("Temperature Measurement updated to: "); Serial.println(tempvalue); 
     }else{
       Serial.println("ERROR: Indicate not set in the CCCD or not connected!");
@@ -216,4 +216,3 @@ void loop()
   // Only send update once per second
   delay(1000);
 }
-

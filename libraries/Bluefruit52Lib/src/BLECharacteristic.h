@@ -74,10 +74,10 @@ class BLECharacteristic
 {
   public:
     /*--------- Callback Signatures ----------*/
-    typedef void (*read_authorize_cb_t)  (BLECharacteristic* chr, ble_gatts_evt_read_t * request);
-    typedef void (*write_authorize_cb_t) (BLECharacteristic* chr, ble_gatts_evt_write_t* request);
-    typedef void (*write_cb_t)           (BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset);
-    typedef void (*write_cccd_cb_t)      (BLECharacteristic* chr, uint16_t value);
+    typedef void (*read_authorize_cb_t)  (uint16_t conn_hdl, BLECharacteristic* chr, ble_gatts_evt_read_t * request);
+    typedef void (*write_authorize_cb_t) (uint16_t conn_hdl, BLECharacteristic* chr, ble_gatts_evt_write_t* request);
+    typedef void (*write_cb_t)           (uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset);
+    typedef void (*write_cccd_cb_t)      (uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value);
 
     BLEUuid uuid;
 
@@ -134,28 +134,28 @@ class BLECharacteristic
     uint32_t read32(void);
 
     /*------------- Notify -------------*/
-    uint16_t getCccd(void);
+    uint16_t getCccd(uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
 
-    bool notifyEnabled(void);
+    bool notifyEnabled(uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
 
-    bool notify   (const void* data, uint16_t len);
-    bool notify   (const char* str);
+    bool notify   (const void* data, uint16_t len, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool notify   (const char* str, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
 
-    bool notify8  (uint8_t  num);
-    bool notify16 (uint16_t num);
-    bool notify32 (uint32_t num);
-    bool notify32 (int      num);
+    bool notify8  (uint8_t  num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool notify16 (uint16_t num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool notify32 (uint32_t num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool notify32 (int      num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
 
     /*------------- Indicate -------------*/
-    bool indicateEnabled(void);
+    bool indicateEnabled(uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
 
-    bool indicate   (const void* data, uint16_t len);
-    bool indicate   (const char* str);
+    bool indicate   (const void* data, uint16_t len, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool indicate   (const char* str, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
 
-    bool indicate8  (uint8_t  num);
-    bool indicate16 (uint16_t num);
-    bool indicate32 (uint32_t num);
-    bool indicate32 (int      num);
+    bool indicate8  (uint8_t  num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool indicate16 (uint16_t num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool indicate32 (uint32_t num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool indicate32 (int      num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
 
     /*------------- Internal Functions -------------*/
     virtual void _eventHandler(ble_evt_t* event);
