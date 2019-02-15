@@ -556,7 +556,7 @@ uint16_t BLECharacteristic::read16(void)
 
 uint32_t BLECharacteristic::read32(void)
 {
-  uint16_t num;
+  uint32_t num;
   return read(&num, sizeof(num)) ? num : 0;
 }
 
