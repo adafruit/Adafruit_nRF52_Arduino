@@ -51,7 +51,7 @@ extern const uint8_t BLEUART_UUID_CHR_TXD[];
 class BLEUart : public BLEService, public Stream
 {
   public:
-    typedef void (*rx_callback_t) (void);
+    typedef void (*rx_callback_t) (uint16_t conn_hdl);
 
     BLEUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
     virtual ~BLEUart();
@@ -96,15 +96,14 @@ class BLEUart : public BLEService, public Stream
     TimerHandle_t  _buffered_th;
 
     bool _flush_txd(uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
-    void _rxd_hanlder(uint16_t conn_hdl, uint8_t const * data, uint16_t len);
 
     // from BLEService
     virtual void _disconnect_cb(void);
     virtual void _connect_cb(void);
 
-    // friend callbacks
-    friend void bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
-    friend void bleuart_txd_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value);
+    // Static Method for callbacks
+    static void bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
+    static void bleuart_txd_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value);
     friend void bleuart_txd_buffered_hdlr(TimerHandle_t timer);
 };
 

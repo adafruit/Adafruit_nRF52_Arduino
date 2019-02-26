@@ -84,15 +84,11 @@ BLEUart::~BLEUart()
 }
 
 // Callback when received new data
-void bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
+void BLEUart::bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
   BLEUart& svc = (BLEUart&) chr->parentService();
-  svc._rxd_hanlder(conn_hdl, data, len);
-}
 
-void BLEUart::_rxd_hanlder(uint16_t conn_hdl, uint8_t const * data, uint16_t len)
-{
-  _rx_fifo->write(data, len);
+  svc._rx_fifo->write(data, len);
 
 #if CFG_DEBUG >= 2
   LOG_LV2("BLEUART", "RX: ");
@@ -100,7 +96,7 @@ void BLEUart::_rxd_hanlder(uint16_t conn_hdl, uint8_t const * data, uint16_t len
 #endif
 
   // invoke user callback
-  if ( _rx_cb ) _rx_cb();
+  if ( svc._rx_cb ) svc._rx_cb(conn_hdl);
 }
 
 /**
@@ -118,7 +114,7 @@ void bleuart_txd_buffered_hdlr(TimerHandle_t timer)
   (void) svc->_flush_txd();
 }
 
-void bleuart_txd_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value)
+void BLEUart::bleuart_txd_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value)
 {
   BLEUart& svc = (BLEUart&) chr->parentService();
 
@@ -151,7 +147,7 @@ void BLEUart::bufferTXD(bool enable)
   if ( enable )
   {
     // enable cccd callback to start timer when enabled
-    _txd.setCccdWriteCallback(bleuart_txd_cccd_cb);
+    _txd.setCccdWriteCallback(BLEUart::bleuart_txd_cccd_cb);
 
     // Create FIFO for TX
     if ( _tx_fifo == NULL )
@@ -187,7 +183,7 @@ err_t BLEUart::begin(void)
 
   // Add RXD Characteristic
   _rxd.setProperties(CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP);
-  _rxd.setWriteCallback(bleuart_rxd_cb);
+  _rxd.setWriteCallback(BLEUart::bleuart_rxd_cb);
 
   // TODO enable encryption when bonding is enabled
   _rxd.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);

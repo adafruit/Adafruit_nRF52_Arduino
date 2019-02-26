@@ -131,8 +131,10 @@ void prph_disconnect_callback(uint16_t conn_handle, uint8_t reason)
   Serial.println("[Prph] Disconnected");
 }
 
-void prph_bleuart_rx_callback(void)
+void prph_bleuart_rx_callback(uint16_t conn_handle)
 {
+  (void) conn_handle;
+  
   // Forward data from Mobile to our peripheral
   char str[20+1] = { 0 };
   bleuart.read(str, 20);
