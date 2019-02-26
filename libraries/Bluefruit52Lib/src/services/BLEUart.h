@@ -89,12 +89,13 @@ class BLEUart : public BLEService, public Stream
     bool           _tx_buffered; // default is false
     TimerHandle_t  _buffered_th;
 
-    bool flush_tx_buffered(uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool _flush_txd(uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
 
     // from BLEService
     virtual void _disconnect_cb(void);
     virtual void _connect_cb(void);
 
+    // friend callbacks
     friend void bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset);
     friend void bleuart_txd_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value);
     friend void bleuart_txd_buffered_hdlr(TimerHandle_t timer);
