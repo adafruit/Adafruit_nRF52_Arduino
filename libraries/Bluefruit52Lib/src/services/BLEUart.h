@@ -58,16 +58,16 @@ class BLEUart : public BLEService, public Stream
 
     virtual err_t begin(void);
 
-    bool notifyEnabled (void);
+    bool notifyEnabled (uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
     void setRxCallback (rx_callback_t fp);
-    void bufferTXD     (uint8_t enable);
+    void bufferTXD     (bool enable);
 
     // Stream API
     virtual int       read       ( void );
     virtual int       read       ( uint8_t * buf, size_t size );
             int       read       ( char    * buf, size_t size ) { return read( (uint8_t*) buf, size); }
-    virtual size_t    write      ( uint8_t b );
-    virtual size_t    write      ( const uint8_t *content, size_t len );
+    virtual size_t    write      ( uint8_t b, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID );
+    virtual size_t    write      ( const uint8_t *content, size_t len, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
     virtual int       available  ( void );
     virtual int       peek       ( void );
     virtual void      flush      ( void );
@@ -80,16 +80,16 @@ class BLEUart : public BLEService, public Stream
     BLECharacteristic _rxd;
 
     // RXD
-    Adafruit_FIFO*    _rx_fifo;
-    uint16_t          _rx_fifo_depth;
-    rx_callback_t     _rx_cb;
+    Adafruit_FIFO* _rx_fifo;
+    uint16_t       _rx_fifo_depth;
+    rx_callback_t  _rx_cb;
 
     // TXD
-    Adafruit_FIFO*    _tx_fifo;
-    uint8_t           _tx_buffered;
-    TimerHandle_t     _buffered_th;
+    Adafruit_FIFO* _tx_fifo;
+    bool           _tx_buffered; // default is false
+    TimerHandle_t  _buffered_th;
 
-    bool flush_tx_buffered(void);
+    bool flush_tx_buffered(uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
 
     // from BLEService
     virtual void _disconnect_cb(void);

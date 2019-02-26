@@ -71,7 +71,7 @@ BLEUart::BLEUart(uint16_t fifo_depth)
   _rx_fifo_depth = fifo_depth;
 
   _tx_fifo       = NULL;
-  _tx_buffered   = 0;
+  _tx_buffered   = false;
   _buffered_th   = NULL;
 }
 
@@ -148,7 +148,7 @@ void BLEUart::setRxCallback( rx_callback_t fp)
  * Note: packet is sent right away if it reach MTU bytes
  * @param enable true or false
  */
-void BLEUart::bufferTXD(uint8_t enable)
+void BLEUart::bufferTXD(bool enable)
 {
   _tx_buffered = enable;
 
@@ -202,9 +202,9 @@ err_t BLEUart::begin(void)
   return ERROR_NONE;
 }
 
-bool BLEUart::notifyEnabled(void)
+bool BLEUart::notifyEnabled(uint16_t conn_hdl)
 {
-  return _txd.notifyEnabled();
+  return _txd.notifyEnabled(conn_hdl);
 }
 
 void BLEUart::_disconnect_cb(void)
@@ -245,27 +245,29 @@ int BLEUart::read (uint8_t * buf, size_t size)
   return _rx_fifo->read(buf, size);
 }
 
-size_t BLEUart::write (uint8_t b)
+size_t BLEUart::write (uint8_t b, uint16_t conn_hdl)
 {
-  return write(&b, 1);
+  return write(&b, 1, conn_hdl);
 }
 
-size_t BLEUart::write (const uint8_t *content, size_t len)
+size_t BLEUart::write (const uint8_t *content, size_t len, uint16_t conn_hdl)
 {
+  // use default conn handle if not passed
+  if ( conn_hdl == BLE_CONN_HANDLE_INVALID ) conn_hdl = Bluefruit.connHandle();
+
+  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
+  VERIFY(conn, 0);
+
+  // skip if not enabled
+  if ( !notifyEnabled(conn_hdl) ) return 0;
+
   // notify right away if txd buffered is not enabled
   if ( !(_tx_buffered && _tx_fifo) )
   {
-    return _txd.notify(content, len) ? len : 0;
+    return _txd.notify(content, len, conn_hdl) ? len : 0;
   }else
   {
-    // skip if not enabled
-    if ( !notifyEnabled() ) return 0;
-
     uint16_t written = _tx_fifo->write(content, len);
-
-    // TODO multiple prph connections
-    BLEConnection* conn = Bluefruit.Connection( Bluefruit.connHandle() );
-    VERIFY(conn, 0);
 
     // Not up to GATT MTU, notify will be sent later by TXD timer handler
     if ( _tx_fifo->count() < (conn->getMtu() - 3) )
@@ -275,12 +277,12 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
     else
     {
       // TX fifo has enough data, send notify right away
-      VERIFY( flush_tx_buffered(), 0);
+      VERIFY( flush_tx_buffered(conn_hdl), 0);
 
       // still more data left, send them all
       if ( written < len )
       {
-        VERIFY( _txd.notify(content+written, len-written), written);
+        VERIFY(_txd.notify(content+written, len-written, conn_hdl), written);
       }
 
       return len;
@@ -304,22 +306,24 @@ void BLEUart::flush (void)
   _rx_fifo->clear();
 }
 
-bool BLEUart::flush_tx_buffered(void)
+bool BLEUart::flush_tx_buffered(uint16_t conn_hdl)
 {
-  // TODO multiple prph connections
-  BLEConnection* conn = Bluefruit.Connection( Bluefruit.connHandle() );
+  // use default conn handle if not passed
+  if ( conn_hdl == BLE_CONN_HANDLE_INVALID ) conn_hdl = Bluefruit.connHandle();
+
+  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
+  VERIFY(conn);
 
   uint16_t const gatt_mtu = conn->getMtu() - 3;
   uint8_t* ff_data = (uint8_t*) rtos_malloc( gatt_mtu );
-
-  if (!ff_data) return false;
+  VERIFY(ff_data);
 
   uint16_t len = _tx_fifo->read(ff_data, gatt_mtu);
   bool result = true;
 
   if ( len )
   {
-    result = _txd.notify(ff_data, len);
+    result = _txd.notify(ff_data, len, conn_hdl);
   }
 
   rtos_free(ff_data);
