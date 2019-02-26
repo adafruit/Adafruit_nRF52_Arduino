@@ -600,10 +600,9 @@ uint32_t BLECharacteristic::read32(void)
   return read(&num, sizeof(num)) ? num : 0;
 }
 
-
 uint16_t BLECharacteristic::getCccd(void)
 {
-  return getCccd(Bluefruit.connHandle());
+  return this->getCccd(Bluefruit.connHandle());
 }
 
 uint16_t BLECharacteristic::getCccd(uint16_t conn_hdl)
@@ -637,7 +636,7 @@ uint16_t BLECharacteristic::getCccd(uint16_t conn_hdl)
  *------------------------------------------------------------------*/
 bool BLECharacteristic::notifyEnabled(void)
 {
-  return notifyEnabled(Bluefruit.connHandle());
+  return this->notifyEnabled(Bluefruit.connHandle());
 }
 
 bool BLECharacteristic::notifyEnabled(uint16_t conn_hdl)
@@ -726,7 +725,7 @@ bool BLECharacteristic::notify32(int num, uint16_t conn_hdl)
  *------------------------------------------------------------------*/
 bool BLECharacteristic::indicateEnabled(void)
 {
-  return indicateEnabled(Bluefruit.connHandle());
+  return this->indicateEnabled(Bluefruit.connHandle());
 }
 
 bool BLECharacteristic::indicateEnabled(uint16_t conn_hdl)

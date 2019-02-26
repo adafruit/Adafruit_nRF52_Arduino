@@ -58,7 +58,9 @@ class BLEUart : public BLEService, public Stream
 
     virtual err_t begin(void);
 
-    bool notifyEnabled (uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool notifyEnabled(void);
+    bool notifyEnabled(uint16_t conn_hdl);
+
     void setRxCallback (rx_callback_t fp);
     void bufferTXD     (bool enable);
 

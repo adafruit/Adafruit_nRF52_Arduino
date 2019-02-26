@@ -198,6 +198,11 @@ err_t BLEUart::begin(void)
   return ERROR_NONE;
 }
 
+bool BLEUart::notifyEnabled(void)
+{
+  return this->notifyEnabled(Bluefruit.connHandle());
+}
+
 bool BLEUart::notifyEnabled(uint16_t conn_hdl)
 {
   return _txd.notifyEnabled(conn_hdl);
@@ -243,17 +248,17 @@ int BLEUart::read (uint8_t * buf, size_t size)
 
 size_t BLEUart::write (uint8_t b)
 {
-  return write(&b, 1, Bluefruit.connHandle());
+  return this->write(&b, 1, Bluefruit.connHandle());
 }
 
 size_t BLEUart::write (const uint8_t *content, size_t len)
 {
-  return write(content, len, Bluefruit.connHandle());
+  return this->write(content, len, Bluefruit.connHandle());
 }
 
 size_t BLEUart::write (uint8_t b, uint16_t conn_hdl)
 {
-  return write(&b, 1, conn_hdl);
+  return this->write(&b, 1, conn_hdl);
 }
 
 size_t BLEUart::write (const uint8_t *content, size_t len, uint16_t conn_hdl)
