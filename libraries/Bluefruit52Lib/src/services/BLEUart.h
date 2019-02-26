@@ -66,8 +66,12 @@ class BLEUart : public BLEService, public Stream
     virtual int       read       ( void );
     virtual int       read       ( uint8_t * buf, size_t size );
             int       read       ( char    * buf, size_t size ) { return read( (uint8_t*) buf, size); }
-    virtual size_t    write      ( uint8_t b, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID );
-    virtual size_t    write      ( const uint8_t *content, size_t len, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    virtual size_t    write      ( uint8_t b );
+    virtual size_t    write      ( const uint8_t *content, size_t len);
+
+    virtual size_t    write      ( uint8_t b, uint16_t conn_hdl);
+    virtual size_t    write      ( const uint8_t *content, size_t len, uint16_t conn_hdl);
+
     virtual int       available  ( void );
     virtual int       peek       ( void );
     virtual void      flush      ( void );
@@ -90,13 +94,14 @@ class BLEUart : public BLEService, public Stream
     TimerHandle_t  _buffered_th;
 
     bool _flush_txd(uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    void _rxd_hanlder(uint16_t conn_hdl, uint8_t const * data, uint16_t len);
 
     // from BLEService
     virtual void _disconnect_cb(void);
     virtual void _connect_cb(void);
 
     // friend callbacks
-    friend void bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset);
+    friend void bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
     friend void bleuart_txd_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value);
     friend void bleuart_txd_buffered_hdlr(TimerHandle_t timer);
 };

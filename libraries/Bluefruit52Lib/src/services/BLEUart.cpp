@@ -83,15 +83,16 @@ BLEUart::~BLEUart()
   if ( _tx_fifo ) delete _tx_fifo;
 }
 
-
 // Callback when received new data
-void bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset)
+void bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  (void) conn_hdl;
-  (void) offset;
-
   BLEUart& svc = (BLEUart&) chr->parentService();
-  svc._rx_fifo->write(data, len);
+  svc._rxd_hanlder(conn_hdl, data, len);
+}
+
+void BLEUart::_rxd_hanlder(uint16_t conn_hdl, uint8_t const * data, uint16_t len)
+{
+  _rx_fifo->write(data, len);
 
 #if CFG_DEBUG >= 2
   LOG_LV2("BLEUART", "RX: ");
@@ -99,7 +100,7 @@ void bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, ui
 #endif
 
   // invoke user callback
-  if ( svc._rx_cb ) svc._rx_cb();
+  if ( _rx_cb ) _rx_cb();
 }
 
 /**
@@ -240,6 +241,16 @@ int BLEUart::read (uint8_t * buf, size_t size)
   return _rx_fifo->read(buf, size);
 }
 
+size_t BLEUart::write (uint8_t b)
+{
+  return write(&b, 1, Bluefruit.connHandle());
+}
+
+size_t BLEUart::write (const uint8_t *content, size_t len)
+{
+  return write(content, len, Bluefruit.connHandle());
+}
+
 size_t BLEUart::write (uint8_t b, uint16_t conn_hdl)
 {
   return write(&b, 1, conn_hdl);
@@ -247,9 +258,6 @@ size_t BLEUart::write (uint8_t b, uint16_t conn_hdl)
 
 size_t BLEUart::write (const uint8_t *content, size_t len, uint16_t conn_hdl)
 {
-  // use default conn handle if not passed
-  if ( conn_hdl == BLE_CONN_HANDLE_INVALID ) conn_hdl = Bluefruit.connHandle();
-
   BLEConnection* conn = Bluefruit.Connection(conn_hdl);
   VERIFY(conn, 0);
 

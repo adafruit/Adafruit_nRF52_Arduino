@@ -440,10 +440,10 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
               {
                 if (_use_ada_cb.write)
                 {
-                  ada_callback(_long_wr.buffer, _long_wr.count, _wr_cb, conn_hdl, this, _long_wr.buffer, _long_wr.count, 0);
+                  ada_callback(_long_wr.buffer, _long_wr.count, _wr_cb, conn_hdl, this, _long_wr.buffer, _long_wr.count);
                 }else
                 {
-                  _wr_cb(conn_hdl, this, _long_wr.buffer, _long_wr.count, 0);
+                  _wr_cb(conn_hdl, this, _long_wr.buffer, _long_wr.count);
                 }
               }
 
@@ -479,10 +479,10 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
         {
           if (_use_ada_cb.write)
           {
-            ada_callback(request->data, request->len, _wr_cb, conn_hdl, this, request->data, request->len, request->offset);
+            ada_callback(request->data, request->len, _wr_cb, conn_hdl, this, request->data, request->len);
           }else
           {
-            _wr_cb(conn_hdl, this, request->data, request->len, request->offset);
+            _wr_cb(conn_hdl, this, request->data, request->len);
           }
         }
       }
@@ -601,11 +601,13 @@ uint32_t BLECharacteristic::read32(void)
 }
 
 
+uint16_t BLECharacteristic::getCccd(void)
+{
+  return getCccd(Bluefruit.connHandle());
+}
+
 uint16_t BLECharacteristic::getCccd(uint16_t conn_hdl)
 {
-  // use default conn handle if not passed
-  if ( conn_hdl == BLE_CONN_HANDLE_INVALID ) conn_hdl = Bluefruit.connHandle();
-
   VERIFY( Bluefruit.connected(conn_hdl) && (_handles.cccd_handle != BLE_GATT_HANDLE_INVALID), 0 );
 
   uint16_t cccd;
@@ -633,6 +635,11 @@ uint16_t BLECharacteristic::getCccd(uint16_t conn_hdl)
 /*------------------------------------------------------------------*/
 /* NOTIFY
  *------------------------------------------------------------------*/
+bool BLECharacteristic::notifyEnabled(void)
+{
+  return notifyEnabled(Bluefruit.connHandle());
+}
+
 bool BLECharacteristic::notifyEnabled(uint16_t conn_hdl)
 {
   VERIFY( _properties.notify );
@@ -717,6 +724,11 @@ bool BLECharacteristic::notify32(int num, uint16_t conn_hdl)
 /*------------------------------------------------------------------*/
 /* INDICATE
  *------------------------------------------------------------------*/
+bool BLECharacteristic::indicateEnabled(void)
+{
+  return indicateEnabled(Bluefruit.connHandle());
+}
+
 bool BLECharacteristic::indicateEnabled(uint16_t conn_hdl)
 {
   VERIFY( _properties.indicate );

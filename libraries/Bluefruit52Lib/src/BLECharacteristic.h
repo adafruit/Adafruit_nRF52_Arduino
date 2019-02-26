@@ -76,7 +76,7 @@ class BLECharacteristic
     /*--------- Callback Signatures ----------*/
     typedef void (*read_authorize_cb_t)  (uint16_t conn_hdl, BLECharacteristic* chr, ble_gatts_evt_read_t * request);
     typedef void (*write_authorize_cb_t) (uint16_t conn_hdl, BLECharacteristic* chr, ble_gatts_evt_write_t* request);
-    typedef void (*write_cb_t)           (uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset);
+    typedef void (*write_cb_t)           (uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
     typedef void (*write_cccd_cb_t)      (uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value);
 
     BLEUuid uuid;
@@ -134,9 +134,11 @@ class BLECharacteristic
     uint32_t read32(void);
 
     /*------------- Notify -------------*/
-    uint16_t getCccd(uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    uint16_t getCccd(void);
+    uint16_t getCccd(uint16_t conn_hdl);
 
-    bool notifyEnabled(uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool notifyEnabled(void);
+    bool notifyEnabled(uint16_t conn_hdl);
 
     bool notify   (const void* data, uint16_t len, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
     bool notify   (const char* str, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
@@ -147,7 +149,8 @@ class BLECharacteristic
     bool notify32 (int      num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
 
     /*------------- Indicate -------------*/
-    bool indicateEnabled(uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool indicateEnabled(void);
+    bool indicateEnabled(uint16_t conn_hdl);
 
     bool indicate   (const void* data, uint16_t len, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
     bool indicate   (const char* str, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);

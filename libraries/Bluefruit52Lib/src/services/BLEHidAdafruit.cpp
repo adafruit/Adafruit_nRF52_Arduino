@@ -222,7 +222,7 @@ err_t BLEHidAdafruit::begin(void)
 /* Keyboard
  *------------------------------------------------------------------*/
 
-void blehid_ada_keyboard_output_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len, uint16_t offset)
+void blehid_ada_keyboard_output_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
   (void) conn_hdl;
 
