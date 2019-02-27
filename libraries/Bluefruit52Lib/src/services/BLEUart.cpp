@@ -60,24 +60,21 @@ const uint8_t BLEUART_UUID_CHR_TXD[] =
     0x93, 0xF3, 0xA3, 0xB5, 0x03, 0x00, 0x40, 0x6E
 };
 
-/**
- * Constructor
- */
+// Constructor
 BLEUart::BLEUart(uint16_t fifo_depth)
   : BLEService(BLEUART_UUID_SERVICE), _txd(BLEUART_UUID_CHR_TXD), _rxd(BLEUART_UUID_CHR_RXD)
 {
   _rx_fifo       = NULL;
-  _rx_cb         = NULL;
   _rx_fifo_depth = fifo_depth;
+
+  _rx_cb         = NULL;
+  _notify_cb     = NULL;
 
   _tx_fifo       = NULL;
   _tx_buffered   = false;
-  _buffered_th   = NULL;
 }
 
-/**
- * Destructor
- */
+// Destructor
 BLEUart::~BLEUart()
 {
   if ( _tx_fifo ) delete _tx_fifo;
@@ -99,40 +96,22 @@ void BLEUart::bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t*
   if ( svc._rx_cb ) svc._rx_cb(conn_hdl);
 }
 
-/**
- * Timer callback periodically to send TX packet (if enabled).
- * @param timer
- */
-void bleuart_txd_buffered_hdlr(TimerHandle_t timer)
-{
-  BLEUart* svc = (BLEUart*) pvTimerGetTimerID(timer);
-
-  // skip if null (unlikely)
-  if ( !svc->_tx_fifo ) return;
-
-  // flush tx data
-  (void) svc->flush_txd();
-}
-
 void BLEUart::bleuart_txd_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value)
 {
   BLEUart& svc = (BLEUart&) chr->parentService();
 
-  if ( svc._buffered_th == NULL) return;
-
-  // Enable TXD timer if configured
-  if (value & BLE_GATT_HVX_NOTIFICATION)
-  {
-    xTimerStart(svc._buffered_th, 0); // if started --> timer got reset
-  }else
-  {
-    xTimerStop(svc._buffered_th, 0);
-  }
+  if ( svc._notify_cb ) svc._notify_cb(conn_hdl, value & BLE_GATT_HVX_NOTIFICATION);
 }
 
 void BLEUart::setRxCallback( rx_callback_t fp)
 {
   _rx_cb = fp;
+}
+
+void BLEUart::setNotifyCallback(notify_callback_t fp)
+{
+  _notify_cb = fp;
+  _txd.setCccdWriteCallback( fp ? BLEUart::bleuart_txd_cccd_cb : NULL );
 }
 
 /**
@@ -146,10 +125,7 @@ void BLEUart::bufferTXD(bool enable)
 
   if ( enable )
   {
-    // enable cccd callback to start timer when enabled
-    _txd.setCccdWriteCallback(BLEUart::bleuart_txd_cccd_cb);
-
-    // Create FIFO for TX
+    // Create FIFO for TXD
     if ( _tx_fifo == NULL )
     {
       _tx_fifo = new Adafruit_FIFO(1);
@@ -157,8 +133,6 @@ void BLEUart::bufferTXD(bool enable)
     }
   }else
   {
-    _txd.setCccdWriteCallback(NULL);
-
     if ( _tx_fifo ) delete _tx_fifo;
   }
 }
@@ -202,30 +176,6 @@ bool BLEUart::notifyEnabled(void)
 bool BLEUart::notifyEnabled(uint16_t conn_hdl)
 {
   return _txd.notifyEnabled(conn_hdl);
-}
-
-void BLEUart::svc_disconnect_hdl(uint16_t conn_hdl)
-{
-  if (_buffered_th)
-  {
-    xTimerDelete(_buffered_th, 0);
-    _buffered_th = NULL;
-
-    if (_tx_fifo) _tx_fifo->clear();
-  }
-}
-
-void BLEUart::svc_connect_hdl (uint16_t conn_hdl)
-{
-  if ( _tx_buffered )
-  {
-    // create TXD timer TODO take connInterval into account
-    // ((5*ms2tick(Bluefruit.connInterval())) / 4) / 2
-    _buffered_th = xTimerCreate(NULL, ms2tick(10), true, this, bleuart_txd_buffered_hdlr);
-
-    // Start the timer
-    xTimerStart(_buffered_th, 0);
-  }
 }
 
 /*------------------------------------------------------------------*/
@@ -281,7 +231,7 @@ size_t BLEUart::write (const uint8_t *content, size_t len, uint16_t conn_hdl)
     else
     {
       // TX fifo has enough data, send notify right away
-      VERIFY( flush_txd(conn_hdl), 0);
+      VERIFY( flushTXD(conn_hdl), 0);
 
       // still more data left, send them all
       if ( written < len )
@@ -310,7 +260,7 @@ void BLEUart::flush (void)
   _rx_fifo->clear();
 }
 
-bool BLEUart::flush_txd(uint16_t conn_hdl)
+bool BLEUart::flushTXD(uint16_t conn_hdl)
 {
   // use default conn handle if not passed
   if ( conn_hdl == BLE_CONN_HANDLE_INVALID ) conn_hdl = Bluefruit.connHandle();

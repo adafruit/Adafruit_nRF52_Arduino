@@ -913,4 +913,7 @@ void loop()
 #ifdef FIRMATA_SERIAL_FEATURE
   serialFeature.update();
 #endif
+
+  // flush TXD since we use bufferTXD()
+  bleuart.flushTXD();
 }
