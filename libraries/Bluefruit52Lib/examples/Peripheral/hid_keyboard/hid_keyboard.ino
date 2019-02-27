@@ -132,8 +132,10 @@ void loop()
  * The LED bit map is as follows: (also defined by KEYBOARD_LED_* )
  *    Kana (4) | Compose (3) | ScrollLock (2) | CapsLock (1) | Numlock (0)
  */
-void set_keyboard_led(uint8_t led_bitmap)
+void set_keyboard_led(uint16_t conn_handle, uint8_t led_bitmap)
 {
+  (void) conn_handle;
+  
   // light up Red Led if any bits is set
   if ( led_bitmap )
   {

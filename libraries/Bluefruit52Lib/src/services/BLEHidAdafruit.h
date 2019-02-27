@@ -47,7 +47,7 @@ class BLEHidAdafruit : public BLEHidGeneric
 {
   public:
     /*--------- Callback Signatures ----------*/
-    typedef void (*kbd_led_cb_t)  (uint8_t leds_bitmap);
+    typedef void (*kbd_led_cb_t)  (uint16_t conn_hdl, uint8_t leds_bitmap);
 
     BLEHidAdafruit(void);
 
@@ -83,7 +83,7 @@ class BLEHidAdafruit : public BLEHidGeneric
     uint8_t _mse_buttons;
     kbd_led_cb_t _kbd_led_cb;
 
-    friend void blehid_ada_keyboard_output_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
+    static void blehid_ada_keyboard_output_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
 };
 
 #endif /* BLEHIDADAFRUIT_H_ */
