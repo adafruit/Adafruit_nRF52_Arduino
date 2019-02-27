@@ -153,7 +153,7 @@ err_t BLEMidi::begin(void)
   // IO characteristic
   _io.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP | CHR_PROPS_NOTIFY);
   _io.setPermission(SECMODE_ENC_NO_MITM, SECMODE_ENC_NO_MITM);
-  _io.setWriteCallback(blemidi_write_cb);
+  _io.setWriteCallback(BLEMidi::blemidi_write_cb);
 
   VERIFY_STATUS( _io.begin() );
 
@@ -166,7 +166,7 @@ err_t BLEMidi::begin(void)
 /*------------------------------------------------------------------*/
 /* Callbacks
  *------------------------------------------------------------------*/
-void blemidi_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
+void BLEMidi::blemidi_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
   (void) conn_hdl;
   if ( len < 3 ) return;
@@ -183,7 +183,6 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
 
   while (len)
   {
-
     // timestamp low byte followed by a MIDI status,
     // so we drop the timestamp low byte
     if ( isStatusByte(data[0]) && isStatusByte(data[1]) )

@@ -93,7 +93,7 @@ class BLEMidi: public BLEService, public Stream
 
     void _write_handler(uint8_t* data, uint16_t len);
 
-    friend void blemidi_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
+    static void blemidi_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
 };
 
 
