@@ -130,9 +130,10 @@ void BLEHidGeneric::setOutputReportCallback(uint8_t reportID, BLECharacteristic:
 /*------------------------------------------------------------------*/
 /* Callbacks
  *------------------------------------------------------------------*/
-void blehid_generic_protocol_mode_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
+void BLEHidGeneric::blehid_generic_protocol_mode_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
   (void) conn_hdl;
+
   BLEHidGeneric& svc = (BLEHidGeneric&) chr->parentService();
   svc._protocol_mode = *data;
 
@@ -157,7 +158,7 @@ err_t BLEHidGeneric::begin(void)
 
     _chr_protocol->setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE_WO_RESP);
     _chr_protocol->setFixedLen(1);
-    _chr_protocol->setWriteCallback(blehid_generic_protocol_mode_cb);
+    _chr_protocol->setWriteCallback(BLEHidGeneric::blehid_generic_protocol_mode_cb);
     VERIFY_STATUS( _chr_protocol->begin() );
     _chr_protocol->write8(_protocol_mode);
   }
@@ -250,22 +251,21 @@ err_t BLEHidGeneric::begin(void)
 /*------------------------------------------------------------------*/
 /* Input Report
  *------------------------------------------------------------------*/
-bool BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
+bool BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len, uint16_t conn_hdl)
 {
   // index is ID-1
   uint8_t const idx =  ( reportID ? (reportID-1) : 0 );
-
-  return _chr_inputs[idx].notify( (uint8_t const*) data, len);
+  return _chr_inputs[idx].notify( (uint8_t const*) data, len, conn_hdl);
 }
 
-bool BLEHidGeneric::bootKeyboardReport(void const* data, int len)
+bool BLEHidGeneric::bootKeyboardReport(void const* data, int len, uint16_t conn_hdl)
 {
-  return _chr_boot_keyboard_input->notify(data, len);
+  return _chr_boot_keyboard_input->notify(data, len, conn_hdl);
 }
 
-bool BLEHidGeneric::bootMouseReport(void const* data, int len)
+bool BLEHidGeneric::bootMouseReport(void const* data, int len, uint16_t conn_hdl)
 {
-  return _chr_boot_mouse_input->notify(data, len);
+  return _chr_boot_mouse_input->notify(data, len, conn_hdl);
 }
 
 /*------------------------------------------------------------------*/
