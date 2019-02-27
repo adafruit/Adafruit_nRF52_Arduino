@@ -68,6 +68,7 @@ class BLEUart : public BLEService, public Stream
     virtual int       read       ( void );
     virtual int       read       ( uint8_t * buf, size_t size );
             int       read       ( char    * buf, size_t size ) { return read( (uint8_t*) buf, size); }
+
     virtual size_t    write      ( uint8_t b );
     virtual size_t    write      ( const uint8_t *content, size_t len);
 
@@ -98,8 +99,8 @@ class BLEUart : public BLEService, public Stream
     bool _flush_txd(uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
 
     // from BLEService
-    virtual void _disconnect_cb(void);
-    virtual void _connect_cb(void);
+    virtual void svc_disconnect_hdl(uint16_t conn_hdl);
+    virtual void svc_connect_hdl(uint16_t conn_hdl);
 
     // Static Method for callbacks
     static void bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);

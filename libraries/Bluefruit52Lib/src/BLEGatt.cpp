@@ -94,10 +94,10 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
       {
         if ( evt_id == BLE_GAP_EVT_DISCONNECTED )
         {
-          _server.svc_list[i]->_disconnect_cb();
+          _server.svc_list[i]->svc_disconnect_hdl(evt_conn_hdl);
         }else
         {
-          _server.svc_list[i]->_connect_cb();
+          _server.svc_list[i]->svc_connect_hdl(evt_conn_hdl);
         }
       }
     }

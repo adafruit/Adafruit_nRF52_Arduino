@@ -204,7 +204,7 @@ bool BLEUart::notifyEnabled(uint16_t conn_hdl)
   return _txd.notifyEnabled(conn_hdl);
 }
 
-void BLEUart::_disconnect_cb(void)
+void BLEUart::svc_disconnect_hdl(uint16_t conn_hdl)
 {
   if (_buffered_th)
   {
@@ -215,7 +215,7 @@ void BLEUart::_disconnect_cb(void)
   }
 }
 
-void BLEUart::_connect_cb (void)
+void BLEUart::svc_connect_hdl (uint16_t conn_hdl)
 {
   if ( _tx_buffered )
   {
