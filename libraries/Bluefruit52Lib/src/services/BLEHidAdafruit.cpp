@@ -266,18 +266,6 @@ bool BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode[6])
   return keyboardReport(&report);
 }
 
-bool BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode0, uint8_t keycode1, uint8_t keycode2, uint8_t keycode3, uint8_t keycode4, uint8_t keycode5)
-{
-  hid_keyboard_report_t report =
-  {
-      .modifier = modifier,
-      .reserved = 0,
-      .keycode  = { keycode0, keycode1, keycode2, keycode3, keycode4, keycode5 }
-  };
-
-  return keyboardReport(&report);
-}
-
 bool BLEHidAdafruit::keyPress(char ch)
 {
   hid_keyboard_report_t report;

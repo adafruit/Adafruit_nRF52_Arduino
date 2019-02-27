@@ -56,7 +56,6 @@ class BLEHidAdafruit : public BLEHidGeneric
     // Keyboard
     bool keyboardReport(hid_keyboard_report_t* report);
     bool keyboardReport(uint8_t modifier, uint8_t keycode[6]);
-    bool keyboardReport(uint8_t modifier, uint8_t keycode0, uint8_t keycode1=0, uint8_t keycode2=0, uint8_t keycode3=0, uint8_t keycode4=0, uint8_t keycode5=0);
 
     void setKeyboardLedCallback(kbd_led_cb_t fp);
 
