@@ -96,7 +96,7 @@ class BLEUart : public BLEService, public Stream
     bool           _tx_buffered; // default is false
     TimerHandle_t  _buffered_th;
 
-    bool _flush_txd(uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool flush_txd(uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
 
     // from BLEService
     virtual void svc_disconnect_hdl(uint16_t conn_hdl);

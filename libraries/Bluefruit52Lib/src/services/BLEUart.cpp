@@ -111,7 +111,7 @@ void bleuart_txd_buffered_hdlr(TimerHandle_t timer)
   if ( !svc->_tx_fifo ) return;
 
   // flush tx data
-  (void) svc->_flush_txd();
+  (void) svc->flush_txd();
 }
 
 void BLEUart::bleuart_txd_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value)
@@ -281,7 +281,7 @@ size_t BLEUart::write (const uint8_t *content, size_t len, uint16_t conn_hdl)
     else
     {
       // TX fifo has enough data, send notify right away
-      VERIFY( _flush_txd(conn_hdl), 0);
+      VERIFY( flush_txd(conn_hdl), 0);
 
       // still more data left, send them all
       if ( written < len )
@@ -310,7 +310,7 @@ void BLEUart::flush (void)
   _rx_fifo->clear();
 }
 
-bool BLEUart::_flush_txd(uint16_t conn_hdl)
+bool BLEUart::flush_txd(uint16_t conn_hdl)
 {
   // use default conn handle if not passed
   if ( conn_hdl == BLE_CONN_HANDLE_INVALID ) conn_hdl = Bluefruit.connHandle();
