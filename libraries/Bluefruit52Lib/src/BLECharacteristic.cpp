@@ -600,11 +600,6 @@ uint32_t BLECharacteristic::read32(void)
   return read(&num, sizeof(num)) ? num : 0;
 }
 
-uint16_t BLECharacteristic::getCccd(void)
-{
-  return this->getCccd(Bluefruit.connHandle());
-}
-
 uint16_t BLECharacteristic::getCccd(uint16_t conn_hdl)
 {
   VERIFY( Bluefruit.connected(conn_hdl) && (_handles.cccd_handle != BLE_GATT_HANDLE_INVALID), 0 );

@@ -47,7 +47,7 @@ err_t BLEBas::begin(void)
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
 
-  _battery.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY); // could support notify
+  _battery.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
   _battery.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   _battery.setFixedLen(1);
   VERIFY_STATUS( _battery.begin() );
@@ -63,4 +63,9 @@ bool BLEBas::write(uint8_t level)
 bool BLEBas::notify(uint8_t level)
 {
   return _battery.notify8(level);
+}
+
+bool BLEBas::notify(uint8_t level, uint16_t conn_hdl)
+{
+  return _battery.notify8(level, conn_hdl);
 }

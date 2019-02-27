@@ -134,7 +134,6 @@ class BLECharacteristic
     uint32_t read32(void);
 
     /*------------- Notify -------------*/
-    uint16_t getCccd(void);
     uint16_t getCccd(uint16_t conn_hdl);
 
     bool notifyEnabled(void);

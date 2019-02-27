@@ -123,6 +123,11 @@ bool BLEMidi::notifyEnabled(void)
   return _io.notifyEnabled();
 }
 
+bool BLEMidi::notifyEnabled(uint16_t conn_hdl)
+{
+  return _io.notifyEnabled(conn_hdl);
+}
+
 void BLEMidi::setWriteCallback(midi_write_cb_t fp)
 {
   _write_cb = fp;
