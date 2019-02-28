@@ -54,7 +54,7 @@ class BLEBas : public BLEService
     bool write (uint8_t level);
 
     bool notify(uint8_t level);
-    bool notify(uint8_t level, uint16_t conn_hdl);
+    bool notify(uint16_t conn_hdl, uint8_t level);
 };
 
 

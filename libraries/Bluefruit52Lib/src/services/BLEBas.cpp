@@ -65,7 +65,7 @@ bool BLEBas::notify(uint8_t level)
   return _battery.notify8(level);
 }
 
-bool BLEBas::notify(uint8_t level, uint16_t conn_hdl)
+bool BLEBas::notify(uint16_t conn_hdl, uint8_t level)
 {
-  return _battery.notify8(level, conn_hdl);
+  return _battery.notify8(conn_hdl, level);
 }

@@ -66,7 +66,9 @@ class BLEUart : public BLEService, public Stream
     void setNotifyCallback(notify_callback_t fp);
 
     void bufferTXD(bool enable);
-    bool flushTXD (uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+
+    bool flushTXD (void);
+    bool flushTXD (uint16_t conn_hdl);
 
     // Stream API
     virtual int       read       ( void );
@@ -76,8 +78,8 @@ class BLEUart : public BLEService, public Stream
     virtual size_t    write      ( uint8_t b );
     virtual size_t    write      ( const uint8_t *content, size_t len);
 
-    virtual size_t    write      ( uint8_t b, uint16_t conn_hdl);
-    virtual size_t    write      ( const uint8_t *content, size_t len, uint16_t conn_hdl);
+    virtual size_t    write      (uint16_t conn_hdl, uint8_t b);
+    virtual size_t    write      (uint16_t conn_hdl, const uint8_t *content, size_t len);
 
     virtual int       available  ( void );
     virtual int       peek       ( void );

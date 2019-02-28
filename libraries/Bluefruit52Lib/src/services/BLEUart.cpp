@@ -187,27 +187,27 @@ int BLEUart::read (void)
   return read(&ch, 1) ? (int) ch : EOF;
 }
 
-int BLEUart::read (uint8_t * buf, size_t size)
+int BLEUart::read(uint8_t * buf, size_t size)
 {
   return _rx_fifo->read(buf, size);
 }
 
-size_t BLEUart::write (uint8_t b)
+size_t BLEUart::write(uint8_t b)
 {
-  return this->write(&b, 1, Bluefruit.connHandle());
+  return this->write(Bluefruit.connHandle(), &b, 1);
 }
 
-size_t BLEUart::write (const uint8_t *content, size_t len)
+size_t BLEUart::write(uint16_t conn_hdl, uint8_t b)
 {
-  return this->write(content, len, Bluefruit.connHandle());
+  return this->write(conn_hdl, &b, 1);
 }
 
-size_t BLEUart::write (uint8_t b, uint16_t conn_hdl)
+size_t BLEUart::write(const uint8_t *content, size_t len)
 {
-  return this->write(&b, 1, conn_hdl);
+  return this->write(Bluefruit.connHandle(), content, len);
 }
 
-size_t BLEUart::write (const uint8_t *content, size_t len, uint16_t conn_hdl)
+size_t BLEUart::write(uint16_t conn_hdl, const uint8_t *content, size_t len)
 {
   BLEConnection* conn = Bluefruit.Connection(conn_hdl);
   VERIFY(conn, 0);
@@ -218,7 +218,7 @@ size_t BLEUart::write (const uint8_t *content, size_t len, uint16_t conn_hdl)
   // notify right away if txd buffered is not enabled
   if ( !(_tx_buffered && _tx_fifo) )
   {
-    return _txd.notify(content, len, conn_hdl) ? len : 0;
+    return _txd.notify(conn_hdl, content, len) ? len : 0;
   }else
   {
     uint16_t written = _tx_fifo->write(content, len);
@@ -236,7 +236,7 @@ size_t BLEUart::write (const uint8_t *content, size_t len, uint16_t conn_hdl)
       // still more data left, send them all
       if ( written < len )
       {
-        VERIFY(_txd.notify(content+written, len-written, conn_hdl), written);
+        VERIFY(_txd.notify(conn_hdl, content+written, len-written), written);
       }
 
       return len;
@@ -260,11 +260,13 @@ void BLEUart::flush (void)
   _rx_fifo->clear();
 }
 
+bool BLEUart::flushTXD (void)
+{
+  return flushTXD(Bluefruit.connHandle());
+}
+
 bool BLEUart::flushTXD(uint16_t conn_hdl)
 {
-  // use default conn handle if not passed
-  if ( conn_hdl == BLE_CONN_HANDLE_INVALID ) conn_hdl = Bluefruit.connHandle();
-
   BLEConnection* conn = Bluefruit.Connection(conn_hdl);
   VERIFY(conn);
 
@@ -277,7 +279,7 @@ bool BLEUart::flushTXD(uint16_t conn_hdl)
 
   if ( len )
   {
-    result = _txd.notify(ff_data, len, conn_hdl);
+    result = _txd.notify(conn_hdl, ff_data, len);
   }
 
   rtos_free(ff_data);

@@ -251,21 +251,36 @@ err_t BLEHidGeneric::begin(void)
 /*------------------------------------------------------------------*/
 /* Input Report
  *------------------------------------------------------------------*/
-bool BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len, uint16_t conn_hdl)
+bool BLEHidGeneric::inputReport(uint16_t conn_hdl, uint8_t reportID, void const* data, int len)
 {
   // index is ID-1
   uint8_t const idx =  ( reportID ? (reportID-1) : 0 );
-  return _chr_inputs[idx].notify( (uint8_t const*) data, len, conn_hdl);
+  return _chr_inputs[idx].notify(conn_hdl, (uint8_t const*) data, len);
 }
 
-bool BLEHidGeneric::bootKeyboardReport(void const* data, int len, uint16_t conn_hdl)
+bool BLEHidGeneric::bootKeyboardReport(uint16_t conn_hdl, void const* data, int len)
 {
-  return _chr_boot_keyboard_input->notify(data, len, conn_hdl);
+  return _chr_boot_keyboard_input->notify(conn_hdl, data, len);
 }
 
-bool BLEHidGeneric::bootMouseReport(void const* data, int len, uint16_t conn_hdl)
+bool BLEHidGeneric::bootMouseReport(uint16_t conn_hdl, void const* data, int len)
 {
-  return _chr_boot_mouse_input->notify(data, len, conn_hdl);
+  return _chr_boot_mouse_input->notify(conn_hdl, data, len);
+}
+
+bool BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
+{
+  return inputReport(BLE_CONN_HANDLE_INVALID, reportID, data, len);
+}
+
+bool BLEHidGeneric::bootKeyboardReport(void const* data, int len)
+{
+  return bootKeyboardReport(BLE_CONN_HANDLE_INVALID, data, len);
+}
+
+bool BLEHidGeneric::bootMouseReport(void const* data, int len)
+{
+  return bootMouseReport(BLE_CONN_HANDLE_INVALID, data, len);
 }
 
 /*------------------------------------------------------------------*/

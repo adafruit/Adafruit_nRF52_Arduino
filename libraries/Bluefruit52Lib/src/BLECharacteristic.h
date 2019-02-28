@@ -133,19 +133,28 @@ class BLECharacteristic
     uint16_t read16(void);
     uint32_t read32(void);
 
-    /*------------- Notify -------------*/
     uint16_t getCccd(uint16_t conn_hdl);
 
     bool notifyEnabled(void);
     bool notifyEnabled(uint16_t conn_hdl);
 
-    bool notify   (const void* data, uint16_t len, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
-    bool notify   (const char* str, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    /*------------- Notify -------------*/
+    bool notify   (const void* data, uint16_t len);
+    bool notify   (const char* str);
 
-    bool notify8  (uint8_t  num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
-    bool notify16 (uint16_t num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
-    bool notify32 (uint32_t num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
-    bool notify32 (int      num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool notify8  (uint8_t  num);
+    bool notify16 (uint16_t num);
+    bool notify32 (uint32_t num);
+    bool notify32 (int      num);
+
+    /*------------- Notify -------------*/
+    bool notify   (uint16_t conn_hdl, const void* data, uint16_t len);
+    bool notify   (uint16_t conn_hdl, const char* str);
+
+    bool notify8  (uint16_t conn_hdl, uint8_t  num);
+    bool notify16 (uint16_t conn_hdl, uint16_t num);
+    bool notify32 (uint16_t conn_hdl, uint32_t num);
+    bool notify32 (uint16_t conn_hdl, int      num);
 
     /*------------- Indicate -------------*/
     bool indicateEnabled(void);

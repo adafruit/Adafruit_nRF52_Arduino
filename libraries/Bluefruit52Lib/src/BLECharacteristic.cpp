@@ -640,7 +640,7 @@ bool BLECharacteristic::notifyEnabled(uint16_t conn_hdl)
   return  (getCccd(conn_hdl) & BLE_GATT_HVX_NOTIFICATION);
 }
 
-bool BLECharacteristic::notify(const void* data, uint16_t len, uint16_t conn_hdl)
+bool BLECharacteristic::notify(uint16_t conn_hdl, const void* data, uint16_t len)
 {
   VERIFY( _properties.notify );
 
@@ -690,30 +690,64 @@ bool BLECharacteristic::notify(const void* data, uint16_t len, uint16_t conn_hdl
   return true;
 }
 
-bool BLECharacteristic::notify(const char * str, uint16_t conn_hdl)
+bool BLECharacteristic::notify(uint16_t conn_hdl, const char * str)
 {
-  return notify((const uint8_t*) str, strlen(str), conn_hdl);
+  return notify(conn_hdl, (const uint8_t*) str, strlen(str));
 }
 
-bool BLECharacteristic::notify8(uint8_t num, uint16_t conn_hdl)
+bool BLECharacteristic::notify8(uint16_t conn_hdl, uint8_t num)
 {
-  return notify((uint8_t*) &num, sizeof(num), conn_hdl);
+  return notify(conn_hdl, (uint8_t*) &num, sizeof(num));
 }
 
-bool BLECharacteristic::notify16(uint16_t num, uint16_t conn_hdl)
+bool BLECharacteristic::notify16(uint16_t conn_hdl, uint16_t num)
 {
-  return notify((uint8_t*) &num, sizeof(num), conn_hdl);
+  return notify(conn_hdl, (uint8_t*) &num, sizeof(num));
 }
 
-bool BLECharacteristic::notify32(uint32_t num, uint16_t conn_hdl)
+bool BLECharacteristic::notify32(uint16_t conn_hdl, uint32_t num)
 {
-  return notify((uint8_t*) &num, sizeof(num), conn_hdl);
+  return notify(conn_hdl, (uint8_t*) &num, sizeof(num));
 }
 
-bool BLECharacteristic::notify32(int num, uint16_t conn_hdl)
+bool BLECharacteristic::notify32(uint16_t conn_hdl, int num)
 {
   return notify32((uint32_t) num, conn_hdl);
 }
+
+//--------------------------------------------------------------------+
+// Notify with single connection
+//--------------------------------------------------------------------+
+bool BLECharacteristic::notify(const void* data, uint16_t len)
+{
+  return notify(BLE_CONN_HANDLE_INVALID, data, len);
+}
+
+bool BLECharacteristic::notify(const char* str)
+{
+  return notify(BLE_CONN_HANDLE_INVALID, str);
+}
+
+bool BLECharacteristic::notify8(uint8_t num)
+{
+  return notify8(BLE_CONN_HANDLE_INVALID, num);
+}
+
+bool BLECharacteristic::notify16(uint16_t num)
+{
+  return notify16(BLE_CONN_HANDLE_INVALID, num);
+}
+
+bool BLECharacteristic::notify32(uint32_t num)
+{
+  return notify32(BLE_CONN_HANDLE_INVALID, num);
+}
+
+bool BLECharacteristic::notify32(int num)
+{
+  return notify32(BLE_CONN_HANDLE_INVALID, num);
+}
+
 
 /*------------------------------------------------------------------*/
 /* INDICATE
