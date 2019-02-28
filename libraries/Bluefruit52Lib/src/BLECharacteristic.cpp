@@ -750,7 +750,7 @@ bool BLECharacteristic::notify32(int num)
 
 
 /*------------------------------------------------------------------*/
-/* INDICATE
+/* INDICATE multiple connections
  *------------------------------------------------------------------*/
 bool BLECharacteristic::indicateEnabled(void)
 {
@@ -763,7 +763,7 @@ bool BLECharacteristic::indicateEnabled(uint16_t conn_hdl)
   return  (getCccd(conn_hdl) & BLE_GATT_HVX_INDICATION);
 }
 
-bool BLECharacteristic::indicate(const void* data, uint16_t len, uint16_t conn_hdl)
+bool BLECharacteristic::indicate(uint16_t conn_hdl, const void* data, uint16_t len)
 {
   VERIFY( _properties.indicate );
 
@@ -813,27 +813,60 @@ bool BLECharacteristic::indicate(const void* data, uint16_t len, uint16_t conn_h
   return true;
 }
 
-bool BLECharacteristic::indicate(const char * str, uint16_t conn_hdl)
+bool BLECharacteristic::indicate(uint16_t conn_hdl, const char * str)
 {
-  return indicate((const uint8_t*) str, strlen(str), conn_hdl);
+  return indicate(conn_hdl, (const uint8_t*) str, strlen(str));
 }
 
-bool BLECharacteristic::indicate8(uint8_t num, uint16_t conn_hdl)
+bool BLECharacteristic::indicate8(uint16_t conn_hdl, uint8_t num)
 {
-  return indicate((uint8_t*) &num, sizeof(num), conn_hdl);
+  return indicate(conn_hdl, (uint8_t*) &num, sizeof(num));
 }
 
-bool BLECharacteristic::indicate16(uint16_t num, uint16_t conn_hdl)
+bool BLECharacteristic::indicate16(uint16_t conn_hdl, uint16_t num)
 {
-  return indicate((uint8_t*) &num, sizeof(num), conn_hdl);
+  return indicate(conn_hdl, (uint8_t*) &num, sizeof(num));
 }
 
-bool BLECharacteristic::indicate32(uint32_t num, uint16_t conn_hdl)
+bool BLECharacteristic::indicate32(uint16_t conn_hdl, uint32_t num)
 {
-  return indicate((uint8_t*) &num, sizeof(num), conn_hdl);
+  return indicate(conn_hdl, (uint8_t*) &num, sizeof(num));
 }
 
-bool BLECharacteristic::indicate32(int num, uint16_t conn_hdl)
+bool BLECharacteristic::indicate32(uint16_t conn_hdl, int num)
 {
-  return indicate32((uint32_t) num, conn_hdl);
+  return indicate32(conn_hdl, (uint32_t) num);
+}
+
+/*------------------------------------------------------------------*/
+/* INDICATE single connections
+ *------------------------------------------------------------------*/
+bool BLECharacteristic::indicate(const void* data, uint16_t len)
+{
+  return indicate(BLE_CONN_HANDLE_INVALID, data, len);
+}
+
+bool BLECharacteristic::indicate(const char* str)
+{
+  return indicate(BLE_CONN_HANDLE_INVALID, str);
+}
+
+bool BLECharacteristic::indicate8(uint8_t num)
+{
+  return indicate8(BLE_CONN_HANDLE_INVALID, num);
+}
+
+bool BLECharacteristic::indicate16(uint16_t num)
+{
+  return indicate16(BLE_CONN_HANDLE_INVALID, num);
+}
+
+bool BLECharacteristic::indicate32(uint32_t num)
+{
+  return indicate32(BLE_CONN_HANDLE_INVALID, num);
+}
+
+bool BLECharacteristic::indicate32(int num)
+{
+  return indicate32(BLE_CONN_HANDLE_INVALID, num);
 }

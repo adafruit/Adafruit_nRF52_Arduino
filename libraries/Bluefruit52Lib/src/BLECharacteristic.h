@@ -147,7 +147,7 @@ class BLECharacteristic
     bool notify32 (uint32_t num);
     bool notify32 (int      num);
 
-    /*------------- Notify -------------*/
+    /*------------- Notify multiple connections -------------*/
     bool notify   (uint16_t conn_hdl, const void* data, uint16_t len);
     bool notify   (uint16_t conn_hdl, const char* str);
 
@@ -160,13 +160,22 @@ class BLECharacteristic
     bool indicateEnabled(void);
     bool indicateEnabled(uint16_t conn_hdl);
 
-    bool indicate   (const void* data, uint16_t len, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
-    bool indicate   (const char* str, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool indicate   (const void* data, uint16_t len);
+    bool indicate   (const char* str);
 
-    bool indicate8  (uint8_t  num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
-    bool indicate16 (uint16_t num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
-    bool indicate32 (uint32_t num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
-    bool indicate32 (int      num, uint16_t conn_hdl = BLE_CONN_HANDLE_INVALID);
+    bool indicate8  (uint8_t  num);
+    bool indicate16 (uint16_t num);
+    bool indicate32 (uint32_t num);
+    bool indicate32 (int      num);
+
+    /*------------- Indicate multiple connections -------------*/
+    bool indicate   (uint16_t conn_hdl, const void* data, uint16_t len);
+    bool indicate   (uint16_t conn_hdl, const char* str);
+
+    bool indicate8  (uint16_t conn_hdl, uint8_t  num);
+    bool indicate16 (uint16_t conn_hdl, uint16_t num);
+    bool indicate32 (uint16_t conn_hdl, uint32_t num);
+    bool indicate32 (uint16_t conn_hdl, int      num);
 
     /*------------- Internal Functions -------------*/
     virtual void _eventHandler(ble_evt_t* event);
