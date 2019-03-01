@@ -204,7 +204,7 @@ void loop()
     // Note: We use .indicate instead of .write!
     // If it is connected but CCCD is not enabled
     // The characteristic's value is still updated although indicate is not sent
-    if ( htmc.indicate(0, htmdata, sizeof(htmdata)) ){
+    if ( htmc.indicate(htmdata, sizeof(htmdata)) ){
       Serial.print("Temperature Measurement updated to: "); Serial.println(tempvalue); 
     }else{
       Serial.println("ERROR: Indicate not set in the CCCD or not connected!");
