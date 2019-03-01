@@ -52,7 +52,7 @@ extern const uint8_t BLEMIDI_UUID_CHR_IO[];
 class BLEMidi: public BLEService, public Stream
 {
   public:
-    typedef void (*midi_write_cb_t) (void);
+    typedef void (*midi_write_cb_t) (uint16_t conn_hdl);
 
     BLEMidi(uint16_t fifo_depth = BLE_MIDI_DEFAULT_FIFO_DEPTH);
 
@@ -91,7 +91,7 @@ class BLEMidi: public BLEService, public Stream
 
     void* _midilib_obj;
 
-    void _write_handler(uint8_t* data, uint16_t len);
+    void _write_handler(uint16_t conn_hdl, uint8_t* data, uint16_t len);
 
     static void blemidi_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
 };

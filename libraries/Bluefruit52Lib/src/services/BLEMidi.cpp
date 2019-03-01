@@ -168,14 +168,13 @@ err_t BLEMidi::begin(void)
  *------------------------------------------------------------------*/
 void BLEMidi::blemidi_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  (void) conn_hdl;
   if ( len < 3 ) return;
 
   BLEMidi& midi_svc = (BLEMidi&) chr->parentService();
-  midi_svc._write_handler(data, len);
+  midi_svc._write_handler(conn_hdl, data, len);
 }
 
-void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
+void BLEMidi::_write_handler(uint16_t conn_hdl, uint8_t* data, uint16_t len)
 {
   // drop the BLE MIDI header byte
   data++;
@@ -204,7 +203,7 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
   }
 
   // Call write callback if configured
-  if ( _write_cb ) _write_cb();
+  if ( _write_cb ) _write_cb(conn_hdl);
 
 #ifdef MIDI_LIB_INCLUDED
   // read while possible if configured
