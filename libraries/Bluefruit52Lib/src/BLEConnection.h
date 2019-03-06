@@ -54,7 +54,7 @@ class BLEConnection
     bool _paired;
     bool _hvc_received;
 
-    ble_gap_addr_t _addr;
+    ble_gap_addr_t _peer_addr;
 
     SemaphoreHandle_t _hvn_sem;
     SemaphoreHandle_t _wrcmd_sem;

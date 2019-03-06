@@ -163,24 +163,22 @@ class AdafruitBluefruit
     void     autoConnLed        (bool enabled);
     void     setConnLedInterval (uint32_t ms);
 
+    void     clearBonds        (void);
+
     /*------------------------------------------------------------------*/
     /* GAP, Connections and Bonding
      *------------------------------------------------------------------*/
     uint8_t  connected         (void); // Number of connected
+    bool     connected         (uint16_t conn_hdl);
 
     uint16_t connHandle        (void);
     bool     connPaired        (void);
 
-    void     clearBonds        (void);
-
     // Alias to BLEConnection API()
-    bool     connected         (uint16_t conn_hdl);
     bool     disconnect        (uint16_t conn_hdl);
-    ble_gap_addr_t getPeerAddr (uint16_t conn_hdl);
     bool     requestPairing    (uint16_t conn_hdl);
 
     uint16_t getPeerName       (uint16_t conn_hdl, char* buf, uint16_t bufsize);
-
     uint16_t getMaxMtu(uint8_t role);
 
     BLEConnection* Connection(uint16_t conn_hdl);
@@ -234,7 +232,6 @@ class AdafruitBluefruit
     bool _led_conn;
 
     bool _ota_en;
-
     BLEDfu _dfu_svc;
 
     uint16_t _conn_hdl;

@@ -47,7 +47,7 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
 
   _mtu = BLE_GATT_ATT_MTU_DEFAULT;
   _conn_interval = 0;
-  _addr = evt_connected->peer_addr;
+  _peer_addr = evt_connected->peer_addr;
   _role = evt_connected->role;
 
   _hvn_sem   = xSemaphoreCreateCounting(hvn_qsize, hvn_qsize);
@@ -101,7 +101,7 @@ uint16_t BLEConnection::getConnInterval(void)
 
 ble_gap_addr_t BLEConnection::getPeerAddr (void)
 {
-  return _addr;
+  return _peer_addr;
 }
 
 static inline bool is_tx_power_valid(int8_t power)
@@ -197,7 +197,7 @@ bool BLEConnection::requestPairing(void)
 
     // Check to see if we did bonded with current prph previously
     // TODO currently only matches key using fixed address
-    if ( bond_find_cntr(&_addr, &bkeys) )
+    if ( bond_find_cntr(&_peer_addr, &bkeys) )
     {
       cntr_ediv = bkeys.peer_enc.master_id.ediv;
       LOG_LV2("BOND", "Load Keys from file " BOND_FNAME_CNTR, cntr_ediv);

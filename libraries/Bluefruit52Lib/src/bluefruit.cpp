@@ -627,12 +627,6 @@ bool AdafruitBluefruit::connPaired(void)
   return conn && conn->paired();
 }
 
-ble_gap_addr_t AdafruitBluefruit::getPeerAddr(uint16_t conn_hdl)
-{
-  BLEConnection* conn = this->Connection(conn_hdl);
-  return conn ? conn->getPeerAddr() : ((ble_gap_addr_t) {0});
-}
-
 uint16_t AdafruitBluefruit::getMaxMtu(uint8_t role)
 {
   return (role == BLE_GAP_ROLE_PERIPH) ? _sd_cfg.prph.mtu_max : _sd_cfg.central.mtu_max;

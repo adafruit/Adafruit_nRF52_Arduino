@@ -48,7 +48,7 @@ class BLEPeriph
     bool begin(void);
 
     bool    connected(uint16_t conn_hdl); // Connected as prph to this connection
-    uint8_t connected(void);              // Number of connected central
+    uint8_t connected(void);              // Number of connected as peripherals
 
     bool setConnInterval   (uint16_t min, uint16_t max);
     bool setConnIntervalMS (uint16_t min_ms, uint16_t max_ms);
