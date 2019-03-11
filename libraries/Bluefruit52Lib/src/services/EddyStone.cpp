@@ -81,7 +81,7 @@ EddyStoneUrl::EddyStoneUrl(int8_t rssiAt0m, const char* url)
   _url  = url;
 }
 
-bool EddyStoneUrl::setUrl(const char* url)
+void EddyStoneUrl::setUrl(const char* url)
 {
   _url = url;
 }
