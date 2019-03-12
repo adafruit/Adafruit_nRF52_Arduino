@@ -38,9 +38,18 @@
 
 #include "common_inc.h"
 
+#ifndef CFG_CALLBACK_TASK_STACKSIZE
 #define CFG_CALLBACK_TASK_STACKSIZE     (512*2)
+#endif
+
+#ifndef CFG_CALLBACK_QUEUE_LENGTH
 #define CFG_CALLBACK_QUEUE_LENGTH       20
+#endif
+
+#ifndef CFG_CALLBACK_TIMEOUT
 #define CFG_CALLBACK_TIMEOUT            100
+#endif
+
 
 #ifdef __cplusplus
 extern "C"{
