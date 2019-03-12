@@ -74,6 +74,7 @@ class LittleFS: public BluefruitFS::FileSystemClass
     struct lfs_config _lfs_cfg;
     lfs_t _lfs;
     bool _begun;
+    bool _mounted;
 
     BluefruitFS::File _open_file (char const *filepath, uint8_t mode);
     BluefruitFS::File _open_dir (char const *filepath);

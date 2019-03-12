@@ -193,6 +193,7 @@ LittleFS::LittleFS (void)
   _lfs_cfg.lookahead = 128;
 
   _begun = false;
+  _mounted = false;
 }
 
 LittleFS::~LittleFS ()
@@ -212,6 +213,8 @@ bool LittleFS::begin (void)
   {
     LOG_LV1("IFLASH", "Format internal file system");
     this->format(false);
+  } else {
+    _mounted = true;
   }
 
   return true;
@@ -226,9 +229,13 @@ bool LittleFS::format (bool eraseall)
       flash_nrf5x_erase(addr);
     }
   }
-
+  if(_mounted) {
+    VERIFY_LFS(lfs_unmount(&_lfs), false);
+  }
   VERIFY_LFS(lfs_format(&_lfs, &_lfs_cfg), false);
   VERIFY_LFS(lfs_mount(&_lfs, &_lfs_cfg), false);
+
+  _mounted = true;
 
   return true;
 }
