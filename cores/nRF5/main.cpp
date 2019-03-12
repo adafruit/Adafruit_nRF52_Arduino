@@ -114,8 +114,9 @@ int _write (int fd, const void *buf, size_t count)
 
   if ( Serial )
   {
-    Serial.write( (const uint8_t *) buf, count);
+    return Serial.write( (const uint8_t *) buf, count);
   }
+  return 0;
 }
 
 }

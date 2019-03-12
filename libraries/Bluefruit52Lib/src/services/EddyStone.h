@@ -59,7 +59,7 @@ class EddyStoneUrl
     EddyStoneUrl(void);
     EddyStoneUrl(int8_t rssiAt0m, const char* url = NULL);
 
-    bool setUrl(const char* url);
+    void setUrl(const char* url);
     void setRssi(int8_t rssiAt0m);
 
     bool start(void);
