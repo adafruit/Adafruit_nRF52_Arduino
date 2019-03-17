@@ -38,7 +38,7 @@ feather52832.build.f_cpu=64000000
 feather52832.build.board=NRF52_FEATHER
 feather52832.build.core=nRF5
 feather52832.build.variant=feather_nrf52832
-feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
+feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52 -DARDUINO_NRF52832_FEATHER
 
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
