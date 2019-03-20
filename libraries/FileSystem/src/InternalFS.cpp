@@ -118,79 +118,30 @@ static inline uint32_t lba2addr(uint32_t block)
   return ((uint32_t) LFS_FLASH_ADDR) + block * LFS_BLOCK_SIZE;
 }
 
-static int _iflash_read (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
-{
-  (void) c;
-
-  uint32_t addr = lba2addr(block) + off;
-  flash_nrf5x_read(buffer, addr, size);
-
-  return 0;
-}
-
-// Program a region in a block. The block must have previously
-// been erased. Negative error codes are propogated to the user.
-// May return LFS_ERR_CORRUPT if the block should be considered bad.
-static int _iflash_prog (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer,
-                         lfs_size_t size)
-{
-  (void) c;
-
-  uint32_t addr = lba2addr(block) + off;
-  flash_nrf5x_write(addr, buffer, size);
-
-  return 0;
-}
-
-// Erase a block. A block must be erased before being programmed.
-// The state of an erased block is undefined. Negative error codes
-// are propogated to the user.
-// May return LFS_ERR_CORRUPT if the block should be considered bad.
-static int _iflash_erase (const struct lfs_config *c, lfs_block_t block)
-{
-  (void) c;
-
-  uint32_t addr = lba2addr(block);
-
-  // implement as write 0xff to whole block address
-  for(int i=0; i <LFS_BLOCK_SIZE; i++)
-  {
-    flash_nrf5x_write8(addr + i, 0xFF);
-  }
-
-  // flash_nrf5x_flush();
-
-  return 0;
-}
-
-// Sync the state of the underlying block device. Negative error codes
-// are propogated to the user.
-static int _iflash_sync (const struct lfs_config *c)
-{
-  (void) c;
-  flash_nrf5x_flush();
-  return 0;
-}
-
 //--------------------------------------------------------------------+
 // Implementation
 //--------------------------------------------------------------------+
 LittleFS InternalFS;
 
-LittleFS::LittleFS (void)
+LittleFS::LittleFS (void) :
+  LittleFS( LFS_BLOCK_SIZE, LFS_BLOCK_SIZE, LFS_BLOCK_SIZE, LFS_FLASH_TOTAL_SIZE / LFS_BLOCK_SIZE, 128)
+{
+}
+
+LittleFS::LittleFS (lfs_size_t read_size, lfs_size_t prog_size, lfs_size_t block_size, lfs_size_t block_count, lfs_size_t lookahead)
 {
   varclr(&_lfs_cfg);
-  _lfs_cfg.context = NULL;
+  _lfs_cfg.context = this;
   _lfs_cfg.read = _iflash_read;
   _lfs_cfg.prog = _iflash_prog;
   _lfs_cfg.erase = _iflash_erase;
   _lfs_cfg.sync = _iflash_sync;
 
-  _lfs_cfg.read_size = LFS_BLOCK_SIZE;
-  _lfs_cfg.prog_size = LFS_BLOCK_SIZE;
-  _lfs_cfg.block_size = LFS_BLOCK_SIZE;
-  _lfs_cfg.block_count = LFS_FLASH_TOTAL_SIZE / LFS_BLOCK_SIZE;
-  _lfs_cfg.lookahead = 128;
+  _lfs_cfg.read_size = read_size;
+  _lfs_cfg.prog_size = prog_size;
+  _lfs_cfg.block_size = block_size;
+  _lfs_cfg.block_count = block_count;
+  _lfs_cfg.lookahead = lookahead;
 
   _begun = false;
   _mounted = false;
@@ -222,12 +173,8 @@ bool LittleFS::begin (void)
 
 bool LittleFS::format (bool eraseall)
 {
-  if ( eraseall )
-  {
-    for ( uint32_t addr = LFS_FLASH_ADDR; addr < LFS_FLASH_ADDR + LFS_FLASH_TOTAL_SIZE; addr += FLASH_NRF52_PAGE_SIZE )
-    {
-      flash_nrf5x_erase(addr);
-    }
+  if ( eraseall ) {
+    _flash_erase_all();
   }
   if(_mounted) {
     VERIFY_LFS(lfs_unmount(&_lfs), false);
@@ -464,4 +411,90 @@ File LittleFS::_f_openNextFile (void* fhdl, char const* cwd, uint8_t mode)
 void LittleFS::_f_rewindDirectory (void* fhdl)
 {
   VERIFY_LFS(lfs_dir_rewind(&_lfs, (lfs_dir_t* ) fhdl),);
+}
+
+
+int LittleFS::_flash_read (lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
+{
+  uint32_t addr = lba2addr(block) + off;
+  flash_nrf5x_read(buffer, addr, size);
+
+  return 0;
+}
+
+// Program a region in a block. The block must have previously
+// been erased. Negative error codes are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+int LittleFS::_flash_prog (lfs_block_t block, lfs_off_t off, const void *buffer,
+                         lfs_size_t size)
+{
+  uint32_t addr = lba2addr(block) + off;
+  flash_nrf5x_write(addr, buffer, size);
+
+  return 0;
+}
+
+// Erase a block. A block must be erased before being programmed.
+// The state of an erased block is undefined. Negative error codes
+// are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+int LittleFS::_flash_erase (lfs_block_t block)
+{
+  uint32_t addr = lba2addr(block);
+
+  // implement as write 0xff to whole block address
+  for(int i=0; i <LFS_BLOCK_SIZE; i++)
+  {
+    flash_nrf5x_write8(addr + i, 0xFF);
+  }
+
+  // flash_nrf5x_flush();
+
+  return 0;
+}
+
+void LittleFS::_flash_erase_all()
+{
+  for ( uint32_t addr = LFS_FLASH_ADDR; addr < LFS_FLASH_ADDR + LFS_FLASH_TOTAL_SIZE; addr += FLASH_NRF52_PAGE_SIZE )
+  {
+    flash_nrf5x_erase(addr);
+  }
+}
+
+// Sync the state of the underlying block device. Negative error codes
+// are propogated to the user.
+int LittleFS::_flash_sync ()
+{
+  flash_nrf5x_flush();
+  return 0;
+}
+
+int LittleFS::_iflash_read (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
+{
+  return ((LittleFS *)c->context)->_flash_read(block, off, buffer, size);
+}
+
+// Program a region in a block. The block must have previously
+// been erased. Negative error codes are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+int LittleFS::_iflash_prog (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer,
+                         lfs_size_t size)
+{
+  return ((LittleFS *)c->context)->_flash_prog(block, off, buffer, size);
+}
+
+// Erase a block. A block must be erased before being programmed.
+// The state of an erased block is undefined. Negative error codes
+// are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+int LittleFS::_iflash_erase (const struct lfs_config *c, lfs_block_t block)
+{
+  return ((LittleFS *)c->context)->_flash_erase(block);
+}
+
+// Sync the state of the underlying block device. Negative error codes
+// are propogated to the user.
+int LittleFS::_iflash_sync (const struct lfs_config *c)
+{
+  return ((LittleFS *)c->context)->_flash_sync();
 }
