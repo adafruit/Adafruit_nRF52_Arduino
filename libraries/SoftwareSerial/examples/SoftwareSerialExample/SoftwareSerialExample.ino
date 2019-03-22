@@ -9,6 +9,9 @@
  * TX is digital pin A1 (connect to RX of other device)
  
  This example code is in the public domain.
+ 
+ Software Serial will not work when Bluetooth Radio is active because the softdevice
+ interrupts the library.
 
  */
 
