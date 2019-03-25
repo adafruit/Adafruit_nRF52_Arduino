@@ -71,6 +71,7 @@ BLEUart::BLEUart(uint16_t fifo_depth)
   _rx_fifo_depth = fifo_depth;
 
   _tx_fifo       = NULL;
+  _tx_fifo_depth = 0;
   _tx_buffered   = 0;
   _buffered_th   = NULL;
 }
@@ -147,26 +148,29 @@ void BLEUart::setRxCallback( rx_callback_t fp)
  * Note: packet is sent right away if it reach MTU bytes
  * @param enable true or false
  */
-void BLEUart::bufferTXD(uint8_t enable)
+void BLEUart::bufferTXD(uint8_t enable, uint16_t fifo_depth)
 {
   _tx_buffered = enable;
+  _tx_fifo_depth = fifo_depth;
 
   if ( enable )
   {
     // enable cccd callback to start timer when enabled
     _txd.setCccdWriteCallback(bleuart_txd_cccd_cb);
 
-    // Create FIFO for TX TODO Larger MTU Size
+    // Create FIFO for TX
     if ( _tx_fifo == NULL )
     {
       _tx_fifo = new Adafruit_FIFO(1);
-      _tx_fifo->begin( Bluefruit.Gap.getMaxMtuByConnCfg(CONN_CFG_PERIPHERAL) );
+      _tx_fifo->begin(_tx_fifo_depth);
     }
   }else
   {
     _txd.setCccdWriteCallback(NULL);
 
     if ( _tx_fifo ) delete _tx_fifo;
+    // set TX FIFO pointer to NULL after delete
+    _tx_fifo = NULL;
   }
 }
 
@@ -254,7 +258,16 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
   // notify right away if txd buffered is not enabled
   if ( !(_tx_buffered && _tx_fifo) )
   {
-    return _txd.notify(content, len) ? len : 0;
+    size_t datatosend =  len;
+    size_t capacity = (Bluefruit.Gap.getMTU( Bluefruit.connHandle() ) - 3);
+    // check to make sure we can send as much data as the caller has requested
+    // if not, adjust the amount sent, and return to caller how much actually got sent
+    if(datatosend > capacity)
+    {
+       datatosend = capacity;
+    }
+
+    return _txd.notify(content, datatosend) ? datatosend : 0;
   }else
   {
     // skip if not enabled
@@ -266,7 +279,7 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
     // Not up to GATT MTU, notify will be sent later by TXD timer handler
     if ( _tx_fifo->count() < (Bluefruit.Gap.getMTU( Bluefruit.connHandle() ) - 3) )
     {
-      return len;
+      return written;
     }
     else
     {
@@ -276,10 +289,13 @@ size_t BLEUart::write (const uint8_t *content, size_t len)
       // still more data left, send them all
       if ( written < len )
       {
-        VERIFY( _txd.notify(content+written, len-written), written);
+         // write any additional data to FIFO,
+         // update total number of bytes written to FIFO
+         written += _tx_fifo->write(content+written, len-written);
       }
 
-      return len;
+      // return actual number of bytes written to FIFO
+      return written;
     }
   }
 }

@@ -60,7 +60,7 @@ class BLEUart : public BLEService, public Stream
 
     bool notifyEnabled (void);
     void setRxCallback (rx_callback_t fp);
-    void bufferTXD     (uint8_t enable);
+    void bufferTXD     (uint8_t enable, uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
 
     // Stream API
     virtual int       read       ( void );
@@ -86,6 +86,7 @@ class BLEUart : public BLEService, public Stream
 
     // TXD
     Adafruit_FIFO*    _tx_fifo;
+    uint16_t          _tx_fifo_depth;
     uint8_t           _tx_buffered;
     TimerHandle_t     _buffered_th;
 
