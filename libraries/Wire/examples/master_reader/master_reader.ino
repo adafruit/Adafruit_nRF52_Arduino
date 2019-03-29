@@ -16,6 +16,7 @@ void setup()
 {
   Wire.begin();        // join i2c bus (address optional for master)
   Serial.begin(9600);  // start serial for output
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 }
 
 void loop()

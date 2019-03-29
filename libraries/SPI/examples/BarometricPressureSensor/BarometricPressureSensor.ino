@@ -39,6 +39,7 @@ const int chipSelectPin = 7;
 
 void setup() {
   Serial.begin(9600);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   // start the SPI library:
   SPI.begin();
