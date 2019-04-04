@@ -1,29 +1,44 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-# 0.9.5
+# 0.10.0
 
 - Fixed Servo detach issue
 - Fixed pulseIn() compile issue: implement countPulseASM() using C instead of ASM
-- Introduce BLEPeriph
-  - setConnInterval(), setConnIntervalMS(), setConnSupervisionTimeout(), setConnSupervisionTimeoutMS()
-  - setDisconnectCallback(), setDisconnectCallback()
-- Bluefruit
-  - remove getPeerAddr(uint8_t[6]) variant
-  - remove connInterval() is replaced by BLEConnection's getConnInterval()
-  - Central.disconnect() is repalced by Bluefruit.disconnect()
-  - add conn_handle to Bluefruit.requestPairing(), remove Gap.requestPairing()
-  - Gap.setAddr()/getAddr() are replaced by Bluefruit's setAddr()/getAddr()
-  - Gap.getPeerName() is replaced by Bluefruit.getPeerName()
-- Enhance Gap, add BLEConnection class to mange peer connection
-  - Remove Gap.connected(), Gap.getRole() in prefer to BLEConnection API
-  - Remove BLEGap, API function is taken by Bluefruit, BLEPeriph, BLECentral
-- Added setRssiCallback(), monitorRssi(), getRssi(), stopRssi() for tracking rssi of a connection
-  - rssi_poll and rssi_callback example sketches are added 
-- Change BLECharacteristic callback signature BLECharacteristic& to BLECharacteristic*
-- Use AdaCallback thread for BLECharacteristic callbacks
-- Update bootloader to 0.2.7 which fixed OTA issue with latest BLE5 central such as iPhone X
+- Update bootloader to 0.2.9 which fixed OTA issue with latest BLE5 central such as iPhone X
 - Added Metro nRF52840 Board support
 - Added enableOTA(bool) to disable/enable OTA service (default is enable)
+- Fixed various warnings, thanks @brijohn
+- Added ARDUINO_NRF52832_FEATHER for feather 832, ARDUINO_NRF52840_FEATHER for feather 840, ARDUINO_NRF52_FEATHER for both
+- Fixed an memory leak with LFS, also extend to allow it to be used with SPI flash on other boards. Thanks @jeremypoulter
+- Introduce BLEPeriph class (Bluefruit.Periph) to mange peripheral role's connection
+  - setConnInterval(), setConnIntervalMS(), setConnSupervisionTimeout(), setConnSupervisionTimeoutMS()
+  - setConnectCallback(), setDisconnectCallback()
+- Bluefruit
+  - Bluefruit.getPeerAddr() is replaced by BLEConnection's getPeerAddr()
+  - Bluefruit.connInterval() is replaced by BLEConnection's getConnInterval()
+  - Bluefruit.Central.disconnect() is repalced by Bluefruit.disconnect()
+  - Bluefruit.begin() return type is changed from err_t to bool
+  - Bluefruit.setConnectCallback()/setDisconnectCallback() are replaced by BLEPeriph's setConnectCallback()/setDisconnectCallback()
+- Introduce BLEConnection class (Bluefruit.Connection(conn)) to mange both peripheral and central connections
+  - Added setRssiCallback(), monitorRssi(), getRssi(), stopRssi() for tracking rssi of a connection. `rssi_poll` and `rssi_callback` are added as example sketches 
+- Remove BLEGap, API functions are taken by Bluefruit, BLEPeriph, BLECentral
+  - Gap.setAddr()/getAddr() are replaced by Bluefruit.setAddr()/getAddr()
+  - Gap.getPeerName() is replaced by Bluefruit.getPeerName()
+  - Gap.requestPairing() is replaced by Bluefruit.requestPairing(), conn_handle parameter is also added
+  - Most of other functions of BLEGap are replaced by BLEConnection's one
+- BLECharacteristic 
+  - Change callback signature's parameter from `BLECharacteristic&` to `BLECharacteristic*`
+  - conn_handle is added to all callbacks to support multiple peripheral's link
+  - Use AdaCallback thread for BLECharacteristic callbacks
+  - Support LONG WRITE a.k.a send more than MTU ( default = 20 bytes) per request. This fixed issue #91, #220
+  - Fixed read32(), thanks @techno
+  - Removed offset parameter in write callback signature
+- BLEUart
+  - Added conn_handle to API and callbacks
+  - Removed auto flush TXD() with timer, user must call flushTXD() should bufferTXD() is enabled. 
+- BLEHidAdafruit
+  - Removed keyboardReport() variant with flat keycode parameters
+  - Added conn_handle parameter to keyboard led callback
 
 # 0.9.3
 

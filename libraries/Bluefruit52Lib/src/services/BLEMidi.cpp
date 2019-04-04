@@ -106,8 +106,6 @@ typedef struct ATTR_PACKED
 
 VERIFY_STATIC ( sizeof(midi_split_packet_t) == (BLE_MIDI_TX_BUFFER_SIZE + 1) );
 
-void blemidi_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
-
 /*------------------------------------------------------------------*/
 /* IMPLEMENTATION
  *------------------------------------------------------------------*/
