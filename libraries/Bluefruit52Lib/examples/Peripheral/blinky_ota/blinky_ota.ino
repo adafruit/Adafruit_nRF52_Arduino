@@ -14,6 +14,9 @@
 
 #include <bluefruit.h>
 
+// OTA DFU service
+BLEDfu bledfu;
+
 void setup() 
 {
   Serial.begin(115200);
@@ -26,6 +29,9 @@ void setup()
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
   Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52");
+
+  // To be consistent OTA DFU should be added first if it exists
+  bledfu.begin();
 
   // Set up and start advertising
   startAdv();

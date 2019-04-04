@@ -51,18 +51,6 @@ There are two methods that you can use to install this BSP. We highly recommend 
 
 - [SiLabs CP2104 driver](http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx) is required for USB to Serial when using with Feather nRF52832
 
-## Arduino BLE Application Support
-
-This Arduino core contains basic BLE peripheral mode helper classes and an initial peripheral mode
-API. These helper classes and APIs aim to make it easier to work with the Nordic SoftDevice that
-contains Nordic's official Bluetooth Low Energy stack. You are also free to use the Nordic SDK to
-generate your own example code, since all of the SoftDevice header files are included in your
-projects by default.
-
-To see a list of example sketches that make use of these helper classes, select the appropriate
-board from the `Tools > Board` menu item, and then in the `Examples` menu look for the list of
-examples sketched for the selected board.
-
 ## Bootloader Support
 
 ### Upgrade existing Bootloader
@@ -110,36 +98,6 @@ $ nrfjprog -e -f nrf52
 $ nrfjprog --program feather_nrf52832_bootloader.hex -f nrf52
 $ nrfjprog --reset -f nrf52
 ```
-
-## Misc Notes
-
-#### nRF52DK Jlink Issue on macOS
-
-If developing with the nRF52DK on macOS, there is a bug where only 64 bytes can be sent
-over the USB CDC interface, which will prevent you from using the serial bootloader from
-the Arduino IDE with an error like this:
-
-```
-Upgrading target on /dev/cu.usbmodem1421 with DFU package /private/var/folders/86/hb2vp14n5_5_yvdz_z8w9x_c0000gn/T/arduino_build_267869/nRF51Blinky.ino.zip. Flow control is disabled.
-
-
-Timed out waiting for acknowledgement from device.
-
-Failed to upgrade target. Error is: No data received on serial port. Not able to proceed.
-
-Possible causes:
-- bootloader, SoftDevice or application on target does not match the requirements in the DFU package.
-- baud rate or flow control is not the same as in the target bootloader.
-- target is not in DFU mode. If using the SDK examples, press Button 4 and RESET and release both to enter DFU mode.
-```
-
-To resolve this and enable 512 byte packets over USB serial, you must disable the
-Mass Storage Device interface on the JLink-OB, which will free up two of the 512 byte
-USB end points. (For details see [this article](https://wiki.segger.com/index.php?title=J-Link-OB_SAM3U).)
-
-You can do so by running `JLinkExe` from the command line, and then entering the
-`MSDDisable` command, and power cycling your nRF52DK. To re-enable MSD support, do the same
-but enter the `MSDEnable` command.
 
 ## Credits
 

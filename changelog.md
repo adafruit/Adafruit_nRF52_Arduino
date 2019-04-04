@@ -6,10 +6,10 @@
 - Fixed pulseIn() compile issue: implement countPulseASM() using C instead of ASM
 - Update bootloader to 0.2.9 which fixed OTA issue with latest BLE5 central such as iPhone X
 - Added Metro nRF52840 Board support
-- Added enableOTA(bool) to disable/enable OTA service (default is enable)
 - Fixed various warnings, thanks @brijohn
 - Added ARDUINO_NRF52832_FEATHER for feather 832, ARDUINO_NRF52840_FEATHER for feather 840, ARDUINO_NRF52_FEATHER for both
 - Fixed an memory leak with LFS, also extend to allow it to be used with SPI flash on other boards. Thanks @jeremypoulter
+- Seperate OTA DFU service from Bluefruit.begin(), sketch must explicit add it if needed.
 - Introduce BLEPeriph class (Bluefruit.Periph) to mange peripheral role's connection
   - setConnInterval(), setConnIntervalMS(), setConnSupervisionTimeout(), setConnSupervisionTimeoutMS()
   - setConnectCallback(), setDisconnectCallback()

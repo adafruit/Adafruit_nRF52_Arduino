@@ -135,8 +135,6 @@ class AdafruitBluefruit
     void configPrphBandwidth   (uint8_t bw);
     void configCentralBandwidth(uint8_t bw);
 
-    void enableOTA(bool en);
-
     bool begin(uint8_t prph_count = 1, uint8_t central_count = 0);
 
     /*------------------------------------------------------------------*/
@@ -230,9 +228,6 @@ class AdafruitBluefruit
 
     TimerHandle_t _led_blink_th;
     bool _led_conn;
-
-    bool _ota_en;
-    BLEDfu _dfu_svc;
 
     uint16_t _conn_hdl;
 

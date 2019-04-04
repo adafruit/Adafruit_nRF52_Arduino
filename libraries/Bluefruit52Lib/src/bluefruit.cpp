@@ -107,9 +107,7 @@ static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
 #endif
 }
 
-/**
- * Constructor
- */
+// Constructor
 AdafruitBluefruit::AdafruitBluefruit(void)
 {
   /*------------------------------------------------------------------*/
@@ -148,8 +146,6 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _led_blink_th  = NULL;
   _led_conn      = true;
-
-  _ota_en = true;
 
   _tx_power      = CFG_BLE_TX_POWER_LEVEL;
 
@@ -266,11 +262,6 @@ void AdafruitBluefruit::configCentralBandwidth(uint8_t bw)
 
     default: break;
   }
-}
-
-void AdafruitBluefruit::enableOTA(bool en)
-{
-  _ota_en = en;
 }
 
 bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
@@ -454,9 +445,6 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   sd_power_usbpwrrdy_enable(true);
   sd_power_usbremoved_enable(true);
 #endif
-
-  // Add DFU OTA service if enabled
-  if ( _ota_en ) _dfu_svc.begin();
 
   // Init Central role
   if (_central_count)  Central.begin();

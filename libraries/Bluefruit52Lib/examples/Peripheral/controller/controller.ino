@@ -14,6 +14,10 @@
 
 #include <bluefruit.h>
 
+// OTA DFU service
+BLEDfu bledfu;
+
+// Uart over BLE service
 BLEUart bleuart;
 
 // Function prototypes for packetparser.cpp
@@ -36,6 +40,9 @@ void setup(void)
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
   Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52");
+
+  // To be consistent OTA DFU should be added first if it exists
+  bledfu.begin();
 
   // Configure and start the BLE Uart service
   bleuart.begin();

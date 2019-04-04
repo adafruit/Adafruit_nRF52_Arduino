@@ -43,6 +43,7 @@ uint8_t components = 3;     // only 3 and 4 are valid values
 Adafruit_NeoPixel neopixel = Adafruit_NeoPixel();
 
 // BLE Service
+BLEDfu  bledfu;
 BLEDis  bledis;
 BLEUart bleuart;
 
@@ -66,6 +67,9 @@ void setup()
   Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52");
   Bluefruit.Periph.setConnectCallback(connect_callback);
+
+  // To be consistent OTA DFU should be added first if it exists
+  bledfu.begin();
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
