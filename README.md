@@ -62,7 +62,7 @@ Bluefruit's Bootloader is self-upgradable, you could upgrade to the latest Bootl
 - Select `Tools > Burn Bootloader`
 - **WAIT** until the process complete ~30 seconds
 
-Note: close the Serial Monitor before you click "Burn Bootloader". Afterwards, you shouldn't close the Arduino IDE, unplug the Feather, launch Serial Monitor etc ... to abort the process. There is a high chance it will brick your device! Do this with care and caution.
+**Note: close the Serial Monitor before you click "Burn Bootloader". Afterwards, you shouldn't close the Arduino IDE, unplug the Feather, launch Serial Monitor etc ... to abort the process. There is a high chance it will brick your device! Do this with care and caution.**
 
 ### Burning new Bootloader
 
