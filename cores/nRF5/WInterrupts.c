@@ -86,7 +86,7 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
       break;
 
     default:
-      return;
+      return 0;
   }
 
   for (int ch = 0; ch < NUMBER_OF_GPIO_TE; ch++) {

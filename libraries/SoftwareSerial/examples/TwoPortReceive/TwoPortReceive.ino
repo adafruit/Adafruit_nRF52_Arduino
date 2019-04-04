@@ -18,6 +18,9 @@
 
  This example code is in the public domain.
 
+ Software Serial will not work when Bluetooth Radio is active because the softdevice
+ interrupts the library.
+ 
  */
 
 #include <SoftwareSerial.h>

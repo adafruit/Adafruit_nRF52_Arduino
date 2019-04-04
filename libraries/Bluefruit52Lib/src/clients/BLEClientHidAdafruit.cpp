@@ -81,6 +81,8 @@ bool BLEClientHidAdafruit::begin(void)
   // set notify callback
   _kbd_boot_input.setNotifyCallback(kbd_client_notify_cb);
   _mse_boot_input.setNotifyCallback(mse_client_notify_cb);
+
+  return true;
 }
 
 void BLEClientHidAdafruit::setKeyboardReportCallback(kbd_callback_t fp)
@@ -140,12 +142,12 @@ bool BLEClientHidAdafruit::keyboardPresent(void)
 
 bool BLEClientHidAdafruit::enableKeyboard(void)
 {
-  _kbd_boot_input.enableNotify();
+  return _kbd_boot_input.enableNotify();
 }
 
 bool BLEClientHidAdafruit::disableKeyboard(void)
 {
-  _kbd_boot_input.disableNotify();
+  return _kbd_boot_input.disableNotify();
 }
 
 void BLEClientHidAdafruit::_handle_kbd_input(uint8_t* data, uint16_t len)
@@ -171,12 +173,12 @@ bool BLEClientHidAdafruit::mousePresent(void)
 
 bool BLEClientHidAdafruit::enableMouse(void)
 {
-  _mse_boot_input.enableNotify();
+  return _mse_boot_input.enableNotify();
 }
 
 bool BLEClientHidAdafruit::disableMouse(void)
 {
-  _mse_boot_input.disableNotify();
+  return _mse_boot_input.disableNotify();
 }
 
 void BLEClientHidAdafruit::_handle_mse_input(uint8_t* data, uint16_t len)

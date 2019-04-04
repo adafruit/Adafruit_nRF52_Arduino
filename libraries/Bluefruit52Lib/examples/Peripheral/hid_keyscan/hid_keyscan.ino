@@ -19,6 +19,7 @@
 
 #include <bluefruit.h>
 
+BLEDis bledis;
 BLEHidAdafruit blehid;
 
 // Array of pins and its keycode
@@ -55,6 +56,11 @@ void setup()
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
   Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52");
+
+  // Configure and Start Device Information Service
+  bledis.setManufacturer("Adafruit Industries");
+  bledis.setModel("Bluefruit Feather 52");
+  bledis.begin();
 
   // set up pin as input
   for (uint8_t i=0; i<pincount; i++)

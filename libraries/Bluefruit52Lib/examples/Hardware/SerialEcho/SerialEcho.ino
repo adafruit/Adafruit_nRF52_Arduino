@@ -24,6 +24,7 @@ const int baudrate = 115200;
 void setup()
 {
   Serial.begin (baudrate);
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Serial Echo demo");
   Serial.print("Badurate : ");

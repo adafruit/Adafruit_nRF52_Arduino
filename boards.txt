@@ -35,10 +35,10 @@ feather52832.upload.native_usb=false
 # Build
 feather52832.build.mcu=cortex-m4
 feather52832.build.f_cpu=64000000
-feather52832.build.board=NRF52_FEATHER
+feather52832.build.board=NRF52832_FEATHER
 feather52832.build.core=nRF5
 feather52832.build.variant=feather_nrf52832
-feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
+feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52 -DARDUINO_NRF52_FEATHER
 
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
@@ -98,7 +98,7 @@ feather52840.build.f_cpu=64000000
 feather52840.build.board=NRF52840_FEATHER
 feather52840.build.core=nRF5
 feather52840.build.variant=feather_nrf52840_express
-feather52840.build.extra_flags=-DNRF52840_XXAA
+feather52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_FEATHER
 
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
