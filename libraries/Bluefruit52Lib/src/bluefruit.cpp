@@ -463,9 +463,7 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   TaskHandle_t soc_task_hdl;
   xTaskCreate( adafruit_soc_task, "SOC", CFG_SOC_TASK_STACKSIZE, NULL, TASK_PRIO_HIGH, &soc_task_hdl);
 
-  // Interrupt priority has already been set by the stack.
-//  NVIC_SetPriority(SD_EVT_IRQn, 6);
-  NVIC_EnableIRQ(SD_EVT_IRQn);
+  NVIC_EnableIRQ(SD_EVT_IRQn); // enable SD interrupt
 
   // Create Timer for led advertising blinky
   _led_blink_th = xTimerCreate(NULL, ms2tick(CFG_ADV_BLINKY_INTERVAL/2), true, NULL, bluefruit_blinky_cb);
@@ -509,7 +507,7 @@ bool AdafruitBluefruit::setAddr (ble_gap_addr_t* gap_addr)
 void AdafruitBluefruit::setName (char const * str)
 {
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
-sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) str, strlen(str));
+  sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) str, strlen(str));
 }
 
 uint8_t AdafruitBluefruit::getName(char* name, uint16_t bufsize)

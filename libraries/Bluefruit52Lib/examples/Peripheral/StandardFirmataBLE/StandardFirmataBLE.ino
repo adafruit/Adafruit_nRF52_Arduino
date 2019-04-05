@@ -869,13 +869,8 @@ void startAdv(void)
  *============================================================================*/
 void loop()
 {
-  // Skip if not connected and bleuart notification is enabled
-  if (  !(Bluefruit.connected() && bleuart.notifyEnabled()) ) 
-  {
-    // go to low power mode since there is nothing to do
-    waitForEvent();
-    return;
-  }
+  // Skip if not connected and bleuart notification is not enabled
+  if (  !(Bluefruit.connected() && bleuart.notifyEnabled()) ) return;
   
   byte pin, analogPin;
 

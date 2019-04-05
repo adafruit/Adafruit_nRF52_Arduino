@@ -120,9 +120,6 @@ void loop()
     // Delay a bit after a report
     delay(5);
   }
-
-  // Request CPU to enter low-power mode until an event/interrupt occurs
-  waitForEvent();  
 }
 
 /**

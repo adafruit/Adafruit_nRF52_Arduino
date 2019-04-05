@@ -13,11 +13,13 @@
 *********************************************************************/
 #include <bluefruit.h>
 
+#define MAX_PRPH_CONNECTION   2
+uint8_t connection_count = 0;
+
 // BLE Service
 BLEDfu  bledfu;  // OTA DFU service
 BLEDis  bledis;  // device information
 BLEUart bleuart; // uart over ble
-BLEBas  blebas;  // battery
 
 void setup()
 {
@@ -32,16 +34,11 @@ void setup()
   // here in case you want to control this LED manually via PIN 19
   Bluefruit.autoConnLed(true);
 
-  // Config the peripheral connection with maximum bandwidth 
-  // more SRAM required by SoftDevice
-  // Note: All config***() function must be called before begin()
-  Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
-
-  Bluefruit.begin();
+  // Initialize Bluefruit with max concurrent connections as Peripheral = 2, Central = 0
+  Bluefruit.begin(MAX_PRPH_CONNECTION, 0);
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
   Bluefruit.setTxPower(4);
   Bluefruit.setName("Bluefruit52");
-  //Bluefruit.setName(getMcuUniqueID()); // useful testing with multiple central connections
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
 
@@ -55,10 +52,6 @@ void setup()
 
   // Configure and Start BLE Uart Service
   bleuart.begin();
-
-  // Start BLE Battery Service
-  blebas.begin();
-  blebas.write(100);
 
   // Set up and start advertising
   startAdv();
@@ -95,25 +88,40 @@ void startAdv(void)
   Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds  
 }
 
+
+// print a string to Serial Uart and all connected BLE Uart
+void printAll(uint8_t* buf, int count)
+{
+  Serial.write(buf, count);
+
+  // Send to all connected centrals
+  for (uint8_t conn_hdl=0; conn_hdl < MAX_PRPH_CONNECTION; conn_hdl++)
+  {
+    bleuart.write(conn_hdl, buf, count);
+  }
+}
+
 void loop()
 {
+  uint8_t buf[64];
+  int count;
+
   // Forward data from HW Serial to BLEUART
   while (Serial.available())
   {
-    // Delay to wait for enough input, since we have a limited transmission buffer
+    // Delay to wait for enough input
     delay(2);
+    count = Serial.readBytes(buf, sizeof(buf));
 
-    uint8_t buf[64];
-    int count = Serial.readBytes(buf, sizeof(buf));
-    bleuart.write( buf, count );
+    printAll(buf, count);
   }
 
   // Forward from BLEUART to HW Serial
   while ( bleuart.available() )
   {
-    uint8_t ch;
-    ch = (uint8_t) bleuart.read();
-    Serial.write(ch);
+    count = bleuart.read(buf, sizeof(buf));
+
+    printAll(buf, count);
   }
 }
 
@@ -128,6 +136,17 @@ void connect_callback(uint16_t conn_handle)
 
   Serial.print("Connected to ");
   Serial.println(central_name);
+
+  connection_count++;
+  Serial.print("Connection count: ");
+  Serial.println(connection_count);
+  
+  // Keep advertising if not reaching max
+  if (connection_count < MAX_PRPH_CONNECTION)
+  {
+    Serial.println("Keep advertising");
+    Bluefruit.Advertising.start(0);
+  }
 }
 
 /**
@@ -142,4 +161,6 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 
   Serial.println();
   Serial.println("Disconnected");
+
+  connection_count--;
 }

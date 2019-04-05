@@ -10,6 +10,7 @@
 - Added ARDUINO_NRF52832_FEATHER for feather 832, ARDUINO_NRF52840_FEATHER for feather 840, ARDUINO_NRF52_FEATHER for both
 - Fixed an memory leak with LFS, also extend to allow it to be used with SPI flash on other boards. Thanks @jeremypoulter
 - Seperate OTA DFU service from Bluefruit.begin(), sketch must explicit add it if needed.
+- Added multiple peripheral-role connections support, example sketch is at `examples/Peripherals/bleuart_multi`
 - Introduce BLEPeriph class (Bluefruit.Periph) to mange peripheral role's connection
   - setConnInterval(), setConnIntervalMS(), setConnSupervisionTimeout(), setConnSupervisionTimeoutMS()
   - setConnectCallback(), setDisconnectCallback()
