@@ -176,7 +176,6 @@ class AdafruitBluefruit
     bool     disconnect        (uint16_t conn_hdl);
     bool     requestPairing    (uint16_t conn_hdl);
 
-    uint16_t getPeerName       (uint16_t conn_hdl, char* buf, uint16_t bufsize);
     uint16_t getMaxMtu(uint8_t role);
 
     BLEConnection* Connection(uint16_t conn_hdl);

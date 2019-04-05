@@ -90,12 +90,12 @@ void connect_callback(uint16_t conn_handle)
   Serial.println("Connected");
 
   // Get the reference to current connection
-  BLEConnection* conn = Bluefruit.Connection(conn_handle);
+  BLEConnection* connection = Bluefruit.Connection(conn_handle);
 
   // Start monitoring rssi of this connection
   // This function should be called in connect callback
   // Input argument is value difference (to current rssi) that triggers callback
-  conn->monitorRssi(10);
+  connection->monitorRssi(10);
 }
 
 void rssi_changed_callback(uint16_t conn_hdl, int8_t rssi)

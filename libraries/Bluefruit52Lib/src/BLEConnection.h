@@ -76,7 +76,9 @@ class BLEConnection
     uint8_t  getRole(void);
     uint16_t getMtu (void);
     uint16_t getConnInterval(void);
+
     ble_gap_addr_t getPeerAddr(void);
+    uint16_t getPeerName(char* buf, uint16_t bufsize);
 
     bool disconnect(void);
 

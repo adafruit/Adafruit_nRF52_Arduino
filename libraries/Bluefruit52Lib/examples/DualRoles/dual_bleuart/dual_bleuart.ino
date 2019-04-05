@@ -121,8 +121,11 @@ void loop()
  *------------------------------------------------------------------*/
 void prph_connect_callback(uint16_t conn_handle)
 {
+  // Get the reference to current connection
+  BLEConnection* connection = Bluefruit.Connection(conn_handle);
+
   char peer_name[32] = { 0 };
-  Bluefruit.getPeerName(conn_handle, peer_name, sizeof(peer_name));
+  connection->getPeerName(peer_name, sizeof(peer_name));
 
   Serial.print("[Prph] Connected to ");
   Serial.println(peer_name);
@@ -170,8 +173,11 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
 
 void cent_connect_callback(uint16_t conn_handle)
 {
+  // Get the reference to current connection
+  BLEConnection* connection = Bluefruit.Connection(conn_handle);
+
   char peer_name[32] = { 0 };
-  Bluefruit.getPeerName(conn_handle, peer_name, sizeof(peer_name));
+  connection->getPeerName(peer_name, sizeof(peer_name));
 
   Serial.print("[Cent] Connected to ");
   Serial.println(peer_name);;

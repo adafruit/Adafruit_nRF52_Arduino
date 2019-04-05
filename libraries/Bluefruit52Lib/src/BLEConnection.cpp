@@ -104,6 +104,11 @@ ble_gap_addr_t BLEConnection::getPeerAddr (void)
   return _peer_addr;
 }
 
+uint16_t BLEConnection::getPeerName(char* buf, uint16_t bufsize)
+{
+  return Bluefruit.Gatt.readCharByUuid(_conn_hdl, BLEUuid(BLE_UUID_GAP_CHARACTERISTIC_DEVICE_NAME), buf, bufsize);
+}
+
 static inline bool is_tx_power_valid(int8_t power)
 {
 #if defined(NRF52832_XXAA)

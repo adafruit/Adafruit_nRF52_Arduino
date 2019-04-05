@@ -21,9 +21,8 @@
   - Bluefruit.setConnectCallback()/setDisconnectCallback() are replaced by BLEPeriph's setConnectCallback()/setDisconnectCallback()
 - Introduce BLEConnection class (Bluefruit.Connection(conn)) to mange both peripheral and central connections
   - Added setRssiCallback(), monitorRssi(), getRssi(), stopRssi() for tracking rssi of a connection. `rssi_poll` and `rssi_callback` are added as example sketches 
-- Remove BLEGap, API functions are taken by Bluefruit, BLEPeriph, BLECentral
+- Remove BLEGap, API functions are taken by Bluefruit, BLEPeriph, BLECentral, BLEConnection
   - Gap.setAddr()/getAddr() are replaced by Bluefruit.setAddr()/getAddr()
-  - Gap.getPeerName() is replaced by Bluefruit.getPeerName()
   - Gap.requestPairing() is replaced by Bluefruit.requestPairing(), conn_handle parameter is also added
   - Most of other functions of BLEGap are replaced by BLEConnection's one
 - BLECharacteristic 

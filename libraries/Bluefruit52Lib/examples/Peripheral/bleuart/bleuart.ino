@@ -123,8 +123,11 @@ void loop()
 // callback invoked when central connects
 void connect_callback(uint16_t conn_handle)
 {
+  // Get the reference to current connection
+  BLEConnection* connection = Bluefruit.Connection(conn_handle);
+
   char central_name[32] = { 0 };
-  Bluefruit.getPeerName(conn_handle, central_name, sizeof(central_name));
+  connection->getPeerName(central_name, sizeof(central_name));
 
   Serial.print("Connected to ");
   Serial.println(central_name);

@@ -156,7 +156,7 @@ void connect_callback(uint16_t conn_handle)
   prph_info_t* peer = &prphs[id];
   peer->conn_handle = conn_handle;
   
-  Bluefruit.getPeerName(conn_handle, peer->name, sizeof(peer->name)-1);
+  Bluefruit.Connection(conn_handle)->getPeerName(peer->name, sizeof(peer->name)-1);
 
   Serial.print("Connected to ");
   Serial.println(peer->name);

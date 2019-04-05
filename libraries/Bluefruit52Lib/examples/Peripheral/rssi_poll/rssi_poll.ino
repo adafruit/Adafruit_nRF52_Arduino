@@ -84,11 +84,11 @@ void loop()
     uint16_t conn_hdl = Bluefruit.connHandle();
 
     // Get the reference to current connected connection 
-    BLEConnection* conn = Bluefruit.Connection(conn_hdl);
+    BLEConnection* connection = Bluefruit.Connection(conn_hdl);
 
     // get the RSSI value of this connection
     // monitorRssi() must be called previously (in callback)
-    int8_t rssi = conn->getRssi();
+    int8_t rssi = connection->getRssi();
     
     Serial.printf("Rssi = %d", rssi);
     Serial.println();
