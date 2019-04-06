@@ -82,7 +82,7 @@ class BLEConnection
 
     bool disconnect(void);
 
-    bool setTxPower(int8_t power);
+    bool setTxPower(int8_t power); // set power for this connection
 
     bool monitorRssi(uint8_t threshold = BLE_GAP_RSSI_THRESHOLD_INVALID);
     int8_t getRssi(void);

@@ -34,8 +34,7 @@ void setup()
   Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
 
   Bluefruit.begin();
-  // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
-  Bluefruit.setTxPower(4);
+  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   Bluefruit.setName("Bluefruit52");
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);  

@@ -37,8 +37,7 @@ void setup(void)
   Serial.println(F("-------------------------------------------"));
 
   Bluefruit.begin();
-  // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
-  Bluefruit.setTxPower(4);
+  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   Bluefruit.setName("Bluefruit52");
 
   // To be consistent OTA DFU should be added first if it exists

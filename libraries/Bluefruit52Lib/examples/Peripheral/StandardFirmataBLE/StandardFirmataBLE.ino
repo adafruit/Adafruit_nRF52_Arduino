@@ -791,9 +791,7 @@ void setup()
   
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
-  
-  // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
-  Bluefruit.setTxPower(4);
+  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   
   // try to go as fast as possible, could be rejected by some central, increase it if needed
   // iOS won't negotitate and will mostly use 30ms

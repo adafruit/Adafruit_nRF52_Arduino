@@ -51,7 +51,7 @@ void setup()
 
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52 MIDI");
-  Bluefruit.setTxPower(4);
+  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
 
   // Setup the on board blue LED to be enabled on CONNECT
   Bluefruit.autoConnLed(true);

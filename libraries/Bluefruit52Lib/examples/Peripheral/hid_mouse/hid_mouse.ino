@@ -37,8 +37,7 @@ void setup()
   Bluefruit.begin();
   // HID Device can have a min connection interval of 9*1.25 = 11.25 ms
   Bluefruit.Periph.setConnInterval(9, 16); // min = 9*1.25=11.25 ms, max = 16*1.25=20ms
-  // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
-  Bluefruit.setTxPower(4);
+  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   Bluefruit.setName("Bluefruit52");
 
   // Configure and Start Device Information Service

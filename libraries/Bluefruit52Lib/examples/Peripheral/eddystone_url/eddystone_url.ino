@@ -27,8 +27,7 @@ void setup()
   Serial.println("---------------------------------\n");
 
   Bluefruit.begin();
-  // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
-  Bluefruit.setTxPower(4);
+  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   Bluefruit.setName("Bluefruit52");
 
   // Setup the advertising packet

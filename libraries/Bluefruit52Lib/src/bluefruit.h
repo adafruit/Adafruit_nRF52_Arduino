@@ -105,7 +105,7 @@ extern "C"
 class AdafruitBluefruit
 {
   public:
-    typedef void (*rssi_callback_t       ) (uint16_t conn_hdl, int8_t rssi);
+    typedef void (*rssi_callback_t) (uint16_t conn_hdl, int8_t rssi);
 
     AdafruitBluefruit(void); // Constructor
 
@@ -147,6 +147,9 @@ class AdafruitBluefruit
     void     setName            (const char* str);
     uint8_t  getName            (char* name, uint16_t bufsize);
 
+    // Supported tx_power values depending on mcu:
+    // - nRF52832: -40dBm, -20dBm, -16dBm, -12dBm, -8dBm, -4dBm, 0dBm, +3dBm and +4dBm.
+    // - nRF52840: -40dBm, -20dBm, -16dBm, -12dBm, -8dBm, -4dBm, 0dBm, +2dBm, +3dBm, +4dBm, +5dBm, +6dBm, +7dBm and +8dBm.
     bool     setTxPower         (int8_t power);
     int8_t   getTxPower         (void);
 
@@ -184,7 +187,7 @@ class AdafruitBluefruit
     /* Callbacks
      *------------------------------------------------------------------*/
     void setRssiCallback(rssi_callback_t fp);
-    void setEventCallback ( void (*fp) (ble_evt_t*) );
+    void setEventCallback( void (*fp) (ble_evt_t*) );
 
     COMMENT_OUT ( bool setPIN(const char* pin); )
 
