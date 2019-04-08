@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*!
-    @file     BLEAncs.cpp
-    @author   hathach (tinyusb.org)
+    @file     BLEAncsLoopback.cpp
+    @author   ferbass (ferbass.com)
 
     @section LICENSE
 
