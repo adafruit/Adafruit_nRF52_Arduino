@@ -112,4 +112,3 @@ The following libraries are used:
 - [nrfx](https://github.com/NordicSemiconductor/nrfx) for peripherals driver
 - [littlefs](https://github.com/ARMmbed/littlefs) for internal file system
 - [fatfs by elm-chan](http://elm-chan.org/fsw/ff/00index_e.html) for external file system
-- Segger Sysview for debugging.
