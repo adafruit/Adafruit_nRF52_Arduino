@@ -2,6 +2,8 @@
 
 # 0.10.0
 
+This release added multiple concurrent peripheral connections support, allow Bluefruit device to multiple central (phones/PC) simultaneously. It introduces new BLE class: BLEPeriph, BLEConnection, remove BLEGap, refactor/rename/move functions and callbacks.     
+
 - Fixed Servo detach issue
 - Fixed pulseIn() compile issue: implement countPulseASM() using C instead of ASM
 - Update bootloader to 0.2.9 which fixed OTA issue with latest BLE5 central such as iPhone X
