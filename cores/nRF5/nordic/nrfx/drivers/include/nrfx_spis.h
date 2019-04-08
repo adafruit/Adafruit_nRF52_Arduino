@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018, Nordic Semiconductor ASA
+ * Copyright (c) 2015 - 2019, Nordic Semiconductor ASA
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,6 +63,9 @@ enum {
 #endif
 #if NRFX_CHECK(NRFX_SPIS2_ENABLED)
     NRFX_SPIS2_INST_IDX,
+#endif
+#if NRFX_CHECK(NRFX_SPIS3_ENABLED)
+    NRFX_SPIS3_INST_IDX,
 #endif
     NRFX_SPIS_ENABLED_COUNT
 };
@@ -229,6 +232,7 @@ nrfx_err_t nrfx_spis_buffers_set(nrfx_spis_t const * const p_instance,
 void nrfx_spis_0_irq_handler(void);
 void nrfx_spis_1_irq_handler(void);
 void nrfx_spis_2_irq_handler(void);
+void nrfx_spis_3_irq_handler(void);
 
 
 /** @} */

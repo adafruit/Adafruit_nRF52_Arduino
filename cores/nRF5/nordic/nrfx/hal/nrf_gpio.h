@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2018, Nordic Semiconductor ASA
+ * Copyright (c) 2015 - 2019, Nordic Semiconductor ASA
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,9 +45,13 @@ extern "C" {
  * @brief   Hardware access layer for managing the GPIO peripheral.
  */
 
+#ifndef NRF_P0
+#define NRF_P0 NRF_GPIO
+#endif
+
 #if (GPIO_COUNT == 1)
 #define NUMBER_OF_PINS (P0_PIN_NUM)
-#define GPIO_REG_LIST  {NRF_GPIO}
+#define GPIO_REG_LIST  {NRF_P0}
 #elif (GPIO_COUNT == 2)
 #define NUMBER_OF_PINS (P0_PIN_NUM + P1_PIN_NUM)
 #define GPIO_REG_LIST  {NRF_P0, NRF_P1}
@@ -322,6 +326,15 @@ __STATIC_INLINE nrf_gpio_pin_sense_t nrf_gpio_pin_sense_get(uint32_t pin_number)
 __STATIC_INLINE nrf_gpio_pin_dir_t nrf_gpio_pin_dir_get(uint32_t pin_number);
 
 /**
+ * @brief Function for reading the status of GPIO pin input buffer.
+ *
+ * @param pin_number Pin number to be read.
+ *
+ * @retval Input buffer configuration.
+ */
+__STATIC_INLINE nrf_gpio_pin_input_t nrf_gpio_pin_input_get(uint32_t pin_number);
+
+/**
  * @brief Function for reading the pull configuration of a GPIO pin.
  *
  * @param pin_number Specifies the pin number to read.
@@ -463,8 +476,7 @@ __STATIC_INLINE NRF_GPIO_Type * nrf_gpio_pin_port_decode(uint32_t * p_pin)
 {
     NRFX_ASSERT(*p_pin < NUMBER_OF_PINS);
 #if (GPIO_COUNT == 1)
-    // The oldest definition case
-    return NRF_GPIO;
+    return NRF_P0;
 #else
     if (*p_pin < P0_PIN_NUM)
     {
@@ -691,6 +703,13 @@ __STATIC_INLINE nrf_gpio_pin_dir_t nrf_gpio_pin_dir_get(uint32_t pin_number)
                                  GPIO_PIN_CNF_DIR_Msk) >> GPIO_PIN_CNF_DIR_Pos);
 }
 
+__STATIC_INLINE nrf_gpio_pin_input_t nrf_gpio_pin_input_get(uint32_t pin_number)
+{
+    NRF_GPIO_Type * reg = nrf_gpio_pin_port_decode(&pin_number);
+
+    return (nrf_gpio_pin_input_t)((reg->PIN_CNF[pin_number] &
+                                   GPIO_PIN_CNF_INPUT_Msk) >> GPIO_PIN_CNF_INPUT_Pos);
+}
 
 __STATIC_INLINE nrf_gpio_pin_pull_t nrf_gpio_pin_pull_get(uint32_t pin_number)
 {
