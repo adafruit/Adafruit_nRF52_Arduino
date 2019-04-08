@@ -6,8 +6,9 @@ This release added multiple concurrent peripheral connections support, allow Blu
 
 - Fixed Servo detach issue
 - Fixed pulseIn() compile issue: implement countPulseASM() using C instead of ASM
-- Update bootloader to 0.2.9 which fixed OTA issue with latest BLE5 central such as iPhone X
-- Added Metro nRF52840 Board support
+- Update bootloader to 0.2.10
+  - Fixed OTA issue with latest BLE5 central such as iPhone X
+  - Fixed pin map for nRF52840
 - Fixed various warnings, thanks @brijohn
 - Added ARDUINO_NRF52832_FEATHER for feather 832, ARDUINO_NRF52840_FEATHER for feather 840, ARDUINO_NRF52_FEATHER for both
 - Fixed an memory leak with LFS, also extend to allow it to be used with SPI flash on other boards. Thanks @jeremypoulter
