@@ -1,14 +1,14 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-# 0.10.0
+# 0.10.1
 
 This release added multiple concurrent peripheral connections support, allow Bluefruit device to multiple central (phones/PC) simultaneously. It introduces new BLE class: BLEPeriph, BLEConnection, remove BLEGap, refactor/rename/move functions and callbacks.     
 
 - Fixed Servo detach issue
 - Fixed pulseIn() compile issue: implement countPulseASM() using C instead of ASM
-- Update bootloader to 0.2.10
+- Update bootloader to 0.2.9
   - Fixed OTA issue with latest BLE5 central such as iPhone X
-  - Fixed pin map for nRF52840
+  - Fixed incomplete writes on Windows. Updated tinyusb to handle write10 completion, and use it for finalizing the DFU process
 - Fixed various warnings, thanks @brijohn
 - Added ARDUINO_NRF52832_FEATHER for feather 832, ARDUINO_NRF52840_FEATHER for feather 840, ARDUINO_NRF52_FEATHER for both
 - Fixed an memory leak with LFS, also extend to allow it to be used with SPI flash on other boards. Thanks @jeremypoulter
