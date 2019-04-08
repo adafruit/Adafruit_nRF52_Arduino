@@ -99,6 +99,7 @@ void connect_callback(uint16_t conn_handle)
 
 void rssi_changed_callback(uint16_t conn_hdl, int8_t rssi)
 {
+  (void) conn_hdl;
   Serial.printf("Rssi = %d", rssi);
   Serial.println();
 }
