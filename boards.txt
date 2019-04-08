@@ -43,7 +43,7 @@ feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52 -DARDUINO_NRF52_FEATHER
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-feather52832.menu.softdevice.s132v6=0.2.10 (s132 6.1.1)
+feather52832.menu.softdevice.s132v6=0.2.9 (s132 6.1.1)
 feather52832.menu.softdevice.s132v6.build.sd_flags=-DS132
 feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.1.1
@@ -103,7 +103,7 @@ feather52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_FEATHER
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-feather52840.menu.softdevice.s140v6=0.2.10 (s140 6.1.1)
+feather52840.menu.softdevice.s140v6=0.2.9 (s140 6.1.1)
 feather52840.menu.softdevice.s140v6.build.sd_flags=-DS140
 feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.1.1
@@ -145,7 +145,7 @@ feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-#metro52840.menu.softdevice.s140v6=0.2.10 (s140 6.1.1)
+#metro52840.menu.softdevice.s140v6=0.2.9 (s140 6.1.1)
 #metro52840.menu.softdevice.s140v6.build.sd_flags=-DS140
 #metro52840.menu.softdevice.s140v6.build.sd_name=s140
 #metro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
@@ -187,7 +187,7 @@ pca10056.build.extra_flags=-DNRF52840_XXAA
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-pca10056.menu.softdevice.s140v6=0.2.10 (s140 6.1.1)
+pca10056.menu.softdevice.s140v6=0.2.9 (s140 6.1.1)
 pca10056.menu.softdevice.s140v6.build.sd_flags=-DS140
 pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.1.1
