@@ -1,40 +1,28 @@
-/**************************************************************************/
-/*!
-    @file     hal_nrf5x.c
-    @author   hathach
-
-    @section LICENSE
-
-    Software License Agreement (BSD License)
-
-    Copyright (c) 2018, hathach (tinyusb.org)
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-    1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    3. Neither the name of the copyright holders nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ''AS IS'' AND ANY
-    EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-    This file is part of the tinyusb stack.
-*/
-/**************************************************************************/
+/* 
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2018, hathach (tinyusb.org)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * This file is part of the TinyUSB stack.
+ */
 
 #include "tusb_option.h"
 
@@ -44,31 +32,19 @@
 #include "nrf_gpio.h"
 #include "nrf_clock.h"
 #include "nrf_usbd.h"
-#include "nrf_drv_usbd_errata.h"
+#include "nrfx_usbd_errata.h"
 
 #ifdef SOFTDEVICE_PRESENT
 #include "nrf_sdm.h"
 #include "nrf_soc.h"
-
-// TODO fully move to nrfx
-enum {
-    NRFX_POWER_USB_EVT_DETECTED, /**< USB power detected on the connector (plugged in). */
-    NRFX_POWER_USB_EVT_REMOVED,  /**< USB power removed from the connector. */
-    NRFX_POWER_USB_EVT_READY     /**< USB power regulator ready. */
-};
-#else
-#include "nrfx_power.h"
 #endif
 
-#include "tusb_hal.h"
+#include "nrfx_power.h"
+#include "device/dcd.h"
 
 /*------------------------------------------------------------------*/
 /* MACRO TYPEDEF CONSTANT ENUM
  *------------------------------------------------------------------*/
-// Priorities 0, 1, 4 (nRF52) are reserved for SoftDevice
-// 2 is highest for application
-#define USB_NVIC_PRIO   2
-
 void tusb_hal_nrf_power_event(uint32_t event);
 
 /*------------------------------------------------------------------*/
@@ -129,27 +105,6 @@ static void hfclk_disable(void)
   nrf_clock_task_trigger(NRF_CLOCK_TASK_HFCLKSTOP);
 }
 
-
-/*------------------------------------------------------------------*/
-/* TUSB HAL
- *------------------------------------------------------------------*/
-bool tusb_hal_init(void)
-{
-  return true;
-}
-
-void tusb_hal_int_enable(uint8_t rhport)
-{
-  (void) rhport;
-  NVIC_EnableIRQ(USBD_IRQn);
-}
-
-void tusb_hal_int_disable(uint8_t rhport)
-{
-  (void) rhport;
-  NVIC_DisableIRQ(USBD_IRQn);
-}
-
 /*------------------------------------------------------------------*/
 /* Controller Start up Sequence (USBD 51.4 specs)
  *------------------------------------------------------------------*/
@@ -167,8 +122,7 @@ void tusb_hal_nrf_power_event (uint32_t event)
         /* Enable the peripheral */
         // ERRATA 171, 187, 166
 
-        // Somehow Errata 187 check failed for pca10056 1.0.0 (2018.19)
-        if ( nrf_drv_usbd_errata_187() )
+        if ( nrfx_usbd_errata_187() )
         {
           // CRITICAL_REGION_ENTER();
           if ( *((volatile uint32_t *) (0x4006EC00)) == 0x00000000 )
@@ -184,7 +138,7 @@ void tusb_hal_nrf_power_event (uint32_t event)
           // CRITICAL_REGION_EXIT();
         }
 
-        if ( nrf_drv_usbd_errata_171() )
+        if ( nrfx_usbd_errata_171() )
         {
           // CRITICAL_REGION_ENTER();
           if ( *((volatile uint32_t *) (0x4006EC00)) == 0x00000000 )
@@ -214,7 +168,7 @@ void tusb_hal_nrf_power_event (uint32_t event)
       nrf_usbd_eventcause_clear(USBD_EVENTCAUSE_READY_Msk);
       nrf_usbd_event_clear(USBD_EVENTCAUSE_READY_Msk);
 
-      if ( nrf_drv_usbd_errata_171() )
+      if ( nrfx_usbd_errata_171() )
       {
         // CRITICAL_REGION_ENTER();
         if ( *((volatile uint32_t *) (0x4006EC00)) == 0x00000000 )
@@ -231,8 +185,7 @@ void tusb_hal_nrf_power_event (uint32_t event)
         // CRITICAL_REGION_EXIT();
       }
 
-      // Somehow Errata 187 check failed for pca10056 1.0.0 (2018.19)
-      if ( nrf_drv_usbd_errata_187() )
+      if ( nrfx_usbd_errata_187() )
       {
         // CRITICAL_REGION_ENTER();
         if ( *((volatile uint32_t *) (0x4006EC00)) == 0x00000000 )
@@ -248,7 +201,7 @@ void tusb_hal_nrf_power_event (uint32_t event)
         // CRITICAL_REGION_EXIT();
       }
 
-      if ( nrf_drv_usbd_errata_166() )
+      if ( nrfx_usbd_errata_166() )
       {
         *((volatile uint32_t *) (NRF_USBD_BASE + 0x800)) = 0x7E3;
         *((volatile uint32_t *) (NRF_USBD_BASE + 0x804)) = 0x40;
@@ -259,19 +212,16 @@ void tusb_hal_nrf_power_event (uint32_t event)
 
       nrf_usbd_isosplit_set(USBD_ISOSPLIT_SPLIT_HalfIN);
 
-      // Enable interrupt. SOF is used as CDC auto flush
-      NRF_USBD->INTENSET = USBD_INTEN_USBRESET_Msk | USBD_INTEN_USBEVENT_Msk | USBD_INTEN_EPDATA_Msk |
+      // Enable interrupt
+      NRF_USBD->INTENSET = USBD_INTEN_USBRESET_Msk | USBD_INTEN_EPDATA_Msk |
           USBD_INTEN_EP0SETUP_Msk | USBD_INTEN_EP0DATADONE_Msk | USBD_INTEN_ENDEPIN0_Msk | USBD_INTEN_ENDEPOUT0_Msk;
 
-      // Enable interrupt
-      NVIC_SetPriority(USBD_IRQn, USB_NVIC_PRIO);
+      // Enable interrupt, priorities should be set by application
       NVIC_ClearPendingIRQ(USBD_IRQn);
       NVIC_EnableIRQ(USBD_IRQn);
 
       // Wait for HFCLK
-      while ( !hfclk_running() )
-      {
-      }
+      while ( !hfclk_running() ) { }
 
       // Enable pull up
       nrf_usbd_pullup_enable();
@@ -293,6 +243,8 @@ void tusb_hal_nrf_power_event (uint32_t event)
 
         nrf_usbd_disable();
         hfclk_disable();
+
+        dcd_event_bus_signal(0, DCD_EVENT_UNPLUGGED, true);
       }
     break;
 

@@ -1,40 +1,28 @@
-/**************************************************************************/
-/*!
-    @file     hid.h
-    @author   hathach (tinyusb.org)
-
-    @section LICENSE
-
-    Software License Agreement (BSD License)
-
-    Copyright (c) 2013, hathach (tinyusb.org)
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-    1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    3. Neither the name of the copyright holders nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ''AS IS'' AND ANY
-    EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    INCLUDING NEGLIGENCE OR OTHERWISE ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-    This file is part of the tinyusb stack.
-*/
-/**************************************************************************/
+/* 
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2018, hathach (tinyusb.org)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * This file is part of the TinyUSB stack.
+ */
 
 /** \ingroup group_class
  *  \defgroup ClassDriver_HID Human Interface Device (HID)
@@ -173,11 +161,11 @@ typedef struct ATTR_PACKED
 /// Standard Mouse Buttons Bitmap
 typedef enum
 {
-	MOUSE_BUTTON_LEFT     = BIT_(0), ///< Left button
-	MOUSE_BUTTON_RIGHT    = BIT_(1), ///< Right button
-	MOUSE_BUTTON_MIDDLE   = BIT_(2), ///< Middle button
-  MOUSE_BUTTON_BACKWARD = BIT_(3), ///< Backward button,
-  MOUSE_BUTTON_FORWARD  = BIT_(4), ///< Forward button,
+  MOUSE_BUTTON_LEFT     = TU_BIT(0), ///< Left button
+  MOUSE_BUTTON_RIGHT    = TU_BIT(1), ///< Right button
+  MOUSE_BUTTON_MIDDLE   = TU_BIT(2), ///< Middle button
+  MOUSE_BUTTON_BACKWARD = TU_BIT(3), ///< Backward button,
+  MOUSE_BUTTON_FORWARD  = TU_BIT(4), ///< Forward button,
 }hid_mouse_button_bm_t;
 
 /// @}
@@ -199,23 +187,23 @@ typedef struct ATTR_PACKED
 /// Keyboard modifier codes bitmap
 typedef enum
 {
-	KEYBOARD_MODIFIER_LEFTCTRL   = BIT_(0), ///< Left Control
-	KEYBOARD_MODIFIER_LEFTSHIFT  = BIT_(1), ///< Left Shift
-	KEYBOARD_MODIFIER_LEFTALT    = BIT_(2), ///< Left Alt
-	KEYBOARD_MODIFIER_LEFTGUI    = BIT_(3), ///< Left Window
-	KEYBOARD_MODIFIER_RIGHTCTRL  = BIT_(4), ///< Right Control
-	KEYBOARD_MODIFIER_RIGHTSHIFT = BIT_(5), ///< Right Shift
-	KEYBOARD_MODIFIER_RIGHTALT   = BIT_(6), ///< Right Alt
-	KEYBOARD_MODIFIER_RIGHTGUI   = BIT_(7)  ///< Right Window
+  KEYBOARD_MODIFIER_LEFTCTRL   = TU_BIT(0), ///< Left Control
+  KEYBOARD_MODIFIER_LEFTSHIFT  = TU_BIT(1), ///< Left Shift
+  KEYBOARD_MODIFIER_LEFTALT    = TU_BIT(2), ///< Left Alt
+  KEYBOARD_MODIFIER_LEFTGUI    = TU_BIT(3), ///< Left Window
+  KEYBOARD_MODIFIER_RIGHTCTRL  = TU_BIT(4), ///< Right Control
+  KEYBOARD_MODIFIER_RIGHTSHIFT = TU_BIT(5), ///< Right Shift
+  KEYBOARD_MODIFIER_RIGHTALT   = TU_BIT(6), ///< Right Alt
+  KEYBOARD_MODIFIER_RIGHTGUI   = TU_BIT(7)  ///< Right Window
 }hid_keyboard_modifier_bm_t;
 
 typedef enum
 {
-  KEYBOARD_LED_NUMLOCK    = BIT_(0), ///< Num Lock LED
-  KEYBOARD_LED_CAPSLOCK   = BIT_(1), ///< Caps Lock LED
-  KEYBOARD_LED_SCROLLLOCK = BIT_(2), ///< Scroll Lock LED
-  KEYBOARD_LED_COMPOSE    = BIT_(3), ///< Composition Mode
-  KEYBOARD_LED_KANA       = BIT_(4) ///< Kana mode
+  KEYBOARD_LED_NUMLOCK    = TU_BIT(0), ///< Num Lock LED
+  KEYBOARD_LED_CAPSLOCK   = TU_BIT(1), ///< Caps Lock LED
+  KEYBOARD_LED_SCROLLLOCK = TU_BIT(2), ///< Scroll Lock LED
+  KEYBOARD_LED_COMPOSE    = TU_BIT(3), ///< Composition Mode
+  KEYBOARD_LED_KANA       = TU_BIT(4) ///< Kana mode
 }hid_keyboard_led_bm_t;
 
 /// @}
@@ -608,7 +596,6 @@ enum
   // Mouse Horizontal scroll
   HID_USAGE_CONSUMER_AC_PAN                            = 0x0238,
 };
-
 
 #ifdef __cplusplus
  }

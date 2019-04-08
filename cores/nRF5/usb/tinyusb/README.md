@@ -1,79 +1,82 @@
-# tinyusb #
+# TinyUSB
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**
+[![Build Status](https://travis-ci.org/hathach/tinyusb.svg?branch=master)](https://travis-ci.org/hathach/tinyusb) [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 
-- [Features](#features)
-	- [Host](#host)
-	- [Device](#device)
-	- [RTOS](#rtos)
-	- [Supported MCUs](#supported-mcus)
-	- [Toolchains](#toolchains)
-- [Getting Started](#getting-started)
-- [License](#license)
-- [How Can I Help](#how-can-i-help)
-	- [Donate Time](#donate-time)
-	- [Donate Money](#donate-money)
+TinyUSB is an open-source cross-platform USB Host/Device stack for embedded system. It is designed to be memory-safe with no dynamic allocation and thread-safe with all interrupt events are deferred then handled in the stack's task function.
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+![tinyusb](https://user-images.githubusercontent.com/249515/49858616-f60c9700-fe27-11e8-8627-e76936352ff7.png)
 
-tinyusb is an open-source (BSD-licensed) USB Host/Device/OTG stack for embedded micro-controllers, especially ARM MCUs. It is designed to be user-friendly in term of configuration and out-of-the-box running experience.
+```
+.
+├── docs            # Documentation
+├── examples        # Sample with Makefile and Segger Embedded build support
+├── hw
+│   ├── bsp         # Supported boards source files
+│   └── mcu         # Low level mcu core & peripheral drivers
+├── lib             # Sources from 3rd party such as freeRTOS, fatfs ...
+├── src             # All sources files for TinyUSB stack itself.
+├── tests           # Unit tests for the stack
+└── tools           # Files used internally
+```
 
-In addition to running without an RTOS, tinyusb is an OS-awared stack that can run across RTOS vendors. For the purpose of eliminating bugs as soon as possible, the stack is developed using [Test-Driven Development (TDD)](tests/readme.md) approach. More documents and API reference can be found at http://docs.tinyusb.org
+## Device Stack
 
-![tinyusb diagram](http://docs.tinyusb.org/images/tinyusb_overview.png)
+Support multiple device configurations by dynamically changing usb descriptors. Low power functions such as suspend, resume and remote wakeup. Following device classes are supported:
 
-## Features ##
-
-### Host ###
-
-- HID Mouse
-- HID Keyboard
-- HID Generic (comming soon)
-- Communication Device Class (CDC)
-- Mass Storage Class (MSC)
-- Hub currnetly only support 1 level of hub (due to my laziness)
-
-### Device ###
-
-- HID Mouse
-- HID Keyboard
-- HID Generic (comming soon)
 - Communication Class (CDC)
+- Human Interface Device (HID): Keyboard, Mouse, Generic
 - Mass Storage Class (MSC)
+- Musical Instrument Digital Interface (MIDI)
 
-### RTOS ###
+## Host Stack
 
-Currently the following OS are supported with tinyusb out of the box with a simple change of CFG_TUSB_OS macro.
+**Most active development is on the Device stack. The Host stack is under rework and largely untested.**
 
-- **None OS**
+- Human Interface Device (HID): Keyboard, Mouse, Generic
+- Mass Storage Class (MSC)
+- Hub currently only support 1 level of hub (due to my laziness)
+
+## OS Abtraction layer
+
+Currently the following OS are supported with tinyusb out of the box with a simple change of **CFG_TUSB_OS** macro.
+
+- **No OS**
 - **FreeRTOS**
-- **CMSIS RTX**
+- **MyNewt** (work in progress)
 
-### Toolchains ###
-
-You can compile with any of following toolchains, however, the stack requires C99 to build with
-
-- lpcxpresso
-- Keil MDK
-- IAR Workbench
-
-### Supported MCUs ###
+## Supported MCUs
 
 The stack supports the following MCUs
 
-  - LPC11uxx
-  - LPC13uxx (12 bit ADC)
-  - LPC175x_6x
-  - LPC43xx
+- **Nordic:** nRF52840
+- **NXP:** LPC11Uxx, LPC13xx, LPC175x_6x, LPC177x_8x, LPC18xx, LPC40xx, LPC43xx
+- **MicroChip:** SAMD21, SAMD51
+- **ST:** STM32F4
 
-[Here is the list of supported Boards](boards/readme.md) in the code base
+[Here is the list of supported Boards](docs/boards.md)
 
-## Getting Started ##
+## Compiler & IDE
 
-[Here is the details for getting started](doxygen/getting_started.md) with the stack.
+The stack is developed with GCC compiler, and should be compilable with others. Folder `examples` provide Makefile and Segger Embedded Studio build support.
 
-## License ##
+## Getting Started
 
-BSD license for most of the code base, but each file is individually licensed especially those in *vendor* folder. Please make sure you understand all the license term for files you use in your project. [Full license is here](tinyusb/license.md)
+[Here is the details for getting started](docs/getting_started.md) with the stack.
+
+## Porting
+
+Want to help add TinyUSB support for a new MCU? Read [here](docs/porting.md) for an explanation on the low-level API needed by TinyUSB.
+
+## License
+
+MIT license for all TinyUSB sources `src` folder, [Full license is here](LICENSE). However each file is individually licensed especially those in `lib` and `hw/mcu` folder. Please make sure you understand all the license term for files you use in your project.
+
+## Uses
+
+TinyUSB is currently used by these other projects:
+
+* [Adafruit nRF52 Arduino](https://github.com/adafruit/Adafruit_nRF52_Arduino)
+* [Adafruit nRF52 Bootloader](https://github.com/adafruit/Adafruit_nRF52_Bootloader)
+* [CircuitPython](https://github.com/adafruit/circuitpython)
+
+If your project also uses TinyUSB and want to share, feel free to create a pull request.

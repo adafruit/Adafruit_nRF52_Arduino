@@ -24,35 +24,43 @@
  * This file is part of the TinyUSB stack.
  */
 
-#ifndef _TUSB_COMPILER_IAR_H_
-#define _TUSB_COMPILER_IAR_H_
+/** \ingroup group_class
+ *  \defgroup ClassDriver_Audio Audio
+ *            Currently only MIDI subclass is supported
+ *  @{ */
+
+#ifndef _TUSB_CDC_H__
+#define _TUSB_CDC_H__
+
+#include "common/tusb_common.h"
 
 #ifdef __cplusplus
  extern "C" {
 #endif
 
-#define ALIGN_OF(x)               __ALIGNOF__(x)
-#define ATTR_ALIGNED(bytes)       _Pragma(XSTRING_(data_alignment=##bytes))
-//#define ATTR_SECTION(section)      _Pragma((#section))
-#define ATTR_PREPACKED            __packed
-#define ATTR_PACKED
-#define ATTR_DEPRECATED(mess)
-#define ATTR_WEAK                 __weak
-#define ATTR_UNUSED
+/// Audio Interface Subclass Codes
+typedef enum
+{
+  AUDIO_SUBCLASS_AUDIO_CONTROL = 0x01  , ///< Audio Control
+  AUDIO_SUBCLASS_AUDIO_STREAMING       , ///< Audio Streaming
+  AUDIO_SUBCLASS_MIDI_STREAMING       ,  ///< MIDI Streaming
+} audio_subclass_type_t;
 
-// built-in function to convert 32-bit Big-Endian to Little-Endian
-//#if __LITTLE_ENDIAN__
-#define __be2n   __REV
-#define __n2be   __be2n
+/// Audio Protocol Codes
+typedef enum
+{
+  AUDIO_PROTOCOL_V1                   = 0x00, ///< Version 1.0
+  AUDIO_PROTOCOL_V2                   = 0x20, ///< Version 2.0
+  AUDIO_PROTOCOL_V3                   = 0x30, ///< Version 3.0
+} audio_protocol_type_t;
 
-#define __n2be_16(u16)  ((uint16_t) __REV16(u16))
-#define __be2n_16(u16)  __n2be_16(u16)
 
-#error "IAR won't work due to '__packed' placement before struct"
+/** @} */
 
 #ifdef __cplusplus
  }
 #endif
 
-#endif /* _TUSB_COMPILER_IAR_H_ */
+#endif
 
+/** @} */

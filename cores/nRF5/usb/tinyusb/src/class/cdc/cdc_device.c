@@ -1,49 +1,33 @@
-/**************************************************************************/
-/*!
-    @file     cdc_device.c
-    @author   hathach (tinyusb.org)
-
-    @section LICENSE
-
-    Software License Agreement (BSD License)
-
-    Copyright (c) 2013, hathach (tinyusb.org)
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-    1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    3. Neither the name of the copyright holders nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ''AS IS'' AND ANY
-    EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-    This file is part of the tinyusb stack.
-*/
-/**************************************************************************/
+/* 
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2018, hathach (tinyusb.org)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * This file is part of the TinyUSB stack.
+ */
 
 #include "tusb_option.h"
 
 #if (TUSB_OPT_DEVICE_ENABLED && CFG_TUD_CDC)
 
-#define _TINY_USB_SOURCE_FILE_
-//--------------------------------------------------------------------+
-// INCLUDE
-//--------------------------------------------------------------------+
 #include "cdc_device.h"
 #include "device/usbd_pvt.h"
 
@@ -62,7 +46,7 @@ typedef struct
 
   /*------------- From this point, data is not cleared by bus reset -------------*/
   char    wanted_char;
-  CFG_TUSB_MEM_ALIGN cdc_line_coding_t line_coding;
+  cdc_line_coding_t line_coding;
 
   // FIFO
   tu_fifo_t rx_ff;
@@ -71,8 +55,10 @@ typedef struct
   uint8_t rx_ff_buf[CFG_TUD_CDC_RX_BUFSIZE];
   uint8_t tx_ff_buf[CFG_TUD_CDC_TX_BUFSIZE];
 
+#if CFG_FIFO_MUTEX
   osal_mutex_def_t rx_ff_mutex;
   osal_mutex_def_t tx_ff_mutex;
+#endif
 
   // Endpoint Transfer buffer
   CFG_TUSB_MEM_ALIGN uint8_t epout_buf[CFG_TUD_CDC_EPSIZE];
@@ -85,7 +71,27 @@ typedef struct
 //--------------------------------------------------------------------+
 // INTERNAL OBJECT & FUNCTION DECLARATION
 //--------------------------------------------------------------------+
-CFG_TUSB_ATTR_USBRAM static cdcd_interface_t _cdcd_itf[CFG_TUD_CDC];
+CFG_TUSB_MEM_SECTION static cdcd_interface_t _cdcd_itf[CFG_TUD_CDC] = { { 0 } };
+
+// TODO will be replaced by dcd_edpt_busy()
+bool pending_read_from_host;
+static void _prep_out_transaction (uint8_t itf)
+{
+  cdcd_interface_t* p_cdc = &_cdcd_itf[itf];
+
+  // skip if previous transfer not complete
+  // dcd_edpt_busy() doesn't work, probably transfer is complete but not properly handled by the stack
+//  if ( dcd_edpt_busy(TUD_OPT_RHPORT, p_cdc->ep_out) ) return;
+  if (pending_read_from_host) return;
+
+  // Prepare for incoming data but only allow what we can store in the ring buffer.
+  uint16_t max_read = tu_fifo_remaining(&p_cdc->rx_ff);
+  if ( max_read >= CFG_TUD_CDC_EPSIZE )
+  {
+    dcd_edpt_xfer(TUD_OPT_RHPORT, p_cdc->ep_out, p_cdc->epout_buf, CFG_TUD_CDC_EPSIZE);
+    pending_read_from_host = true;
+  }
+}
 
 //--------------------------------------------------------------------+
 // APPLICATION API
@@ -93,7 +99,7 @@ CFG_TUSB_ATTR_USBRAM static cdcd_interface_t _cdcd_itf[CFG_TUD_CDC];
 bool tud_cdc_n_connected(uint8_t itf)
 {
   // DTR (bit 0) active  is considered as connected
-  return BIT_TEST_(_cdcd_itf[itf].line_state, 0);
+  return tud_ready() && TU_BIT_TEST(_cdcd_itf[itf].line_state, 0);
 }
 
 uint8_t tud_cdc_n_get_line_state (uint8_t itf)
@@ -123,12 +129,14 @@ uint32_t tud_cdc_n_available(uint8_t itf)
 char tud_cdc_n_read_char(uint8_t itf)
 {
   char ch;
-  return tu_fifo_read(&_cdcd_itf[itf].rx_ff, &ch) ? ch : (-1);
+  return tud_cdc_n_read(itf, &ch, 1) ? ch : (-1);
 }
 
 uint32_t tud_cdc_n_read(uint8_t itf, void* buffer, uint32_t bufsize)
 {
-  return tu_fifo_read_n(&_cdcd_itf[itf].rx_ff, buffer, bufsize);
+  uint32_t num_read = tu_fifo_read_n(&_cdcd_itf[itf].rx_ff, buffer, bufsize);
+  _prep_out_transaction(itf);
+  return num_read;
 }
 
 char tud_cdc_n_peek(uint8_t itf, int pos)
@@ -140,6 +148,7 @@ char tud_cdc_n_peek(uint8_t itf, int pos)
 void tud_cdc_n_read_flush (uint8_t itf)
 {
   tu_fifo_clear(&_cdcd_itf[itf].rx_ff);
+  _prep_out_transaction(itf);
 }
 
 //--------------------------------------------------------------------+
@@ -149,6 +158,11 @@ void tud_cdc_n_read_flush (uint8_t itf)
 uint32_t tud_cdc_n_write_char(uint8_t itf, char ch)
 {
   return tud_cdc_n_write(itf, &ch, 1);
+}
+
+uint32_t tud_cdc_n_write_str (uint8_t itf, char const* str)
+{
+  return tud_cdc_n_write(itf, str, strlen(str));
 }
 
 uint32_t tud_cdc_n_write(uint8_t itf, void const* buffer, uint32_t bufsize)
@@ -191,22 +205,24 @@ void cdcd_init(void)
 
   for(uint8_t i=0; i<CFG_TUD_CDC; i++)
   {
-    cdcd_interface_t* ser = &_cdcd_itf[i];
+    cdcd_interface_t* p_cdc = &_cdcd_itf[i];
 
-    ser->wanted_char = -1;
+    p_cdc->wanted_char = -1;
 
     // default line coding is : stop bit = 1, parity = none, data bits = 8
-    ser->line_coding.bit_rate = 115200;
-    ser->line_coding.stop_bits = 0;
-    ser->line_coding.parity    = 0;
-    ser->line_coding.data_bits = 8;
+    p_cdc->line_coding.bit_rate = 115200;
+    p_cdc->line_coding.stop_bits = 0;
+    p_cdc->line_coding.parity    = 0;
+    p_cdc->line_coding.data_bits = 8;
 
     // config fifo
-    tu_fifo_config(&ser->rx_ff, ser->rx_ff_buf, CFG_TUD_CDC_RX_BUFSIZE, 1, true);
-    tu_fifo_config_mutex(&ser->rx_ff, osal_mutex_create(&ser->rx_ff_mutex));
+    tu_fifo_config(&p_cdc->rx_ff, p_cdc->rx_ff_buf, CFG_TUD_CDC_RX_BUFSIZE, 1, false);
+    tu_fifo_config(&p_cdc->tx_ff, p_cdc->tx_ff_buf, CFG_TUD_CDC_TX_BUFSIZE, 1, false);
 
-    tu_fifo_config(&ser->tx_ff, ser->tx_ff_buf, CFG_TUD_CDC_TX_BUFSIZE, 1, false);
-    tu_fifo_config_mutex(&ser->tx_ff, osal_mutex_create(&ser->tx_ff_mutex));
+#if CFG_FIFO_MUTEX
+    tu_fifo_config_mutex(&p_cdc->rx_ff, osal_mutex_create(&p_cdc->rx_ff_mutex));
+    tu_fifo_config_mutex(&p_cdc->tx_ff, osal_mutex_create(&p_cdc->tx_ff_mutex));
+#endif
   }
 }
 
@@ -222,117 +238,142 @@ void cdcd_reset(uint8_t rhport)
   }
 }
 
-tusb_error_t cdcd_open(uint8_t rhport, tusb_desc_interface_t const * p_interface_desc, uint16_t *p_length)
+bool cdcd_open(uint8_t rhport, tusb_desc_interface_t const * itf_desc, uint16_t *p_length)
 {
-  if ( CDC_COMM_SUBCLASS_ABSTRACT_CONTROL_MODEL != p_interface_desc->bInterfaceSubClass) return TUSB_ERROR_CDC_UNSUPPORTED_SUBCLASS;
+  // Only support ACM subclass
+  TU_ASSERT ( CDC_COMM_SUBCLASS_ABSTRACT_CONTROL_MODEL == itf_desc->bInterfaceSubClass);
 
-  if ( !(tu_within(CDC_COMM_PROTOCOL_ATCOMMAND, p_interface_desc->bInterfaceProtocol, CDC_COMM_PROTOCOL_ATCOMMAND_CDMA) ||
-         0xff == p_interface_desc->bInterfaceProtocol) )
-  {
-    return TUSB_ERROR_CDC_UNSUPPORTED_PROTOCOL;
-  }
+  // Only support AT commands, no protocol and vendor specific commands.
+  TU_ASSERT(tu_within(CDC_COMM_PROTOCOL_NONE, itf_desc->bInterfaceProtocol, CDC_COMM_PROTOCOL_ATCOMMAND_CDMA) ||
+            itf_desc->bInterfaceProtocol == 0xff);
 
   // Find available interface
   cdcd_interface_t * p_cdc = NULL;
-  for(uint8_t i=0; i<CFG_TUD_CDC; i++)
+  uint8_t cdc_id;
+  for(cdc_id=0; cdc_id<CFG_TUD_CDC; cdc_id++)
   {
-    if ( _cdcd_itf[i].ep_in == 0 )
+    if ( _cdcd_itf[cdc_id].ep_in == 0 )
     {
-      p_cdc = &_cdcd_itf[i];
+      p_cdc = &_cdcd_itf[cdc_id];
       break;
     }
   }
+  TU_ASSERT(p_cdc);
 
   //------------- Control Interface -------------//
-  p_cdc->itf_num  = p_interface_desc->bInterfaceNumber;
+  p_cdc->itf_num = itf_desc->bInterfaceNumber;
 
-  uint8_t const * p_desc = descriptor_next ( (uint8_t const *) p_interface_desc );
+  uint8_t const * p_desc = tu_desc_next( itf_desc );
   (*p_length) = sizeof(tusb_desc_interface_t);
 
   // Communication Functional Descriptors
-  while( TUSB_DESC_CLASS_SPECIFIC == p_desc[DESC_OFFSET_TYPE] )
+  while ( TUSB_DESC_CLASS_SPECIFIC == tu_desc_type(p_desc) )
   {
-    (*p_length) += p_desc[DESC_OFFSET_LEN];
-    p_desc = descriptor_next(p_desc);
+    (*p_length) += tu_desc_len(p_desc);
+    p_desc = tu_desc_next(p_desc);
   }
 
-  if ( TUSB_DESC_ENDPOINT == p_desc[DESC_OFFSET_TYPE])
-  { // notification endpoint if any
-    TU_ASSERT( dcd_edpt_open(rhport, (tusb_desc_endpoint_t const *) p_desc), TUSB_ERROR_DCD_OPEN_PIPE_FAILED);
+  if ( TUSB_DESC_ENDPOINT == tu_desc_type(p_desc) )
+  {
+    // notification endpoint if any
+    TU_ASSERT( dcd_edpt_open(rhport, (tusb_desc_endpoint_t const *) p_desc) );
 
     p_cdc->ep_notif = ((tusb_desc_endpoint_t const *) p_desc)->bEndpointAddress;
 
     (*p_length) += p_desc[DESC_OFFSET_LEN];
-    p_desc = descriptor_next(p_desc);
+    p_desc = tu_desc_next(p_desc);
   }
 
   //------------- Data Interface (if any) -------------//
   if ( (TUSB_DESC_INTERFACE == p_desc[DESC_OFFSET_TYPE]) &&
        (TUSB_CLASS_CDC_DATA == ((tusb_desc_interface_t const *) p_desc)->bInterfaceClass) )
   {
-    // next to endpoint descritpor
-    (*p_length) += p_desc[DESC_OFFSET_LEN];
-    p_desc = descriptor_next(p_desc);
+    // next to endpoint descriptor
+    (*p_length) += tu_desc_len(p_desc);
+    p_desc = tu_desc_next(p_desc);
 
     // Open endpoint pair with usbd helper
     tusb_desc_endpoint_t const *p_desc_ep = (tusb_desc_endpoint_t const *) p_desc;
-    TU_ASSERT_ERR( usbd_open_edpt_pair(rhport, p_desc_ep, TUSB_XFER_BULK, &p_cdc->ep_out, &p_cdc->ep_in) );
+    TU_ASSERT( usbd_open_edpt_pair(rhport, p_desc_ep, TUSB_XFER_BULK, &p_cdc->ep_out, &p_cdc->ep_in) );
 
     (*p_length) += 2*sizeof(tusb_desc_endpoint_t);
   }
 
   // Prepare for incoming data
-  TU_ASSERT( dcd_edpt_xfer(rhport, p_cdc->ep_out, p_cdc->epout_buf, CFG_TUD_CDC_EPSIZE), TUSB_ERROR_DCD_EDPT_XFER);
+  pending_read_from_host = false;
+  _prep_out_transaction(cdc_id);
 
-  return TUSB_ERROR_NONE;
+  return true;
 }
 
-tusb_error_t cdcd_control_request_st(uint8_t rhport, tusb_control_request_t const * p_request)
+// Invoked when class request DATA stage is finished.
+// return false to stall control endpoint (e.g Host send non-sense DATA)
+bool cdcd_control_request_complete(uint8_t rhport, tusb_control_request_t const * request)
 {
-  OSAL_SUBTASK_BEGIN
+  (void) rhport;
 
   //------------- Class Specific Request -------------//
-  if (p_request->bmRequestType_bit.type != TUSB_REQ_TYPE_CLASS) return TUSB_ERROR_DCD_CONTROL_REQUEST_NOT_SUPPORT;
+  TU_VERIFY (request->bmRequestType_bit.type == TUSB_REQ_TYPE_CLASS);
 
   // TODO Support multiple interfaces
   uint8_t const itf = 0;
   cdcd_interface_t* p_cdc = &_cdcd_itf[itf];
 
-  if ( (CDC_REQUEST_GET_LINE_CODING == p_request->bRequest) || (CDC_REQUEST_SET_LINE_CODING == p_request->bRequest) )
+  // Invoke callback
+  if ( CDC_REQUEST_SET_LINE_CODING == request->bRequest )
   {
-    uint16_t len = tu_min16(sizeof(cdc_line_coding_t), p_request->wLength);
-    usbd_control_xfer_st(rhport, p_request->bmRequestType_bit.direction, &p_cdc->line_coding, len);
-
-    // Invoke callback
-    if (CDC_REQUEST_SET_LINE_CODING == p_request->bRequest)
-    {
-      if ( tud_cdc_line_coding_cb ) tud_cdc_line_coding_cb(itf, &p_cdc->line_coding);
-    }
-  }
-  else if (CDC_REQUEST_SET_CONTROL_LINE_STATE == p_request->bRequest )
-  {
-    dcd_control_status(rhport, p_request->bmRequestType_bit.direction); // ACK control request
-
-    // CDC PSTN v1.2 section 6.3.12
-    // Bit 0: Indicates if DTE is present or not.
-    //        This signal corresponds to V.24 signal 108/2 and RS-232 signal DTR (Data Terminal Ready)
-    // Bit 1: Carrier control for half-duplex modems.
-    //        This signal corresponds to V.24 signal 105 and RS-232 signal RTS (Request to Send)
-    p_cdc->line_state = (uint8_t) p_request->wValue;
-
-    // Invoke callback
-    if ( tud_cdc_line_state_cb) tud_cdc_line_state_cb(itf, BIT_TEST_(p_request->wValue, 0), BIT_TEST_(p_request->wValue, 1));
-  }
-  else
-  {
-    dcd_control_stall(rhport); // stall unsupported request
+    if ( tud_cdc_line_coding_cb ) tud_cdc_line_coding_cb(itf, &p_cdc->line_coding);
   }
 
-  OSAL_SUBTASK_END
+  return true;
 }
 
-tusb_error_t cdcd_xfer_cb(uint8_t rhport, uint8_t ep_addr, tusb_event_t event, uint32_t xferred_bytes)
+// Handle class control request
+// return false to stall control endpoint (e.g unsupported request)
+bool cdcd_control_request(uint8_t rhport, tusb_control_request_t const * request)
 {
+  //------------- Class Specific Request -------------//
+  TU_ASSERT(request->bmRequestType_bit.type == TUSB_REQ_TYPE_CLASS);
+
+  // TODO Support multiple interfaces
+  uint8_t const itf = 0;
+  cdcd_interface_t* p_cdc = &_cdcd_itf[itf];
+
+  switch ( request->bRequest )
+  {
+    case CDC_REQUEST_SET_LINE_CODING:
+      usbd_control_xfer(rhport, request, &p_cdc->line_coding, sizeof(cdc_line_coding_t));
+    break;
+
+    case CDC_REQUEST_GET_LINE_CODING:
+      usbd_control_xfer(rhport, request, &p_cdc->line_coding, sizeof(cdc_line_coding_t));
+    break;
+
+    case CDC_REQUEST_SET_CONTROL_LINE_STATE:
+      // CDC PSTN v1.2 section 6.3.12
+      // Bit 0: Indicates if DTE is present or not.
+      //        This signal corresponds to V.24 signal 108/2 and RS-232 signal DTR (Data Terminal Ready)
+      // Bit 1: Carrier control for half-duplex modems.
+      //        This signal corresponds to V.24 signal 105 and RS-232 signal RTS (Request to Send)
+      p_cdc->line_state = (uint8_t) request->wValue;
+
+      usbd_control_status(rhport, request);
+
+      // Invoke callback
+      if ( tud_cdc_line_state_cb) tud_cdc_line_state_cb(itf, TU_BIT_TEST(request->wValue, 0), TU_BIT_TEST(request->wValue, 1));
+    break;
+
+    default: return false; // stall unsupported request
+  }
+
+  return true;
+}
+
+bool cdcd_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_t xferred_bytes)
+{
+  (void) rhport;
+  (void) result;
+
   // TODO Support multiple interfaces
   uint8_t const itf = 0;
   cdcd_interface_t* p_cdc = &_cdcd_itf[itf];
@@ -340,29 +381,28 @@ tusb_error_t cdcd_xfer_cb(uint8_t rhport, uint8_t ep_addr, tusb_event_t event, u
   // receive new data
   if ( ep_addr == p_cdc->ep_out )
   {
-    char const wanted = p_cdc->wanted_char;
-
     for(uint32_t i=0; i<xferred_bytes; i++)
     {
       tu_fifo_write(&p_cdc->rx_ff, &p_cdc->epout_buf[i]);
 
       // Check for wanted char and invoke callback if needed
-      if ( tud_cdc_rx_wanted_cb && ( wanted != -1 ) && ( wanted == p_cdc->epout_buf[i] ) )
+      if ( tud_cdc_rx_wanted_cb && ( ((signed char) p_cdc->wanted_char) != -1 ) && ( p_cdc->wanted_char == p_cdc->epout_buf[i] ) )
       {
-        tud_cdc_rx_wanted_cb(itf, wanted);
+        tud_cdc_rx_wanted_cb(itf, p_cdc->wanted_char);
       }
     }
 
     // invoke receive callback (if there is still data)
     if (tud_cdc_rx_cb && tu_fifo_count(&p_cdc->rx_ff) ) tud_cdc_rx_cb(itf);
 
-    // prepare for next
-    TU_ASSERT( dcd_edpt_xfer(rhport, p_cdc->ep_out, p_cdc->epout_buf, CFG_TUD_CDC_EPSIZE), TUSB_ERROR_DCD_EDPT_XFER );
+    // prepare for OUT transaction
+    pending_read_from_host = false;
+    _prep_out_transaction(itf);
   }
 
-  // nothing to do with in and notif endpoint
+  // nothing to do with in and notif endpoint for now
 
-  return TUSB_ERROR_NONE;
+  return true;
 }
 
 #endif

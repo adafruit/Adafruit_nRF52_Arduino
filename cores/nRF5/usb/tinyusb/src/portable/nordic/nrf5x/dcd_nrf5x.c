@@ -1,40 +1,28 @@
-/**************************************************************************/
-/*!
-    @file     dcd_nrf5x.c
-    @author   hathach
-
-    @section LICENSE
-
-    Software License Agreement (BSD License)
-
-    Copyright (c) 2018, hathach (tinyusb.org)
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-    1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    3. Neither the name of the copyright holders nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ''AS IS'' AND ANY
-    EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-    This file is part of the tinyusb stack.
-*/
-/**************************************************************************/
+/* 
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2018, hathach (tinyusb.org)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * This file is part of the TinyUSB stack.
+ */
 
 #include "tusb_option.h"
 
@@ -64,9 +52,7 @@ enum
                       USBD_INTENCLR_ENDISOIN_Msk | USBD_INTEN_ENDISOOUT_Msk
 };
 
-/*------------------------------------------------------------------*/
-/* VARIABLE DECLARATION
- *------------------------------------------------------------------*/
+// Transfer descriptor
 typedef struct
 {
   uint8_t* buffer;
@@ -78,73 +64,23 @@ typedef struct
   // indicate packet is already ACK
   volatile bool data_received;
 
-} nom_xfer_t;
+} xfer_td_t;
 
-/*static*/ struct
+// Data for managing dcd
+static struct
 {
-  struct
-  {
-    uint8_t* buffer;
-    uint16_t total_len;
-    volatile uint16_t actual_len;
+  // All 8 endpoints including control IN & OUT (offset 1)
+  xfer_td_t xfer[8][2];
 
-    uint8_t  dir;
-  }control;
-
-  // Non control: 7 endpoints IN & OUT (offset 1)
-  nom_xfer_t xfer[7][2];
-
+  // Only one DMA can run at a time
   volatile bool dma_running;
 }_dcd;
 
-void bus_reset(void)
-{
-  for(int i=0; i<8; i++)
-  {
-    NRF_USBD->TASKS_STARTEPIN[i] = 0;
-    NRF_USBD->TASKS_STARTEPOUT[i] = 0;
-  }
-
-  NRF_USBD->TASKS_STARTISOIN  = 0;
-  NRF_USBD->TASKS_STARTISOOUT = 0;
-
-  tu_varclr(&_dcd);
-}
-
 /*------------------------------------------------------------------*/
-/* Controller API
+/* Control / Bulk / Interrupt (CBI) Transfer
  *------------------------------------------------------------------*/
-bool dcd_init (uint8_t rhport)
-{
-  (void) rhport;
-  return true;
-}
 
-void dcd_connect (uint8_t rhport)
-{
-
-}
-void dcd_disconnect (uint8_t rhport)
-{
-
-}
-
-void dcd_set_address (uint8_t rhport, uint8_t dev_addr)
-{
-  (void) rhport;
-  // Set Address is automatically update by hw controller
-}
-
-void dcd_set_config (uint8_t rhport, uint8_t config_num)
-{
-  (void) rhport;
-  (void) config_num;
-  // Nothing to do
-}
-
-/*------------------------------------------------------------------*/
-/* Control
- *------------------------------------------------------------------*/
+// helper to start DMA
 static void edpt_dma_start(volatile uint32_t* reg_startep)
 {
   // Only one dma can be active
@@ -169,87 +105,43 @@ static void edpt_dma_start(volatile uint32_t* reg_startep)
   __ISB(); __DSB();
 }
 
+// DMA is complete
 static void edpt_dma_end(void)
 {
   TU_ASSERT(_dcd.dma_running, );
-
   _dcd.dma_running = false;
 }
 
-static void xact_control_start(void)
+// helper getting td
+static inline xfer_td_t* get_td(uint8_t epnum, uint8_t dir)
 {
-  // Each transaction is up to 64 bytes
-  uint8_t const xact_len = tu_min16(_dcd.control.total_len-_dcd.control.actual_len, MAX_PACKET_SIZE);
-
-  if ( _dcd.control.dir == TUSB_DIR_OUT )
-  {
-    // TODO control out
-    NRF_USBD->EPOUT[0].PTR    = (uint32_t) _dcd.control.buffer;
-    NRF_USBD->EPOUT[0].MAXCNT = xact_len;
-
-    NRF_USBD->TASKS_EP0RCVOUT = 1;
-    __ISB(); __DSB();
-  }else
-  {
-    NRF_USBD->EPIN[0].PTR        = (uint32_t) _dcd.control.buffer;
-    NRF_USBD->EPIN[0].MAXCNT     = xact_len;
-
-    edpt_dma_start(&NRF_USBD->TASKS_STARTEPIN[0]);
-  }
-
-  _dcd.control.buffer     += xact_len;
-  _dcd.control.actual_len += xact_len;
+  return &_dcd.xfer[epnum][dir];
 }
 
-bool dcd_control_xfer (uint8_t rhport, uint8_t dir, uint8_t * buffer, uint16_t length)
-{
-  (void) rhport;
+/*------------- CBI OUT Transfer -------------*/
 
-  if ( length )
-  {
-    // Data Phase
-    _dcd.control.total_len  = length;
-    _dcd.control.actual_len = 0;
-    _dcd.control.buffer     = buffer;
-    _dcd.control.dir        = dir;
-
-    xact_control_start();
-  }else
-  {
-    // Status Phase also require Easy DMA has to be free as well !!!!
-    edpt_dma_start(&NRF_USBD->TASKS_EP0STATUS);
-    edpt_dma_end();
-  }
-
-  return true;
-}
-
-/*------------------------------------------------------------------*/
-/*
- *------------------------------------------------------------------*/
-
-static inline nom_xfer_t* get_td(uint8_t epnum, uint8_t dir)
-{
-  return &_dcd.xfer[epnum-1][dir];
-}
-
-/*------------- Bulk/Int OUT transfer -------------*/
-
-/**
- * Prepare Bulk/Int out transaction, Endpoint start to accept/ACK Data
- * @param epnum
- */
+// Prepare for a CBI transaction OUT, call at the start
+// Allow ACK incoming data
 static void xact_out_prepare(uint8_t epnum)
 {
-  // Write zero value to SIZE register will allow hw to ACK (accept data)
-  // If it is not already done by DMA
-  NRF_USBD->SIZE.EPOUT[epnum] = 0;
+  if ( epnum == 0 )
+  {
+    NRF_USBD->TASKS_EP0RCVOUT = 1;
+  }
+  else
+  {
+    // Write zero value to SIZE register will allow hw to ACK (accept data)
+    // If it is not already done by DMA
+    NRF_USBD->SIZE.EPOUT[epnum] = 0;
+  }
+
   __ISB(); __DSB();
 }
 
+// Start DMA to move data from Endpoint -> RAM
 static void xact_out_dma(uint8_t epnum)
 {
-  nom_xfer_t* xfer = get_td(epnum, TUSB_DIR_OUT);
+  xfer_td_t* xfer = get_td(epnum, TUSB_DIR_OUT);
 
   uint8_t const xact_len = NRF_USBD->SIZE.EPOUT[epnum];
 
@@ -263,16 +155,13 @@ static void xact_out_dma(uint8_t epnum)
   xfer->actual_len += xact_len;
 }
 
+/*------------- CBI IN Transfer -------------*/
 
-/*------------- Bulk/Int IN transfer -------------*/
-
-/**
- * Prepare Bulk/Int in transaction, use DMA to transfer data from Memory -> Endpoint
- * @param epnum
- */
+// Prepare for a CBI transaction IN, call at the start
+// it start DMA to transfer data from RAM -> Endpoint
 static void xact_in_prepare(uint8_t epnum)
 {
-  nom_xfer_t* xfer = get_td(epnum, TUSB_DIR_IN);
+  xfer_td_t* xfer = get_td(epnum, TUSB_DIR_IN);
 
   // Each transaction is up to Max Packet Size
   uint8_t const xact_len = tu_min16(xfer->total_len - xfer->actual_len, xfer->mps);
@@ -285,23 +174,83 @@ static void xact_in_prepare(uint8_t epnum)
   edpt_dma_start(&NRF_USBD->TASKS_STARTEPIN[epnum]);
 }
 
+//--------------------------------------------------------------------+
+// Controller API
+//--------------------------------------------------------------------+
+void dcd_init (uint8_t rhport)
+{
+  (void) rhport;
+}
+
+void dcd_int_enable(uint8_t rhport)
+{
+  (void) rhport;
+  NVIC_EnableIRQ(USBD_IRQn);
+}
+
+void dcd_int_disable(uint8_t rhport)
+{
+  (void) rhport;
+  NVIC_DisableIRQ(USBD_IRQn);
+}
+
+void dcd_set_address (uint8_t rhport, uint8_t dev_addr)
+{
+  (void) rhport;
+  (void) dev_addr;
+  // Set Address is automatically update by hw controller, nothing to do
+
+  // Enable usbevent for suspend and resume detection
+  // Since the bus signal D+/D- are stable now.
+
+  // Clear current pending first
+  NRF_USBD->EVENTCAUSE |= NRF_USBD->EVENTCAUSE;
+  NRF_USBD->EVENTS_USBEVENT = 0;
+
+  NRF_USBD->INTENSET = USBD_INTEN_USBEVENT_Msk;
+}
+
+void dcd_set_config (uint8_t rhport, uint8_t config_num)
+{
+  (void) rhport;
+  (void) config_num;
+}
+
+void dcd_remote_wakeup(uint8_t rhport)
+{
+  (void) rhport;
+
+  // Bring controller out of low power mode
+  NRF_USBD->LOWPOWER = 0;
+
+  // Initiate RESUME signal
+  NRF_USBD->DPDMVALUE = USBD_DPDMVALUE_STATE_Resume;
+  NRF_USBD->TASKS_DPDMDRIVE = 1;
+
+  // TODO There is no USBEVENT Resume interrupt
+  // We may manually raise DCD_EVENT_RESUME event here
+}
+
+//--------------------------------------------------------------------+
+// Endpoint API
+//--------------------------------------------------------------------+
 bool dcd_edpt_open (uint8_t rhport, tusb_desc_endpoint_t const * desc_edpt)
 {
   (void) rhport;
 
-  uint8_t const epnum = edpt_number(desc_edpt->bEndpointAddress);
-  uint8_t const dir   = edpt_dir(desc_edpt->bEndpointAddress);
+  uint8_t const epnum = tu_edpt_number(desc_edpt->bEndpointAddress);
+  uint8_t const dir   = tu_edpt_dir(desc_edpt->bEndpointAddress);
 
-  _dcd.xfer[epnum-1][dir].mps = desc_edpt->wMaxPacketSize.size;
+  _dcd.xfer[epnum][dir].mps = desc_edpt->wMaxPacketSize.size;
 
   if ( dir == TUSB_DIR_OUT )
   {
-    NRF_USBD->INTENSET = BIT_(USBD_INTEN_ENDEPOUT0_Pos + epnum);
-    NRF_USBD->EPOUTEN |= BIT_(epnum);
+    NRF_USBD->INTENSET = TU_BIT(USBD_INTEN_ENDEPOUT0_Pos + epnum);
+    NRF_USBD->EPOUTEN |= TU_BIT(epnum);
   }else
   {
-    NRF_USBD->INTENSET = BIT_(USBD_INTEN_ENDEPIN0_Pos + epnum);
-    NRF_USBD->EPINEN  |= BIT_(epnum);
+    NRF_USBD->INTENSET = TU_BIT(USBD_INTEN_ENDEPIN0_Pos + epnum);
+    NRF_USBD->EPINEN  |= TU_BIT(epnum);
   }
   __ISB(); __DSB();
 
@@ -312,27 +261,39 @@ bool dcd_edpt_xfer (uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t 
 {
   (void) rhport;
 
-  uint8_t const epnum = edpt_number(ep_addr);
-  uint8_t const dir   = edpt_dir(ep_addr);
+  uint8_t const epnum = tu_edpt_number(ep_addr);
+  uint8_t const dir   = tu_edpt_dir(ep_addr);
 
-  nom_xfer_t* xfer = get_td(epnum, dir);
+  xfer_td_t* xfer = get_td(epnum, dir);
 
   xfer->buffer     = buffer;
   xfer->total_len  = total_bytes;
   xfer->actual_len = 0;
 
-  if ( dir == TUSB_DIR_OUT )
+  // Control endpoint with zero-length packet --> status stage
+  if ( epnum == 0 && total_bytes == 0 )
+  {
+    // Status Phase also require Easy DMA has to be free as well !!!!
+    edpt_dma_start(&NRF_USBD->TASKS_EP0STATUS);
+    edpt_dma_end();
+
+    // The nRF doesn't interrupt on status transmit so we queue up a success response.
+    dcd_event_xfer_complete(0, ep_addr, 0, XFER_RESULT_SUCCESS, false);
+  }
+  else if ( dir == TUSB_DIR_OUT )
   {
     if ( xfer->data_received )
     {
       // nrf52840 auto ACK OUT packet after DMA is done
       // Data already received previously --> trigger DMA to copy to SRAM
       xact_out_dma(epnum);
-    }else
+    }
+    else
     {
       xact_out_prepare(epnum);
     }
-  }else
+  }
+  else
   {
     xact_in_prepare(epnum);
   }
@@ -340,22 +301,11 @@ bool dcd_edpt_xfer (uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t 
   return true;
 }
 
-bool dcd_edpt_stalled (uint8_t rhport, uint8_t ep_addr)
-{
-  (void) rhport;
-
-  // control is never got halted
-  if ( ep_addr == 0 ) return false;
-
-  uint8_t const epnum = edpt_number(ep_addr);
-  return (edpt_dir(ep_addr) == TUSB_DIR_IN ) ? NRF_USBD->HALTED.EPIN[epnum] : NRF_USBD->HALTED.EPOUT[epnum];
-}
-
 void dcd_edpt_stall (uint8_t rhport, uint8_t ep_addr)
 {
   (void) rhport;
 
-  if ( ep_addr == 0)
+  if ( tu_edpt_number(ep_addr) == 0 )
   {
     NRF_USBD->TASKS_EP0STALL = 1;
   }else
@@ -370,7 +320,7 @@ void dcd_edpt_clear_stall (uint8_t rhport, uint8_t ep_addr)
 {
   (void) rhport;
 
-  if ( ep_addr )
+  if ( tu_edpt_number(ep_addr)  )
   {
     NRF_USBD->EPSTALL = (USBD_EPSTALL_STALL_UnStall << USBD_EPSTALL_STALL_Pos) | ep_addr;
     __ISB(); __DSB();
@@ -382,19 +332,35 @@ bool dcd_edpt_busy (uint8_t rhport, uint8_t ep_addr)
   (void) rhport;
 
   // USBD shouldn't check control endpoint state
-  if ( 0 == ep_addr ) return false;
+  if ( 0 == tu_edpt_number(ep_addr) ) return false;
 
-  uint8_t const epnum = edpt_number(ep_addr);
-  uint8_t const dir   = edpt_dir(ep_addr);
+  uint8_t const epnum = tu_edpt_number(ep_addr);
+  uint8_t const dir   = tu_edpt_dir(ep_addr);
 
-  nom_xfer_t* xfer = get_td(epnum, dir);
+  xfer_td_t* xfer = get_td(epnum, dir);
 
   return xfer->actual_len < xfer->total_len;
 }
 
 /*------------------------------------------------------------------*/
-/*
+/* Interrupt Handler
  *------------------------------------------------------------------*/
+void bus_reset(void)
+{
+  for(int i=0; i<8; i++)
+  {
+    NRF_USBD->TASKS_STARTEPIN[i] = 0;
+    NRF_USBD->TASKS_STARTEPOUT[i] = 0;
+  }
+
+  NRF_USBD->TASKS_STARTISOIN  = 0;
+  NRF_USBD->TASKS_STARTISOOUT = 0;
+
+  tu_varclr(&_dcd);
+  _dcd.xfer[0][TUSB_DIR_IN].mps = MAX_PACKET_SIZE;
+  _dcd.xfer[0][TUSB_DIR_OUT].mps = MAX_PACKET_SIZE;
+}
+
 void USBD_IRQHandler(void)
 {
   uint32_t const inten  = NRF_USBD->INTEN;
@@ -402,11 +368,11 @@ void USBD_IRQHandler(void)
 
   volatile uint32_t* regevt = &NRF_USBD->EVENTS_USBRESET;
 
-  for(int i=0; i<USBD_INTEN_EPDATA_Pos+1; i++)
+  for(uint8_t i=0; i<USBD_INTEN_EPDATA_Pos+1; i++)
   {
-    if ( BIT_TEST_(inten, i) && regevt[i]  )
+    if ( TU_BIT_TEST(inten, i) && regevt[i]  )
     {
-      int_status |= BIT_(i);
+      int_status |= TU_BIT(i);
 
       // event clear
       regevt[i] = 0;
@@ -414,11 +380,36 @@ void USBD_IRQHandler(void)
     }
   }
 
-  /*------------- Interrupt Processing -------------*/
   if ( int_status & USBD_INTEN_USBRESET_Msk )
   {
     bus_reset();
     dcd_event_bus_signal(0, DCD_EVENT_BUS_RESET, true);
+  }
+
+  if ( int_status & USBD_INTEN_SOF_Msk )
+  {
+    dcd_event_bus_signal(0, DCD_EVENT_SOF, true);
+  }
+
+  if ( int_status & USBD_INTEN_USBEVENT_Msk )
+  {
+    uint32_t const evt_cause = NRF_USBD->EVENTCAUSE & (USBD_EVENTCAUSE_SUSPEND_Msk | USBD_EVENTCAUSE_RESUME_Msk);
+    NRF_USBD->EVENTCAUSE = evt_cause; // clear interrupt
+
+    if ( evt_cause & USBD_EVENTCAUSE_SUSPEND_Msk )
+    {
+      dcd_event_bus_signal(0, DCD_EVENT_SUSPEND, true);
+
+      // Put controller into low power mode
+      NRF_USBD->LOWPOWER = 1;
+
+      // Leave HFXO disable to application, since it may be used by other
+    }
+
+    if ( evt_cause & USBD_EVENTCAUSE_RESUME_Msk  )
+    {
+      dcd_event_bus_signal(0, DCD_EVENT_RESUME , true);
+    }
   }
 
   if ( int_status & EDPT_END_ALL_MASK )
@@ -426,66 +417,67 @@ void USBD_IRQHandler(void)
     // DMA complete move data from SRAM -> Endpoint
     edpt_dma_end();
   }
-
-  /*------------- Control Transfer -------------*/
+ 
+  // Setup tokens are specific to the Control endpoint.
   if ( int_status & USBD_INTEN_EP0SETUP_Msk )
   {
-    uint8_t setup[8] = {
+    uint8_t const setup[8] = {
         NRF_USBD->BMREQUESTTYPE , NRF_USBD->BREQUEST, NRF_USBD->WVALUEL , NRF_USBD->WVALUEH,
         NRF_USBD->WINDEXL       , NRF_USBD->WINDEXH , NRF_USBD->WLENGTHL, NRF_USBD->WLENGTHH
     };
-    dcd_event_setup_recieved(0, setup, true);
-  }
 
-  if ( int_status & USBD_INTEN_EP0DATADONE_Msk )
-  {
-    if ( _dcd.control.dir == TUSB_DIR_OUT )
+    // nrf5x hw auto handle set address, there is no need to inform usb stack
+    tusb_control_request_t const * request = (tusb_control_request_t const *) setup;
+
+    if ( !(TUSB_REQ_RCPT_DEVICE == request->bmRequestType_bit.recipient &&
+           TUSB_REQ_TYPE_STANDARD == request->bmRequestType_bit.type &&
+           TUSB_REQ_SET_ADDRESS == request->bRequest) )
     {
-      // Control OUT: data from Host -> Endpoint
-      // Trigger DMA to move Endpoint -> SRAM
-      edpt_dma_start(&NRF_USBD->TASKS_STARTEPOUT[0]);
-    }else
-    {
-      // Control IN: data transferred from Endpoint -> Host
-      if ( _dcd.control.actual_len < _dcd.control.total_len )
-      {
-        xact_control_start();
-      }else
-      {
-        // Control IN complete
-        dcd_event_xfer_complete(0, 0, _dcd.control.actual_len, DCD_XFER_SUCCESS, true);
-      }
+      dcd_event_setup_received(0, setup, true);
     }
   }
 
-  // Control OUT: data from Endpoint -> SRAM
-  if ( int_status & USBD_INTEN_ENDEPOUT0_Msk)
-  {
-    if ( _dcd.control.actual_len < _dcd.control.total_len )
-    {
-      xact_control_start();
-    }else
-    {
-      // Control OUT complete
-      dcd_event_xfer_complete(0, 0, _dcd.control.actual_len, DCD_XFER_SUCCESS, true);
-    }
-  }
+  //--------------------------------------------------------------------+
+  /* Control/Bulk/Interrupt (CBI) Transfer
+   *
+   * Data flow is:
+   *           (bus)              (dma)
+   *    Host <-------> Endpoint <-------> RAM
+   *
+   * For CBI OUT:
+   *  - Host -> Endpoint
+   *      EPDATA (or EP0DATADONE) interrupted, check EPDATASTATUS.EPOUT[i]
+   *      to start DMA. This step can occur automatically (without sw),
+   *      which means data may or may not ready (data_received flag).
+   *  - Endpoint -> RAM
+   *      ENDEPOUT[i] interrupted, transaction complete, sw prepare next transaction
+   *
+   * For CBI IN:
+   *  - RAM -> Endpoint
+   *      ENDEPIN[i] interrupted indicate DMA is complete. HW will start
+   *      to move daat to host
+   *  - Endpoint -> Host
+   *      EPDATA (or EP0DATADONE) interrupted, check EPDATASTATUS.EPIN[i].
+   *      Transaction is complete, sw prepare next transaction
+   *
+   * Note: in both Control In and Out of Data stage from Host <-> Endpoint
+   * EP0DATADONE will be set as interrupt source
+   */
+  //--------------------------------------------------------------------+
 
-  /*------------- Bulk/Interrupt Transfer -------------*/
-
-  /* Bulk/Int OUT: data from DMA -> SRAM
-   * Note: Since nrf controller auto ACK next packet without SW awareness
+  /* CBI OUT: Endpoint -> SRAM (aka transaction complete)
+   * Note: Since nRF controller auto ACK next packet without SW awareness
    * We must handle this stage before Host -> Endpoint just in case
    * 2 event happens at once
    */
-  for(uint8_t epnum=1; epnum<8; epnum++)
+  for(uint8_t epnum=0; epnum<8; epnum++)
   {
-    if ( BIT_TEST_(int_status, USBD_INTEN_ENDEPOUT0_Pos+epnum) )
+    if ( TU_BIT_TEST(int_status, USBD_INTEN_ENDEPOUT0_Pos+epnum))
     {
-      nom_xfer_t* xfer = get_td(epnum, TUSB_DIR_OUT);
-
+      xfer_td_t* xfer = get_td(epnum, TUSB_DIR_OUT);
       uint8_t const xact_len = NRF_USBD->EPOUT[epnum].AMOUNT;
 
+      // Data in endpoint has been consumed
       xfer->data_received = false;
 
       // Transfer complete if transaction len < Max Packet Size or total len is transferred
@@ -498,25 +490,31 @@ void USBD_IRQHandler(void)
         xfer->total_len = xfer->actual_len;
 
         // BULK/INT OUT complete
-        dcd_event_xfer_complete(0, epnum, xfer->actual_len, DCD_XFER_SUCCESS, true);
+        dcd_event_xfer_complete(0, epnum, xfer->actual_len, XFER_RESULT_SUCCESS, true);
       }
     }
 
-    // Ended event for Bulk/Int : nothing to do
+    // Ended event for CBI IN : nothing to do
   }
 
-  if ( int_status & USBD_INTEN_EPDATA_Msk)
+  // Endpoint <-> Host
+  if ( int_status & (USBD_INTEN_EPDATA_Msk | USBD_INTEN_EP0DATADONE_Msk) )
   {
     uint32_t data_status = NRF_USBD->EPDATASTATUS;
-
     nrf_usbd_epdatastatus_clear(data_status);
 
-    // Bulk/Int In: data from Endpoint -> Host
-    for(uint8_t epnum=1; epnum<8; epnum++)
+    // EP0DATADONE is set with either Control Out on IN Data
+    // Since EPDATASTATUS cannot be used to determine whether it is control OUT or IN.
+    // We will use BMREQUESTTYPE in setup packet to determine the direction
+    bool const is_control_in = (int_status & USBD_INTEN_EP0DATADONE_Msk) && (NRF_USBD->BMREQUESTTYPE & TUSB_DIR_IN_MASK);
+    bool const is_control_out = (int_status & USBD_INTEN_EP0DATADONE_Msk) && !(NRF_USBD->BMREQUESTTYPE & TUSB_DIR_IN_MASK);
+
+    // CBI In: Endpoint -> Host (transaction complete)
+    for(uint8_t epnum=0; epnum<8; epnum++)
     {
-      if ( BIT_TEST_(data_status, epnum ) )
+      if ( TU_BIT_TEST(data_status, epnum ) || ( epnum == 0 && is_control_in) )
       {
-        nom_xfer_t* xfer = get_td(epnum, TUSB_DIR_IN);
+        xfer_td_t* xfer = get_td(epnum, TUSB_DIR_IN);
 
         xfer->actual_len += NRF_USBD->EPIN[epnum].MAXCNT;
 
@@ -527,17 +525,17 @@ void USBD_IRQHandler(void)
         } else
         {
           // Bulk/Int IN complete
-          dcd_event_xfer_complete(0, epnum | TUSB_DIR_IN_MASK, xfer->actual_len, DCD_XFER_SUCCESS, true);
+          dcd_event_xfer_complete(0, epnum | TUSB_DIR_IN_MASK, xfer->actual_len, XFER_RESULT_SUCCESS, true);
         }
       }
     }
 
-    // Bulk/Int OUT: data from Host -> Endpoint
-    for(uint8_t epnum=1; epnum<8; epnum++)
+    // CBI OUT: Host -> Endpoint
+    for(uint8_t epnum=0; epnum<8; epnum++)
     {
-      if ( BIT_TEST_(data_status, 16+epnum ) )
+      if ( TU_BIT_TEST(data_status, 16+epnum ) || ( epnum == 0 && is_control_out) )
       {
-        nom_xfer_t* xfer = get_td(epnum, TUSB_DIR_OUT);
+        xfer_td_t* xfer = get_td(epnum, TUSB_DIR_OUT);
 
         if (xfer->actual_len < xfer->total_len)
         {
@@ -550,12 +548,6 @@ void USBD_IRQHandler(void)
         }
       }
     }
-  }
-
-  // SOF interrupt
-  if ( int_status & USBD_INTEN_SOF_Msk )
-  {
-    dcd_event_bus_signal(0, DCD_EVENT_SOF, true);
   }
 }
 

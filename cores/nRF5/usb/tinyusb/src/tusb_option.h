@@ -1,40 +1,28 @@
-/**************************************************************************/
-/*!
-    @file     tusb_option.h
-    @author   hathach (tinyusb.org)
-
-    @section LICENSE
-
-    Software License Agreement (BSD License)
-
-    Copyright (c) 2013, hathach (tinyusb.org)
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-    1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    3. Neither the name of the copyright holders nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ''AS IS'' AND ANY
-    EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    INCLUDING NEGLIGENCE OR OTHERWISE ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-    This file is part of the tinyusb stack.
-*/
-/**************************************************************************/
+/* 
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2018, hathach (tinyusb.org)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * This file is part of the TinyUSB stack.
+ */
 
 #ifndef _TUSB_OPTION_H_
 #define _TUSB_OPTION_H_
@@ -48,15 +36,22 @@
 /** \defgroup group_mcu Supported MCU
  * \ref CFG_TUSB_MCU must be defined to one of these
  *  @{ */
-#define OPT_MCU_LPC11UXX       1 ///< NXP LPC11Uxx series
-#define OPT_MCU_LPC13XX        2 ///< NXP LPC13xx (not supported yet)
-#define OPT_MCU_LPC13UXX       3 ///< NXP LPC13xx 12 bit ADC series
-#define OPT_MCU_LPC175X_6X     4 ///< NXP LPC175x, LPC176x series
-#define OPT_MCU_LPC177X_8X     5 ///< NXP LPC177x, LPC178x series (not supported yet)
-#define OPT_MCU_LPC18XX        6 ///< NXP LPC18xx series (not supported yet)
-#define OPT_MCU_LPC43XX        7 ///< NXP LPC43xx series
+#define OPT_MCU_LPC11UXX        1 ///< NXP LPC11Uxx
+#define OPT_MCU_LPC13XX         3 ///< NXP LPC13xx
+#define OPT_MCU_LPC175X_6X      4 ///< NXP LPC175x, LPC176x
+#define OPT_MCU_LPC177X_8X      5 ///< NXP LPC177x, LPC178x
+#define OPT_MCU_LPC18XX         6 ///< NXP LPC18xx
+#define OPT_MCU_LPC40XX         7 ///< NXP LPC40xx
+#define OPT_MCU_LPC43XX         8 ///< NXP LPC43xx
 
-#define OPT_MCU_NRF5X        100 ///< Nordic nRF5x series
+#define OPT_MCU_NRF5X         100 ///< Nordic nRF5x series
+
+#define OPT_MCU_SAMD21        200 ///< MicroChip SAMD21
+#define OPT_MCU_SAMD51        201 ///< MicroChip SAMD51
+
+#define OPT_MCU_STM32F4       300 ///< ST STM32F4
+#define OPT_MCU_STM32F3       301 ///< ST STM32F3
+
 /** @} */
 
 /** \defgroup group_supported_os Supported RTOS
@@ -80,13 +75,16 @@
 
 //--------------------------------------------------------------------
 // CONTROLLER
+// Only 1 roothub port can be configured to be device and/or host.
+// tinyusb does not support dual devices or dual host configuration
 //--------------------------------------------------------------------
 /** \defgroup group_mode Controller Mode Selection
  * \brief CFG_TUSB_CONTROLLER_N_MODE must be defined with these
  *  @{ */
-#define OPT_MODE_HOST    0x02 ///< Host Mode
-#define OPT_MODE_DEVICE  0x01 ///< Device Mode
-#define OPT_MODE_NONE    0x00 ///< Disabled
+#define OPT_MODE_NONE         0x00 ///< Disabled
+#define OPT_MODE_DEVICE       0x01 ///< Device Mode
+#define OPT_MODE_HOST         0x02 ///< Host Mode
+#define OPT_MODE_HIGH_SPEED   0x10 ///< High speed
 /** @} */
 
 #ifndef CFG_TUSB_RHPORT0_MODE
@@ -97,21 +95,26 @@
   #define CFG_TUSB_RHPORT1_MODE OPT_MODE_NONE
 #endif
 
-#define CONTROLLER_HOST_NUMBER (\
-    ((CFG_TUSB_RHPORT0_MODE & OPT_MODE_HOST) ? 1 : 0) + \
-    ((CFG_TUSB_RHPORT1_MODE & OPT_MODE_HOST) ? 1 : 0))
+#if ((CFG_TUSB_RHPORT0_MODE & OPT_MODE_HOST) && (CFG_TUSB_RHPORT1_MODE & OPT_MODE_HOST)) || \
+    ((CFG_TUSB_RHPORT0_MODE & OPT_MODE_DEVICE) && (CFG_TUSB_RHPORT1_MODE & OPT_MODE_DEVICE))
+  #error "tinyusb does not support same modes on more than 1 roothub port"
+#endif
 
-#define MODE_HOST_SUPPORTED     (CONTROLLER_HOST_NUMBER > 0)
-
+// Which roothub port is configured as host
 #define TUH_OPT_RHPORT          ( (CFG_TUSB_RHPORT0_MODE & OPT_MODE_HOST) ? 0 : ((CFG_TUSB_RHPORT1_MODE & OPT_MODE_HOST) ? 1 : -1) )
 #define TUSB_OPT_HOST_ENABLED   ( TUH_OPT_RHPORT >= 0 )
 
+// Which roothub port is configured as device
 #define TUD_OPT_RHPORT          ( (CFG_TUSB_RHPORT0_MODE & OPT_MODE_DEVICE) ? 0 : ((CFG_TUSB_RHPORT1_MODE & OPT_MODE_DEVICE) ? 1 : -1) )
+
+#if TUD_OPT_RHPORT == 0
+#define TUD_OPT_HIGH_SPEED      ( CFG_TUSB_RHPORT0_MODE & OPT_MODE_HIGH_SPEED )
+#else
+#define TUD_OPT_HIGH_SPEED      ( CFG_TUSB_RHPORT1_MODE & OPT_MODE_HIGH_SPEED )
+#endif
+
 #define TUSB_OPT_DEVICE_ENABLED ( TUD_OPT_RHPORT >= 0 )
 
-#if ((CFG_TUSB_RHPORT0_MODE & OPT_MODE_HOST) && (CFG_TUSB_RHPORT1_MODE & OPT_MODE_HOST)) || ((CFG_TUSB_RHPORT0_MODE & OPT_MODE_DEVICE) && (CFG_TUSB_RHPORT1_MODE & OPT_MODE_DEVICE))
-  #error "tinyusb does not support same modes on more than 1 roothub port"
-#endif
 
 //--------------------------------------------------------------------+
 // COMMON OPTIONS
@@ -128,8 +131,13 @@
   #warning CFG_TUSB_DEBUG is not defined, default value is 0
 #endif
 
-#ifndef CFG_TUSB_ATTR_USBRAM
- #error CFG_TUSB_ATTR_USBRAM is not defined, please help me know how to place data in accessible RAM for usb controller
+// place data in accessible RAM for usb controller
+#ifndef CFG_TUSB_MEM_SECTION
+#define CFG_TUSB_MEM_SECTION
+#endif
+
+#ifndef CFG_TUSB_MEM_ALIGN
+#define CFG_TUSB_MEM_ALIGN          ATTR_ALIGNED(4)
 #endif
 
 #ifndef CFG_TUSB_OS
@@ -145,7 +153,7 @@
     #define CFG_TUD_ENDOINT0_SIZE    64
   #endif
 
-  #ifndef CFG_TUD_ENUM_BUFFER_SIZE
+  #ifndef CFG_TUD_CTRL_BUFSIZE
     #define CFG_TUD_CTRL_BUFSIZE 256
   #endif
 
@@ -182,41 +190,33 @@
 //--------------------------------------------------------------------
 // HOST OPTIONS
 //--------------------------------------------------------------------
-#if MODE_HOST_SUPPORTED
+#if TUSB_OPT_HOST_ENABLED
   #ifndef CFG_TUSB_HOST_DEVICE_MAX
     #define CFG_TUSB_HOST_DEVICE_MAX 1
     #warning CFG_TUSB_HOST_DEVICE_MAX is not defined, default value is 1
   #endif
 
   //------------- HUB CLASS -------------//
-  #if CFG_TUSB_HOST_HUB && (CFG_TUSB_HOST_DEVICE_MAX == 1)
+  #if CFG_TUH_HUB && (CFG_TUSB_HOST_DEVICE_MAX == 1)
     #error there is no benefit enable hub with max device is 1. Please disable hub or increase CFG_TUSB_HOST_DEVICE_MAX
   #endif
 
   //------------- HID CLASS -------------//
-  #define HOST_CLASS_HID   ( CFG_TUSB_HOST_HID_KEYBOARD + CFG_TUSB_HOST_HID_MOUSE + CFG_TUSB_HOST_HID_GENERIC )
-//  #if HOST_CLASS_HID
-//    #define HOST_HCD_XFER_INTERRUPT
-//  #endif
+  #define HOST_CLASS_HID   ( CFG_TUH_HID_KEYBOARD + CFG_TUH_HID_MOUSE + CFG_TUSB_HOST_HID_GENERIC )
 
   #ifndef CFG_TUSB_HOST_ENUM_BUFFER_SIZE
     #define CFG_TUSB_HOST_ENUM_BUFFER_SIZE 256
   #endif
 
   //------------- CLASS -------------//
-#endif // MODE_HOST_SUPPORTED
+#endif // TUSB_OPT_HOST_ENABLED
 
 
 //------------------------------------------------------------------
 // Configuration Validation
 //------------------------------------------------------------------
-
-#if (CFG_TUSB_OS != OPT_OS_NONE) && !defined (CFG_TUD_TASK_PRIO)
-  #error CFG_TUD_TASK_PRIO need to be defined (hint: use the highest if possible)
-#endif
-
 #if CFG_TUD_ENDOINT0_SIZE > 64
-  #error Control Endpoint Max Package Size cannot larger than 64
+  #error Control Endpoint Max Packet Size cannot be larger than 64
 #endif
 
 #endif /* _TUSB_OPTION_H_ */

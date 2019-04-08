@@ -1,40 +1,28 @@
-/**************************************************************************/
-/*!
-    @file     msc_device.h
-    @author   hathach (tinyusb.org)
-
-    @section LICENSE
-
-    Software License Agreement (BSD License)
-
-    Copyright (c) 2013, hathach (tinyusb.org)
-    All rights reserved.
-
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
-    1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-    2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in the
-    documentation and/or other materials provided with the distribution.
-    3. Neither the name of the copyright holders nor the
-    names of its contributors may be used to endorse or promote products
-    derived from this software without specific prior written permission.
-
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ''AS IS'' AND ANY
-    EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-    This file is part of the tinyusb stack.
-*/
-/**************************************************************************/
+/* 
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2018, hathach (tinyusb.org)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * This file is part of the TinyUSB stack.
+ */
 
 #ifndef _TUSB_MSC_DEVICE_H_
 #define _TUSB_MSC_DEVICE_H_
@@ -55,14 +43,6 @@ TU_VERIFY_STATIC(CFG_TUD_MSC_BUFSIZE < UINT16_MAX, "Size is not correct");
   #error MSC Device: Incorrect setting of MAX LUN
 #endif
 
-#ifndef CFG_TUD_MSC_BLOCK_NUM
-  #error CFG_TUD_MSC_BLOCK_NUM must be defined
-#endif
-
-#ifndef CFG_TUD_MSC_BLOCK_SZ
-  #error CFG_TUD_MSC_BLOCK_SZ must be defined
-#endif
-
 #ifndef CFG_TUD_MSC_BUFSIZE
   #error CFG_TUD_MSC_BUFSIZE must be defined, value of CFG_TUD_MSC_BLOCK_SZ should work well, the more the better
 #endif
@@ -79,12 +59,6 @@ TU_VERIFY_STATIC(CFG_TUD_MSC_BUFSIZE < UINT16_MAX, "Size is not correct");
   #error CFG_TUD_MSC_PRODUCT_REV 4-byte string must be defined
 #endif
 
-// TODO highspeed device is 512
-#ifndef CFG_TUD_MSC_EPSIZE
-#define CFG_TUD_MSC_EPSIZE 64
-#endif
-
-
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -94,9 +68,6 @@ TU_VERIFY_STATIC(CFG_TUD_MSC_BUFSIZE < UINT16_MAX, "Size is not correct");
  * \defgroup MSC_Device Device
  *  @{ */
 
-
-// Check if MSC interface is ready to use
-bool tud_msc_ready(void);
 bool tud_msc_set_sense(uint8_t lun, uint8_t sense_key, uint8_t add_sense_code, uint8_t add_sense_qualifier);
 
 //--------------------------------------------------------------------+
@@ -138,7 +109,10 @@ int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buf
  * \retval      negative    Indicate error writing disk I/O. Tinyusb will \b STALL the corresponding
  *                          endpoint and return failed status in command status wrapper phase.
  */
-int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize);
+int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize);
+
+// Invoked to determine the disk size
+void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size);
 
 /**
  * Callback invoked when received an SCSI command not in built-in list below.
@@ -160,29 +134,34 @@ int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* bu
 int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize);
 
 /*------------- Optional callbacks : Could be used by application to free up resources -------------*/
+
+// Invoked when Read10 command is complete
 ATTR_WEAK void tud_msc_read10_complete_cb(uint8_t lun);
+
+// Invoke when Write10 command is complete
 ATTR_WEAK void tud_msc_write10_complete_cb(uint8_t lun);
+
+// Invoked when command in tud_msc_scsi_cb is complete
 ATTR_WEAK void tud_msc_scsi_complete_cb(uint8_t lun, uint8_t const scsi_cmd[16]);
 
+// Hook to make a mass storage device read-only. TODO remove
+ATTR_WEAK bool tud_msc_is_writable_cb(uint8_t lun);
+
 /** @} */
 /** @} */
 
 //--------------------------------------------------------------------+
-// USBD-CLASS DRIVER API
+// Internal Class Driver API
 //--------------------------------------------------------------------+
-#ifdef _TINY_USB_SOURCE_FILE_
-
 void mscd_init(void);
-tusb_error_t mscd_open(uint8_t rhport, tusb_desc_interface_t const * p_interface_desc, uint16_t *p_length);
-tusb_error_t mscd_control_request_st(uint8_t rhport, tusb_control_request_t const * p_request);
-tusb_error_t mscd_xfer_cb(uint8_t rhport, uint8_t edpt_addr, tusb_event_t event, uint32_t xferred_bytes);
+bool mscd_open(uint8_t rhport, tusb_desc_interface_t const * itf_desc, uint16_t *p_length);
+bool mscd_control_request(uint8_t rhport, tusb_control_request_t const * p_request);
+bool mscd_control_request_complete (uint8_t rhport, tusb_control_request_t const * p_request);
+bool mscd_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t event, uint32_t xferred_bytes);
 void mscd_reset(uint8_t rhport);
-
-#endif
 
 #ifdef __cplusplus
  }
 #endif
 
 #endif /* _TUSB_MSC_DEVICE_H_ */
-

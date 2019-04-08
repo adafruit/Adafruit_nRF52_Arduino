@@ -23,47 +23,50 @@
  *
  * This file is part of the TinyUSB stack.
  */
-#ifndef USBD_PVT_H_
-#define USBD_PVT_H_
 
-#include "osal/osal.h"
-#include "common/tusb_fifo.h"
+/** \ingroup group_class
+ *  \defgroup ClassDriver_CDC Communication Device Class (CDC)
+ *            Currently only Abstract Control Model subclass is supported
+ *  @{ */
+
+#ifndef _TUSB_MIDI_H__
+#define _TUSB_MIDI_H__
+
+#include "common/tusb_common.h"
 
 #ifdef __cplusplus
  extern "C" {
 #endif
 
-// Either point to tud_desc_set or usbd_auto_desc_set depending on CFG_TUD_DESC_AUTO
-extern tud_desc_set_t const* usbd_desc_set;
-
 //--------------------------------------------------------------------+
-// INTERNAL API for stack management
+// FUNCTIONAL DESCRIPTOR (COMMUNICATION INTERFACE)
 //--------------------------------------------------------------------+
-bool usbd_init (void);
+/// Header Functional Descriptor (Communication Interface)
+typedef struct ATTR_PACKED
+{
+  uint8_t bLength            ; ///< Size of this descriptor in bytes.
+  uint8_t bDescriptorType    ; ///< Descriptor Type, must be Class-Specific
+  uint8_t bDescriptorSubType ; ///< Descriptor SubType one of above MIDI_FUCN_DESC_
+  uint16_t bcdMSC            ; ///< MidiStreaming SubClass release number in Binary-Coded Decimal
+  uint16_t wTotalLength      ;
+}midi_desc_func_header_t;
 
-// Carry out Data and Status stage of control transfer
-// - If len = 0, it is equivalent to sending status only
-// - If len > wLength : it will be truncated
-bool usbd_control_xfer(uint8_t rhport, tusb_control_request_t const * request, void* buffer, uint16_t len);
+/// Union Functional Descriptor (Communication Interface)
+typedef struct ATTR_PACKED
+{
+  uint8_t bLength                  ; ///< Size of this descriptor in bytes.
+  uint8_t bDescriptorType          ; ///< Descriptor Type, must be Class-Specific
+  uint8_t bDescriptorSubType       ; ///< Descriptor SubType one of above CDC_FUCN_DESC_
+  uint8_t bControlInterface        ; ///< Interface number of Communication Interface
+  uint8_t bSubordinateInterface    ; ///< Array of Interface number of Data Interface
+}cdc_desc_func_union_t;
 
-// Send STATUS (zero length) packet
-bool usbd_control_status(uint8_t rhport, tusb_control_request_t const * request);
-
-void usbd_edpt_stall(uint8_t rhport, uint8_t ep_addr);
-void usbd_edpt_clear_stall(uint8_t rhport, uint8_t ep_addr);
-bool usbd_edpt_stalled(uint8_t rhport, uint8_t ep_addr);
-
-/*------------------------------------------------------------------*/
-/* Helper
- *------------------------------------------------------------------*/
-// helper to parse an pair of In and Out endpoint descriptors. They must be consecutive
-bool usbd_open_edpt_pair(uint8_t rhport, tusb_desc_endpoint_t const* p_desc_ep, uint8_t xfer_type, uint8_t* ep_out, uint8_t* ep_in);
-
-void usbd_defer_func( osal_task_func_t func, void* param, bool in_isr );
-
+/** @} */
 
 #ifdef __cplusplus
  }
 #endif
 
-#endif /* USBD_PVT_H_ */
+#endif
+
+/** @} */
