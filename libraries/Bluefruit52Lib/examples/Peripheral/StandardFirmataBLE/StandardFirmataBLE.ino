@@ -791,13 +791,11 @@ void setup()
   
   Bluefruit.begin();
   Bluefruit.setName("Bluefruit52");
-  
-  // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
-  Bluefruit.setTxPower(4);
+  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   
   // try to go as fast as possible, could be rejected by some central, increase it if needed
   // iOS won't negotitate and will mostly use 30ms
-  Bluefruit.setConnInterval(9, 24); // min = 9*1.25=11.25 ms, max = 23*1.25=30ms
+  Bluefruit.Periph.setConnInterval(9, 24); // min = 9*1.25=11.25 ms, max = 23*1.25=30ms
   
   // Configure and Start BLE Uart Service
   // Firmata use several small write(1) --> buffering TXD is required to run smoothly
@@ -869,13 +867,8 @@ void startAdv(void)
  *============================================================================*/
 void loop()
 {
-  // Skip if not connected and bleuart notification is enabled
-  if (  !(Bluefruit.connected() && bleuart.notifyEnabled()) ) 
-  {
-    // go to low power mode since there is nothing to do
-    waitForEvent();
-    return;
-  }
+  // Skip if not connected and bleuart notification is not enabled
+  if (  !(Bluefruit.connected() && bleuart.notifyEnabled()) ) return;
   
   byte pin, analogPin;
 
@@ -913,4 +906,7 @@ void loop()
 #ifdef FIRMATA_SERIAL_FEATURE
   serialFeature.update();
 #endif
+
+  // flush TXD since we use bufferTXD()
+  bleuart.flushTXD();
 }

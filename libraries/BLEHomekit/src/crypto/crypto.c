@@ -136,7 +136,7 @@ static uint8_t crypto_loadKeys(void)
 void crypto_scheduleStoreKeys(void)
 {
 //    crypto_storing = 1;
-  ada_callback(NULL, crypto_storeKeys);
+  ada_callback(NULL, 0, crypto_storeKeys);
 }
 
 void crypto_storeKeys(void)

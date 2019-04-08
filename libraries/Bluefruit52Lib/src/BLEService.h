@@ -42,12 +42,12 @@
 class BLEService
 {
   protected:
-    uint16_t _handle;
+    uint16_t _handle; // service gatt handle
 
     void  _init(void);
 
-    virtual void _disconnect_cb(void);
-    virtual void _connect_cb(void);
+    virtual void svc_disconnect_hdl(uint16_t conn_hdl);
+    virtual void svc_connect_hdl(uint16_t conn_hdl);
   
   public:
     static BLEService* lastService;

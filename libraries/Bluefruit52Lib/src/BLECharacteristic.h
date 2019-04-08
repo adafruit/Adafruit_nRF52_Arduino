@@ -74,10 +74,10 @@ class BLECharacteristic
 {
   public:
     /*--------- Callback Signatures ----------*/
-    typedef void (*read_authorize_cb_t)  (BLECharacteristic& chr, ble_gatts_evt_read_t * request);
-    typedef void (*write_authorize_cb_t) (BLECharacteristic& chr, ble_gatts_evt_write_t* request);
-    typedef void (*write_cb_t)           (BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
-    typedef void (*write_cccd_cb_t)      (BLECharacteristic& chr, uint16_t value);
+    typedef void (*read_authorize_cb_t)  (uint16_t conn_hdl, BLECharacteristic* chr, ble_gatts_evt_read_t * request);
+    typedef void (*write_authorize_cb_t) (uint16_t conn_hdl, BLECharacteristic* chr, ble_gatts_evt_write_t* request);
+    typedef void (*write_cb_t)           (uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
+    typedef void (*write_cccd_cb_t)      (uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value);
 
     BLEUuid uuid;
 
@@ -105,10 +105,10 @@ class BLECharacteristic
     void setPresentationFormatDescriptor(uint8_t type, int8_t exponent, uint16_t unit, uint8_t name_space = 1, uint16_t descritpor = 0);
 
     /*------------- Callbacks -------------*/
-    void setWriteCallback        (write_cb_t fp);
-    void setCccdWriteCallback    (write_cccd_cb_t fp);
-    void setReadAuthorizeCallback(read_authorize_cb_t fp);
-    void setWriteAuthorizeCallback(write_authorize_cb_t fp);
+    void setWriteCallback        (write_cb_t            fp, bool useAdaCallback = true);
+    void setCccdWriteCallback    (write_cccd_cb_t       fp, bool useAdaCallback = true);
+    void setReadAuthorizeCallback(read_authorize_cb_t   fp, bool useAdaCallback = true);
+    void setWriteAuthorizeCallback(write_authorize_cb_t fp, bool useAdaCallback = true);
 
     virtual err_t begin(void);
 
@@ -118,50 +118,76 @@ class BLECharacteristic
     ble_gatts_char_handles_t handles(void);
 
     /*------------- Write -------------*/
-    uint16_t write(const void* data, uint16_t len);
-    uint16_t write(const char* str);
+    uint16_t write   (const void* data, uint16_t len);
+    uint16_t write   (const char* str);
 
-    uint16_t write8    (uint8_t  num);
-    uint16_t write16   (uint16_t num);
-    uint16_t write32   (uint32_t num);
-    uint16_t write32   (int      num);
-
+    uint16_t write8  (uint8_t  num);
+    uint16_t write16 (uint16_t num);
+    uint16_t write32 (uint32_t num);
+    uint16_t write32 (int      num);
 
     /*------------- Read -------------*/
-    uint16_t read(void* buffer, uint16_t bufsize, uint16_t offset = 0);
+    uint16_t read  (void* buffer, uint16_t bufsize, uint16_t offset = 0);
 
     uint8_t  read8 (void);
     uint16_t read16(void);
     uint32_t read32(void);
 
-    /*------------- Notify -------------*/
-    uint16_t getCccd(void);
+    uint16_t getCccd(uint16_t conn_hdl);
 
     bool notifyEnabled(void);
+    bool notifyEnabled(uint16_t conn_hdl);
 
-    bool notify(const void* data, uint16_t len);
-    bool notify(const char* str);
+    /*------------- Notify -------------*/
+    bool notify   (const void* data, uint16_t len);
+    bool notify   (const char* str);
 
-    bool notify8    (uint8_t  num);
-    bool notify16   (uint16_t num);
-    bool notify32   (uint32_t num);
-    bool notify32   (int      num);
+    bool notify8  (uint8_t  num);
+    bool notify16 (uint16_t num);
+    bool notify32 (uint32_t num);
+    bool notify32 (int      num);
+
+    /*------------- Notify multiple connections -------------*/
+    bool notify   (uint16_t conn_hdl, const void* data, uint16_t len);
+    bool notify   (uint16_t conn_hdl, const char* str);
+
+    bool notify8  (uint16_t conn_hdl, uint8_t  num);
+    bool notify16 (uint16_t conn_hdl, uint16_t num);
+    bool notify32 (uint16_t conn_hdl, uint32_t num);
+    bool notify32 (uint16_t conn_hdl, int      num);
 
     /*------------- Indicate -------------*/
     bool indicateEnabled(void);
+    bool indicateEnabled(uint16_t conn_hdl);
 
-    bool indicate(const void* data, uint16_t len);
-    bool indicate(const char* str);
+    bool indicate   (const void* data, uint16_t len);
+    bool indicate   (const char* str);
 
-    bool indicate8    (uint8_t  num);
-    bool indicate16   (uint16_t num);
-    bool indicate32   (uint32_t num);
-    bool indicate32   (int      num);
+    bool indicate8  (uint8_t  num);
+    bool indicate16 (uint16_t num);
+    bool indicate32 (uint32_t num);
+    bool indicate32 (int      num);
+
+    /*------------- Indicate multiple connections -------------*/
+    bool indicate   (uint16_t conn_hdl, const void* data, uint16_t len);
+    bool indicate   (uint16_t conn_hdl, const char* str);
+
+    bool indicate8  (uint16_t conn_hdl, uint8_t  num);
+    bool indicate16 (uint16_t conn_hdl, uint16_t num);
+    bool indicate32 (uint16_t conn_hdl, uint32_t num);
+    bool indicate32 (uint16_t conn_hdl, int      num);
 
     /*------------- Internal Functions -------------*/
     virtual void _eventHandler(ble_evt_t* event);
 
   protected:
+    struct ATTR_PACKED {
+      uint8_t write           : 1;
+      uint8_t cccd_write      : 1;
+      uint8_t read_authorize  : 1;
+      uint8_t write_authorize : 1;
+    } _use_ada_cb;
+
     bool _is_temp;
     uint16_t _max_len;
     BLEService* _service; // pointer to parent's service

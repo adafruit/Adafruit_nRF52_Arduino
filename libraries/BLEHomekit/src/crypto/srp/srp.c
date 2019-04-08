@@ -232,7 +232,7 @@ void srp_start(void)
   srp.serverM1 = 0;
 }
 
-uint8_t srp_setA(uint8_t* abuf, uint16_t length, moretime_t moretime)
+uint8_t srp_setA(uint8_t* abuf, uint16_t length, moretime_t moretime, uint16_t conn_hdl)
 {
   int err_code;
 
@@ -280,7 +280,7 @@ uint8_t srp_setA(uint8_t* abuf, uint16_t length, moretime_t moretime)
     // These calculations take a long time. To avoid the connection dying we ask for more time now.
     if (moretime)
     {
-      moretime();
+      moretime(conn_hdl);
     }
 
     {

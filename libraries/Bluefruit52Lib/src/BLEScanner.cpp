@@ -41,14 +41,13 @@ BLEScanner::BLEScanner(void)
   _report_data.p_data  = _scan_data;
   _report_data.len     = BLE_GAP_SCAN_BUFFER_MAX;
 
+  _conn_mask            = 0;
   _runnning            = false;
   _start_if_disconnect = true;
 
   _filter_rssi         = INT8_MIN;
-
   _filter_msd_en       = false;
   _filter_msd_id       = 0; // Irrelevant
-
   _filter_uuid_count   = 0;
   _filter_uuid         = NULL;
 
@@ -331,6 +330,9 @@ void BLEScanner::clearFilters(void)
  */
 void BLEScanner::_eventHandler(ble_evt_t* evt)
 {
+  // conn handle has fixed offset for all events
+  uint16_t const conn_hdl = evt->evt.common_evt.conn_handle;
+
   switch ( evt->header.evt_id  )
   {
     case BLE_GAP_EVT_ADV_REPORT:
@@ -368,11 +370,7 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
 
       if ( invoke_cb )
       {
-        ble_gap_evt_adv_report_t* adv_report = (ble_gap_evt_adv_report_t*) rtos_malloc( sizeof(ble_gap_evt_adv_report_t) );
-        VERIFY(adv_report,);
-
-        (*adv_report) = (*evt_report);
-        if (_rx_cb) ada_callback(adv_report, _rx_cb, adv_report);
+        if (_rx_cb) ada_callback(evt_report, sizeof(*evt_report), _rx_cb, evt_report);
       }else
       {
         // continue scanning since report is filtered and callback is not invoked
@@ -387,30 +385,20 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
 
       if ( para->role == BLE_GAP_ROLE_CENTRAL)
       {
-        _runnning = false;
+        bitSet(_conn_mask, conn_hdl);
 
-        // Turn on Conn LED
-        Bluefruit._stopConnLed();
-        Bluefruit._setConnLed(true);
+        _runnning = false;
       }
     }
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
-      if ( BLE_GAP_ROLE_CENTRAL == Bluefruit.Gap.getRole(evt->evt.common_evt.conn_handle) )
+      if ( bitRead(_conn_mask, conn_hdl) && (0 == Bluefruit.Central.connected()) )
       {
-        // skip if already running
-        if ( !_runnning )
-        {
-          // Turn off Conn LED
-          Bluefruit._setConnLed(false);
+        bitClear(_conn_mask, conn_hdl);
 
-          // Auto start if enabled
-          if ( _start_if_disconnect )
-          {
-            start(_param.timeout);
-          }
-        }
+        // Auto start if enabled and not connected to any peripherals
+        if ( !_runnning && _start_if_disconnect ) start(_param.timeout);
       }
     break;
 
@@ -418,7 +406,7 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
       if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_SCAN)
       {
         _runnning = false;
-        if (_stop_cb) ada_callback(NULL, _stop_cb);
+        if (_stop_cb) ada_callback(NULL, 0, _stop_cb);
       }
     break;
 

@@ -168,7 +168,10 @@ uint16_t BLEClientCharacteristic::read(void* buffer, uint16_t bufsize)
 {
   VERIFY( _chr.char_props.read, 0 );
 
-  uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+  BLEConnection* conn = Bluefruit.Connection( _service->connHandle() );
+  VERIFY(conn, 0);
+
+  uint16_t const max_payload = conn->getMtu() - 3;
 
   _adamsg.prepare(buffer, bufsize);
   VERIFY_STATUS( sd_ble_gattc_read(_service->connHandle(), _chr.handle_value, 0), 0);
@@ -202,7 +205,10 @@ uint16_t BLEClientCharacteristic::write_resp(const void* data, uint16_t len)
 {
   VERIFY( _chr.char_props.write, 0 );
 
-  uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+  BLEConnection* conn = Bluefruit.Connection( _service->connHandle() );
+  VERIFY(conn, 0);
+
+  uint16_t const max_payload = conn->getMtu() - 3;
 
   const bool long_write = (len > max_payload);
   int32_t count = 0;
@@ -275,7 +281,10 @@ uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
 {
 //  VERIFY( _chr.char_props.write_wo_resp, 0 );
 
-  uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+  BLEConnection* conn = Bluefruit.Connection( _service->connHandle() );
+  VERIFY(conn, 0);
+
+  uint16_t const max_payload = conn->getMtu() - 3;
   const uint8_t* u8data = (const uint8_t*) data;
 
   // Break into multiple packet if needed
@@ -283,7 +292,7 @@ uint16_t BLEClientCharacteristic::write(const void* data, uint16_t len)
   while( remaining )
   {
     // TODO only Write without response consume a TX buffer
-    if ( !Bluefruit.Gap.getWriteCmdPacket(_service->connHandle()) ) break;
+    if ( !conn->getWriteCmdPacket() ) break;
 
     uint16_t packet_len = min16(max_payload, remaining);
 
@@ -326,7 +335,6 @@ uint16_t BLEClientCharacteristic::write32(int value)
   return write32( (uint32_t) value);
 }
 
-
 void BLEClientCharacteristic::setNotifyCallback(notify_cb_t fp, bool useAdaCallback)
 {
   _notify_cb = fp;
@@ -354,7 +362,8 @@ bool BLEClientCharacteristic::writeCCCD(uint16_t value)
   };
 
   // TODO only Write without response consume a TX buffer
-  if ( !Bluefruit.Gap.getWriteCmdPacket(conn_handle) )  return NRF_ERROR_RESOURCES; //BLE_ERROR_NO_TX_PACKETS;
+  BLEConnection* conn = Bluefruit.Connection(conn_handle);
+  VERIFY( conn && conn->getWriteCmdPacket() );
 
   VERIFY_STATUS( sd_ble_gattc_write(conn_handle, &param), false );
 
@@ -404,12 +413,7 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
             // use AdaCallback or invoke directly
             if (_use_ada_cb.notify)
             {
-              uint8_t* data = (uint8_t*) rtos_malloc(hvx->len);
-              if (!data) return;
-              memcpy(data, hvx->data, hvx->len);
-
-              // data is free by callback
-              ada_callback(data, _notify_cb, this, data, hvx->len);
+              ada_callback(hvx->data, hvx->len, _notify_cb, this, hvx->data, hvx->len);
             }else
             {
               _notify_cb(this, hvx->data, hvx->len);
@@ -423,12 +427,7 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
             // use AdaCallback or invoke directly
             if (_use_ada_cb.indicate)
             {
-              uint8_t* data = (uint8_t*) rtos_malloc(hvx->len);
-              if (!data) return;
-              memcpy(data, hvx->data, hvx->len);
-
-              // data is free by callback
-              ada_callback(data, _indicate_cb, this, data, hvx->len);
+              ada_callback(hvx->data, hvx->len, _indicate_cb, this, hvx->data, hvx->len);
             }else
             {
               _indicate_cb(this, hvx->data, hvx->len);
@@ -464,7 +463,9 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
       }
       else if ( wr_rsp->write_op == BLE_GATT_OP_PREP_WRITE_REQ)
       {
-        uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+        BLEConnection* conn = Bluefruit.Connection( _service->connHandle() );
+
+        uint16_t const max_payload = conn->getMtu() - 3;
         uint16_t packet_len = min16(_adamsg.remaining, max_payload-2);
 
         if ( packet_len )
@@ -511,7 +512,9 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
 
     case BLE_GATTC_EVT_READ_RSP:
     {
-      uint16_t const max_payload = Bluefruit.Gap.getMTU( _service->connHandle() ) - 3;
+      BLEConnection* conn = Bluefruit.Connection( _service->connHandle() );
+
+      uint16_t const max_payload = conn->getMtu() - 3;
       ble_gattc_evt_read_rsp_t* rd_rsp = (ble_gattc_evt_read_rsp_t*) &evt->evt.gattc_evt.params.read_rsp;
 
       // Give up if failed (BLE_GATT_STATUS_ATTERR_INVALID_OFFSET usually)

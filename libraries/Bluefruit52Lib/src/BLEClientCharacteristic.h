@@ -91,21 +91,21 @@ class BLEClientCharacteristic
     uint16_t write32_resp   (int      value);
 
     /*------------- Notify -------------*/
-    bool     writeCCCD       (uint16_t value);
+    bool writeCCCD       (uint16_t value);
 
-    bool     enableNotify    (void);
-    bool     disableNotify   (void);
+    bool enableNotify    (void);
+    bool disableNotify   (void);
 
-    bool     enableIndicate  (void);
-    bool     disableIndicate (void);
+    bool enableIndicate  (void);
+    bool disableIndicate (void);
 
     /*------------- Callbacks -------------*/
-    void     setNotifyCallback(notify_cb_t fp, bool useAdaCallback = true);
-    void     setIndicateCallback(indicate_cb_t fp, bool useAdaCallback = true);
+    void setNotifyCallback(notify_cb_t fp, bool useAdaCallback = true);
+    void setIndicateCallback(indicate_cb_t fp, bool useAdaCallback = true);
 
     /*------------- Internal usage -------------*/
-    void     _assign(ble_gattc_char_t* gattc_chr);
-    bool     _discoverDescriptor(uint16_t conn_handle, ble_gattc_handle_range_t hdl_range);
+    void _assign(ble_gattc_char_t* gattc_chr);
+    bool _discoverDescriptor(uint16_t conn_handle, ble_gattc_handle_range_t hdl_range);
 
   private:
     ble_gattc_char_t  _chr;
@@ -122,7 +122,6 @@ class BLEClientCharacteristic
       uint8_t notify    : 1;
       uint8_t indicate : 1;
     } _use_ada_cb;
-
 
     void  _init         (void);
     void  _eventHandler (ble_evt_t* event);

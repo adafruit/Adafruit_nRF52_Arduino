@@ -60,12 +60,9 @@ void setup()
   blinkTimer.begin(1000, blink_timer_callback);
   blinkTimer.start();
 
-  err_t err = Bluefruit.begin();
-  if (err)
+  if (Bluefruit.begin())
   {
-    Serial.print("Unable to init Bluefruit (ERROR CODE: ");
-    Serial.print(err);
-    Serial.println(")");
+    Serial.println("Unable to init Bluefruit");
     while(1)
     {
       digitalToggle(LED_RED);
@@ -77,8 +74,7 @@ void setup()
     Serial.println("Bluefruit initialized (peripheral mode)");
   }
 
-  // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
-  Bluefruit.setTxPower(4);
+  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   Bluefruit.setName("Bluefruit52");
 
   // Set up and start advertising

@@ -80,8 +80,7 @@ const char* getBootloaderVersion(void)
     uint32_t const ver2 = (sd_version % 1000000)/1000;
     uint32_t const ver3 = sd_version % 1000;
 
-    sprintf(fw_str, "s%d %d.%d.%d r%d", sd_id,
-                    ver1, ver2, ver3, U32_BYTE4(bootloaderVersion) );
+    sprintf(fw_str, "s%d %d.%d.%d", sd_id, ver1, ver2, ver3);
   }
 
   return fw_str;

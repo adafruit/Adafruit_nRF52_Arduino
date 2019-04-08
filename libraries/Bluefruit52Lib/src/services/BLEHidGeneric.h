@@ -115,10 +115,15 @@ class BLEHidGeneric : public BLEService
 
     bool isBootMode(void) { return _protocol_mode == HID_PROTOCOL_MODE_BOOT; }
 
-    // Report
+    // Send Report to default connection
     bool inputReport(uint8_t reportID, void const* data, int len);
     bool bootKeyboardReport(void const* data, int len);
     bool bootMouseReport(void const* data, int len);
+
+    // Send report to specific connection
+    bool inputReport(uint16_t conn_hdl, uint8_t reportID, void const* data, int len);
+    bool bootKeyboardReport(uint16_t conn_hdl, void const* data, int len);
+    bool bootMouseReport(uint16_t conn_hdl, void const* data, int len);
 
   protected:
     uint8_t _num_input;
@@ -149,7 +154,7 @@ class BLEHidGeneric : public BLEService
 
     BLECharacteristic _chr_control;
 
-    friend void blehid_generic_protocol_mode_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
+    static void blehid_generic_protocol_mode_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
 };
 
 //--------------------------------------------------------------------+

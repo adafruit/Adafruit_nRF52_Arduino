@@ -50,10 +50,11 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
   int32_t count = 0;
   ble_gattc_handle_range_t hdl_range = { .start_handle = start_hdl, .end_handle = end_hdl };
 
+  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
+
   while( _adamsg.isWaiting() )
   {
-    // TODO multiple peripherals
-    delay( Bluefruit.connInterval() );
+    delay( conn->getConnInterval() );
   }
 
   _adamsg.begin(true);
@@ -75,95 +76,73 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
   return (count < 0) ? 0 : count;
 }
 
-bool BLEGatt::waitForIndicateConfirm(uint16_t conn_hdl)
-{
-  BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(conn_hdl);
-
-  // hvi confirm semaphore is created on the fly
-  peer->hvc_sem = xSemaphoreCreateBinary();
-
-  xSemaphoreTake(peer->hvc_sem, portMAX_DELAY);
-
-  vSemaphoreDelete(peer->hvc_sem);
-  peer->hvc_sem = NULL;
-
-  return peer->hvc_received;
-}
-
 void BLEGatt::_eventHandler(ble_evt_t* evt)
 {
   // conn handle has fixed offset regardless of event type
   const uint16_t evt_conn_hdl = evt->evt.common_evt.conn_handle;
   const uint16_t evt_id       = evt->header.evt_id;
 
+  BLEConnection* conn = Bluefruit.Connection(evt_conn_hdl);
+
   /*------------- Server service -------------*/
-  // TODO multiple peripherals
-//  if ( evt_conn_hdl == Bluefruit.connHandle() )
+  if ( evt_id == BLE_GAP_EVT_DISCONNECTED ||  evt_id == BLE_GAP_EVT_CONNECTED )
   {
-    if ( evt_id == BLE_GAP_EVT_DISCONNECTED ||  evt_id == BLE_GAP_EVT_CONNECTED )
+    for(uint8_t i=0; i<_server.svc_count; i++)
     {
-      for(uint8_t i=0; i<_server.svc_count; i++)
+      if ( evt_id == BLE_GAP_EVT_DISCONNECTED )
       {
-        if ( evt_id == BLE_GAP_EVT_DISCONNECTED )
-        {
-          _server.svc_list[i]->_disconnect_cb();
-        }else
-        {
-          _server.svc_list[i]->_connect_cb();
-        }
+        _server.svc_list[i]->svc_disconnect_hdl(evt_conn_hdl);
+      }else
+      {
+        _server.svc_list[i]->svc_connect_hdl(evt_conn_hdl);
       }
     }
   }
 
   /*------------- Server Characteristics -------------*/
-  // TODO multiple prph connection
-  if ( evt_conn_hdl == Bluefruit.connHandle() )
+  for(uint8_t i=0; i<_server.chr_count; i++)
   {
-    for(uint8_t i=0; i<_server.chr_count; i++)
+    BLECharacteristic* chr = _server.chr_list[i];
+    uint16_t req_handle = BLE_GATT_HANDLE_INVALID;
+
+    // BLE_GATTS_OP_EXEC_WRITE_REQ_NOW has no handle, uuid only command op
+    bool exec_write_now = false;
+
+    switch (evt_id)
     {
-      BLECharacteristic* chr = _server.chr_list[i];
-      uint16_t req_handle = BLE_GATT_HANDLE_INVALID;
-
-      // BLE_GATTS_OP_EXEC_WRITE_REQ_NOW has no handle, uuid only command op
-      bool exec_write_now = false;
-
-      switch (evt_id)
+      case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
       {
-        case BLE_GATTS_EVT_RW_AUTHORIZE_REQUEST:
-        {
-          // Handle has the same offset for read & write request
-          req_handle = evt->evt.gatts_evt.params.authorize_request.request.read.handle;
+        // Handle has the same offset for read & write request
+        req_handle = evt->evt.gatts_evt.params.authorize_request.request.read.handle;
 
-          if ( evt->evt.gatts_evt.params.authorize_request.type == BLE_GATTS_AUTHORIZE_TYPE_WRITE )
+        if ( evt->evt.gatts_evt.params.authorize_request.type == BLE_GATTS_AUTHORIZE_TYPE_WRITE )
+        {
+          ble_gatts_evt_write_t * wr_req = &evt->evt.gatts_evt.params.authorize_request.request.write;
+          if ( wr_req->op == BLE_GATTS_OP_EXEC_WRITE_REQ_NOW )
           {
-            ble_gatts_evt_write_t * wr_req = &evt->evt.gatts_evt.params.authorize_request.request.write;
-            if ( wr_req->op == BLE_GATTS_OP_EXEC_WRITE_REQ_NOW )
-            {
-              exec_write_now = true;
-            }
+            exec_write_now = true;
           }
         }
-        break;
-
-        case BLE_GATTS_EVT_WRITE:
-          req_handle = evt->evt.gatts_evt.params.write.handle;
-        break;
-
-        default: break;
       }
+      break;
 
-      // invoke characteristic handler if matched
-      if ( exec_write_now ||
-          ((req_handle != BLE_GATT_HANDLE_INVALID) && (req_handle == chr->handles().value_handle || req_handle == chr->handles().cccd_handle)) )
+      case BLE_GATTS_EVT_WRITE:
+        req_handle = evt->evt.gatts_evt.params.write.handle;
+        break;
+
+      default: break;
+    }
+
+    // invoke characteristic handler if matched
+    if ( exec_write_now ||
+        ((req_handle != BLE_GATT_HANDLE_INVALID) && (req_handle == chr->handles().value_handle || req_handle == chr->handles().cccd_handle)) )
+    {
+      chr->_eventHandler(evt);
+
+      // Save CCCD if paired
+      if ( conn->paired() && (evt_id == BLE_GATTS_EVT_WRITE) && (req_handle == chr->handles().cccd_handle) )
       {
-        chr->_eventHandler(evt);
-
-        // Save CCCD if paired
-        if ( Bluefruit.connPaired() && (evt_id == BLE_GATTS_EVT_WRITE) && (req_handle == chr->handles().cccd_handle) )
-        {
-          BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(evt_conn_hdl);
-          bond_save_cccd( peer->role, evt_conn_hdl, peer->ediv);
-        }
+        conn->storeCccd();
       }
     }
   }
@@ -241,27 +220,6 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
 
         _adamsg.complete();
       }
-    }
-    break;
-
-    case BLE_GATTS_EVT_HVC:
-    {
-      LOG_LV2("GATTS", "Confirm received handle = 0x%04X", evt->evt.gatts_evt.params.hvc.handle);
-      BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(evt_conn_hdl);
-
-      if ( peer->hvc_sem ) xSemaphoreGive(peer->hvc_sem);
-      peer->hvc_received = true;
-    }
-    break;
-
-    case BLE_GATTS_EVT_TIMEOUT:
-    {
-      LOG_LV2("GATTS", "Timeout Source = %d", evt->evt.gatts_evt.params.timeout.src);
-
-      BLEGap::gap_peer_t* peer = Bluefruit.Gap._get_peer(evt_conn_hdl);
-
-      if ( peer->hvc_sem ) xSemaphoreGive(peer->hvc_sem);
-      peer->hvc_received = false;
     }
     break;
 

@@ -23,6 +23,28 @@
 // See pulse_asm.S
 extern unsigned long countPulseASM(const volatile uint32_t *port, uint32_t bit, uint32_t stateMask, unsigned long maxloops);
 
+unsigned long countPulseASM(const volatile uint32_t *port, uint32_t bit, uint32_t stateMask, unsigned long maxloops)
+{
+  unsigned long width = 0;
+
+  // wait for any previous pulse to end
+  while ((*port & bit) == stateMask)
+    if (--maxloops == 0)
+      return 0;
+
+  // wait for the pulse to start
+  while ((*port & bit) != stateMask)
+    if (--maxloops == 0)
+      return 0;
+
+  // wait for the pulse to stop
+  while ((*port & bit) == stateMask) {
+    if (++width == maxloops)
+      return 0;
+  }
+  return width;
+}
+
 /* Measures the length (in microseconds) of a pulse on the pin; state is HIGH
  * or LOW, the type of pulse to measure.  Works on pulses from 2-3 microseconds
  * to 3 minutes in length, but must be called at least a few dozen microseconds

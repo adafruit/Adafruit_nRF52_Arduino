@@ -153,6 +153,8 @@ private:
   bool     _start_if_disconnect;
   bool     _runnning;
 
+  uint32_t _conn_mask;
+
   uint16_t _fast_interval;   // in 0.625 ms
   uint16_t _slow_interval;   // in 0.625 ms
   uint16_t _active_interval; // in 0.625 ms

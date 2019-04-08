@@ -43,8 +43,7 @@ void setup()
   Serial.println();
 
   Bluefruit.begin();
-  // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
-  Bluefruit.setTxPower(4);
+  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   Bluefruit.setName("Bluefruit52");
 
   // Configure and start DIS (Device Information Service)
@@ -66,7 +65,7 @@ void setup()
    * Note: It is already set by BLEHidAdafruit::begin() to 11.25ms - 15ms
    * min = 9*1.25=11.25 ms, max = 12*1.25= 15 ms
    */
-  /* Bluefruit.setConnInterval(9, 12); */
+  /* Bluefruit.Periph.setConnInterval(9, 12); */
 
   // Set up and start advertising
   startAdv();

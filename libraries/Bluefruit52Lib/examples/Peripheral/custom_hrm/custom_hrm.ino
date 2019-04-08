@@ -44,8 +44,8 @@ void setup()
   Bluefruit.setName("Bluefruit52 HRM");
 
   // Set the connect/disconnect callback handlers
-  Bluefruit.setConnectCallback(connect_callback);
-  Bluefruit.setDisconnectCallback(disconnect_callback);
+  Bluefruit.Periph.setConnectCallback(connect_callback);
+  Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
 
   // Configure and Start the Device Information Service
   Serial.println("Configuring the Device Information Service");
@@ -136,7 +136,7 @@ void setupHRM(void)
   hrmc.setCccdWriteCallback(cccd_callback);  // Optionally capture CCCD updates
   hrmc.begin();
   uint8_t hrmdata[2] = { 0b00000110, 0x40 }; // Set the characteristic to use 8-bit values, with the sensor connected and detected
-  hrmc.notify(hrmdata, 2);                   // Use .notify instead of .write!
+  hrmc.write(hrmdata, 2);
 
   // Configure the Body Sensor Location characteristic
   // See: https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.body_sensor_location.xml
@@ -161,8 +161,11 @@ void setupHRM(void)
 
 void connect_callback(uint16_t conn_handle)
 {
+  // Get the reference to current connection
+  BLEConnection* connection = Bluefruit.Connection(conn_handle);
+
   char central_name[32] = { 0 };
-  Bluefruit.Gap.getPeerName(conn_handle, central_name, sizeof(central_name));
+  connection->getPeerName(central_name, sizeof(central_name));
 
   Serial.print("Connected to ");
   Serial.println(central_name);
@@ -172,7 +175,6 @@ void connect_callback(uint16_t conn_handle)
  * Callback invoked when a connection is dropped
  * @param conn_handle connection where this event happens
  * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
- * https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/master/cores/nRF5/nordic/softdevice/s140_nrf52_6.1.1_API/include/ble_hci.h
  */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
@@ -183,7 +185,7 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   Serial.println("Advertising!");
 }
 
-void cccd_callback(BLECharacteristic& chr, uint16_t cccd_value)
+void cccd_callback(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t cccd_value)
 {
     // Display the raw request packet
     Serial.print("CCCD Updated: ");
@@ -193,8 +195,8 @@ void cccd_callback(BLECharacteristic& chr, uint16_t cccd_value)
 
     // Check the characteristic this CCCD update is associated with in case
     // this handler is used for multiple CCCD records.
-    if (chr.uuid == hrmc.uuid) {
-        if (chr.notifyEnabled()) {
+    if (chr->uuid == hrmc.uuid) {
+        if (chr->notifyEnabled(conn_hdl)) {
             Serial.println("Heart Rate Measurement 'Notify' enabled");
         } else {
             Serial.println("Heart Rate Measurement 'Notify' disabled");

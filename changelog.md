@@ -1,12 +1,54 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+# 0.10.0
+
+This release added multiple concurrent peripheral connections support, allow Bluefruit device to multiple central (phones/PC) simultaneously. It introduces new BLE class: BLEPeriph, BLEConnection, remove BLEGap, refactor/rename/move functions and callbacks.     
+
+- Fixed Servo detach issue
+- Fixed pulseIn() compile issue: implement countPulseASM() using C instead of ASM
+- Update bootloader to 0.2.9 which fixed OTA issue with latest BLE5 central such as iPhone X
+- Added Metro nRF52840 Board support
+- Fixed various warnings, thanks @brijohn
+- Added ARDUINO_NRF52832_FEATHER for feather 832, ARDUINO_NRF52840_FEATHER for feather 840, ARDUINO_NRF52_FEATHER for both
+- Fixed an memory leak with LFS, also extend to allow it to be used with SPI flash on other boards. Thanks @jeremypoulter
+- Seperate OTA DFU service from Bluefruit.begin(), sketch must explicit add it if needed.
+- Added multiple peripheral-role connections support, example sketch is at `examples/Peripherals/bleuart_multi`
+- Introduce BLEPeriph class (Bluefruit.Periph) to mange peripheral role's connection
+  - setConnInterval(), setConnIntervalMS(), setConnSupervisionTimeout(), setConnSupervisionTimeoutMS()
+  - setConnectCallback(), setDisconnectCallback()
+- Bluefruit
+  - Bluefruit.getPeerAddr() is replaced by BLEConnection's getPeerAddr()
+  - Bluefruit.connInterval() is replaced by BLEConnection's getConnInterval()
+  - Bluefruit.Central.disconnect() is repalced by Bluefruit.disconnect()
+  - Bluefruit.begin() return type is changed from err_t to bool
+  - Bluefruit.setConnectCallback()/setDisconnectCallback() are replaced by BLEPeriph's setConnectCallback()/setDisconnectCallback()
+- Introduce BLEConnection class (Bluefruit.Connection(conn)) to mange both peripheral and central connections
+  - Added setRssiCallback(), monitorRssi(), getRssi(), stopRssi() for tracking rssi of a connection. `rssi_poll` and `rssi_callback` are added as example sketches 
+- Remove BLEGap, API functions are taken by Bluefruit, BLEPeriph, BLECentral, BLEConnection
+  - Gap.setAddr()/getAddr() are replaced by Bluefruit.setAddr()/getAddr()
+  - Gap.requestPairing() is replaced by Bluefruit.requestPairing(), conn_handle parameter is also added
+  - Most of other functions of BLEGap are replaced by BLEConnection's one
+- BLECharacteristic 
+  - Change callback signature's parameter from `BLECharacteristic&` to `BLECharacteristic*`
+  - conn_handle is added to all callbacks to support multiple peripheral's link
+  - Use AdaCallback thread for BLECharacteristic callbacks
+  - Support LONG WRITE a.k.a send more than MTU ( default = 20 bytes) per request. This fixed issue #91, #220
+  - Fixed read32(), thanks @techno
+  - Removed offset parameter in write callback signature
+- BLEUart
+  - Added conn_handle to API and callbacks
+  - Removed auto flush TXD() with timer, user must call flushTXD() should bufferTXD() is enabled. 
+- BLEHidAdafruit
+  - Removed keyboardReport() variant with flat keycode parameters
+  - Added conn_handle parameter to keyboard led callback
+
 # 0.9.3
 
 - Correct bootloader version text in IDE to 0.2.6
 - Fixed #173 bleuart return incorrect value when failed to send (PR #178 thanks Nenik)
 - Added Client Battery support BLEClientBas
 - Added BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST event support for Central
-- Added Jlink as programmer to upload sketch #133
+- Added Jlink as programmer to upload sketch #133. Though at least one serial DFU upload is needed to disable firmware crc checking
 - Fixed issue with high speed uart baud ~ 1 Mbps (PR #158 thanks Ureloc)
 - Add HardwardPWM removePin(), refactor hwpwm.ino sketch
 - Fixed print float issue with precision > 10

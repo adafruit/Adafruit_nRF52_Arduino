@@ -31,17 +31,17 @@
  * 
  * Connection Handle Explanation
  * -----------------------------
- * The total number of connections is BLE_MAX_CONN = BLE_PRPH_MAX_CONN + BLE_CENTRAL_MAX_CONN.
+ * The total number of connections is BLE_MAX_CONNECTION (20)
  * 
  * The 'connection handle' is an integer number assigned by the SoftDevice
  * (Nordic's proprietary BLE stack). Each connection will receive it's own
- * numeric 'handle' starting from 0 to BLE_MAX_CONN-1, depending on the order
+ * numeric 'handle' starting from 0 to BLE_MAX_CONNECTION-1, depending on the order
  * of connection(s).
  *
  * - E.g If our Central board connects to a mobile phone first (running as a peripheral),
- *   then afterwards connects to another Bluefruit board running in peripheral mode, then
- *    the connection handle of mobile phone is 0, and the handle for the Bluefruit
- *    board is 1, and so on.
+ * then afterwards connects to another Bluefruit board running in peripheral mode, then
+ * the connection handle of mobile phone is 0, and the handle for the Bluefruit
+ * board is 1, and so on.
  */
 
 /* LED PATTERNS
@@ -55,7 +55,7 @@
 // Struct containing peripheral info
 typedef struct
 {
-  char name[32];
+  char name[16+1];
 
   uint16_t conn_handle;
 
@@ -65,16 +65,16 @@ typedef struct
 
 /* Peripheral info array (one per peripheral device)
  * 
- * There are 'BLE_CENTRAL_MAX_CONN' central connections, but the
+ * There are 'BLE_MAX_CONNECTION' central connections, but the
  * the connection handle can be numerically larger (for example if
  * the peripheral role is also used, such as connecting to a mobile
  * device). As such, we need to convert connection handles <-> the array
  * index where appropriate to prevent out of array accesses.
  * 
- * Note: One can simply declares the array with BLE_MAX_CONN and use connection
+ * Note: One can simply declares the array with BLE_MAX_CONNECTION and use connection
  * handle as index directly with the expense of SRAM.
  */
-prph_info_t prphs[BLE_CENTRAL_MAX_CONN];
+prph_info_t prphs[BLE_MAX_CONNECTION];
 
 // Software Timer for blinking the RED LED
 SoftwareTimer blinkTimer;
@@ -92,7 +92,7 @@ void setup()
   Serial.println("Bluefruit52 Central Multi BLEUART Example");
   Serial.println("-----------------------------------------\n");
   
-  // Initialize Bluefruit with max concurrent connections as Peripheral = 1, Central = 1
+  // Initialize Bluefruit with max concurrent connections as Peripheral = 0, Central = 4
   // SRAM usage required by SoftDevice will increase with number of connections
   Bluefruit.begin(0, 4);
 
@@ -100,7 +100,7 @@ void setup()
   Bluefruit.setName("Bluefruit52 Central");
   
   // Init peripheral pool
-  for (uint8_t idx=0; idx<BLE_CENTRAL_MAX_CONN; idx++)
+  for (uint8_t idx=0; idx<BLE_MAX_CONNECTION; idx++)
   {
     // Invalid all connection handle
     prphs[idx].conn_handle = BLE_CONN_HANDLE_INVALID;
@@ -156,7 +156,7 @@ void connect_callback(uint16_t conn_handle)
   prph_info_t* peer = &prphs[id];
   peer->conn_handle = conn_handle;
   
-  Bluefruit.Gap.getPeerName(conn_handle, peer->name, 32);
+  Bluefruit.Connection(conn_handle)->getPeerName(peer->name, sizeof(peer->name)-1);
 
   Serial.print("Connected to ");
   Serial.println(peer->name);
@@ -177,8 +177,8 @@ void connect_callback(uint16_t conn_handle)
   {
     Serial.println("Found ... NOTHING!");
 
-    // disconect since we couldn't find bleuart service
-    Bluefruit.Central.disconnect(conn_handle);
+    // disconnect since we couldn't find bleuart service
+    Bluefruit.disconnect(conn_handle);
   }  
 
   connection_num++;
@@ -188,7 +188,6 @@ void connect_callback(uint16_t conn_handle)
  * Callback invoked when a connection is dropped
  * @param conn_handle
  * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
- * https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/master/cores/nRF5/nordic/softdevice/s140_nrf52_6.1.1_API/include/ble_hci.h
  */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
@@ -248,7 +247,7 @@ void sendAll(const char* str)
   Serial.print("[Send to All]: ");
   Serial.println(str);
   
-  for(uint8_t id=0; id < BLE_CENTRAL_MAX_CONN; id++)
+  for(uint8_t id=0; id < BLE_MAX_CONNECTION; id++)
   {
     prph_info_t* peer = &prphs[id];
 
@@ -282,7 +281,7 @@ void loop()
  */
 int findConnHandle(uint16_t conn_handle)
 {
-  for(int id=0; id<BLE_CENTRAL_MAX_CONN; id++)
+  for(int id=0; id<BLE_MAX_CONNECTION; id++)
   {
     if (conn_handle == prphs[id].conn_handle)
     {

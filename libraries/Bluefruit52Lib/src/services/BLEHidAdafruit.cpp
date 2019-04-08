@@ -213,22 +213,20 @@ err_t BLEHidAdafruit::begin(void)
   VERIFY_STATUS( BLEHidGeneric::begin() );
 
   // Attempt to change the connection interval to 11.25-15 ms when starting HID
-  Bluefruit.setConnInterval(9, 12);
+  Bluefruit.Periph.setConnInterval(9, 12);
 
   return ERROR_NONE;
 }
 
 /*------------------------------------------------------------------*/
-/* Keyboard
+/* Keyboard Multiple Connections
  *------------------------------------------------------------------*/
-
-void blehid_ada_keyboard_output_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
+void BLEHidAdafruit::blehid_ada_keyboard_output_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
   LOG_LV2("HID", "Keyboard LED : 0x%02X", data[0]);
-  VERIFY(len == 1, );
 
-  BLEHidAdafruit& svc = (BLEHidAdafruit&) chr.parentService();
-  if ( svc._kbd_led_cb ) svc._kbd_led_cb(data[0]);
+  BLEHidAdafruit& svc = (BLEHidAdafruit&) chr->parentService();
+  if ( svc._kbd_led_cb ) svc._kbd_led_cb(conn_hdl, data[0]);
 }
 
 void BLEHidAdafruit::setKeyboardLedCallback(kbd_led_cb_t fp)
@@ -242,18 +240,18 @@ void BLEHidAdafruit::setKeyboardLedCallback(kbd_led_cb_t fp)
   _chr_boot_keyboard_output->setWriteCallback(fp ? blehid_ada_keyboard_output_cb : NULL);
 }
 
-bool BLEHidAdafruit::keyboardReport(hid_keyboard_report_t* report)
+bool BLEHidAdafruit::keyboardReport(uint16_t conn_hdl, hid_keyboard_report_t* report)
 {
   if ( isBootMode() )
   {
-    return bootKeyboardReport(report, sizeof(hid_keyboard_report_t));
+    return bootKeyboardReport(conn_hdl, report, sizeof(hid_keyboard_report_t));
   }else
   {
-    return inputReport( REPORT_ID_KEYBOARD, report, sizeof(hid_keyboard_report_t));
+    return inputReport(conn_hdl, REPORT_ID_KEYBOARD, report, sizeof(hid_keyboard_report_t));
   }
 }
 
-bool BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode[6])
+bool BLEHidAdafruit::keyboardReport(uint16_t conn_hdl, uint8_t modifier, uint8_t keycode[6])
 {
   hid_keyboard_report_t report =
   {
@@ -261,22 +259,10 @@ bool BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode[6])
   };
   memcpy(report.keycode, keycode, 6);
 
-  return keyboardReport(&report);
+  return keyboardReport(conn_hdl, &report);
 }
 
-bool BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode0, uint8_t keycode1, uint8_t keycode2, uint8_t keycode3, uint8_t keycode4, uint8_t keycode5)
-{
-  hid_keyboard_report_t report =
-  {
-      .modifier = modifier,
-      .reserved = 0,
-      .keycode  = { keycode0, keycode1, keycode2, keycode3, keycode4, keycode5 }
-  };
-
-  return keyboardReport(&report);
-}
-
-bool BLEHidAdafruit::keyPress(char ch)
+bool BLEHidAdafruit::keyPress(uint16_t conn_hdl, char ch)
 {
   hid_keyboard_report_t report;
   varclr(&report);
@@ -284,18 +270,18 @@ bool BLEHidAdafruit::keyPress(char ch)
   report.modifier = ( HID_ASCII_TO_KEYCODE[(uint8_t)ch].shift ) ? KEYBOARD_MODIFIER_LEFTSHIFT : 0;
   report.keycode[0] = HID_ASCII_TO_KEYCODE[(uint8_t)ch].keycode;
 
-  return keyboardReport(&report);
+  return keyboardReport(conn_hdl, &report);
 }
 
-bool BLEHidAdafruit::keyRelease(void)
+bool BLEHidAdafruit::keyRelease(uint16_t conn_hdl)
 {
   hid_keyboard_report_t report;
   varclr(&report);
 
-  return keyboardReport(&report);
+  return keyboardReport(conn_hdl, &report);
 }
 
-bool BLEHidAdafruit::keySequence(const char* str, int interal)
+bool BLEHidAdafruit::keySequence(uint16_t conn_hdl, const char* str, int interval)
 {
   // Send each key in sequence
   char ch;
@@ -303,15 +289,15 @@ bool BLEHidAdafruit::keySequence(const char* str, int interal)
   {
     char lookahead = *str;
 
-    keyPress(ch);
-    delay(interal);
+    keyPress(conn_hdl, ch);
+    delay(interval);
 
     /* Only need to empty report if the next character is NULL or the same with
      * the current one, else no need to send */
     if ( lookahead == ch || lookahead == 0 )
     {
-      keyRelease();
-      delay(interal);
+      keyRelease(conn_hdl);
+      delay(interval);
     }
   }
 
@@ -321,37 +307,37 @@ bool BLEHidAdafruit::keySequence(const char* str, int interal)
 /*------------------------------------------------------------------*/
 /* Consumer Media Key
  *------------------------------------------------------------------*/
-bool BLEHidAdafruit::consumerReport(uint16_t usage_code)
+bool BLEHidAdafruit::consumerReport(uint16_t conn_hdl, uint16_t usage_code)
 {
-  return inputReport( REPORT_ID_CONSUMER_CONTROL, &usage_code, sizeof(usage_code));
+  return inputReport(conn_hdl, REPORT_ID_CONSUMER_CONTROL, &usage_code, sizeof(usage_code));
 }
 
-bool BLEHidAdafruit::consumerKeyPress(uint16_t usage_code)
+bool BLEHidAdafruit::consumerKeyPress(uint16_t conn_hdl, uint16_t usage_code)
 {
-  return consumerReport(usage_code);
+  return consumerReport(conn_hdl, usage_code);
 }
 
-bool BLEHidAdafruit::consumerKeyRelease(void)
+bool BLEHidAdafruit::consumerKeyRelease(uint16_t conn_hdl)
 {
   uint16_t usage = 0;
-  return consumerReport(usage);
+  return consumerReport(conn_hdl, usage);
 }
 
 /*------------------------------------------------------------------*/
 /* Mouse
  *------------------------------------------------------------------*/
-bool BLEHidAdafruit::mouseReport(hid_mouse_report_t* report)
+bool BLEHidAdafruit::mouseReport(uint16_t conn_hdl, hid_mouse_report_t* report)
 {
   if ( isBootMode() )
   {
-    return bootMouseReport(report, sizeof(hid_mouse_report_t));
+    return bootMouseReport(conn_hdl, report, sizeof(hid_mouse_report_t));
   }else
   {
-    return inputReport( REPORT_ID_MOUSE, report, sizeof(hid_mouse_report_t));
+    return inputReport(conn_hdl, REPORT_ID_MOUSE, report, sizeof(hid_mouse_report_t));
   }
 }
 
-bool BLEHidAdafruit::mouseReport(uint8_t buttons, int8_t x, int8_t y, int8_t wheel, int8_t pan)
+bool BLEHidAdafruit::mouseReport(uint16_t conn_hdl, uint8_t buttons, int8_t x, int8_t y, int8_t wheel, int8_t pan)
 {
   hid_mouse_report_t report =
   {
@@ -364,31 +350,114 @@ bool BLEHidAdafruit::mouseReport(uint8_t buttons, int8_t x, int8_t y, int8_t whe
 
   _mse_buttons = buttons;
 
-  return mouseReport(&report);
+  return mouseReport(conn_hdl, &report);
+}
+
+bool BLEHidAdafruit::mouseButtonPress(uint16_t conn_hdl, uint8_t buttons)
+{
+  _mse_buttons = buttons;
+  return mouseReport(conn_hdl, buttons, 0, 0, 0, 0);
+}
+
+bool BLEHidAdafruit::mouseButtonRelease(uint16_t conn_hdl)
+{
+  return mouseReport(conn_hdl, 0, 0, 0, 0, 0);
+}
+
+bool BLEHidAdafruit::mouseMove(uint16_t conn_hdl, int8_t x, int8_t y)
+{
+  return mouseReport(conn_hdl, _mse_buttons, x, y, 0, 0);
+}
+
+bool BLEHidAdafruit::mouseScroll(uint16_t conn_hdl, int8_t scroll)
+{
+  return mouseReport(conn_hdl, _mse_buttons, 0, 0, scroll, 0);
+}
+
+bool BLEHidAdafruit::mousePan(uint16_t conn_hdl, int8_t pan)
+{
+  return mouseReport(conn_hdl, _mse_buttons, 0, 0, 0, pan);
+}
+
+/*------------------------------------------------------------------*/
+/* Single Connections
+ *------------------------------------------------------------------*/
+
+//------------- Keyboard -------------//
+bool BLEHidAdafruit::keyboardReport(hid_keyboard_report_t* report)
+{
+  return keyboardReport(BLE_GATT_HANDLE_INVALID, report);
+}
+
+bool BLEHidAdafruit::keyboardReport(uint8_t modifier, uint8_t keycode[6])
+{
+  return keyboardReport(BLE_GATT_HANDLE_INVALID, modifier, keycode);
+}
+
+bool BLEHidAdafruit::keyPress(char ch)
+{
+  return keyPress(BLE_GATT_HANDLE_INVALID, ch);
+}
+
+bool BLEHidAdafruit::keyRelease(void)
+{
+  return keyRelease(BLE_GATT_HANDLE_INVALID);
+}
+
+bool BLEHidAdafruit::keySequence(const char* str, int interval)
+{
+  return keySequence(BLE_GATT_HANDLE_INVALID, str, interval);
+}
+
+//------------- Consumer Media Keys -------------//
+bool BLEHidAdafruit::consumerReport(uint16_t usage_code)
+{
+  return consumerReport(BLE_GATT_HANDLE_INVALID, usage_code);
+}
+
+bool BLEHidAdafruit::consumerKeyPress(uint16_t usage_code)
+{
+  return consumerKeyPress(BLE_GATT_HANDLE_INVALID, usage_code);
+}
+
+bool BLEHidAdafruit::consumerKeyRelease(void)
+{
+  return consumerKeyRelease(BLE_GATT_HANDLE_INVALID);
+}
+
+//------------- Mouse -------------//
+bool BLEHidAdafruit::mouseReport(hid_mouse_report_t* report)
+{
+  return mouseReport(BLE_GATT_HANDLE_INVALID, report);
+}
+
+bool BLEHidAdafruit::mouseReport(uint8_t buttons, int8_t x, int8_t y, int8_t wheel, int8_t pan)
+{
+  return mouseReport(BLE_GATT_HANDLE_INVALID, buttons, x, y, wheel, pan);
 }
 
 bool BLEHidAdafruit::mouseButtonPress(uint8_t buttons)
 {
-  _mse_buttons = buttons;
-  return mouseReport(buttons, 0, 0, 0, 0);
+  return mouseButtonPress(BLE_GATT_HANDLE_INVALID, buttons);
 }
 
 bool BLEHidAdafruit::mouseButtonRelease(void)
 {
-  return mouseReport(0, 0, 0, 0, 0);
+  return mouseButtonRelease(BLE_GATT_HANDLE_INVALID);
 }
 
 bool BLEHidAdafruit::mouseMove(int8_t x, int8_t y)
 {
-  return mouseReport(_mse_buttons, x, y, 0, 0);
+  return mouseMove(BLE_GATT_HANDLE_INVALID, x, y);
 }
 
 bool BLEHidAdafruit::mouseScroll(int8_t scroll)
 {
-  return mouseReport(_mse_buttons, 0, 0, scroll, 0);
+  return mouseScroll(BLE_GATT_HANDLE_INVALID, scroll);
 }
 
 bool BLEHidAdafruit::mousePan(int8_t pan)
 {
-  return mouseReport(_mse_buttons, 0, 0, 0, pan);
+  return mousePan(BLE_GATT_HANDLE_INVALID, pan);
 }
+

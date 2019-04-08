@@ -51,23 +51,36 @@ extern const uint8_t BLEUART_UUID_CHR_TXD[];
 class BLEUart : public BLEService, public Stream
 {
   public:
-    typedef void (*rx_callback_t) (void);
+    typedef void (*rx_callback_t) (uint16_t conn_hdl);
+    typedef void (*notify_callback_t)(uint16_t conn_hdl, bool enabled);
 
     BLEUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
     virtual ~BLEUart();
 
     virtual err_t begin(void);
 
-    bool notifyEnabled (void);
+    bool notifyEnabled(void);
+    bool notifyEnabled(uint16_t conn_hdl);
+
     void setRxCallback (rx_callback_t fp);
-    void bufferTXD     (uint8_t enable);
+    void setNotifyCallback(notify_callback_t fp);
+
+    void bufferTXD(bool enable);
+
+    bool flushTXD (void);
+    bool flushTXD (uint16_t conn_hdl);
 
     // Stream API
     virtual int       read       ( void );
     virtual int       read       ( uint8_t * buf, size_t size );
             int       read       ( char    * buf, size_t size ) { return read( (uint8_t*) buf, size); }
+
     virtual size_t    write      ( uint8_t b );
-    virtual size_t    write      ( const uint8_t *content, size_t len );
+    virtual size_t    write      ( const uint8_t *content, size_t len);
+
+    virtual size_t    write      (uint16_t conn_hdl, uint8_t b);
+    virtual size_t    write      (uint16_t conn_hdl, const uint8_t *content, size_t len);
+
     virtual int       available  ( void );
     virtual int       peek       ( void );
     virtual void      flush      ( void );
@@ -80,26 +93,20 @@ class BLEUart : public BLEService, public Stream
     BLECharacteristic _rxd;
 
     // RXD
-    Adafruit_FIFO*    _rx_fifo;
-    uint16_t          _rx_fifo_depth;
-    rx_callback_t     _rx_cb;
+    Adafruit_FIFO* _rx_fifo;
+    uint16_t       _rx_fifo_depth;
 
     // TXD
-    Adafruit_FIFO*    _tx_fifo;
-    uint8_t           _tx_buffered;
-    TimerHandle_t     _buffered_th;
+    Adafruit_FIFO* _tx_fifo;
+    bool           _tx_buffered; // default is false
 
-    bool flush_tx_buffered(void);
+    // Callbacks
+    rx_callback_t     _rx_cb;
+    notify_callback_t _notify_cb;
 
-    // from BLEService
-    virtual void _disconnect_cb(void);
-    virtual void _connect_cb(void);
-
-    friend void bleuart_rxd_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
-    friend void bleuart_txd_cccd_cb(BLECharacteristic& chr, uint16_t value);
-    friend void bleuart_txd_buffered_hdlr(TimerHandle_t timer);
+    // Static Method for callbacks
+    static void bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
+    static void bleuart_txd_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value);
 };
-
-
 
 #endif /* BLEUART_H_ */

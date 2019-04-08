@@ -110,8 +110,8 @@ void connect_callback(uint16_t conn_handle)
   {
     Serial.println("Found NONE");
 
-    // disconect since we couldn't find HRM service
-    Bluefruit.Central.disconnect(conn_handle);
+    // disconnect since we couldn't find HRM service
+    Bluefruit.disconnect(conn_handle);
 
     return;
   }
@@ -125,7 +125,7 @@ void connect_callback(uint16_t conn_handle)
     // Measurement chr is mandatory, if it is not found (valid), then disconnect
     Serial.println("not found !!!");  
     Serial.println("Measurement characteristic is mandatory but not found");
-    Bluefruit.Central.disconnect(conn_handle);
+    Bluefruit.disconnect(conn_handle);
     return;
   }
   Serial.println("Found it");
@@ -165,7 +165,6 @@ void connect_callback(uint16_t conn_handle)
  * Callback invoked when a connection is dropped
  * @param conn_handle
  * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
- * https://github.com/adafruit/Adafruit_nRF52_Arduino/blob/master/cores/nRF5/nordic/softdevice/s140_nrf52_6.1.1_API/include/ble_hci.h
  */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {

@@ -106,8 +106,6 @@ typedef struct ATTR_PACKED
 
 VERIFY_STATIC ( sizeof(midi_split_packet_t) == (BLE_MIDI_TX_BUFFER_SIZE + 1) );
 
-void blemidi_write_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset);
-
 /*------------------------------------------------------------------*/
 /* IMPLEMENTATION
  *------------------------------------------------------------------*/
@@ -120,7 +118,12 @@ BLEMidi::BLEMidi(uint16_t fifo_depth)
 
 bool BLEMidi::notifyEnabled(void)
 {
-  return Bluefruit.connPaired() && _io.notifyEnabled();
+  return _io.notifyEnabled();
+}
+
+bool BLEMidi::notifyEnabled(uint16_t conn_hdl)
+{
+  return _io.notifyEnabled(conn_hdl);
 }
 
 void BLEMidi::setWriteCallback(midi_write_cb_t fp)
@@ -148,12 +151,12 @@ err_t BLEMidi::begin(void)
   // IO characteristic
   _io.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP | CHR_PROPS_NOTIFY);
   _io.setPermission(SECMODE_ENC_NO_MITM, SECMODE_ENC_NO_MITM);
-  _io.setWriteCallback(blemidi_write_cb);
+  _io.setWriteCallback(BLEMidi::blemidi_write_cb);
 
   VERIFY_STATUS( _io.begin() );
 
   // Attempt to change the connection interval to 11.25-15 ms when starting HID
-  Bluefruit.setConnInterval(9, 12);
+  Bluefruit.Periph.setConnInterval(9, 12);
 
   return ERROR_NONE;
 }
@@ -161,16 +164,15 @@ err_t BLEMidi::begin(void)
 /*------------------------------------------------------------------*/
 /* Callbacks
  *------------------------------------------------------------------*/
-void blemidi_write_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
+void BLEMidi::blemidi_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  (void) offset;
   if ( len < 3 ) return;
 
-  BLEMidi& midi_svc = (BLEMidi&) chr.parentService();
-  midi_svc._write_handler(data, len);
+  BLEMidi& midi_svc = (BLEMidi&) chr->parentService();
+  midi_svc._write_handler(conn_hdl, data, len);
 }
 
-void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
+void BLEMidi::_write_handler(uint16_t conn_hdl, uint8_t* data, uint16_t len)
 {
   // drop the BLE MIDI header byte
   data++;
@@ -178,7 +180,6 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
 
   while (len)
   {
-
     // timestamp low byte followed by a MIDI status,
     // so we drop the timestamp low byte
     if ( isStatusByte(data[0]) && isStatusByte(data[1]) )
@@ -200,7 +201,7 @@ void BLEMidi::_write_handler(uint8_t* data, uint16_t len)
   }
 
   // Call write callback if configured
-  if ( _write_cb ) _write_cb();
+  if ( _write_cb ) _write_cb(conn_hdl);
 
 #ifdef MIDI_LIB_INCLUDED
   // read while possible if configured

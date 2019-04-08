@@ -42,12 +42,12 @@
  */
 BLECentral::BLECentral(void)
 {
+  _connect_cb = NULL;
+  _disconnect_cb = NULL;
+
   _conn_param.min_conn_interval = _conn_param.max_conn_interval = BLE_GAP_CONN_MIN_INTERVAL_DFLT;
   _conn_param.slave_latency = BLE_GAP_CONN_SLAVE_LATENCY;
   _conn_param.conn_sup_timeout = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS/10;
-
-  _connect_cb    = NULL;
-  _disconnect_cb = NULL;
 }
 
 void BLECentral::begin(void)
@@ -85,46 +85,37 @@ bool BLECentral::connect(const ble_gap_evt_adv_report_t* adv_report)
   return connect(&adv_report->peer_addr);
 }
 
-bool BLECentral::disconnect(uint16_t conn_handle)
-{
-  return ERROR_NONE == sd_ble_gap_disconnect(conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-}
-
 /**
  * Check if connected to a specific peripheral
  * @param conn_handle
  * @return
  */
-bool BLECentral::connected(uint16_t conn_handle)
+bool BLECentral::connected(uint16_t conn_hdl)
 {
-  return Bluefruit.Gap.connected(conn_handle);
+  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
+  return conn && conn->connected() && (conn->getRole() == BLE_GAP_ROLE_CENTRAL);
 }
 
 /**
- * Check if connected to ANY peripherals
- * @param conn_handle
- * @return
+ * @return number of peripherals
  */
-bool BLECentral::connected(void)
+uint8_t BLECentral::connected(void)
 {
-  for (uint8_t conn=0; conn<BLE_MAX_CONN; conn++)
+  uint8_t count = 0;
+  for (uint16_t c=0; c<BLE_MAX_CONNECTION; c++)
   {
-    // skip Peripheral Role handle
-    if ( Bluefruit.Gap.connected(conn) && (Bluefruit.Gap.getRole(conn) == BLE_GAP_ROLE_CENTRAL) )
-    {
-      return true;
-    }
+    if ( this->connected(c) ) count++;
   }
 
-  return false;
+  return count;
 }
 
-void BLECentral::setConnectCallback( BLEGap::connect_callback_t fp)
+void BLECentral::setConnectCallback( ble_connect_callback_t fp )
 {
   _connect_cb = fp;
 }
 
-void BLECentral::setDisconnectCallback( BLEGap::disconnect_callback_t fp)
+void BLECentral::setDisconnectCallback( ble_disconnect_callback_t fp )
 {
   _disconnect_cb = fp;
 }
@@ -138,7 +129,7 @@ void BLECentral::clearBonds(void)
  * Event is forwarded from Bluefruit Poll() method
  * @param event
  */
-void BLECentral::_event_handler(ble_evt_t* evt)
+void BLECentral::_eventHandler(ble_evt_t* evt)
 {
   // conn handle has fixed offset regardless of event type
   const uint16_t conn_hdl = evt->evt.common_evt.conn_handle;
@@ -148,19 +139,9 @@ void BLECentral::_event_handler(ble_evt_t* evt)
   switch ( evt->header.evt_id  )
   {
     case BLE_GAP_EVT_CONNECTED:
-      if ( Bluefruit.Gap.getRole(conn_hdl) == BLE_GAP_ROLE_CENTRAL)
-      {
-        // Invoke callback
-        if ( _connect_cb) ada_callback(NULL, _connect_cb, conn_hdl);
-      }
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
-      if ( Bluefruit.Gap.getRole(conn_hdl) == BLE_GAP_ROLE_CENTRAL)
-      {
-        // Invoke callback reason is BLE_HCI_STATUS code
-        if ( _disconnect_cb) ada_callback(NULL, _disconnect_cb, conn_hdl, evt->evt.gap_evt.params.disconnected.reason);
-      }
     break;
 
     case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:

@@ -12,7 +12,7 @@
  any redistribution
 *********************************************************************/
 
-/* This sketches demontrates the Bluefruit.Advertising API(). When powered up,
+/* This sketch demonstrates the Bluefruit.Advertising API(). When powered up,
  * the Bluefruit module will start advertising for ADV_TIMEOUT seconds (by
  * default 30 seconds in fast mode, the remaining time slow mode) and then
  * stop advertising completely. The module will start advertising again if
@@ -35,8 +35,7 @@ void setup()
   Serial.println("----------------------------------------\n");
 
   Bluefruit.begin();
-  // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
-  Bluefruit.setTxPower(4);
+  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   Bluefruit.setName("Bluefruit52");
 
   // Set up and start advertising

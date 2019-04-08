@@ -138,7 +138,7 @@ void SwRotaryEncoder::_irq_handler(void)
     _abs += step;
     _a_last = bita;
 
-    if (_cb) ada_callback_fromISR(NULL, _cb, step);
+    if (_cb) ada_callback_fromISR(NULL, 0, _cb, step);
   }
 }
 

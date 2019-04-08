@@ -74,12 +74,12 @@ err_t BLEService::begin(void)
   return ERROR_NONE;
 }
 
-void BLEService::_disconnect_cb(void)
+void BLEService::svc_disconnect_hdl(uint16_t conn_hdl)
 {
   // Template for inherited class
 }
 
-void BLEService::_connect_cb(void)
+void BLEService::svc_connect_hdl(uint16_t conn_hdl)
 {
   // Template for inherited class
 }

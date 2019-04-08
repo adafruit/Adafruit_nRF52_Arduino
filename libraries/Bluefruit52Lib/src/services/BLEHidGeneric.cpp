@@ -130,9 +130,11 @@ void BLEHidGeneric::setOutputReportCallback(uint8_t reportID, BLECharacteristic:
 /*------------------------------------------------------------------*/
 /* Callbacks
  *------------------------------------------------------------------*/
-void blehid_generic_protocol_mode_cb(BLECharacteristic& chr, uint8_t* data, uint16_t len, uint16_t offset)
+void BLEHidGeneric::blehid_generic_protocol_mode_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  BLEHidGeneric& svc = (BLEHidGeneric&) chr.parentService();
+  (void) conn_hdl;
+
+  BLEHidGeneric& svc = (BLEHidGeneric&) chr->parentService();
   svc._protocol_mode = *data;
 
   LOG_LV2("HID", "Protocol Mode : %d (0 Boot, 1 Report)", *data);
@@ -156,7 +158,7 @@ err_t BLEHidGeneric::begin(void)
 
     _chr_protocol->setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE_WO_RESP);
     _chr_protocol->setFixedLen(1);
-    _chr_protocol->setWriteCallback(blehid_generic_protocol_mode_cb);
+    _chr_protocol->setWriteCallback(BLEHidGeneric::blehid_generic_protocol_mode_cb);
     VERIFY_STATUS( _chr_protocol->begin() );
     _chr_protocol->write8(_protocol_mode);
   }
@@ -249,22 +251,36 @@ err_t BLEHidGeneric::begin(void)
 /*------------------------------------------------------------------*/
 /* Input Report
  *------------------------------------------------------------------*/
-bool BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
+bool BLEHidGeneric::inputReport(uint16_t conn_hdl, uint8_t reportID, void const* data, int len)
 {
   // index is ID-1
   uint8_t const idx =  ( reportID ? (reportID-1) : 0 );
+  return _chr_inputs[idx].notify(conn_hdl, (uint8_t const*) data, len);
+}
 
-  return _chr_inputs[idx].notify( (uint8_t const*) data, len);
+bool BLEHidGeneric::bootKeyboardReport(uint16_t conn_hdl, void const* data, int len)
+{
+  return _chr_boot_keyboard_input->notify(conn_hdl, data, len);
+}
+
+bool BLEHidGeneric::bootMouseReport(uint16_t conn_hdl, void const* data, int len)
+{
+  return _chr_boot_mouse_input->notify(conn_hdl, data, len);
+}
+
+bool BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
+{
+  return inputReport(BLE_CONN_HANDLE_INVALID, reportID, data, len);
 }
 
 bool BLEHidGeneric::bootKeyboardReport(void const* data, int len)
 {
-  return _chr_boot_keyboard_input->notify(data, len);
+  return bootKeyboardReport(BLE_CONN_HANDLE_INVALID, data, len);
 }
 
 bool BLEHidGeneric::bootMouseReport(void const* data, int len)
 {
-  return _chr_boot_mouse_input->notify(data, len);
+  return bootMouseReport(BLE_CONN_HANDLE_INVALID, data, len);
 }
 
 /*------------------------------------------------------------------*/

@@ -170,12 +170,9 @@ void setup()
   }
 
   /* Enable both peripheral and central modes */
-  err_t err = Bluefruit.begin(true, true);
-  if (err)
+  if ( !Bluefruit.begin(1, 1) )
   {
-    Serial.print("Unable to init Bluefruit (ERROR CODE: ");
-    Serial.print(err);
-    Serial.println(")");
+    Serial.println("Unable to init Bluefruit");
     while(1)
     {
       digitalToggle(LED_RED);
@@ -187,8 +184,7 @@ void setup()
     Serial.println("Bluefruit initialized (central mode)");
   }
   
-  // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
-  Bluefruit.setTxPower(4);
+  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
 
   /* Set the device name */
   Bluefruit.setName("Bluefruit52");

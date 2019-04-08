@@ -58,9 +58,9 @@ using the command line:
 The result has been slightly edited to increase readability.
 
 */
-
-	.cpu cortex-m0plus
-	.fpu softvfp
+/*
+	.cpu cortex-m4
+	.fpu fpv4-sp-d16
 	.eabi_attribute 20, 1	@ Tag_ABI_FP_denormal
 	.eabi_attribute 21, 1	@ Tag_ABI_FP_exceptions
 	.eabi_attribute 23, 3	@ Tag_ABI_FP_number_model
@@ -173,3 +173,4 @@ countPulseASM:
 	pop	{r4, r5, pc}
 	.size	countPulseASM, .-countPulseASM
 	.ident	"GCC: (GNU Tools for ARM Embedded Processors (Arduino build)) 4.8.3 20140228 (release) [ARM/embedded-4_8-branch revision 208322]"
+*/

@@ -43,6 +43,7 @@ uint8_t components = 3;     // only 3 and 4 are valid values
 Adafruit_NeoPixel neopixel = Adafruit_NeoPixel();
 
 // BLE Service
+BLEDfu  bledfu;
 BLEDis  bledis;
 BLEUart bleuart;
 
@@ -62,10 +63,12 @@ void setup()
 
   // Init Bluefruit
   Bluefruit.begin();
-  // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
-  Bluefruit.setTxPower(4);
+  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   Bluefruit.setName("Bluefruit52");
-  Bluefruit.setConnectCallback(connect_callback);
+  Bluefruit.Periph.setConnectCallback(connect_callback);
+
+  // To be consistent OTA DFU should be added first if it exists
+  bledfu.begin();
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
@@ -109,8 +112,11 @@ void startAdv(void)
 
 void connect_callback(uint16_t conn_handle)
 {
+  // Get the reference to current connection
+  BLEConnection* connection = Bluefruit.Connection(conn_handle);
+
   char central_name[32] = { 0 };
-  Bluefruit.Gap.getPeerName(conn_handle, central_name, sizeof(central_name));
+  connection->getPeerName(central_name, sizeof(central_name));
 
   Serial.print("Connected to ");
   Serial.println(central_name);

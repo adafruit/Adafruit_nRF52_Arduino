@@ -43,7 +43,7 @@ feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52 -DARDUINO_NRF52_FEATHER
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-feather52832.menu.softdevice.s132v6=0.2.7 (s132 6.1.1)
+feather52832.menu.softdevice.s132v6=0.2.9 (s132 6.1.1)
 feather52832.menu.softdevice.s132v6.build.sd_flags=-DS132
 feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.1.1
@@ -103,7 +103,7 @@ feather52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_FEATHER
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-feather52840.menu.softdevice.s140v6=0.2.7 (s140 6.1.1)
+feather52840.menu.softdevice.s140v6=0.2.9 (s140 6.1.1)
 feather52840.menu.softdevice.s140v6.build.sd_flags=-DS140
 feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.1.1
@@ -125,44 +125,44 @@ feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 #**********************************************
 # Bluefruit Metro nRF52840 Express Board
 #**********************************************
-metro52840.name=Adafruit Bluefruit nRF52840 Metro Express
-metro52840.bootloader.tool=bootburn
+#metro52840.name=Adafruit Bluefruit nRF52840 Metro Express
+#metro52840.bootloader.tool=bootburn
 
 # Upload
-metro52840.upload.tool=nrfutil
-metro52840.upload.protocol=nrfutil
-metro52840.upload.use_1200bps_touch=true
-metro52840.upload.wait_for_upload_port=true
+#metro52840.upload.tool=nrfutil
+#metro52840.upload.protocol=nrfutil
+#metro52840.upload.use_1200bps_touch=true
+#metro52840.upload.wait_for_upload_port=true
 
 # Build
-metro52840.build.mcu=cortex-m4
-metro52840.build.f_cpu=64000000
-metro52840.build.board=NRF52840_METRO
-metro52840.build.core=nRF5
-metro52840.build.variant=metro_nrf52840_express
-metro52840.build.extra_flags=-DNRF52840_XXAA
+#metro52840.build.mcu=cortex-m4
+#metro52840.build.f_cpu=64000000
+#metro52840.build.board=NRF52840_METRO
+#metro52840.build.core=nRF5
+#metro52840.build.variant=metro_nrf52840_express
+#metro52840.build.extra_flags=-DNRF52840_XXAA
 
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-metro52840.menu.softdevice.s140v6=0.2.7 (s140 6.1.1)
-metro52840.menu.softdevice.s140v6.build.sd_flags=-DS140
-metro52840.menu.softdevice.s140v6.build.sd_name=s140
-metro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
-metro52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
-metro52840.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_v6.ld
-metro52840.menu.softdevice.s140v6.upload.maximum_size=815104
-metro52840.menu.softdevice.s140v6.upload.maximum_data_size=248832
+#metro52840.menu.softdevice.s140v6=0.2.9 (s140 6.1.1)
+#metro52840.menu.softdevice.s140v6.build.sd_flags=-DS140
+#metro52840.menu.softdevice.s140v6.build.sd_name=s140
+#metro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
+#metro52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+#metro52840.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_v6.ld
+#metro52840.menu.softdevice.s140v6.upload.maximum_size=815104
+#metro52840.menu.softdevice.s140v6.upload.maximum_data_size=248832
 
 # Debug Menu
-metro52840.menu.debug.l0=Level 0 (Release)
-metro52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0 -Os
-metro52840.menu.debug.l1=Level 1 (Error Message)
-metro52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1 -Os
-metro52840.menu.debug.l2=Level 2 (Full Debug)
-metro52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
-metro52840.menu.debug.l3=Level 3 (Segger SystemView)
-metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
+#metro52840.menu.debug.l0=Level 0 (Release)
+#metro52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0 -Os
+#metro52840.menu.debug.l1=Level 1 (Error Message)
+#metro52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1 -Os
+#metro52840.menu.debug.l2=Level 2 (Full Debug)
+#metro52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
+#metro52840.menu.debug.l3=Level 3 (Segger SystemView)
+#metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
 
 #**********************************************
 # Nordic nRF52840DK (PCA10056)
@@ -187,7 +187,7 @@ pca10056.build.extra_flags=-DNRF52840_XXAA
 # SofDevice Menu
 # Ram & ROM size varies depending on SoftDevice (check linker script)
 
-pca10056.menu.softdevice.s140v6=0.2.7 (s140 6.1.1)
+pca10056.menu.softdevice.s140v6=0.2.9 (s140 6.1.1)
 pca10056.menu.softdevice.s140v6.build.sd_flags=-DS140
 pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.1.1
