@@ -11,7 +11,7 @@ git:
 before_install:
   - source <(curl -SLs https://raw.githubusercontent.com/hathach/travis-ci-arduino/test-nrf52/install.sh)
 script:
-  - build_platform adafruit:nrf52:feather52840:softdevice=s140v6,debug=l0
+  - build_platform adafruit:nrf52:feather52840
 
 notifications:
   email:
