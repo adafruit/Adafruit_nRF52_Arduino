@@ -9,7 +9,7 @@ git:
   quiet: true
 
 before_install:
-  - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
+  - source <(curl -SLs https://raw.githubusercontent.com/hathach/travis-ci-arduino/test-nrf52/install.sh)
 script:
   - build_platform adafruit:samd:adafruit_feather_m0
 
