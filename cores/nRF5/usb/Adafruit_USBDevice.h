@@ -1,7 +1,7 @@
-/*
+/* 
  * The MIT License (MIT)
  *
- * Copyright (c) 2018, hathach for Adafruit
+ * Copyright (c) 2019 hathach for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,45 +22,35 @@
  * THE SOFTWARE.
  */
 
-#ifndef USBSERIAL_H_
-#define USBSERIAL_H_
+#ifndef ADAFRUIT_USBDEVICE_H_
+#define ADAFRUIT_USBDEVICE_H_
 
-#ifdef NRF52840_XXAA
+#include "tusb.h"
 
-#include "Adafruit_USBDevice.h"
-#include "Stream.h"
-
-class USBSerial : public Stream, Adafruit_USBInterface
+class Adafruit_USBInterface
 {
-public:
-	USBSerial(void);
-
-	// fron Adafruit_USBInterface
-	virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize);
-
-	void setPins(uint8_t pin_rx, uint8_t pin_tx) { (void) pin_rx; (void) pin_tx; }
-	void begin(uint32_t baud_count);
-	void begin(uint32_t baud, uint8_t config);
-	void end(void);
-
-	virtual int available(void);
-	virtual int peek(void);
-	virtual int read(void);
-	virtual void flush(void);
-	virtual size_t write(uint8_t);
-	virtual size_t write(const uint8_t *buffer, size_t size);
-	size_t write(const char *buffer, size_t size) {
-	  return write((const uint8_t *)buffer, size);
-	}
-	operator bool();
-
-	size_t readBytes(char *buffer, size_t length);
-	size_t readBytes(uint8_t *buffer, size_t length) { return readBytes((char *)buffer, length); }
+  public:
+    virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize) = 0;
 };
 
+class Adafruit_USBDevice
+{
+  private:
+    tusb_desc_device_t _desc_device;
 
-extern USBSerial Serial;
+    uint8_t  _desc_cfg[256];
+    uint16_t _desc_cfglen;
 
-#endif
+    uint8_t  _itf_count;
 
-#endif /* USBSERIAL_H_ */
+  public:
+    Adafruit_USBDevice(void);
+
+    bool addInterface(Adafruit_USBInterface& itf);
+
+    bool begin(uint16_t vid, uint16_t pid);
+};
+
+extern Adafruit_USBDevice USBDevice;
+
+#endif /* ADAFRUIT_USBDEVICE_H_ */

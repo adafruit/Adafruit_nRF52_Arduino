@@ -27,12 +27,24 @@
 #include "Arduino.h"
 #include "tusb.h"
 
-
 USBSerial Serial;
 
 USBSerial::USBSerial(void)
 {
 
+}
+
+uint16_t USBSerial::getDescriptor(uint8_t* buf, uint16_t bufsize)
+{
+  // CDC is mostly always existed for DFU
+  // Let's pick EP 1 & 2 for it
+  uint8_t desc[] = { TUD_CDC_DESCRIPTOR(0, 0, 0x81, 8, 0x02, 0x82, 64) };
+  uint16_t const len = sizeof(desc);
+
+  if ( bufsize < len ) return 0;
+
+  memcpy(buf, desc, len);
+  return len;
 }
 
 // Baud and config is ignore in CDC

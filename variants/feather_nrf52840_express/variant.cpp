@@ -22,8 +22,6 @@
 #include "wiring_constants.h"
 #include "wiring_digital.h"
 #include "nrf.h"
-
-#include "usb.h"
 #include "flash/flash_qspi.h"
 
 const uint32_t g_ADigitalPinMap[] =
@@ -84,9 +82,5 @@ void initVariant()
   // Init External Flash
   flash_qspi_init();
 #endif
-
-
-  // USB init
-  usb_init();
 }
 

@@ -154,7 +154,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _event_cb = NULL;
   _rssi_cb = NULL;
 
-  _sec_param = (ble_gap_sec_params_t)
+  _sec_param = ((ble_gap_sec_params_t)
                 {
                   .bond         = 1,
                   .mitm         = 0,
@@ -166,7 +166,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
                   .max_key_size = 16,
                   .kdist_own    = { .enc = 1, .id = 1},
                   .kdist_peer   = { .enc = 1, .id = 1},
-                };
+                });
 
 COMMENT_OUT(
   _auth_type = BLE_GAP_AUTH_KEY_TYPE_NONE;

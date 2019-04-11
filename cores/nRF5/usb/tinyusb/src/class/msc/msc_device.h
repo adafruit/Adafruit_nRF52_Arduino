@@ -31,6 +31,9 @@
 #include "device/usbd.h"
 #include "msc.h"
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
 
 //--------------------------------------------------------------------+
 // Class Driver Configuration
@@ -59,9 +62,23 @@ TU_VERIFY_STATIC(CFG_TUD_MSC_BUFSIZE < UINT16_MAX, "Size is not correct");
   #error CFG_TUD_MSC_PRODUCT_REV 4-byte string must be defined
 #endif
 
-#ifdef __cplusplus
- extern "C" {
-#endif
+
+//--------------------------------------------------------------------+
+// Interface Descriptor Template
+//--------------------------------------------------------------------+
+
+// Length of template descriptor: 23 bytes
+#define TUD_MSC_DESC_LEN    (9 + 7 + 7)
+
+// Interface Number, EP Out & EP In address
+#define TUD_MSC_DESCRIPTOR(_itfnum, _stridx, _epout, _epin, _epsize) \
+  /* Interface */\
+  0x09, TUSB_DESC_INTERFACE, _itfnum, 0x00, 0x02, TUSB_CLASS_MSC, MSC_SUBCLASS_SCSI, MSC_PROTOCOL_BOT, _stridx,\
+  /* Endpoint Out */\
+  0x07, TUSB_DESC_ENDPOINT, _epout, TUSB_XFER_BULK, U16_TO_U8S_LE(_epsize), 0x00,\
+  /* Endpoint In */\
+  0x07, TUSB_DESC_ENDPOINT, _epin, TUSB_XFER_BULK, U16_TO_U8S_LE(_epsize), 0x00
+
 
 /** \addtogroup ClassDriver_MSC
  *  @{

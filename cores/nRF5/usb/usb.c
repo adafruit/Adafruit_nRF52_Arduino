@@ -35,7 +35,8 @@
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
-extern uint16_t usb_desc_str_serial[1+16];
+// Serial is 64-bit DeviceID -> 16 chars len
+uint16_t usb_desc_str_serial[1+16] = { TUD_DESC_STR_HEADER(16) };
 
 // Init usb when starting up. Softdevice is not enabled yet
 void usb_init(void)

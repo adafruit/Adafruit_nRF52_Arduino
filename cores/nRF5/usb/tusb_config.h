@@ -39,13 +39,8 @@
 #define CFG_TUSB_RHPORT0_MODE       OPT_MODE_NONE
 #endif
 
-#define CFG_TUSB_DEBUG              0
-
-/*------------- RTOS -------------*/
 #define CFG_TUSB_OS                 OPT_OS_FREERTOS
-#define CFG_TUD_TASK_PRIO           (configMAX_PRIORITIES-2) // TASK_PRIO_HIGH = Bluefruit Task
-//#define CFG_TUD_TASK_QUEUE_SZ     16
-//#define CFG_TUD_TASK_STACK_SZ     150
+#define CFG_TUSB_DEBUG              0
 
 //--------------------------------------------------------------------
 // DEVICE CONFIGURATION
@@ -60,13 +55,7 @@
  *
  * Note: All CFG_TUD_DESC_* are relevant only if CFG_TUD_DESC_AUTO is enabled
  */
-#define CFG_TUD_DESC_AUTO           1
-
-/* USB VID/PID if not defined, tinyusb to use default value
- * Note: different class combination e.g CDC and (CDC + MSC) should have different
- * PID since Host OS will "remembered" device driver after the first plug */
-#define CFG_TUD_DESC_VID            0x239A
-#define CFG_TUD_DESC_PID            0x8029
+#define CFG_TUD_DESC_AUTO           0
 
 //------------- CLASS -------------//
 #define CFG_TUD_CDC                 1
