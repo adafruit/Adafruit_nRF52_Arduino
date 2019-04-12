@@ -13,6 +13,7 @@
 *********************************************************************/
 
 #include <bluefruit.h>
+#include <Adafruit_USBDev_MSC.h>
 #include <Bluefruit_FileIO.h>
 
 /* This example  print out External Flash contents up to
@@ -22,9 +23,15 @@
  */
 #define MAX_LEVEL   2
 
+Adafruit_USBDev_MSC usbmsc;
+
 // the setup function runs once when you press reset or power the board
 void setup() 
 {
+  // block count and size are defined in variant.h
+  usbmsc.setCapacity(USB_MSC_BLOCK_COUNT, USB_MSC_BLOCK_SIZE);
+  usbmsc.begin();
+  
   Serial.begin(115200);
   while ( !Serial ) delay(10);   // for nrf52840 with native usb
   

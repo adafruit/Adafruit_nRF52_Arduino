@@ -28,8 +28,12 @@
 #define EPIN    0x80
 #define EPSIZE  64  // TODO must be 512 for highspeed device
 
+static Adafruit_USBDev_MSC* _msc_dev = NULL;
+
 Adafruit_USBDev_MSC::Adafruit_USBDev_MSC(void)
 {
+  _block_count = 0;
+  _block_size = 0;
 }
 
 uint16_t Adafruit_USBDev_MSC::getDescriptor(uint8_t* buf, uint16_t bufsize)
@@ -42,15 +46,29 @@ uint16_t Adafruit_USBDev_MSC::getDescriptor(uint8_t* buf, uint16_t bufsize)
   return len;
 }
 
-void Adafruit_USBDev_MSC::begin(void)
+void Adafruit_USBDev_MSC::setCapacity(uint32_t block_count, uint16_t block_size)
 {
-  USBDevice.addInterface(*this);
+  _block_count = block_count;
+  _block_size = block_size;
+}
+
+void Adafruit_USBDev_MSC::getCapacity(uint32_t* block_count, uint16_t* block_size)
+{
+  (*block_count) = _block_count;
+  (*block_size) = _block_size;
+}
+
+bool Adafruit_USBDev_MSC::begin(void)
+{
+  if ( !USBDevice.addInterface(*this) ) return false;
+
+  _msc_dev = this;
+  return true;
 }
 
 extern "C"
 {
 
-#include "nrf_gpio.h"
 #include "flash/flash_qspi.h"
 
 // Callback invoked when received an SCSI command not in built-in list below
@@ -94,10 +112,7 @@ int32_t tud_msc_scsi_cb (uint8_t lun, const uint8_t scsi_cmd[16], void* buffer, 
   }
 
   // return len must not larger than bufsize
-  if ( resplen > bufsize )
-  {
-    resplen = bufsize;
-  }
+  if ( resplen > bufsize ) resplen = bufsize;
 
   // copy response to stack's buffer if any
   if ( response && resplen )
@@ -108,11 +123,15 @@ int32_t tud_msc_scsi_cb (uint8_t lun, const uint8_t scsi_cmd[16], void* buffer, 
   return resplen;
 }
 
+#define CFG_TUD_MSC_BLOCK_SZ 512
+
 // Callback invoked when received READ10 command.
 // Copy disk's data to buffer (up to bufsize) and return number of copied bytes.
 int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
 {
   (void) lun;
+  if (!_msc_dev) return -1;
+
 
   return flash_qspi_read(buffer, lba * CFG_TUD_MSC_BLOCK_SZ + offset, bufsize);
 }
@@ -122,6 +141,7 @@ int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buf
 int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
 {
   (void) lun;
+  if (!_msc_dev) return -1;
 
   uint32_t wrcount = flash_qspi_write(lba * CFG_TUD_MSC_BLOCK_SZ + offset, buffer, bufsize);
 
@@ -145,9 +165,9 @@ void tud_msc_write10_complete_cb (uint8_t lun)
 void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
 {
   (void) lun;
+  if (!_msc_dev) return;
 
-  *block_count = flash_qspi_size() / CFG_TUD_MSC_BLOCK_SZ;
-  *block_size  = CFG_TUD_MSC_BUFSIZE;
+  _msc_dev->getCapacity(block_count, block_size);
 }
 
 }

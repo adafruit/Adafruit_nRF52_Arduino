@@ -92,9 +92,6 @@
 // Buffer size of Device Mass storage
 #define CFG_TUD_MSC_BUFSIZE         512
 
-// Block size
-#define CFG_TUD_MSC_BLOCK_SZ        512
-
 // Vendor name included in Inquiry response, max 8 bytes
 #define CFG_TUD_MSC_VENDOR          "Adafruit"
 

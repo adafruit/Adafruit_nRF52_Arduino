@@ -30,11 +30,16 @@
 class Adafruit_USBDev_MSC : Adafruit_USBDev_Interface
 {
   private:
+    uint32_t _block_count;
+    uint16_t _block_size;
 
   public:
     Adafruit_USBDev_MSC(void);
 
-    void begin(void);
+    bool begin(void);
+
+    void setCapacity(uint32_t block_count, uint16_t block_size);
+    void getCapacity(uint32_t* block_count, uint16_t* block_size);
 
     // from Adafruit_USBInterface
     virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize);
