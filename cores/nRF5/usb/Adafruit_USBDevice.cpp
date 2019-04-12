@@ -127,12 +127,15 @@ Adafruit_USBDevice::Adafruit_USBDevice(void)
 
   _desc_cfglen = sizeof(tusb_desc_configuration_t);
   _itf_count = 0;
+  _epin_count = _epout_count = 1;
 
   tud_desc_set.config = _desc_cfg;
   tud_desc_set.device = &_desc_device;
 }
 
-// Add interface descriptor, interface number will be updated to match current count
+// Add interface descriptor
+// - Interface number will be updated to match current count
+// - Endpoint number is updated to be unique
 bool Adafruit_USBDevice::addInterface(Adafruit_USBInterface& itf)
 {
   uint8_t* desc = _desc_cfg+_desc_cfglen;
@@ -155,6 +158,10 @@ bool Adafruit_USBDevice::addInterface(Adafruit_USBInterface& itf)
     {
       // No alternate interface support
       ((tusb_desc_interface_t*) desc)->bInterfaceNumber = _itf_count++;
+    }else if (desc[1] == TUSB_DESC_ENDPOINT)
+    {
+      tusb_desc_endpoint_t* desc_ep = (tusb_desc_endpoint_t*) desc;
+      desc_ep->bEndpointAddress |= (desc_ep->bEndpointAddress & 0x80) ? _epin_count++ : _epout_count++;
     }
 
     if (desc[0] == 0) return false;

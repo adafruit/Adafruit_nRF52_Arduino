@@ -27,6 +27,9 @@
 #include "Arduino.h"
 #include "tusb.h"
 
+#define EPOUT   0x00
+#define EPIN    0x80
+
 USBSerial Serial;
 
 USBSerial::USBSerial(void)
@@ -37,8 +40,7 @@ USBSerial::USBSerial(void)
 uint16_t USBSerial::getDescriptor(uint8_t* buf, uint16_t bufsize)
 {
   // CDC is mostly always existed for DFU
-  // Let's pick EP 1 & 2 for it
-  uint8_t desc[] = { TUD_CDC_DESCRIPTOR(0, 0, 0x81, 8, 0x02, 0x82, 64) };
+  uint8_t desc[] = { TUD_CDC_DESCRIPTOR(0, 0, EPIN, 8, EPOUT, EPIN, 64) };
   uint16_t const len = sizeof(desc);
 
   if ( bufsize < len ) return 0;

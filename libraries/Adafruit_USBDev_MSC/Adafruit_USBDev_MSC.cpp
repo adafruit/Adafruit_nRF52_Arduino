@@ -22,23 +22,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef ADAFRUIT_USBDEV_MSC_H_
-#define ADAFRUIT_USBDEV_MSC_H_
+#include "Adafruit_USBDev_MSC.h"
 
-#include "Adafruit_USBDevice.h"
+#define EPOUT   0x00
+#define EPIN    0x80
+#define EPSIZE  64  // TODO must be 512 for highspeed device
 
-class Adafruit_USBDev_MSC : Adafruit_USBInterface
+Adafruit_USBDev_MSC::Adafruit_USBDev_MSC(void)
 {
-  private:
-    uint16_t _epsize;
-    uint8_t _epout, _epin;
-  public:
-    Adafruit_USBDev_MSC(uint8_t epout, uint8_t epin, uint16_t epsize);
+}
 
-    void begin(void);
+uint16_t Adafruit_USBDev_MSC::getDescriptor(uint8_t* buf, uint16_t bufsize)
+{
+  uint8_t desc[] = { TUD_MSC_DESCRIPTOR(0, 0, EPOUT, EPIN, EPSIZE) };
+  uint16_t const len = sizeof(desc);
 
-    // from Adafruit_USBInterface
-    virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize);
-};
+  if ( bufsize < len ) return 0;
+  memcpy(buf, desc, len);
+  return len;
+}
 
-#endif /* ADAFRUIT_USBDEV_MSC_H_ */
+void Adafruit_USBDev_MSC::begin(void)
+{
+  USBDevice.addInterface(*this);
+}
+

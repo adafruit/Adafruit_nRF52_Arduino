@@ -96,7 +96,7 @@ int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buf
 
 // Callback invoked when received WRITE10 command.
 // Process data in buffer to disk's storage and return number of written bytes
-int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
+int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
 {
   (void) lun;
 
@@ -117,6 +117,14 @@ void tud_msc_write10_complete_cb (uint8_t lun)
 
   // flush pending cache when write10 is complete
   flash_qspi_flush();
+}
+
+void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size)
+{
+  (void) lun;
+
+  *block_count = flash_qspi_size() / CFG_TUD_MSC_BLOCK_SZ;
+  *block_size  = CFG_TUD_MSC_BUFSIZE;
 }
 
 #endif // CFG_TUD_MSC

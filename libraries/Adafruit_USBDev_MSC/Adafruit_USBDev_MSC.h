@@ -22,27 +22,22 @@
  * THE SOFTWARE.
  */
 
-#include "Adafruit_USBDev_MSC.h"
+#ifndef ADAFRUIT_USBDEV_MSC_H_
+#define ADAFRUIT_USBDEV_MSC_H_
 
-Adafruit_USBDev_MSC::Adafruit_USBDev_MSC(uint8_t epout, uint8_t epin, uint16_t epsize)
+#include "Adafruit_USBDevice.h"
+
+class Adafruit_USBDev_MSC : Adafruit_USBInterface
 {
-  _epout = epout;
-  _epin = epin;
-  _epsize = epsize;
-}
+  private:
 
-uint16_t Adafruit_USBDev_MSC::getDescriptor(uint8_t* buf, uint16_t bufsize)
-{
-  uint8_t desc[] = { TUD_MSC_DESCRIPTOR(0, 0, _epout, _epin, _epsize) };
-  uint16_t const len = sizeof(desc);
+  public:
+    Adafruit_USBDev_MSC(void);
 
-  if ( bufsize < len ) return 0;
-  memcpy(buf, desc, len);
-  return len;
-}
+    void begin(void);
 
-void Adafruit_USBDev_MSC::begin(void)
-{
-  USBDevice.addInterface(*this);
-}
+    // from Adafruit_USBInterface
+    virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize);
+};
 
+#endif /* ADAFRUIT_USBDEV_MSC_H_ */

@@ -43,6 +43,9 @@ class Adafruit_USBDevice
 
     uint8_t  _itf_count;
 
+    uint8_t  _epin_count;
+    uint8_t  _epout_count;
+
   public:
     Adafruit_USBDevice(void);
 

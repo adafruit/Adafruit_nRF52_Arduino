@@ -61,12 +61,7 @@
 #define CFG_TUD_CDC                 1
 
 // disable msc for feather nrf52840 for now until have a more stable QSPI driver
-#ifdef ARDUINO_NRF52840_FEATHER
-#define CFG_TUD_MSC                 0
-#else
 #define CFG_TUD_MSC                 1
-#endif
-
 
 #define CFG_TUD_HID                 0
 #define CFG_TUD_HID_KEYBOARD        0
@@ -96,11 +91,6 @@
 
 // Buffer size of Device Mass storage
 #define CFG_TUD_MSC_BUFSIZE         512
-
-// Number of Blocks
-#include <stdint.h>
-extern uint32_t flash_qspi_size (void);
-#define CFG_TUD_MSC_BLOCK_NUM       (flash_qspi_size() / CFG_TUD_MSC_BLOCK_SZ)
 
 // Block size
 #define CFG_TUD_MSC_BLOCK_SZ        512
