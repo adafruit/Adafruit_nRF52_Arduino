@@ -25,8 +25,6 @@
 #ifndef ADAFRUIT_USBDEV_CDC_H_
 #define ADAFRUIT_USBDEV_CDC_H_
 
-#ifdef NRF52840_XXAA
-
 #include "Adafruit_USBDevice.h"
 #include "Stream.h"
 
@@ -58,9 +56,6 @@ public:
 	size_t readBytes(uint8_t *buffer, size_t length) { return readBytes((char *)buffer, length); }
 };
 
-
 extern Adafruit_USBDev_CDC Serial;
-
-#endif
 
 #endif /* ADAFRUIT_USBDEV_CDC_H_ */
