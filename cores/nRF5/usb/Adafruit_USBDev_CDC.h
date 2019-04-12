@@ -22,18 +22,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef USBSERIAL_H_
-#define USBSERIAL_H_
+#ifndef ADAFRUIT_USBDEV_CDC_H_
+#define ADAFRUIT_USBDEV_CDC_H_
 
 #ifdef NRF52840_XXAA
 
 #include "Adafruit_USBDevice.h"
 #include "Stream.h"
 
-class USBSerial : public Stream, Adafruit_USBInterface
+class Adafruit_USBDev_CDC : public Stream, Adafruit_USBInterface
 {
 public:
-	USBSerial(void);
+	Adafruit_USBDev_CDC(void);
 
 	// fron Adafruit_USBInterface
 	virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize);
@@ -59,8 +59,8 @@ public:
 };
 
 
-extern USBSerial Serial;
+extern Adafruit_USBDev_CDC Serial;
 
 #endif
 
-#endif /* USBSERIAL_H_ */
+#endif /* ADAFRUIT_USBDEV_CDC_H_ */

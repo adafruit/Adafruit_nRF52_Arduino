@@ -71,7 +71,7 @@ void suspendLoop(void);
   #include "tusb.h"
 #ifdef __cplusplus
   #include "Adafruit_USBDevice.h"
-  #include "USBSerial.h"
+  #include "Adafruit_USBDev_CDC.h"
 #endif
 #endif
 

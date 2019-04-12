@@ -1,3 +1,4 @@
+
 /*
  * The MIT License (MIT)
  *
@@ -23,21 +24,21 @@
  */
 #ifdef NRF52840_XXAA
 
-#include "USBSerial.h"
+#include "Adafruit_USBDev_CDC.h"
 #include "Arduino.h"
 #include "tusb.h"
 
 #define EPOUT   0x00
 #define EPIN    0x80
 
-USBSerial Serial;
+Adafruit_USBDev_CDC Serial;
 
-USBSerial::USBSerial(void)
+Adafruit_USBDev_CDC::Adafruit_USBDev_CDC(void)
 {
 
 }
 
-uint16_t USBSerial::getDescriptor(uint8_t* buf, uint16_t bufsize)
+uint16_t Adafruit_USBDev_CDC::getDescriptor(uint8_t* buf, uint16_t bufsize)
 {
   // CDC is mostly always existed for DFU
   uint8_t desc[] = { TUD_CDC_DESCRIPTOR(0, 0, EPIN, 8, EPOUT, EPIN, 64) };
@@ -50,54 +51,54 @@ uint16_t USBSerial::getDescriptor(uint8_t* buf, uint16_t bufsize)
 }
 
 // Baud and config is ignore in CDC
-void USBSerial::begin (uint32_t baud)
+void Adafruit_USBDev_CDC::begin (uint32_t baud)
 {
 }
-void USBSerial::begin (uint32_t baud, uint8_t config)
+void Adafruit_USBDev_CDC::begin (uint32_t baud, uint8_t config)
 {
 }
 
-void USBSerial::end(void)
+void Adafruit_USBDev_CDC::end(void)
 {
   // nothing to do
 }
 
-USBSerial::operator bool()
+Adafruit_USBDev_CDC::operator bool()
 {
   return tud_cdc_connected();
 }
 
-int USBSerial::available(void)
+int Adafruit_USBDev_CDC::available(void)
 {
   return tud_cdc_available();
 }
 
-int USBSerial::peek(void)
+int Adafruit_USBDev_CDC::peek(void)
 {
   return tud_cdc_peek(0);
 }
 
-int USBSerial::read(void)
+int Adafruit_USBDev_CDC::read(void)
 {
   return (int) tud_cdc_read_char();
 }
 
-size_t USBSerial::readBytes(char *buffer, size_t length)
+size_t Adafruit_USBDev_CDC::readBytes(char *buffer, size_t length)
 {
   return tud_cdc_read(buffer, length);
 }
 
-void USBSerial::flush(void)
+void Adafruit_USBDev_CDC::flush(void)
 {
   tud_cdc_write_flush();
 }
 
-size_t USBSerial::write(uint8_t ch)
+size_t Adafruit_USBDev_CDC::write(uint8_t ch)
 {
   return tud_cdc_write_char((char) ch);
 }
 
-size_t USBSerial::write(const uint8_t *buffer, size_t size)
+size_t Adafruit_USBDev_CDC::write(const uint8_t *buffer, size_t size)
 {
   size_t remain = size;
   while ( remain && tud_cdc_connected() )
