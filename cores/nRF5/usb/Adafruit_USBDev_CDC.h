@@ -30,7 +30,7 @@
 #include "Adafruit_USBDevice.h"
 #include "Stream.h"
 
-class Adafruit_USBDev_CDC : public Stream, Adafruit_USBInterface
+class Adafruit_USBDev_CDC : public Stream, Adafruit_USBDev_Interface
 {
 public:
 	Adafruit_USBDev_CDC(void);

@@ -27,7 +27,7 @@
 
 #include "tusb.h"
 
-class Adafruit_USBInterface
+class Adafruit_USBDev_Interface
 {
   public:
     virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize) = 0;
@@ -49,7 +49,7 @@ class Adafruit_USBDevice
   public:
     Adafruit_USBDevice(void);
 
-    bool addInterface(Adafruit_USBInterface& itf);
+    bool addInterface(Adafruit_USBDev_Interface& itf);
 
     bool begin(uint16_t vid, uint16_t pid);
 };

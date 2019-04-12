@@ -27,7 +27,7 @@
 
 #include "Adafruit_USBDevice.h"
 
-class Adafruit_USBDev_MSC : Adafruit_USBInterface
+class Adafruit_USBDev_MSC : Adafruit_USBDev_Interface
 {
   private:
 
