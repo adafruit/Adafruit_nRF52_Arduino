@@ -37,9 +37,9 @@ extern "C"
 #endif // __cplusplus
 
 // Number of pins defined in PinDescription array
-#define PINS_COUNT           (48)
-#define NUM_DIGITAL_PINS     (48)
-#define NUM_ANALOG_INPUTS    (6)
+#define PINS_COUNT           (34)
+#define NUM_DIGITAL_PINS     (34)
+#define NUM_ANALOG_INPUTS    (6) // A6 is used for battery, A7 is analog reference
 #define NUM_ANALOG_OUTPUTS   (0)
 
 // LEDs
@@ -88,8 +88,8 @@ static const uint8_t A7  = PIN_A7 ;
 // Other pins
 #define PIN_AREF           (PIN_A7)
 #define PIN_DFU            (7)
-#define PIN_NFC1           (2)
-#define PIN_NFC2           (51)
+#define PIN_NFC1           (33)
+#define PIN_NFC2           (2)
 
 static const uint8_t AREF = PIN_AREF;
 
