@@ -77,6 +77,7 @@
 #include "services/EddyStone.h"
 
 #include "clients/BLEAncs.h"
+#include "clients/BLEAncsLoopback.h"
 #include "clients/BLEClientUart.h"
 #include "clients/BLEClientDis.h"
 #include "clients/BLEClientCts.h"
