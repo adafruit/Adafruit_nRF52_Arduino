@@ -58,6 +58,13 @@ void Adafruit_USBDev_MSC::getCapacity(uint32_t* block_count, uint16_t* block_siz
   (*block_size) = _block_size;
 }
 
+void Adafruit_USBDev_MSC::setCallback(read_callback_t rd_cb, write_callback_t wr_cb, flush_callback_t fl_cb)
+{
+  _rd_cb = rd_cb;
+  _wr_cb = wr_cb;
+  _fl_cb = fl_cb;
+}
+
 bool Adafruit_USBDev_MSC::begin(void)
 {
   if ( !USBDevice.addInterface(*this) ) return false;
@@ -123,43 +130,32 @@ int32_t tud_msc_scsi_cb (uint8_t lun, const uint8_t scsi_cmd[16], void* buffer, 
   return resplen;
 }
 
-#define CFG_TUD_MSC_BLOCK_SZ 512
-
 // Callback invoked when received READ10 command.
 // Copy disk's data to buffer (up to bufsize) and return number of copied bytes.
 int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
 {
-  (void) lun;
-  if (!_msc_dev) return -1;
+  if ( !(_msc_dev && _msc_dev->_rd_cb) ) return -1;
 
-
-  return flash_qspi_read(buffer, lba * CFG_TUD_MSC_BLOCK_SZ + offset, bufsize);
+  return _msc_dev->_rd_cb(lun, lba, offset, buffer, bufsize);
 }
 
 // Callback invoked when received WRITE10 command.
 // Process data in buffer to disk's storage and return number of written bytes
 int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
 {
-  (void) lun;
-  if (!_msc_dev) return -1;
+  if ( !(_msc_dev && _msc_dev->_wr_cb) ) return -1;
 
-  uint32_t wrcount = flash_qspi_write(lba * CFG_TUD_MSC_BLOCK_SZ + offset, buffer, bufsize);
-
-  // update fatfs's cache if address matches
-  extern void ExternalFS_usbmsc_write (uint32_t lba, void const* buffer, uint32_t bufsize);
-  if ( ExternalFS_usbmsc_write ) ExternalFS_usbmsc_write(lba, buffer, bufsize);
-
-  return wrcount;
+  return _msc_dev->_wr_cb(lun, lba, offset, buffer, bufsize);
 }
 
 // Callback invoked when WRITE10 command is completed (status received and accepted by host).
 // used to flush any pending cache.
 void tud_msc_write10_complete_cb (uint8_t lun)
 {
-  (void) lun;
+  if ( !(_msc_dev && _msc_dev->_fl_cb) ) return;
 
   // flush pending cache when write10 is complete
-  flash_qspi_flush();
+  return _msc_dev->_fl_cb(lun);
 }
 
 void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size)

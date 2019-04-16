@@ -29,20 +29,33 @@
 
 class Adafruit_USBDev_MSC : Adafruit_USBDev_Interface
 {
-  private:
-    uint32_t _block_count;
-    uint16_t _block_size;
-
   public:
+    typedef int32_t (*read_callback_t ) (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize);
+    typedef int32_t (*write_callback_t) (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize);
+    typedef void    (*flush_callback_t) (uint8_t lun);
+
     Adafruit_USBDev_MSC(void);
 
     bool begin(void);
 
     void setCapacity(uint32_t block_count, uint16_t block_size);
     void getCapacity(uint32_t* block_count, uint16_t* block_size);
+    void setCallback(read_callback_t rd_cb, write_callback_t wr_cb, flush_callback_t fl_cb);
 
     // from Adafruit_USBInterface
     virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize);
+
+  private:
+    uint32_t _block_count;
+    uint16_t _block_size;
+
+    read_callback_t  _rd_cb;
+    write_callback_t _wr_cb;
+    flush_callback_t _fl_cb;
+
+    friend int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize);
+    friend int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize);
+    friend void tud_msc_write10_complete_cb (uint8_t lun);
 };
 
 #endif /* ADAFRUIT_USBDEV_MSC_H_ */

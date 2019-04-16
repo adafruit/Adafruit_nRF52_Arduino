@@ -47,7 +47,7 @@ TU_VERIFY_STATIC(CFG_TUD_MSC_BUFSIZE < UINT16_MAX, "Size is not correct");
 #endif
 
 #ifndef CFG_TUD_MSC_BUFSIZE
-  #error CFG_TUD_MSC_BUFSIZE must be defined, value of CFG_TUD_MSC_BLOCK_SZ should work well, the more the better
+  #error CFG_TUD_MSC_BUFSIZE must be defined, value of a block size should work well, the more the better
 #endif
 
 #ifndef CFG_TUD_MSC_VENDOR
