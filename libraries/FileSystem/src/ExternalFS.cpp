@@ -377,21 +377,13 @@ void FatFS::_f_rewindDirectory (void* fhdl)
 }
 
 // for USB MSC to check and update fatfs sector cache
-void FatFS::_usbmsc_write (uint32_t lba, void const* buffer, uint32_t bufsize)
+void FatFS::updateCache (uint32_t lba, void const* buffer, uint32_t bufsize)
 {
   VERIFY(_fs,);
   if ( (lba <= _fs->winsect) && (_fs->winsect < (lba + bufsize / FF_MAX_SS)) )
   {
     memcpy(_fs->win, buffer + FF_MAX_SS * (_fs->winsect - lba), FF_MAX_SS);
   }
-}
-
-extern "C"
-{
-void ExternalFS_usbmsc_write (uint32_t lba, void const* buffer, uint32_t bufsize)
-{
-  ExternalFS._usbmsc_write(lba, buffer, bufsize);
-}
 }
 
 #endif

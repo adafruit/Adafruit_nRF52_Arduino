@@ -68,22 +68,25 @@ void loop()
 
 int32_t fl_read_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
 {
+  (void) lun;
   return flash_qspi_read(buffer, lba * USB_MSC_BLOCK_SIZE + offset, bufsize);
 }
 
 int32_t fl_write_cb (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
 {
+  (void) lun;
+  
   uint32_t wrcount = flash_qspi_write(lba * USB_MSC_BLOCK_SIZE + offset, buffer, bufsize);
 
-  // update fatfs's cache if address matches
-  extern void ExternalFS_usbmsc_write (uint32_t lba, void const* buffer, uint32_t bufsize);
-  if ( ExternalFS_usbmsc_write ) ExternalFS_usbmsc_write(lba, buffer, bufsize);
+  // update ExternalFS cache since USB write it out of its awareness
+  ExternalFS.updateCache(lba, buffer, bufsize);
 
   return wrcount;
 }
 
 void fl_flush_cb (uint8_t lun)
 {
+  (void) lun;
   flash_qspi_flush();
 }
 

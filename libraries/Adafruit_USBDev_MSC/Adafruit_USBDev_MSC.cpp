@@ -76,8 +76,6 @@ bool Adafruit_USBDev_MSC::begin(void)
 extern "C"
 {
 
-#include "flash/flash_qspi.h"
-
 // Callback invoked when received an SCSI command not in built-in list below
 // - READ_CAPACITY10, READ_FORMAT_CAPACITY, INQUIRY, MODE_SENSE6, REQUEST_SENSE
 // - READ10 and WRITE10 has their own callbacks
