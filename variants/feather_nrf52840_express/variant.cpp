@@ -83,7 +83,7 @@ const uint32_t g_ADigitalPinMap[] =
   //  0,      // P0.00 is XL1   (attached to 32.768kHz crystal)
   //  1,      // P0.01 is XL2   (attached to 32.768kHz crystal)
   // 18,      // P0.18 is RESET (attached to switch)
-  // 32,      // P0.00 is SWO   (attached to debug header)
+  // 32,      // P1.00 is SWO   (attached to debug header)
   // 
   // The remaining pins are not connected (per schematic)
   // 33,      // P1.01 is not connected per schematic
