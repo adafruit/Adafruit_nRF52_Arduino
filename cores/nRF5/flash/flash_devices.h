@@ -49,13 +49,13 @@ typedef struct {
 
 // Settings for the Gigadevice GD25Q16C 2MiB SPI flash.
 // Datasheet: http://www.gigadevice.com/datasheet/gd25q16c/
-// Can only work reliably with nrf5x at 16Mhz, even though it should work up to 104 MHz
+// Can only work reliably with nrf5x at 10 Mhz, even though it should work up to 104 MHz
 #define GD25Q16C {\
     .total_size = 2*1024*1024, \
     .manufacturer_id = 0xc8, \
     .device_id = 0x14, \
     .status_quad_enable = (1 << 9),\
-    .freq = NRF_QSPI_FREQ_32MDIV2 \
+    .freq = NRF_QSPI_FREQ_32MDIV3 \
 }
 
 #define MX25R6435F {\
