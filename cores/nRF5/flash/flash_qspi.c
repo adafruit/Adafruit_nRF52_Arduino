@@ -215,10 +215,10 @@ void flash_qspi_init (void)
       .dpmen = false
     };
     nrf_qspi_ifconfig1_set(NRF_QSPI, &phy_if);
-  }
 
-  // create mutex
-  _qspi_mutex = xSemaphoreCreateMutex();
+    // create mutex
+    _qspi_mutex = xSemaphoreCreateMutex();
+  }
 }
 
 //--------------------------------------------------------------------+

@@ -1,5 +1,6 @@
 /*
  Copyright (c) 2013 Arduino LLC. All right reserved.
+ Copyright (c) 2019 Ha Thach for Adafruit Industries
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -15,18 +16,6 @@
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
-
-/**************************************************************************/
-/*!
-    @file     Bluefruit_FileIO.h
-    @author   hathach (tinyusb.org)
-
-    @section LICENSE
-
-    Software License Agreement (BSD License)
-    Copyright (c) 2018, Adafruit Industries (adafruit.com)
-*/
-/**************************************************************************/
 
 #ifndef __FILEIO_H__
 #define __FILEIO_H__
