@@ -133,8 +133,10 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 #define PIN_QSPI_DATA3       32
 
 // On-board QSPI Flash
-// If EXTERNAL_FLASH_DEVICES is not defined, all supported devices will be used
 #define EXTERNAL_FLASH_DEVICES   GD25Q16C
+
+#define USB_MSC_BLOCK_SIZE    512
+#define USB_MSC_BLOCK_COUNT   ((2*1024*1024) / USB_MSC_BLOCK_SIZE)
 
 #ifdef __cplusplus
 }

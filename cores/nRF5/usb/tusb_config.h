@@ -59,8 +59,6 @@
 
 //------------- CLASS -------------//
 #define CFG_TUD_CDC                 1
-
-// disable msc for feather nrf52840 for now until have a more stable QSPI driver
 #define CFG_TUD_MSC                 1
 
 #define CFG_TUD_HID                 0

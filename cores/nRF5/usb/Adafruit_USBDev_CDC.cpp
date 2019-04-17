@@ -1,8 +1,7 @@
-
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2018, hathach for Adafruit
+ * Copyright (c) 2019 Ha Thach for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #ifdef NRF52840_XXAA
 
 #include "Adafruit_USBDev_CDC.h"

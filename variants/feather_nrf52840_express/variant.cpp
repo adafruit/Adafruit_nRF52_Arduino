@@ -78,9 +78,7 @@ void initVariant()
   pinMode(PIN_LED2, OUTPUT);
   ledOff(PIN_LED2);
 
-#if 0 // disable QSPI flash for now
   // Init External Flash
   flash_qspi_init();
-#endif
 }
 
