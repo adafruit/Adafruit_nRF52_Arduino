@@ -25,12 +25,14 @@
 #ifdef NRF52840_XXAA
 
 #include "Arduino.h"
+
+#ifdef EXTERNAL_FLASH_DEVICES
+
 #include "flash_devices.h"
 #include "flash_qspi.h"
 #include "flash_cache.h"
 #include "nrfx_qspi.h"
 
-#ifdef EXTERNAL_FLASH_DEVICES
 
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
@@ -181,7 +183,7 @@ void flash_qspi_init (void)
   uint8_t const mfgr_id = id_resp[3];
   uint8_t const dev_id = id_resp[4];
 
-  // quick hack
+  // Debug
 //  printf("qspi mfgr id  : 0x%02X\n", mfgr_id);
 //  printf("qspi device id: 0x%02X\n", dev_id);
 //  PRINT_BUFFER(id_resp, sizeof(id_resp));
@@ -250,4 +252,3 @@ static bool fal_qspi_verify (uint32_t addr, void const * buf, uint32_t len)
 
 #endif // external flash
 #endif // nrf52840
-
