@@ -46,7 +46,6 @@ void initVariant() __attribute__((weak));
 void initVariant() { }
 
 #define LOOP_STACK_SZ   (512*3)
-#define USBD_STACK_SZ   (150)
 
 static void loop_task(void* arg)
 {
@@ -75,20 +74,6 @@ static void loop_task(void* arg)
   }
 }
 
-// USB Device Driver task
-// This top level thread process all usb events and invoke callbacks
-static void usb_device_task(void* param)
-{
-  (void) param;
-
-  // RTOS forever loop
-  while (1)
-  {
-    // tinyusb device task
-    tud_task();
-  }
-}
-
 // \brief Main entry point of Arduino application
 int main( void )
 {
@@ -99,9 +84,6 @@ int main( void )
   USBDevice.addInterface( (Adafruit_USBDev_Interface&) Serial);
   USBDevice.begin(USB_VID, USB_PID);
   usb_init();
-
-  // Create a task for tinyusb device stack
-  xTaskCreate( usb_device_task, "usbd", USBD_STACK_SZ, NULL, TASK_PRIO_HIGH, NULL);
 #endif
 
 #if CFG_DEBUG >= 3

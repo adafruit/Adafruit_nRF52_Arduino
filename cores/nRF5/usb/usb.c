@@ -32,11 +32,18 @@
 #include "tusb.h"
 #include "usb.h"
 
+#include "rtos.h"
+
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
+
+#define USBD_STACK_SZ   (150)
+
 // Serial is 64-bit DeviceID -> 16 chars len
 uint16_t usb_desc_str_serial[1+16] = { TUD_DESC_STR_HEADER(16) };
+
+static void usb_device_task(void* param);
 
 // Init usb when starting up. Softdevice is not enabled yet
 void usb_init(void)
@@ -73,6 +80,9 @@ void usb_init(void)
 
   // Init tinyusb stack
   tusb_init();
+
+  // Create a task for tinyusb device stack
+  xTaskCreate( usb_device_task, "usbd", USBD_STACK_SZ, NULL, TASK_PRIO_HIGH, NULL);
 }
 
 // Must be called before sd_softdevice_enable()
@@ -93,6 +103,19 @@ void usb_softdevice_post_enable(void)
   sd_power_usbremoved_enable(true);
 }
 
+// USB Device Driver task
+// This top level thread process all usb events and invoke callbacks
+static void usb_device_task(void* param)
+{
+  (void) param;
+
+  // RTOS forever loop
+  while (1)
+  {
+    // tinyusb device task
+    tud_task();
+  }
+}
 
 // Invoked when cdc when line state changed e.g connected/disconnected
 // Use to reset to DFU when disconnect with 1200 bps
@@ -109,7 +132,5 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts)
     if ( coding.bit_rate == 1200 ) enterSerialDfu();
   }
 }
-
-
 
 #endif
