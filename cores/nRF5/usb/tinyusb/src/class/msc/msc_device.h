@@ -62,24 +62,6 @@ TU_VERIFY_STATIC(CFG_TUD_MSC_BUFSIZE < UINT16_MAX, "Size is not correct");
   #error CFG_TUD_MSC_PRODUCT_REV 4-byte string must be defined
 #endif
 
-
-//--------------------------------------------------------------------+
-// Interface Descriptor Template
-//--------------------------------------------------------------------+
-
-// Length of template descriptor: 23 bytes
-#define TUD_MSC_DESC_LEN    (9 + 7 + 7)
-
-// Interface Number, EP Out & EP In address
-#define TUD_MSC_DESCRIPTOR(_itfnum, _stridx, _epout, _epin, _epsize) \
-  /* Interface */\
-  0x09, TUSB_DESC_INTERFACE, _itfnum, 0x00, 0x02, TUSB_CLASS_MSC, MSC_SUBCLASS_SCSI, MSC_PROTOCOL_BOT, _stridx,\
-  /* Endpoint Out */\
-  0x07, TUSB_DESC_ENDPOINT, _epout, TUSB_XFER_BULK, U16_TO_U8S_LE(_epsize), 0x00,\
-  /* Endpoint In */\
-  0x07, TUSB_DESC_ENDPOINT, _epin, TUSB_XFER_BULK, U16_TO_U8S_LE(_epsize), 0x00
-
-
 /** \addtogroup ClassDriver_MSC
  *  @{
  * \defgroup MSC_Device Device
@@ -107,7 +89,7 @@ bool tud_msc_set_sense(uint8_t lun, uint8_t sense_key, uint8_t add_sense_code, u
  * \retval      negative    Indicate error e.g reading disk I/O. tinyusb will \b STALL the corresponding
  *                          endpoint and return failed status in command status wrapper phase.
  */
-ATTR_WEAK int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize);
+int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize);
 
 /**
  * Callback invoked when received \ref SCSI_CMD_WRITE_10 command
@@ -126,10 +108,10 @@ ATTR_WEAK int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset,
  * \retval      negative    Indicate error writing disk I/O. Tinyusb will \b STALL the corresponding
  *                          endpoint and return failed status in command status wrapper phase.
  */
-ATTR_WEAK int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize);
+int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize);
 
 // Invoked to determine the disk size
-ATTR_WEAK void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size);
+void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size);
 
 /**
  * Callback invoked when received an SCSI command not in built-in list below.
@@ -148,9 +130,9 @@ ATTR_WEAK void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t*
  *              - READ_CAPACITY10, READ_FORMAT_CAPACITY, INQUIRY, MODE_SENSE6, REQUEST_SENSE
  *              - READ10 and WRITE10 has their own callbacks
  */
-ATTR_WEAK int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize);
+int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize);
 
-/*------------- Optional callbacks : Could be used by application to free up resources -------------*/
+/*------------- Optional callbacks -------------*/
 
 // Invoked when Read10 command is complete
 ATTR_WEAK void tud_msc_read10_complete_cb(uint8_t lun);

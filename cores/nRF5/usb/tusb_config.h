@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #ifndef _TUSB_CONFIG_H_
 #define _TUSB_CONFIG_H_
 
@@ -42,35 +43,22 @@
 #define CFG_TUSB_OS                 OPT_OS_FREERTOS
 #define CFG_TUSB_DEBUG              0
 
+#define CFG_TUSB_MEM_SECTION
+#define CFG_TUSB_MEM_ALIGN          ATTR_ALIGNED(4)
+
 //--------------------------------------------------------------------
 // DEVICE CONFIGURATION
 //--------------------------------------------------------------------
 
 #define CFG_TUD_ENDOINT0_SIZE       64
 
-/*------------- Descriptors -------------*/
-
-/* Enable auto generated descriptor, tinyusb will try its best to create
- * descriptor ( device, configuration, hid ) that matches enabled CFG_* in this file
- *
- * Note: All CFG_TUD_DESC_* are relevant only if CFG_TUD_DESC_AUTO is enabled
- */
-#define CFG_TUD_DESC_AUTO           0
-
 //------------- CLASS -------------//
 #define CFG_TUD_CDC                 1
 #define CFG_TUD_MSC                 1
-
 #define CFG_TUD_HID                 0
-#define CFG_TUD_HID_KEYBOARD        0
-#define CFG_TUD_HID_MOUSE           0
 
-/* Use Boot Protocol for Keyboard, Mouse. Enable this will create separated HID interface
- * require more IN endpoints. If disabled, they they are all packed into a single
- * multiple report interface called "Generic". */
-#define CFG_TUD_HID_KEYBOARD_BOOT   0
-#define CFG_TUD_HID_MOUSE_BOOT      0
-
+#define CFG_TUD_MIDI                0
+#define CFG_TUD_CUSTOM_CLASS        0
 
 //--------------------------------------------------------------------
 // CDC
@@ -103,19 +91,11 @@
 // HID
 //--------------------------------------------------------------------
 
-/* Use the HID_ASCII_TO_KEYCODE lookup if CFG_TUD_HID_KEYBOARD is enabled.
- * This will occupies 256 bytes of ROM. It will also enable the use of 2 extra APIs
+/* Use the HID_ASCII_TO_KEYCODE lookup
+ * This will occupies 256 bytes of ROM. It will also enable the use of extra APIs
  * - tud_hid_keyboard_send_char()
- * - tud_hid_keyboard_send_string()
  */
-#define CFG_TUD_HID_ASCII_TO_KEYCODE_LOOKUP 1
-
-//--------------------------------------------------------------------
-// USB RAM PLACEMENT
-//--------------------------------------------------------------------
-#define CFG_TUSB_ATTR_USBRAM
-#define CFG_TUSB_MEM_ALIGN          ATTR_ALIGNED(4)
-
+#define CFG_TUD_HID_ASCII_TO_KEYCODE_LOOKUP 0
 
 #ifdef __cplusplus
  }
