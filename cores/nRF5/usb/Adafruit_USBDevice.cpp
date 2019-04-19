@@ -56,17 +56,12 @@ uint16_t const * const string_desc_arr [] =
 // since CFG_TUD_DESC_AUTO is enabled, we only need to set string_arr
 tud_desc_set_t tud_desc_set =
 {
-  .device       = NULL,
-  .config       = NULL,
+  .device       = NULL, // update later
+  .config       = NULL, // update later
   .string_arr   = (uint8_t const **) string_desc_arr,
   .string_count = sizeof(string_desc_arr)/sizeof(string_desc_arr[0]),
 
-  .hid_report =
-  {
-    .generic       = NULL,
-    .boot_keyboard = NULL,
-    .boot_mouse    = NULL
-  }
+  .hid_report = NULL // update later
 };
 
 } // extern C
@@ -182,6 +177,8 @@ bool Adafruit_USBDevice::begin(uint16_t vid, uint16_t pid)
 {
   _desc_device.idVendor = vid;
   _desc_device.idProduct = pid;
+
+  return true;
 }
 
 #endif
