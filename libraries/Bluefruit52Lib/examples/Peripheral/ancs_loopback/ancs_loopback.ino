@@ -47,13 +47,11 @@ void setup ()
   Bluefruit.begin();
   // Set max power. Accepted values are: -40, -30, -20, -16, -12, -8, -4, 0, 4
   Bluefruit.setTxPower(4);
-  Bluefruit.setName("DM ancs loopback");
+  Bluefruit.setName("Bluefruit52");
   Bluefruit.setConnectCallback(connect_callback);
   Bluefruit.setDisconnectCallback(disconnect_callback);
 
   // Configure and Start Device Information Service
-  bledis.setManufacturer("Drivemode Inc.");
-  bledis.setModel("Drivemode Socket alpha");
   bledis.begin();
 
   // Configure DIS client
