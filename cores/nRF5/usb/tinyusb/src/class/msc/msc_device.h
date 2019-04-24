@@ -89,7 +89,7 @@ bool tud_msc_set_sense(uint8_t lun, uint8_t sense_key, uint8_t add_sense_code, u
  * \retval      negative    Indicate error e.g reading disk I/O. tinyusb will \b STALL the corresponding
  *                          endpoint and return failed status in command status wrapper phase.
  */
-int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize);
+ATTR_WEAK int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize);
 
 /**
  * Callback invoked when received \ref SCSI_CMD_WRITE_10 command
@@ -108,10 +108,10 @@ int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buf
  * \retval      negative    Indicate error writing disk I/O. Tinyusb will \b STALL the corresponding
  *                          endpoint and return failed status in command status wrapper phase.
  */
-int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize);
+ATTR_WEAK int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize);
 
 // Invoked to determine the disk size
-void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size);
+ATTR_WEAK void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size);
 
 /**
  * Callback invoked when received an SCSI command not in built-in list below.
@@ -130,7 +130,7 @@ void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_siz
  *              - READ_CAPACITY10, READ_FORMAT_CAPACITY, INQUIRY, MODE_SENSE6, REQUEST_SENSE
  *              - READ10 and WRITE10 has their own callbacks
  */
-int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize);
+ATTR_WEAK int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize);
 
 /*------------- Optional callbacks -------------*/
 
