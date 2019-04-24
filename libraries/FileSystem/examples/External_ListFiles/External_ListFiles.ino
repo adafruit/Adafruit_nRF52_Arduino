@@ -14,7 +14,7 @@
 
 #include "flash/flash_qspi.h"
 #include <bluefruit.h>
-#include <Adafruit_USBDev_MSC.h>
+#include "Adafruit_TinyUSB.h"
 #include <Bluefruit_FileIO.h>
 
 /* This example  print out External Flash contents up to
