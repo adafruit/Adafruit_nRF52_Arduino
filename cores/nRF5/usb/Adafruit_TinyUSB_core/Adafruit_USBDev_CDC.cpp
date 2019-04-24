@@ -117,4 +117,25 @@ size_t Adafruit_USBDev_CDC::write(const uint8_t *buffer, size_t size)
   return size - remain;
 }
 
+extern "C"
+{
+
+// Invoked when cdc when line state changed e.g connected/disconnected
+// Use to reset to DFU when disconnect with 1200 bps
+void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts)
+{
+  (void) itf;  // interface ID, not used
+
+  // DTR = false is counted as disconnected
+  if ( !dtr )
+  {
+    cdc_line_coding_t coding;
+    tud_cdc_get_line_coding(&coding);
+
+    if ( coding.bit_rate == 1200 ) enterSerialDfu();
+  }
+}
+
+}
+
 #endif // NRF52840_XXAA
