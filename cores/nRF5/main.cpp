@@ -18,12 +18,6 @@
 
 #include "usb.h"
 
-/* USB VID/PID if not defined, tinyusb to use default value
- * Note: different class combination e.g CDC and (CDC + MSC) should have different
- * PID since Host OS will "remembered" device driver after the first plug */
-#define USB_VID  0x239A
-#define USB_PID  0x8029
-
 // DEBUG Level 1
 #if CFG_DEBUG
 // weak function to avoid compilation error with
