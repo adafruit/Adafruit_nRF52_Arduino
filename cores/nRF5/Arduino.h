@@ -68,11 +68,7 @@ void suspendLoop(void);
 #include "utility/AdaCallback.h"
 
 #ifdef NRF52840_XXAA
-  #include "tusb.h"
-#ifdef __cplusplus
-  #include "Adafruit_USBDevice.h"
-  #include "Adafruit_USBDev_CDC.h"
-#endif
+  #include "Adafruit_TinyUSB_core.h"
 #endif
 
 // Include board variant

@@ -22,11 +22,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef ADAFRUIT_TINYUSB_H_
-#define ADAFRUIT_TINYUSB_H_
+#ifndef ADAFRUIT_TINYUSB_CORE_H_
+#define ADAFRUIT_TINYUSB_CORE_H_
 
 #include "tusb.h"
-#include "Adafruit_USBDevice.h"
-#include "Adafruit_USBDev_MSC.h"
 
-#endif /* ADAFRUIT_TINYUSB_H_ */
+#ifdef __cplusplus
+#include "Adafruit_USBDevice.h"
+#include "Adafruit_USBDev_CDC.h"
+#endif
+
+#endif /* ADAFRUIT_TINYUSB_CORE_H_ */
