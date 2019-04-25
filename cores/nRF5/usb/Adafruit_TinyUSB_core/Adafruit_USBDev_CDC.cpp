@@ -31,14 +31,14 @@
 #define EPOUT   0x00
 #define EPIN    0x80
 
-Adafruit_USBDev_CDC Serial;
+Adafruit_USBD_CDC Serial;
 
-Adafruit_USBDev_CDC::Adafruit_USBDev_CDC(void)
+Adafruit_USBD_CDC::Adafruit_USBD_CDC(void)
 {
 
 }
 
-uint16_t Adafruit_USBDev_CDC::getDescriptor(uint8_t* buf, uint16_t bufsize)
+uint16_t Adafruit_USBD_CDC::getDescriptor(uint8_t* buf, uint16_t bufsize)
 {
   // CDC is mostly always existed for DFU
   uint8_t desc[] = { TUD_CDC_DESCRIPTOR(0, 0, EPIN, 8, EPOUT, EPIN, 64) };
@@ -51,54 +51,54 @@ uint16_t Adafruit_USBDev_CDC::getDescriptor(uint8_t* buf, uint16_t bufsize)
 }
 
 // Baud and config is ignore in CDC
-void Adafruit_USBDev_CDC::begin (uint32_t baud)
+void Adafruit_USBD_CDC::begin (uint32_t baud)
 {
 }
-void Adafruit_USBDev_CDC::begin (uint32_t baud, uint8_t config)
+void Adafruit_USBD_CDC::begin (uint32_t baud, uint8_t config)
 {
 }
 
-void Adafruit_USBDev_CDC::end(void)
+void Adafruit_USBD_CDC::end(void)
 {
   // nothing to do
 }
 
-Adafruit_USBDev_CDC::operator bool()
+Adafruit_USBD_CDC::operator bool()
 {
   return tud_cdc_connected();
 }
 
-int Adafruit_USBDev_CDC::available(void)
+int Adafruit_USBD_CDC::available(void)
 {
   return tud_cdc_available();
 }
 
-int Adafruit_USBDev_CDC::peek(void)
+int Adafruit_USBD_CDC::peek(void)
 {
   return tud_cdc_peek(0);
 }
 
-int Adafruit_USBDev_CDC::read(void)
+int Adafruit_USBD_CDC::read(void)
 {
   return (int) tud_cdc_read_char();
 }
 
-size_t Adafruit_USBDev_CDC::readBytes(char *buffer, size_t length)
+size_t Adafruit_USBD_CDC::readBytes(char *buffer, size_t length)
 {
   return tud_cdc_read(buffer, length);
 }
 
-void Adafruit_USBDev_CDC::flush(void)
+void Adafruit_USBD_CDC::flush(void)
 {
   tud_cdc_write_flush();
 }
 
-size_t Adafruit_USBDev_CDC::write(uint8_t ch)
+size_t Adafruit_USBD_CDC::write(uint8_t ch)
 {
   return tud_cdc_write_char((char) ch);
 }
 
-size_t Adafruit_USBDev_CDC::write(const uint8_t *buffer, size_t size)
+size_t Adafruit_USBD_CDC::write(const uint8_t *buffer, size_t size)
 {
   size_t remain = size;
   while ( remain && tud_cdc_connected() )

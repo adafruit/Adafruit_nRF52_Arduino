@@ -28,10 +28,10 @@
 #include "Adafruit_USBDevice.h"
 #include "Stream.h"
 
-class Adafruit_USBDev_CDC : public Stream, Adafruit_USBDev_Interface
+class Adafruit_USBD_CDC : public Stream, Adafruit_USBD_Interface
 {
 public:
-	Adafruit_USBDev_CDC(void);
+	Adafruit_USBD_CDC(void);
 
 	// fron Adafruit_USBInterface
 	virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize);
@@ -56,6 +56,6 @@ public:
 	size_t readBytes(uint8_t *buffer, size_t length) { return readBytes((char *)buffer, length); }
 };
 
-extern Adafruit_USBDev_CDC Serial;
+extern Adafruit_USBD_CDC Serial;
 
 #endif /* ADAFRUIT_USBDEV_CDC_H_ */

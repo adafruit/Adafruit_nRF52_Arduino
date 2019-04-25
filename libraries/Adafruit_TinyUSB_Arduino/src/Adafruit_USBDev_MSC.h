@@ -25,16 +25,16 @@
 #ifndef ADAFRUIT_USBDEV_MSC_H_
 #define ADAFRUIT_USBDEV_MSC_H_
 
-#include "Adafruit_USBDevice.h"
+#include "Adafruit_TinyUSB_core.h"
 
-class Adafruit_USBDev_MSC : Adafruit_USBDev_Interface
+class Adafruit_USBD_MSC : Adafruit_USBD_Interface
 {
   public:
     typedef int32_t (*read_callback_t ) (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize);
     typedef int32_t (*write_callback_t) (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize);
     typedef void    (*flush_callback_t) (uint8_t lun);
 
-    Adafruit_USBDev_MSC(void);
+    Adafruit_USBD_MSC(void);
 
     bool begin(void);
 

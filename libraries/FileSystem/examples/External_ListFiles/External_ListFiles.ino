@@ -24,7 +24,7 @@
  */
 #define MAX_LEVEL   2
 
-Adafruit_USBDev_MSC usbmsc;
+Adafruit_USBD_MSC usbmsc;
 
 // the setup function runs once when you press reset or power the board
 void setup() 

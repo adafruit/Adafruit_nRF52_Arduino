@@ -28,15 +28,15 @@
 #define EPIN    0x80
 #define EPSIZE  64  // TODO must be 512 for highspeed device
 
-static Adafruit_USBDev_MSC* _msc_dev = NULL;
+static Adafruit_USBD_MSC* _msc_dev = NULL;
 
-Adafruit_USBDev_MSC::Adafruit_USBDev_MSC(void)
+Adafruit_USBD_MSC::Adafruit_USBD_MSC(void)
 {
   _block_count = 0;
   _block_size = 0;
 }
 
-uint16_t Adafruit_USBDev_MSC::getDescriptor(uint8_t* buf, uint16_t bufsize)
+uint16_t Adafruit_USBD_MSC::getDescriptor(uint8_t* buf, uint16_t bufsize)
 {
   uint8_t desc[] = { TUD_MSC_DESCRIPTOR(0, 0, EPOUT, EPIN, EPSIZE) };
   uint16_t const len = sizeof(desc);
@@ -46,26 +46,26 @@ uint16_t Adafruit_USBDev_MSC::getDescriptor(uint8_t* buf, uint16_t bufsize)
   return len;
 }
 
-void Adafruit_USBDev_MSC::setCapacity(uint32_t block_count, uint16_t block_size)
+void Adafruit_USBD_MSC::setCapacity(uint32_t block_count, uint16_t block_size)
 {
   _block_count = block_count;
   _block_size = block_size;
 }
 
-void Adafruit_USBDev_MSC::getCapacity(uint32_t* block_count, uint16_t* block_size)
+void Adafruit_USBD_MSC::getCapacity(uint32_t* block_count, uint16_t* block_size)
 {
   (*block_count) = _block_count;
   (*block_size) = _block_size;
 }
 
-void Adafruit_USBDev_MSC::setCallback(read_callback_t rd_cb, write_callback_t wr_cb, flush_callback_t fl_cb)
+void Adafruit_USBD_MSC::setCallback(read_callback_t rd_cb, write_callback_t wr_cb, flush_callback_t fl_cb)
 {
   _rd_cb = rd_cb;
   _wr_cb = wr_cb;
   _fl_cb = fl_cb;
 }
 
-bool Adafruit_USBDev_MSC::begin(void)
+bool Adafruit_USBD_MSC::begin(void)
 {
   if ( !USBDevice.addInterface(*this) ) return false;
 

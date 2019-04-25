@@ -27,13 +27,13 @@
 
 #include "tusb.h"
 
-class Adafruit_USBDev_Interface
+class Adafruit_USBD_Interface
 {
   public:
     virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize) = 0;
 };
 
-class Adafruit_USBDevice
+class Adafruit_TinyUSB_Device
 {
   private:
     tusb_desc_device_t _desc_device;
@@ -47,13 +47,13 @@ class Adafruit_USBDevice
     uint8_t  _epout_count;
 
   public:
-    Adafruit_USBDevice(void);
+    Adafruit_TinyUSB_Device(void);
 
-    bool addInterface(Adafruit_USBDev_Interface& itf);
+    bool addInterface(Adafruit_USBD_Interface& itf);
 
     bool begin(uint16_t vid, uint16_t pid);
 };
 
-extern Adafruit_USBDevice USBDevice;
+extern Adafruit_TinyUSB_Device USBDevice;
 
 #endif /* ADAFRUIT_USBDEVICE_H_ */

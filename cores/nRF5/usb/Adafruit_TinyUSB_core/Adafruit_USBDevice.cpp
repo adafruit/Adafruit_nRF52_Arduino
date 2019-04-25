@@ -66,9 +66,9 @@ tud_desc_set_t tud_desc_set =
 
 } // extern C
 
-Adafruit_USBDevice USBDevice;
+Adafruit_TinyUSB_Device USBDevice;
 
-Adafruit_USBDevice::Adafruit_USBDevice(void)
+Adafruit_TinyUSB_Device::Adafruit_TinyUSB_Device(void)
 {
   tusb_desc_device_t  desc_dev =
   {
@@ -131,7 +131,7 @@ Adafruit_USBDevice::Adafruit_USBDevice(void)
 // Add interface descriptor
 // - Interface number will be updated to match current count
 // - Endpoint number is updated to be unique
-bool Adafruit_USBDevice::addInterface(Adafruit_USBDev_Interface& itf)
+bool Adafruit_TinyUSB_Device::addInterface(Adafruit_USBD_Interface& itf)
 {
   uint8_t* desc = _desc_cfg+_desc_cfglen;
   uint16_t len = itf.getDescriptor(desc, sizeof(_desc_cfg)-_desc_cfglen);
@@ -173,7 +173,7 @@ bool Adafruit_USBDevice::addInterface(Adafruit_USBDev_Interface& itf)
   return true;
 }
 
-bool Adafruit_USBDevice::begin(uint16_t vid, uint16_t pid)
+bool Adafruit_TinyUSB_Device::begin(uint16_t vid, uint16_t pid)
 {
   _desc_device.idVendor = vid;
   _desc_device.idProduct = pid;
