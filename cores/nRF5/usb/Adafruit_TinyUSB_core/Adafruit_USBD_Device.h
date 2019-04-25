@@ -52,6 +52,11 @@ class Adafruit_USBD_Device
     bool addInterface(Adafruit_USBD_Interface& itf);
 
     bool begin(uint16_t vid, uint16_t pid);
+
+    bool mounted(void) { return tud_mounted(); }
+    bool suspended(void) { return tud_suspended(); }
+    bool ready(void) { return tud_ready(); }
+    bool remoteWakeup(void) { return tud_remote_wakeup(); }
 };
 
 extern Adafruit_USBD_Device USBDevice;

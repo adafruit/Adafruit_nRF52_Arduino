@@ -53,7 +53,6 @@ uint16_t const * const string_desc_arr [] =
 };
 
 // tud_desc_set is required by tinyusb stack
-// since CFG_TUD_DESC_AUTO is enabled, we only need to set string_arr
 tud_desc_set_t tud_desc_set =
 {
   .device       = NULL, // update later
@@ -134,9 +133,10 @@ Adafruit_USBD_Device::Adafruit_USBD_Device(void)
 bool Adafruit_USBD_Device::addInterface(Adafruit_USBD_Interface& itf)
 {
   uint8_t* desc = _desc_cfg+_desc_cfglen;
-  uint16_t len = itf.getDescriptor(desc, sizeof(_desc_cfg)-_desc_cfglen);
-
+  uint16_t const len = itf.getDescriptor(desc, sizeof(_desc_cfg)-_desc_cfglen);
   uint8_t* desc_end = desc+len;
+
+  if ( !len ) return false;
 
   // Handle IAD
   if ( desc[1] == TUSB_DESC_INTERFACE_ASSOCIATION )
