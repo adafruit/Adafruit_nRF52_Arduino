@@ -60,13 +60,13 @@ bool tud_hid_report(uint8_t report_id, void const* report, uint8_t len);
 // Invoked when receiving GET_REPORT control request
 // Application must fill buffer report's content and return its length.
 // Return zero will cause the stack to STALL request
-uint16_t tud_hid_get_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen);
+ATTR_WEAK uint16_t tud_hid_get_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen);
 
 // Invoked when receiving SET_REPORT control request
-void tud_hid_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize);
+ATTR_WEAK void tud_hid_set_report_cb(uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize);
 
 // Invoked when host switch mode Boot <-> Report via SET_PROTOCOL request
-void tud_hid_mode_changed_cb(uint8_t boot_mode) ATTR_WEAK;
+ATTR_WEAK void tud_hid_mode_changed_cb(uint8_t boot_mode);
 
 //--------------------------------------------------------------------+
 // KEYBOARD API
