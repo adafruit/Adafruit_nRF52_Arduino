@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef ADAFRUIT_USBDEVICE_H_
-#define ADAFRUIT_USBDEVICE_H_
+#ifndef ADAFRUIT_USBD_DEVICE_H_
+#define ADAFRUIT_USBD_DEVICE_H_
 
 #include "tusb.h"
 
@@ -33,7 +33,7 @@ class Adafruit_USBD_Interface
     virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize) = 0;
 };
 
-class Adafruit_TinyUSB_Device
+class Adafruit_USBD_Device
 {
   private:
     tusb_desc_device_t _desc_device;
@@ -47,13 +47,13 @@ class Adafruit_TinyUSB_Device
     uint8_t  _epout_count;
 
   public:
-    Adafruit_TinyUSB_Device(void);
+    Adafruit_USBD_Device(void);
 
     bool addInterface(Adafruit_USBD_Interface& itf);
 
     bool begin(uint16_t vid, uint16_t pid);
 };
 
-extern Adafruit_TinyUSB_Device USBDevice;
+extern Adafruit_USBD_Device USBDevice;
 
-#endif /* ADAFRUIT_USBDEVICE_H_ */
+#endif /* ADAFRUIT_USBD_DEVICE_H_ */

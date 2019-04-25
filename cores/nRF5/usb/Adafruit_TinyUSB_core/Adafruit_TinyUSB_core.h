@@ -28,7 +28,7 @@
 #include "tusb.h"
 
 #ifdef __cplusplus
-#include "Adafruit_USBDevice.h"
+#include "Adafruit_USBD_Device.h"
 #include "Adafruit_USBD_CDC.h"
 #endif
 

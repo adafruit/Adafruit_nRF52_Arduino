@@ -24,9 +24,8 @@
 
 #ifdef NRF52840_XXAA
 
-#include "Adafruit_USBD_CDC.h"
 #include "Arduino.h"
-#include "tusb.h"
+#include "Adafruit_USBD_CDC.h"
 
 #define EPOUT   0x00
 #define EPIN    0x80
