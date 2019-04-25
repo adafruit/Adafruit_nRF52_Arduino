@@ -4,6 +4,9 @@ This repository contains the Arduino BSP for Adafruit nRF52 series:
 
 - [Bluefruit Feather nRF52832](https://www.adafruit.com/product/3406)
 - [Bluefruit Feather nRF52840](https://www.adafruit.com/product/4062)
+
+Following boards are also included but are not officially supported:
+
 - [Noric nRF52840DK PCA10056](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-DK)
 
 ## BSP Installation
