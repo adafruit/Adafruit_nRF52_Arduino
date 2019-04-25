@@ -33,7 +33,7 @@ class Adafruit_USBD_CDC : public Stream, Adafruit_USBD_Interface
 public:
 	Adafruit_USBD_CDC(void);
 
-	// fron Adafruit_USBInterface
+	// fron Adafruit_USBD_Interface
 	virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize);
 
 	void setPins(uint8_t pin_rx, uint8_t pin_tx) { (void) pin_rx; (void) pin_tx; }

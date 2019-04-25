@@ -42,7 +42,7 @@ class Adafruit_USBD_MSC : Adafruit_USBD_Interface
     void getCapacity(uint32_t* block_count, uint16_t* block_size);
     void setCallback(read_callback_t rd_cb, write_callback_t wr_cb, flush_callback_t fl_cb);
 
-    // from Adafruit_USBInterface
+    // from Adafruit_USBD_Interface
     virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize);
 
   private:
