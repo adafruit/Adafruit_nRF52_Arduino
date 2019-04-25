@@ -25,6 +25,6 @@
 #ifndef ADAFRUIT_TINYUSB_H_
 #define ADAFRUIT_TINYUSB_H_
 
-#include "Adafruit_USBDev_MSC.h"
+#include "Adafruit_USBD_MSC.h"
 
 #endif /* ADAFRUIT_TINYUSB_H_ */

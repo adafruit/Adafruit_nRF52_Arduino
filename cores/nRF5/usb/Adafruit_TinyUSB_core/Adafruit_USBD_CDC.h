@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef ADAFRUIT_USBDEV_CDC_H_
-#define ADAFRUIT_USBDEV_CDC_H_
+#ifndef ADAFRUIT_USBD_CDC_H_
+#define ADAFRUIT_USBD_CDC_H_
 
 #include "Adafruit_USBDevice.h"
 #include "Stream.h"
@@ -58,4 +58,4 @@ public:
 
 extern Adafruit_USBD_CDC Serial;
 
-#endif /* ADAFRUIT_USBDEV_CDC_H_ */
+#endif /* ADAFRUIT_USBD_CDC_H_ */

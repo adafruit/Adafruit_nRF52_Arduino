@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-#include "Adafruit_USBDev_MSC.h"
+#include "Adafruit_USBD_MSC.h"
 
 #define EPOUT   0x00
 #define EPIN    0x80

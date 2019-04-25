@@ -29,7 +29,7 @@
 
 #ifdef __cplusplus
 #include "Adafruit_USBDevice.h"
-#include "Adafruit_USBDev_CDC.h"
+#include "Adafruit_USBD_CDC.h"
 #endif
 
 #endif /* ADAFRUIT_TINYUSB_CORE_H_ */

@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef ADAFRUIT_USBDEV_MSC_H_
-#define ADAFRUIT_USBDEV_MSC_H_
+#ifndef ADAFRUIT_USBD_MSC_H_
+#define ADAFRUIT_USBD_MSC_H_
 
 #include "Adafruit_TinyUSB_core.h"
 
@@ -58,4 +58,4 @@ class Adafruit_USBD_MSC : Adafruit_USBD_Interface
     friend void tud_msc_write10_complete_cb (uint8_t lun);
 };
 
-#endif /* ADAFRUIT_USBDEV_MSC_H_ */
+#endif /* ADAFRUIT_USBD_MSC_H_ */

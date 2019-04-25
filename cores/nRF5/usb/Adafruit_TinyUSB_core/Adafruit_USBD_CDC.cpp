@@ -24,7 +24,7 @@
 
 #ifdef NRF52840_XXAA
 
-#include "Adafruit_USBDev_CDC.h"
+#include "Adafruit_USBD_CDC.h"
 #include "Arduino.h"
 #include "tusb.h"
 
