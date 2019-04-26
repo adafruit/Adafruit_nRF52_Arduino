@@ -163,8 +163,13 @@ bool mscd_control_request(uint8_t rhport, tusb_control_request_t const * p_reque
 
     case MSC_REQ_GET_MAX_LUN:
     {
-      // returned MAX LUN is minus 1 by specs
-      uint8_t maxlun = CFG_TUD_MSC_MAXLUN-1;
+      uint8_t maxlun = 1;
+      if (tud_msc_maxlun_cb) maxlun = tud_msc_maxlun_cb();
+      TU_VERIFY(maxlun);
+
+      // MAX LUN is minus 1 by specs
+      maxlun--;
+
       usbd_control_xfer(rhport, p_request, &maxlun, 1);
     }
     break;
