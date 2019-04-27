@@ -51,7 +51,8 @@ class Adafruit_USBD_Device
 
     bool addInterface(Adafruit_USBD_Interface& itf);
 
-    bool begin(uint16_t vid, uint16_t pid);
+    void setID(uint16_t vid, uint16_t pid);
+    bool begin(void);
 
     bool mounted(void) { return tud_mounted(); }
     bool suspended(void) { return tud_suspended(); }

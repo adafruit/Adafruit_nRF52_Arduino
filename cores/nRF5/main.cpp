@@ -76,7 +76,8 @@ int main( void )
 
 #ifdef NRF52840_XXAA
   USBDevice.addInterface( (Adafruit_USBD_Interface&) Serial);
-  USBDevice.begin(USB_VID, USB_PID);
+  USBDevice.setID(USB_VID, USB_PID);
+  USBDevice.begin();
   usb_init();
 #endif
 

@@ -173,11 +173,14 @@ bool Adafruit_USBD_Device::addInterface(Adafruit_USBD_Interface& itf)
   return true;
 }
 
-bool Adafruit_USBD_Device::begin(uint16_t vid, uint16_t pid)
+void Adafruit_USBD_Device::setID(uint16_t vid, uint16_t pid)
 {
   _desc_device.idVendor = vid;
   _desc_device.idProduct = pid;
+}
 
+bool Adafruit_USBD_Device::begin(void)
+{
   return true;
 }
 
