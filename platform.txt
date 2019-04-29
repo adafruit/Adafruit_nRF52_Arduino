@@ -63,7 +63,7 @@ nordic.path={build.core.path}/nordic
 compiler.nrf.flags= -DARDUINO_FEATHER52 -DARDUINO_NRF52_ADAFRUIT -DNRF52_SERIES {build.debug_flags} "-I{build.core.path}/cmsis/include" "-I{nordic.path}" "-I{nordic.path}/nrfx" "-I{nordic.path}/nrfx/hal" "-I{nordic.path}/nrfx/mdk" "-I{nordic.path}/nrfx/soc" "-I{nordic.path}/nrfx/drivers/include" "-I{nordic.path}/nrfx/drivers/src" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include" "-I{rtos.path}/Source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" 
 
 # nRF52840 flags
-build.nrf52840_flags= -DNRF52840_XXAA -DUSBCON "-I{build.core.path}/Adafruit_TinyUSB_core" "-I{build.core.path}/Adafruit_TinyUSB_core/tinyusb/src"
+build.nrf52840_flags= -DNRF52840_XXAA -DUSBCON "-I{build.core.path}/Adafruit_TinyUSB_Core" "-I{build.core.path}/Adafruit_TinyUSB_Core/tinyusb/src"
 
 # These can be overridden in platform.local.txt
 compiler.c.extra_flags=
