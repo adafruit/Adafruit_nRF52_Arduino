@@ -38,21 +38,9 @@
 // Serial is 64-bit DeviceID -> 16 chars len
 uint16_t usb_desc_str_serial[1+16] = { TUD_DESC_STR_HEADER(16) };
 
-/* tinyusb function that handles power event (detected, ready, removed)
- * We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled. */
+// tinyusb function that handles power event (detected, ready, removed)
+// We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled.
 extern "C" void tusb_hal_nrf_power_event(uint32_t event);
-
-void usb_init(void);
-
-void Adafruit_TinyUSB_Core_init(void)
-{
-  USBDevice.addInterface( (Adafruit_USBD_Interface&) Serial);
-  USBDevice.setID(USB_VID, USB_PID);
-  USBDevice.begin();
-
-  usb_init();
-}
-
 
 // USB Device Driver task
 // This top level thread process all usb events and invoke callbacks
@@ -68,8 +56,8 @@ static void usb_device_task(void* param)
   }
 }
 
-// Init usb when starting up. Softdevice is not enabled yet
-void usb_init(void)
+// Init usb hardware when starting up. Softdevice is not enabled yet
+static void usb_hardware_init(void)
 {
   // Power module init
   const nrfx_power_config_t pwr_cfg = { 0 };
@@ -91,7 +79,10 @@ void usb_init(void)
 
   if ( usb_reg & POWER_USBREGSTATUS_VBUSDETECT_Msk ) tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_DETECTED);
   if ( usb_reg & POWER_USBREGSTATUS_OUTPUTRDY_Msk  ) tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_READY);
+}
 
+void Adafruit_TinyUSB_Core_init(void)
+{
   // Create Serial string descriptor
   char tmp_serial[17];
   sprintf(tmp_serial, "%08lX%08lX", NRF_FICR->DEVICEID[1], NRF_FICR->DEVICEID[0]);
@@ -100,6 +91,13 @@ void usb_init(void)
   {
     usb_desc_str_serial[1+i] = tmp_serial[i];
   }
+
+
+  USBDevice.addInterface( (Adafruit_USBD_Interface&) Serial);
+  USBDevice.setID(USB_VID, USB_PID);
+  USBDevice.begin();
+
+  usb_hardware_init();
 
   // Init tinyusb stack
   tusb_init();

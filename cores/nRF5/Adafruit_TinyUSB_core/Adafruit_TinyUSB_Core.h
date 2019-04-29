@@ -32,6 +32,7 @@
 #include "Adafruit_USBD_CDC.h"
 #endif
 
+// Called by main.cpp to initialize usb device typically with CDC device for Serial
 void Adafruit_TinyUSB_Core_init(void);
 
 #endif /* ADAFRUIT_TINYUSB_CORE_H_ */
