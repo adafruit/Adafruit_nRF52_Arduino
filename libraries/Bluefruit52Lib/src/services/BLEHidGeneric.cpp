@@ -286,7 +286,7 @@ bool BLEHidGeneric::bootMouseReport(void const* data, int len)
 /*------------------------------------------------------------------*/
 /* Ascii to Keycode
  *------------------------------------------------------------------*/
-const hid_ascii_to_keycode_entry_t HID_ASCII_TO_KEYCODE[128] =
+const hid_ascii_to_keycode_entry_t hid_ascii_to_keycode[128] =
 {
     {0, 0                     }, // 0x00 Null
     {0, 0                     }, // 0x01
@@ -424,7 +424,7 @@ const hid_ascii_to_keycode_entry_t HID_ASCII_TO_KEYCODE[128] =
 /*------------------------------------------------------------------*/
 /* Keycode to Ascii
  *------------------------------------------------------------------*/
-const hid_keycode_to_ascii_t HID_KEYCODE_TO_ASCII[128] =
+const hid_keycode_to_ascii_t hid_keycode_to_ascii[128] =
 {
     {0     , 0      }, // 0x00
     {0     , 0      }, // 0x01
