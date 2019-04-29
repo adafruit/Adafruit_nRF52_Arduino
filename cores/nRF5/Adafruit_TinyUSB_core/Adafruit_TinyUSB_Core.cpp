@@ -25,14 +25,9 @@
 
 #include "nrfx.h"
 #include "nrfx_power.h"
-#include "nrf_sdm.h"
-#include "nrf_soc.h"
 
-#include "nrf_usbd.h"
-#include "tusb.h"
-#include "usb.h"
-
-#include "rtos.h"
+#include "Arduino.h"
+#include "Adafruit_TinyUSB_Core.h"
 
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
@@ -43,7 +38,35 @@
 // Serial is 64-bit DeviceID -> 16 chars len
 uint16_t usb_desc_str_serial[1+16] = { TUD_DESC_STR_HEADER(16) };
 
-static void usb_device_task(void* param);
+/* tinyusb function that handles power event (detected, ready, removed)
+ * We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled. */
+extern "C" void tusb_hal_nrf_power_event(uint32_t event);
+
+void usb_init(void);
+
+void Adafruit_TinyUSB_Core_init(void)
+{
+  USBDevice.addInterface( (Adafruit_USBD_Interface&) Serial);
+  USBDevice.setID(USB_VID, USB_PID);
+  USBDevice.begin();
+
+  usb_init();
+}
+
+
+// USB Device Driver task
+// This top level thread process all usb events and invoke callbacks
+static void usb_device_task(void* param)
+{
+  (void) param;
+
+  // RTOS forever loop
+  while (1)
+  {
+    // tinyusb device task
+    tud_task();
+  }
+}
 
 // Init usb when starting up. Softdevice is not enabled yet
 void usb_init(void)
@@ -83,38 +106,6 @@ void usb_init(void)
 
   // Create a task for tinyusb device stack
   xTaskCreate( usb_device_task, "usbd", USBD_STACK_SZ, NULL, TASK_PRIO_HIGH, NULL);
-}
-
-// Must be called before sd_softdevice_enable()
-// NRF_POWER is restricted prph used by Softdevice, must be release before enable SD
-void usb_softdevice_pre_enable(void)
-{
-  nrfx_power_usbevt_disable();
-  nrfx_power_usbevt_uninit();
-  nrfx_power_uninit();
-}
-
-// Must be called after sd_softdevice_enable()
-// To re-enable USB
-void usb_softdevice_post_enable(void)
-{
-  sd_power_usbdetected_enable(true);
-  sd_power_usbpwrrdy_enable(true);
-  sd_power_usbremoved_enable(true);
-}
-
-// USB Device Driver task
-// This top level thread process all usb events and invoke callbacks
-static void usb_device_task(void* param)
-{
-  (void) param;
-
-  // RTOS forever loop
-  while (1)
-  {
-    // tinyusb device task
-    tud_task();
-  }
 }
 
 #endif

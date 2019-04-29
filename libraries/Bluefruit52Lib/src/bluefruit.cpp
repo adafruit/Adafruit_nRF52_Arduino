@@ -37,11 +37,6 @@
 #include "bluefruit.h"
 #include "utility/bonding.h"
 
-#ifdef NRF52840_XXAA
-#include "nrfx_power.h"
-#include "usb/usb.h"
-#endif
-
 #ifndef CFG_BLE_TX_POWER_LEVEL
 #define CFG_BLE_TX_POWER_LEVEL           0
 #endif
@@ -59,6 +54,32 @@
 #define CFG_SOC_TASK_STACKSIZE          (200)
 #endif
 
+#ifdef NRF52840_XXAA
+#include "nrfx_power.h"
+
+/* tinyusb function that handles power event (detected, ready, removed)
+ * We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled. */
+extern "C" void tusb_hal_nrf_power_event(uint32_t event);
+
+// Must be called before sd_softdevice_enable()
+// NRF_POWER is restricted prph used by Softdevice, must be release before enable SD
+void usb_softdevice_pre_enable(void)
+{
+  nrfx_power_usbevt_disable();
+  nrfx_power_usbevt_uninit();
+  nrfx_power_uninit();
+}
+
+// Must be called after sd_softdevice_enable()
+// To re-enable USB
+void usb_softdevice_post_enable(void)
+{
+  sd_power_usbdetected_enable(true);
+  sd_power_usbpwrrdy_enable(true);
+  sd_power_usbremoved_enable(true);
+}
+
+#endif
 
 AdafruitBluefruit Bluefruit;
 

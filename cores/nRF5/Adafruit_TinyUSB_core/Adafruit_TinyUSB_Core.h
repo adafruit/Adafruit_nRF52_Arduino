@@ -1,7 +1,7 @@
-/*
+/* 
  * The MIT License (MIT)
  *
- * Copyright (c) 2018, hathach for Adafruit
+ * Copyright (c) 2019 Ha Thach for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,23 +22,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef USB_H_
-#define USB_H_
+#ifndef ADAFRUIT_TINYUSB_CORE_H_
+#define ADAFRUIT_TINYUSB_CORE_H_
+
+#include "tusb.h"
 
 #ifdef __cplusplus
- extern "C" {
+#include "Adafruit_USBD_Device.h"
+#include "Adafruit_USBD_CDC.h"
 #endif
 
-void usb_init(void);
-void usb_softdevice_pre_enable(void);
-void usb_softdevice_post_enable(void);
+void Adafruit_TinyUSB_Core_init(void);
 
-/* tinyusb function that handles power event (detected, ready, removed)
- * We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled. */
-void tusb_hal_nrf_power_event(uint32_t event);
-
-#ifdef __cplusplus
- }
-#endif
-
-#endif /* USB_H_ */
+#endif /* ADAFRUIT_TINYUSB_CORE_H_ */
