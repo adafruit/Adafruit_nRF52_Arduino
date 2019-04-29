@@ -1,6 +1,6 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-# 0.10.1
+# 0.10.5
 
 This release added multiple concurrent peripheral connections support, allow Bluefruit device to multiple central (phones/PC) simultaneously. It introduces new BLE class: BLEPeriph, BLEConnection, remove BLEGap, refactor/rename/move functions and callbacks.     
 

@@ -21,7 +21,6 @@ suspendLoop	KEYWORD2
 
 enterSerialDfu	KEYWORD2
 enterOTADfu	KEYWORD2
-setLoopStacksize	KEYWORD2
 
 ledOn	KEYWORD2
 ledOff	KEYWORD2

@@ -1,6 +1,68 @@
 # Changelog
 All notable changes to this project are documented in this file.
 
+## [1.6.2] - 2019-02-12
+### Added
+- Added the possibility to use the macro NRFX_COREDEP_DELAY_US_LOOP_CYCLES to specify the number of cycles consumed by one iteration of the internal loop in the function nrfx_coredep_delay_us().
+
+### Changed
+- Updated MDK to version 8.24.1.
+
+## [1.6.1] - 2019-01-29
+### Fixed
+- Fixed an issue in the NFCT driver that caused a performance loss on nRF52832. The interrupt configuration is now properly restored after the NRFX_NFCT_EVT_FIELD_LOST event.
+
+## [1.6.0] - 2019-01-18
+### Added
+- Added support for nRF52811.
+- Added support for the legacy peripherals SPI, TWI, and UART in nRF52810.
+- Added support for SAMPLERATE in nrf_saadc.h.
+- Added clearing of the STOPPED event in the nrfx_saadc_init() function to prevent driver deadlock in some cases.
+- Added HALs: BPROT, MPU, MWU.
+- Added function for reading the pin input buffer configuration in the GPIO HAL.
+- Implemented workaround for nRF9160 anomaly 1 in the I2S driver.
+
+### Changed
+- Improved handling of hardware anomalies in the USBD driver.
+- Updated MDK to version 8.23.1.
+
+### Fixed
+- Fixed the condition in NRFX_WAIT_FOR in the nrfx_saadc_abort() function. The macro now correctly waits for a stop of the driver.
+- Fixed the pending interrupt clearing in NVIC in the nrfx_usbd_stop() function. The driver now correctly handles power management.
+- Fixed the case when nrfx_uarte_tx_in_progress() function would return an incorrect value. The driver now correctly updates the tx_buffer_length variable internally.
+
+## [1.5.0] - 2018-12-12
+### Added
+- Added support for nRF9160.
+- Added allocator for DPPI.
+- Added HALs: DPPI, KMU, REGULATORS, SPU, VMC.
+- Added support for DPPI subscription and publishing in HALs related to nRF9160.
+- Added support for instances 2 and 3 in SPIS, TWIM, TWIS, and UARTE drivers.
+
+### Changed
+- Updated MDK to version 8.21.1.
+
+### Fixed
+- Corrected NRFX_I2S_CONFIG_RATIO value in nrfx_config.h. It now correctly uses supported value.
+
+## [1.4.0] - 2018-11-30
+### Added
+- Added the nrfx_is_word_aligned() function for checking whether an address is word-aligned.
+- Added HAL for ACL.
+- Added functions for disabling and re-enabling interrupts in the SWI driver.
+- Added possibility to completely remove interrupt handling from the WDT driver.
+
+### Changed
+- Updated the documentation for the nrfx_uarte_rx() function. It now correctly reflects the actual behavior of the function.
+
+### Fixed
+- Corrected the type of the nrfx_uarte_xfer_evt_t structure field that holds the amount of transferred bytes.
+- Corrected the way of disabling interrupts in the NFCT driver when moving the peripheral to the disabled state.
+- Fixed a typo in the name of the bmRequest field in the nrfx_usbd_setup_t structure. The new correct name is bRequest.
+- Fixed the nrfx_ppi_channel_fork_assign() function. It now accepts also pre-programmed channels.
+- Fixed handling of long custom instruction responses in the QSPI driver.
+- Fixed a bug affecting the conversion of time to ticks in the TIMER HAL.
+
 ## [1.3.1] - 2018-09-28
 ### Fixed
 - Corrected the type of nrfx_usbd_ep_status_get() return value.

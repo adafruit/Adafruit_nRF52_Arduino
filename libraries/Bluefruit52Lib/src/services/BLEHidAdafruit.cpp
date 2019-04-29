@@ -267,8 +267,8 @@ bool BLEHidAdafruit::keyPress(uint16_t conn_hdl, char ch)
   hid_keyboard_report_t report;
   varclr(&report);
 
-  report.modifier = ( HID_ASCII_TO_KEYCODE[(uint8_t)ch].shift ) ? KEYBOARD_MODIFIER_LEFTSHIFT : 0;
-  report.keycode[0] = HID_ASCII_TO_KEYCODE[(uint8_t)ch].keycode;
+  report.modifier = ( hid_ascii_to_keycode[(uint8_t)ch].shift ) ? KEYBOARD_MODIFIER_LEFTSHIFT : 0;
+  report.keycode[0] = hid_ascii_to_keycode[(uint8_t)ch].keycode;
 
   return keyboardReport(conn_hdl, &report);
 }
@@ -345,7 +345,7 @@ bool BLEHidAdafruit::mouseReport(uint16_t conn_hdl, uint8_t buttons, int8_t x, i
       .x       = x,
       .y       = y,
       .wheel   = wheel,
-      .pan     = pan
+//      .pan     = pan
   };
 
   _mse_buttons = buttons;

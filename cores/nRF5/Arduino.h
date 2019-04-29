@@ -36,7 +36,6 @@ void setup( void ) ;
 void loop( void ) ;
 
 void suspendLoop(void);
-uint32_t setLoopStacksize(void);
 
 #include "WVariant.h"
 
@@ -69,12 +68,7 @@ uint32_t setLoopStacksize(void);
 #include "utility/AdaCallback.h"
 
 #ifdef NRF52840_XXAA
-  #include "tusb.h"
-
-#ifdef __cplusplus
-  #include "USBSerial.h"
-#endif
-
+  #include "Adafruit_TinyUSB_core.h"
 #endif
 
 // Include board variant

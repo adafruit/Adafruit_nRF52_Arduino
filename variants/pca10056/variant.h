@@ -126,8 +126,15 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 #define PIN_QSPI_DATA3       23
 
 // On-board QSPI Flash
-// If EXTERNAL_FLASH_DEVICES is not defined, all supported devices will be used
 #define EXTERNAL_FLASH_DEVICES   MX25R6435F
+
+#define USB_MSC_BLOCK_SIZE    512
+#define USB_MSC_BLOCK_COUNT   ((8*1024*1024) / USB_MSC_BLOCK_SIZE)
+
+/* Note: different class combination e.g CDC and (CDC + MSC) should have different
+ * PID since Host OS will "remembered" device driver after the first plug */
+#define USB_VID  0x239A
+#define USB_PID  0x8029
 
 #ifdef __cplusplus
 }

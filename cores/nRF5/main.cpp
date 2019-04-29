@@ -16,6 +16,8 @@
 #define ARDUINO_MAIN
 #include "Arduino.h"
 
+#include "usb.h"
+
 // DEBUG Level 1
 #if CFG_DEBUG
 // weak function to avoid compilation error with
@@ -37,9 +39,7 @@ static TaskHandle_t  _loopHandle;
 void initVariant() __attribute__((weak));
 void initVariant() { }
 
-uint32_t _loopStacksize = 512*3;
-
-uint32_t setLoopStacksize(void) __attribute__ ((weak));
+#define LOOP_STACK_SZ   (512*3)
 
 static void loop_task(void* arg)
 {
@@ -68,25 +68,25 @@ static void loop_task(void* arg)
   }
 }
 
-/*
- * \brief Main entry point of Arduino application
- */
+// \brief Main entry point of Arduino application
 int main( void )
 {
   init();
   initVariant();
 
-  if (setLoopStacksize)
-  {
-    _loopStacksize = setLoopStacksize();
-  }
+#ifdef NRF52840_XXAA
+  USBDevice.addInterface( (Adafruit_USBD_Interface&) Serial);
+  USBDevice.setID(USB_VID, USB_PID);
+  USBDevice.begin();
+  usb_init();
+#endif
 
 #if CFG_DEBUG >= 3
   SEGGER_SYSVIEW_Conf();
 #endif
 
   // Create a task for loop()
-  xTaskCreate( loop_task, "loop", _loopStacksize, NULL, TASK_PRIO_LOW, &_loopHandle);
+  xTaskCreate( loop_task, "loop", LOOP_STACK_SZ, NULL, TASK_PRIO_LOW, &_loopHandle);
 
   // Initialize callback task
   ada_callback_init();

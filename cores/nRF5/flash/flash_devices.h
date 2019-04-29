@@ -1,9 +1,7 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
- *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 hathach for Adafruit Industries
+ * Copyright (c) 2019 Ha Thach for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,29 +35,35 @@
 typedef struct {
     uint32_t total_size;
 
-    // Three response bytes to 0x90 JEDEC REMS ID command.
+    // Response bytes to 0x90 JEDEC REMS ID command.
     uint8_t manufacturer_id;
     uint8_t device_id;
 
-    // Status register value enable quad mode
+    // Status register value to enable quad mode
     uint16_t status_quad_enable;
+
+    // Working frequency
+    uint8_t freq;
 
 } qspi_flash_device_t;
 
 // Settings for the Gigadevice GD25Q16C 2MiB SPI flash.
-// Datasheet: http://www.gigadevice.com/wp-content/uploads/2017/12/DS-00086-GD25Q16C-Rev2.6.pdf
+// Datasheet: http://www.gigadevice.com/datasheet/gd25q16c/
+// Can only work reliably with nrf5x at 10 Mhz, even though it should work up to 104 MHz
 #define GD25Q16C {\
     .total_size = 2*1024*1024, \
     .manufacturer_id = 0xc8, \
     .device_id = 0x14, \
-    .status_quad_enable = (1 << 9)\
+    .status_quad_enable = (1 << 9),\
+    .freq = NRF_QSPI_FREQ_32MDIV3 \
 }
 
 #define MX25R6435F {\
     .total_size = 8*1024*1024, \
     .manufacturer_id = 0xc2, \
     .device_id = 0x17, \
-    .status_quad_enable = (1 << 6)\
+    .status_quad_enable = (1 << 6),\
+    .freq = NRF_QSPI_FREQ_32MDIV1 \
 }
 
 #ifdef __cplusplus

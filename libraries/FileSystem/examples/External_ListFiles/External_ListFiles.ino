@@ -12,7 +12,9 @@
  any redistribution
 *********************************************************************/
 
+#include "flash/flash_qspi.h"
 #include <bluefruit.h>
+#include "Adafruit_TinyUSB.h"
 #include <Bluefruit_FileIO.h>
 
 /* This example  print out External Flash contents up to
@@ -22,9 +24,16 @@
  */
 #define MAX_LEVEL   2
 
+Adafruit_USBD_MSC usbmsc;
+
 // the setup function runs once when you press reset or power the board
 void setup() 
 {
+  // block count and size are defined in variant.h
+  usbmsc.setCapacity(USB_MSC_BLOCK_COUNT, USB_MSC_BLOCK_SIZE);
+  usbmsc.setCallback(fl_read_cb, fl_write_cb, fl_flush_cb);
+  usbmsc.begin();
+  
   Serial.begin(115200);
   while ( !Serial ) delay(10);   // for nrf52840 with native usb
   
@@ -55,6 +64,30 @@ void loop()
     Serial.println();
     Serial.println("Enter anything to print directory tree (again):");
   }
+}
+
+int32_t fl_read_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize)
+{
+  (void) lun;
+  return flash_qspi_read(buffer, lba * USB_MSC_BLOCK_SIZE + offset, bufsize);
+}
+
+int32_t fl_write_cb (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize)
+{
+  (void) lun;
+  
+  uint32_t wrcount = flash_qspi_write(lba * USB_MSC_BLOCK_SIZE + offset, buffer, bufsize);
+
+  // update ExternalFS cache since USB write it out of its awareness
+  ExternalFS.updateCache(lba, buffer, bufsize);
+
+  return wrcount;
+}
+
+void fl_flush_cb (uint8_t lun)
+{
+  (void) lun;
+  flash_qspi_flush();
 }
 
 /**************************************************************************/

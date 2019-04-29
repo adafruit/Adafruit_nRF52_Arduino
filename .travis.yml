@@ -1,0 +1,19 @@
+language: c
+sudo: false
+cache:
+  directories:
+    - ~/arduino_ide
+
+git:
+  depth: false
+  quiet: true
+
+before_install:
+#  - source <(curl -SLs https://raw.githubusercontent.com/hathach/travis-ci-arduino/test-nrf52/install.sh)
+script:
+#  - build_platform adafruit:nrf52:feather52840
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
