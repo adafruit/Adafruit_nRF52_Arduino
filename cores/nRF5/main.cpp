@@ -73,7 +73,7 @@ int main( void )
   initVariant();
 
 #ifdef NRF52840_XXAA
-  Adafruit_TinyUSB_core_init();
+  Adafruit_TinyUSB_Core_init();
 #endif
 
 #if CFG_DEBUG >= 3

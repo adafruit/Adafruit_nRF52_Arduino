@@ -27,7 +27,7 @@
 #include "nrfx_power.h"
 
 #include "Arduino.h"
-#include "Adafruit_TinyUSB_core.h"
+#include "Adafruit_TinyUSB_Core.h"
 
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
@@ -44,7 +44,7 @@ extern "C" void tusb_hal_nrf_power_event(uint32_t event);
 
 void usb_init(void);
 
-void Adafruit_TinyUSB_core_init(void)
+void Adafruit_TinyUSB_Core_init(void)
 {
   USBDevice.addInterface( (Adafruit_USBD_Interface&) Serial);
   USBDevice.setID(USB_VID, USB_PID);

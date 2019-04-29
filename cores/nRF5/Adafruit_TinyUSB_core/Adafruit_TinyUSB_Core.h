@@ -32,6 +32,6 @@
 #include "Adafruit_USBD_CDC.h"
 #endif
 
-void Adafruit_TinyUSB_core_init(void);
+void Adafruit_TinyUSB_Core_init(void);
 
 #endif /* ADAFRUIT_TINYUSB_CORE_H_ */
