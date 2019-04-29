@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-#ifdef NRF52840_XXAA
+#ifdef USBCON
 
 #include "Adafruit_USBD_Device.h"
 

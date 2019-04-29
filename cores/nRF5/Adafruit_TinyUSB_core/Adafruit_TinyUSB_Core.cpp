@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifdef NRF52840_XXAA
+#ifdef USBCON
 
 #include "nrfx.h"
 #include "nrfx_power.h"

@@ -57,7 +57,7 @@ static void loop_task(void* arg)
   {
     loop();
 
-#ifdef NRF52840_XXAA
+#ifdef USBCON
     tud_cdc_write_flush();
 #endif
 
@@ -72,7 +72,7 @@ int main( void )
   init();
   initVariant();
 
-#ifdef NRF52840_XXAA
+#ifdef USBCON
   Adafruit_TinyUSB_Core_init();
 #endif
 

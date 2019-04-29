@@ -39,7 +39,7 @@ void delay( uint32_t ms )
 {
   uint32_t ticks = ms2tick(ms);
 
-#ifdef NRF52840_XXAA
+#ifdef USBCON
   // Take chance to flush usb cdc
   uint32_t flush_tick = xTaskGetTickCount();
   tud_cdc_write_flush();

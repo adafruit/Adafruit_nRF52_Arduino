@@ -115,7 +115,7 @@ void dbgMemInfo(void)
   printf("| Name | Addr 0x2000xxxx | Usage               |\n");
   printf("| ---------------------------------------------|\n");
 
-  // Pritn SRAM used for Stack executed by S132 and ISR
+  // Pritn SRAM used for Stack executed by Softdevice and ISR
   printMemRegion("Stack", ((uint32_t) __StackTop), ((uint32_t) __StackLimit), dbgStackUsed() );
 
   // Print Heap usage overall (including memory malloced to tasks)
@@ -125,7 +125,7 @@ void dbgMemInfo(void)
   printMemRegion("Bss", ((uint32_t) __bss_end__), ((uint32_t) __data_start__), 0);
 
   // Print SRAM Used by SoftDevice
-  printMemRegion("S132", (uint32_t) __data_start__, 0x20000000, 0);
+  printMemRegion("SD", (uint32_t) __data_start__, 0x20000000, 0);
 
   printf("|______________________________________________|\n");
   printf("\n");
