@@ -1,9 +1,10 @@
 # Arduino Core for Adafruit Bluefruit nRF52 Boards
 
-This repository contains the Arduino BSP for Adafruit nRF52 series:
+This repository contains the Arduino BSP for Adafruit Bluefruit nRF52 series:
 
-- [Bluefruit Feather nRF52832](https://www.adafruit.com/product/3406)
-- [Bluefruit Feather nRF52840](https://www.adafruit.com/product/4062)
+- [Adafruit Feather nRF52832](https://www.adafruit.com/product/3406)
+- [Adafruit Feather nRF52840 Express](https://www.adafruit.com/product/4062)
+- Adafruit Metro nRF52840 Express
 
 Following boards are also included but are not officially supported:
 

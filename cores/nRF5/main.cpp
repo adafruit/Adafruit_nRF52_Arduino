@@ -16,8 +16,6 @@
 #define ARDUINO_MAIN
 #include "Arduino.h"
 
-#include "usb.h"
-
 // DEBUG Level 1
 #if CFG_DEBUG
 // weak function to avoid compilation error with
@@ -75,10 +73,7 @@ int main( void )
   initVariant();
 
 #ifdef NRF52840_XXAA
-  USBDevice.addInterface( (Adafruit_USBD_Interface&) Serial);
-  USBDevice.setID(USB_VID, USB_PID);
-  USBDevice.begin();
-  usb_init();
+  Adafruit_TinyUSB_core_init();
 #endif
 
 #if CFG_DEBUG >= 3
