@@ -52,6 +52,11 @@ class SoftwareTimer
       _handle = xTimerCreate(NULL, ms2tick(ms), true, NULL, callback);
     }
 
+    void begin(uint32_t ms, TimerCallbackFunction_t callback, bool repeating)
+    {
+      _handle = xTimerCreate(NULL, ms2tick(ms), repeating, NULL, callback);
+    }
+
     TimerHandle_t getHandle(void)
     {
       return _handle;
@@ -59,6 +64,17 @@ class SoftwareTimer
 
     void start(void) { xTimerStart(_handle, 0); }
     void stop (void) { xTimerStop (_handle, 0); }
+    void reset(void) { xTimerReset(_handle, 0); }
+
+    BaseType_t startFromISR(BaseType_t* pxHigherPriorityTaskWoken) {
+      return xTimerStartFromISR(_handle, pxHigherPriorityTaskWoken);
+    }
+    BaseType_t stopFromISR(BaseType_t* pxHigherPriorityTaskWoken) {
+      return xTimerStopFromISR (_handle, pxHigherPriorityTaskWoken);
+    }
+    BaseType_t resetFromISR(BaseType_t* pxHigherPriorityTaskWoken) {
+      return xTimerResetFromISR(_handle, pxHigherPriorityTaskWoken);
+    }
 
     void setPeriod(uint32_t ms)
     {
