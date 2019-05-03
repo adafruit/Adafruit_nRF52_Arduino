@@ -41,13 +41,13 @@ feather52832.build.board=NRF52832_FEATHER
 feather52832.build.core=nRF5
 feather52832.build.variant=feather_nrf52832
 feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52 -DARDUINO_NRF52_FEATHER
+feather52832.build.ldscript=nrf52832_s132_v6.ld
 
 # SofDevice Menu
 feather52832.menu.softdevice.s132v6=0.2.9 (s132 6.1.1)
 feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_fwid=0x00B7
-feather52832.menu.softdevice.s132v6.build.ldscript=nrf52832_s132_v6.ld
 
 # Debug Menu
 feather52832.menu.debug.l0=Level 0 (Release)
@@ -90,6 +90,7 @@ feather52840.build.board=NRF52840_FEATHER
 feather52840.build.core=nRF5
 feather52840.build.variant=feather_nrf52840_express
 feather52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_FEATHER {build.flags.usb}
+feather52840.build.ldscript=nrf52840_s140_v6.ld
 feather52840.build.vid=0x239A
 feather52840.build.pid=0x8029
 
@@ -98,7 +99,6 @@ feather52840.menu.softdevice.s140v6=0.2.9 (s140 6.1.1)
 feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
-feather52840.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_v6.ld
 
 # Debug Menu
 feather52840.menu.debug.l0=Level 0 (Release)
@@ -141,6 +141,7 @@ metro52840.build.board=NRF52840_METRO
 metro52840.build.core=nRF5
 metro52840.build.variant=metro_nrf52840_express
 metro52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_FEATHER {build.flags.usb}
+metro52840.build.ldscript=nrf52840_s140_v6.ld
 metro52840.build.vid=0x239A
 metro52840.build.pid=0x803F
 
@@ -149,7 +150,6 @@ metro52840.menu.softdevice.s140v6=0.2.9 (s140 6.1.1)
 metro52840.menu.softdevice.s140v6.build.sd_name=s140
 metro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
-metro52840.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_v6.ld
 
 # Debug Menu
 metro52840.menu.debug.l0=Level 0 (Release)
@@ -182,6 +182,7 @@ pca10056.build.board=NRF52840_PCA10056
 pca10056.build.core=nRF5
 pca10056.build.variant=pca10056
 pca10056.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+pca10056.build.ldscript=nrf52840_s140_v6.ld
 pca10056.build.vid=0x239A
 pca10056.build.pid=0x8029
 
@@ -190,7 +191,6 @@ pca10056.menu.softdevice.s140v6=0.2.9 (s140 6.1.1)
 pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_fwid=0x00B6
-pca10056.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_v6.ld
 
 # Debug Menu
 pca10056.menu.debug.l0=Level 0 (Release)
