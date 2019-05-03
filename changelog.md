@@ -2,6 +2,12 @@
 
 # 0.10.5
 
+- Fixed Feather nRF52840 Express's qspi driver to work with on-board flash device
+- Rework USB driver using Adafruit_TinyUSB library
+- Added Metro nRF52840 Express
+
+# 0.10.1
+
 This release added multiple concurrent peripheral connections support, allow Bluefruit device to multiple central (phones/PC) simultaneously. It introduces new BLE class: BLEPeriph, BLEConnection, remove BLEGap, refactor/rename/move functions and callbacks.     
 
 - Fixed Servo detach issue

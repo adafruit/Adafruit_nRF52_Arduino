@@ -81,9 +81,8 @@ static void usb_hardware_init(void)
   if ( usb_reg & POWER_USBREGSTATUS_OUTPUTRDY_Msk  ) tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_READY);
 }
 
-void Adafruit_TinyUSB_Core_init(void)
+static void load_serial_number(void)
 {
-  // Create Serial string descriptor
   char tmp_serial[17];
   sprintf(tmp_serial, "%08lX%08lX", NRF_FICR->DEVICEID[1], NRF_FICR->DEVICEID[0]);
 
@@ -92,6 +91,12 @@ void Adafruit_TinyUSB_Core_init(void)
     usb_desc_str_serial[1+i] = tmp_serial[i];
   }
 
+}
+
+void Adafruit_TinyUSB_Core_init(void)
+{
+  // Create Serial string descriptor
+  load_serial_number();
 
   USBDevice.addInterface( (Adafruit_USBD_Interface&) Serial);
   USBDevice.setID(USB_VID, USB_PID);
