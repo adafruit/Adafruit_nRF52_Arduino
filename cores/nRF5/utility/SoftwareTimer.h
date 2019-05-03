@@ -47,12 +47,7 @@ class SoftwareTimer
     SoftwareTimer()          { _handle = NULL; }
     virtual ~SoftwareTimer() { if(_handle != NULL) xTimerDelete(_handle, 0); }
 
-    void begin(uint32_t ms, TimerCallbackFunction_t callback)
-    {
-      _handle = xTimerCreate(NULL, ms2tick(ms), true, NULL, callback);
-    }
-
-    void begin(uint32_t ms, TimerCallbackFunction_t callback, bool repeating)
+    void begin(uint32_t ms, TimerCallbackFunction_t callback, bool repeating = true)
     {
       _handle = xTimerCreate(NULL, ms2tick(ms), repeating, NULL, callback);
     }
