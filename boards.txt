@@ -19,10 +19,10 @@
 menu.softdevice=Bootloader Version
 menu.debug=Debug Mode
 
-#**********************************************
-# Bluefruit Feather nRF52832 Board
-#**********************************************
-feather52832.name=Adafruit Bluefruit nRF52832 Feather
+# ----------------------------------
+# Bluefruit Feather nRF52832
+# ----------------------------------
+feather52832.name=Adafruit Bluefruit Feather nRF52832
 feather52832.bootloader.tool=bootburn
 
 # Upload
@@ -31,6 +31,8 @@ feather52832.upload.protocol=nrfutil
 feather52832.upload.use_1200bps_touch=false
 feather52832.upload.wait_for_upload_port=false
 feather52832.upload.native_usb=false
+feather52832.upload.maximum_size=290816
+feather52832.upload.maximum_data_size=51072
 
 # Build
 feather52832.build.mcu=cortex-m4
@@ -41,55 +43,45 @@ feather52832.build.variant=feather_nrf52832
 feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52 -DARDUINO_NRF52_FEATHER
 
 # SofDevice Menu
-# Ram & ROM size varies depending on SoftDevice (check linker script)
-
 feather52832.menu.softdevice.s132v6=0.2.9 (s132 6.1.1)
 feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_fwid=0x00B7
 feather52832.menu.softdevice.s132v6.build.ldscript=nrf52832_s132_v6.ld
-feather52832.menu.softdevice.s132v6.upload.maximum_size=290816
-feather52832.menu.softdevice.s132v6.upload.maximum_data_size=51072
 
 # Debug Menu
 feather52832.menu.debug.l0=Level 0 (Release)
-feather52832.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0 -Os
+feather52832.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 feather52832.menu.debug.l1=Level 1 (Error Message)
-feather52832.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1 -Os
+feather52832.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 feather52832.menu.debug.l2=Level 2 (Full Debug)
-feather52832.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
+feather52832.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 feather52832.menu.debug.l3=Level 3 (Segger SystemView)
-feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
+feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 
+# ----------------------------------
+# Bluefruit Feather nRF52840 Express
+# ----------------------------------
+feather52840.name=Adafruit Bluefruit Feather nRF52840 Express
 
-#**********************************************
-# Bluefruit Feather nRF52840 Express Board
-#**********************************************
-feather52840.name=Adafruit Bluefruit nRF52840 Feather Express
-
-# DFU Mode with CDC + MSC (UF2)
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
 feather52840.vid.0=0x239A
-feather52840.pid.0=0x0029
-
-# DFU Mode with CDC only
+feather52840.pid.0=0x8029
 feather52840.vid.1=0x239A
-feather52840.pid.1=0x002A
-
-# Arduino Application
+feather52840.pid.1=0x0029
 feather52840.vid.2=0x239A
-feather52840.pid.2=0x8029
-
-# CircuitPython
+feather52840.pid.2=0x002A
 feather52840.vid.3=0x239A
 feather52840.pid.3=0x802A
 
-feather52840.bootloader.tool=bootburn
-
 # Upload
+feather52840.bootloader.tool=bootburn
 feather52840.upload.tool=nrfutil
 feather52840.upload.protocol=nrfutil
 feather52840.upload.use_1200bps_touch=true
 feather52840.upload.wait_for_upload_port=true
+feather52840.upload.maximum_size=815104
+feather52840.upload.maximum_data_size=248832
 
 # Build
 feather52840.build.mcu=cortex-m4
@@ -97,56 +89,50 @@ feather52840.build.f_cpu=64000000
 feather52840.build.board=NRF52840_FEATHER
 feather52840.build.core=nRF5
 feather52840.build.variant=feather_nrf52840_express
-feather52840.build.extra_flags=-DARDUINO_NRF52_FEATHER {build.nrf52840_flags}
+feather52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_FEATHER {build.flags.usb}
+feather52840.build.vid=0x239A
+feather52840.build.pid=0x8029
 
 # SofDevice Menu
-# Ram & ROM size varies depending on SoftDevice (check linker script)
-
 feather52840.menu.softdevice.s140v6=0.2.9 (s140 6.1.1)
 feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 feather52840.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_v6.ld
-feather52840.menu.softdevice.s140v6.upload.maximum_size=815104
-feather52840.menu.softdevice.s140v6.upload.maximum_data_size=248832
 
 # Debug Menu
 feather52840.menu.debug.l0=Level 0 (Release)
-feather52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0 -Os
+feather52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 feather52840.menu.debug.l1=Level 1 (Error Message)
-feather52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1 -Os
+feather52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 feather52840.menu.debug.l2=Level 2 (Full Debug)
-feather52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
+feather52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 feather52840.menu.debug.l3=Level 3 (Segger SystemView)
-feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
+feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 
-#**********************************************
-# Bluefruit Metro nRF52840 Express Board
-#**********************************************
-metro52840.name=Adafruit Bluefruit nRF52840 Metro Express
-metro52840.bootloader.tool=bootburn
+# ----------------------------------
+# Bluefruit Metro nRF52840 Express
+# ----------------------------------
+metro52840.name=Adafruit Bluefruit Metro nRF52840 Express
 
-# DFU Mode with CDC + MSC (UF2)
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
 metro52840.vid.0=0x239A
-metro52840.pid.0=0x003F
-
-# DFU Mode with CDC only
+metro52840.pid.0=0x803F
 metro52840.vid.1=0x239A
-metro52840.pid.1=0x0040
-
-# Arduino Application
+metro52840.pid.1=0x003F
 metro52840.vid.2=0x239A
-metro52840.pid.2=0x803F
-
-# CircuitPython
+metro52840.pid.2=0x0040
 metro52840.vid.3=0x239A
 metro52840.pid.3=0x8040
 
 # Upload
+metro52840.bootloader.tool=bootburn
 metro52840.upload.tool=nrfutil
 metro52840.upload.protocol=nrfutil
 metro52840.upload.use_1200bps_touch=true
 metro52840.upload.wait_for_upload_port=true
+metro52840.upload.maximum_size=815104
+metro52840.upload.maximum_data_size=248832
 
 # Build
 metro52840.build.mcu=cortex-m4
@@ -154,33 +140,31 @@ metro52840.build.f_cpu=64000000
 metro52840.build.board=NRF52840_METRO
 metro52840.build.core=nRF5
 metro52840.build.variant=metro_nrf52840_express
-metro52840.build.extra_flags=-DARDUINO_NRF52_FEATHER {build.nrf52840_flags}
+metro52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_FEATHER {build.flags.usb}
+metro52840.build.vid=0x239A
+metro52840.build.pid=0x803F
 
 # SofDevice Menu
-# Ram & ROM size varies depending on SoftDevice (check linker script)
-
 metro52840.menu.softdevice.s140v6=0.2.9 (s140 6.1.1)
 metro52840.menu.softdevice.s140v6.build.sd_name=s140
 metro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 metro52840.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_v6.ld
-metro52840.menu.softdevice.s140v6.upload.maximum_size=815104
-metro52840.menu.softdevice.s140v6.upload.maximum_data_size=248832
 
 # Debug Menu
 metro52840.menu.debug.l0=Level 0 (Release)
-metro52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0 -Os
+metro52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 metro52840.menu.debug.l1=Level 1 (Error Message)
-metro52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1 -Os
+metro52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 metro52840.menu.debug.l2=Level 2 (Full Debug)
-metro52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
+metro52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 metro52840.menu.debug.l3=Level 3 (Segger SystemView)
-metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
+metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 
-#**********************************************
+# ----------------------------------
 # Nordic nRF52840DK (PCA10056)
-#**********************************************
-pca10056.name=Adafruit Bluefruit on nRF52840DK PCA10056
+# ----------------------------------
+pca10056.name=Noridc nRF52840DK (PCA10056)
 pca10056.bootloader.tool=bootburn
 
 # Upload
@@ -188,6 +172,8 @@ pca10056.upload.tool=nrfutil
 pca10056.upload.protocol=nrfutil
 pca10056.upload.use_1200bps_touch=true
 pca10056.upload.wait_for_upload_port=true
+pca10056.upload.maximum_size=815104
+pca10056.upload.maximum_data_size=248832
 
 # Build
 pca10056.build.mcu=cortex-m4
@@ -195,25 +181,23 @@ pca10056.build.f_cpu=64000000
 pca10056.build.board=NRF52840_PCA10056
 pca10056.build.core=nRF5
 pca10056.build.variant=pca10056
-pca10056.build.extra_flags={build.nrf52840_flags}
+pca10056.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+pca10056.build.vid=0x239A
+pca10056.build.pid=0x8029
 
 # SofDevice Menu
-# Ram & ROM size varies depending on SoftDevice (check linker script)
-
 pca10056.menu.softdevice.s140v6=0.2.9 (s140 6.1.1)
 pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 pca10056.menu.softdevice.s140v6.build.ldscript=nrf52840_s140_v6.ld
-pca10056.menu.softdevice.s140v6.upload.maximum_size=815104
-pca10056.menu.softdevice.s140v6.upload.maximum_data_size=248832
 
 # Debug Menu
 pca10056.menu.debug.l0=Level 0 (Release)
-pca10056.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0 -Os
+pca10056.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 pca10056.menu.debug.l1=Level 1 (Error Message)
-pca10056.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1 -Os
+pca10056.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 pca10056.menu.debug.l2=Level 2 (Full Debug)
-pca10056.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2 -Os
+pca10056.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 pca10056.menu.debug.l3=Level 3 (Segger SystemView)
-pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -Os
+pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
