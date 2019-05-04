@@ -30,7 +30,7 @@ compiler.warning_flags.all=-Wall -Wextra -Wno-unused-parameter -Wno-missing-fiel
 
 compiler.path={runtime.tools.gcc-arm-none-eabi-5_2-2015q4.path}/bin/
 compiler.c.cmd=arm-none-eabi-gcc
-compiler.c.flags=-mcpu={build.mcu} -mthumb -c -g {compiler.warning_flags} {build.float_flags} -std=gnu11 -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -MMD  -DSOFTDEVICE_PRESENT
+compiler.c.flags=-mcpu={build.mcu} -mthumb -c -g {compiler.warning_flags} {build.float_flags} -std=gnu11 -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -MMD
 compiler.c.elf.cmd=arm-none-eabi-gcc
 compiler.c.elf.flags=-Os -Wl,--gc-sections -save-temps
 compiler.S.cmd=arm-none-eabi-gcc
@@ -46,12 +46,11 @@ compiler.elf2bin.cmd=arm-none-eabi-objcopy
 compiler.elf2hex.flags=-O ihex
 compiler.elf2hex.cmd=arm-none-eabi-objcopy
 compiler.ldflags=-mcpu={build.mcu} -mthumb {build.float_flags} -Wl,--cref -Wl,--check-sections -Wl,--gc-sections -Wl,--unresolved-symbols=report-all -Wl,--warn-common -Wl,--warn-section-align --specs=nano.specs --specs=nosys.specs
-
 compiler.size.cmd=arm-none-eabi-size
 
 # this can be overriden in boards.txt
 build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16 -u _printf_float
-build.debug_flags=-DCFG_DEBUG=0 -Os
+build.debug_flags=-DCFG_DEBUG=0
 
 # common compiler for nrf
 rtos.path={build.core.path}/freertos
@@ -60,7 +59,10 @@ nordic.path={build.core.path}/nordic
 # ARDUINO_FEATHER52 is defined for backward compatiable with other lib only
 # should be replaced by ARDUINO_NRF52_ADAFRUIT in the future
 
-compiler.nrf.flags= -DARDUINO_FEATHER52 -DARDUINO_NRF52_ADAFRUIT -DNRF52_SERIES {build.sd_flags} {build.debug_flags} "-I{build.core.path}/cmsis/include" "-I{nordic.path}" "-I{nordic.path}/nrfx" "-I{nordic.path}/nrfx/hal" "-I{nordic.path}/nrfx/mdk" "-I{nordic.path}/nrfx/soc" "-I{nordic.path}/nrfx/drivers/include" "-I{nordic.path}/nrfx/drivers/src" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include" "-I{rtos.path}/Source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" "-I{build.core.path}/Adafruit_TinyUSB_core" "-I{build.core.path}/Adafruit_TinyUSB_core/tinyusb/src"
+build.flags.nrf= -DSOFTDEVICE_PRESENT -DARDUINO_FEATHER52 -DARDUINO_NRF52_ADAFRUIT -DNRF52_SERIES -Os {build.debug_flags} "-I{build.core.path}/cmsis/include" "-I{nordic.path}" "-I{nordic.path}/nrfx" "-I{nordic.path}/nrfx/hal" "-I{nordic.path}/nrfx/mdk" "-I{nordic.path}/nrfx/soc" "-I{nordic.path}/nrfx/drivers/include" "-I{nordic.path}/nrfx/drivers/src" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include" "-I{rtos.path}/Source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" "-I{build.core.path}/Adafruit_TinyUSB_Core" "-I{build.core.path}/Adafruit_TinyUSB_Core/tinyusb/src"
+
+# usb flags
+build.flags.usb= -DUSBCON -DUSB_VID={build.vid} -DUSB_PID={build.pid}
 
 # These can be overridden in platform.local.txt
 compiler.c.extra_flags=
@@ -76,13 +78,13 @@ compiler.elf2hex.extra_flags=
 # ----------------
 
 ## Compile c files
-recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} -DARDUINO_BSP_VERSION="{version}" {compiler.c.extra_flags} {build.extra_flags} {compiler.nrf.flags} {includes} "{source_file}" -o "{object_file}"
+recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} -DARDUINO_BSP_VERSION="{version}" {compiler.c.extra_flags} {build.extra_flags} {build.flags.nrf} {includes} "{source_file}" -o "{object_file}"
 
 ## Compile c++ files
-recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} -DARDUINO_BSP_VERSION="{version}" {compiler.cpp.extra_flags} {build.extra_flags} {compiler.nrf.flags} {includes} "{source_file}" -o "{object_file}"
+recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} -DARDUINO_BSP_VERSION="{version}" {compiler.cpp.extra_flags} {build.extra_flags} {build.flags.nrf} {includes} "{source_file}" -o "{object_file}"
 
 ## Compile S files
-recipe.S.o.pattern="{compiler.path}{compiler.S.cmd}" {compiler.S.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} {compiler.S.extra_flags} {build.extra_flags} {compiler.nrf.flags} {includes} "{source_file}" -o "{object_file}"
+recipe.S.o.pattern="{compiler.path}{compiler.S.cmd}" {compiler.S.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} {compiler.S.extra_flags} {build.extra_flags} {build.flags.nrf} {includes} "{source_file}" -o "{object_file}"
 
 ## Create archives
 recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} {compiler.ar.extra_flags} "{archive_file_path}" "{object_file}"
@@ -137,7 +139,7 @@ tools.nrfutil.upload.pattern="{cmd}" {upload.verbose} dfu serial -pkg "{build.pa
 #***************************************************
 
 # Bootloader version
-tools.bootburn.bootloader.file={runtime.platform.path}/bootloader/{build.variant}/{build.variant}_bootloader-0.2.9_{build.sd_name}_{build.sd_version}
+tools.bootburn.bootloader.file={runtime.platform.path}/bootloader/{build.variant}/{build.variant}_bootloader-0.2.11_{build.sd_name}_{build.sd_version}
 
 tools.bootburn.bootloader.params.verbose=
 tools.bootburn.bootloader.params.quiet=
