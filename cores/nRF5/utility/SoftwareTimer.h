@@ -61,13 +61,13 @@ class SoftwareTimer
     void stop (void) { xTimerStop (_handle, 0); }
     void reset(void) { xTimerReset(_handle, 0); }
 
-    BaseType_t startFromISR(BaseType_t* pxHigherPriorityTaskWoken) {
+    BaseType_t startFromISR(BaseType_t* pxHigherPriorityTaskWoken = NULL) {
       return xTimerStartFromISR(_handle, pxHigherPriorityTaskWoken);
     }
-    BaseType_t stopFromISR(BaseType_t* pxHigherPriorityTaskWoken) {
+    BaseType_t stopFromISR(BaseType_t* pxHigherPriorityTaskWoken = NULL) {
       return xTimerStopFromISR (_handle, pxHigherPriorityTaskWoken);
     }
-    BaseType_t resetFromISR(BaseType_t* pxHigherPriorityTaskWoken) {
+    BaseType_t resetFromISR(BaseType_t* pxHigherPriorityTaskWoken = NULL) {
       return xTimerResetFromISR(_handle, pxHigherPriorityTaskWoken);
     }
 
