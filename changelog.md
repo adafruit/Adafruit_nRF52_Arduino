@@ -5,6 +5,7 @@
 - Fixed Feather nRF52840 Express's qspi driver to work with on-board flash device
 - Rework USB driver using Adafruit_TinyUSB library
 - Added Metro nRF52840 Express
+- Update bootloader binaries to 0.2.11
 
 # 0.10.1
 
