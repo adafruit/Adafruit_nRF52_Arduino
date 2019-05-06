@@ -87,7 +87,6 @@ static const uint8_t A7  = PIN_A7 ;
 
 // Other pins
 #define PIN_AREF           (PIN_A7)
-#define PIN_DFU            (7)
 #define PIN_NFC1           (2)
 #define PIN_NFC2           (51)
 
