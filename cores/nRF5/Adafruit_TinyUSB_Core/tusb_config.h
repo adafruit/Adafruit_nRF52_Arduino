@@ -71,15 +71,6 @@
 // Buffer size of Device Mass storage
 #define CFG_TUD_MSC_BUFSIZE         512
 
-// Vendor name included in Inquiry response, max 8 bytes
-#define CFG_TUD_MSC_VENDOR          "Adafruit"
-
-// Product name included in Inquiry response, max 16 bytes
-#define CFG_TUD_MSC_PRODUCT         "Bluefruit nRF52"
-
-// Product revision string included in Inquiry response, max 4 bytes
-#define CFG_TUD_MSC_PRODUCT_REV     "1.0"
-
 //------------- HID -------------//
 
 // Should be sufficient to hold ID (if any) + Data
