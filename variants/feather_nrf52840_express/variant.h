@@ -86,8 +86,8 @@ static const uint8_t A7  = PIN_A7 ;
 #define ADC_RESOLUTION    14
 
 // Other pins
-#define PIN_AREF           (PIN_A7)
-#define PIN_DFU            (7)
+#define PIN_AREF           PIN_A7
+#define PIN_VBAT           PIN_A6
 #define PIN_NFC1           (33)
 #define PIN_NFC2           (2)
 
