@@ -23,7 +23,7 @@
   Last updated October 16th, 2016
 */
 
-// Adafruit nRF52 Boards require Firmata at least 2.5.7
+// Adafruit nRF52 Boards require Firmata version is at least 2.5.7
 
 #include <bluefruit.h>
 #include <Servo.h>
