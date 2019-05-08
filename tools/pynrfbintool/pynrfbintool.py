@@ -36,7 +36,7 @@ def crc16(data):
     crc = 0xFFFF
     for c in data:
         crc = (((crc >> 8) & 0xFF) | (crc << 8)) & 0xFFFF
-        crc = (crc ^ ord(c)) & 0xFFFF
+        crc = (crc ^ (c if isinstance(c, int) else ord(c))) & 0xFFFF
         crc = (crc ^ ((crc & 0xFF) >> 4)) & 0xFFFF
         crc = (crc ^ ((crc << 8) << 4)) & 0xFFFF
         crc = (crc ^ (((crc & 0xFF) << 4) << 1)) & 0xFFFF
@@ -71,7 +71,7 @@ if __name__ == '__main__':
                         action='store_true',
                         help='disable all console output unless an error occurs')
     args = parser.parse_args()
-    
+
     # Make sure input filename exists.
     if not os.path.isfile(args.input):
         raise RuntimeError('Input file does not exist!')
@@ -90,13 +90,13 @@ if __name__ == '__main__':
 
     # Generate and write signature.
     if not args.quiet:
-        print 'Writing signature to:     {0}'.format(signature)
+        print('Writing signature to:     {0}'.format(signature))
     with open(signature, 'wb') as out_file:
         out_file.write(create_app_signature(data))
 
     # Done!
     if not args.quiet:
-        print 'Done!'
+        print('Done!')
 
 
 # Unit Tests.
