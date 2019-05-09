@@ -21,7 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifdef USBCON
+
+#ifdef USE_TINYUSB
 
 #include "nrfx.h"
 #include "nrfx_power.h"
@@ -111,4 +112,4 @@ void Adafruit_TinyUSB_Core_init(void)
   xTaskCreate( usb_device_task, "usbd", USBD_STACK_SZ, NULL, TASK_PRIO_HIGH, NULL);
 }
 
-#endif
+#endif // USE_TINYUSB

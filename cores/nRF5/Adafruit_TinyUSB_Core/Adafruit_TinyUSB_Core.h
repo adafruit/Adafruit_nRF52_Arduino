@@ -25,6 +25,10 @@
 #ifndef ADAFRUIT_TINYUSB_CORE_H_
 #define ADAFRUIT_TINYUSB_CORE_H_
 
+#ifndef USE_TINYUSB
+#error TinyUSB is not selected, please select it in Tools->Menu->USB Stack
+#endif
+
 #include "tusb.h"
 
 #ifdef __cplusplus

@@ -34,7 +34,7 @@
 //--------------------------------------------------------------------
 #define CFG_TUSB_MCU                OPT_MCU_NRF5X
 
-#ifdef NRF52840_XXAA
+#ifdef USE_TINYUSB
 #define CFG_TUSB_RHPORT0_MODE       OPT_MODE_DEVICE
 #else
 #define CFG_TUSB_RHPORT0_MODE       OPT_MODE_NONE

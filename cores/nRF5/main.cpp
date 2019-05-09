@@ -57,7 +57,7 @@ static void loop_task(void* arg)
   {
     loop();
 
-#ifdef USBCON
+#ifdef USE_TINYUSB
     tud_cdc_write_flush();
 #endif
 
@@ -72,7 +72,7 @@ int main( void )
   init();
   initVariant();
 
-#ifdef USBCON
+#ifdef USE_TINYUSB
   Adafruit_TinyUSB_Core_init();
 #endif
 

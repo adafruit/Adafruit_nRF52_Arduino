@@ -54,7 +54,7 @@
 #define CFG_SOC_TASK_STACKSIZE          (200)
 #endif
 
-#ifdef USBCON
+#ifdef USE_TINYUSB
 #include "nrfx_power.h"
 
 /* tinyusb function that handles power event (detected, ready, removed)
@@ -290,7 +290,7 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   _prph_count    = prph_count;
   _central_count = central_count;
 
-#ifdef USBCON
+#ifdef USE_TINYUSB
   usb_softdevice_pre_enable();
 #endif
 
@@ -319,7 +319,7 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 
   VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, nrf_error_cb), false );
 
-#ifdef USBCON
+#ifdef USE_TINYUSB
   usb_softdevice_post_enable();
 #endif
 
@@ -461,7 +461,7 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   VERIFY_STATUS(sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)), false);
 
   //------------- USB -------------//
-#ifdef USBCON
+#ifdef USE_TINYUSB
   sd_power_usbdetected_enable(true);
   sd_power_usbpwrrdy_enable(true);
   sd_power_usbremoved_enable(true);
@@ -713,7 +713,7 @@ void adafruit_soc_task(void* arg)
               if ( flash_nrf5x_event_cb ) flash_nrf5x_event_cb(soc_evt);
             break;
 
-            #ifdef USBCON
+            #ifdef USE_TINYUSB
             /*------------- usb power event handler -------------*/
             case NRF_EVT_POWER_USB_DETECTED:
             case NRF_EVT_POWER_USB_POWER_READY:
