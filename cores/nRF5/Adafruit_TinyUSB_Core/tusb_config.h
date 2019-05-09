@@ -41,8 +41,6 @@
 #endif
 
 #define CFG_TUSB_OS                 OPT_OS_FREERTOS
-#define CFG_TUSB_DEBUG              0
-
 #define CFG_TUSB_MEM_SECTION
 #define CFG_TUSB_MEM_ALIGN          ATTR_ALIGNED(4)
 

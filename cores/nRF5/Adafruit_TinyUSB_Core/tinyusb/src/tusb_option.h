@@ -128,7 +128,6 @@
 */
 #ifndef CFG_TUSB_DEBUG
   #define CFG_TUSB_DEBUG 0
-  #warning CFG_TUSB_DEBUG is not defined, default value is 0
 #endif
 
 // place data in accessible RAM for usb controller
