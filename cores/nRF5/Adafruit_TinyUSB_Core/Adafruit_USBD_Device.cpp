@@ -44,7 +44,6 @@ tud_desc_set_t tud_desc_set =
 {
   .device     = NULL, // update later
   .config     = NULL, // update later
-  .hid_report = NULL  // update later
 };
 
 // Invoked when received GET_STRING_DESC request
@@ -77,6 +76,7 @@ uint8_t tud_descriptor_string_cb(uint8_t index, uint16_t* desc, uint8_t max_char
     break;
 
     case 3:
+      // serial Number
       return load_serial_number(desc);
 
     default: return 0;
@@ -84,6 +84,7 @@ uint8_t tud_descriptor_string_cb(uint8_t index, uint16_t* desc, uint8_t max_char
 
   return 0;
 }
+
 
 } // extern C
 

@@ -41,8 +41,6 @@
 typedef struct {
   void const * device;        ///< pointer to device descriptor \ref tusb_desc_device_t
   void const * config;        ///< pointer to the whole configuration descriptor, starting by \ref tusb_desc_configuration_t
-  uint8_t const*  hid_report;
-
 }tud_desc_set_t;
 
 // Descriptor collection set, must be defined by application
