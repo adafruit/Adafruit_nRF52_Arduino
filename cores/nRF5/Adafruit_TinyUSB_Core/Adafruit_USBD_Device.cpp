@@ -26,42 +26,64 @@
 
 #include "Adafruit_USBD_Device.h"
 
+#ifndef USB_MANUFACTURER
+  #define USB_MANUFACTURER "Unknown"
+#endif
+
+#ifndef USB_PRODUCT
+  #define USB_PRODUCT "Unknown"
+#endif
+
+extern uint8_t load_serial_number(uint16_t* serial_str);
+
 extern "C"
 {
-extern uint16_t usb_desc_str_serial[1+16];
-
-// array of pointer to string descriptors
-uint16_t const * const string_desc_arr [] =
-{
-  // 0: is supported language = English
-  TUD_DESC_STRCONV(0x0409),
-
-  // 1: Manufacturer
-  TUD_DESC_STRCONV('A','d','a','f','r','u','i','t',' ','I','n','d','u','s','t','r','i','e','s'),
-
-  // 2: Product
-  TUD_DESC_STRCONV('B','l','u','e','f','r','u','i','t',' ','n','R','F','5','2','8','4','0'),
-
-  // 3: Serials
-  usb_desc_str_serial,
-
-  //    // 4: CDC Interface
-  //    TUD_DESC_STRCONV('B','l','u','e','f','r','u','i','t',' ','S','e','r','i','a','l'),
-  //
-  //    // 5: MSC Interface
-  //    TUD_DESC_STRCONV('B','l','u','e','f','r','u','i','t',' ','U','F','2'),
-};
 
 // tud_desc_set is required by tinyusb stack
 tud_desc_set_t tud_desc_set =
 {
-  .device       = NULL, // update later
-  .config       = NULL, // update later
-  .string_arr   = (uint8_t const **) string_desc_arr,
-  .string_count = sizeof(string_desc_arr)/sizeof(string_desc_arr[0]),
-
-  .hid_report = NULL // update later
+  .device     = NULL, // update later
+  .config     = NULL, // update later
+  .hid_report = NULL  // update later
 };
+
+// Invoked when received GET_STRING_DESC request
+// max_char is CFG_TUD_ENDOINT0_SIZE/2 -1, typically max_char = 31 if Endpoint0 size is 64
+// Return number of characters. Note usb string is in 16-bits unicode format
+uint8_t tud_descriptor_string_cb(uint8_t index, uint16_t* desc, uint8_t max_char)
+{
+  switch (index)
+  {
+    case 0:
+      // language = English
+      desc[0] = 0x0409;
+      return 1;
+
+    case 1: // Manufacturer
+    case 2: // Product
+    {
+      char const * str = (index == 1) ? USB_MANUFACTURER : USB_PRODUCT;
+
+      // cap at max char
+      uint8_t count = strlen(str);
+      if ( count > max_char ) count = max_char;
+
+      for(uint8_t i=0; i<count; i++)
+      {
+        *desc++ = str[i];
+      }
+      return count;
+    }
+    break;
+
+    case 3:
+      return load_serial_number(desc);
+
+    default: return 0;
+  }
+
+  return 0;
+}
 
 } // extern C
 

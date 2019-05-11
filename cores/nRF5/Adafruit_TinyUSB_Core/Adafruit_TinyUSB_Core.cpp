@@ -36,9 +36,6 @@
 
 #define USBD_STACK_SZ   (150)
 
-// Serial is 64-bit DeviceID -> 16 chars len
-uint16_t usb_desc_str_serial[1+16] = { TUD_DESC_STR_HEADER(16) };
-
 // tinyusb function that handles power event (detected, ready, removed)
 // We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled.
 extern "C" void tusb_hal_nrf_power_event(uint32_t event);
@@ -82,23 +79,8 @@ static void usb_hardware_init(void)
   if ( usb_reg & POWER_USBREGSTATUS_OUTPUTRDY_Msk  ) tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_READY);
 }
 
-static void load_serial_number(void)
-{
-  char tmp_serial[17];
-  sprintf(tmp_serial, "%08lX%08lX", NRF_FICR->DEVICEID[1], NRF_FICR->DEVICEID[0]);
-
-  for(uint8_t i=0; i<16; i++)
-  {
-    usb_desc_str_serial[1+i] = tmp_serial[i];
-  }
-
-}
-
 void Adafruit_TinyUSB_Core_init(void)
 {
-  // Create Serial string descriptor
-  load_serial_number();
-
   USBDevice.addInterface( (Adafruit_USBD_Interface&) Serial);
   USBDevice.setID(USB_VID, USB_PID);
   USBDevice.begin();
@@ -110,6 +92,16 @@ void Adafruit_TinyUSB_Core_init(void)
 
   // Create a task for tinyusb device stack
   xTaskCreate( usb_device_task, "usbd", USBD_STACK_SZ, NULL, TASK_PRIO_HIGH, NULL);
+}
+
+uint8_t load_serial_number(uint16_t* serial_str)
+{
+  // Serial is 64-bit DeviceID -> 16 chars len
+  char tmp_serial[17];
+  sprintf(tmp_serial, "%08lX%08lX", NRF_FICR->DEVICEID[1], NRF_FICR->DEVICEID[0]);
+
+  for(uint8_t i=0; i<16; i++) serial_str[i] = tmp_serial[i];
+  return 16;
 }
 
 #endif // USE_TINYUSB
