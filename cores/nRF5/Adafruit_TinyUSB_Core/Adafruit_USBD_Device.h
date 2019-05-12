@@ -60,7 +60,7 @@ class Adafruit_USBD_Device
     bool remoteWakeup(void) { return tud_remote_wakeup(); }
 
     friend uint8_t const * tud_descriptor_device_cb(void);
-    friend uint8_t const * tud_descriptor_configuration_cb(void);
+    friend uint8_t const * tud_descriptor_configuration_cb(uint8_t index);
 };
 
 extern Adafruit_USBD_Device USBDevice;
