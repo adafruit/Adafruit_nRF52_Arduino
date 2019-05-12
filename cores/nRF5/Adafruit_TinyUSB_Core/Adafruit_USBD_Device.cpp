@@ -164,17 +164,21 @@ uint8_t const * tud_descriptor_configuration_cb(void)
   return USBDevice._desc_cfg;
 }
 
-// Invoked when received GET_STRING_DESC request
-// max_char is CFG_TUD_ENDOINT0_SIZE/2 -1, typically max_char = 31 if Endpoint0 size is 64
-// Return number of characters. Note usb string is in UTF-16 format
-uint8_t tud_descriptor_string_cb(uint8_t index, uint16_t* desc, uint8_t max_char)
+static uint16_t _desc_str[32];
+
+// Invoked when received GET STRING DESCRIPTOR request
+// Application return pointer to descriptor, whose contents must exist long enough for transfer to complete
+uint16_t const* tud_descriptor_string_cb(uint8_t index)
 {
+  uint8_t chr_count;
+
   switch (index)
   {
     case 0:
       // language = English
-      desc[0] = 0x0409;
-      return 1;
+      _desc_str[1] = 0x0409;
+      chr_count = 1;
+    break;
 
     case 1: // Manufacturer
     case 2: // Product
@@ -182,25 +186,28 @@ uint8_t tud_descriptor_string_cb(uint8_t index, uint16_t* desc, uint8_t max_char
       char const * str = (index == 1) ? USB_MANUFACTURER : USB_PRODUCT;
 
       // cap at max char
-      uint8_t count = strlen(str);
-      if ( count > max_char ) count = max_char;
+      chr_count = strlen(str);
+      if ( chr_count > 31 ) chr_count = 31;
 
-      for(uint8_t i=0; i<count; i++)
+      for(uint8_t i=0; i<chr_count; i++)
       {
-        *desc++ = str[i];
+        _desc_str[1+i] = str[i];
       }
-      return count;
     }
     break;
 
     case 3:
       // serial Number
-      return load_serial_number(desc);
+      chr_count = load_serial_number(_desc_str+1);
+    break;
 
-    default: return 0;
+    default: return NULL;
   }
 
-  return 0;
+  // first byte is len, second byte is string type
+  _desc_str[0] = TUD_DESC_STR_HEADER(chr_count);
+
+  return _desc_str;
 }
 
 } // extern C
