@@ -61,14 +61,25 @@ class SoftwareTimer
     void stop (void) { xTimerStop (_handle, 0); }
     void reset(void) { xTimerReset(_handle, 0); }
 
-    BaseType_t startFromISR(BaseType_t* pxHigherPriorityTaskWoken = NULL) {
-      return xTimerStartFromISR(_handle, pxHigherPriorityTaskWoken);
+    bool startFromISR(void) {
+      BaseType_t ret, xHigherPriorityTaskWoken = pdFALSE;
+      ret = xTimerStartFromISR(_handle, &xHigherPriorityTaskWoken);
+      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+      return (ret == pdPASS);
     }
-    BaseType_t stopFromISR(BaseType_t* pxHigherPriorityTaskWoken = NULL) {
-      return xTimerStopFromISR (_handle, pxHigherPriorityTaskWoken);
+
+    bool stopFromISR(void) {
+      BaseType_t ret, xHigherPriorityTaskWoken = pdFALSE;
+      ret = xTimerStopFromISR(_handle, &xHigherPriorityTaskWoken);
+      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+      return (ret == pdPASS);
     }
-    BaseType_t resetFromISR(BaseType_t* pxHigherPriorityTaskWoken = NULL) {
-      return xTimerResetFromISR(_handle, pxHigherPriorityTaskWoken);
+
+    bool resetFromISR(void) {
+      BaseType_t ret, xHigherPriorityTaskWoken = pdFALSE;
+      ret = xTimerResetFromISR(_handle, &xHigherPriorityTaskWoken);
+      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+      return (ret == pdPASS);
     }
 
     void setPeriod(uint32_t ms)
