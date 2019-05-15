@@ -41,8 +41,8 @@
 #include "BLECharacteristic.h"
 #include "BLEService.h"
 
-// for HID definitions
-#include "tusb.h"
+// include usb hid definitions
+#include "class/hid/hid.h"
 
 enum
 {

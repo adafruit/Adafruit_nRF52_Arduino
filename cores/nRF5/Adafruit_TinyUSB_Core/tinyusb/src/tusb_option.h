@@ -131,22 +131,19 @@
 #endif
 
 #ifndef CFG_TUSB_MEM_ALIGN
-#define CFG_TUSB_MEM_ALIGN          ATTR_ALIGNED(4)
+#define CFG_TUSB_MEM_ALIGN        ATTR_ALIGNED(4)
 #endif
 
 #ifndef CFG_TUSB_OS
-#define CFG_TUSB_OS OPT_OS_NONE
+#define CFG_TUSB_OS               OPT_OS_NONE
 #endif
 
 //--------------------------------------------------------------------
 // DEVICE OPTIONS
 //--------------------------------------------------------------------
+
 #ifndef CFG_TUD_ENDOINT0_SIZE
   #define CFG_TUD_ENDOINT0_SIZE   64
-#endif
-
-#ifndef CFG_TUD_CTRL_BUFSIZE
-  #define CFG_TUD_CTRL_BUFSIZE    256
 #endif
 
 #ifndef CFG_TUD_CDC

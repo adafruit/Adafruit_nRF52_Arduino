@@ -41,48 +41,48 @@
 //------------- HOST -------------//
 #if TUSB_OPT_HOST_ENABLED
   #include "host/usbh.h"
-#endif
 
-#if HOST_CLASS_HID
-  #include "class/hid/hid_host.h"
-#endif
+  #if HOST_CLASS_HID
+    #include "class/hid/hid_host.h"
+  #endif
 
-#if CFG_TUH_MSC
-  #include "class/msc/msc_host.h"
-#endif
+  #if CFG_TUH_MSC
+    #include "class/msc/msc_host.h"
+  #endif
 
-#if CFG_TUH_CDC
-  #include "class/cdc/cdc_host.h"
-#endif
+  #if CFG_TUH_CDC
+    #include "class/cdc/cdc_host.h"
+  #endif
 
-#if CFG_TUSB_HOST_CUSTOM_CLASS
-  #include "class/custom_host.h"
-#endif
+  #if CFG_TUSB_HOST_CUSTOM_CLASS
+    #include "class/custom_host.h"
+  #endif
 
+#endif
 
 //------------- DEVICE -------------//
 #if TUSB_OPT_DEVICE_ENABLED
   #include "device/usbd.h"
-#endif
 
-#if CFG_TUD_HID
-  #include "class/hid/hid_device.h"
-#endif
+  #if CFG_TUD_HID
+    #include "class/hid/hid_device.h"
+  #endif
 
-#if CFG_TUD_CDC
-  #include "class/cdc/cdc_device.h"
-#endif
+  #if CFG_TUD_CDC
+    #include "class/cdc/cdc_device.h"
+  #endif
 
-#if CFG_TUD_MSC
-  #include "class/msc/msc_device.h"
-#endif
+  #if CFG_TUD_MSC
+    #include "class/msc/msc_device.h"
+  #endif
 
-#if CFG_TUD_MIDI
-  #include "class/midi/midi_device.h"
-#endif
+  #if CFG_TUD_MIDI
+    #include "class/midi/midi_device.h"
+  #endif
 
-#if CFG_TUD_CUSTOM_CLASS
-  #include "class/custom/custom_device.h"
+  #if CFG_TUD_CUSTOM_CLASS
+    #include "class/custom/custom_device.h"
+  #endif
 #endif
 
 
