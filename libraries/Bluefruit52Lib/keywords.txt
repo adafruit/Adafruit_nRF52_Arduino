@@ -531,14 +531,14 @@ ANCS_ACTION_NEGATIVE	LITERAL1
 ANCS_APP_ATTR_DISPLAY_NAME	LITERAL1
 
 #######################################
-# UUID128 Serivce Constants
+# UUID128 Service Constants
 #######################################
 
 BLEUART_UUID_SERVICE	LITERAL1
 BLEANCS_UUID_SERVICE	LITERAL1
 
 #######################################
-# UUID16 Serivce Constants
+# UUID16 Service Constants
 #######################################
 UUID16_SVC_ALERT_NOTIFICATION	LITERAL1
 UUID16_SVC_BATTERY	LITERAL1
