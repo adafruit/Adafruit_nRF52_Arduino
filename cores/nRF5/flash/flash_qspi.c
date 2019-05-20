@@ -128,10 +128,10 @@ void flash_qspi_init (void)
     .pins = {
       .sck_pin = g_ADigitalPinMap[PIN_QSPI_SCK],
       .csn_pin = g_ADigitalPinMap[PIN_QSPI_CS],
-      .io0_pin = g_ADigitalPinMap[PIN_QSPI_DATA0],
-      .io1_pin = g_ADigitalPinMap[PIN_QSPI_DATA1],
-      .io2_pin = g_ADigitalPinMap[PIN_QSPI_DATA2],
-      .io3_pin = g_ADigitalPinMap[PIN_QSPI_DATA3],
+      .io0_pin = g_ADigitalPinMap[PIN_QSPI_IO0],
+      .io1_pin = g_ADigitalPinMap[PIN_QSPI_IO1],
+      .io2_pin = g_ADigitalPinMap[PIN_QSPI_IO2],
+      .io3_pin = g_ADigitalPinMap[PIN_QSPI_IO3],
     },
     .prot_if = {
       .readoc = NRF_QSPI_READOC_READ4IO,

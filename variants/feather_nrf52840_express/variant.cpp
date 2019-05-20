@@ -104,8 +104,5 @@ void initVariant()
 
   pinMode(PIN_LED2, OUTPUT);
   ledOff(PIN_LED2);
-
-  // Init External Flash
-  flash_qspi_init();
 }
 
