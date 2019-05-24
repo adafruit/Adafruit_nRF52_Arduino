@@ -36,57 +36,6 @@
 
 extern uint8_t load_serial_number(uint16_t* serial_str);
 
-extern "C"
-{
-
-// tud_desc_set is required by tinyusb stack
-tud_desc_set_t tud_desc_set =
-{
-  .device     = NULL, // update later
-  .config     = NULL, // update later
-  .hid_report = NULL  // update later
-};
-
-// Invoked when received GET_STRING_DESC request
-// max_char is CFG_TUD_ENDOINT0_SIZE/2 -1, typically max_char = 31 if Endpoint0 size is 64
-// Return number of characters. Note usb string is in 16-bits unicode format
-uint8_t tud_descriptor_string_cb(uint8_t index, uint16_t* desc, uint8_t max_char)
-{
-  switch (index)
-  {
-    case 0:
-      // language = English
-      desc[0] = 0x0409;
-      return 1;
-
-    case 1: // Manufacturer
-    case 2: // Product
-    {
-      char const * str = (index == 1) ? USB_MANUFACTURER : USB_PRODUCT;
-
-      // cap at max char
-      uint8_t count = strlen(str);
-      if ( count > max_char ) count = max_char;
-
-      for(uint8_t i=0; i<count; i++)
-      {
-        *desc++ = str[i];
-      }
-      return count;
-    }
-    break;
-
-    case 3:
-      return load_serial_number(desc);
-
-    default: return 0;
-  }
-
-  return 0;
-}
-
-} // extern C
-
 Adafruit_USBD_Device USBDevice;
 
 Adafruit_USBD_Device::Adafruit_USBD_Device(void)
@@ -97,17 +46,11 @@ Adafruit_USBD_Device::Adafruit_USBD_Device(void)
     .bDescriptorType    = TUSB_DESC_DEVICE,
     .bcdUSB             = 0x0200,
 
-#if CFG_TUD_CDC
     // Use Interface Association Descriptor (IAD) for CDC
     // As required by USB Specs IAD's subclass must be common class (2) and protocol must be IAD (1)
     .bDeviceClass       = TUSB_CLASS_MISC,
     .bDeviceSubClass    = MISC_SUBCLASS_COMMON,
     .bDeviceProtocol    = MISC_PROTOCOL_IAD,
-#else
-    .bDeviceClass       = 0x00,
-    .bDeviceSubClass    = 0x00,
-    .bDeviceProtocol    = 0x00,
-#endif
 
     .bMaxPacketSize0    = CFG_TUD_ENDOINT0_SIZE,
 
@@ -144,9 +87,6 @@ Adafruit_USBD_Device::Adafruit_USBD_Device(void)
   _desc_cfglen = sizeof(tusb_desc_configuration_t);
   _itf_count = 0;
   _epin_count = _epout_count = 1;
-
-  tud_desc_set.config = _desc_cfg;
-  tud_desc_set.device = &_desc_device;
 }
 
 // Add interface descriptor
@@ -205,5 +145,71 @@ bool Adafruit_USBD_Device::begin(void)
 {
   return true;
 }
+
+extern "C"
+{
+
+// Invoked when received GET DEVICE DESCRIPTOR
+// Application return pointer to descriptor
+uint8_t const * tud_descriptor_device_cb(void)
+{
+  return (uint8_t const *) &USBDevice._desc_device;
+}
+
+// Invoked when received GET CONFIGURATION DESCRIPTOR
+// Application return pointer to descriptor, whose contents must exist long enough for transfer to complete
+uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
+{
+  (void) index; // for multiple configurations
+  return USBDevice._desc_cfg;
+}
+
+static uint16_t _desc_str[32];
+
+// Invoked when received GET STRING DESCRIPTOR request
+// Application return pointer to descriptor, whose contents must exist long enough for transfer to complete
+uint16_t const* tud_descriptor_string_cb(uint8_t index)
+{
+  uint8_t chr_count;
+
+  switch (index)
+  {
+    case 0:
+      // language = English
+      _desc_str[1] = 0x0409;
+      chr_count = 1;
+    break;
+
+    case 1: // Manufacturer
+    case 2: // Product
+    {
+      char const * str = (index == 1) ? USB_MANUFACTURER : USB_PRODUCT;
+
+      // cap at max char
+      chr_count = strlen(str);
+      if ( chr_count > 31 ) chr_count = 31;
+
+      for(uint8_t i=0; i<chr_count; i++)
+      {
+        _desc_str[1+i] = str[i];
+      }
+    }
+    break;
+
+    case 3:
+      // serial Number
+      chr_count = load_serial_number(_desc_str+1);
+    break;
+
+    default: return NULL;
+  }
+
+  // first byte is len, second byte is string type
+  _desc_str[0] = TUD_DESC_STR_HEADER(chr_count);
+
+  return _desc_str;
+}
+
+} // extern C
 
 #endif // USE_TINYUSB

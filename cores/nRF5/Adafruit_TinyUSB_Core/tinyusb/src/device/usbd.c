@@ -1,7 +1,7 @@
 /* 
  * The MIT License (MIT)
  *
- * Copyright (c) 2018, hathach (tinyusb.org)
+ * Copyright (c) 2019 Ha Thach (tinyusb.org)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -159,7 +159,7 @@ static osal_queue_t _usbd_q;
 //--------------------------------------------------------------------+
 static void mark_interface_endpoint(uint8_t ep2drv[8][2], uint8_t const* p_desc, uint16_t desc_len, uint8_t driver_id);
 static bool process_control_request(uint8_t rhport, tusb_control_request_t const * p_request);
-static bool process_set_config(uint8_t rhport);
+static bool process_set_config(uint8_t rhport, uint8_t cfg_num);
 static bool process_get_descriptor(uint8_t rhport, tusb_control_request_t const * p_request);
 
 void usbd_control_reset (uint8_t rhport);
@@ -376,13 +376,13 @@ static bool process_control_request(uint8_t rhport, tusb_control_request_t const
           dcd_set_config(rhport, cfg_num);
           _usbd_dev.configured = cfg_num ? 1 : 0;
 
-          TU_ASSERT( process_set_config(rhport) );
+          if ( cfg_num ) TU_ASSERT( process_set_config(rhport, cfg_num) );
           usbd_control_status(rhport, p_request);
         }
         break;
 
         case TUSB_REQ_GET_DESCRIPTOR:
-          TU_ASSERT( process_get_descriptor(rhport, p_request) );
+          TU_VERIFY( process_get_descriptor(rhport, p_request) );
         break;
 
         case TUSB_REQ_SET_FEATURE:
@@ -477,9 +477,9 @@ static bool process_control_request(uint8_t rhport, tusb_control_request_t const
 
 // Process Set Configure Request
 // This function parse configuration descriptor & open drivers accordingly
-static bool process_set_config(uint8_t rhport)
+static bool process_set_config(uint8_t rhport, uint8_t cfg_num)
 {
-  tusb_desc_configuration_t const * desc_cfg = (tusb_desc_configuration_t const *) tud_desc_set.config;
+  tusb_desc_configuration_t const * desc_cfg = (tusb_desc_configuration_t const *) tud_descriptor_configuration_cb(cfg_num-1); // index is cfg_num-1
   TU_ASSERT(desc_cfg != NULL && desc_cfg->bDescriptorType == TUSB_DESC_CONFIGURATION);
 
   // Parse configuration descriptor
@@ -558,11 +558,14 @@ static bool process_get_descriptor(uint8_t rhport, tusb_control_request_t const 
   switch(desc_type)
   {
     case TUSB_DESC_DEVICE:
-      return usbd_control_xfer(rhport, p_request, (void*) tud_desc_set.device, sizeof(tusb_desc_device_t));
+      return usbd_control_xfer(rhport, p_request, (void*) tud_descriptor_device_cb(), sizeof(tusb_desc_device_t));
     break;
 
     case TUSB_DESC_CONFIGURATION:
-      return usbd_control_xfer(rhport, p_request, (void*) tud_desc_set.config, ((tusb_desc_configuration_t const*) tud_desc_set.config)->wTotalLength);
+    {
+      tusb_desc_configuration_t const* desc_config = (tusb_desc_configuration_t const*) tud_descriptor_configuration_cb(desc_index);
+      return usbd_control_xfer(rhport, p_request, (void*) desc_config, desc_config->wTotalLength);
+    }
     break;
 
     case TUSB_DESC_STRING:
@@ -574,16 +577,11 @@ static bool process_get_descriptor(uint8_t rhport, tusb_control_request_t const 
         return false;
       }else
       {
-        uint16_t desc_str[CFG_TUD_ENDOINT0_SIZE/2]; // up to endpoint0 size only
-        uint8_t len = 2*tud_descriptor_string_cb(desc_index, desc_str+1, CFG_TUD_ENDOINT0_SIZE/2-1);
+        uint8_t const* desc_str = (uint8_t const*) tud_descriptor_string_cb(desc_index);
+        TU_ASSERT(desc_str);
 
-        TU_ASSERT(len > 0);
-
-        // first byte of descriptor is size, second byte is string type
-        len += 2; // header len
-        desc_str[0] = tu_u16_from_u8(TUSB_DESC_STRING, len);
-
-        return usbd_control_xfer(rhport, p_request, desc_str, len);
+        // first byte of descriptor is its size
+        return usbd_control_xfer(rhport, p_request, (void*) desc_str, desc_str[0]);
       }
     break;
 
@@ -741,7 +739,7 @@ void usbd_edpt_stall(uint8_t rhport, uint8_t ep_addr)
   uint8_t const dir   = tu_edpt_dir(ep_addr);
 
   dcd_edpt_stall(rhport, ep_addr);
-  _usbd_dev.ep_stall_mask[dir] = tu_bit_set(_usbd_dev.ep_stall_mask[dir], epnum);
+  _usbd_dev.ep_stall_mask[dir] = (uint8_t) tu_bit_set(_usbd_dev.ep_stall_mask[dir], epnum);
 }
 
 void usbd_edpt_clear_stall(uint8_t rhport, uint8_t ep_addr)
@@ -750,7 +748,7 @@ void usbd_edpt_clear_stall(uint8_t rhport, uint8_t ep_addr)
   uint8_t const dir   = tu_edpt_dir(ep_addr);
 
   dcd_edpt_clear_stall(rhport, ep_addr);
-  _usbd_dev.ep_stall_mask[dir] = tu_bit_clear(_usbd_dev.ep_stall_mask[dir], epnum);
+  _usbd_dev.ep_stall_mask[dir] = (uint8_t) tu_bit_clear(_usbd_dev.ep_stall_mask[dir], epnum);
 }
 
 bool usbd_edpt_stalled(uint8_t rhport, uint8_t ep_addr)

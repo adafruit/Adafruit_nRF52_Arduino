@@ -39,4 +39,7 @@
 // Called by main.cpp to initialize usb device typically with CDC device for Serial
 void Adafruit_TinyUSB_Core_init(void);
 
+// Invoked when host disconnects cdc at baud 1200, usually touch feature to go into DFU mode
+void Adafruit_TinyUSB_Core_touch1200(void);
+
 #endif /* ADAFRUIT_TINYUSB_CORE_H_ */

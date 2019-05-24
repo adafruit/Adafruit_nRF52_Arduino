@@ -1,7 +1,7 @@
 /* 
  * The MIT License (MIT)
  *
- * Copyright (c) 2018, hathach (tinyusb.org)
+ * Copyright (c) 2019 Ha Thach (tinyusb.org)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,48 +41,48 @@
 //------------- HOST -------------//
 #if TUSB_OPT_HOST_ENABLED
   #include "host/usbh.h"
-#endif
 
-#if HOST_CLASS_HID
-  #include "class/hid/hid_host.h"
-#endif
+  #if HOST_CLASS_HID
+    #include "class/hid/hid_host.h"
+  #endif
 
-#if CFG_TUH_MSC
-  #include "class/msc/msc_host.h"
-#endif
+  #if CFG_TUH_MSC
+    #include "class/msc/msc_host.h"
+  #endif
 
-#if CFG_TUH_CDC
-  #include "class/cdc/cdc_host.h"
-#endif
+  #if CFG_TUH_CDC
+    #include "class/cdc/cdc_host.h"
+  #endif
 
-#if CFG_TUSB_HOST_CUSTOM_CLASS
-  #include "class/custom_host.h"
-#endif
+  #if CFG_TUSB_HOST_CUSTOM_CLASS
+    #include "class/custom_host.h"
+  #endif
 
+#endif
 
 //------------- DEVICE -------------//
 #if TUSB_OPT_DEVICE_ENABLED
   #include "device/usbd.h"
-#endif
 
-#if CFG_TUD_HID
-  #include "class/hid/hid_device.h"
-#endif
+  #if CFG_TUD_HID
+    #include "class/hid/hid_device.h"
+  #endif
 
-#if CFG_TUD_CDC
-  #include "class/cdc/cdc_device.h"
-#endif
+  #if CFG_TUD_CDC
+    #include "class/cdc/cdc_device.h"
+  #endif
 
-#if CFG_TUD_MSC
-  #include "class/msc/msc_device.h"
-#endif
+  #if CFG_TUD_MSC
+    #include "class/msc/msc_device.h"
+  #endif
 
-#if CFG_TUD_MIDI
-  #include "class/midi/midi_device.h"
-#endif
+  #if CFG_TUD_MIDI
+    #include "class/midi/midi_device.h"
+  #endif
 
-#if CFG_TUD_CUSTOM_CLASS
-  #include "class/custom/custom_device.h"
+  #if CFG_TUD_CUSTOM_CLASS
+    #include "class/custom/custom_device.h"
+  #endif
 #endif
 
 
@@ -100,20 +100,6 @@ bool tusb_inited(void);
 
 // TODO
 // bool tusb_teardown(void);
-
-
-// backward compatible only. TODO remove later
-ATTR_DEPRECATED("Please use either tud_task() or tuh_task()")
-static inline void tusb_task(void)
-{
-  #if TUSB_OPT_HOST_ENABLED
-  tuh_task();
-  #endif
-
-  #if TUSB_OPT_DEVICE_ENABLED
-  tud_task();
-  #endif
-}
 
 /** @} */
 

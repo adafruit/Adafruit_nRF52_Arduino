@@ -1,7 +1,7 @@
 /* 
  * The MIT License (MIT)
  *
- * Copyright (c) 2018, hathach (tinyusb.org)
+ * Copyright (c) 2019 Ha Thach (tinyusb.org)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,6 +67,10 @@ bool tud_hid_mouse_report(uint8_t report_id, uint8_t buttons, int8_t x, int8_t y
 //--------------------------------------------------------------------+
 // Callbacks (Weak is optional)
 //--------------------------------------------------------------------+
+
+// Invoked when received GET HID REPORT DESCRIPTOR request
+// Application return pointer to descriptor, whose contents must exist long enough for transfer to complete
+ATTR_WEAK uint8_t const * tud_hid_descriptor_report_cb(void);
 
 // Invoked when received GET_REPORT control request
 // Application must fill buffer report's content and return its length.

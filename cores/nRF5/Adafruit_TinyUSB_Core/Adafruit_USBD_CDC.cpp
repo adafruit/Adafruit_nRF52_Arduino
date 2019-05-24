@@ -131,7 +131,7 @@ void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts)
     cdc_line_coding_t coding;
     tud_cdc_get_line_coding(&coding);
 
-    if ( coding.bit_rate == 1200 ) enterSerialDfu();
+    if ( coding.bit_rate == 1200 ) Adafruit_TinyUSB_Core_touch1200();
   }
 }
 

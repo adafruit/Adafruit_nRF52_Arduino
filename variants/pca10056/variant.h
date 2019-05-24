@@ -114,15 +114,13 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 #define PIN_WIRE_SDA         (26)
 #define PIN_WIRE_SCL         (27)
 
-/*
- * QSPI interface for external flash
- */
+// QSPI Pins
 #define PIN_QSPI_SCK         19
 #define PIN_QSPI_CS          17
-#define PIN_QSPI_DATA0       20
-#define PIN_QSPI_DATA1       21
-#define PIN_QSPI_DATA2       22
-#define PIN_QSPI_DATA3       23
+#define PIN_QSPI_IO0         20
+#define PIN_QSPI_IO1         21
+#define PIN_QSPI_IO2         22
+#define PIN_QSPI_IO3         23
 
 // On-board QSPI Flash
 #define EXTERNAL_FLASH_DEVICES   MX25R6435F

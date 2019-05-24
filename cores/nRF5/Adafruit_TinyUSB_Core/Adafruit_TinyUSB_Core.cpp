@@ -94,6 +94,11 @@ void Adafruit_TinyUSB_Core_init(void)
   xTaskCreate( usb_device_task, "usbd", USBD_STACK_SZ, NULL, TASK_PRIO_HIGH, NULL);
 }
 
+void Adafruit_TinyUSB_Core_touch1200(void)
+{
+  enterSerialDfu();
+}
+
 uint8_t load_serial_number(uint16_t* serial_str)
 {
   // Serial is 64-bit DeviceID -> 16 chars len
