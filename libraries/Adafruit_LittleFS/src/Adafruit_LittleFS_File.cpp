@@ -36,7 +36,7 @@ using namespace LittleFilesystem;
 File::File (Adafruit_LittleFS &fs)
 {
   _fs = &fs;
-  _hdl = NULL;
+  _file = NULL;
   _dir = NULL;
   _path = NULL;
   _is_dir = false;
@@ -45,7 +45,7 @@ File::File (Adafruit_LittleFS &fs)
 File::File (char const *filename, uint8_t mode, Adafruit_LittleFS &fs)
 {
   _fs = &fs;
-  _hdl = NULL;
+  _file = NULL;
   _dir = NULL;
   _path = NULL;
   _is_dir = false;
@@ -56,7 +56,7 @@ File::File (char const *filename, uint8_t mode, Adafruit_LittleFS &fs)
 File& File::operator = (const File &rhs)
 {
   // close if currently opened
-  if ( _hdl ) close();
+  if ( _file ) close();
   memcpy(this, &rhs, sizeof(File));
   return *this;
 }
@@ -90,7 +90,7 @@ File File::_open_file (char const *filepath, uint8_t mode)
       // move to end of file
       if ( mode == FILE_WRITE ) lfs_file_seek(_fs->getFS(), fhdl, 0, LFS_SEEK_END);
 
-      file._hdl = fhdl;
+      file._file = fhdl;
       file._is_dir = false;
 
       file._path = (char*) rtos_malloc(strlen(filepath) + 1);
@@ -128,7 +128,7 @@ File File::_open_dir (char const *filepath)
 bool File::open (char const *filepath, uint8_t mode)
 {
   // close if currently opened
-  if ( _hdl ) close();
+  if ( _file ) close();
 
   File file(*_fs);
   struct lfs_info info;
@@ -149,7 +149,7 @@ bool File::open (char const *filepath, uint8_t mode)
     PRINT_LFS_ERR(rc);
   }
 
-  return _hdl != NULL;
+  return _file != NULL;
 }
 
 size_t File::write (uint8_t ch)
@@ -162,7 +162,7 @@ size_t File::write (uint8_t const *buf, size_t size)
 {
   VERIFY(!_is_dir, 0);
 
-  lfs_ssize_t wrcount = lfs_file_write(_fs->getFS(), _hdl, buf, size);
+  lfs_ssize_t wrcount = lfs_file_write(_fs->getFS(), _file, buf, size);
   VERIFY(wrcount > 0, 0);
   return wrcount;
 }
@@ -177,7 +177,7 @@ int File::read (void)
 int File::read (void *buf, uint16_t nbyte)
 {
   VERIFY(!_is_dir, 0);
-  return lfs_file_read(_fs->getFS(), _hdl, buf, nbyte);
+  return lfs_file_read(_fs->getFS(), _file, buf, nbyte);
 }
 
 int File::peek (void)
@@ -198,30 +198,30 @@ int File::available (void)
 bool File::seek (uint32_t pos)
 {
   VERIFY(!_is_dir, false);
-  return lfs_file_seek(_fs->getFS(), _hdl, pos, LFS_SEEK_SET) >= 0;
+  return lfs_file_seek(_fs->getFS(), _file, pos, LFS_SEEK_SET) >= 0;
 }
 
 uint32_t File::position (void)
 {
   VERIFY(!_is_dir, 0);
-  return lfs_file_tell(_fs->getFS(), _hdl);
+  return lfs_file_tell(_fs->getFS(), _file);
 }
 
 uint32_t File::size (void)
 {
   VERIFY(!_is_dir, 0);
-  return lfs_file_size(_fs->getFS(), _hdl);
+  return lfs_file_size(_fs->getFS(), _file);
 }
 
 void File::flush (void)
 {
   VERIFY(!_is_dir,);
-  lfs_file_sync(_fs->getFS(), _hdl);
+  lfs_file_sync(_fs->getFS(), _file);
 }
 
 void File::close (void)
 {
-  if ( _hdl )
+  if ( _file )
   {
     if ( _is_dir )
     {
@@ -229,21 +229,21 @@ void File::close (void)
     }
     else
     {
-      lfs_file_close(_fs->getFS(), _hdl);
+      lfs_file_close(_fs->getFS(), _file);
     }
 
-    rtos_free(_hdl);
+    rtos_free(_file);
   }
 
   if ( _path ) rtos_free(_path);
 
-  _hdl = NULL;
+  _file = NULL;
   _path = NULL;
 }
 
 File::operator bool (void)
 {
-  return _hdl != NULL;
+  return _file != NULL;
 }
 
 char const* File::name (void)

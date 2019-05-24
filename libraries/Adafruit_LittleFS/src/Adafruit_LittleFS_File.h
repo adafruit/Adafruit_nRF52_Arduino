@@ -80,7 +80,7 @@ class File : public Stream
   private:
     Adafruit_LittleFS* _fs;
 
-    lfs_file_t* _hdl; // file hanlde
+    lfs_file_t* _file; // file hanlde
     lfs_dir_t*  _dir; // dir handle
 
     char* _path;
