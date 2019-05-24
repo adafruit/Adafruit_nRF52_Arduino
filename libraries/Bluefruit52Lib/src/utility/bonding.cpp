@@ -35,9 +35,11 @@
 /**************************************************************************/
 
 #include <Arduino.h>
-#include "Bluefruit_FileIO.h"
+#include "Adafruit_LittleFS.h"
 #include "bonding.h"
 #include "bluefruit.h"
+
+using namespace LittleFilesystem;
 
 #define BOND_DEBUG        0
 
