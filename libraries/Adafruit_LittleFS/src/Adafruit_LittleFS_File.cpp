@@ -66,42 +66,41 @@ File::~File ()
 
 }
 
-File File::_open_file (char const *filepath, uint8_t mode)
+bool File::_open_file (char const *filepath, uint8_t mode)
 {
-  File file(*_fs);
-
   int flags = (mode == FILE_READ) ? LFS_O_RDONLY :
               (mode == FILE_WRITE) ? (LFS_O_RDWR | LFS_O_CREAT) : 0;
 
   if ( flags )
   {
     lfs_file_t* fhdl = (lfs_file_t*) rtos_malloc(sizeof(lfs_file_t));
-    VERIFY(fhdl, file);
+    if (!fhdl) return false;
 
     int rc = lfs_file_open(_fs->getFS(), fhdl, filepath, flags);
 
     if ( rc )
     {
+      // failed to open
       rtos_free(fhdl);
       PRINT_LFS_ERR(rc);
-    }
-    else
-    {
-      // move to end of file
-      if ( mode == FILE_WRITE ) lfs_file_seek(_fs->getFS(), fhdl, 0, LFS_SEEK_END);
 
-      file._file = fhdl;
-      file._is_dir = false;
-
-      file._path = (char*) rtos_malloc(strlen(filepath) + 1);
-      strcpy(file._path, filepath);
+      return false;
     }
+
+    // move to end of file
+    if ( mode == FILE_WRITE ) lfs_file_seek(_fs->getFS(), fhdl, 0, LFS_SEEK_END);
+
+    _file = fhdl;
+    _is_dir = false;
+
+    _path = (char*) rtos_malloc(strlen(filepath) + 1);
+    strcpy(_path, filepath);
   }
 
-  return file;
+  return true;
 }
 
-File File::_open_dir (char const *filepath)
+bool File::_open_dir (char const *filepath)
 {
   File file(*_fs);
 
@@ -110,23 +109,25 @@ File File::_open_dir (char const *filepath)
 
   if ( rc )
   {
+    // failed to open
     rtos_free(fhdl);
     PRINT_LFS_ERR(rc);
-  }
-  else
-  {
-    file._dir = fhdl;
-    file._is_dir = true;
-
-    file._path = (char*) rtos_malloc(strlen(filepath) + 1);
-    strcpy(file._path, filepath);
+    return false;
   }
 
-  return file;
+  _dir = fhdl;
+  _is_dir = true;
+
+  _path = (char*) rtos_malloc(strlen(filepath) + 1);
+  strcpy(_path, filepath);
+
+  return true;
 }
 
 bool File::open (char const *filepath, uint8_t mode)
 {
+  bool ret = false;
+
   // close if currently opened
   if ( _file ) close();
 
@@ -136,19 +137,19 @@ bool File::open (char const *filepath, uint8_t mode)
   if ( LFS_ERR_OK == rc )
   {
     // file existed, open file or directory accordingly
-    *this = (info.type == LFS_TYPE_REG) ? _open_file(filepath, mode) : _open_dir(filepath);
+    ret = (info.type == LFS_TYPE_REG) ? _open_file(filepath, mode) : _open_dir(filepath);
   }
   else if ( LFS_ERR_NOENT == rc )
   {
     // file not existed, only proceed with FILE_WRITE mode
-    if ( mode == FILE_WRITE ) *this = _open_file(filepath, mode);
+    if ( mode == FILE_WRITE ) ret = _open_file(filepath, mode);
   }
   else
   {
     PRINT_LFS_ERR(rc);
   }
 
-  return _file != NULL;
+  return ret;
 }
 
 size_t File::write (uint8_t ch)

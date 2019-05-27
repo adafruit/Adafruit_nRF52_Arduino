@@ -86,8 +86,8 @@ class File : public Stream
     char* _path;
     bool _is_dir;
 
-    File _open_file(char const *filepath, uint8_t mode);
-    File _open_dir (char const *filepath);
+    bool _open_file(char const *filepath, uint8_t mode);
+    bool _open_dir (char const *filepath);
 
     friend class ::Adafruit_LittleFS;
 };
