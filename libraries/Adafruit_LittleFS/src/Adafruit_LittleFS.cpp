@@ -150,67 +150,6 @@ bool Adafruit_LittleFS::format (bool eraseall)
   return true;
 }
 
-#if 0
-LittleFilesystem::File Adafruit_LittleFS::_open_file (char const *filepath, uint8_t mode)
-{
-  LittleFilesystem::File file(*this);
-
-  int flags = (mode == FILE_READ) ? LFS_O_RDONLY :
-              (mode == FILE_WRITE) ? (LFS_O_RDWR | LFS_O_CREAT) : 0;
-
-  if ( flags )
-  {
-    lfs_file_t* fhdl = (lfs_file_t*) rtos_malloc(sizeof(lfs_file_t));
-    VERIFY(fhdl, file);
-
-    int rc = lfs_file_open(&_lfs, fhdl, filepath, flags);
-
-    if ( rc )
-    {
-      rtos_free(fhdl);
-      PRINT_LFS_ERR(rc);
-    }
-    else
-    {
-      // move to end of file
-      if ( mode == FILE_WRITE ) lfs_file_seek(&_lfs, fhdl, 0, LFS_SEEK_END);
-
-      file._hdl = fhdl;
-      file._is_dir = false;
-
-      file._path = (char*) rtos_malloc(strlen(filepath) + 1);
-      strcpy(file._path, filepath);
-    }
-  }
-
-  return file;
-}
-
-LittleFilesystem::File Adafruit_LittleFS::_open_dir (char const *filepath)
-{
-  LittleFilesystem::File file(*this);
-
-  lfs_dir_t* fhdl = (lfs_dir_t*) rtos_malloc(sizeof(lfs_dir_t));
-  int rc = lfs_dir_open(&_lfs, fhdl, filepath);
-
-  if ( rc )
-  {
-    rtos_free(fhdl);
-    PRINT_LFS_ERR(rc);
-  }
-  else
-  {
-    file._hdl = fhdl;
-    file._is_dir = true;
-
-    file._path = (char*) rtos_malloc(strlen(filepath) + 1);
-    strcpy(file._path, filepath);
-  }
-
-  return file;
-}
-#endif
-
 LittleFilesystem::File Adafruit_LittleFS::open (char const *filepath, uint8_t mode)
 {
   return LittleFilesystem::File(filepath, mode, *this);
@@ -275,90 +214,8 @@ bool Adafruit_LittleFS::rmdir_r (char const *filepath)
 }
 
 //--------------------------------------------------------------------+
-// FILE API
+// flash API
 //--------------------------------------------------------------------+
-//size_t Adafruit_LittleFS::_f_write (void* fhdl, uint8_t const *buf, size_t size)
-//{
-//  lfs_ssize_t wrcount = lfs_file_write(&_lfs, (lfs_file_t*) fhdl, buf, size);
-//  VERIFY(wrcount > 0, 0);
-//  return wrcount;
-//}
-
-//void Adafruit_LittleFS::_f_flush (void* fhdl)
-//{
-//  VERIFY_LFS(lfs_file_sync(&_lfs, (lfs_file_t* ) fhdl),);
-//}
-
-//int Adafruit_LittleFS::_f_read (void* fhdl, void *buf, uint16_t nbyte)
-//{
-//  return lfs_file_read(&_lfs, (lfs_file_t*) fhdl, buf, nbyte);
-//}
-//
-//bool Adafruit_LittleFS::_f_seek (void* fhdl, uint32_t pos)
-//{
-//  return lfs_file_seek(&_lfs, (lfs_file_t*) fhdl, pos, LFS_SEEK_SET) >= 0;
-//}
-
-//uint32_t Adafruit_LittleFS::_f_position (void* fhdl)
-//{
-//  return lfs_file_tell(&_lfs, (lfs_file_t*) fhdl);
-//}
-
-//uint32_t Adafruit_LittleFS::_f_size (void* fhdl)
-//{
-//  return lfs_file_size(&_lfs, (lfs_file_t*) fhdl);
-//}
-
-//void Adafruit_LittleFS::_f_close (void* fhdl, bool is_dir)
-//{
-//  if ( is_dir )
-//  {
-//    lfs_dir_close(&_lfs, (lfs_dir_t *) fhdl);
-//  }
-//  else
-//  {
-//    lfs_file_close(&_lfs, (lfs_file_t*) fhdl);
-//  }
-//}
-
-//File Adafruit_LittleFS::_f_openNextFile (void* fhdl, char const* cwd, uint8_t mode)
-//{
-//  LittleFilesystem::File file(*this);
-//  struct lfs_info info;
-//
-//  int rc;
-//
-//  // lfs_dir_read return 0 when reaching end of directory, 1 if found an entry
-//  // skip "." and ".." entries
-//  do
-//  {
-//    rc = lfs_dir_read(&_lfs, (lfs_dir_t *) fhdl, &info);
-//  } while ( rc == 1 && (!strcmp(".", info.name) || !strcmp("..", info.name)) );
-//
-//  if ( rc == 1 )
-//  {
-//    // string cat name with current folder
-//    char filepath[strlen(cwd) + 1 + strlen(info.name) + 1];
-//
-//    strcpy(filepath, cwd);
-//    if ( !(cwd[0] == '/' && cwd[1] == 0) ) strcat(filepath, "/");    // only add '/' if cwd is not root
-//    strcat(filepath, info.name);
-//
-//    file = (info.type == LFS_TYPE_REG) ? _open_file(filepath, mode) : _open_dir(filepath);
-//  }
-//  else if ( rc < 0 )
-//  {
-//    PRINT_LFS_ERR(rc);
-//  }
-//
-//  return file;
-//}
-
-//void Adafruit_LittleFS::_f_rewindDirectory (void* fhdl)
-//{
-//  VERIFY_LFS(lfs_dir_rewind(&_lfs, (lfs_dir_t* ) fhdl),);
-//}
-
 
 int Adafruit_LittleFS::_flash_read (lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
 {
