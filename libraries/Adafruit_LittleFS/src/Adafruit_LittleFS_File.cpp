@@ -50,7 +50,7 @@ File::File (char const *filename, uint8_t mode, Adafruit_LittleFS &fs)
   _path = NULL;
   _is_dir = false;
 
-  open(filename, mode);
+  this->open(filename, mode);
 }
 
 File& File::operator = (const File &rhs)
@@ -130,19 +130,18 @@ bool File::open (char const *filepath, uint8_t mode)
   // close if currently opened
   if ( _file ) close();
 
-  File file(*_fs);
   struct lfs_info info;
 
   int rc = lfs_stat(_fs->getFS(), filepath, &info);
   if ( LFS_ERR_OK == rc )
   {
     // file existed, open file or directory accordingly
-    file = (info.type == LFS_TYPE_REG) ? _open_file(filepath, mode) : _open_dir(filepath);
+    *this = (info.type == LFS_TYPE_REG) ? _open_file(filepath, mode) : _open_dir(filepath);
   }
   else if ( LFS_ERR_NOENT == rc )
   {
     // file not existed, only proceed with FILE_WRITE mode
-    if ( mode == FILE_WRITE ) file = _open_file(filepath, mode);
+    if ( mode == FILE_WRITE ) *this = _open_file(filepath, mode);
   }
   else
   {

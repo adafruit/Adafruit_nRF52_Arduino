@@ -12,7 +12,9 @@
  any redistribution
 *********************************************************************/
 
-#include <Bluefruit_FileIO.h>
+#include <Adafruit_LittleFS.h>
+
+using namespace LittleFilesystem;
 
 // the setup function runs once when you press reset or power the board
 void setup() 

@@ -13,7 +13,9 @@
 *********************************************************************/
 
 #include <bluefruit.h>
-#include <Bluefruit_FileIO.h>
+#include <Adafruit_LittleFS.h>
+
+using namespace LittleFilesystem;
 
 /* This example  print out Internal Flash contents up to
  * MAX_LEVEL level of directories (including root)
