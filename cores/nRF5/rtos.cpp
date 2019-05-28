@@ -38,11 +38,6 @@
 
 SchedulerRTOS Scheduler;
 
-void yield(void)
-{
-  taskYIELD();
-}
-
 static void _redirect_task(void* arg)
 {
   SchedulerRTOS::taskfunc_t taskfunc = (SchedulerRTOS::taskfunc_t) arg;
@@ -81,11 +76,20 @@ bool SchedulerRTOS::startLoop(taskfunc_t task, const char* name, uint32_t stack_
 
 
 //--------------------------------------------------------------------+
-// FreeRTOS Hooks
+// Hooks
 //--------------------------------------------------------------------+
 
 extern "C"
 {
+
+void yield(void)
+{
+#ifdef USE_TINYUSB
+    tud_cdc_write_flush();
+#endif
+
+  taskYIELD();
+}
 
 void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
 {

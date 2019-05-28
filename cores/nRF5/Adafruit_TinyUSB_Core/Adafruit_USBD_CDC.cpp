@@ -82,11 +82,6 @@ int Adafruit_USBD_CDC::read(void)
   return (int) tud_cdc_read_char();
 }
 
-size_t Adafruit_USBD_CDC::readBytes(char *buffer, size_t length)
-{
-  return tud_cdc_read(buffer, length);
-}
-
 void Adafruit_USBD_CDC::flush(void)
 {
   tud_cdc_write_flush();

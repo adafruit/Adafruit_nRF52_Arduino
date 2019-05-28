@@ -51,9 +51,6 @@ public:
 	  return write((const uint8_t *)buffer, size);
 	}
 	operator bool();
-
-	size_t readBytes(char *buffer, size_t length);
-	size_t readBytes(uint8_t *buffer, size_t length) { return readBytes((char *)buffer, length); }
 };
 
 extern Adafruit_USBD_CDC Serial;
