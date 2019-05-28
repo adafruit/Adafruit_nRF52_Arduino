@@ -28,8 +28,6 @@
 #define FILE_READ 0
 #define FILE_WRITE 1
 
-#define FILE_NAME_MAX 255
-
 // Forward declaration
 class Adafruit_LittleFS;
 
@@ -41,7 +39,6 @@ class File : public Stream
   public:
     File (Adafruit_LittleFS &fs);
     File (char const *filename, uint8_t mode, Adafruit_LittleFS &fs);
-    File & operator = (const File &rhs);
     virtual ~File ();
 
     bool open (char const *filename, uint8_t mode);
@@ -71,7 +68,6 @@ class File : public Stream
     void close (void);
     operator bool (void);
     char const* name (void);
-    char const* path (void);
 
     bool isDirectory (void);
     File openNextFile (uint8_t mode = FILE_READ);
@@ -80,16 +76,19 @@ class File : public Stream
   private:
     Adafruit_LittleFS* _fs;
 
-    lfs_file_t* _file; // file hanlde
-    lfs_dir_t*  _dir; // dir handle
-
-    char* _path;
     bool _is_dir;
+    bool _opened;
+
+    union {
+        lfs_file_t _file;
+        lfs_dir_t  _dir;
+    };
+
+    char* _dir_path;
+    char  _name[LFS_NAME_MAX+1];
 
     bool _open_file(char const *filepath, uint8_t mode);
     bool _open_dir (char const *filepath);
-
-    friend class ::Adafruit_LittleFS;
 };
 
 }

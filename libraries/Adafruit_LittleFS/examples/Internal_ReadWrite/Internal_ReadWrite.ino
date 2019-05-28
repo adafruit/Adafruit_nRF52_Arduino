@@ -15,7 +15,7 @@
 #include <Adafruit_LittleFS.h>
 using namespace LittleFilesystem;
 
-#define FILENAME    "/adafruit2.txt"
+#define FILENAME    "/adafruit.txt"
 #define CONTENTS    "Adafruit Little File System test file contents"
 
 File file(InternalFS);
