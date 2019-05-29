@@ -84,6 +84,7 @@ class BLEUuid
 #define UUID16_SVC_CYCLING_POWER                              0x1818
 #define UUID16_SVC_LOCATION_AND_NAVIGATION                    0x1819
 #define UUID16_SVC_DEVICE_INFORMATION                         0x180A
+#define UUID16_SVC_ENVIRONMENTAL_SENSING                      0x181A
 #define UUID16_SVC_GLUCOSE                                    0x1808
 #define UUID16_SVC_HEALTH_THERMOMETER                         0x1809
 #define UUID16_SVC_HEART_RATE                                 0x180D
@@ -195,6 +196,7 @@ class BLEUuid
 #define UUID16_PLX_SPOT_CHECK_MEAS                            0x2A5E
 #define UUID16_PLX_CONTINUOUS_MEAS                            0x2A5F
 #define UUID16_PLX_FEATURES                                   0x2A60
+#define UUID16_CHR_UV_INDEX                                   0x2A76
 
 /*------------------------------------------------------------------*/
 /* Company UUID

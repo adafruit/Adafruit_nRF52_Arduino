@@ -47,9 +47,9 @@ class SoftwareTimer
     SoftwareTimer()          { _handle = NULL; }
     virtual ~SoftwareTimer() { if(_handle != NULL) xTimerDelete(_handle, 0); }
 
-    void begin(uint32_t ms, TimerCallbackFunction_t callback)
+    void begin(uint32_t ms, TimerCallbackFunction_t callback, bool repeating = true)
     {
-      _handle = xTimerCreate(NULL, ms2tick(ms), true, NULL, callback);
+      _handle = xTimerCreate(NULL, ms2tick(ms), repeating, NULL, callback);
     }
 
     TimerHandle_t getHandle(void)
@@ -59,6 +59,28 @@ class SoftwareTimer
 
     void start(void) { xTimerStart(_handle, 0); }
     void stop (void) { xTimerStop (_handle, 0); }
+    void reset(void) { xTimerReset(_handle, 0); }
+
+    bool startFromISR(void) {
+      BaseType_t ret, xHigherPriorityTaskWoken = pdFALSE;
+      ret = xTimerStartFromISR(_handle, &xHigherPriorityTaskWoken);
+      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+      return (ret == pdPASS);
+    }
+
+    bool stopFromISR(void) {
+      BaseType_t ret, xHigherPriorityTaskWoken = pdFALSE;
+      ret = xTimerStopFromISR(_handle, &xHigherPriorityTaskWoken);
+      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+      return (ret == pdPASS);
+    }
+
+    bool resetFromISR(void) {
+      BaseType_t ret, xHigherPriorityTaskWoken = pdFALSE;
+      ret = xTimerResetFromISR(_handle, &xHigherPriorityTaskWoken);
+      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+      return (ret == pdPASS);
+    }
 
     void setPeriod(uint32_t ms)
     {

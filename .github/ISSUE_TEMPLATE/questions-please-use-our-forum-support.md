@@ -1,6 +1,6 @@
 ---
 name: Questions please use our forum support
-about: Post your question at forums.adafruit.com
+about: Don't open issue, post your question at forums.adafruit.com
 title: ''
 labels: ''
 assignees: ''
