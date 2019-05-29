@@ -31,7 +31,7 @@
 // Forward declaration
 class Adafruit_LittleFS;
 
-namespace LittleFilesystem
+namespace Adafruit_LittleFS_Namespace
 {
 
 class File : public Stream

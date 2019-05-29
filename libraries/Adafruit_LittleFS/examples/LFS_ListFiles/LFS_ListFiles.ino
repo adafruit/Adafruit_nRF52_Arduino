@@ -12,10 +12,9 @@
  any redistribution
 *********************************************************************/
 
-//#include <bluefruit.h>
 #include <Adafruit_LittleFS.h>
 
-using namespace LittleFilesystem;
+using namespace Adafruit_LittleFS_Namespace;
 
 /* This example  print out Internal Flash contents up to
  * MAX_LEVEL level of directories (including root)

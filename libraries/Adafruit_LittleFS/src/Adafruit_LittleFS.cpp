@@ -28,7 +28,7 @@
 #include "Adafruit_LittleFS.h"
 #include "flash/flash_nrf5x.h"
 
-using namespace LittleFilesystem;
+using namespace Adafruit_LittleFS_Namespace;
 
 #ifdef NRF52840_XXAA
 #define LFS_FLASH_ADDR        0xED000
@@ -150,9 +150,9 @@ bool Adafruit_LittleFS::format (bool eraseall)
   return true;
 }
 
-LittleFilesystem::File Adafruit_LittleFS::open (char const *filepath, uint8_t mode)
+Adafruit_LittleFS_Namespace::File Adafruit_LittleFS::open (char const *filepath, uint8_t mode)
 {
-  return LittleFilesystem::File(filepath, mode, *this);
+  return Adafruit_LittleFS_Namespace::File(filepath, mode, *this);
 }
 
 bool Adafruit_LittleFS::exists (char const *filepath)

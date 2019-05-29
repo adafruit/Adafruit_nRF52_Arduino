@@ -14,7 +14,7 @@
 
 #include <Adafruit_LittleFS.h>
 
-using namespace LittleFilesystem;
+using namespace Adafruit_LittleFS_Namespace;
 
 // the setup function runs once when you press reset or power the board
 void setup() 

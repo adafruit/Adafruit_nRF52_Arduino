@@ -39,7 +39,7 @@
 #include "bonding.h"
 #include "bluefruit.h"
 
-using namespace LittleFilesystem;
+using namespace Adafruit_LittleFS_Namespace;
 
 #define BOND_DEBUG        0
 

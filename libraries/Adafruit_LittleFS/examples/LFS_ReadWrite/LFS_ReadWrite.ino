@@ -13,7 +13,7 @@
 *********************************************************************/
 
 #include <Adafruit_LittleFS.h>
-using namespace LittleFilesystem;
+using namespace Adafruit_LittleFS_Namespace;
 
 #define FILENAME    "/adafruit.txt"
 #define CONTENTS    "Adafruit Little File System test file contents"

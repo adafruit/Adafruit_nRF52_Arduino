@@ -30,7 +30,7 @@
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
 
-using namespace LittleFilesystem;
+using namespace Adafruit_LittleFS_Namespace;
 
 File::File (Adafruit_LittleFS &fs)
 {
