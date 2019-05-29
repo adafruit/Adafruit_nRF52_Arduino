@@ -78,19 +78,22 @@ bool tud_hid_ready(void)
 
 bool tud_hid_report(uint8_t report_id, void const* report, uint8_t len)
 {
-  TU_VERIFY( tud_hid_ready() && (len <= CFG_TUD_HID_BUFSIZE) );
+  TU_VERIFY( tud_hid_ready() );
 
   uint8_t itf = 0;
   hidd_interface_t * p_hid = &_hidd_itf[itf];
 
-  // If report id = 0, skip ID field
   if (report_id)
   {
+    len = tu_min8(len, CFG_TUD_HID_BUFSIZE-1);
+
     p_hid->epin_buf[0] = report_id;
     memcpy(p_hid->epin_buf+1, report, len);
     len++;
   }else
   {
+    // If report id = 0, skip ID field
+    len = tu_min8(len, CFG_TUD_HID_BUFSIZE);
     memcpy(p_hid->epin_buf, report, len);
   }
 

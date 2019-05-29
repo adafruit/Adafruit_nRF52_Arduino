@@ -73,7 +73,7 @@ typedef struct
 //--------------------------------------------------------------------+
 CFG_TUSB_MEM_SECTION static cdcd_interface_t _cdcd_itf[CFG_TUD_CDC];
 
-//bool pending_read_from_host;
+//bool pending_read_from_host; TODO remove
 static void _prep_out_transaction (uint8_t itf)
 {
   cdcd_interface_t* p_cdc = &_cdcd_itf[itf];
