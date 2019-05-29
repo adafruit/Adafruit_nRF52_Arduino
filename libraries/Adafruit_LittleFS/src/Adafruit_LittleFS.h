@@ -77,14 +77,6 @@ class Adafruit_LittleFS
     Adafruit_LittleFS (uint32_t read_size, uint32_t prog_size, uint32_t block_size, uint32_t block_count, uint32_t lookahead);
     
     // Internal API: shouldn't be used by Arduino sketch
-//    virtual size_t _f_write (void* fhdl, uint8_t const *buf, size_t size);
-//    virtual int _f_read (void* fhdl, void *buf, uint16_t nbyte);
-//    virtual void _f_flush (void* fhdl);
-//    virtual void _f_close (void* fhdl, bool is_dir);
-//    virtual bool _f_seek (void* fhdl, uint32_t pos);
-//    virtual uint32_t _f_position (void* fhdl);
-//    virtual uint32_t _f_size (void* fhdl);
-
     // Raw flash opperations, override to use an external flash chip
     virtual int _flash_read (lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size);
     virtual int _flash_prog (lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size);
@@ -92,14 +84,9 @@ class Adafruit_LittleFS
     virtual void _flash_erase_all();
     virtual int _flash_sync ();
 
-//    virtual LittleFilesystem::File _f_openNextFile (void* fhdl, char const* cwd, uint8_t mode);
-//    virtual void _f_rewindDirectory (void* fhdl);
   private:
     struct lfs_config _lfs_cfg;
     lfs_t _lfs;
-
-//    LittleFilesystem::File _open_file (char const *filepath, uint8_t mode);
-//    LittleFilesystem::File _open_dir (char const *filepath);
 
     static int _iflash_read (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size);
     static int _iflash_prog (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size);
