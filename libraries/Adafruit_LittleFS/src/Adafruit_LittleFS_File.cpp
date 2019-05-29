@@ -36,23 +36,17 @@ File::File (Adafruit_LittleFS &fs)
 {
   _fs = &fs;
   _is_dir = false;
-  _opened = false;
   _name[0] = 0;
   _dir_path = NULL;
 
-  varclr(&_dir);
-  varclr(&_file);
+  _dir = NULL;
+  _file = NULL;
 }
 
 File::File (char const *filename, uint8_t mode, Adafruit_LittleFS &fs)
  : File(fs)
 {
   this->open(filename, mode);
-}
-
-File::~File ()
-{
-  if ( _dir_path ) rtos_free(_dir_path);
 }
 
 bool File::_open_file (char const *filepath, uint8_t mode)
@@ -62,7 +56,10 @@ bool File::_open_file (char const *filepath, uint8_t mode)
 
   if ( flags )
   {
-    int rc = lfs_file_open(_fs->getFS(), &_file, filepath, flags);
+    _file = (lfs_file_t*) rtos_malloc(sizeof(lfs_file_t));
+    if (!_file) return false;
+
+    int rc = lfs_file_open(_fs->getFS(), _file, filepath, flags);
 
     if ( rc )
     {
@@ -72,9 +69,8 @@ bool File::_open_file (char const *filepath, uint8_t mode)
     }
 
     // move to end of file
-    if ( mode == FILE_WRITE ) lfs_file_seek(_fs->getFS(), &_file, 0, LFS_SEEK_END);
+    if ( mode == FILE_WRITE ) lfs_file_seek(_fs->getFS(), _file, 0, LFS_SEEK_END);
 
-    _opened = true;
     _is_dir = false;
   }
 
@@ -83,7 +79,10 @@ bool File::_open_file (char const *filepath, uint8_t mode)
 
 bool File::_open_dir (char const *filepath)
 {
-  int rc = lfs_dir_open(_fs->getFS(), &_dir, filepath);
+  _dir = (lfs_dir_t*) rtos_malloc(sizeof(lfs_dir_t));
+  if (!_dir) return false;
+
+  int rc = lfs_dir_open(_fs->getFS(), _dir, filepath);
 
   if ( rc )
   {
@@ -92,7 +91,6 @@ bool File::_open_dir (char const *filepath)
     return false;
   }
 
-  _opened = true;
   _is_dir = true;
 
   _dir_path = (char*) rtos_malloc(strlen(filepath) + 1);
@@ -106,7 +104,7 @@ bool File::open (char const *filepath, uint8_t mode)
   bool ret = false;
 
   // close if currently opened
-  if ( _opened ) close();
+  if ( (*this) ) close();
 
   struct lfs_info info;
   int rc = lfs_stat(_fs->getFS(), filepath, &info);
@@ -146,7 +144,7 @@ size_t File::write (uint8_t const *buf, size_t size)
 {
   VERIFY(!_is_dir, 0);
 
-  lfs_ssize_t wrcount = lfs_file_write(_fs->getFS(), &_file, buf, size);
+  lfs_ssize_t wrcount = lfs_file_write(_fs->getFS(), _file, buf, size);
   VERIFY(wrcount > 0, 0);
   return wrcount;
 }
@@ -161,7 +159,7 @@ int File::read (void)
 int File::read (void *buf, uint16_t nbyte)
 {
   VERIFY(!_is_dir, 0);
-  return lfs_file_read(_fs->getFS(), &_file, buf, nbyte);
+  return lfs_file_read(_fs->getFS(), _file, buf, nbyte);
 }
 
 int File::peek (void)
@@ -182,50 +180,52 @@ int File::available (void)
 bool File::seek (uint32_t pos)
 {
   VERIFY(!_is_dir, false);
-  return lfs_file_seek(_fs->getFS(), &_file, pos, LFS_SEEK_SET) >= 0;
+  return lfs_file_seek(_fs->getFS(), _file, pos, LFS_SEEK_SET) >= 0;
 }
 
 uint32_t File::position (void)
 {
   VERIFY(!_is_dir, 0);
-  return lfs_file_tell(_fs->getFS(), &_file);
+  return lfs_file_tell(_fs->getFS(), _file);
 }
 
 uint32_t File::size (void)
 {
   VERIFY(!_is_dir, 0);
-  return lfs_file_size(_fs->getFS(), &_file);
+  return lfs_file_size(_fs->getFS(), _file);
 }
 
 void File::flush (void)
 {
   VERIFY(!_is_dir,);
-  lfs_file_sync(_fs->getFS(), &_file);
+  lfs_file_sync(_fs->getFS(), _file);
 }
 
 void File::close (void)
 {
-  if ( _opened )
+  if ( (*this) )
   {
     if ( _is_dir )
     {
-      lfs_dir_close(_fs->getFS(), &_dir);
+      lfs_dir_close(_fs->getFS(), _dir);
+      rtos_free(_dir);
+      _dir = NULL;
+
+      if ( _dir_path ) rtos_free(_dir_path);
+      _dir_path = NULL;
     }
     else
     {
-      lfs_file_close(_fs->getFS(), &_file);
+      lfs_file_close(_fs->getFS(), _file);
+      rtos_free(_file);
+      _file = NULL;
     }
   }
-
-  _opened = false;
-
-  if ( _dir_path ) rtos_free(_dir_path);
-  _dir_path = NULL;
 }
 
 File::operator bool (void)
 {
-  return _opened;
+  return (_file != NULL) || (_dir != NULL);
 }
 
 char const* File::name (void)
@@ -252,7 +252,7 @@ File File::openNextFile (uint8_t mode)
   // skip "." and ".." entries
   do
   {
-    rc = lfs_dir_read(_fs->getFS(), &_dir, &info);
+    rc = lfs_dir_read(_fs->getFS(), _dir, &info);
   } while ( rc == 1 && (!strcmp(".", info.name) || !strcmp("..", info.name)) );
 
   if ( rc == 1 )
@@ -276,5 +276,5 @@ File File::openNextFile (uint8_t mode)
 
 void File::rewindDirectory (void)
 {
-  VERIFY_LFS(lfs_dir_rewind(_fs->getFS(), &_dir),);
+  VERIFY_LFS(lfs_dir_rewind(_fs->getFS(), _dir),);
 }

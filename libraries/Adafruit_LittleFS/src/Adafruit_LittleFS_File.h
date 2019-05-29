@@ -39,7 +39,6 @@ class File : public Stream
   public:
     File (Adafruit_LittleFS &fs);
     File (char const *filename, uint8_t mode, Adafruit_LittleFS &fs);
-    virtual ~File ();
 
     bool open (char const *filename, uint8_t mode);
 
@@ -77,11 +76,10 @@ class File : public Stream
     Adafruit_LittleFS* _fs;
 
     bool _is_dir;
-    bool _opened;
 
     union {
-        lfs_file_t _file;
-        lfs_dir_t  _dir;
+        lfs_file_t* _file;
+        lfs_dir_t*  _dir;
     };
 
     char* _dir_path;
