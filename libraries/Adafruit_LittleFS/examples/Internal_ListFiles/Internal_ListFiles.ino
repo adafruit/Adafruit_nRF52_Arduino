@@ -12,7 +12,7 @@
  any redistribution
 *********************************************************************/
 
-#include <bluefruit.h>
+//#include <bluefruit.h>
 #include <Adafruit_LittleFS.h>
 
 using namespace LittleFilesystem;
@@ -40,7 +40,7 @@ void setup()
 
   // Print prompt
   Serial.println();
-  Serial.println("Enter anything to print directory tree (again):");
+  Serial.println("Enter anything to print directory tree:");
 }
 
 // the loop function runs over and over again forever
@@ -55,7 +55,7 @@ void loop()
     
     // Print prompt
     Serial.println();
-    Serial.println("Enter anything to print directory tree (again):");
+    Serial.println("Enter anything to print directory tree:");
   }
 }
 
@@ -78,7 +78,7 @@ void printTreeDir(const char* cwd, uint8_t level)
   // File within folder
   File item(InternalFS);
 
-  // Loop through the directory
+  // Loop through the directory 
   while( (item = dir.openNextFile(FILE_READ)) )
   {
     // Indentation according to dir level
@@ -95,7 +95,12 @@ void printTreeDir(const char* cwd, uint8_t level)
       // High number of MAX_LEVEL can cause memory overflow
       if ( level < MAX_LEVEL )
       {
-        printTreeDir( item.path(), level+1 );
+        char dpath[strlen(cwd) + strlen(item.name()) + 2 ];
+        strcpy(dpath, cwd);
+        strcat(dpath, "/");
+        strcat(dpath, item.name());
+        
+        printTreeDir( dpath, level+1 );
       }
     }else
     {

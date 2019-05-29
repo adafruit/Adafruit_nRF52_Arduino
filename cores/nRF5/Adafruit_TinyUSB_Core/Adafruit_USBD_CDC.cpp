@@ -101,11 +101,8 @@ size_t Adafruit_USBD_CDC::write(const uint8_t *buffer, size_t size)
     remain -= wrcount;
     buffer += wrcount;
 
-    // Write FIFO is full, flush and re-try
-    if ( remain )
-    {
-      tud_cdc_write_flush();
-    }
+    // Write FIFO is full, run usb background to flush
+    if ( remain ) yield();
   }
 
   return size - remain;
