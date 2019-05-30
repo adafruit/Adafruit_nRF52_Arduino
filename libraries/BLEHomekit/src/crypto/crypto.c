@@ -13,13 +13,16 @@
 //#include <pstorage.h>
 //#include <app_scheduler.h>
 #include <nrf_soc.h>
-#include "Bluefruit_FileIO.h"
+#include <Adafruit_LittleFS.h>
+#include <InternalFileSystem.h>
 #include "utility/debug.h"
 
 #include "rtos.h"
 #include "utility/AdaCallback.h"
 
 #include "crypto.h"
+
+using namespace Adafruit_LittleFS_Namespace;
 
 #define CRYPTO_INSTANCE  2   // Change this to force key regeneration on next run
 
@@ -108,7 +111,7 @@ static uint8_t crypto_loadKeys(void)
 
   uint32_t keylen = sizeof(keys);
 
-  File file(CRYPTO_KEYFILE, FILE_READ, InternalFS);
+  File file(CRYPTO_KEYFILE, FILE_O_READ, InternalFS);
   VERIFY(file, 0);
 
   keylen = file.read(&keys, keylen);
@@ -162,7 +165,7 @@ void crypto_storeKeys(void)
     keys.valid0 = 0x55;
     keys.valid1 = 0xAA;
 
-    File file(CRYPTO_KEYFILE, FILE_WRITE, InternalFS);
+    File file(CRYPTO_KEYFILE, FILE_O_WRITE, InternalFS);
     VERIFY(file,);
 
     file.write(&keys, sizeof(keys));

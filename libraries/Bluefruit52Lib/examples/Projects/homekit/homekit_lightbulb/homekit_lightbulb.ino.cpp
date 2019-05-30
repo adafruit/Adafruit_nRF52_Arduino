@@ -124,7 +124,7 @@ void setup()
   Bluefruit.setName("Bluefruit52");
 
   //InternalFS.remove(CRYPTO_KEYFILE);
-  //File file(CRYPTO_KEYFILE, FILE_WRITE, InternalFS);
+  //File file(CRYPTO_KEYFILE, FILE_O_WRITE, InternalFS);
   //file.write(&test_keys, sizeof(test_keys));
   //file.close();
   

@@ -104,7 +104,7 @@ static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_keys_t* bk
   // delete if file already exists
   if ( InternalFS.exists(filename) ) InternalFS.remove(filename);
 
-  File file(filename, FILE_WRITE, InternalFS);
+  File file(filename, FILE_O_WRITE, InternalFS);
   VERIFY(file,);
 
   //------------- save keys -------------//
@@ -141,7 +141,7 @@ bool bond_load_keys(uint8_t role, uint16_t ediv, bond_keys_t* bkeys)
   char filename[BOND_FNAME_LEN];
   get_fname(filename, role, ediv);
 
-  File file(filename, FILE_READ, InternalFS);
+  File file(filename, FILE_O_READ, InternalFS);
   VERIFY(file);
 
   int keylen = file.read();
@@ -171,7 +171,7 @@ static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
   char filename[BOND_FNAME_LEN];
   get_fname(filename, role, ediv);
 
-  File file(filename, FILE_WRITE, InternalFS);
+  File file(filename, FILE_O_WRITE, InternalFS);
   VERIFY(file,);
 
   file.seek(0); // write mode start at the end, seek to beginning
@@ -204,7 +204,7 @@ bool bond_load_cccd(uint8_t role, uint16_t conn_hdl, uint16_t ediv)
     char filename[BOND_FNAME_LEN];
     get_fname(filename, role, ediv);
 
-    File file(filename, FILE_READ, InternalFS);
+    File file(filename, FILE_O_READ, InternalFS);
 
     if ( file )
     {
@@ -241,10 +241,10 @@ void bond_print_list(uint8_t role)
 {
   char const * dpath = (role == BLE_GAP_ROLE_PERIPH ? BOND_DIR_PRPH : BOND_DIR_CNTR);
 
-  File dir(dpath, FILE_READ, InternalFS);
+  File dir(dpath, FILE_O_READ, InternalFS);
   File file(InternalFS);
 
-  while ( (file = dir.openNextFile(FILE_READ)) )
+  while ( (file = dir.openNextFile(FILE_O_READ)) )
   {
     if ( !file.isDirectory() && bdata_skip_field(&file) ) // skip key
     {
@@ -272,10 +272,10 @@ bool bond_find_cntr(ble_gap_addr_t const * addr, bond_keys_t* bkeys)
 {
   bool found = false;
 
-  File dir(BOND_DIR_CNTR, FILE_READ, InternalFS);
+  File dir(BOND_DIR_CNTR, FILE_O_READ, InternalFS);
   File file(InternalFS);
 
-  while ( (file = dir.openNextFile(FILE_READ)) )
+  while ( (file = dir.openNextFile(FILE_O_READ)) )
   {
     // Read bond data of each stored file
     int keylen = file.read();

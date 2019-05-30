@@ -44,7 +44,7 @@ void setup()
   // Initialize Internal File System
   InternalFS.begin();
 
-  file.open(FILENAME, FILE_READ);
+  file.open(FILENAME, FILE_O_READ);
 
   // file existed
   if ( file )
@@ -62,7 +62,7 @@ void setup()
   {
     Serial.print("Open " FILENAME " file to write ... ");
 
-    if( file.open(FILENAME, FILE_WRITE) )
+    if( file.open(FILENAME, FILE_O_WRITE) )
     {
       Serial.println("OK");
       file.write(CONTENTS, strlen(CONTENTS));

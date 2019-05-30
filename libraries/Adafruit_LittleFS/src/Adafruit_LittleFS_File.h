@@ -25,14 +25,18 @@
 #ifndef ADAFRUIT_LITTLEFS_FILE_H_
 #define ADAFRUIT_LITTLEFS_FILE_H_
 
-#define FILE_READ 0
-#define FILE_WRITE 1
-
 // Forward declaration
 class Adafruit_LittleFS;
 
 namespace Adafruit_LittleFS_Namespace
 {
+
+// avoid conflict with other FileSystem FILE_READ/FILE_WRITE
+enum
+{
+  FILE_O_READ = 0,
+  FILE_O_WRITE = 1,
+};
 
 class File : public Stream
 {
@@ -69,7 +73,7 @@ class File : public Stream
     char const* name (void);
 
     bool isDirectory (void);
-    File openNextFile (uint8_t mode = FILE_READ);
+    File openNextFile (uint8_t mode = FILE_O_READ);
     void rewindDirectory (void);
 
   private:

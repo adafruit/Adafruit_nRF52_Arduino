@@ -51,8 +51,8 @@ File::File (char const *filename, uint8_t mode, Adafruit_LittleFS &fs)
 
 bool File::_open_file (char const *filepath, uint8_t mode)
 {
-  int flags = (mode == FILE_READ) ? LFS_O_RDONLY :
-              (mode == FILE_WRITE) ? (LFS_O_RDWR | LFS_O_CREAT) : 0;
+  int flags = (mode == FILE_O_READ) ? LFS_O_RDONLY :
+              (mode == FILE_O_WRITE) ? (LFS_O_RDWR | LFS_O_CREAT) : 0;
 
   if ( flags )
   {
@@ -69,7 +69,7 @@ bool File::_open_file (char const *filepath, uint8_t mode)
     }
 
     // move to end of file
-    if ( mode == FILE_WRITE ) lfs_file_seek(_fs->getFS(), _file, 0, LFS_SEEK_END);
+    if ( mode == FILE_O_WRITE ) lfs_file_seek(_fs->getFS(), _file, 0, LFS_SEEK_END);
 
     _is_dir = false;
   }
@@ -116,8 +116,8 @@ bool File::open (char const *filepath, uint8_t mode)
   }
   else if ( LFS_ERR_NOENT == rc )
   {
-    // file not existed, only proceed with FILE_WRITE mode
-    if ( mode == FILE_WRITE ) ret = _open_file(filepath, mode);
+    // file not existed, only proceed with FILE_O_WRITE mode
+    if ( mode == FILE_O_WRITE ) ret = _open_file(filepath, mode);
   }
   else
   {
