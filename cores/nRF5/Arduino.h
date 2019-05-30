@@ -66,6 +66,7 @@ void suspendLoop(void);
 #include "utility/debug.h"
 #include "utility/utilities.h"
 #include "utility/AdaCallback.h"
+#include "flash/flash_nrf5x.h"
 
 #ifdef USE_TINYUSB
   #include "Adafruit_TinyUSB_Core.h"

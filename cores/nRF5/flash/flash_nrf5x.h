@@ -29,12 +29,21 @@
 
 #define FLASH_NRF52_PAGE_SIZE   4096
 
+#ifdef NRF52840_XXAA
+#define LFS_FLASH_ADDR        0xED000
+#else
+#define LFS_FLASH_ADDR        0x6D000
+#endif
+
+#define LFS_FLASH_TOTAL_SIZE  (7*FLASH_NRF52_PAGE_SIZE)
+
 #ifdef __cplusplus
  extern "C" {
 #endif
 
 void flash_nrf5x_flush (void);
 bool flash_nrf5x_erase(uint32_t addr);
+bool flash_nrf5x_erase_all(void);
 
 uint32_t flash_nrf5x_write (uint32_t dst, void const * src, uint32_t len);
 uint32_t flash_nrf5x_read (void* dst, uint32_t src, uint32_t len);

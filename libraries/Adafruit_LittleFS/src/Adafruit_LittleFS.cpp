@@ -30,54 +30,10 @@
 
 using namespace Adafruit_LittleFS_Namespace;
 
-#ifdef NRF52840_XXAA
-#define LFS_FLASH_ADDR        0xED000
-#else
-#define LFS_FLASH_ADDR        0x6D000
-#endif
-
-#define LFS_FLASH_TOTAL_SIZE  (7*FLASH_NRF52_PAGE_SIZE)
 #define LFS_BLOCK_SIZE        128
 
 //--------------------------------------------------------------------+
 // LFS Disk IO
-//--------------------------------------------------------------------+
-
-#if CFG_DEBUG
-
-#define VERIFY_LFS(...)       _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, dbg_strerr_lfs)
-#define PRINT_LFS_ERR(_err)   VERIFY_MESS(_err, dbg_strerr_lfs)
-
-const char* dbg_strerr_lfs (int32_t err)
-{
-  switch ( err )
-  {
-    case LFS_ERR_OK       : return "LFS_ERR_OK";
-    case LFS_ERR_IO       : return "LFS_ERR_IO";
-    case LFS_ERR_CORRUPT  : return "LFS_ERR_CORRUPT";
-    case LFS_ERR_NOENT    : return "LFS_ERR_NOENT";
-    case LFS_ERR_EXIST    : return "LFS_ERR_EXIST";
-    case LFS_ERR_NOTDIR   : return "LFS_ERR_NOTDIR";
-    case LFS_ERR_ISDIR    : return "LFS_ERR_ISDIR";
-    case LFS_ERR_NOTEMPTY : return "LFS_ERR_NOTEMPTY";
-    case LFS_ERR_BADF     : return "LFS_ERR_BADF";
-    case LFS_ERR_INVAL    : return "LFS_ERR_INVAL";
-    case LFS_ERR_NOSPC    : return "LFS_ERR_NOSPC";
-    case LFS_ERR_NOMEM    : return "LFS_ERR_NOMEM";
-
-    default:
-      static char errcode[10];
-      sprintf(errcode, "%d", err);
-      return errcode;
-  }
-
-  return NULL;
-}
-
-#endif
-
-//--------------------------------------------------------------------+
-// flash API
 //--------------------------------------------------------------------+
 
 static inline uint32_t lba2addr(uint32_t block)
@@ -95,7 +51,7 @@ static int _internal_flash_read (const struct lfs_config *c, lfs_block_t block, 
    return 0;
 }
 
- // Program a region in a block. The block must have previously
+// Program a region in a block. The block must have previously
 // been erased. Negative error codes are propogated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
 static int _internal_flash_prog (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer,
@@ -139,9 +95,7 @@ static int _internal_flash_sync (const struct lfs_config *c)
   return 0;
 }
 
-//--------------------------------------------------------------------+
-// Implementation
-//--------------------------------------------------------------------+
+
 static struct lfs_config _InternalFSConfig =
 {
   .context = NULL,
@@ -165,6 +119,11 @@ static struct lfs_config _InternalFSConfig =
 
 Adafruit_LittleFS InternalFS(&_InternalFSConfig);
 
+
+//--------------------------------------------------------------------+
+// Implementation
+//--------------------------------------------------------------------+
+
 Adafruit_LittleFS::Adafruit_LittleFS (void)
   : Adafruit_LittleFS(NULL)
 {
@@ -172,11 +131,9 @@ Adafruit_LittleFS::Adafruit_LittleFS (void)
 }
 
 Adafruit_LittleFS::Adafruit_LittleFS (struct lfs_config* cfg)
-
 {
+  varclr(&_lfs);
   _lfs_cfg = cfg;
-
-  _begun = false;
   _mounted = false;
 }
 
@@ -185,65 +142,57 @@ Adafruit_LittleFS::~Adafruit_LittleFS ()
 
 }
 
+// Initialize and mount the file system
+// Return true if mounted successfully else probably corrupted.
+// User should format the disk and try again
 bool Adafruit_LittleFS::begin (struct lfs_config * cfg)
 {
-  if ( _begun ) return true;
+  if ( _mounted ) return true;
 
   if (cfg) _lfs_cfg = cfg;
   if (!_lfs_cfg) return false;
 
-  _begun = true;
-
-  int err = lfs_mount(&_lfs, _lfs_cfg);
-
-  // reformat if we can't mount the filesystem
-  if ( LFS_ERR_CORRUPT == err )
-  {
-    LOG_LV1("IFLASH", "Format internal file system");
-    this->format(false);
-  } else {
-    _mounted = true;
-  }
-
-  return true;
-}
-
-void Adafruit_LittleFS::_flash_erase_all()
-{
-  for ( uint32_t addr = LFS_FLASH_ADDR; addr < LFS_FLASH_ADDR + LFS_FLASH_TOTAL_SIZE; addr += FLASH_NRF52_PAGE_SIZE )
-  {
-    flash_nrf5x_erase(addr);
-  }
-}
-
-
-bool Adafruit_LittleFS::format (bool eraseall)
-{
-  if ( eraseall ) {
-    _flash_erase_all();
-  }
-  if(_mounted) {
-    VERIFY_LFS(lfs_unmount(&_lfs), false);
-  }
-  VERIFY_LFS(lfs_format(&_lfs, _lfs_cfg), false);
   VERIFY_LFS(lfs_mount(&_lfs, _lfs_cfg), false);
-
   _mounted = true;
 
   return true;
 }
 
+// Tear down and unmount file system
+void Adafruit_LittleFS::end(void)
+{
+  if (!_mounted) return;
+
+  _mounted = false;
+  VERIFY_LFS(lfs_unmount(&_lfs), );
+}
+
+bool Adafruit_LittleFS::format (void)
+{
+  // if already mounted: umount -> format -> remount
+  if(_mounted) VERIFY_LFS(lfs_unmount(&_lfs), false);
+
+  VERIFY_LFS(lfs_format(&_lfs, _lfs_cfg), false);
+
+  if (_mounted) VERIFY_LFS(lfs_mount(&_lfs, _lfs_cfg), false);
+
+  return true;
+}
+
+// Open a file or folder
 Adafruit_LittleFS_Namespace::File Adafruit_LittleFS::open (char const *filepath, uint8_t mode)
 {
   return Adafruit_LittleFS_Namespace::File(filepath, mode, *this);
 }
 
+// Check if file or folder exists
 bool Adafruit_LittleFS::exists (char const *filepath)
 {
   struct lfs_info info;
   return 0 == lfs_stat(&_lfs, filepath, &info);
 }
 
+// Create a directory, create intermediate parent if needed
 bool Adafruit_LittleFS::mkdir (char const *filepath)
 {
   const char* slash = filepath;
@@ -275,18 +224,21 @@ bool Adafruit_LittleFS::mkdir (char const *filepath)
   return true;
 }
 
+// Remove a file
 bool Adafruit_LittleFS::remove (char const *filepath)
 {
   VERIFY_LFS(lfs_remove(&_lfs, filepath), false);
   return true;
 }
 
+// Remove a folder
 bool Adafruit_LittleFS::rmdir (char const *filepath)
 {
   VERIFY_LFS(lfs_remove(&_lfs, filepath));
   return true;
 }
 
+// Remove a folder recursively
 bool Adafruit_LittleFS::rmdir_r (char const *filepath)
 {
   /* adafruit: lfs is modified to remove non-empty folder,
@@ -295,3 +247,34 @@ bool Adafruit_LittleFS::rmdir_r (char const *filepath)
   VERIFY_LFS(lfs_remove(&_lfs, filepath));
   return true;
 }
+
+//------------- Debug -------------//
+#if CFG_DEBUG
+
+const char* dbg_strerr_lfs (int32_t err)
+{
+  switch ( err )
+  {
+    case LFS_ERR_OK       : return "LFS_ERR_OK";
+    case LFS_ERR_IO       : return "LFS_ERR_IO";
+    case LFS_ERR_CORRUPT  : return "LFS_ERR_CORRUPT";
+    case LFS_ERR_NOENT    : return "LFS_ERR_NOENT";
+    case LFS_ERR_EXIST    : return "LFS_ERR_EXIST";
+    case LFS_ERR_NOTDIR   : return "LFS_ERR_NOTDIR";
+    case LFS_ERR_ISDIR    : return "LFS_ERR_ISDIR";
+    case LFS_ERR_NOTEMPTY : return "LFS_ERR_NOTEMPTY";
+    case LFS_ERR_BADF     : return "LFS_ERR_BADF";
+    case LFS_ERR_INVAL    : return "LFS_ERR_INVAL";
+    case LFS_ERR_NOSPC    : return "LFS_ERR_NOSPC";
+    case LFS_ERR_NOMEM    : return "LFS_ERR_NOMEM";
+
+    default:
+      static char errcode[10];
+      sprintf(errcode, "%d", err);
+      return errcode;
+  }
+
+  return NULL;
+}
+
+#endif

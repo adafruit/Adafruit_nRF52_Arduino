@@ -35,11 +35,15 @@ void setup()
   // Initialize Internal File System
   InternalFS.begin();
 
-  Serial.print("Formating ...");
+  Serial.print("Formating ... ");
+  delay(1); // for message appear on monitor
   
-  // Format without erase
-  // Pass true for full external flash erasing (take time)
-  InternalFS.format(true);
+  // Erase all sectors of internal flash region for Filesystem.
+  // Low level format
+  flash_nrf5x_erase_all();
+
+  // Format 
+  InternalFS.format();
 
   Serial.println("Done");
 }

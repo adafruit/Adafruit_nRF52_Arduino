@@ -70,11 +70,11 @@ void setup()
       Serial.println("Failed!");
     }
   }
+
+  Serial.println("Done");
 }
 
 // the loop function runs over and over again forever
 void loop() 
 {
-  digitalToggle(LED_RED);
-  delay(1000);
 }

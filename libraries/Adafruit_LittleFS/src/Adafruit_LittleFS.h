@@ -40,7 +40,8 @@ class Adafruit_LittleFS
     Adafruit_LittleFS (struct lfs_config* cfg);
     virtual ~Adafruit_LittleFS ();
 
-    bool begin (struct lfs_config * cfg = NULL);
+    bool begin(struct lfs_config * cfg = NULL);
+    void end(void);
 
     // Open the specified file/directory with the supplied mode (e.g. read or
     // write, etc). Returns a File object for interacting with the file.
@@ -63,8 +64,8 @@ class Adafruit_LittleFS
     // Delete a folder (recursively)
     bool rmdir_r (char const *filepath);
 
-    // format whole file system
-    bool format (bool eraseall);
+    // format file system
+    bool format (void);
 
     lfs_t* getFS(void)
     {
@@ -72,10 +73,7 @@ class Adafruit_LittleFS
     }
 
   protected:
-    bool _begun;
     bool _mounted;
-
-    virtual void _flash_erase_all();
 
   private:
     struct lfs_config* _lfs_cfg;

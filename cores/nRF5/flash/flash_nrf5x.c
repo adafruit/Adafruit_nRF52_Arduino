@@ -82,6 +82,16 @@ bool flash_nrf5x_erase(uint32_t addr)
   return fal_erase(addr);
 }
 
+bool flash_nrf5x_erase_all(void)
+{
+  for ( uint32_t addr = LFS_FLASH_ADDR; addr < LFS_FLASH_ADDR + LFS_FLASH_TOTAL_SIZE; addr += FLASH_NRF52_PAGE_SIZE )
+  {
+    VERIFY( flash_nrf5x_erase(addr) );
+  }
+
+  return true;
+}
+
 //--------------------------------------------------------------------+
 // HAL for caching
 //--------------------------------------------------------------------+
