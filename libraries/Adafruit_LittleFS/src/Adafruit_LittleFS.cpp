@@ -76,35 +76,105 @@ const char* dbg_strerr_lfs (int32_t err)
 
 #endif
 
+//--------------------------------------------------------------------+
+// flash API
+//--------------------------------------------------------------------+
+
 static inline uint32_t lba2addr(uint32_t block)
 {
   return ((uint32_t) LFS_FLASH_ADDR) + block * LFS_BLOCK_SIZE;
 }
 
+static int _internal_flash_read (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
+{
+  (void) c;
+
+   uint32_t addr = lba2addr(block) + off;
+  flash_nrf5x_read(buffer, addr, size);
+
+   return 0;
+}
+
+ // Program a region in a block. The block must have previously
+// been erased. Negative error codes are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int _internal_flash_prog (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer,
+                         lfs_size_t size)
+{
+  (void) c;
+
+   uint32_t addr = lba2addr(block) + off;
+  flash_nrf5x_write(addr, buffer, size);
+
+   return 0;
+}
+
+// Erase a block. A block must be erased before being programmed.
+// The state of an erased block is undefined. Negative error codes
+// are propogated to the user.
+// May return LFS_ERR_CORRUPT if the block should be considered bad.
+static int _internal_flash_erase (const struct lfs_config *c, lfs_block_t block)
+{
+  (void) c;
+
+   uint32_t addr = lba2addr(block);
+
+   // implement as write 0xff to whole block address
+  for(int i=0; i <LFS_BLOCK_SIZE; i++)
+  {
+    flash_nrf5x_write8(addr + i, 0xFF);
+  }
+
+   // flash_nrf5x_flush();
+
+   return 0;
+}
+
+// Sync the state of the underlying block device. Negative error codes
+// are propogated to the user.
+static int _internal_flash_sync (const struct lfs_config *c)
+{
+  (void) c;
+  flash_nrf5x_flush();
+  return 0;
+}
+
 //--------------------------------------------------------------------+
 // Implementation
 //--------------------------------------------------------------------+
-Adafruit_LittleFS InternalFS;
-
-Adafruit_LittleFS::Adafruit_LittleFS (void) :
-  Adafruit_LittleFS( LFS_BLOCK_SIZE, LFS_BLOCK_SIZE, LFS_BLOCK_SIZE, LFS_FLASH_TOTAL_SIZE / LFS_BLOCK_SIZE, 128)
+static struct lfs_config _InternalFSConfig =
 {
+  .context = NULL,
+
+  .read = _internal_flash_read,
+  .prog = _internal_flash_prog,
+  .erase = _internal_flash_erase,
+  .sync = _internal_flash_sync,
+
+  .read_size = LFS_BLOCK_SIZE,
+  .prog_size = LFS_BLOCK_SIZE,
+  .block_size = LFS_BLOCK_SIZE,
+  .block_count = LFS_FLASH_TOTAL_SIZE / LFS_BLOCK_SIZE,
+  .lookahead = 128,
+
+  .read_buffer = NULL,
+  .prog_buffer = NULL,
+  .lookahead_buffer = NULL,
+  .file_buffer = NULL
+};
+
+Adafruit_LittleFS InternalFS(&_InternalFSConfig);
+
+Adafruit_LittleFS::Adafruit_LittleFS (void)
+  : Adafruit_LittleFS(NULL)
+{
+
 }
 
-Adafruit_LittleFS::Adafruit_LittleFS (uint32_t read_size, uint32_t prog_size, uint32_t block_size, uint32_t block_count, uint32_t lookahead)
-{
-  varclr(&_lfs_cfg);
-  _lfs_cfg.context = this;
-  _lfs_cfg.read = _iflash_read;
-  _lfs_cfg.prog = _iflash_prog;
-  _lfs_cfg.erase = _iflash_erase;
-  _lfs_cfg.sync = _iflash_sync;
+Adafruit_LittleFS::Adafruit_LittleFS (struct lfs_config* cfg)
 
-  _lfs_cfg.read_size = read_size;
-  _lfs_cfg.prog_size = prog_size;
-  _lfs_cfg.block_size = block_size;
-  _lfs_cfg.block_count = block_count;
-  _lfs_cfg.lookahead = lookahead;
+{
+  _lfs_cfg = cfg;
 
   _begun = false;
   _mounted = false;
@@ -115,12 +185,16 @@ Adafruit_LittleFS::~Adafruit_LittleFS ()
 
 }
 
-bool Adafruit_LittleFS::begin (void)
+bool Adafruit_LittleFS::begin (struct lfs_config * cfg)
 {
   if ( _begun ) return true;
+
+  if (cfg) _lfs_cfg = cfg;
+  if (!_lfs_cfg) return false;
+
   _begun = true;
 
-  int err = lfs_mount(&_lfs, &_lfs_cfg);
+  int err = lfs_mount(&_lfs, _lfs_cfg);
 
   // reformat if we can't mount the filesystem
   if ( LFS_ERR_CORRUPT == err )
@@ -134,6 +208,15 @@ bool Adafruit_LittleFS::begin (void)
   return true;
 }
 
+void Adafruit_LittleFS::_flash_erase_all()
+{
+  for ( uint32_t addr = LFS_FLASH_ADDR; addr < LFS_FLASH_ADDR + LFS_FLASH_TOTAL_SIZE; addr += FLASH_NRF52_PAGE_SIZE )
+  {
+    flash_nrf5x_erase(addr);
+  }
+}
+
+
 bool Adafruit_LittleFS::format (bool eraseall)
 {
   if ( eraseall ) {
@@ -142,8 +225,8 @@ bool Adafruit_LittleFS::format (bool eraseall)
   if(_mounted) {
     VERIFY_LFS(lfs_unmount(&_lfs), false);
   }
-  VERIFY_LFS(lfs_format(&_lfs, &_lfs_cfg), false);
-  VERIFY_LFS(lfs_mount(&_lfs, &_lfs_cfg), false);
+  VERIFY_LFS(lfs_format(&_lfs, _lfs_cfg), false);
+  VERIFY_LFS(lfs_mount(&_lfs, _lfs_cfg), false);
 
   _mounted = true;
 
@@ -211,93 +294,4 @@ bool Adafruit_LittleFS::rmdir_r (char const *filepath)
    https://github.com/ARMmbed/littlefs/issues/43 */
   VERIFY_LFS(lfs_remove(&_lfs, filepath));
   return true;
-}
-
-//--------------------------------------------------------------------+
-// flash API
-//--------------------------------------------------------------------+
-
-int Adafruit_LittleFS::_flash_read (lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
-{
-  uint32_t addr = lba2addr(block) + off;
-  flash_nrf5x_read(buffer, addr, size);
-
-  return 0;
-}
-
-// Program a region in a block. The block must have previously
-// been erased. Negative error codes are propogated to the user.
-// May return LFS_ERR_CORRUPT if the block should be considered bad.
-int Adafruit_LittleFS::_flash_prog (lfs_block_t block, lfs_off_t off, const void *buffer,
-                         lfs_size_t size)
-{
-  uint32_t addr = lba2addr(block) + off;
-  flash_nrf5x_write(addr, buffer, size);
-
-  return 0;
-}
-
-// Erase a block. A block must be erased before being programmed.
-// The state of an erased block is undefined. Negative error codes
-// are propogated to the user.
-// May return LFS_ERR_CORRUPT if the block should be considered bad.
-int Adafruit_LittleFS::_flash_erase (lfs_block_t block)
-{
-  uint32_t addr = lba2addr(block);
-
-  // implement as write 0xff to whole block address
-  for(int i=0; i <LFS_BLOCK_SIZE; i++)
-  {
-    flash_nrf5x_write8(addr + i, 0xFF);
-  }
-
-  // flash_nrf5x_flush();
-
-  return 0;
-}
-
-void Adafruit_LittleFS::_flash_erase_all()
-{
-  for ( uint32_t addr = LFS_FLASH_ADDR; addr < LFS_FLASH_ADDR + LFS_FLASH_TOTAL_SIZE; addr += FLASH_NRF52_PAGE_SIZE )
-  {
-    flash_nrf5x_erase(addr);
-  }
-}
-
-// Sync the state of the underlying block device. Negative error codes
-// are propogated to the user.
-int Adafruit_LittleFS::_flash_sync ()
-{
-  flash_nrf5x_flush();
-  return 0;
-}
-
-int Adafruit_LittleFS::_iflash_read (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
-{
-  return ((Adafruit_LittleFS *)c->context)->_flash_read(block, off, buffer, size);
-}
-
-// Program a region in a block. The block must have previously
-// been erased. Negative error codes are propogated to the user.
-// May return LFS_ERR_CORRUPT if the block should be considered bad.
-int Adafruit_LittleFS::_iflash_prog (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer,
-                         lfs_size_t size)
-{
-  return ((Adafruit_LittleFS *)c->context)->_flash_prog(block, off, buffer, size);
-}
-
-// Erase a block. A block must be erased before being programmed.
-// The state of an erased block is undefined. Negative error codes
-// are propogated to the user.
-// May return LFS_ERR_CORRUPT if the block should be considered bad.
-int Adafruit_LittleFS::_iflash_erase (const struct lfs_config *c, lfs_block_t block)
-{
-  return ((Adafruit_LittleFS *)c->context)->_flash_erase(block);
-}
-
-// Sync the state of the underlying block device. Negative error codes
-// are propogated to the user.
-int Adafruit_LittleFS::_iflash_sync (const struct lfs_config *c)
-{
-  return ((Adafruit_LittleFS *)c->context)->_flash_sync();
 }

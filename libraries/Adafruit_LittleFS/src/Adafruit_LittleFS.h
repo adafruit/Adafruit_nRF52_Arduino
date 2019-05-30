@@ -37,9 +37,10 @@ class Adafruit_LittleFS
 {
   public:
     Adafruit_LittleFS (void);
+    Adafruit_LittleFS (struct lfs_config* cfg);
     virtual ~Adafruit_LittleFS ();
 
-    bool begin (void);
+    bool begin (struct lfs_config * cfg = NULL);
 
     // Open the specified file/directory with the supplied mode (e.g. read or
     // write, etc). Returns a File object for interacting with the file.
@@ -74,24 +75,11 @@ class Adafruit_LittleFS
     bool _begun;
     bool _mounted;
 
-    Adafruit_LittleFS (uint32_t read_size, uint32_t prog_size, uint32_t block_size, uint32_t block_count, uint32_t lookahead);
-    
-    // Internal API: shouldn't be used by Arduino sketch
-    // Raw flash opperations, override to use an external flash chip
-    virtual int _flash_read (lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size);
-    virtual int _flash_prog (lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size);
-    virtual int _flash_erase (lfs_block_t block);
     virtual void _flash_erase_all();
-    virtual int _flash_sync ();
 
   private:
-    struct lfs_config _lfs_cfg;
+    struct lfs_config* _lfs_cfg;
     lfs_t _lfs;
-
-    static int _iflash_read (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size);
-    static int _iflash_prog (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size);
-    static int _iflash_erase (const struct lfs_config *c, lfs_block_t block);
-    static int _iflash_sync (const struct lfs_config *c);
 };
 
 extern Adafruit_LittleFS InternalFS;
