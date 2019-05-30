@@ -74,13 +74,9 @@ class Adafruit_LittleFS
 
   protected:
     bool _mounted;
-
-  private:
     struct lfs_config* _lfs_cfg;
     lfs_t _lfs;
 };
-
-extern Adafruit_LittleFS InternalFS;
 
 #if !CFG_DEBUG
   #define VERIFY_LFS(...)       _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, NULL)

@@ -35,7 +35,9 @@
 /**************************************************************************/
 
 #include <Arduino.h>
-#include "Adafruit_LittleFS.h"
+#include <Adafruit_LittleFS.h>
+#include <InternalFileSystem.h>
+
 #include "bonding.h"
 #include "bluefruit.h"
 

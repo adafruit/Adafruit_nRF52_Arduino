@@ -13,6 +13,7 @@
 *********************************************************************/
 
 #include <Adafruit_LittleFS.h>
+#include <InternalFileSystem.h>
 
 using namespace Adafruit_LittleFS_Namespace;
 

@@ -13,6 +13,7 @@
 *********************************************************************/
 
 #include <Adafruit_LittleFS.h>
+#include <InternalFileSystem.h>
 
 using namespace Adafruit_LittleFS_Namespace;
 
@@ -37,10 +38,6 @@ void setup()
 
   Serial.print("Formating ... ");
   delay(1); // for message appear on monitor
-  
-  // Erase all sectors of internal flash region for Filesystem.
-  // Low level format
-  flash_nrf5x_erase_all();
 
   // Format 
   InternalFS.format();
