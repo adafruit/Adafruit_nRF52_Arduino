@@ -22,7 +22,6 @@
 #include "wiring_constants.h"
 #include "wiring_digital.h"
 #include "nrf.h"
-#include "flash/flash_qspi.h"
 
 #define _PINNUM(port, pin)     ((port)*32 + (pin))
 
@@ -88,10 +87,5 @@ void initVariant()
 
   pinMode(PIN_LED2, OUTPUT);
   ledOff(PIN_LED2);
-
-#if 0 // disable QSPI flash for now
-  // Init External Flash
-  flash_qspi_init();
-#endif
 }
 
