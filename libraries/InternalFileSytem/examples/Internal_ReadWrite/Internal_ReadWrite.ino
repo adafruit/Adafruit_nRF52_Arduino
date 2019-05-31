@@ -12,13 +12,15 @@
  any redistribution
 *********************************************************************/
 
-#include <Bluefruit_FileIO.h>
+#include <Adafruit_LittleFS.h>
+#include <InternalFileSystem.h>
+
+using namespace Adafruit_LittleFS_Namespace;
 
 #define FILENAME    "/adafruit.txt"
+#define CONTENTS    "Adafruit Little File System test file contents"
 
-#define CONTENTS    "Bluefruit Feather52's file contents"
-
-File file (ExternalFS);
+File file(InternalFS);
 
 // the setup function runs once when you press reset or power the board
 void setup() 
@@ -26,7 +28,7 @@ void setup()
   Serial.begin(115200);
   while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
-  Serial.println("External Read Write File Example");
+  Serial.println("Internal Read Write File Example");
   Serial.println();
 
   // Wait for user input to run. Otherwise the code will 
@@ -40,9 +42,9 @@ void setup()
   Serial.println();
 
   // Initialize Internal File System
-  ExternalFS.begin();
+  InternalFS.begin();
 
-  file.open(FILENAME, FILE_READ);
+  file.open(FILENAME, FILE_O_READ);
 
   // file existed
   if ( file )
@@ -60,7 +62,7 @@ void setup()
   {
     Serial.print("Open " FILENAME " file to write ... ");
 
-    if( file.open(FILENAME, FILE_WRITE) )
+    if( file.open(FILENAME, FILE_O_WRITE) )
     {
       Serial.println("OK");
       file.write(CONTENTS, strlen(CONTENTS));
@@ -70,10 +72,11 @@ void setup()
       Serial.println("Failed!");
     }
   }
+
+  Serial.println("Done");
 }
 
 // the loop function runs over and over again forever
 void loop() 
 {
-  // nothing to do
 }

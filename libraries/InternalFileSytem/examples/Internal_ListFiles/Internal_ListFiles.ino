@@ -12,8 +12,10 @@
  any redistribution
 *********************************************************************/
 
-#include <bluefruit.h>
-#include <Bluefruit_FileIO.h>
+#include <Adafruit_LittleFS.h>
+#include <InternalFileSystem.h>
+
+using namespace Adafruit_LittleFS_Namespace;
 
 /* This example  print out Internal Flash contents up to
  * MAX_LEVEL level of directories (including root)
@@ -38,7 +40,7 @@ void setup()
 
   // Print prompt
   Serial.println();
-  Serial.println("Enter anything to print directory tree (again):");
+  Serial.println("Enter anything to print directory tree:");
 }
 
 // the loop function runs over and over again forever
@@ -53,7 +55,7 @@ void loop()
     
     // Print prompt
     Serial.println();
-    Serial.println("Enter anything to print directory tree (again):");
+    Serial.println("Enter anything to print directory tree:");
   }
 }
 
@@ -68,7 +70,7 @@ void loop()
 void printTreeDir(const char* cwd, uint8_t level)
 {
   // Open the input folder
-  File dir(cwd, FILE_READ, InternalFS);
+  File dir(cwd, FILE_O_READ, InternalFS);
 
   // Print root
   if (level == 0) Serial.println("root");
@@ -76,8 +78,8 @@ void printTreeDir(const char* cwd, uint8_t level)
   // File within folder
   File item(InternalFS);
 
-  // Loop through the directory
-  while( (item = dir.openNextFile(FILE_READ)) )
+  // Loop through the directory 
+  while( (item = dir.openNextFile(FILE_O_READ)) )
   {
     // Indentation according to dir level
     for(int i=0; i<level; i++) Serial.print("|  ");
@@ -93,7 +95,12 @@ void printTreeDir(const char* cwd, uint8_t level)
       // High number of MAX_LEVEL can cause memory overflow
       if ( level < MAX_LEVEL )
       {
-        printTreeDir( item.path(), level+1 );
+        char dpath[strlen(cwd) + strlen(item.name()) + 2 ];
+        strcpy(dpath, cwd);
+        strcat(dpath, "/");
+        strcat(dpath, item.name());
+        
+        printTreeDir( dpath, level+1 );
       }
     }else
     {

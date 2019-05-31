@@ -1,7 +1,7 @@
-/*
+/* 
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Ha Thach for Adafruit Industries
+ * Copyright (c) 2019 hathach for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,37 +22,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef ADAFRUIT_USBD_CDC_H_
-#define ADAFRUIT_USBD_CDC_H_
+#ifndef INTERNALFILESYSTEM_H_
+#define INTERNALFILESYSTEM_H_
 
-#include "Adafruit_USBD_Device.h"
-#include "Stream.h"
+#include "Adafruit_LittleFS.h"
 
-class Adafruit_USBD_CDC : public Stream, Adafruit_USBD_Interface
+class InternalFileSystem : public Adafruit_LittleFS
 {
-public:
-	Adafruit_USBD_CDC(void);
+  public:
+    InternalFileSystem(void);
 
-	// fron Adafruit_USBD_Interface
-	virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize);
-
-	void setPins(uint8_t pin_rx, uint8_t pin_tx) { (void) pin_rx; (void) pin_tx; }
-	void begin(uint32_t baud_count);
-	void begin(uint32_t baud, uint8_t config);
-	void end(void);
-
-	virtual int available(void);
-	virtual int peek(void);
-	virtual int read(void);
-	virtual void flush(void);
-	virtual size_t write(uint8_t);
-	virtual size_t write(const uint8_t *buffer, size_t size);
-	size_t write(const char *buffer, size_t size) {
-	  return write((const uint8_t *)buffer, size);
-	}
-	operator bool();
+    // overwrite to also perform low level format (sector erase of whole flash region)
+    bool begin(void);
 };
 
-extern Adafruit_USBD_CDC Serial;
+extern InternalFileSystem InternalFS;
 
-#endif /* ADAFRUIT_USBD_CDC_H_ */
+#endif /* INTERNALFILESYSTEM_H_ */

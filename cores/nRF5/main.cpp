@@ -56,10 +56,7 @@ static void loop_task(void* arg)
   while (1)
   {
     loop();
-
-#ifdef USE_TINYUSB
-    tud_cdc_write_flush();
-#endif
+    yield(); // yield run usb background task
 
     // Serial events
     if (serialEvent && serialEventRun) serialEventRun();
