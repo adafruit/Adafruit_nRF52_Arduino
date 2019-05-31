@@ -1,8 +1,7 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-# 0.10.5
+# 0.11.0
 
-- Fixed Feather nRF52840 Express's qspi driver to work with on-board flash device
 - Rework USB driver using Adafruit_TinyUSB library
 - Added Metro nRF52840 Express
 - Update bootloader binaries to 0.2.11
