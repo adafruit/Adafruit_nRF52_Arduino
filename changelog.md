@@ -2,9 +2,21 @@
 
 # 0.11.0
 
-- Rework USB driver using Adafruit_TinyUSB library
+- Rework USB driver to support Adafruit_TinyUSB library (support HID and MSC)
 - Added Metro nRF52840 Express
 - Update bootloader binaries to 0.2.11
+- Rework Filesystem
+  - Seperate LittleFS and InternalFS into `Adafruit_LittleFS` and `InternalFileSystem`
+  - Remove ExternalFS in favor of using Adafruit_QSPI and Adafruit_SPIFlash library
+- Update nrfx to 1.6.2
+- Fixed #250 wrong values for g_ADigitalPinMap, thanks to @henrygab
+- Fixed interrupts for device with multiple I/O Port, thanks to MacGyverNL PR #261
+- Update adc_vbat.ino sketch to work with nrf52840, thanks to @pyro9
+- Extend SoftwareTimer with option to make it non-repeating, add reset function & ISR-safe functions, thanks to @MacGyverNL PR #260
+- Fixed connection handle in BLEHidAdafruit single connection api, thanks to @ogatatsu PR #267
+- Fixed spelling & Add Environmental Sensing GATT Service and UV Index GATT Characteristics UUID, thanks to @sayanee
+- Fixed #276 rename macro FILE_READ/WRITE to enum FILE_O_READ/WRITE
+- Upgrade compiler toolchain from gcc 5.2 2015q2 to gcc 7 2017q4
 
 # 0.10.1
 
