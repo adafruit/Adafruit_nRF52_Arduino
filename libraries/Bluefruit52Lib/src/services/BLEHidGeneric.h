@@ -42,7 +42,7 @@
 #include "BLEService.h"
 
 // include usb hid definitions
-#include "class/hid/hid.h"
+#include "tinyusb/src/class/hid/hid.h"
 
 enum
 {
@@ -50,18 +50,8 @@ enum
   HID_PROTOCOL_MODE_REPORT = 1
 };
 
-typedef struct{
-  uint8_t shift;
-  uint8_t keycode;
-}hid_ascii_to_keycode_entry_t;
-extern const hid_ascii_to_keycode_entry_t hid_ascii_to_keycode[128];
-
-typedef struct{
-  uint8_t ascii;
-  uint8_t shifted;
-}hid_keycode_to_ascii_t;
-extern hid_keycode_to_ascii_t const hid_keycode_to_ascii[128];
-
+extern const uint8_t hid_ascii_to_keycode[128][2];
+extern const uint8_t hid_keycode_to_ascii[128][2];
 
 /// HID Consumer Control Report
 typedef struct ATTR_PACKED

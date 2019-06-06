@@ -206,7 +206,7 @@ void processKeyboardReport(hid_keyboard_report_t* report)
       
       if ( kc < 128 )
       {
-        ch = shifted ? HID_KEYCODE_TO_ASCII[kc].shifted : HID_KEYCODE_TO_ASCII[kc].ascii;
+        ch = shifted ? hid_keycode_to_ascii[kc][1] : hid_keycode_to_ascii[kc][0];
       }else
       {
         // non-US keyboard !!??
