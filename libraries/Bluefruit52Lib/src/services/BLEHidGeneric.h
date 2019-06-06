@@ -64,15 +64,16 @@ extern hid_keycode_to_ascii_t const hid_keycode_to_ascii[128];
 
 
 /// HID Consumer Control Report
-typedef ATTR_PACKED_STRUCT(struct)
+typedef struct ATTR_PACKED
 {
   uint16_t usage_value; ///< Usage value of the pressed control
 } hid_consumer_control_report_t;
 
 /// Gamepad report
-typedef ATTR_PACKED_STRUCT(struct)
+typedef struct ATTR_PACKED
 {
-  ATTR_PACKED_STRUCT(struct){
+  struct ATTR_PACKED
+  {
     uint8_t x : 2;
     uint8_t y : 2;
     uint8_t : 4;

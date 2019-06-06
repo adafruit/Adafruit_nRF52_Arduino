@@ -50,13 +50,7 @@ extern "C"
 //--------------------------------------------------------------------+
 // Compile-time Assert
 //--------------------------------------------------------------------+
-#if defined __COUNTER__ && __COUNTER__ != __COUNTER__
-  #define _VERIFY_COUNTER __COUNTER__
-#else
-  #define _VERIFY_COUNTER __LINE__
-#endif
-
-#define VERIFY_STATIC(const_expr) enum { XSTRING_CONCAT_(static_verify_, _VERIFY_COUNTER) = 1/(!!(const_expr)) }
+#define VERIFY_STATIC(const_expr) TU_VERIFY_STATIC(const_expr, "Assert failed")
 
 //--------------------------------------------------------------------+
 // VERIFY Helper
