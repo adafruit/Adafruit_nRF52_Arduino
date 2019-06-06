@@ -101,12 +101,6 @@ void vApplicationMallocFailedHook(void)
   LOG_LV1("RTOS", "Failed to Malloc");
 }
 
-void vApplicationIdleHook( void )
-{
-  // Call user callback if defined
-  if ( rtos_idle_callback ) rtos_idle_callback();
-}
-
 /* configSUPPORT_STATIC_ALLOCATION is set to 1, so the application must provide an
  * implementation of vApplicationGetIdleTaskMemory() to provide the memory that is
  * used by the Idle task. */
