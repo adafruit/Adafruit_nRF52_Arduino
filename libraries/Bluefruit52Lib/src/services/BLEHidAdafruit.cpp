@@ -267,8 +267,8 @@ bool BLEHidAdafruit::keyPress(uint16_t conn_hdl, char ch)
   hid_keyboard_report_t report;
   varclr(&report);
 
-  report.modifier = ( hid_ascii_to_keycode[(uint8_t)ch].shift ) ? KEYBOARD_MODIFIER_LEFTSHIFT : 0;
-  report.keycode[0] = hid_ascii_to_keycode[(uint8_t)ch].keycode;
+  report.modifier = ( hid_ascii_to_keycode[(uint8_t)ch][0] ) ? KEYBOARD_MODIFIER_LEFTSHIFT : 0;
+  report.keycode[0] = hid_ascii_to_keycode[(uint8_t)ch][1];
 
   return keyboardReport(conn_hdl, &report);
 }
