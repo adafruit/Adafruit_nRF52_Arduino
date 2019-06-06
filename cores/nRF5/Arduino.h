@@ -119,8 +119,6 @@ void suspendLoop(void);
 #define portInputRegister(port)    ( (volatile uint32_t*) &(port->IN) )
 #define portModeRegister(port)     ( &(port->DIR) )
 #define digitalPinHasPWM(P)        ( g_ADigitalPinMap[P] > 1 )
-
-void rtos_idle_callback(void) ATTR_WEAK;
 /*
  * digitalPinToTimer(..) is AVR-specific and is not defined for nRF52
  * architecture. If you need to check if a pin supports PWM you must

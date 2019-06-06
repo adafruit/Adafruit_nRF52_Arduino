@@ -64,12 +64,24 @@ void Adafruit_USBD_CDC::end(void)
 
 Adafruit_USBD_CDC::operator bool()
 {
-  return tud_cdc_connected();
+  bool ret = tud_cdc_connected();
+
+  // Add an yield to run usb background in case sketch block wait as follows
+  // while( !Serial ) {}
+  if ( !ret ) yield();
+
+  return ret;
 }
 
 int Adafruit_USBD_CDC::available(void)
 {
-  return tud_cdc_available();
+  uint32_t count = tud_cdc_available();
+
+  // Add an yield to run usb background in case sketch block wait as follows
+  // while( !Serial.available() ) {}
+  if (!count) yield();
+
+  return count;
 }
 
 int Adafruit_USBD_CDC::peek(void)

@@ -144,7 +144,10 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
           // only discover CCCD descriptor
           if (disc_chr->chars[d].char_props.notify || disc_chr->chars[d].char_props.indicate )
           {
-            ble_gattc_handle_range_t range = { disc_chr->chars[d].handle_value + 1, _hdl_range.end_handle };
+            ble_gattc_handle_range_t range = {
+              .start_handle = (uint16_t) (disc_chr->chars[d].handle_value + 1),
+              .end_handle   = _hdl_range.end_handle
+            };
 
             if ( range.start_handle <= range.end_handle  )
             {

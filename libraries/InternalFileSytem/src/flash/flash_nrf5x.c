@@ -26,6 +26,7 @@
 #include "flash_cache.h"
 #include "nrf_sdm.h"
 #include "nrf_soc.h"
+#include "delay.h"
 #include "rtos.h"
 
 //--------------------------------------------------------------------+

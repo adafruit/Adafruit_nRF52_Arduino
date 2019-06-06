@@ -42,7 +42,7 @@
 
 #define CFG_TUSB_OS                 OPT_OS_FREERTOS
 #define CFG_TUSB_MEM_SECTION
-#define CFG_TUSB_MEM_ALIGN          ATTR_ALIGNED(4)
+#define CFG_TUSB_MEM_ALIGN          TU_ATTR_ALIGNED(4)
 
 //--------------------------------------------------------------------
 // DEVICE CONFIGURATION

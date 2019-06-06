@@ -72,7 +72,7 @@ bool tud_msc_set_sense(uint8_t lun, uint8_t sense_key, uint8_t add_sense_code, u
  * \retval      negative    Indicate error e.g reading disk I/O. tinyusb will \b STALL the corresponding
  *                          endpoint and return failed status in command status wrapper phase.
  */
-ATTR_WEAK int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize);
+TU_ATTR_WEAK int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset, void* buffer, uint32_t bufsize);
 
 /**
  * Invoked when received \ref SCSI_CMD_WRITE_10 command
@@ -91,19 +91,19 @@ ATTR_WEAK int32_t tud_msc_read10_cb (uint8_t lun, uint32_t lba, uint32_t offset,
  * \retval      negative    Indicate error writing disk I/O. Tinyusb will \b STALL the corresponding
  *                          endpoint and return failed status in command status wrapper phase.
  */
-ATTR_WEAK int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize);
+TU_ATTR_WEAK int32_t tud_msc_write10_cb (uint8_t lun, uint32_t lba, uint32_t offset, uint8_t* buffer, uint32_t bufsize);
 
 // Invoked when received SCSI_CMD_INQUIRY
 // Application fill vendor id, product id and revision with string up to 8, 16, 4 characters respectively
-ATTR_WEAK void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]);
+TU_ATTR_WEAK void tud_msc_inquiry_cb(uint8_t lun, uint8_t vendor_id[8], uint8_t product_id[16], uint8_t product_rev[4]);
 
 // Invoked when received Test Unit Ready command.
 // return true allowing host to read/write this LUN e.g SD card inserted
-ATTR_WEAK bool tud_msc_test_unit_ready_cb(uint8_t lun);
+TU_ATTR_WEAK bool tud_msc_test_unit_ready_cb(uint8_t lun);
 
 // Invoked when received SCSI_CMD_READ_CAPACITY_10 and SCSI_CMD_READ_FORMAT_CAPACITY to determine the disk size
 // Application update block count and block size
-ATTR_WEAK void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size);
+TU_ATTR_WEAK void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t* block_size);
 
 /**
  * Invoked when received an SCSI command not in built-in list below.
@@ -121,29 +121,29 @@ ATTR_WEAK void tud_msc_capacity_cb(uint8_t lun, uint32_t* block_count, uint16_t*
  * \retval      negative    Indicate error e.g unsupported command, tinyusb will \b STALL the corresponding
  *                          endpoint and return failed status in command status wrapper phase.
  */
-ATTR_WEAK int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize);
+TU_ATTR_WEAK int32_t tud_msc_scsi_cb (uint8_t lun, uint8_t const scsi_cmd[16], void* buffer, uint16_t bufsize);
 
 /*------------- Optional callbacks -------------*/
 
 // Invoked when received GET_MAX_LUN request, required for multiple LUNs implementation
-ATTR_WEAK uint8_t tud_msc_get_maxlun_cb(void);
+TU_ATTR_WEAK uint8_t tud_msc_get_maxlun_cb(void);
 
 // Invoked when received Start Stop Unit command
 // - Start = 0 : stopped power mode, if load_eject = 1 : unload disk storage
 // - Start = 1 : active mode, if load_eject = 1 : load disk storage
-ATTR_WEAK void tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, bool load_eject);
+TU_ATTR_WEAK void tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, bool load_eject);
 
 // Invoked when Read10 command is complete
-ATTR_WEAK void tud_msc_read10_complete_cb(uint8_t lun);
+TU_ATTR_WEAK void tud_msc_read10_complete_cb(uint8_t lun);
 
 // Invoke when Write10 command is complete, can be used to flush flash caching
-ATTR_WEAK void tud_msc_write10_complete_cb(uint8_t lun);
+TU_ATTR_WEAK void tud_msc_write10_complete_cb(uint8_t lun);
 
 // Invoked when command in tud_msc_scsi_cb is complete
-ATTR_WEAK void tud_msc_scsi_complete_cb(uint8_t lun, uint8_t const scsi_cmd[16]);
+TU_ATTR_WEAK void tud_msc_scsi_complete_cb(uint8_t lun, uint8_t const scsi_cmd[16]);
 
 // Hook to make a mass storage device read-only. TODO remove
-ATTR_WEAK bool tud_msc_is_writable_cb(uint8_t lun);
+TU_ATTR_WEAK bool tud_msc_is_writable_cb(uint8_t lun);
 
 /** @} */
 /** @} */
