@@ -262,7 +262,7 @@ void dbgDumpMemoryCFormat(const char* str, void const *buf, uint16_t count)
     buf8++;
   }
 
-  printf("\n\};\n");
+  printf("\n};\n");
 }
 
 

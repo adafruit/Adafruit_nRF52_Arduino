@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 
+#include <string.h>
 #include "flash_cache.h"
 #include "common_func.h"
 #include "variant.h"
@@ -124,6 +125,6 @@ void flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t cou
   }
   else
   {
-    fc->read(dst, (void*) addr, count);
+    fc->read(dst, addr, count);
   }
 }

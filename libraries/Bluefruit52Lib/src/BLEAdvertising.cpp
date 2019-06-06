@@ -346,7 +346,7 @@ bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
       },
       .p_peer_addr    = NULL               , // Undirected advertisement
       .interval       = interval           , // advertising interval (in units of 0.625 ms)
-      .duration       = timeout*100        , // in 10-ms unit
+      .duration       = (uint16_t) (timeout*100), // in 10-ms unit
 
       .max_adv_evts   = 0, // TODO can be used for fast/slow mode
       .channel_mask   = { 0, 0, 0, 0, 0 }  , // 40 channel, set 1 to disable
