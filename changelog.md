@@ -17,6 +17,10 @@
 - Fixed spelling & Add Environmental Sensing GATT Service and UV Index GATT Characteristics UUID, thanks to @sayanee
 - Fixed #276 rename macro FILE_READ/WRITE to enum FILE_O_READ/WRITE
 - Upgrade compiler toolchain from gcc 5.2 2015q2 to gcc 7 2017q4
+- Rename hid client setProtocolMode() to setBootMode()
+- Removed `rtos_idle_callback()`, sketch define vApplicationIdleHook() if needed
+- enhance Serial.available()/write() to prevent blocking wait without yield/delay
+- Clean up compiler warnings
 
 # 0.10.1
 
