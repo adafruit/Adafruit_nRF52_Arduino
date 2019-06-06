@@ -56,6 +56,8 @@ extern "C"
 // VERIFY Helper
 //--------------------------------------------------------------------+
 #if CFG_DEBUG >= 1
+#include <stdio.h>
+
   #define VERIFY_MESS(_status, _funcstr) \
     do { \
       const char* (*_fstr)(int32_t) = _funcstr;\
