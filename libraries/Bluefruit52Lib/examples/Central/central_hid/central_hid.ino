@@ -111,9 +111,9 @@ void connect_callback(uint16_t conn_handle)
     Serial.print("Country code: "); Serial.println(hidInfo[2]);
     Serial.printf("HID Flags  : 0x%02X\n", hidInfo[3]);
 
-    // BLEClientHidAdafruit currently only suports Boot Protocol Mode
+    // BLEClientHidAdafruit currently only supports Boot Protocol Mode
     // for Keyboard and Mouse. Let's set the protocol mode on prph to Boot Mode
-    hid.setProtocolMode(HID_PROTOCOL_MODE_BOOT);
+    hid.setBootMode(true);
 
     // Enable Keyboard report notification if present on prph
     if ( hid.keyboardPresent() ) hid.enableKeyboard();

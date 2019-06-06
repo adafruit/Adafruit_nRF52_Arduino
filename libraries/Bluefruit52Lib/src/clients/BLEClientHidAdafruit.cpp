@@ -127,9 +127,10 @@ uint8_t BLEClientHidAdafruit::getCountryCode(void)
   return info[2];
 }
 
-bool BLEClientHidAdafruit::setProtocolMode(uint8_t mode)
+bool BLEClientHidAdafruit::setBootMode(bool boot)
 {
-  return _protcol_mode.write8(mode);
+  // 0 is boot, 1 is protocol
+  return _protcol_mode.write8(1-boot);
 }
 
 /*------------------------------------------------------------------*/

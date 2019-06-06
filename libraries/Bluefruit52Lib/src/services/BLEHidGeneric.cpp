@@ -46,7 +46,7 @@ BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_
   : BLEService(UUID16_SVC_HUMAN_INTERFACE_DEVICE), _chr_control(UUID16_CHR_HID_CONTROL_POINT)
 {
   _has_keyboard = _has_mouse = false;
-  _protocol_mode = HID_PROTOCOL_MODE_REPORT;
+  _report_mode = true; // default is report mode
 
   _report_map = NULL;
   _report_map_len = 0;
@@ -135,7 +135,7 @@ void BLEHidGeneric::blehid_generic_protocol_mode_cb(uint16_t conn_hdl, BLECharac
   (void) conn_hdl;
 
   BLEHidGeneric& svc = (BLEHidGeneric&) chr->parentService();
-  svc._protocol_mode = *data;
+  svc._report_mode = (*data); // 0 is boot, 1 Report
 
   LOG_LV2("HID", "Protocol Mode : %d (0 Boot, 1 Report)", *data);
 }
@@ -160,7 +160,7 @@ err_t BLEHidGeneric::begin(void)
     _chr_protocol->setFixedLen(1);
     _chr_protocol->setWriteCallback(BLEHidGeneric::blehid_generic_protocol_mode_cb);
     VERIFY_STATUS( _chr_protocol->begin() );
-    _chr_protocol->write8(_protocol_mode);
+    _chr_protocol->write8(_report_mode);
   }
 
   // Input reports

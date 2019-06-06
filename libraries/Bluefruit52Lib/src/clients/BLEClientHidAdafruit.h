@@ -58,7 +58,7 @@ class BLEClientHidAdafruit : public BLEClientService
     bool     getHidInfo(uint8_t info[4]);
     uint8_t  getCountryCode(void);
 
-    bool setProtocolMode(uint8_t mode);
+    bool setBootMode(bool boot);
 
     // Keyboard API
     bool keyboardPresent(void);

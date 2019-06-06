@@ -44,12 +44,6 @@
 // include usb hid definitions
 #include "tinyusb/src/class/hid/hid.h"
 
-enum
-{
-  HID_PROTOCOL_MODE_BOOT   = 0,
-  HID_PROTOCOL_MODE_REPORT = 1
-};
-
 extern const uint8_t hid_ascii_to_keycode[128][2];
 extern const uint8_t hid_keycode_to_ascii[128][2];
 
@@ -90,7 +84,7 @@ class BLEHidGeneric : public BLEService
 
     virtual err_t begin(void);
 
-    bool isBootMode(void) { return _protocol_mode == HID_PROTOCOL_MODE_BOOT; }
+    bool isBootMode(void) { return !_report_mode; }
 
     // Send Report to default connection
     bool inputReport(uint8_t reportID, void const* data, int len);
@@ -109,7 +103,7 @@ class BLEHidGeneric : public BLEService
 
     bool    _has_keyboard;
     bool    _has_mouse;
-    bool    _protocol_mode;
+    bool    _report_mode;
 
     uint8_t _hid_info[4];
     const uint8_t* _report_map;
