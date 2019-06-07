@@ -169,7 +169,7 @@ uint32_t analogRead( uint32_t ulPin )
   uint32_t pin = SAADC_CH_PSELP_PSELP_NC;
   uint32_t saadcResolution;
   uint32_t resolution;
-  int16_t value;
+  volatile int16_t value = 0;
 
   if (ulPin >= PINS_COUNT) {
     return 0;
