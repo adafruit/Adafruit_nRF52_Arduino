@@ -16,7 +16,7 @@ addons:
 
 install:
   - pip3 install --user adafruit-nrfutil
-  - umake electronics arduino
+  - umake electronics arduino $TRAVIS_BUILD_DIR/Arduino
   #- arduino --install-library "Adafruit GFX","Adafruit NeoPixel","Adafruit DotStar","Adafruit SSD1306"
 
 script:
