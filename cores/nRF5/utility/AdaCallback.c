@@ -72,9 +72,15 @@ void adafruit_callback_task(void* arg)
   }
 }
 
-void ada_callback_queue(ada_callback_t* cb_data, bool from_isr)
+//! Test if in interrupt mode
+static inline bool is_isr(void)
 {
-  if ( from_isr )
+  return (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0 ;
+}
+
+void ada_callback_queue(ada_callback_t* cb_data)
+{
+  if ( is_isr() )
   {
     xQueueSendFromISR(_cb_queue, (void*) &cb_data, NULL);
   }else

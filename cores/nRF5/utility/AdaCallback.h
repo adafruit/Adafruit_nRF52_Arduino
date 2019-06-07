@@ -94,7 +94,7 @@ typedef void (*adacb_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 /**
  * Macro function is called by other module with all intended parameters.
  */
-#define _cb_setup(_from_isr, _mdata, _mlen, _func, ... )      \
+#define _cb_setup(_mdata, _mlen, _func, ... )      \
   do {                                                        \
       uint8_t const _count = VA_ARGS_NUM(__VA_ARGS__);        \
       ada_callback_t* cb_data = (ada_callback_t*) rtos_malloc( sizeof(ada_callback_t) + (_count ? (_count-1)*4 : 0) );\
@@ -115,7 +115,7 @@ typedef void (*adacb_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
         }\
         memcpy(cb_data->arguments, arguments, 4*_count);      \
       }                                                       \
-      ada_callback_queue(cb_data, _from_isr);                 \
+      ada_callback_queue(cb_data);                            \
   } while(0)
 
 /**
@@ -127,15 +127,11 @@ typedef void (*adacb_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
  * - 3rd arg     : function to be invoked
  * - 3rd-7th arg : function argument, will be cast to uint32_t
  */
-#define ada_callback(... )           _cb_setup(false, __VA_ARGS__)
+#define ada_callback(...)           _cb_setup(__VA_ARGS__)
 
-/**
- * Similar to ada_callback() but invoke in ISR-context
- */
-#define ada_callback_fromISR(... )   _cb_setup(true, __VA_ARGS__)
 
 void ada_callback_init(void);
-void ada_callback_queue(ada_callback_t* cb_data, bool from_isr);
+void ada_callback_queue(ada_callback_t* cb_data);
 
 #ifdef __cplusplus
 }
