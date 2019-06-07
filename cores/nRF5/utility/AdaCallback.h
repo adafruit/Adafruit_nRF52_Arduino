@@ -57,12 +57,11 @@ extern "C"{
 
 typedef struct
 {
-  void*   malloced_data;
-  void*   callback_func;
+  void*       malloced_data;
+  void const* callback_func;
 
   uint8_t arg_count;
-  bool    from_isr;
-//  uint8_t _reserved[2];
+//  uint8_t _reserved[3];
 
   uint32_t arguments[1]; // flexible array holder
 }ada_callback_t;
@@ -94,28 +93,11 @@ typedef void (*adacb_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 /**
  * Macro function is called by other module with all intended parameters.
  */
-#define _cb_setup(_mdata, _mlen, _func, ... )      \
-  do {                                                        \
-      uint8_t const _count = VA_ARGS_NUM(__VA_ARGS__);        \
-      ada_callback_t* cb_data = (ada_callback_t*) rtos_malloc( sizeof(ada_callback_t) + (_count ? (_count-1)*4 : 0) );\
-      cb_data->malloced_data = NULL;                          \
-      if ( (_mdata) && (_mlen) ) {                            \
-        cb_data->malloced_data = rtos_malloc(_mlen);          \
-        memcpy(cb_data->malloced_data, _mdata, _mlen);        \
-      }                                                       \
-      cb_data->callback_func = (void*)_func;                  \
-      cb_data->arg_count = _count;                            \
-      if ( _count ) {                                         \
-        uint32_t arguments[] = { _ADA_CB_ARGS(__VA_ARGS__) }; \
-        /* argument most likely is _mdata if used, change it to malloced one */\
-        if ( (_mdata) && (_mlen) ) { \
-          for(uint8_t i=0; i<_count; i++) {\
-            if (arguments[i] == ((uint32_t) (_mdata))) { arguments[i] = ((uint32_t) cb_data->malloced_data); } \
-          }\
-        }\
-        memcpy(cb_data->arguments, arguments, 4*_count);      \
-      }                                                       \
-      ada_callback_queue(cb_data);                            \
+#define _cb_setup(_malloc_data, _malloc_len, _func, ... )                               \
+  do {                                                                      \
+      uint8_t const _count = VA_ARGS_NUM(__VA_ARGS__);                      \
+      uint32_t arguments[] = { _ADA_CB_ARGS(__VA_ARGS__) };                 \
+      ada_callback_invoke(_malloc_data, _malloc_len, (void const*) _func, arguments, _count); \
   } while(0)
 
 /**
@@ -131,7 +113,8 @@ typedef void (*adacb_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 
 
 void ada_callback_init(void);
-void ada_callback_queue(ada_callback_t* cb_data);
+void ada_callback_invoke(const void* mdata, uint32_t mlen, const void* func, uint32_t arguments[], uint8_t argcount);
+void ada_callback_queue(ada_callback_t* cb_item);
 
 #ifdef __cplusplus
 }

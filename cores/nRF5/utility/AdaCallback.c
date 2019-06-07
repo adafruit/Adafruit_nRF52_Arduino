@@ -50,7 +50,7 @@ void adafruit_callback_task(void* arg)
 //      PRINT_HEX(cb_data);
 //      PRINT_HEX(cb_data->malloced_data);
 
-      void* func = cb_data->callback_func;
+      const void* func = cb_data->callback_func;
       uint32_t* args = cb_data->arguments;
 
       switch (cb_data->arg_count)
@@ -78,15 +78,45 @@ static inline bool is_isr(void)
   return (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0 ;
 }
 
-void ada_callback_queue(ada_callback_t* cb_data)
+void ada_callback_queue(ada_callback_t* cb_item)
 {
   if ( is_isr() )
   {
-    xQueueSendFromISR(_cb_queue, (void*) &cb_data, NULL);
+    xQueueSendFromISR(_cb_queue, (void*) &cb_item, NULL);
   }else
   {
-    xQueueSend(_cb_queue, (void*) &cb_data, CFG_CALLBACK_TIMEOUT);
+    xQueueSend(_cb_queue, (void*) &cb_item, CFG_CALLBACK_TIMEOUT);
   }
+}
+
+void ada_callback_invoke(const void* malloc_data, uint32_t malloc_len, const void* func, uint32_t arguments[], uint8_t argcount)
+{
+  ada_callback_t* cb_data = (ada_callback_t*) rtos_malloc( sizeof(ada_callback_t) + (argcount ? (argcount-1)*4 : 0) );
+  cb_data->malloced_data = NULL;
+  cb_data->callback_func = func;
+  cb_data->arg_count = argcount;
+
+  if ( malloc_data && malloc_len )
+  {
+    cb_data->malloced_data = rtos_malloc(malloc_len);
+    memcpy(cb_data->malloced_data, malloc_data, malloc_len);
+  }
+
+  if ( argcount )
+  {
+    // argument most likely has _mdata if used, change it to malloced one
+    if ( malloc_data && malloc_len )
+    {
+      for(uint8_t i=0; i<argcount; i++)
+      {
+        if (arguments[i] == ((uint32_t) malloc_data)) arguments[i] = ((uint32_t) cb_data->malloced_data);
+      }
+    }
+
+    memcpy(cb_data->arguments, arguments, 4*argcount);
+  }
+
+  ada_callback_queue(cb_data);
 }
 
 void ada_callback_init(void)
