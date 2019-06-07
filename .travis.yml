@@ -1,20 +1,22 @@
 language: c
-sudo: false
-cache:
-  directories:
-    - ~/arduino_ide
-
+dist: xenial
 git:
   depth: false
   quiet: true
 
-before_install:
-#  - source <(curl -SLs https://raw.githubusercontent.com/hathach/travis-ci-arduino/test-nrf52/install.sh)
-script:
-  - echo "test travis"
-#  - build_platform adafruit:nrf52:feather52840
+addons:
+  apt:
+    packages:
+      - "python3"
+      - "python3-pip"
+  snap:
+    - ubuntu-make
 
-notifications:
-  email:
-    on_success: change
-    on_failure: change
+install:
+  - pip3 install --user adafruit-nrfutil
+  - umake electronics arduino
+  #- arduino --install-library "Adafruit GFX","Adafruit NeoPixel","Adafruit DotStar","Adafruit SSD1306"
+
+script:
+  - arduino --version
+   #- build_nrf5x_platforms
