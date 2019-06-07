@@ -16,9 +16,12 @@ addons:
 
 install:
   - pip3 install --user adafruit-nrfutil
-  - umake electronics arduino $TRAVIS_BUILD_DIR/Arduino
+  - umake electronics arduino $HOME/Arduino
   #- arduino --install-library "Adafruit GFX","Adafruit NeoPixel","Adafruit DotStar","Adafruit SSD1306"
 
+before_script:
+  - export PATH=$HOME/Arduino:$PATH
+  
 script:
   - arduino --version
    #- build_nrf5x_platforms
