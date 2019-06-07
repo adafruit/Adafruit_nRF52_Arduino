@@ -17,10 +17,12 @@ addons:
 install:
   - pip3 install --user adafruit-nrfutil
   - umake electronics arduino $HOME/Arduino
-  #- arduino --install-library "Adafruit GFX","Adafruit NeoPixel","Adafruit DotStar","Adafruit SSD1306"
+  - export PATH=$HOME/Arduino:$PATH
+  - arduino --install-boards adafruit:nrf52
+  - arduino --install-library "Adafruit GFX","Adafruit NeoPixel","Adafruit DotStar","Adafruit SSD1306"
 
 before_script:
-  - export PATH=$HOME/Arduino:$PATH
+
   
 script:
   - arduino --version
