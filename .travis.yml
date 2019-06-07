@@ -11,7 +11,8 @@ addons:
       - python3-pip
       - python3-setuptools
   snaps:
-    - ubuntu-make
+    - name: ubuntu-make
+      confinement: classic
 
 install:
   - pip3 install --user adafruit-nrfutil
