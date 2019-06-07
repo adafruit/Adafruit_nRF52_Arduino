@@ -16,8 +16,8 @@ addons:
 
 install:
   - pip3 install --user adafruit-nrfutil
-  - umake electronics arduino $HOME/Arduino
-  - export PATH=$HOME/Arduino:$PATH
+  - umake electronics arduino $HOME/arduino_ide
+  - export PATH=$HOME/arduino_ide:$PATH
   - arduino --pref "boardsmanager.additional.urls=https://adafruit.github.io/arduino-board-index/package_adafruit_index.json" --save-prefs
   - arduino --install-boards adafruit:nrf52
   - arduino --install-library "Adafruit GFX","Adafruit NeoPixel","Adafruit SSD1306"
