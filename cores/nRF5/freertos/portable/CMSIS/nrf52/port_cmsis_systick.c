@@ -144,7 +144,7 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
     do{
         uint8_t dummy = 0;
         uint32_t err_code = sd_nvic_critical_region_enter(&dummy);
-        //APP_ERROR_CHECK(err_code);
+        (void) err_code; //APP_ERROR_CHECK(err_code);
     }while (0);
 #else
     __disable_irq();
@@ -229,7 +229,7 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
     }
 #ifdef SOFTDEVICE_PRESENT
     uint32_t err_code = sd_nvic_critical_region_exit(0);
-    //APP_ERROR_CHECK(err_code);
+    (void) err_code; //APP_ERROR_CHECK(err_code);
 #else
     __enable_irq();
 #endif
