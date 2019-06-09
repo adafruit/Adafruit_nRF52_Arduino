@@ -16,10 +16,11 @@ if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
 success_count = 0
 fail_count = 0
 
+print("Setting board to Feather nRF52840")
+subprocess.run("arduino --board adafruit:nrf52:feather52840:softdevice=s140v6,debug=l0 --save-prefs", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
 for sketch in glob.iglob('libraries/**/*.ino', recursive=True):
     start_time = time.monotonic()
-    #build_result = subprocess.run("/home/hathach/Applications/arduino-1.8.9/arduino-builder -compile -hardware /home/hathach/Applications/arduino-1.8.9/hardware -hardware /home/hathach/.arduino15/packages -hardware /home/hathach/Arduino/hardware/ -tools /home/hathach/.arduino15/packages/adafruit/tools -tools /home/hathach/Applications/arduino-1.8.9/tools-builder -tools /home/hathach/.arduino15/packages -built-in-libraries /home/hathach/Applications/arduino-1.8.9/libraries -libraries /home/hathach/Arduino/libraries -fqbn=adafruit:nrf52:feather52840:softdevice=s140v6,debug=l0 -ide-version=10807 -warnings=none -prefs=build.warn_data_percentage=75 -verbose {}".format(sketch), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    
     build_result = subprocess.run("arduino --verify {}".format(sketch), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)    
     build_duration = time.monotonic() - start_time
 
