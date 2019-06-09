@@ -8,6 +8,11 @@ from pathlib import Path
 home = str(Path.home())
 
 exit_status = 0
+
+travis = False
+if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
+    travis = True
+
 success_count = 0
 fail_count = 0
 
