@@ -23,8 +23,7 @@ install:
   - arduino --install-library "Adafruit NeoPixel","Adafruit SSD1306"
 
 before_script:
-
+  - arduino --board adafruit:nrf52:feather52840:softdevice=s140v6,debug=l0 --save-prefs
   
 script:
-  - arduino --version
-   #- build_nrf5x_platforms
+  - python3 tools/build_all.py
