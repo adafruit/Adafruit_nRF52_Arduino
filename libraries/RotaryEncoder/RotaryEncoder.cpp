@@ -195,7 +195,7 @@ void HwRotaryEncoder::_irq_handler(void)
     if ( _cb )
     {
       int32_t step = read();
-      if ( step ) ada_callback_fromISR(NULL, 0, _cb, step);
+      if ( step ) ada_callback(NULL, 0, _cb, step);
     }
   }
 }

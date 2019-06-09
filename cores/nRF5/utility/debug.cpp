@@ -182,7 +182,7 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
 
   const uint8_t  item_per_line  = 16 / size;
 
-  for(int i=0; i<count; i++)
+  for(uint32_t i=0; i<count; i++)
   {
     uint32_t value=0;
 
@@ -246,10 +246,8 @@ void dbgDumpMemoryCFormat(const char* str, void const *buf, uint16_t count)
 
   uint8_t const *buf8 = (uint8_t const *) buf;
 
-  for(int i=0; i<count; i++)
+  for(uint32_t i=0; i<count; i++)
   {
-    uint32_t value=0;
-
     if ( i%16 == 0 )
     {
       if ( i != 0 ) printf(",\n  ");
@@ -258,7 +256,7 @@ void dbgDumpMemoryCFormat(const char* str, void const *buf, uint16_t count)
       if ( i != 0 ) printf(", ");
     }
 
-    printf("0x%02lX", *buf8);
+    printf("0x%02X", *buf8);
     buf8++;
   }
 

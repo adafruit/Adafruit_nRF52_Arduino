@@ -106,6 +106,7 @@ static void bluefruit_blinky_cb( TimerHandle_t xTimer )
 
 static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
 {
+#if CFG_DEBUG
   PRINT_INT(id);
   PRINT_HEX(pc);
   PRINT_HEX(info);
@@ -123,7 +124,6 @@ static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
     LOG_LV1("SD Err", "assert at %s : %d", assert_info->p_file_name, assert_info->line_num);
   }
 
-#if CFG_DEBUG
   while(1) { }
 #endif
 }
@@ -865,6 +865,8 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
     case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
     {
       ble_gap_data_length_params_t* param = &evt->evt.gap_evt.params.data_length_update_request.peer_params;
+      (void) param;
+
       LOG_LV2("GAP", "Data Length Req is (tx, rx) octets = (%d, %d), (tx, rx) time = (%d, %d) us",
               param->max_tx_octets, param->max_rx_octets, param->max_tx_time_us, param->max_rx_time_us);
 
@@ -876,6 +878,8 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
     case BLE_GAP_EVT_DATA_LENGTH_UPDATE:
     {
       ble_gap_data_length_params_t* datalen =  &evt->evt.gap_evt.params.data_length_update.effective_params;
+      (void) datalen;
+
       LOG_LV2("GAP", "Data Length is (tx, rx) octets = (%d, %d), (tx, rx) time = (%d, %d) us",
                    datalen->max_tx_octets, datalen->max_rx_octets, datalen->max_tx_time_us, datalen->max_rx_time_us);
     }
@@ -884,11 +888,11 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
     case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
     {
       ble_gap_phys_t* req_phy = &evt->evt.gap_evt.params.phy_update_request.peer_preferred_phys;
-
-      #if CFG_DEBUG >= 1
       char const *phy_str[] = { "Auto", "1 Mbps", "2 Mbps", "Coded" };
+
+      (void) req_phy;
+      (void) phy_str;
       LOG_LV1("GAP", "PHY request tx: %s, rx: %s", phy_str[req_phy->tx_phys], phy_str[req_phy->rx_phys]);
-      #endif
 
       // Tell SoftDevice to choose PHY automatically
       ble_gap_phys_t phy = { BLE_GAP_PHY_AUTO, BLE_GAP_PHY_AUTO };
@@ -900,16 +904,15 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
     {
       ble_gap_evt_phy_update_t* active_phy = &evt->evt.gap_evt.params.phy_update;
 
-      #if CFG_DEBUG >= 1
       if ( active_phy->status != BLE_HCI_STATUS_CODE_SUCCESS )
       {
         LOG_LV1("GAP", "Failed HCI status = 0x%02X", active_phy->status);
       }else
       {
         char const *phy_str[] = { "Auto", "1 Mbps", "2 Mbps", "Coded" };
+        (void) phy_str;
         LOG_LV1("GAP", "PHY active tx: %s, rx: %s", phy_str[active_phy->tx_phy], phy_str[active_phy->rx_phy]);
       }
-      #endif
     }
     break;
 

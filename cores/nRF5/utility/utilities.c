@@ -80,7 +80,7 @@ const char* getBootloaderVersion(void)
     uint32_t const ver2 = (sd_version % 1000000)/1000;
     uint32_t const ver3 = sd_version % 1000;
 
-    sprintf(fw_str, "s%d %d.%d.%d", sd_id, ver1, ver2, ver3);
+    sprintf(fw_str, "s%lu %lu.%lu.%lu", sd_id, ver1, ver2, ver3);
   }
 
   return fw_str;
@@ -93,7 +93,7 @@ const char* getMcuUniqueID(void)
   // Skip if already created
   if ( serial_str[0] == 0 )
   {
-    sprintf(serial_str, "%08lX%08lX", NRF_FICR->DEVICEID[1], NRF_FICR->DEVICEID[0]);
+    sprintf(serial_str, "%08lu%08lu", NRF_FICR->DEVICEID[1], NRF_FICR->DEVICEID[0]);
   }
 
   return serial_str;

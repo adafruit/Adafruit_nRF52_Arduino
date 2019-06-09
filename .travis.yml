@@ -1,20 +1,28 @@
 language: c
-sudo: false
-cache:
-  directories:
-    - ~/arduino_ide
-
+dist: xenial
 git:
   depth: false
   quiet: true
 
-before_install:
-#  - source <(curl -SLs https://raw.githubusercontent.com/hathach/travis-ci-arduino/test-nrf52/install.sh)
-script:
-  - echo "test travis"
-#  - build_platform adafruit:nrf52:feather52840
+addons:
+  apt:
+    packages:
+      - python3
+      - python3-pip
+      - python3-setuptools
+  snaps:
+    - name: ubuntu-make
+      confinement: classic
 
-notifications:
-  email:
-    on_success: change
-    on_failure: change
+install:
+  - pip3 install --user adafruit-nrfutil
+  - umake electronics arduino $HOME/arduino_ide
+  - export PATH=$HOME/arduino_ide:$PATH
+  - arduino --pref "boardsmanager.additional.urls=https://adafruit.github.io/arduino-board-index/package_adafruit_index.json" --save-prefs
+  - arduino --install-boards adafruit:nrf52
+  - arduino --install-library "Adafruit NeoPixel","Adafruit NeoMatrix","Adafruit GFX Library","Adafruit SSD1306","MIDI Library",
+
+before_script:
+  
+script:
+  - python3 tools/build_all.py

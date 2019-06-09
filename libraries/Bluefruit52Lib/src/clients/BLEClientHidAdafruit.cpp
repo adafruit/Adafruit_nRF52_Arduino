@@ -39,9 +39,9 @@
 BLEClientHidAdafruit::BLEClientHidAdafruit(void)
  : BLEClientService(UUID16_SVC_HUMAN_INTERFACE_DEVICE),
    _protcol_mode(UUID16_CHR_PROTOCOL_MODE),
+   _hid_info(UUID16_CHR_HID_INFORMATION), _hid_control(UUID16_CHR_HID_CONTROL_POINT),
    _kbd_boot_input(UUID16_CHR_BOOT_KEYBOARD_INPUT_REPORT), _kbd_boot_output(UUID16_CHR_BOOT_KEYBOARD_OUTPUT_REPORT),
-   _mse_boot_input(UUID16_CHR_BOOT_MOUSE_INPUT_REPORT),
-   _hid_info(UUID16_CHR_HID_INFORMATION), _hid_control(UUID16_CHR_HID_CONTROL_POINT)
+   _mse_boot_input(UUID16_CHR_BOOT_MOUSE_INPUT_REPORT)
 {
   _kbd_cb = NULL;
   _mse_cb = NULL;
