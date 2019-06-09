@@ -20,7 +20,7 @@ install:
   - export PATH=$HOME/arduino_ide:$PATH
   - arduino --pref "boardsmanager.additional.urls=https://adafruit.github.io/arduino-board-index/package_adafruit_index.json" --save-prefs
   - arduino --install-boards adafruit:nrf52
-  - arduino --install-library "Adafruit NeoPixel","adafruit GFX Library","Adafruit SSD1306"
+  - arduino --install-library "Adafruit NeoPixel","Adafruit GFX Library","Adafruit SSD1306","MIDI Library",
 
 before_script:
   - arduino --board adafruit:nrf52:feather52840:softdevice=s140v6,debug=l0 --save-prefs
