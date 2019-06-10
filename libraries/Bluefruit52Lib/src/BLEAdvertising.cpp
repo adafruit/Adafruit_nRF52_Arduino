@@ -418,7 +418,7 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
-      if ( bitRead(_conn_mask, conn_hdl) && (0 == Bluefruit.connected()) )
+      if ( bitRead(_conn_mask, conn_hdl) && (0 == Bluefruit.Periph.connected()) )
       {
         bitClear(_conn_mask, conn_hdl);
 
