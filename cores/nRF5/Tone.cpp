@@ -118,6 +118,8 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 	NVIC_SetPriority(IntNo, 6); //low priority
 	NVIC_ClearPendingIRQ(IntNo);
 	NVIC_EnableIRQ(IntNo);
+
+	nrf_pwm_task_trigger(PWMInstance, NRF_PWM_TASK_SEQSTART0);
 }
 
 
