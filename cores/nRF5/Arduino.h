@@ -50,7 +50,7 @@ void suspendLoop(void);
 #ifdef __cplusplus
   #include "WCharacter.h"
   #include "WString.h"
-  // #include "Tone.h"
+  #include "Tone.h"
   #include "WMath.h"
   #include "HardwareSerial.h"
   #include "pulse.h"

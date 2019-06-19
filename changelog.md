@@ -1,5 +1,12 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+# 0.11.1
+
+- Refactor Ada Callback, use ISCR to detect isr context. Use function instead of macro
+- Implement #240 run travis test with all example sketches
+- Fix auto-start of advertising when central is connected, thanks to @ogatatsu PR #268
+- Added Tone()/noTone() functions
+
 # 0.11.0
 
 - Rework USB driver to support Adafruit_TinyUSB library (support HID and MSC)
