@@ -154,7 +154,9 @@ class AdafruitBluefruit
     int8_t   getTxPower         (void);
 
     bool     setApperance       (uint16_t appear);
+    bool     setAppearance      (uint16_t appear);
     uint16_t getApperance       (void);
+    uint16_t getAppearance      (void);
 
     ble_gap_sec_params_t getSecureParam(void)
     {
