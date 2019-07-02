@@ -580,19 +580,9 @@ void AdafruitBluefruit::setConnLedInterval(uint32_t ms)
   if ( !active ) xTimerStop(_led_blink_th, 0);
 }
 
-bool AdafruitBluefruit::setApperance(uin16_t appear)
-{
-   setAppearance(appear);
-}
-
 bool AdafruitBluefruit::setAppearance(uint16_t appear)
 {
   return ERROR_NONE == sd_ble_gap_appearance_set(appear);
-}
-
-bool AdafruitBluefruit::getApperance(void)
-{
-  getAppearance(void);
 }
 
 uint16_t AdafruitBluefruit::getAppearance(void)

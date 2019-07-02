@@ -61,8 +61,8 @@ setName	KEYWORD2
 getName	KEYWORD2      
 setTxPower	KEYWORD2
 getTxPower	KEYWORD2
-setApperance	KEYWORD2
-getApperance	KEYWORD2
+setAppearance	KEYWORD2
+getAppearance	KEYWORD2
 
 connected	KEYWORD2
 disconnect	KEYWORD2
