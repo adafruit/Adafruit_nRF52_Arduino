@@ -60,7 +60,7 @@ void setup()
   blinkTimer.begin(1000, blink_timer_callback);
   blinkTimer.start();
 
-  if (Bluefruit.begin())
+  if (!Bluefruit.begin())
   {
     Serial.println("Unable to init Bluefruit");
     while(1)
