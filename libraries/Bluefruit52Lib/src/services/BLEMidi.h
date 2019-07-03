@@ -75,11 +75,11 @@ class BLEMidi: public BLEService, public Stream
     void autoMIDIread(void* midi_obj);
 
     // Stream API for MIDI Interface
-    virtual int       read       ( void );
-    virtual size_t    write      ( uint8_t b );
-    virtual int       available  ( void );
-    virtual int       peek       ( void );
-    virtual void      flush      ( void );
+    virtual int    read       ( void );
+    virtual size_t write      ( uint8_t b );
+    virtual int    available  ( void );
+    virtual int    peek       ( void );
+    virtual void   flush      ( void );
 
     using Print::write; // pull in write(str) and write(buf, size) from Print
 
