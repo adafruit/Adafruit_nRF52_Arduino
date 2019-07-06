@@ -369,17 +369,11 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
         {
           _rd_authorize_cb(conn_hdl, this, rd_req);
         }
-<<<<<<< HEAD
 
         if (Bluefruit.connPaired()) {
           ble_gatts_rw_authorize_reply_params_t reply = { .type = BLE_GATTS_AUTHORIZE_TYPE_READ };
           sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
         }
-=======
-          
-        ble_gatts_rw_authorize_reply_params_t reply = { .type = BLE_GATTS_AUTHORIZE_TYPE_READ };
-        sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
->>>>>>> bcbb4fce7abbccb279c28fc154b4c9731684f75e
       }
 
       // Write Authorization and Long Write sequence handling
