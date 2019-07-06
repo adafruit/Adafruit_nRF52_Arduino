@@ -594,6 +594,9 @@ enum BLE_GAP_TX_POWER_ROLES
 /**@brief Maximum amount of addresses in the whitelist. */
 #define BLE_GAP_WHITELIST_ADDR_MAX_COUNT (8)
 
+/**@brief Maximum amount of IRKs in a whitelist. */
+#define BLE_GAP_WHITELIST_IRK_MAX_COUNT (8)
+
 
 /**@brief Maximum amount of identities in the device identities list. */
 #define BLE_GAP_DEVICE_IDENTITIES_MAX_COUNT (8)
@@ -693,7 +696,6 @@ typedef struct
   uint8_t addr[BLE_GAP_ADDR_LEN]; /**< 48-bit address, LSB format.
                                        @ref addr is not used if @ref addr_type is @ref BLE_GAP_ADDR_TYPE_ANONYMOUS. */
 } ble_gap_addr_t;
-
 
 /**@brief GAP connection parameters.
  *

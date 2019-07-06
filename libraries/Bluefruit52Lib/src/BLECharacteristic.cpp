@@ -428,7 +428,7 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
               _long_wr.count = max16(_long_wr.count, wr_req->offset + wr_req->len);
             }
 
-            if (Bluefruit.connPaired())
+            if (Bluefruit.connPaired(conn_hndl))
               sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
           }
           break;
@@ -440,7 +440,7 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
               ble_gatts_rw_authorize_reply_params_t reply = { .type = BLE_GATTS_AUTHORIZE_TYPE_WRITE };
               reply.params.write.gatt_status = BLE_GATT_STATUS_SUCCESS;
 
-              if (Bluefruit.connPaired())
+              if (Bluefruit.connPaired(conn_hndl))
                 sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
 
               // Long write complete, call write callback if set
