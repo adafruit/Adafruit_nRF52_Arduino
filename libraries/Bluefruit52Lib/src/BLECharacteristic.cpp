@@ -369,6 +369,9 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
         {
           _rd_authorize_cb(conn_hdl, this, rd_req);
         }
+          
+        ble_gatts_rw_authorize_reply_params_t reply = { .type = BLE_GATTS_AUTHORIZE_TYPE_READ };
+        sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
       }
 
       // Write Authorization and Long Write sequence handling
