@@ -396,6 +396,18 @@ bool BLEAdvertising::stop(void)
   return true;
 }
 
+bool BLEAdvertising::setWhitelist(ble_gap_addr_t const * const * addrs, uint8_t len) {
+  VERIFY_STATUS( sd_ble_gap_whitelist_set(addrs, len) );
+
+  return true;
+}
+
+bool BLEAdvertising::clearWhitelist() {
+  VERIFY_STATUS( sd_ble_gap_whitelist_set(NULL, 0) );
+
+  return true;
+}
+
 
 void BLEAdvertising::_eventHandler(ble_evt_t* evt)
 {

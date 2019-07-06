@@ -129,6 +129,9 @@ public:
   void setInterval  (uint16_t fast, uint16_t slow);
   void setIntervalMS(uint16_t fast, uint16_t slow);
 
+  bool setWhitelist(ble_gap_addr_t const * const * addrs, uint8_t len);
+  bool clearWhitelist();
+
   uint16_t getInterval(void);
 
   bool setBeacon(BLEBeacon& beacon);
