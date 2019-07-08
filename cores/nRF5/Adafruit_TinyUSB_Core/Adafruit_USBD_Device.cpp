@@ -95,26 +95,17 @@ Adafruit_USBD_Device::Adafruit_USBD_Device(void)
 bool Adafruit_USBD_Device::addInterface(Adafruit_USBD_Interface& itf)
 {
   uint8_t* desc = _desc_cfg+_desc_cfglen;
-  uint16_t const len = itf.getDescriptor(desc, sizeof(_desc_cfg)-_desc_cfglen);
+  uint16_t const len = itf.getDescriptor(_itf_count, desc, sizeof(_desc_cfg)-_desc_cfglen);
   uint8_t* desc_end = desc+len;
 
   if ( !len ) return false;
-
-  // Handle IAD
-  if ( desc[1] == TUSB_DESC_INTERFACE_ASSOCIATION )
-  {
-    // update starting interface
-    ((tusb_desc_interface_assoc_t*) desc)->bFirstInterface = _itf_count;
-
-    desc += desc[0]; // next
-  }
 
   while (desc < desc_end)
   {
     if (desc[1] == TUSB_DESC_INTERFACE)
     {
-      // No alternate interface support
-      ((tusb_desc_interface_t*) desc)->bInterfaceNumber = _itf_count++;
+      tusb_desc_interface_t* desc_itf = (tusb_desc_interface_t*) desc;
+      if (desc_itf->bAlternateSetting == 0) _itf_count++;
     }else if (desc[1] == TUSB_DESC_ENDPOINT)
     {
       tusb_desc_endpoint_t* desc_ep = (tusb_desc_endpoint_t*) desc;
@@ -127,7 +118,7 @@ bool Adafruit_USBD_Device::addInterface(Adafruit_USBD_Interface& itf)
 
   _desc_cfglen += len;
 
-  // Update config descriptor
+  // Update configuration descriptor
   tusb_desc_configuration_t* config = (tusb_desc_configuration_t*)_desc_cfg;
   config->wTotalLength = _desc_cfglen;
   config->bNumInterfaces = _itf_count;
