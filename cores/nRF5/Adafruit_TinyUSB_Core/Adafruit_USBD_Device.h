@@ -30,7 +30,7 @@
 class Adafruit_USBD_Interface
 {
   public:
-    virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize) = 0;
+    virtual uint16_t getDescriptor(uint8_t itfnum, uint8_t* buf, uint16_t bufsize) = 0;
 };
 
 class Adafruit_USBD_Device

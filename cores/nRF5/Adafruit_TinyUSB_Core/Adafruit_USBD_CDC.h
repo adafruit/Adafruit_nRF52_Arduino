@@ -34,7 +34,7 @@ public:
 	Adafruit_USBD_CDC(void);
 
 	// fron Adafruit_USBD_Interface
-	virtual uint16_t getDescriptor(uint8_t* buf, uint16_t bufsize);
+	virtual uint16_t getDescriptor(uint8_t itfnum, uint8_t* buf, uint16_t bufsize);
 
 	void setPins(uint8_t pin_rx, uint8_t pin_tx) { (void) pin_rx; (void) pin_tx; }
 	void begin(uint32_t baud_count);
