@@ -25,7 +25,8 @@ install:
   - rm -r $HOME/.arduino15/packages/adafruit/hardware/nrf52
   - echo $TRAVIS_BUILD_DIR
   - ln -s $TRAVIS_BUILD_DIR $HOME/.arduino15/packages/adafruit/hardware/nrf52
-  - ls $HOME/.arduino15/packages/adafruit/hardware
+  - ls $HOME/.arduino15/packages/adafruit/hardware/nrf52
+  - tree $HOME/.arduino15/packages/adafruit/hardware/nrf52
   - arduino --install-library "Adafruit NeoPixel","Adafruit NeoMatrix","Adafruit GFX Library","Adafruit SSD1306","MIDI Library",
 
 before_script:
