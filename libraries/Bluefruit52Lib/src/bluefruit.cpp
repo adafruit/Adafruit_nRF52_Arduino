@@ -635,9 +635,9 @@ uint16_t AdafruitBluefruit::connHandle(void)
   return _conn_hdl;
 }
 
-bool AdafruitBluefruit::connPaired(void)
+bool AdafruitBluefruit::connPaired(uint16_t conn_hdl)
 {
-  BLEConnection* conn = Bluefruit.Connection(_conn_hdl);
+  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
   return conn && conn->paired();
 }
 
