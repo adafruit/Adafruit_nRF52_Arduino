@@ -1,6 +1,8 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-# 0.11.1 - 2019.07.10
+## Next Release
+
+## 0.11.1 - 2019.07.10
 
 - Update tinyusb core to support USB MIDI
 - Refactor Ada Callback, use ISCR to detect isr context. Use function instead of macro
@@ -15,7 +17,7 @@
 - Fixed #277 conn LED doesn't stop when scanner is time out
 - Added connection handle to Bluefruit.connParied()
 
-# 0.11.0
+## 0.11.0
 
 - Rework USB driver to support Adafruit_TinyUSB library (support HID and MSC)
 - Added Metro nRF52840 Express
@@ -37,7 +39,7 @@
 - enhance Serial.available()/write() to prevent blocking wait without yield/delay
 - Clean up compiler warnings
 
-# 0.10.1
+## 0.10.1
 
 This release added multiple concurrent peripheral connections support, allow Bluefruit device to multiple central (phones/PC) simultaneously. It introduces new BLE class: BLEPeriph, BLEConnection, remove BLEGap, refactor/rename/move functions and callbacks.     
 
@@ -80,7 +82,7 @@ This release added multiple concurrent peripheral connections support, allow Blu
   - Removed keyboardReport() variant with flat keycode parameters
   - Added conn_handle parameter to keyboard led callback
 
-# 0.9.3
+## 0.9.3
 
 - Correct bootloader version text in IDE to 0.2.6
 - Fixed #173 bleuart return incorrect value when failed to send (PR #178 thanks Nenik)
