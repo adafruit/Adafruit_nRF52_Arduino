@@ -1,11 +1,19 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-# 0.11.1
+# 0.11.1 - 2019.07.10
 
+- Update tinyusb core to support USB MIDI
 - Refactor Ada Callback, use ISCR to detect isr context. Use function instead of macro
 - Implement #240 run travis test with all example sketches
-- Fix auto-start of advertising when central is connected, thanks to @ogatatsu PR #268
+- Fixed auto-start of advertising when central is connected, thanks to @ogatatsu PR #268
 - Added Tone()/noTone() functions
+- Travis-ci builds all sketches when commit code
+- Fixed setAppearance/getAppearance() typo, thanks to @paulmand3l PR #292
+- Fixed rssi_proximity_peripheral sketch, thanks to @dicobrazz PR #295
+- Fixed doc typo, thanks to @yvadher PR #296
+- Fixed HID usage code location comment in exmaple sketch, thanks to @stefandz PR #297
+- Fixed #277 conn LED doesn't stop when scanner is time out
+- Added connection handle to Bluefruit.connParied()
 
 # 0.11.0
 
