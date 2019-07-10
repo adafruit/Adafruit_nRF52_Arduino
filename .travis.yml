@@ -19,7 +19,10 @@ install:
   - umake electronics arduino $HOME/arduino_ide
   - export PATH=$HOME/arduino_ide:$PATH
   - arduino --pref "boardsmanager.additional.urls=https://adafruit.github.io/arduino-board-index/package_adafruit_index.json" --save-prefs
+  # Install BSP for tools, then remove and create symlink the git code
   - arduino --install-boards adafruit:nrf52
+  - rm -r $HOME/.arduino15/packages/adafruit/hardware/nrf52
+  - ln -s $TRAVIS_BUILD_DIR $HOME/.arduino15/packages/adafruit/hardware/nrf52
   - arduino --install-library "Adafruit NeoPixel","Adafruit NeoMatrix","Adafruit GFX Library","Adafruit SSD1306","MIDI Library",
 
 before_script:
