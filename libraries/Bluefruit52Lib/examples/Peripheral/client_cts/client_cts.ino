@@ -94,8 +94,11 @@ void startAdv(void)
 
 void loop()
 {
-  // If service is not yet discovered
-  if ( !bleCTime.discovered() && !Bluefruit.connPaired() ) return;
+  // Skip if service is not yet discovered
+  if ( !bleCTime.discovered() ) return;
+
+  // Skip if service connection is not paired/secured
+  if ( !Bluefruit.connPaired( bleCTime.connHandle() ) ) return;
 
   // Get Time from iOS once per second
   // Note it is not advised to update this quickly

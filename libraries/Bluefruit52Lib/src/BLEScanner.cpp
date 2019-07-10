@@ -138,8 +138,8 @@ bool BLEScanner::stop(void)
 {
   VERIFY_STATUS( sd_ble_gap_scan_stop(), false );
 
-  Bluefruit._stopConnLed(); // stop blinking
   _runnning = false;
+  Bluefruit._stopConnLed(); // stop blinking
 
   return true;
 }
@@ -406,6 +406,7 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
       if (evt->evt.gap_evt.params.timeout.src == BLE_GAP_TIMEOUT_SRC_SCAN)
       {
         _runnning = false;
+        Bluefruit._stopConnLed();
         if (_stop_cb) ada_callback(NULL, 0, _stop_cb);
       }
     break;
