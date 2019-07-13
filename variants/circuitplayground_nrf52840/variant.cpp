@@ -26,36 +26,36 @@
 const uint32_t g_ADigitalPinMap[] =
 {
   // D0 .. D13
-  29,  // D0  is P0.29 (GPIO D0 / A6 / UART RX)
+  30,  // D0  is P0.30 (GPIO D0 / A6 / UART RX)
   14,  // D1  is P0.14 (GPIO D1 / UART TX)
-   4,  // D2  is P0.04 (GPIO D2 / A5 / SDA)
-   5,  // D3  is P0.05 (GPIO D3 / A4 / SCL)
-  33,  // D4  is P1.01 (GPIO D4 / Left Button)
+   5,  // D2  is P0.05 (GPIO D2 / A5 / SDA)
+   4,  // D3  is P0.04 (GPIO D3 / A4 / SCL)
+  34,  // D4  is P1.02 (GPIO D4 / Left Button)
   47,  // D5  is P1.15 (GPIO D5 / Right button)
-   3,  // D6  is P0.03 (GPIO D6 / A1)
-  34,  // D7  is P1.02 (GPIO D7 / Slide Switch)
+   2,  // D6  is P0.02 (GPIO D6 / A1)
+  38,  // D7  is P1.06 (GPIO D7 / Slide Switch)
   13,  // D8  is P0.13 (GPIO D8 / NeoPixels)
-   2,  // D9  is P0.02 (GPIO D9 / A2)
-  28,  // D10 is P0.28 (GPIO D10 / A3)
-  35,  // D11 is P1.03 (GPIO D11 / Speaker Shutdown)
+  29,  // D9  is P0.29 (GPIO D9 / A2)
+   3,  // D10 is P0.03 (GPIO D10 / A3)
+  36,  // D11 is P1.04 (GPIO D11 / Speaker Shutdown)
   26,  // D12 is P0.26 (GPIO D12 / Audio Out)
   46,  // D13 is P1.14 (GPIO D13 / Red LED)
 
   // D14 .. D23
   26,  // NOT REALLY ANALOG, A PLACEHODER SINCE D12 is not analog
-   3,  // D6  is P0.03 (GPIO D6 / A1)
-   2,  // D9  is P0.02 (GPIO D9 / A2)
-  28,  // D10 is P0.28 (GPIO D10 / A3)
-   5,  // D3  is P0.05 (GPIO D3 / A4 / SCL)
-   4,  // D2  is P0.04 (GPIO D2 / A5 / SDA)
-  29,  // D0  is P0.29 (GPIO D0 / A6 / UART RX)
+   2,  // D6  is P0.02 (GPIO D6 / A1)
+  29,  // D9  is P0.29 (GPIO D9 / A2)
+   3,  // D10 is P0.03 (GPIO D10 / A3)
+   4,  // D3  is P0.04 (GPIO D3 / A4 / SCL)
+   5,  // D2  is P0.05 (GPIO D2 / A5 / SDA)
+  30,  // D0  is P0.30 (GPIO D0 / A6 / UART RX)
   14,  // NOT REALLY ANALOG, A PLACEHODER SINCE D1 is not analog
-  31,  // A8 - Light sensor
-  30,  // A9 - Thermistor sensor
+  28,  // A8 - Light sensor
+  31,  // A9 - Thermistor sensor
 
-  45,  // D24 is P1.13  (LIS IRQ)
+  45,  // D24 is P1.13 (LIS IRQ)
   44,  // D25 is P1.12 (LIS SCL)
-  43,  // D26 is P1.11 (LIS SDA)
+  42,  // D26 is P1.10 (LIS SDA)
 
   // QSPI pins (not exposed via any header / test point)
   19,  // D27 is P0.19 (QSPI CLK)
@@ -66,8 +66,8 @@ const uint32_t g_ADigitalPinMap[] =
   22,  // D32 is P0.22 (QSPI Data 3)
 
   // D33 & D34 PDM pins
-  24,  // D33 is P0.24 (PDM CLK)
-  25,  // D34 is P0.25 (PDM DAT)
+  16,  // D33 is P0.16 (PDM CLK)
+  17,  // D34 is P0.17 (PDM DAT)
 
 };
 
