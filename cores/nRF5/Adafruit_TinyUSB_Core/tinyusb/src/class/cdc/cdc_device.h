@@ -57,10 +57,10 @@ void        tud_cdc_n_get_line_coding (uint8_t itf, cdc_line_coding_t* coding);
 void        tud_cdc_n_set_wanted_char (uint8_t itf, char wanted);
 
 uint32_t    tud_cdc_n_available       (uint8_t itf);
-signed char tud_cdc_n_read_char       (uint8_t itf);
+int         tud_cdc_n_read_char       (uint8_t itf);
 uint32_t    tud_cdc_n_read            (uint8_t itf, void* buffer, uint32_t bufsize);
 void        tud_cdc_n_read_flush      (uint8_t itf);
-signed char tud_cdc_n_peek            (uint8_t itf, int pos);
+int         tud_cdc_n_peek            (uint8_t itf, int pos);
 
 uint32_t    tud_cdc_n_write_char      (uint8_t itf, char ch);
 uint32_t    tud_cdc_n_write           (uint8_t itf, void const* buffer, uint32_t bufsize);
@@ -76,10 +76,10 @@ static inline void        tud_cdc_get_line_coding (cdc_line_coding_t* coding);
 static inline void        tud_cdc_set_wanted_char (char wanted);
 
 static inline uint32_t    tud_cdc_available       (void);
-static inline signed char tud_cdc_read_char       (void);
+static inline int         tud_cdc_read_char       (void);
 static inline uint32_t    tud_cdc_read            (void* buffer, uint32_t bufsize);
 static inline void        tud_cdc_read_flush      (void);
-static inline signed char tud_cdc_peek            (int pos);
+static inline int         tud_cdc_peek            (int pos);
 
 static inline uint32_t    tud_cdc_write_char      (char ch);
 static inline uint32_t    tud_cdc_write           (void const* buffer, uint32_t bufsize);
@@ -130,7 +130,7 @@ static inline uint32_t tud_cdc_available (void)
   return tud_cdc_n_available(0);
 }
 
-static inline signed char tud_cdc_read_char (void)
+static inline int tud_cdc_read_char (void)
 {
   return tud_cdc_n_read_char(0);
 }
@@ -145,7 +145,7 @@ static inline void tud_cdc_read_flush (void)
   tud_cdc_n_read_flush(0);
 }
 
-static inline signed char tud_cdc_peek (int pos)
+static inline int tud_cdc_peek (int pos)
 {
   return tud_cdc_n_peek(0, pos);
 }
