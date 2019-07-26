@@ -66,6 +66,7 @@ uint32_t    tud_cdc_n_write_char      (uint8_t itf, char ch);
 uint32_t    tud_cdc_n_write           (uint8_t itf, void const* buffer, uint32_t bufsize);
 uint32_t    tud_cdc_n_write_str       (uint8_t itf, char const* str);
 bool        tud_cdc_n_write_flush     (uint8_t itf);
+uint32_t    tud_cdc_n_availableForWrite (uint8_t itf);
 
 //--------------------------------------------------------------------+
 // Application API (Interface0)
@@ -85,6 +86,7 @@ static inline uint32_t    tud_cdc_write_char      (char ch);
 static inline uint32_t    tud_cdc_write           (void const* buffer, uint32_t bufsize);
 static inline uint32_t    tud_cdc_write_str       (char const* str);
 static inline bool        tud_cdc_write_flush     (void);
+static inline uint32_t    tud_cdc_availableForWrite(void);
 
 //--------------------------------------------------------------------+
 // Application Callback API (weak is optional)
@@ -168,6 +170,11 @@ static inline uint32_t tud_cdc_write_str (char const* str)
 static inline bool tud_cdc_write_flush (void)
 {
   return tud_cdc_n_write_flush(0);
+}
+
+static inline uint32_t tud_cdc_availableForWrite(void)
+{
+  return tud_cdc_n_availableForWrite(0);
 }
 
 /** @} */

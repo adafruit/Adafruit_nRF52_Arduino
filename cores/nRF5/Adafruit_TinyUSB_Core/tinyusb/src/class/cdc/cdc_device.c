@@ -190,6 +190,11 @@ bool tud_cdc_n_write_flush (uint8_t itf)
   return true;
 }
 
+uint32_t tud_cdc_n_availableForWrite (uint8_t itf)
+{
+  return CFG_TUD_CDC_TX_BUFSIZE - tu_fifo_count(&_cdcd_itf[itf].tx_ff);
+}
+
 
 //--------------------------------------------------------------------+
 // USBD Driver API
