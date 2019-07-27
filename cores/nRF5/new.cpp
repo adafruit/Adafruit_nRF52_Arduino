@@ -34,3 +34,11 @@ void operator delete(void * ptr) {
 void operator delete[](void * ptr) {
   rtos_free(ptr);
 }
+
+void operator delete(void * ptr, unsigned int) {
+  rtos_free(ptr);
+}
+
+void operator delete[](void * ptr, unsigned int) {
+  rtos_free(ptr);
+}
