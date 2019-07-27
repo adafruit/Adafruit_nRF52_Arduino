@@ -127,7 +127,7 @@ size_t Adafruit_USBD_CDC::write(const uint8_t *buffer, size_t size)
 
 size_t Adafruit_USBD_CDC::availableForWrite(void)
 {
-  return tud_cdc_availableForWrite();
+  return tud_cdc_write_available();
 }
 
 extern "C"
