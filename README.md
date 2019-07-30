@@ -115,4 +115,3 @@ The following libraries are used:
 - [tinyusb](https://github.com/hathach/tinyusb) as usb stack
 - [nrfx](https://github.com/NordicSemiconductor/nrfx) for peripherals driver
 - [littlefs](https://github.com/ARMmbed/littlefs) for internal file system
-- [fatfs by elm-chan](http://elm-chan.org/fsw/ff/00index_e.html) for external file system
