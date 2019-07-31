@@ -52,12 +52,13 @@ class Adafruit_USBD_Device
     bool addInterface(Adafruit_USBD_Interface& itf);
 
     void setID(uint16_t vid, uint16_t pid);
+    void setVersion(uint16_t bcd);
     bool begin(void);
 
-    bool mounted(void) { return tud_mounted(); }
-    bool suspended(void) { return tud_suspended(); }
-    bool ready(void) { return tud_ready(); }
-    bool remoteWakeup(void) { return tud_remote_wakeup(); }
+    bool mounted      (void) { return tud_mounted(); }
+    bool suspended    (void) { return tud_suspended(); }
+    bool ready        (void) { return tud_ready(); }
+    bool remoteWakeup (void) { return tud_remote_wakeup(); }
 
     friend uint8_t const * tud_descriptor_device_cb(void);
     friend uint8_t const * tud_descriptor_configuration_cb(uint8_t index);
