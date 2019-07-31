@@ -96,7 +96,7 @@ int Adafruit_USBD_CDC::peek(void)
 
 int Adafruit_USBD_CDC::read(void)
 {
-  return (int) tud_cdc_read_char();
+  return tud_cdc_read_char();
 }
 
 void Adafruit_USBD_CDC::flush(void)
