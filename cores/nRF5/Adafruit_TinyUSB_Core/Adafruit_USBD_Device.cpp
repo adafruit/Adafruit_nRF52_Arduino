@@ -40,7 +40,7 @@ Adafruit_USBD_Device USBDevice;
 
 Adafruit_USBD_Device::Adafruit_USBD_Device(void)
 {
-  tusb_desc_device_t  desc_dev =
+  tusb_desc_device_t const desc_dev =
   {
     .bLength            = sizeof(tusb_desc_device_t),
     .bDescriptorType    = TUSB_DESC_DEVICE,
@@ -57,17 +57,15 @@ Adafruit_USBD_Device::Adafruit_USBD_Device(void)
     .idVendor           = 0,
     .idProduct          = 0,
     .bcdDevice          = 0x0100,
-
     .iManufacturer      = 0x01,
     .iProduct           = 0x02,
     .iSerialNumber      = 0x03,
-
     .bNumConfigurations = 0x01
   };
 
   _desc_device = desc_dev;
 
-  tusb_desc_configuration_t dev_cfg =
+  tusb_desc_configuration_t const dev_cfg =
   {
     .bLength             = sizeof(tusb_desc_configuration_t),
     .bDescriptorType     = TUSB_DESC_CONFIGURATION,
@@ -75,7 +73,6 @@ Adafruit_USBD_Device::Adafruit_USBD_Device(void)
     // Total Length & Interface Number will be updated later
     .wTotalLength        = 0,
     .bNumInterfaces      = 0,
-
     .bConfigurationValue = 1,
     .iConfiguration      = 0x00,
     .bmAttributes        = TU_BIT(7) | TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP,
@@ -130,6 +127,11 @@ void Adafruit_USBD_Device::setID(uint16_t vid, uint16_t pid)
 {
   _desc_device.idVendor = vid;
   _desc_device.idProduct = pid;
+}
+
+void Adafruit_USBD_Device::setVersion(uint16_t bcd)
+{
+  _desc_device.bcdUSB = bcd;
 }
 
 bool Adafruit_USBD_Device::begin(void)
