@@ -64,7 +64,7 @@ void Uart::begin(unsigned long baudrate)
   begin(baudrate, (uint8_t)SERIAL_8N1);
 }
 
-void Uart::begin(unsigned long baudrate, uint16_t /*config*/)
+void Uart::begin(unsigned long baudrate, uint16_t config)
 {
   // skip if already begun
   if ( _begun ) return;
@@ -75,9 +75,9 @@ void Uart::begin(unsigned long baudrate, uint16_t /*config*/)
   if (uc_hwFlow == 1) {
     nrfUart->PSEL.CTS = uc_pinCTS;
     nrfUart->PSEL.RTS = uc_pinRTS;
-    nrfUart->CONFIG = (UARTE_CONFIG_PARITY_Excluded << UARTE_CONFIG_PARITY_Pos) | UARTE_CONFIG_HWFC_Enabled;
+    nrfUart->CONFIG = config | (UARTE_CONFIG_HWFC_Enabled << UARTE_CONFIG_HWFC_Pos);
   } else {
-    nrfUart->CONFIG = (UARTE_CONFIG_PARITY_Excluded << UARTE_CONFIG_PARITY_Pos) | UARTE_CONFIG_HWFC_Disabled;
+    nrfUart->CONFIG = config | (UARTE_CONFIG_HWFC_Disabled << UARTE_CONFIG_HWFC_Pos);
   }
 
   uint32_t nrfBaudRate;
