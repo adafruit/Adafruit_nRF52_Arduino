@@ -30,8 +30,8 @@
 class Uart : public HardwareSerial
 {
   public:
-    Uart(NRF_UART_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pinTX);
-    Uart(NRF_UART_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pinTX, uint8_t _pinCTS, uint8_t _pinRTS );
+    Uart(NRF_UARTE_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pinTX);
+    Uart(NRF_UARTE_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pinTX, uint8_t _pinCTS, uint8_t _pinRTS);
 
     void setPins(uint8_t pin_rx, uint8_t pin_tx);
     void begin(unsigned long baudRate);
@@ -41,8 +41,9 @@ class Uart : public HardwareSerial
     int peek();
     int read();
     void flush();
-    size_t write(const uint8_t data);
-    using Print::write; // pull in write(str) and write(buf, size) from Print
+    size_t write(uint8_t data);
+    size_t write(const uint8_t *buffer, size_t size);
+    using Print::write; // pull in write(str) from Print
 
     void IrqHandler();
 
@@ -52,8 +53,10 @@ class Uart : public HardwareSerial
     }
 
   private:
-    NRF_UART_Type *nrfUart;
+    NRF_UARTE_Type *nrfUart;
     RingBuffer rxBuffer;
+    uint8_t rxRcv;
+    uint8_t txBuffer[SERIAL_BUFFER_SIZE];
 
     IRQn_Type IRQn;
 
@@ -93,9 +96,8 @@ class Uart : public HardwareSerial
 #define SERIAL_PORT_HARDWARE        Serial1
 #define SERIAL_PORT_HARDWARE_OPEN   Serial1
 
-// TODO need to update class Uart to work with UARTE
-//extern Uart Serial2;
-//#define HAVE_HWSERIAL2
+extern Uart Serial2;
+#define HAVE_HWSERIAL2
 
 #else
 

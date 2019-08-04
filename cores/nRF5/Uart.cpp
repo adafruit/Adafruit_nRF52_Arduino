@@ -27,7 +27,7 @@ void serialEventRun(void)
   if (serialEvent && Serial.available() ) serialEvent();
 }
 
-Uart::Uart(NRF_UART_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pinTX)
+Uart::Uart(NRF_UARTE_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pinTX)
 {
   nrfUart = _nrfUart;
   IRQn = _IRQn;
@@ -39,7 +39,7 @@ Uart::Uart(NRF_UART_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pi
   _begun = false;
 }
 
-Uart::Uart(NRF_UART_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pinTX, uint8_t _pinCTS, uint8_t _pinRTS)
+Uart::Uart(NRF_UARTE_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pinTX, uint8_t _pinCTS, uint8_t _pinRTS)
 {
   nrfUart = _nrfUart;
   IRQn = _IRQn;
@@ -55,8 +55,8 @@ Uart::Uart(NRF_UART_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pi
 
 void Uart::setPins(uint8_t pin_rx, uint8_t pin_tx)
 {
-  uc_pinRX = pin_rx;
-  uc_pinTX = pin_tx;
+  uc_pinRX = g_ADigitalPinMap[pin_rx];
+  uc_pinTX = g_ADigitalPinMap[pin_tx];
 }
 
 void Uart::begin(unsigned long baudrate)
@@ -69,15 +69,15 @@ void Uart::begin(unsigned long baudrate, uint16_t /*config*/)
   // skip if already begun
   if ( _begun ) return;
 
-  nrfUart->PSELTXD = uc_pinTX;
-  nrfUart->PSELRXD = uc_pinRX;
+  nrfUart->PSEL.TXD = uc_pinTX;
+  nrfUart->PSEL.RXD = uc_pinRX;
 
   if (uc_hwFlow == 1) {
-    nrfUart->PSELCTS = uc_pinCTS;
-    nrfUart->PSELRTS = uc_pinRTS;
-    nrfUart->CONFIG = (UART_CONFIG_PARITY_Excluded << UART_CONFIG_PARITY_Pos) | UART_CONFIG_HWFC_Enabled;
+    nrfUart->PSEL.CTS = uc_pinCTS;
+    nrfUart->PSEL.RTS = uc_pinRTS;
+    nrfUart->CONFIG = (UARTE_CONFIG_PARITY_Excluded << UARTE_CONFIG_PARITY_Pos) | UARTE_CONFIG_HWFC_Enabled;
   } else {
-    nrfUart->CONFIG = (UART_CONFIG_PARITY_Excluded << UART_CONFIG_PARITY_Pos) | UART_CONFIG_HWFC_Disabled;
+    nrfUart->CONFIG = (UARTE_CONFIG_PARITY_Excluded << UARTE_CONFIG_PARITY_Pos) | UARTE_CONFIG_HWFC_Disabled;
   }
 
   uint32_t nrfBaudRate;
@@ -118,15 +118,16 @@ void Uart::begin(unsigned long baudrate, uint16_t /*config*/)
 
   nrfUart->BAUDRATE = nrfBaudRate;
 
-  nrfUart->ENABLE = UART_ENABLE_ENABLE_Enabled;
+  nrfUart->ENABLE = UARTE_ENABLE_ENABLE_Enabled;
 
-  nrfUart->EVENTS_RXDRDY = 0x0UL;
-  nrfUart->EVENTS_TXDRDY = 0x0UL;
+  nrfUart->TXD.PTR = (uint32_t)txBuffer;
+  nrfUart->EVENTS_ENDTX = 0x0UL;
 
+  nrfUart->RXD.PTR = (uint32_t)&rxRcv;
+  nrfUart->RXD.MAXCNT = 1;
   nrfUart->TASKS_STARTRX = 0x1UL;
-  nrfUart->TASKS_STARTTX = 0x1UL;
 
-  nrfUart->INTENSET = UART_INTENSET_RXDRDY_Msk;
+  nrfUart->INTENSET = UARTE_INTENSET_ENDRX_Msk | UARTE_INTENSET_ENDTX_Msk;
 
   NVIC_ClearPendingIRQ(IRQn);
   NVIC_SetPriority(IRQn, 3);
@@ -140,18 +141,18 @@ void Uart::end()
 {
   NVIC_DisableIRQ(IRQn);
 
-  nrfUart->INTENCLR = UART_INTENCLR_RXDRDY_Msk;
+  nrfUart->INTENCLR = UARTE_INTENSET_ENDRX_Msk | UARTE_INTENSET_ENDTX_Msk;
 
   nrfUart->TASKS_STOPRX = 0x1UL;
   nrfUart->TASKS_STOPTX = 0x1UL;
 
-  nrfUart->ENABLE = UART_ENABLE_ENABLE_Disabled;
+  nrfUart->ENABLE = UARTE_ENABLE_ENABLE_Disabled;
 
-  nrfUart->PSELTXD = 0xFFFFFFFF;
-  nrfUart->PSELRXD = 0xFFFFFFFF;
+  nrfUart->PSEL.TXD = 0xFFFFFFFF;
+  nrfUart->PSEL.RXD = 0xFFFFFFFF;
 
-  nrfUart->PSELRTS = 0xFFFFFFFF;
-  nrfUart->PSELCTS = 0xFFFFFFFF;
+  nrfUart->PSEL.RTS = 0xFFFFFFFF;
+  nrfUart->PSEL.CTS = 0xFFFFFFFF;
 
   rxBuffer.clear();
 
@@ -162,15 +163,28 @@ void Uart::end()
 
 void Uart::flush()
 {
-	rxBuffer.clear();
+  if ( _begun ) {
+    xSemaphoreTake(_mutex, portMAX_DELAY);
+    xSemaphoreGive(_mutex);
+  }
 }
 
 void Uart::IrqHandler()
 {
-  if (nrfUart->EVENTS_RXDRDY)
+  if (nrfUart->EVENTS_ENDRX)
   {
-    nrfUart->EVENTS_RXDRDY = 0x0UL;
-    rxBuffer.store_char(nrfUart->RXD);
+    nrfUart->EVENTS_ENDRX = 0x0UL;
+    if (nrfUart->RXD.AMOUNT)
+    {
+      rxBuffer.store_char(rxRcv);
+    }
+    nrfUart->TASKS_STARTRX = 0x1UL;
+  }
+
+  if (nrfUart->EVENTS_ENDTX)
+  {
+    nrfUart->EVENTS_ENDTX = 0x0UL;
+    xSemaphoreGiveFromISR(_mutex, NULL);
   }
 }
 
@@ -189,25 +203,38 @@ int Uart::read()
   return rxBuffer.read_char();
 }
 
-size_t Uart::write(const uint8_t data)
+size_t Uart::write(uint8_t data)
 {
-  xSemaphoreTake(_mutex, portMAX_DELAY);
-
-  nrfUart->TXD = data;
-
-  while(!nrfUart->EVENTS_TXDRDY);
-
-  nrfUart->EVENTS_TXDRDY = 0x0UL;
-
-  xSemaphoreGive(_mutex);
-
-  return 1;
+  return write(&data, 1);
 }
 
-Uart SERIAL_PORT_HARDWARE( NRF_UART0, UARTE0_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX );
+size_t Uart::write(const uint8_t *buffer, size_t size)
+{
+  if(size == 0) return 0;
+
+  size_t sent = 0;
+
+  do
+  {
+    size_t remaining = size - sent;
+    size_t txSize = min(remaining, SERIAL_BUFFER_SIZE);
+
+    xSemaphoreTake(_mutex, portMAX_DELAY);
+
+    memcpy(txBuffer, buffer + sent, txSize);
+
+    nrfUart->TXD.MAXCNT = txSize;
+    nrfUart->TASKS_STARTTX = 0x1UL;
+    sent += txSize;
+
+  } while (sent < size);
+
+  return sent;
+}
+
+Uart SERIAL_PORT_HARDWARE( NRF_UARTE0, UARTE0_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX );
 
 #ifdef HAVE_HWSERIAL2
-// TODO UART1 is UARTE only, need update class Uart to work
 Uart Serial2( NRF_UARTE1, UARTE1_IRQn, PIN_SERIAL2_RX, PIN_SERIAL2_TX );
 #endif
 
@@ -217,4 +244,11 @@ extern "C"
   {
     SERIAL_PORT_HARDWARE.IrqHandler();
   }
+
+#ifdef HAVE_HWSERIAL2
+  void UARTE1_IRQHandler()
+  {
+    Serial2.IrqHandler();
+  }
+#endif
 }
