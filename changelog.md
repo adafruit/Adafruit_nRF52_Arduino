@@ -2,6 +2,13 @@
 
 ## Next Release
 
+## 0.12.0 - 2019.08.05
+
+- Update tinyusb core to support webUSB & vendor class
+- Added a couple delete operators to make std=gnu++14/17, PR #312 thanks to @kevinfrei
+- Fix Serial.read() return clean 8-bit, PR #308 thanks to @pyro9
+- Added availableForWrite(), PR #311 thanks to @pyro9
+
 ## 0.11.1 - 2019.07.10
 
 - Update tinyusb core to support USB MIDI
