@@ -42,7 +42,7 @@
 
 #define CFG_TUSB_OS                 OPT_OS_FREERTOS
 #define CFG_TUSB_MEM_SECTION
-#define CFG_TUSB_MEM_ALIGN          TU_ATTR_ALIGNED(4)
+#define CFG_TUSB_MEM_ALIGN          __attribute__ ((aligned(4)))
 
 //--------------------------------------------------------------------
 // DEVICE CONFIGURATION
@@ -72,7 +72,6 @@
 #define CFG_TUD_MIDI_TX_BUFSIZE     64
 
 // Vendor FIFO size of TX and RX
-// If not configured vendor endpoints will not be buffered
 #define CFG_TUD_VENDOR_RX_BUFSIZE   64
 #define CFG_TUD_VENDOR_TX_BUFSIZE   64
 
