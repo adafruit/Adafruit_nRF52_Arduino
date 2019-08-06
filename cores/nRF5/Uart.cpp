@@ -234,8 +234,8 @@ size_t Uart::write(const uint8_t *buffer, size_t size)
 
 Uart SERIAL_PORT_HARDWARE( NRF_UARTE0, UARTE0_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX );
 
-#ifdef HAVE_HWSERIAL2
-Uart Serial2( NRF_UARTE1, UARTE1_IRQn, PIN_SERIAL2_RX, PIN_SERIAL2_TX );
+#ifdef SERIAL_PORT_HARDWARE1
+Uart SERIAL_PORT_HARDWARE1( NRF_UARTE1, UARTE1_IRQn, PIN_SERIAL2_RX, PIN_SERIAL2_TX );
 #endif
 
 extern "C"
@@ -245,10 +245,10 @@ extern "C"
     SERIAL_PORT_HARDWARE.IrqHandler();
   }
 
-#ifdef HAVE_HWSERIAL2
+#ifdef SERIAL_PORT_HARDWARE1
   void UARTE1_IRQHandler()
   {
-    Serial2.IrqHandler();
+    SERIAL_PORT_HARDWARE1.IrqHandler();
   }
 #endif
 }
