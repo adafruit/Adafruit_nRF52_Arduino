@@ -432,6 +432,11 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
     }
     break;
 
+    case BLE_GATTC_EVT_EXCHANGE_MTU_RSP:
+      _mtu = evt->evt.gattc_evt.params.exchange_mtu_rsp.server_rx_mtu;
+      LOG_LV1("GAP", "ATT MTU is changed to %d", _mtu);
+    break;
+
     //--------------------------------------------------------------------+
     //
     //--------------------------------------------------------------------+
