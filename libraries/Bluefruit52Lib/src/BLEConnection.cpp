@@ -132,6 +132,18 @@ bool BLEConnection::setTxPower(int8_t power)
   return true;
 }
 
+bool BLEConnection::requestMtuExchange(uint16_t mtu)
+{
+  VERIFY_STATUS(sd_ble_gattc_exchange_mtu_request(_conn_hdl, mtu), false);
+  return true;
+}
+
+bool BLEConnection::updateDataLength(ble_gap_data_length_params_t const *p_dl_params, ble_gap_data_length_limitation_t *p_dl_limitation)
+{
+  VERIFY_STATUS(sd_ble_gap_data_length_update(_conn_hdl, p_dl_params, p_dl_limitation), false);
+  return true;
+}
+
 bool BLEConnection::disconnect(void)
 {
   return ERROR_NONE == sd_ble_gap_disconnect(_conn_hdl, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
@@ -405,7 +417,7 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
       ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
       _conn_interval = param->max_conn_interval;
 
-      LOG_LV2("GAP", "Conn Interval= %f", _conn_interval*1.25f);
+      LOG_LV1("GAP", "Conn Interval= %f", _conn_interval*1.25f);
     }
     break;
 

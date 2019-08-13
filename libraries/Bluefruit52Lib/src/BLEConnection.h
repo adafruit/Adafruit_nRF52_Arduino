@@ -83,6 +83,8 @@ class BLEConnection
     bool disconnect(void);
 
     bool setTxPower(int8_t power); // set power for this connection
+    bool updateDataLength(ble_gap_data_length_params_t const *p_dl_params = NULL, ble_gap_data_length_limitation_t *p_dl_limitation = NULL);
+    bool requestMtuExchange(uint16_t mtu);
 
     bool monitorRssi(uint8_t threshold = BLE_GAP_RSSI_THRESHOLD_INVALID);
     int8_t getRssi(void);
