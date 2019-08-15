@@ -46,6 +46,8 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
   _connected = true;
 
   _mtu = BLE_GATT_ATT_MTU_DEFAULT;
+  _data_length = BLE_GATT_ATT_MTU_DEFAULT + 4; // 27
+  _phy = BLE_GAP_PHY_1MBPS;
   _conn_interval = 0;
   _peer_addr = evt_connected->peer_addr;
   _role = evt_connected->role;
@@ -99,6 +101,16 @@ uint16_t BLEConnection::getConnInterval(void)
   return _conn_interval;
 }
 
+uint16_t BLEConnection::getDataLength(void)
+{
+  return _data_length;
+}
+
+uint8_t BLEConnection::getPHY(void)
+{
+  return _phy;
+}
+
 ble_gap_addr_t BLEConnection::getPeerAddr (void)
 {
   return _peer_addr;
@@ -138,9 +150,16 @@ bool BLEConnection::requestMtuExchange(uint16_t mtu)
   return true;
 }
 
-bool BLEConnection::updateDataLength(ble_gap_data_length_params_t const *p_dl_params, ble_gap_data_length_limitation_t *p_dl_limitation)
+bool BLEConnection::requestDataLengthUpdate(ble_gap_data_length_params_t const *p_dl_params, ble_gap_data_length_limitation_t *p_dl_limitation)
 {
   VERIFY_STATUS(sd_ble_gap_data_length_update(_conn_hdl, p_dl_params, p_dl_limitation), false);
+  return true;
+}
+
+bool BLEConnection::requestPHY(uint8_t phy)
+{
+  ble_gap_phys_t gap_phy = { .tx_phys = phy, .rx_phys = phy };
+  VERIFY_STATUS( sd_ble_gap_phy_update(_conn_hdl, &gap_phy), false);
   return true;
 }
 
@@ -421,6 +440,7 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
     }
     break;
 
+    //------------- MTU -------------//
     case BLE_GATTS_EVT_EXCHANGE_MTU_REQUEST:
     {
       uint16_t const max_mtu = Bluefruit.getMaxMtu(_role);
@@ -435,6 +455,66 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
     case BLE_GATTC_EVT_EXCHANGE_MTU_RSP:
       _mtu = evt->evt.gattc_evt.params.exchange_mtu_rsp.server_rx_mtu;
       LOG_LV1("GAP", "ATT MTU is changed to %d", _mtu);
+    break;
+
+    //------------- Data Length -------------//
+    case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
+    {
+      ble_gap_data_length_params_t* param = &evt->evt.gap_evt.params.data_length_update_request.peer_params;
+      (void) param;
+
+      LOG_LV1("GAP", "Data Length Request is (tx, rx) octets = (%d, %d), (tx, rx) time = (%d, %d) us",
+              param->max_tx_octets, param->max_rx_octets, param->max_tx_time_us, param->max_rx_time_us);
+
+      // Let Softdevice decide the data length
+      VERIFY_STATUS( sd_ble_gap_data_length_update(_conn_hdl, NULL, NULL), );
+    }
+    break;
+
+    case BLE_GAP_EVT_DATA_LENGTH_UPDATE:
+    {
+      ble_gap_data_length_params_t* datalen =  &evt->evt.gap_evt.params.data_length_update.effective_params;
+      (void) datalen;
+
+      LOG_LV1("GAP", "Data Length is (tx, rx) octets = (%d, %d), (tx, rx) time = (%d, %d) us",
+                   datalen->max_tx_octets, datalen->max_rx_octets, datalen->max_tx_time_us, datalen->max_rx_time_us);
+
+      _data_length = datalen->max_tx_octets;
+    }
+    break;
+
+    //------------- PHY -------------//
+    case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
+    {
+      ble_gap_phys_t* req_phy = &evt->evt.gap_evt.params.phy_update_request.peer_preferred_phys;
+      char const *phy_str[] = { "Auto", "1 Mbps", "2 Mbps", "Coded" };
+
+      (void) req_phy;
+      (void) phy_str;
+      LOG_LV1("GAP", "PHY request tx: %s, rx: %s", phy_str[req_phy->tx_phys], phy_str[req_phy->rx_phys]);
+
+      // Tell SoftDevice to choose PHY automatically
+      ble_gap_phys_t phy = { BLE_GAP_PHY_AUTO, BLE_GAP_PHY_AUTO };
+      (void) sd_ble_gap_phy_update(_conn_hdl, &phy);
+    }
+    break;
+
+    case BLE_GAP_EVT_PHY_UPDATE:
+    {
+      ble_gap_evt_phy_update_t* active_phy = &evt->evt.gap_evt.params.phy_update;
+
+      if ( active_phy->status != BLE_HCI_STATUS_CODE_SUCCESS )
+      {
+        LOG_LV1("GAP", "Failed HCI status = 0x%02X", active_phy->status);
+      }else
+      {
+        char const *phy_str[] = { "Auto", "1 Mbps", "2 Mbps", "Coded" };
+        (void) phy_str;
+        LOG_LV1("GAP", "PHY active tx: %s, rx: %s", phy_str[active_phy->tx_phy], phy_str[active_phy->rx_phy]);
+
+        _phy = active_phy->tx_phy;
+      }
+    }
     break;
 
     //--------------------------------------------------------------------+

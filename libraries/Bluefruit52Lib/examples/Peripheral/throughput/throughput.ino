@@ -14,12 +14,18 @@
 
 #include <bluefruit.h>
 
-// String to send in the throughput test
-#define TEST_STRING     "01234567899876543210"
-const int TEST_STRLEN = strlen(TEST_STRING);
+/* Best result is 
+ *  - 8.74 KB/s with 20 ms, MTU = 23
+ *  - 23.62 KB/s with 7.5 ms, MTU = 23
+ *  - 47.85 KB/s with 15 ms, MTU = 247 
+ */
 
-// Number of total data sent ( 1024 times the test string)
-#define TOTAL_BYTES     (1024 * strlen(TEST_STRING))
+// data to send in the throughput test
+char test_data[256] = { 0 };
+
+// Number of packet to sent
+// actualy number of bytes depends on the MTU of the connection
+#define PACKET_NUM    1024
 
 BLEDis bledis;
 BLEUart bleuart;
@@ -31,7 +37,7 @@ BLEUart bleuart;
 */
 /**************************************************************************/
 void setup(void)
-{
+{  
   Serial.begin(115200);
   while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
@@ -43,11 +49,17 @@ void setup(void)
   // here in case you want to control this manually via PIN 19
   Bluefruit.autoConnLed(true);
 
+  // Config the peripheral connection with maximum bandwidth 
+  // more SRAM required by SoftDevice
+  // Note: All config***() function must be called before begin()
+  Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);  
+
   Bluefruit.begin();
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   Bluefruit.setName("Bluefruit52");
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
+  Bluefruit.Periph.setConnInterval(6, 12); // 7.5 - 15 ms
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
@@ -90,8 +102,19 @@ void startAdv(void)
 
 void connect_callback(uint16_t conn_handle)
 {
+  BLEConnection* conn = Bluefruit.Connection(conn_handle);
   (void) conn_handle;
   Serial.println("Connected");
+
+
+  // request PHY changed to 2MB
+  
+
+  // request to update data length
+  conn->requestDataLengthUpdate();
+    
+  // request mtu exchange
+  conn->requestMtuExchange(247);
 }
 
 /**
@@ -108,53 +131,55 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   Serial.println("Disconnected");
 }
 
-/**************************************************************************/
-/*!
-    @brief  Constantly poll for new command or response data
-*/
-/**************************************************************************/
-void loop(void)
+
+void test_throughput(void)
 {
   uint32_t start, stop, sent;
-  uint32_t remaining = TOTAL_BYTES;
   start = stop = sent = 0;
 
+  const uint16_t data_mtu = Bluefruit.Connection(0)->getMtu() - 3;
+  memset(test_data, '1', data_mtu);
+
+  uint32_t remaining = data_mtu*PACKET_NUM;
+
+  Serial.print("Sending ");
+  Serial.print(remaining);
+  Serial.println(" bytes ...");
+  Serial.flush();  
+
+  start = millis();
+  while ( (remaining > 0) && Bluefruit.connected() && bleuart.notifyEnabled() )
+  {
+    if ( !bleuart.write(test_data, data_mtu) ) break;
+
+    sent      += data_mtu;
+    remaining -= data_mtu;
+  }
+  stop = millis() - start;
+
+  Serial.print("Sent ");
+  Serial.print(sent);
+  Serial.print(" bytes in ");
+  Serial.print(stop / 1000.0F, 2);
+  Serial.println(" seconds.");
+
+  Serial.println("Speed ");
+  Serial.print( (sent / 1000.0F) / (stop / 1000.0F), 2);
+  Serial.println(" KB/s.\r\n");
+}
+
+void loop(void)
+{  
   if (Bluefruit.connected() && bleuart.notifyEnabled())
   {
     // Wait for user input before trying again
     Serial.println("Connected. Send a key and press enter to start test");
-    getUserInput();
-    
-    Serial.print("Sending ");
-    Serial.print(remaining);
-    Serial.println(" bytes ...");
+    //getUserInput();
 
-    start = millis();
-    while ( (remaining > 0) && Bluefruit.connected() && bleuart.notifyEnabled() )
-    {
-      if ( !bleuart.print(TEST_STRING) ) break;
+    test_throughput();
 
-      sent      += TEST_STRLEN;
-      remaining -= TEST_STRLEN;
-
-      // Only print every 100th time
-      // if ( (sent % (100*TEST_STRLEN) ) == 0 )
-      // {
-      //  Serial.print("Sent: "); Serial.print(sent);
-      //  Serial.print(" Remaining: "); Serial.println(remaining);
-      // }
-    }
-    stop = millis() - start;
-
-    Serial.print("Sent ");
-    Serial.print(sent);
-    Serial.print(" bytes in ");
-    Serial.print(stop / 1000.0F, 2);
-    Serial.println(" seconds.");
-
-    Serial.println("Speed ");
-    Serial.print( (sent / 1000.0F) / (stop / 1000.0F), 2);
-    Serial.println(" KB/s.\r\n");
+    Bluefruit.disconnect(0);
+    delay(2000);
   }
 }
 

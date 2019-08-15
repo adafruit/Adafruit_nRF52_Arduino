@@ -20,6 +20,8 @@
 
 BLEClientUart clientUart; // bleuart client
 
+uint32_t rx_count = 0;
+
 void setup()
 {
   Serial.begin(115200);
@@ -27,6 +29,11 @@ void setup()
 
   Serial.println("Bluefruit52 Central BLEUART Example");
   Serial.println("-----------------------------------\n");
+
+  // Config the connection with maximum bandwidth 
+  // more SRAM required by SoftDevice
+  // Note: All config***() function must be called before begin()
+  Bluefruit.configCentralBandwidth(BANDWIDTH_MAX);  
   
   // Initialize Bluefruit with maximum connections as Peripheral = 0, Central = 1
   // SRAM usage required by SoftDevice will increase dramatically with number of connections
@@ -36,7 +43,7 @@ void setup()
 
   // Init BLE Central Uart Serivce
   clientUart.begin();
-  clientUart.setRxCallback(bleuart_rx_callback);
+  clientUart.setRxCallback(bleuart_rx_callback);  
 
   // Increase Blink rate to different from PrPh advertising mode
   Bluefruit.setConnLedInterval(250);
@@ -101,7 +108,7 @@ void connect_callback(uint16_t conn_handle)
     Serial.println("Found NONE");
     
     // disconnect since we couldn't find bleuart service
-    Bluefruit.disconnect(conn_handle);
+    //Bluefruit.disconnect(conn_handle);
   }  
 }
 
@@ -125,14 +132,8 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
  */
 void bleuart_rx_callback(BLEClientUart& uart_svc)
 {
-  Serial.print("[RX]: ");
-  
-  while ( uart_svc.available() )
-  {
-    Serial.print( (char) uart_svc.read() );
-  }
-
-  Serial.println();
+  int count = uart_svc.available();
+  uart_svc.flush();
 }
 
 void loop()
