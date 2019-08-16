@@ -171,7 +171,7 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   (void) conn_handle;
   (void) reason;
 
-  Serial.println("Disconnected");
+  Serial.print("Disconnected, reason = 0x"); Serial.println(reason, HEX);
 }
 
 

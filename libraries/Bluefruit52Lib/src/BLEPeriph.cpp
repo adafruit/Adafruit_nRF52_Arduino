@@ -158,7 +158,7 @@ void BLEPeriph::printInfo(void)
   Serial.println();
 
   Serial.printf(title_fmt, "Conn Timeout");
-  Serial.printf("%.2f ms", _ppcp.conn_sup_timeout*10.0f);
+  Serial.printf("%d ms", _ppcp.conn_sup_timeout*10);
   Serial.println();
 }
 
