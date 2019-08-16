@@ -30,6 +30,10 @@ char test_data[256] = { 0 };
 BLEDis bledis;
 BLEUart bleuart;
 
+uint32_t rxCount = 0;
+uint32_t rxStartTime = 0;
+uint32_t rxLastTime = 0;
+
 /**************************************************************************/
 /*!
     @brief  Sets up the HW an the BLE module (this function is called
@@ -68,6 +72,9 @@ void setup(void)
 
   // Configure and Start BLE Uart Service
   bleuart.begin();
+
+  bleuart.setRxCallback(bleuart_rx_callback);
+  bleuart.setNotifyCallback(bleuart_notify_callback);
 
   // Set up and start advertising
   startAdv();
@@ -122,7 +129,7 @@ void connect_callback(uint16_t conn_handle)
   //conn->requestConnectionParameter(6); // in unit of 1.25
 
   // delay a bit for all the request to complete
-  delay(5000);
+  delay(1000);
 }
 
 /**
@@ -139,11 +146,47 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   Serial.print("Disconnected, reason = 0x"); Serial.println(reason, HEX);
 }
 
+void bleuart_rx_callback(uint16_t conn_hdl)
+{
+  (void) conn_hdl;
+  
+  rxLastTime = millis();
+  
+  // first packet
+  if ( rxCount == 0 )
+  {
+    rxStartTime = millis();
+  }
+
+  rxCount += bleuart.available();
+  bleuart.flush(); // empty rx fifo
+}
+
+void bleuart_notify_callback(uint16_t conn_hdl, bool enabled)
+{
+  if ( enabled )
+  {
+    Serial.println("Send a key and press enter to start test");
+  }
+}
+
+void print_speed(const char* text, uint32_t count, uint32_t ms)
+{
+  Serial.print(text);
+  Serial.print(count);
+  Serial.print(" bytes in ");
+  Serial.print(ms / 1000.0F, 2);
+  Serial.println(" seconds.");
+
+  Serial.print("Speed : ");
+  Serial.print( (count / 1000.0F) / (ms / 1000.0F), 2);
+  Serial.println(" KB/s.\r\n");  
+}
 
 void test_throughput(void)
 {
-  uint32_t start, stop, sent;
-  start = stop = sent = 0;
+  uint32_t start, sent;
+  start = sent = 0;
 
   const uint16_t data_mtu = Bluefruit.Connection(0)->getMtu() - 3;
   memset(test_data, '1', data_mtu);
@@ -164,31 +207,32 @@ void test_throughput(void)
     sent      += data_mtu;
     remaining -= data_mtu;
   }
-  stop = millis() - start;
 
-  Serial.print("Sent ");
-  Serial.print(sent);
-  Serial.print(" bytes in ");
-  Serial.print(stop / 1000.0F, 2);
-  Serial.println(" seconds.");
-
-  Serial.println("Speed ");
-  Serial.print( (sent / 1000.0F) / (stop / 1000.0F), 2);
-  Serial.println(" KB/s.\r\n");
+  print_speed("Sent ", sent, millis() - start);
 }
 
 void loop(void)
 {  
   if (Bluefruit.connected() && bleuart.notifyEnabled())
-  {  
+  {
     // Wait for user input before trying again
-    Serial.println("Send a key and press enter to start test");
-    //getUserInput();
+    if ( Serial.available() )
+    {
+      getUserInput();
+      test_throughput();
 
-    test_throughput();
+    }
+    
+    // 3 seconds has passed and there is no data received
+    // then reset rx count
+    if ( (rxCount > 0) && (rxLastTime + 3000 < millis()) )
+    {
+      print_speed("Received ", rxCount, rxLastTime-rxStartTime);
+      rxCount = 0;
+    }
 
-    Bluefruit.disconnect(0);
-    delay(2000);
+    // Bluefruit.disconnect(0);
+    // delay(2000);
   }
 }
 
