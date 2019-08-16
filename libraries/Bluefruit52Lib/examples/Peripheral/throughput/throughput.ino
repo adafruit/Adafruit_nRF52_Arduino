@@ -106,9 +106,8 @@ void connect_callback(uint16_t conn_handle)
   (void) conn_handle;
   Serial.println("Connected");
 
-
   // request PHY changed to 2MB
-  
+  conn->requestPHY();
 
   // request to update data length
   conn->requestDataLengthUpdate();
