@@ -501,11 +501,9 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
     {
       ble_gap_phys_t* req_phy = &evt->evt.gap_evt.params.phy_update_request.peer_preferred_phys;
-      char const *phy_str[] = { "Auto", "1 Mbps", "2 Mbps", "Coded" };
-
       (void) req_phy;
-      (void) phy_str;
-      LOG_LV1("GAP", "PHY request tx: %s, rx: %s", phy_str[req_phy->tx_phys], phy_str[req_phy->rx_phys]);
+
+      LOG_LV1("GAP", "PHY request tx = 0x%02X, rx = 0x%02X", req_phy->tx_phys, req_phy->rx_phys);
 
       // Tell SoftDevice to choose PHY automatically
       ble_gap_phys_t phy = { BLE_GAP_PHY_AUTO, BLE_GAP_PHY_AUTO };
