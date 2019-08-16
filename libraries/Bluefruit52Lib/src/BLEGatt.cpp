@@ -54,7 +54,7 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
 
   while( _adamsg.isWaiting() )
   {
-    delay( conn->getConnInterval() );
+    delay( conn->getConnectionInterval() );
   }
 
   _adamsg.begin(true);

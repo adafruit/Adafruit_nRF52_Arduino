@@ -96,7 +96,7 @@ uint16_t BLEConnection::getMtu (void)
   return _mtu;
 }
 
-uint16_t BLEConnection::getConnInterval(void)
+uint16_t BLEConnection::getConnectionInterval(void)
 {
   return _conn_interval;
 }
@@ -153,6 +153,20 @@ bool BLEConnection::requestMtuExchange(uint16_t mtu)
 bool BLEConnection::requestDataLengthUpdate(ble_gap_data_length_params_t const *p_dl_params, ble_gap_data_length_limitation_t *p_dl_limitation)
 {
   VERIFY_STATUS(sd_ble_gap_data_length_update(_conn_hdl, p_dl_params, p_dl_limitation), false);
+  return true;
+}
+
+bool BLEConnection::requestConnectionParameter(uint16_t conn_interval, uint16_t slave_latency, uint16_t sup_timeout)
+{
+  ble_gap_conn_params_t const conn_params =
+  {
+    .min_conn_interval = conn_interval,
+    .max_conn_interval = conn_interval,
+    .slave_latency = slave_latency,
+    .conn_sup_timeout = sup_timeout
+  };
+  VERIFY_STATUS(sd_ble_gap_conn_param_update(_conn_hdl, &conn_params), false);
+
   return true;
 }
 
@@ -436,7 +450,7 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
       ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
       _conn_interval = param->max_conn_interval;
 
-      LOG_LV1("GAP", "Conn Interval= %f", _conn_interval*1.25f);
+      LOG_LV1("GAP", "Conn Interval= %.2f ms, Latency = %d, Supervisor Timeout = %d ms", _conn_interval*1.25f, param->slave_latency, 10*param->conn_sup_timeout);
     }
     break;
 

@@ -794,6 +794,9 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 
       ble_gap_evt_connected_t const * para = &evt->evt.gap_evt.params.connected;
 
+      LOG_LV1("GAP", "Conn Interval= %.2f ms, Latency = %d, Supervisor Timeout = %d ms",
+              para->conn_params.max_conn_interval*1.25f, para->conn_params.slave_latency, 10*para->conn_params.conn_sup_timeout);
+
       if ( _connection[conn_hdl] )
       {
         LOG_LV1("GAP", "Connection is already in used, something wrong !!");

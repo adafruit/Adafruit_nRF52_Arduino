@@ -78,7 +78,7 @@ class BLEConnection
 
     uint8_t  getRole(void);
     uint16_t getMtu (void);
-    uint16_t getConnInterval(void);
+    uint16_t getConnectionInterval(void);
     uint16_t getDataLength(void);
     uint8_t  getPHY(void);
 
@@ -88,9 +88,12 @@ class BLEConnection
     bool disconnect(void);
 
     bool setTxPower(int8_t power); // set power for this connection
+
     bool requestDataLengthUpdate(ble_gap_data_length_params_t const *p_dl_params = NULL, ble_gap_data_length_limitation_t *p_dl_limitation = NULL);
     bool requestMtuExchange(uint16_t mtu);
     bool requestPHY(uint8_t phy = BLE_GAP_PHY_AUTO);
+    bool requestConnectionParameter(uint16_t conn_interval, uint16_t slave_latency = BLE_GAP_CONN_SLAVE_LATENCY, uint16_t sup_timeout = BLE_GAP_CONN_SUPERVISION_TIMEOUT_MS/10);
+    bool requestPairing(void);
 
     bool monitorRssi(uint8_t threshold = BLE_GAP_RSSI_THRESHOLD_INVALID);
     int8_t getRssi(void);
@@ -100,7 +103,6 @@ class BLEConnection
     bool getWriteCmdPacket(void);
     bool waitForIndicateConfirm(void);
 
-    bool requestPairing(void);
     bool storeCccd(void);
     bool loadKeys(bond_keys_t* bkeys);
 

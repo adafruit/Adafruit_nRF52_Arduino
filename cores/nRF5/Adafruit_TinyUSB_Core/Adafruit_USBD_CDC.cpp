@@ -107,7 +107,7 @@ void Adafruit_USBD_CDC::flush(void)
 
 size_t Adafruit_USBD_CDC::write(uint8_t ch)
 {
-  return tud_cdc_write_char((char) ch);
+  return write(&ch, 1);
 }
 
 size_t Adafruit_USBD_CDC::write(const uint8_t *buffer, size_t size)

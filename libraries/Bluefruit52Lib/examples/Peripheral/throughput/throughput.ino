@@ -25,7 +25,7 @@ char test_data[256] = { 0 };
 
 // Number of packet to sent
 // actualy number of bytes depends on the MTU of the connection
-#define PACKET_NUM    1024
+#define PACKET_NUM    1000
 
 BLEDis bledis;
 BLEUart bleuart;
@@ -114,6 +114,9 @@ void connect_callback(uint16_t conn_handle)
     
   // request mtu exchange
   conn->requestMtuExchange(247);
+
+  // request connection interval of 7.5 ms
+  //conn->requestConnectionParameter(6); // in unit of 1.25
 }
 
 /**
@@ -144,7 +147,8 @@ void test_throughput(void)
   Serial.print("Sending ");
   Serial.print(remaining);
   Serial.println(" bytes ...");
-  Serial.flush();  
+  Serial.flush();
+  delay(1);  
 
   start = millis();
   while ( (remaining > 0) && Bluefruit.connected() && bleuart.notifyEnabled() )
@@ -172,7 +176,7 @@ void loop(void)
   if (Bluefruit.connected() && bleuart.notifyEnabled())
   {
     // Wait for user input before trying again
-    Serial.println("Connected. Send a key and press enter to start test");
+    Serial.println("Send a key and press enter to start test");
     //getUserInput();
 
     test_throughput();
