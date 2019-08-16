@@ -157,8 +157,12 @@ void bleuart_rx_callback(uint16_t conn_hdl)
     rxStartTime = millis();
   }
 
-  rxCount += bleuart.available();
+  uint32_t count = bleuart.available();
+
+  rxCount += count;
   bleuart.flush(); // empty rx fifo
+
+  Serial.printf("RX %d bytes\n", count);
 }
 
 void bleuart_notify_callback(uint16_t conn_hdl, bool enabled)
@@ -219,12 +223,11 @@ void loop(void)
     {
       getUserInput();
       test_throughput();
-
     }
     
     // 3 seconds has passed and there is no data received
     // then reset rx count
-    if ( (rxCount > 0) && (rxLastTime + 3000 < millis()) )
+    if ( (rxCount > 0) && (rxLastTime + 1000 < millis()) )
     {
       print_speed("Received ", rxCount, rxLastTime-rxStartTime);
       rxCount = 0;
