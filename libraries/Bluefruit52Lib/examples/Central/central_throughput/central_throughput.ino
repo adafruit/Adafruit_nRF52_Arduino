@@ -108,7 +108,7 @@ void connect_callback(uint16_t conn_handle)
     Serial.println("Found NONE");
     
     // disconnect since we couldn't find bleuart service
-    //Bluefruit.disconnect(conn_handle);
+    Bluefruit.disconnect(conn_handle);
   }  
 }
 
@@ -122,14 +122,14 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   (void) conn_handle;
   (void) reason;
   
-  Serial.println("Disconnected");
+  Serial.print("Disconnected, reason = 0x"); Serial.println(reason, HEX);
 }
 
 /**
  * Callback invoked when uart received data
  * @param uart_svc Reference object to the service where the data 
  * arrived. In this example it is clientUart
- */
+ */ 
 void bleuart_rx_callback(BLEClientUart& uart_svc)
 {
   int count = uart_svc.available();

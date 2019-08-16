@@ -107,16 +107,22 @@ void connect_callback(uint16_t conn_handle)
   Serial.println("Connected");
 
   // request PHY changed to 2MB
+  Serial.println("Request to change PHY");
   conn->requestPHY();
 
   // request to update data length
+  Serial.println("Request to change Data Length");
   conn->requestDataLengthUpdate();
     
   // request mtu exchange
+  Serial.println("Request to change MTU");
   conn->requestMtuExchange(247);
 
   // request connection interval of 7.5 ms
   //conn->requestConnectionParameter(6); // in unit of 1.25
+
+  // delay a bit for all the request to complete
+  delay(5000);
 }
 
 /**
@@ -130,7 +136,7 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   (void) reason;
 
   Serial.println();
-  Serial.println("Disconnected");
+  Serial.print("Disconnected, reason = 0x"); Serial.println(reason, HEX);
 }
 
 
@@ -174,7 +180,7 @@ void test_throughput(void)
 void loop(void)
 {  
   if (Bluefruit.connected() && bleuart.notifyEnabled())
-  {
+  {  
     // Wait for user input before trying again
     Serial.println("Send a key and press enter to start test");
     //getUserInput();
