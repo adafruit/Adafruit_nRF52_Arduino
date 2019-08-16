@@ -110,7 +110,6 @@ void startAdv(void)
 void connect_callback(uint16_t conn_handle)
 {
   BLEConnection* conn = Bluefruit.Connection(conn_handle);
-  (void) conn_handle;
   Serial.println("Connected");
 
   // request PHY changed to 2MB
