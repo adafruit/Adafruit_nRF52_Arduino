@@ -168,7 +168,7 @@ metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 # ----------------------------------
 # Nordic nRF52840DK (PCA10056)
 # ----------------------------------
-pca10056.name=Noridc nRF52840DK (PCA10056)
+pca10056.name=Nordic nRF52840DK (PCA10056)
 pca10056.bootloader.tool=bootburn
 
 # Upload
