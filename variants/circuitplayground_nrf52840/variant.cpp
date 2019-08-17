@@ -66,8 +66,8 @@ const uint32_t g_ADigitalPinMap[] =
   22,  // D32 is P0.22 (QSPI Data 3)
 
   // D33 & D34 PDM pins
-  16,  // D33 is P0.16 (PDM CLK)
-  17,  // D34 is P0.17 (PDM DAT)
+  16,  // D33 is P0.16 (PDM DAT)
+  17,  // D34 is P0.17 (PDM CLK)
 
 };
 
