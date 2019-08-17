@@ -15,14 +15,16 @@
 /*
  * This sketch uses the HID Consumer Key API to send the Volume Down
  * key when PIN_SHUTTER is grounded. This will cause your mobile device
- * to capture a photo when you are in the camera app
+ * to capture a photo when you are in the camera app.
+ *
+ * For Feather nRF52840 PIN_SHUTTER is conveniently user switch.
  */
 #include <bluefruit.h>
 
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
-#define PIN_SHUTTER   A0
+#define PIN_SHUTTER   7
 
 void setup()
 {
@@ -101,30 +103,34 @@ void startAdv(void)
 
 void loop()
 {
-  // Make sure you are connected and bonded/paired
-  if ( Bluefruit.connected() && Bluefruit.connPaired() )
+  // Skip if shutter pin is not Ground
+  if ( digitalRead(PIN_SHUTTER) == 1 ) return;
+
+  // Make sure we are connected and bonded/paired
+  for (uint16_t conn_hdl=0; conn_hdl < BLE_MAX_CONNECTION; conn_hdl++)
   {
-    // Check if pin GND'ed
-    if ( digitalRead(PIN_SHUTTER) == 0 )
+    BLEConnection* connection = Bluefruit.Connection(conn_hdl);
+
+    if ( connection && connection->connected() && connection->paired() )
     {
       // Turn on red LED when we start sending data
       digitalWrite(LED_RED, 1);
 
-      // Send the 'volume down' key press
-      // Check BLEHidGeneric.h for a list of valid consumer usage codes
-      blehid.consumerKeyPress(HID_USAGE_CONSUMER_VOLUME_DECREMENT);
+      // Send the 'volume down' key press to the peer
+      // Check tinyusb/src/class/hid/hid.h for a list of valid consumer usage codes
+      blehid.consumerKeyPress(conn_hdl, HID_USAGE_CONSUMER_VOLUME_DECREMENT);
 
       // Delay a bit between reports
       delay(10);
 
       // Send key release
-      blehid.consumerKeyRelease();
+      blehid.consumerKeyRelease(conn_hdl);
 
       // Turn off the red LED
       digitalWrite(LED_RED, 0);
-
-      // Delay to avoid constant capturing
-      delay(500);
     }
   }
+
+  // Delay to avoid constant capturing
+  delay(500);
 }

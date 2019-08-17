@@ -4,6 +4,9 @@ git:
   depth: false
   quiet: true
 
+env:
+  - BSP_PATH="$HOME/.arduino15/packages/adafruit/hardware/nrf52"
+  
 addons:
   apt:
     packages:
@@ -19,8 +22,12 @@ install:
   - umake electronics arduino $HOME/arduino_ide
   - export PATH=$HOME/arduino_ide:$PATH
   - arduino --pref "boardsmanager.additional.urls=https://adafruit.github.io/arduino-board-index/package_adafruit_index.json" --save-prefs
+  # Install BSP for tools, then remove and create symlink the git code
   - arduino --install-boards adafruit:nrf52
-  - arduino --install-library "Adafruit NeoPixel","Adafruit NeoMatrix","Adafruit GFX Library","Adafruit SSD1306","MIDI Library",
+  - BSP_VERSION=`eval ls $BSP_PATH`
+  - rm -r $BSP_PATH/*
+  - ln -s $TRAVIS_BUILD_DIR $BSP_PATH/$BSP_VERSION
+  - arduino --install-library "Adafruit NeoPixel","Adafruit NeoMatrix","Adafruit GFX Library","Adafruit SSD1306","MIDI Library","Adafruit ILI9341"
 
 before_script:
   

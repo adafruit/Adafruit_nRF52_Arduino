@@ -580,12 +580,12 @@ void AdafruitBluefruit::setConnLedInterval(uint32_t ms)
   if ( !active ) xTimerStop(_led_blink_th, 0);
 }
 
-bool AdafruitBluefruit::setApperance(uint16_t appear)
+bool AdafruitBluefruit::setAppearance(uint16_t appear)
 {
   return ERROR_NONE == sd_ble_gap_appearance_set(appear);
 }
 
-uint16_t AdafruitBluefruit::getApperance(void)
+uint16_t AdafruitBluefruit::getAppearance(void)
 {
   uint16_t appear = 0;
   (void) sd_ble_gap_appearance_get(&appear);
@@ -635,9 +635,9 @@ uint16_t AdafruitBluefruit::connHandle(void)
   return _conn_hdl;
 }
 
-bool AdafruitBluefruit::connPaired(void)
+bool AdafruitBluefruit::connPaired(uint16_t conn_hdl)
 {
-  BLEConnection* conn = Bluefruit.Connection(_conn_hdl);
+  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
   return conn && conn->paired();
 }
 
@@ -779,7 +779,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   uint16_t const conn_hdl = evt->evt.common_evt.conn_handle;
   BLEConnection* conn = this->Connection(conn_hdl);
 
-  LOG_LV1("BLE", "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), conn_hdl);
+  LOG_LV2("BLE", "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), conn_hdl);
 
   // GAP handler
   if ( conn ) conn->_eventHandler(evt);
@@ -793,6 +793,9 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       _setConnLed(true);
 
       ble_gap_evt_connected_t const * para = &evt->evt.gap_evt.params.connected;
+
+      LOG_LV1("GAP", "Conn Interval= %.2f ms, Latency = %d, Supervisor Timeout = %d ms",
+              para->conn_params.max_conn_interval*1.25f, para->conn_params.slave_latency, 10*para->conn_params.conn_sup_timeout);
 
       if ( _connection[conn_hdl] )
       {
@@ -826,16 +829,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       LOG_LV2("GAP", "Disconnect Reason 0x%02X", evt->evt.gap_evt.params.disconnected.reason);
 
       // Turn off Conn LED If not connected at all
-      bool still_connected = false;
-      for (uint8_t i=0; i<BLE_MAX_CONNECTION; i++)
-      {
-        if ( _connection[i] && _connection[i]->connected() )
-        {
-          still_connected = true;
-          break;
-        }
-      }
-      if ( !still_connected ) _setConnLed(false);
+      if ( !this->connected() ) _setConnLed(false);
 
       // Invoke disconnect callback
       if ( conn->getRole() == BLE_GAP_ROLE_PERIPH )
@@ -848,7 +842,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
 
       delete _connection[conn_hdl];
       _connection[conn_hdl] = NULL;
-
     }
     break;
 
@@ -858,60 +851,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       if ( _rssi_cb )
       {
          ada_callback(NULL, 0, _rssi_cb, conn_hdl, rssi_changed->rssi);
-      }
-    }
-    break;
-
-    case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
-    {
-      ble_gap_data_length_params_t* param = &evt->evt.gap_evt.params.data_length_update_request.peer_params;
-      (void) param;
-
-      LOG_LV2("GAP", "Data Length Req is (tx, rx) octets = (%d, %d), (tx, rx) time = (%d, %d) us",
-              param->max_tx_octets, param->max_rx_octets, param->max_tx_time_us, param->max_rx_time_us);
-
-      // Let Softdevice decide the data length
-      VERIFY_STATUS( sd_ble_gap_data_length_update(conn_hdl, NULL, NULL), );
-    }
-    break;
-
-    case BLE_GAP_EVT_DATA_LENGTH_UPDATE:
-    {
-      ble_gap_data_length_params_t* datalen =  &evt->evt.gap_evt.params.data_length_update.effective_params;
-      (void) datalen;
-
-      LOG_LV2("GAP", "Data Length is (tx, rx) octets = (%d, %d), (tx, rx) time = (%d, %d) us",
-                   datalen->max_tx_octets, datalen->max_rx_octets, datalen->max_tx_time_us, datalen->max_rx_time_us);
-    }
-    break;
-
-    case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
-    {
-      ble_gap_phys_t* req_phy = &evt->evt.gap_evt.params.phy_update_request.peer_preferred_phys;
-      char const *phy_str[] = { "Auto", "1 Mbps", "2 Mbps", "Coded" };
-
-      (void) req_phy;
-      (void) phy_str;
-      LOG_LV1("GAP", "PHY request tx: %s, rx: %s", phy_str[req_phy->tx_phys], phy_str[req_phy->rx_phys]);
-
-      // Tell SoftDevice to choose PHY automatically
-      ble_gap_phys_t phy = { BLE_GAP_PHY_AUTO, BLE_GAP_PHY_AUTO };
-      (void) sd_ble_gap_phy_update(conn_hdl, &phy);
-    }
-    break;
-
-    case BLE_GAP_EVT_PHY_UPDATE:
-    {
-      ble_gap_evt_phy_update_t* active_phy = &evt->evt.gap_evt.params.phy_update;
-
-      if ( active_phy->status != BLE_HCI_STATUS_CODE_SUCCESS )
-      {
-        LOG_LV1("GAP", "Failed HCI status = 0x%02X", active_phy->status);
-      }else
-      {
-        char const *phy_str[] = { "Auto", "1 Mbps", "2 Mbps", "Coded" };
-        (void) phy_str;
-        LOG_LV1("GAP", "PHY active tx: %s, rx: %s", phy_str[active_phy->tx_phy], phy_str[active_phy->rx_phy]);
       }
     }
     break;
@@ -994,6 +933,8 @@ void AdafruitBluefruit::_startConnLed(void)
 void AdafruitBluefruit::_stopConnLed(void)
 {
   xTimerStop(_led_blink_th, 0);
+
+  _setConnLed( this->connected() );
 }
 
 void AdafruitBluefruit::_setConnLed (bool on_off)

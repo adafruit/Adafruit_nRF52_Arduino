@@ -70,6 +70,11 @@ class BLEUart : public BLEService, public Stream
     bool flushTXD (void);
     bool flushTXD (uint16_t conn_hdl);
 
+    // Read helper
+    uint8_t  read8 (void);
+    uint16_t read16(void);
+    uint32_t read32(void);
+
     // Stream API
     virtual int       read       ( void );
     virtual int       read       ( uint8_t * buf, size_t size );

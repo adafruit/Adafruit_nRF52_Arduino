@@ -8,7 +8,7 @@ This repository contains the Arduino BSP for Adafruit Bluefruit nRF52 series:
 
 Following boards are also included but are not officially supported:
 
-- [Noric nRF52840DK PCA10056](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-DK)
+- [Nordic nRF52840DK PCA10056](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-DK)
 
 ## BSP Installation
 
@@ -115,4 +115,3 @@ The following libraries are used:
 - [tinyusb](https://github.com/hathach/tinyusb) as usb stack
 - [nrfx](https://github.com/NordicSemiconductor/nrfx) for peripherals driver
 - [littlefs](https://github.com/ARMmbed/littlefs) for internal file system
-- [fatfs by elm-chan](http://elm-chan.org/fsw/ff/00index_e.html) for external file system

@@ -153,8 +153,8 @@ class AdafruitBluefruit
     bool     setTxPower         (int8_t power);
     int8_t   getTxPower         (void);
 
-    bool     setApperance       (uint16_t appear);
-    uint16_t getApperance       (void);
+    bool     setAppearance      (uint16_t appear);
+    uint16_t getAppearance      (void);
 
     ble_gap_sec_params_t getSecureParam(void)
     {
@@ -173,7 +173,7 @@ class AdafruitBluefruit
     bool     connected         (uint16_t conn_hdl);
 
     uint16_t connHandle        (void);
-    bool     connPaired        (void);
+    bool     connPaired        (uint16_t conn_hdl);
 
     // Alias to BLEConnection API()
     bool     disconnect        (uint16_t conn_hdl);

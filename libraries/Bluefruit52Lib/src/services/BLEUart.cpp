@@ -192,6 +192,24 @@ int BLEUart::read(uint8_t * buf, size_t size)
   return _rx_fifo->read(buf, size);
 }
 
+uint8_t BLEUart::read8 (void)
+{
+  uint8_t num;
+  return read(&num, sizeof(num)) ? num : 0;
+}
+
+uint16_t BLEUart::read16(void)
+{
+  uint16_t num;
+  return read((uint8_t*) &num, sizeof(num)) ? num : 0;
+}
+
+uint32_t BLEUart::read32(void)
+{
+  uint32_t num;
+  return read((uint8_t*) &num, sizeof(num)) ? num : 0;
+}
+
 size_t BLEUart::write(uint8_t b)
 {
   return this->write(Bluefruit.connHandle(), &b, 1);
