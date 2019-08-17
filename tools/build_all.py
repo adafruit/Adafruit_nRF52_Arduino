@@ -65,6 +65,16 @@ print(build_separator)
 subprocess.run("arduino --board adafruit:nrf52:feather52832:softdevice=s132v6,debug=l0 --save-prefs", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 build_examples('feather52832')
 
+print('\r\n')
+print(build_separator)
+print('| {:^73} |'.format('Circuit Playground Bluefruit Express'))
+print(build_separator)
+print((build_format + '| {:5} |').format('Library', 'Example', 'Result', 'Time'))
+print(build_separator)
+subprocess.run("arduino --board adafruit:nrf52:cplaynrf52840:softdevice=s140v6,debug=l0 --save-prefs", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+build_examples('feather52840')
+
+
 print(build_separator)
 build_time = time.monotonic() - build_time
 print("Build Sumamary: {} \033[32msucceeded\033[0m, {} \033[31mfailed\033[0m and took {:.2f}s".format(success_count, fail_count, build_time))
