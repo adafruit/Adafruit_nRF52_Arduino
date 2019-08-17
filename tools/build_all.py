@@ -72,7 +72,7 @@ print(build_separator)
 print((build_format + '| {:5} |').format('Library', 'Example', 'Result', 'Time'))
 print(build_separator)
 subprocess.run("arduino --board adafruit:nrf52:cplaynrf52840:softdevice=s140v6,debug=l0 --save-prefs", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-build_examples('feather52840')
+build_examples('cplaynrf52840')
 
 
 print(build_separator)
