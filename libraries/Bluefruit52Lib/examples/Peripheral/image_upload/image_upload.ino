@@ -36,6 +36,10 @@ BLEUart bleuart; // uart over ble
 
 uint16_t imageWidth = 0;
 uint16_t imageHeight = 0;
+uint16_t imageX = 0;
+uint16_t imageY = 0;
+
+uint16_t color_buf[256];
 
 // Statistics for speed testing
 uint32_t rxCount = 0;
@@ -47,9 +51,7 @@ uint32_t rxLastTime = 0;
    #define TFT_CS   31
    #define STMPE_CS 30
    #define SD_CS    27
-#endif
-
-#ifdef ARDUINO_NRF52840_FEATHER
+#else
    #define TFT_DC   10
    #define TFT_CS   9
    #define STMPE_CS 6
@@ -86,10 +88,6 @@ void setup()
   // Set up and start advertising
   startAdv();
 
-  // splash screen effect
-  delay(100);
-
-
   tft.println("Advertising ... ");
 }
 
@@ -124,6 +122,30 @@ void startAdv(void)
 
 void loop()
 {
+  if ( !Bluefruit.connected()   ) return;
+  if ( !bleuart.notifyEnabled() ) return;
+
+  // extract pixel data and display on TFT
+  uint16_t pixelNum = 0;
+  while ( bleuart.available() >= 3 )
+  {
+    uint8_t red   = bleuart.read();
+    uint8_t green = bleuart.read();
+    uint8_t blue  = bleuart.read();
+
+    color_buf[pixelNum++] = ((red & 0xF8) << 8) | ((green & 0xFC) << 3) | ( blue >> 3);
+
+    rxCount += 3;
+  }
+
+  if ( pixelNum )
+  {
+    tft.drawRGBBitmap(imageX, imageY, color_buf, imageWidth, imageHeight);
+
+    imageX += (imageX + pixelNum) % imageWidth;
+    imageY += pixelNum/imageHeight;
+  }
+
   // 3 seconds has passed and there is no data received
   // then reset rx count
   if ( (rxCount > 0) && (rxLastTime + 1000 < millis()) )
@@ -170,21 +192,23 @@ void bleuart_rx_callback(uint16_t conn_hdl)
 
   rxLastTime = millis();
 
-  // first packet
+  // first packet: reset time, extract Image Width & Height
   if ( rxCount == 0 )
   {
     rxStartTime = millis();
 
     // Incorrect format, possibly corrupted data
     if ( bleuart.read() != '!' ) bleuart.flush();
-    rxCount++;
+
+    imageWidth = bleuart.read16();
+    imageHeight = bleuart.read16();
+
+    rxCount += 5;
 
     tft.fillScreen(ILI9341_BLACK);
     tft.setCursor(0, 0);
+    imageX = imageY = 0;
   }
-
-  rxCount += bleuart.available();
-  bleuart.flush(); // empty rx fifo
 }
 
 /**
