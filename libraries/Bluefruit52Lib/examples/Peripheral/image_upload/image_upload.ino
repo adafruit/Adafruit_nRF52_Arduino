@@ -26,12 +26,12 @@ BLEUart bleuart; // uart over ble
 
 /* The Image Transfer module sends the image of your choice to Bluefruit LE over UART.
  * Each image sent begins with
- * - A single byte char ‚Äú!‚Äù (0x21)
+ * - A single byte char ì!î (0x21)
  * - Image width (uint16 little endian, 2 bytes)
  * - Image height (uint16 little endian, 2 bytes)
  * - Pixel data encoded as RGB 24-bit and suffixed by a single byte CRC.
  *
- * Format: [ ‚Äò!‚Äô ] [ uint16 width ] [ uint16 height ] [ r g b ] [ r g b ] [ r g b ] ‚Ä¶ [ CRC ]
+ * Format: [ ë!í ] [ uint16 width ] [ uint16 height ] [ r g b ] [ r g b ] [ r g b ] Ö [ CRC ]
  */
 
 uint16_t imageWidth = 0;
@@ -45,16 +45,18 @@ uint32_t rxLastTime = 0;
 #ifdef ARDUINO_NRF52832_FEATHER
    #define TFT_DC   11
    #define TFT_CS   31
-   #define STMPE_CS 30
-   #define SD_CS    27
 #endif
 
 #ifdef ARDUINO_NRF52840_FEATHER
    #define TFT_DC   10
    #define TFT_CS   9
-   #define STMPE_CS 6
-   #define SD_CS    5
 #endif
+
+#ifdef ARDUINO_NRF52840_CIRCUITPLAY
+   #define TFT_DC   A7
+   #define TFT_CS   A6
+#endif
+
 
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 

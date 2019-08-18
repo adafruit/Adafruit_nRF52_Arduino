@@ -112,6 +112,61 @@ feather52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 feather52840.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 
+
+# ----------------------------------
+# Bluefruit Circuit Playground nRF52840 Express
+# ----------------------------------
+cplaynrf52840.name=Adafruit Circuit Playground Bluefruit
+
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+cplaynrf52840.vid.0=0x239A
+cplaynrf52840.pid.0=0x8045
+cplaynrf52840.vid.1=0x239A
+cplaynrf52840.pid.1=0x0045
+cplaynrf52840.vid.2=0x239A
+cplaynrf52840.pid.2=0x0046
+cplaynrf52840.vid.3=0x239A
+cplaynrf52840.pid.3=0x8046
+
+# Upload
+cplaynrf52840.bootloader.tool=bootburn
+cplaynrf52840.upload.tool=nrfutil
+cplaynrf52840.upload.protocol=nrfutil
+cplaynrf52840.upload.use_1200bps_touch=true
+cplaynrf52840.upload.wait_for_upload_port=true
+cplaynrf52840.upload.maximum_size=815104
+cplaynrf52840.upload.maximum_data_size=248832
+
+# Build
+cplaynrf52840.build.mcu=cortex-m4
+cplaynrf52840.build.f_cpu=64000000
+cplaynrf52840.build.board=CIRCUITPLAY_NRF52840
+cplaynrf52840.build.core=nRF5
+cplaynrf52840.build.variant=circuitplayground_nrf52840
+cplaynrf52840.build.usb_manufacturer="Adafruit LLC"
+cplaynrf52840.build.usb_product="Adafruit Circuit Playground Bluefruit"
+cplaynrf52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52840_CIRCUITPLAY {build.flags.usb}
+cplaynrf52840.build.ldscript=nrf52840_s140_v6.ld
+cplaynrf52840.build.vid=0x239A
+cplaynrf52840.build.pid=0x8045
+
+# SofDevice Menu
+cplaynrf52840.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+cplaynrf52840.menu.softdevice.s140v6.build.sd_name=s140
+cplaynrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
+cplaynrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+cplaynrf52840.menu.debug.l0=Level 0 (Release)
+cplaynrf52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+cplaynrf52840.menu.debug.l1=Level 1 (Error Message)
+cplaynrf52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+cplaynrf52840.menu.debug.l2=Level 2 (Full Debug)
+cplaynrf52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+cplaynrf52840.menu.debug.l3=Level 3 (Segger SystemView)
+cplaynrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
+
 # ----------------------------------
 # Bluefruit Metro nRF52840 Express
 # ----------------------------------
