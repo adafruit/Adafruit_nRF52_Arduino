@@ -133,7 +133,7 @@ void loop()
   if ( !bleuart.notifyEnabled() ) return;
   if ( !bleuart.available() ) return;
 
-  PRINT_INT(bleuart.available());
+  //PRINT_INT(bleuart.available());
 
   // all pixel data is received
   if ( rxCount == 1 + 5 + imageWidth*imageHeight*3 )
@@ -156,6 +156,9 @@ void loop()
   if ( pixelNum )
   {
     PRINT_INT(pixelNum);
+    PRINT_INT(imageX);
+    PRINT_INT(imageY);
+
     for ( uint16_t i=0; i < pixelNum; i++)
     {
       uint8_t red   = bleuart.read();
