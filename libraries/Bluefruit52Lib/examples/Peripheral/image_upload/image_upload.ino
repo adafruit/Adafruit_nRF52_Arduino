@@ -42,10 +42,11 @@ uint16_t imageHeight = 0;
 uint16_t imageX = 0;
 uint16_t imageY = 0;
 
+uint32_t totalPixel = 0; // received pixel
+
 uint16_t color_buf[512];
 
 // Statistics for speed testing
-uint32_t rxCount = 0;
 uint32_t rxStartTime = 0;
 uint32_t rxLastTime = 0;
 
@@ -133,32 +134,30 @@ void loop()
   if ( !bleuart.notifyEnabled() ) return;
   if ( !bleuart.available() ) return;
 
-  //PRINT_INT(bleuart.available());
-
   // all pixel data is received
-  if ( rxCount == 1 + 5 + imageWidth*imageHeight*3 )
+  if ( totalPixel == imageWidth*imageHeight )
   {
     uint8_t crc = bleuart.read();
-    rxCount++;
     // do checksum later
 
-    print_speed(rxCount, rxLastTime-rxStartTime);
-    rxCount = 0;
+    print_speed(totalPixel*3 + 7, rxLastTime-rxStartTime);
+
+    // reset and waiting for new image
+    totalPixel = imageWidth = imageHeight = 0;
   }
 
   // extract pixel data and display on TFT
   uint16_t pixelNum = bleuart.available() / 3;
 
-  // draw up to 512 pixels since color_buf array size is 512
+  // Draw up to color_buf size (512 pixel)
   // the rest will be drawn in the next invocation of loop()
   pixelNum = min(pixelNum, sizeof(color_buf)/2);
 
+  // Chop pixel number to multiple of image width
+  pixelNum = (pixelNum / imageWidth) * imageWidth;
+
   if ( pixelNum )
   {
-    PRINT_INT(pixelNum);
-    PRINT_INT(imageX);
-    PRINT_INT(imageY);
-
     for ( uint16_t i=0; i < pixelNum; i++)
     {
       uint8_t red   = bleuart.read();
@@ -166,14 +165,14 @@ void loop()
       uint8_t blue  = bleuart.read();
 
       color_buf[i] = ((red & 0xF8) << 8) | ((green & 0xFC) << 3) | ( blue >> 3);
-
-      rxCount += 3;
     }
 
-    tft.drawRGBBitmap(imageX, imageY, color_buf, imageWidth, imageHeight);
+    tft.drawRGBBitmap(imageX, imageY, color_buf, imageWidth, imageHeight - imageY);
 
-    imageX += (imageX + pixelNum) % imageWidth;
-    imageY += pixelNum/imageHeight;
+    totalPixel += pixelNum;
+
+    imageX = totalPixel % imageWidth;
+    imageY = totalPixel / imageWidth;
   }
 }
 
@@ -214,28 +213,22 @@ void bleuart_rx_callback(uint16_t conn_hdl)
 
   rxLastTime = millis();
 
-  // first packet: reset time, extract Image Width & Height
-  if ( rxCount == 0 )
+  // Received new Image
+  if ( (imageWidth == 0) && (imageHeight == 0) )
   {
     rxStartTime = millis();
 
-    // Incorrect format, possibly corrupted data
-    if ( bleuart.read() != '!' )
-    {
-      PRINT_LOCATION();
-      bleuart.flush();
-      return;
-    }
+    // Skip all data until '!' is found
+    while( bleuart.available() && bleuart.read() != '!' )  { }
+    if ( !bleuart.available() ) return;
 
-    bleuart.read(); rxCount++; // skip unicode extra byte following '!'
+    bleuart.read(); // skip unicode extra byte following '!'
     
     imageWidth = bleuart.read16();
     imageHeight = bleuart.read16();
 
     PRINT_INT(imageWidth);
     PRINT_INT(imageHeight);
-
-    rxCount += 5;
 
     tft.fillScreen(ILI9341_BLACK);
     tft.setCursor(0, 0);
@@ -255,4 +248,6 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   tft.fillScreen(ILI9341_BLACK);
   tft.setCursor(0, 0);
   tft.println("Advertising ...");
+
+  totalPixel = 0;
 }
