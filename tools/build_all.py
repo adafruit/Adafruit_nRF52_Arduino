@@ -27,7 +27,7 @@ def build_examples(variant):
             build_result = subprocess.run("arduino --verify {}".format(sketch), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             if build_result.returncode != 0:
                 exit_status = build_result.returncode
-                success = "\033[31mfailed\033[0m"
+                success = "\033[31mfailed\033[0m   "
                 fail_count += 1
             else:
                 success = "\033[32msucceeded\033[0m"

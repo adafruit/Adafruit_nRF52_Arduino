@@ -22,7 +22,10 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 
-BLEUart bleuart; // uart over ble
+// Uart over BLE with large buffer to hold image, image size is
+//    size = width x height x 3 + 6
+//
+BLEUart bleuart(1024*10);
 
 /* The Image Transfer module sends the image of your choice to Bluefruit LE over UART.
  * Each image sent begins with
@@ -39,7 +42,7 @@ uint16_t imageHeight = 0;
 uint16_t imageX = 0;
 uint16_t imageY = 0;
 
-uint16_t color_buf[256];
+uint16_t color_buf[512];
 
 // Statistics for speed testing
 uint32_t rxCount = 0;
@@ -128,34 +131,46 @@ void loop()
 {
   if ( !Bluefruit.connected()   ) return;
   if ( !bleuart.notifyEnabled() ) return;
+  if ( !bleuart.available() ) return;
+
+  PRINT_INT(bleuart.available());
+
+  // all pixel data is received
+  if ( rxCount == 1 + 5 + imageWidth*imageHeight*3 )
+  {
+    uint8_t crc = bleuart.read();
+    rxCount++;
+    // do checksum later
+
+    print_speed(rxCount, rxLastTime-rxStartTime);
+    rxCount = 0;
+  }
 
   // extract pixel data and display on TFT
-  uint16_t pixelNum = 0;
-  while ( bleuart.available() >= 3 )
-  {
-    uint8_t red   = bleuart.read();
-    uint8_t green = bleuart.read();
-    uint8_t blue  = bleuart.read();
+  uint16_t pixelNum = bleuart.available() / 3;
 
-    color_buf[pixelNum++] = ((red & 0xF8) << 8) | ((green & 0xFC) << 3) | ( blue >> 3);
-
-    rxCount += 3;
-  }
+  // draw up to 512 pixels since color_buf array size is 512
+  // the rest will be drawn in the next invocation of loop()
+  pixelNum = min(pixelNum, sizeof(color_buf)/2);
 
   if ( pixelNum )
   {
+    PRINT_INT(pixelNum);
+    for ( uint16_t i=0; i < pixelNum; i++)
+    {
+      uint8_t red   = bleuart.read();
+      uint8_t green = bleuart.read();
+      uint8_t blue  = bleuart.read();
+
+      color_buf[i] = ((red & 0xF8) << 8) | ((green & 0xFC) << 3) | ( blue >> 3);
+
+      rxCount += 3;
+    }
+
     tft.drawRGBBitmap(imageX, imageY, color_buf, imageWidth, imageHeight);
 
     imageX += (imageX + pixelNum) % imageWidth;
     imageY += pixelNum/imageHeight;
-  }
-
-  // 3 seconds has passed and there is no data received
-  // then reset rx count
-  if ( (rxCount > 0) && (rxLastTime + 1000 < millis()) )
-  {
-    print_speed(rxCount, rxLastTime-rxStartTime);
-    rxCount = 0;
   }
 }
 
@@ -202,10 +217,20 @@ void bleuart_rx_callback(uint16_t conn_hdl)
     rxStartTime = millis();
 
     // Incorrect format, possibly corrupted data
-    if ( bleuart.read() != '!' ) bleuart.flush();
+    if ( bleuart.read() != '!' )
+    {
+      PRINT_LOCATION();
+      bleuart.flush();
+      return;
+    }
 
+    bleuart.read(); rxCount++; // skip unicode extra byte following '!'
+    
     imageWidth = bleuart.read16();
     imageHeight = bleuart.read16();
+
+    PRINT_INT(imageWidth);
+    PRINT_INT(imageHeight);
 
     rxCount += 5;
 
