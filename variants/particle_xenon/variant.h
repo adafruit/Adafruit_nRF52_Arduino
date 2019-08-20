@@ -147,10 +147,10 @@ static const uint8_t A5  = PIN_A5 ;
  * Serial interfaces
  */
 // Serial
-#define PIN_SERIAL_RX         PIN_D9
-#define PIN_SERIAL_TX         PIN_D10
-#define PIN_SERIAL2_RX        PIN_D5
-#define PIN_SERIAL2_TX        PIN_D6
+#define PIN_SERIAL_RX         (10)
+#define PIN_SERIAL_TX         (9)
+#define PIN_SERIAL2_RX        (5)
+#define PIN_SERIAL2_TX        (6)
 //#define HAVE_HWSERIAL2  true  // TODO: implement UARTE in Uart.cpp
 
 /*
