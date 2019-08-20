@@ -22,9 +22,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 
-// Uart over BLE with large buffer to hold image, image size is
-//    size = width x height x 3 + 6
-//
+// Uart over BLE with large buffer to hold image data
 BLEUart bleuart(1024*10);
 
 /* The Image Transfer module sends the image of your choice to Bluefruit LE over UART.
@@ -140,6 +138,7 @@ void loop()
     uint8_t crc = bleuart.read();
     // do checksum later
 
+    tft.setCursor(0, imageHeight+1);
     print_speed(totalPixel*3 + 7, rxLastTime-rxStartTime);
 
     // reset and waiting for new image
@@ -149,8 +148,9 @@ void loop()
   // extract pixel data and display on TFT
   uint16_t pixelNum = bleuart.available() / 3;
 
-  // Draw up to color_buf size (512 pixel)
-  // the rest will be drawn in the next invocation of loop()
+  // Draw multiple lines of image each time i.e pixelNum = n*imageWidth
+  // pixelNum is capped at color_buf size (512 pixel)
+  // the rest will be drawn in the next invocation of loop().
   pixelNum = min(pixelNum, sizeof(color_buf)/2);
 
   // Chop pixel number to multiple of image width
@@ -191,20 +191,36 @@ void connect_callback(uint16_t conn_handle)
   conn->requestMtuExchange(247);
   tft.println("Exchanging MTU");
 
-  tft.println("Ready to receive Image");
+  tft.setTextColor(ILI9341_GREEN);
+  tft.println("Ready to receive new image");
+  tft.setTextColor(ILI9341_WHITE);
 }
 
 void print_speed(uint32_t count, uint32_t ms)
 {
-  Serial.print("Received ");
-  Serial.print(count);
-  Serial.print(" bytes in ");
-  Serial.print(ms / 1000.0F, 2);
-  Serial.println(" seconds.");
+  tft.print("Received ");
 
-  Serial.print("Speed : ");
-  Serial.print( (count / 1000.0F) / (ms / 1000.0F), 2);
-  Serial.println(" KB/s.\r\n");
+  tft.setTextColor(ILI9341_YELLOW);
+  tft.print(count);
+  tft.setTextColor(ILI9341_WHITE);
+
+  tft.print(" bytes in ");
+
+  tft.setTextColor(ILI9341_YELLOW);
+  tft.print(ms / 1000.0F, 2);
+  tft.setTextColor(ILI9341_WHITE);
+
+  tft.println(" seconds");
+
+  tft.print("Speed: ");
+  tft.setTextColor(ILI9341_YELLOW);
+  tft.print( (count / 1000.0F) / (ms / 1000.0F), 2);
+  tft.setTextColor(ILI9341_WHITE);
+  tft.println(" KB/s");
+
+  tft.setTextColor(ILI9341_GREEN);
+  tft.println("Ready to receive new image");
+  tft.setTextColor(ILI9341_WHITE);
 }
 
 void bleuart_rx_callback(uint16_t conn_hdl)
