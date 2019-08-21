@@ -27,12 +27,12 @@ BLEUart bleuart(1024*10);
 
 /* The Image Transfer module sends the image of your choice to Bluefruit LE over UART.
  * Each image sent begins with
- * - A single byte char '!' (0x21)
+ * - A single byte char '!' (0x21) followed by 'I' helper for image
  * - Image width (uint16 little endian, 2 bytes)
  * - Image height (uint16 little endian, 2 bytes)
  * - Pixel data encoded as RGB 24-bit and suffixed by a single byte CRC.
  *
- * Format: [ '!' ] [ uint16 width ] [ uint16 height ] [ r g b ] [ r g b ] [ r g b ] … [ CRC ]
+ * Format: [ '!' ] [ 'I' ] [ uint16 width ] [ uint16 height ] [ r g b ] [ r g b ] [ r g b ] … [ CRC ]
  */
 
 uint16_t imageWidth = 0;
@@ -42,7 +42,9 @@ uint16_t imageY = 0;
 
 uint32_t totalPixel = 0; // received pixel
 
-uint16_t color_buf[512];
+// color buf must be large enough to consume incoming data fast enough
+// otherwise bleuart fifo could be overflow and start dropping data
+uint16_t color_buf[2048];
 
 // Statistics for speed testing
 uint32_t rxStartTime = 0;
@@ -81,7 +83,7 @@ void setup()
   Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
 
   Bluefruit.begin();
-  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
+  Bluefruit.setTxPower(8);    // Check bluefruit.h for supported values
   Bluefruit.setName("Bluefruit52");
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
@@ -235,11 +237,11 @@ void bleuart_rx_callback(uint16_t conn_hdl)
   {
     rxStartTime = millis();
 
-    // Skip all data until '!' is found
+    // Skip all data until '!I' is found
     while( bleuart.available() && bleuart.read() != '!' )  { }
-    if ( !bleuart.available() ) return;
+    if (bleuart.read() != 'I') return;
 
-    bleuart.read(); // skip unicode extra byte following '!'
+    if ( !bleuart.available() ) return;
     
     imageWidth = bleuart.read16();
     imageHeight = bleuart.read16();
