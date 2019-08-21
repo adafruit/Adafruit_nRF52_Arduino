@@ -138,7 +138,7 @@ void loop()
     uint8_t crc = bleuart.read();
     // do checksum later
 
-    tft.setCursor(0, imageHeight+1);
+    // print speed summary
     print_speed(totalPixel*3 + 7, rxLastTime-rxStartTime);
 
     // reset and waiting for new image
@@ -198,6 +198,7 @@ void connect_callback(uint16_t conn_handle)
 
 void print_speed(uint32_t count, uint32_t ms)
 {
+  tft.setCursor(0, imageHeight+5);
   tft.print("Received ");
 
   tft.setTextColor(ILI9341_YELLOW);
