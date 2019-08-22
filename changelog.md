@@ -2,6 +2,23 @@
 
 ## Next Release
 
+## 0.12.1 - 2019.08.22
+
+- Added CircuitPlay Blueffuit nRF52840 support
+- Added variant support for Particle Xenon, PR #317
+- Added PDM support
+- Switch compiler optimization from -Os to -Ofast
+- Improve BLEConnection throughput
+  - Added requestPHY() to initate PHY switching to 2 MB, 1MB
+  - Added requestDataLengthUpdate() to initate Data Length Update process
+  - Added requestMtuExchange() to iniate MTU exchange procoess
+  - Added requestConnectionParameter() to initate connection parameter process
+- Updated throughput and added central_throughput sketch (WIP)
+- Added image_upload example
+- Enhance mutex lock/unlock for fifo used by bleuart
+- Fixed multiples warning with tinyUSB descriptor template, PR #322
+- Fixed typo, PR #326
+
 ## 0.12.0 - 2019.08.05
 
 - Update tinyusb core to support webUSB & vendor class
