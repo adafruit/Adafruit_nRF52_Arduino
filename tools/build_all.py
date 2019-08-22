@@ -65,12 +65,12 @@ def build_examples(variant):
 
 build_time = time.monotonic()
 
-for variant in variants_dict:
-    build_examples(variant)
+for var in variants_dict:
+    build_examples(var)
 
 print(build_separator)
 build_time = time.monotonic() - build_time
-print("Build Sumamary: {} \033[32msucceeded\033[0m, {} \033[31mfailed\033[0m and took {:.2f}s".format(success_count, fail_count, build_time))
+print("Build Summary: {} \033[32msucceeded\033[0m, {} \033[31mfailed\033[0m and took {:.2f}s".format(success_count, fail_count, build_time))
 print(build_separator)
 
 sys.exit(exit_status)
