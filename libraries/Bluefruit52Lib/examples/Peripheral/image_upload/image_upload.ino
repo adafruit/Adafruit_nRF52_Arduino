@@ -268,5 +268,5 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   tft.setCursor(0, 0);
   tft.println("Advertising ...");
 
-  totalPixel = 0;
+  totalPixel = imageWidth = imageHeight = 0;
 }
