@@ -44,7 +44,7 @@ feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52 -DARDUINO_NRF52_FEATHER
 feather52832.build.ldscript=nrf52832_s132_v6.ld
 
 # SofDevice Menu
-feather52832.menu.softdevice.s132v6=0.2.11 SoftDevice s132 6.1.1
+feather52832.menu.softdevice.s132v6=0.2.12 SoftDevice s132 6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_fwid=0x00B7
@@ -97,7 +97,7 @@ feather52840.build.vid=0x239A
 feather52840.build.pid=0x8029
 
 # SofDevice Menu
-feather52840.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+feather52840.menu.softdevice.s140v6=0.2.12 SoftDevice s140 6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -151,7 +151,7 @@ cplaynrf52840.build.vid=0x239A
 cplaynrf52840.build.pid=0x8045
 
 # SofDevice Menu
-cplaynrf52840.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+cplaynrf52840.menu.softdevice.s140v6=0.2.12 SoftDevice s140 6.1.1
 cplaynrf52840.menu.softdevice.s140v6.build.sd_name=s140
 cplaynrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 cplaynrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -205,7 +205,7 @@ metro52840.build.vid=0x239A
 metro52840.build.pid=0x803F
 
 # SofDevice Menu
-metro52840.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+metro52840.menu.softdevice.s140v6=0.2.12 SoftDevice s140 6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_name=s140
 metro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -248,7 +248,7 @@ pca10056.build.vid=0x239A
 pca10056.build.pid=0x8029
 
 # SofDevice Menu
-pca10056.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+pca10056.menu.softdevice.s140v6=0.2.12 SoftDevice s140 6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_fwid=0x00B6

@@ -4,7 +4,8 @@
 
 ## 0.12.1 - 2019.08.22
 
-- Added CircuitPlay Blueffuit nRF52840 support
+- Update bootloader binary to to 0.2.12 version (upgrade is optional)
+- Added Circuit Playground Blueffuit nRF52840 support
 - Added variant support for Particle Xenon, PR #317
 - Added PDM support
 - Switch compiler optimization from -Os to -Ofast
