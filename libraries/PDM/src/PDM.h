@@ -21,7 +21,7 @@
 
 #include <Arduino.h>
 
-#if !defined(ARDUINO_ARCH_ADAFRUIT_NRF52_ARDUINO)
+#if !defined(ARDUINO_NRF52_ADAFRUIT)
 #error "This library targets only Adafruit NRF52840 boards"
 #endif
 
