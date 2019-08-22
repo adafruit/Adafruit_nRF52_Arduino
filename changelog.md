@@ -2,7 +2,7 @@
 
 ## Next Release
 
-## 0.12.1 - 2019.08.22
+## 0.13.0 - 2019.08.22
 
 - Update bootloader binary to to 0.2.12 version (upgrade is optional)
 - Added Circuit Playground Blueffuit nRF52840 support
