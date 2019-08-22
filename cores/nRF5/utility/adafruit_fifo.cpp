@@ -86,19 +86,6 @@ Adafruit_FIFO::~Adafruit_FIFO()
   if (_buffer) rtos_free(_buffer);
 }
 
-bool Adafruit_FIFO::_mutex_lock(bool isr)
-{
-  (void) isr;
-  return xSemaphoreTake(_mutex, portMAX_DELAY);
-}
-
-bool Adafruit_FIFO::_mutex_unlock(bool isr)
-{
-  (void) isr;
-  return xSemaphoreGive(_mutex);
-}
-
-
 /******************************************************************************/
 /*!
     @brief  Clear the FIFO
@@ -106,25 +93,14 @@ bool Adafruit_FIFO::_mutex_unlock(bool isr)
 /******************************************************************************/
 void Adafruit_FIFO::clear(void)
 {
-  _mutex_lock(false);
+  _mutex_lock();
   _rd_idx = _wr_idx = _count = 0;
-  _mutex_unlock(false);
+  _mutex_unlock();
 }
 
-/******************************************************************************/
-/*!
-    @brief  Write an item to the FIFO
 
-    @param[in] item
-               Memory address of the item
-*/
-/******************************************************************************/
-uint16_t Adafruit_FIFO::write(void const* item)
+void Adafruit_FIFO::_push(void const* item)
 {
-  if ( full() && !_overwritable ) return 0;
-
-  _mutex_lock(false);
-
   memcpy( _buffer + (_wr_idx * _item_size),
           item,
           _item_size);
@@ -139,8 +115,25 @@ uint16_t Adafruit_FIFO::write(void const* item)
   {
     _count++;
   }
+}
 
-  _mutex_unlock(false);
+/******************************************************************************/
+/*!
+    @brief  Write an item to the FIFO
+
+    @param[in] item
+               Memory address of the item
+*/
+/******************************************************************************/
+uint16_t Adafruit_FIFO::write(void const* item)
+{
+  if ( full() && !_overwritable ) return 0;
+
+  _mutex_lock();
+
+  _push(item);
+
+  _mutex_unlock();
 
   return 1;
 }
@@ -157,20 +150,38 @@ uint16_t Adafruit_FIFO::write(void const* item)
     @return    Number of written items
 */
 /******************************************************************************/
-uint16_t Adafruit_FIFO::write(void const * data, uint16_t n)
+uint16_t Adafruit_FIFO::write(void const * data, uint16_t count)
 {
-  if ( n == 0 ) return 0;
+  if ( count == 0 ) return 0;
 
-  uint8_t* buf = (uint8_t*) data;
+  _mutex_lock();
 
-  uint16_t len = 0;
-  while( (len < n) && write(buf) )
+  // Not overwritable limit up to full
+  if (!_overwritable) count = min(count, remaining());
+
+  uint8_t const* buf8 = (uint8_t const*) data;
+  uint16_t n = 0;
+
+  while (n < count)
   {
-    len++;
-    buf += _item_size;
+    _push(buf8);
+
+    n++;
+    buf8 += _item_size;
   }
 
-  return len;
+  _mutex_unlock();
+
+  return n;
+}
+
+void Adafruit_FIFO::_pull(void * buffer)
+{
+  memcpy(buffer,
+         _buffer + (_rd_idx * _item_size),
+         _item_size);
+  _rd_idx = (_rd_idx + 1) % _depth;
+  _count--;
 }
 
 /******************************************************************************/
@@ -185,15 +196,11 @@ uint16_t Adafruit_FIFO::read(void* buffer)
 {
   if( empty() ) return 0;
 
-  _mutex_lock(false);
+  _mutex_lock();
 
-  memcpy(buffer,
-         _buffer + (_rd_idx * _item_size),
-         _item_size);
-  _rd_idx = (_rd_idx + 1) % _depth;
-  _count--;
+  _pull(buffer);
 
-  _mutex_unlock(false);
+  _mutex_unlock();
 
   return 1;
 }
@@ -210,41 +217,30 @@ uint16_t Adafruit_FIFO::read(void* buffer)
     @return    Number of read items
 */
 /******************************************************************************/
-uint16_t Adafruit_FIFO::read(void * buffer, uint16_t n)
+uint16_t Adafruit_FIFO::read(void * buffer, uint16_t count)
 {
-  if( n == 0 ) return 0;
+  if( count == 0 ) return 0;
 
-  uint8_t* buf = (uint8_t*) buffer;
+  _mutex_lock();
 
-  uint16_t len = 0;
-  while( (len < n) && read(buf) )
+  /* Limit up to fifo's count */
+  if ( count > _count ) count = _count;
+
+  uint8_t* buf8 = (uint8_t*) buffer;
+  uint16_t n = 0;
+
+  while (n < count)
   {
-    len++;
-    buf += _item_size;
+    _pull(buf8);
+
+    n++;
+    buf8 += _item_size;
   }
 
-  return len;
+  _mutex_unlock();
+
+  return n;
 }
-
-/******************************************************************************/
-/*!
-    @brief  Read an item without removing it from the FIFO
-
-    @param[in] buffer
-               Memory address to store item
-*/
-/******************************************************************************/
-bool Adafruit_FIFO::peek(void* buffer)
-{
-  if( empty() ) return false;
-
-  memcpy(buffer,
-         _buffer + (_rd_idx * _item_size),
-         _item_size);
-
-  return true;
-}
-
 
 /******************************************************************************/
 /*!

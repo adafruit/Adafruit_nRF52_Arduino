@@ -162,7 +162,7 @@ void bleuart_rx_callback(uint16_t conn_hdl)
   rxCount += count;
   bleuart.flush(); // empty rx fifo
 
-  Serial.printf("RX %d bytes\n", count);
+  // Serial.printf("RX %d bytes\n", count);
 }
 
 void bleuart_notify_callback(uint16_t conn_hdl, bool enabled)
@@ -232,9 +232,6 @@ void loop(void)
       print_speed("Received ", rxCount, rxLastTime-rxStartTime);
       rxCount = 0;
     }
-
-    // Bluefruit.disconnect(0);
-    // delay(2000);
   }
 }
 

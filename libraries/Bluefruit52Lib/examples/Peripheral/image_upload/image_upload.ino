@@ -22,23 +22,31 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 
-BLEUart bleuart; // uart over ble
+// Uart over BLE with large buffer to hold image data
+BLEUart bleuart(1024*10);
 
 /* The Image Transfer module sends the image of your choice to Bluefruit LE over UART.
  * Each image sent begins with
- * - A single byte char “!” (0x21)
+ * - A single byte char '!' (0x21) followed by 'I' helper for image
  * - Image width (uint16 little endian, 2 bytes)
  * - Image height (uint16 little endian, 2 bytes)
  * - Pixel data encoded as RGB 24-bit and suffixed by a single byte CRC.
  *
- * Format: [ ‘!’ ] [ uint16 width ] [ uint16 height ] [ r g b ] [ r g b ] [ r g b ] … [ CRC ]
+ * Format: [ '!' ] [ 'I' ] [ uint16 width ] [ uint16 height ] [ r g b ] [ r g b ] [ r g b ] â€¦ [ CRC ]
  */
 
 uint16_t imageWidth = 0;
 uint16_t imageHeight = 0;
+uint16_t imageX = 0;
+uint16_t imageY = 0;
+
+uint32_t totalPixel = 0; // received pixel
+
+// color buf must be large enough to consume incoming data fast enough
+// otherwise bleuart fifo could be overflow and start dropping data
+uint16_t color_buf[2048];
 
 // Statistics for speed testing
-uint32_t rxCount = 0;
 uint32_t rxStartTime = 0;
 uint32_t rxLastTime = 0;
 
@@ -75,7 +83,7 @@ void setup()
   Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
 
   Bluefruit.begin();
-  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
+  Bluefruit.setTxPower(8);    // Check bluefruit.h for supported values
   Bluefruit.setName("Bluefruit52");
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
@@ -87,10 +95,6 @@ void setup()
 
   // Set up and start advertising
   startAdv();
-
-  // splash screen effect
-  delay(100);
-
 
   tft.println("Advertising ... ");
 }
@@ -126,12 +130,51 @@ void startAdv(void)
 
 void loop()
 {
-  // 3 seconds has passed and there is no data received
-  // then reset rx count
-  if ( (rxCount > 0) && (rxLastTime + 1000 < millis()) )
+  if ( !Bluefruit.connected()   ) return;
+  if ( !bleuart.notifyEnabled() ) return;
+  if ( !bleuart.available() ) return;
+
+  // all pixel data is received
+  if ( totalPixel == imageWidth*imageHeight )
   {
-    print_speed(rxCount, rxLastTime-rxStartTime);
-    rxCount = 0;
+    uint8_t crc = bleuart.read();
+    // do checksum later
+
+    // print speed summary
+    print_speed(totalPixel*3 + 7, rxLastTime-rxStartTime);
+
+    // reset and waiting for new image
+    totalPixel = imageWidth = imageHeight = 0;
+  }
+
+  // extract pixel data and display on TFT
+  uint16_t pixelNum = bleuart.available() / 3;
+
+  // Draw multiple lines of image each time i.e pixelNum = n*imageWidth
+  // pixelNum is capped at color_buf size (512 pixel)
+  // the rest will be drawn in the next invocation of loop().
+  pixelNum = min(pixelNum, sizeof(color_buf)/2);
+
+  // Chop pixel number to multiple of image width
+  pixelNum = (pixelNum / imageWidth) * imageWidth;
+
+  if ( pixelNum )
+  {
+    for ( uint16_t i=0; i < pixelNum; i++)
+    {
+      uint8_t red   = bleuart.read();
+      uint8_t green = bleuart.read();
+      uint8_t blue  = bleuart.read();
+
+      color_buf[i] = ((red & 0xF8) << 8) | ((green & 0xFC) << 3) | ( blue >> 3);
+    }
+
+    tft.drawRGBBitmap(imageX, imageY, color_buf, imageWidth, imageHeight - imageY);
+
+    totalPixel += pixelNum;
+
+    imageX = totalPixel % imageWidth;
+    imageY = totalPixel / imageWidth;
   }
 }
 
@@ -150,20 +193,37 @@ void connect_callback(uint16_t conn_handle)
   conn->requestMtuExchange(247);
   tft.println("Exchanging MTU");
 
-  tft.println("Ready to receive Image");
+  tft.setTextColor(ILI9341_GREEN);
+  tft.println("Ready to receive new image");
+  tft.setTextColor(ILI9341_WHITE);
 }
 
 void print_speed(uint32_t count, uint32_t ms)
 {
-  Serial.print("Received ");
-  Serial.print(count);
-  Serial.print(" bytes in ");
-  Serial.print(ms / 1000.0F, 2);
-  Serial.println(" seconds.");
+  tft.setCursor(0, imageHeight+5);
+  tft.print("Received ");
 
-  Serial.print("Speed : ");
-  Serial.print( (count / 1000.0F) / (ms / 1000.0F), 2);
-  Serial.println(" KB/s.\r\n");
+  tft.setTextColor(ILI9341_YELLOW);
+  tft.print(count);
+  tft.setTextColor(ILI9341_WHITE);
+
+  tft.print(" bytes in ");
+
+  tft.setTextColor(ILI9341_YELLOW);
+  tft.print(ms / 1000.0F, 2);
+  tft.setTextColor(ILI9341_WHITE);
+
+  tft.println(" seconds");
+
+  tft.print("Speed: ");
+  tft.setTextColor(ILI9341_YELLOW);
+  tft.print( (count / 1000.0F) / (ms / 1000.0F), 2);
+  tft.setTextColor(ILI9341_WHITE);
+  tft.println(" KB/s");
+
+  tft.setTextColor(ILI9341_GREEN);
+  tft.println("Ready to receive new image");
+  tft.setTextColor(ILI9341_WHITE);
 }
 
 void bleuart_rx_callback(uint16_t conn_hdl)
@@ -172,21 +232,27 @@ void bleuart_rx_callback(uint16_t conn_hdl)
 
   rxLastTime = millis();
 
-  // first packet
-  if ( rxCount == 0 )
+  // Received new Image
+  if ( (imageWidth == 0) && (imageHeight == 0) )
   {
     rxStartTime = millis();
 
-    // Incorrect format, possibly corrupted data
-    if ( bleuart.read() != '!' ) bleuart.flush();
-    rxCount++;
+    // Skip all data until '!I' is found
+    while( bleuart.available() && bleuart.read() != '!' )  { }
+    if (bleuart.read() != 'I') return;
+
+    if ( !bleuart.available() ) return;
+    
+    imageWidth = bleuart.read16();
+    imageHeight = bleuart.read16();
+
+    PRINT_INT(imageWidth);
+    PRINT_INT(imageHeight);
 
     tft.fillScreen(ILI9341_BLACK);
     tft.setCursor(0, 0);
+    imageX = imageY = 0;
   }
-
-  rxCount += bleuart.available();
-  bleuart.flush(); // empty rx fifo
 }
 
 /**
@@ -201,4 +267,6 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   tft.fillScreen(ILI9341_BLACK);
   tft.setCursor(0, 0);
   tft.println("Advertising ...");
+
+  totalPixel = imageWidth = imageHeight = 0;
 }
