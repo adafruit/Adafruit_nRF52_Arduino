@@ -13,14 +13,45 @@
 *********************************************************************/
 
 /* This sketch demonstrates the "Image Upload" feature of Bluefruit Mobile App.
- * FeatherWing OLED is used to display uploaded image
+ * Either 2.4" or 3.5" TFT FeatherWing is used to display uploaded image
  *  - https://www.adafruit.com/product/3315
+ *  - https://www.adafruit.com/product/3651
  */
+
+// if USE_35_TFT_FEATHERWING = 0 then the 2.4" TFT will be used instead
+#define USE_35_TFT_FEATHERWING    1
 
 #include <bluefruit.h>
 #include <SPI.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_ILI9341.h>
+
+#ifdef ARDUINO_NRF52832_FEATHER
+   #define TFT_DC   11
+   #define TFT_CS   31
+#endif
+
+#ifdef ARDUINO_NRF52840_FEATHER
+   #define TFT_DC   10
+   #define TFT_CS   9
+#endif
+
+#ifdef ARDUINO_NRF52840_CIRCUITPLAY
+   #define TFT_DC   A7
+   #define TFT_CS   A6
+#endif
+
+#if USE_35_TFT_FEATHERWING
+  #include "Adafruit_HX8357.h"
+  Adafruit_HX8357 tft = Adafruit_HX8357(TFT_CS, TFT_DC);
+#else
+  #include <Adafruit_ILI9341.h>
+  Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+#endif
+
+#define COLOR_WHITE     0xFFFF
+#define COLOR_BLACK     0x0000
+#define COLOR_YELLOW    0xFFE0
+#define COLOR_GREEN     0x07E0
 
 // Uart over BLE with large buffer to hold image data
 BLEUart bleuart(1024*10);
@@ -50,31 +81,14 @@ uint16_t color_buf[2048];
 uint32_t rxStartTime = 0;
 uint32_t rxLastTime = 0;
 
-#ifdef ARDUINO_NRF52832_FEATHER
-   #define TFT_DC   11
-   #define TFT_CS   31
-#endif
-
-#ifdef ARDUINO_NRF52840_FEATHER
-   #define TFT_DC   10
-   #define TFT_CS   9
-#endif
-
-#ifdef ARDUINO_NRF52840_CIRCUITPLAY
-   #define TFT_DC   A7
-   #define TFT_CS   A6
-#endif
-
-
-Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 
 void setup()
 {
   Serial.begin(115200);
 
   tft.begin();
-  tft.fillScreen(ILI9341_BLACK);
-  tft.setTextColor(ILI9341_WHITE);
+  tft.fillScreen(COLOR_BLACK);
+  tft.setTextColor(COLOR_WHITE);
   tft.setTextSize(1);
 
   // Config the peripheral connection with maximum bandwidth
@@ -135,7 +149,7 @@ void loop()
   if ( !bleuart.available() ) return;
 
   // all pixel data is received
-  if ( totalPixel == imageWidth*imageHeight )
+  if ( (totalPixel != 0) && (totalPixel == imageWidth*imageHeight) )
   {
     uint8_t crc = bleuart.read();
     // do checksum later
@@ -193,9 +207,9 @@ void connect_callback(uint16_t conn_handle)
   conn->requestMtuExchange(247);
   tft.println("Exchanging MTU");
 
-  tft.setTextColor(ILI9341_GREEN);
+  tft.setTextColor(COLOR_GREEN);
   tft.println("Ready to receive new image");
-  tft.setTextColor(ILI9341_WHITE);
+  tft.setTextColor(COLOR_WHITE);
 }
 
 void print_speed(uint32_t count, uint32_t ms)
@@ -203,27 +217,27 @@ void print_speed(uint32_t count, uint32_t ms)
   tft.setCursor(0, imageHeight+5);
   tft.print("Received ");
 
-  tft.setTextColor(ILI9341_YELLOW);
+  tft.setTextColor(COLOR_YELLOW);
   tft.print(count);
-  tft.setTextColor(ILI9341_WHITE);
+  tft.setTextColor(COLOR_WHITE);
 
   tft.print(" bytes in ");
 
-  tft.setTextColor(ILI9341_YELLOW);
+  tft.setTextColor(COLOR_YELLOW);
   tft.print(ms / 1000.0F, 2);
-  tft.setTextColor(ILI9341_WHITE);
+  tft.setTextColor(COLOR_WHITE);
 
   tft.println(" seconds");
 
   tft.print("Speed: ");
-  tft.setTextColor(ILI9341_YELLOW);
+  tft.setTextColor(COLOR_YELLOW);
   tft.print( (count / 1000.0F) / (ms / 1000.0F), 2);
-  tft.setTextColor(ILI9341_WHITE);
+  tft.setTextColor(COLOR_WHITE);
   tft.println(" KB/s");
 
-  tft.setTextColor(ILI9341_GREEN);
+  tft.setTextColor(COLOR_GREEN);
   tft.println("Ready to receive new image");
-  tft.setTextColor(ILI9341_WHITE);
+  tft.setTextColor(COLOR_WHITE);
 }
 
 void bleuart_rx_callback(uint16_t conn_hdl)
@@ -249,7 +263,7 @@ void bleuart_rx_callback(uint16_t conn_hdl)
     PRINT_INT(imageWidth);
     PRINT_INT(imageHeight);
 
-    tft.fillScreen(ILI9341_BLACK);
+    tft.fillScreen(COLOR_BLACK);
     tft.setCursor(0, 0);
     imageX = imageY = 0;
   }
@@ -264,9 +278,11 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
   (void) reason;
 
-  tft.fillScreen(ILI9341_BLACK);
+  tft.fillScreen(COLOR_BLACK);
   tft.setCursor(0, 0);
   tft.println("Advertising ...");
 
   totalPixel = imageWidth = imageHeight = 0;
+
+  bleuart.flush();
 }
