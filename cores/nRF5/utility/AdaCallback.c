@@ -37,6 +37,8 @@
 #include "Arduino.h"
 
 static QueueHandle_t _cb_queue = NULL;
+static uint8_t _cb_qbuf[CFG_CALLBACK_QUEUE_LENGTH*sizeof(void*)];
+static StaticQueue_t _cb_static_q;
 
 void adafruit_callback_task(void* arg)
 {
@@ -122,7 +124,7 @@ void ada_callback_invoke(const void* malloc_data, uint32_t malloc_len, const voi
 void ada_callback_init(void)
 {
   // queue to hold "Pointer to callback data"
-  _cb_queue = xQueueCreate(CFG_CALLBACK_QUEUE_LENGTH, sizeof(ada_callback_t*));
+  _cb_queue = xQueueCreateStatic(CFG_CALLBACK_QUEUE_LENGTH, sizeof(void*), _cb_qbuf, &_cb_static_q);
 
   TaskHandle_t callback_task_hdl;
   xTaskCreate( adafruit_callback_task, "Callback", CFG_CALLBACK_TASK_STACKSIZE, NULL, TASK_PRIO_NORMAL, &callback_task_hdl);
