@@ -468,12 +468,11 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
     {
       ble_gatts_evt_write_t* request = &event->evt.gatts_evt.params.write;
 
-      LOG_LV2_BUFFER(NULL, request->data, request->len);
-
       // Value write
       if (request->handle == _handles.value_handle)
       {
-        LOG_LV2("GATTS", "attr's value, uuid = 0x%04X", request->uuid.uuid);
+        LOG_LV2("GATTS", "attr's value, uuid = 0x%04X, len = %d", request->uuid.uuid, request->len);
+        LOG_LV2_BUFFER(NULL, request->data, request->len);
 
         if (_wr_cb)
         {
@@ -490,13 +489,13 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
       // CCCD write
       if ( request->handle == _handles.cccd_handle )
       {
-        LOG_LV2("GATTS", "attr's cccd");
+        uint16_t value;
+        memcpy(&value, request->data, 2);
+
+        LOG_LV1("GATTS", "attr's cccd = 0x%04X", value);
 
         if (_cccd_wr_cb)
         {
-          uint16_t value;
-          memcpy(&value, request->data, 2);
-
           if ( _use_ada_cb.cccd_write )
           {
             ada_callback(NULL, 0, _cccd_wr_cb, conn_hdl, this, value);

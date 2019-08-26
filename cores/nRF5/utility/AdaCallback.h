@@ -43,7 +43,7 @@
 #endif
 
 #ifndef CFG_CALLBACK_QUEUE_LENGTH
-#define CFG_CALLBACK_QUEUE_LENGTH       20
+#define CFG_CALLBACK_QUEUE_LENGTH       40
 #endif
 
 #ifndef CFG_CALLBACK_TIMEOUT

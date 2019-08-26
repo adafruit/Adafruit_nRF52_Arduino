@@ -68,8 +68,6 @@ BLEUart bleuart(1024*10);
 
 uint16_t imageWidth = 0;
 uint16_t imageHeight = 0;
-uint16_t imageX = 0;
-uint16_t imageY = 0;
 
 uint32_t totalPixel = 0; // received pixel
 
@@ -172,6 +170,19 @@ void loop()
   // Chop pixel number to multiple of image width
   pixelNum = (pixelNum / imageWidth) * imageWidth;
 
+#if 0
+  static uint32_t last_available = 0;
+  if ( last_available != bleuart.available() )
+  {
+    last_available = bleuart.available();
+
+    PRINT_INT(totalPixel);
+    PRINT_INT(last_available);
+    PRINT_INT(pixelNum);
+    Serial.println();
+  }
+#endif
+
   if ( pixelNum )
   {
     for ( uint16_t i=0; i < pixelNum; i++)
@@ -183,12 +194,8 @@ void loop()
       color_buf[i] = ((red & 0xF8) << 8) | ((green & 0xFC) << 3) | ( blue >> 3);
     }
 
-    tft.drawRGBBitmap(imageX, imageY, color_buf, imageWidth, imageHeight - imageY);
-
+    tft.drawRGBBitmap(0, totalPixel/imageWidth, color_buf, imageWidth, pixelNum/imageWidth);
     totalPixel += pixelNum;
-
-    imageX = totalPixel % imageWidth;
-    imageY = totalPixel / imageWidth;
   }
 }
 
@@ -265,7 +272,6 @@ void bleuart_rx_callback(uint16_t conn_hdl)
 
     tft.fillScreen(COLOR_BLACK);
     tft.setCursor(0, 0);
-    imageX = imageY = 0;
   }
 }
 

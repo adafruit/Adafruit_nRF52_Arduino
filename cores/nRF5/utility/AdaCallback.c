@@ -47,9 +47,6 @@ void adafruit_callback_task(void* arg)
     ada_callback_t* cb_data;
     if ( xQueueReceive(_cb_queue, (void*) &cb_data, portMAX_DELAY) )
     {
-//      PRINT_HEX(cb_data);
-//      PRINT_HEX(cb_data->malloced_data);
-
       const void* func = cb_data->callback_func;
       uint32_t* args = cb_data->arguments;
 
@@ -85,7 +82,10 @@ void ada_callback_queue(ada_callback_t* cb_item)
     xQueueSendFromISR(_cb_queue, (void*) &cb_item, NULL);
   }else
   {
-    xQueueSend(_cb_queue, (void*) &cb_item, CFG_CALLBACK_TIMEOUT);
+    if ( !xQueueSend(_cb_queue, (void*) &cb_item, CFG_CALLBACK_TIMEOUT) )
+    {
+      LOG_LV1("MEMORY", "AdaCallback run out of queue item, increase CFG_CALLBACK_QUEUE_LENGTH");
+    }
   }
 }
 
