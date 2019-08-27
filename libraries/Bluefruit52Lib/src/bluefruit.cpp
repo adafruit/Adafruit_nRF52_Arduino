@@ -779,7 +779,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   uint16_t const conn_hdl = evt->evt.common_evt.conn_handle;
   BLEConnection* conn = this->Connection(conn_hdl);
 
-  LOG_LV1("BLE", "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), conn_hdl);
+  LOG_LV2("BLE", "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), conn_hdl);
 
   // GAP handler
   if ( conn ) conn->_eventHandler(evt);
