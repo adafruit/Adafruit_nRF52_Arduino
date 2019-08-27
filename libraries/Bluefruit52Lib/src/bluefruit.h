@@ -130,8 +130,8 @@ class AdafruitBluefruit
     void configAttrTableSize  (uint32_t attr_table_size);
 
     // Configure Bandwidth for connections
-    void configPrphConn        (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
-    void configCentralConn     (uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    void configPrphConn        (uint16_t mtu_max, uint16_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
+    void configCentralConn     (uint16_t mtu_max, uint16_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
     void configPrphBandwidth   (uint8_t bw);
     void configCentralBandwidth(uint8_t bw);
 
@@ -211,10 +211,10 @@ class AdafruitBluefruit
 
       // Bandwidth configuration
       struct {
-        uint16_t mtu_max;
-        uint8_t  event_len;
-        uint8_t  hvn_qsize;
-        uint8_t  wrcmd_qsize;
+        uint16_t  mtu_max;
+        uint16_t  event_len;
+        uint8_t   hvn_qsize;
+        uint8_t   wrcmd_qsize;
       }prph, central;
     }_sd_cfg;
 

@@ -210,7 +210,7 @@ void AdafruitBluefruit::configAttrTableSize(uint32_t attr_table_size)
   _sd_cfg.attr_table_size = align4( maxof(attr_table_size, BLE_GATTS_ATTR_TAB_SIZE_MIN) );
 }
 
-void AdafruitBluefruit::configPrphConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
+void AdafruitBluefruit::configPrphConn(uint16_t mtu_max, uint16_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
 {
   _sd_cfg.prph.mtu_max     = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);;
   _sd_cfg.prph.event_len   = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
@@ -218,7 +218,7 @@ void AdafruitBluefruit::configPrphConn(uint16_t mtu_max, uint8_t event_len, uint
   _sd_cfg.prph.wrcmd_qsize = wrcmd_qsize;
 }
 
-void AdafruitBluefruit::configCentralConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
+void AdafruitBluefruit::configCentralConn(uint16_t mtu_max, uint16_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
 {
   _sd_cfg.central.mtu_max     = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);;
   _sd_cfg.central.event_len   = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
@@ -249,7 +249,7 @@ void AdafruitBluefruit::configPrphBandwidth(uint8_t bw)
     break;
 
     case BANDWIDTH_MAX:
-      configPrphConn(247, 6, 3, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
+      configPrphConn(247, 100, 3, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
     break;
 
     default: break;
@@ -779,7 +779,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   uint16_t const conn_hdl = evt->evt.common_evt.conn_handle;
   BLEConnection* conn = this->Connection(conn_hdl);
 
-  LOG_LV2("BLE", "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), conn_hdl);
+  LOG_LV1("BLE", "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), conn_hdl);
 
   // GAP handler
   if ( conn ) conn->_eventHandler(evt);
