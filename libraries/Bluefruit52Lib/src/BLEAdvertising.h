@@ -139,6 +139,7 @@ public:
   void restartOnDisconnect(bool enable);
   bool start(uint16_t timeout = 0);
   bool stop (void);
+  bool updateData();
 
   /*------------------------------------------------------------------*/
   /* INTERNAL USAGE ONLY
