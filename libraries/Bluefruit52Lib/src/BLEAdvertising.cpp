@@ -385,6 +385,21 @@ bool BLEAdvertising::start(uint16_t timeout)
   return true;
 }
 
+// first set new advertising data with "Bluefruit.Advertising.setData(data,len) or "Bluefruit.ScanResponse.setData(data,len)"
+bool BLEAdvertising::updateData()
+{
+  // gap_adv long-live is required by SD v6
+  static ble_gap_adv_data_t gap_adv =
+  {
+      .adv_data      = { .p_data = _data, .len = _count },
+      .scan_rsp_data = { .p_data = Bluefruit.ScanResponse.getData(), .len = Bluefruit.ScanResponse.count() }
+  };
+  VERIFY_STATUS( sd_ble_gap_adv_set_configure(&_hdl, &gap_adv, NULL), false );
+  VERIFY_STATUS( sd_ble_gap_adv_start(_hdl, CONN_CFG_PERIPHERAL), false );
+
+  return true;
+}
+
 bool BLEAdvertising::stop(void)
 {
   VERIFY_STATUS( sd_ble_gap_adv_stop(_hdl), false);
@@ -465,4 +480,3 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
     default: break;
   }
 }
-
