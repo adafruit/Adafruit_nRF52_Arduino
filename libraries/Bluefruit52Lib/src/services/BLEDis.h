@@ -46,24 +46,56 @@ class BLEDis : public BLEService
   protected:
     union {
       struct {
+        const char * _system_id;
         const char * _model;
         const char * _serial;
         const char * _firmware_rev;
         const char * _hardware_rev;
         const char * _software_rev;
         const char * _manufacturer;
+        const char * _reg_cert_list;
+        const char * _pnp_id;
       };
 
-      const char * _strarr[6];
+    const char * _strarr[9];
+    };
+
+    union {
+      struct {
+        uint8_t _system_id_length;
+        uint8_t _model_length;
+        uint8_t _serial_length;
+        uint8_t _firmware_rev_length;
+        uint8_t _hardware_rev_length;
+        uint8_t _software_rev_length;
+        uint8_t _manufacturer_length;
+        uint8_t _reg_cert_list_length;
+        uint8_t _pnp_id_length;
+      };
+      const uint8_t _strarr_length[9];
     };
 
   public:
     BLEDis(void);
 
     void setModel(const char* model);
+    void setModel(const char* model,uint8_t length);
     void setHardwareRev(const char* hw_rev);
+    void setHardwareRev(const char* hw_rev,uint8_t length);
     void setSoftwareRev(const char* sw_rev);
+    void setSoftwareRev(const char* sw_rev, uint8_t length);
     void setManufacturer(const char* manufacturer);
+    void setManufacturer(const char* manufacturer, uint8_t length);
+    void setFirmwareRev(const char* firmware_rev);
+    void setFirmwareRev(const char* firmware_rev, uint8_t length);
+    void setSerialNum(const char* serial_num);
+    void setSerialNum(const char* serial_num, uint8_t length);
+    void setSystemID(const char* system_id);
+    void setSystemID(const char* system_id, uint8_t length);
+    void setRegCertList(const char* reg_cert_list);
+    void setRegCertList(const char* reg_cert_list, uint8_t length);
+    void setPNPID(const char* pnp_id);
+    void setPNPID(const char* pnp_id, uint8_t pnp_id_length);
 
     virtual err_t begin(void);
 };
