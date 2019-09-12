@@ -53,21 +53,22 @@ const uint32_t g_ADigitalPinMap[] =
   28,  // A8 - Light sensor
   31,  // A9 - Thermistor sensor
 
-  45,  // D24 is P1.13 (LIS IRQ)
-  44,  // D25 is P1.12 (LIS SCL)
-  42,  // D26 is P1.10 (LIS SDA)
+  // D24 & D25 PDM pins
+  16,  // D24 is P0.16 (PDM DAT)
+  17,  // D25 is P0.17 (PDM CLK)
+
+  44,  // D26 is P1.12 (LIS SCL)
+  45,  // D27 is P1.13 (LIS IRQ)
+  42,  // D28 is P1.10 (LIS SDA)
 
   // QSPI pins (not exposed via any header / test point)
-  19,  // D27 is P0.19 (QSPI CLK)
-  15,  // D28 is P0.15 (QSPI CS)
-  21,  // D29 is P0.21 (QSPI Data 0)
-  23,  // D30 is P0.23 (QSPI Data 1)
-  32,  // D31 is P1.00 (QSPI Data 2)
-  22,  // D32 is P0.22 (QSPI Data 3)
+  19,  // D29 is P0.19 (QSPI CLK)
+  15,  // D30 is P0.15 (QSPI CS)
+  21,  // D31 is P0.21 (QSPI Data 0)
+  23,  // D32 is P0.23 (QSPI Data 1)
+  32,  // D33 is P1.00 (QSPI Data 2)
+  22,  // D34 is P0.22 (QSPI Data 3)
 
-  // D33 & D34 PDM pins
-  16,  // D33 is P0.16 (PDM DAT)
-  17,  // D34 is P0.17 (PDM CLK)
 
 };
 

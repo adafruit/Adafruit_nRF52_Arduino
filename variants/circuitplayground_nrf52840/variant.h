@@ -58,8 +58,8 @@ extern "C"
 #define PIN_BUTTON2             (5)
 
 // Microphone
-#define PIN_PDM_DIN           33
-#define PIN_PDM_CLK           34
+#define PIN_PDM_DIN           24
+#define PIN_PDM_CLK           25
 #define PIN_PDM_PWR           -1  // not used
 
 /*
@@ -114,16 +114,16 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
  */
 #define WIRE_INTERFACES_COUNT 1
 
-#define PIN_WIRE_SDA         (26)
-#define PIN_WIRE_SCL         (25)
+#define PIN_WIRE_SDA         (28)
+#define PIN_WIRE_SCL         (26)
 
 // QSPI Pins
-#define PIN_QSPI_SCK         27
-#define PIN_QSPI_CS          28
-#define PIN_QSPI_IO0         29
-#define PIN_QSPI_IO1         30
-#define PIN_QSPI_IO2         31
-#define PIN_QSPI_IO3         32
+#define PIN_QSPI_SCK         29
+#define PIN_QSPI_CS          30
+#define PIN_QSPI_IO0         31
+#define PIN_QSPI_IO1         32
+#define PIN_QSPI_IO2         33
+#define PIN_QSPI_IO3         34
 
 // On-board QSPI Flash
 #define EXTERNAL_FLASH_DEVICES   GD25Q16C
