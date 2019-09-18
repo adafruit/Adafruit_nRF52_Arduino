@@ -56,7 +56,7 @@ static void loop_task(void* arg)
   while (1)
   {
     loop();
-    yield(); // yield run usb background task
+    yield(); // yield to run other task
 
     // Serial events
     if (serialEvent && serialEventRun) serialEventRun();
