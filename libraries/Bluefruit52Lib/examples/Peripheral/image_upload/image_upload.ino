@@ -207,7 +207,7 @@ void bleuart_rx_callback(uint16_t conn_hdl)
     // do checksum later
 
     // print speed summary
-    print_speed(totalPixel*3 + 7, rxLastTime-rxStartTime);
+    print_summary(totalPixel*3 + 7, rxLastTime-rxStartTime);
 
     // reset and waiting for new image
     totalPixel = imageWidth = imageHeight = 0;
@@ -234,7 +234,7 @@ void connect_callback(uint16_t conn_handle)
   tft.setTextColor(COLOR_WHITE);
 }
 
-void print_speed(uint32_t count, uint32_t ms)
+void print_summary(uint32_t count, uint32_t ms)
 {
   tft.setCursor(0, imageHeight+5);
   tft.print("Received ");
@@ -251,11 +251,17 @@ void print_speed(uint32_t count, uint32_t ms)
 
   tft.println(" seconds");
 
-  tft.print("Speed: ");
+  tft.print("Speed ");
   tft.setTextColor(COLOR_YELLOW);
   tft.print( (count / 1000.0F) / (ms / 1000.0F), 2);
   tft.setTextColor(COLOR_WHITE);
-  tft.println(" KB/s");
+  tft.print(" KB/s with ");
+
+  tft.setTextColor(COLOR_YELLOW);
+  tft.print(imageWidth); tft.print(" x "); tft.print(imageHeight);
+
+  tft.setTextColor(COLOR_WHITE);
+  tft.println(" Image");
 
   tft.setTextColor(COLOR_GREEN);
   tft.println("Ready to receive new image");
