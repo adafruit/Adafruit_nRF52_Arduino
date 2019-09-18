@@ -36,9 +36,10 @@
 
 #include "Arduino.h"
 
+#define INITIAL_QUEUE_DEPTH     64
+
 static QueueHandle_t _cb_queue = NULL;
-static uint8_t _cb_qbuf[CFG_CALLBACK_QUEUE_LENGTH*sizeof(void*)];
-static StaticQueue_t _cb_static_q;
+static uint32_t _cb_qdepth;
 
 void adafruit_callback_task(void* arg)
 {
@@ -79,14 +80,26 @@ static inline bool is_isr(void)
 
 void ada_callback_queue(ada_callback_t* cb_item)
 {
-  if ( is_isr() )
+  BaseType_t ret = is_isr() ? xQueueSendFromISR(_cb_queue, (void*) &cb_item, NULL) : xQueueSend(_cb_queue, (void*) &cb_item, CFG_CALLBACK_TIMEOUT);
+
+  if ( ret != pdTRUE )
   {
-    xQueueSendFromISR(_cb_queue, (void*) &cb_item, NULL);
-  }else
-  {
-    if ( !xQueueSend(_cb_queue, (void*) &cb_item, CFG_CALLBACK_TIMEOUT) )
+    // run out of space, resize queue with double the size
+    if ( ada_callback_queue_resize(2*_cb_qdepth) )
     {
-      LOG_LV1("MEMORY", "AdaCallback run out of queue item, increase CFG_CALLBACK_QUEUE_LENGTH");
+      _cb_qdepth = 2*_cb_qdepth;
+
+      // try again
+      if ( is_isr() )
+      {
+        xQueueSendFromISR(_cb_queue, (void*) &cb_item, NULL);
+      }else
+      {
+        xQueueSend(_cb_queue, (void*) &cb_item, CFG_CALLBACK_TIMEOUT);
+      }
+    }else
+    {
+      LOG_LV1("MEMORY", "AdaCallback run out of queue spaces");
     }
   }
 }
@@ -124,8 +137,37 @@ void ada_callback_invoke(const void* malloc_data, uint32_t malloc_len, const voi
 void ada_callback_init(void)
 {
   // queue to hold "Pointer to callback data"
-  _cb_queue = xQueueCreateStatic(CFG_CALLBACK_QUEUE_LENGTH, sizeof(void*), _cb_qbuf, &_cb_static_q);
+  _cb_qdepth = INITIAL_QUEUE_DEPTH;
+  _cb_queue  = xQueueCreate(_cb_qdepth, sizeof(void*));
 
   TaskHandle_t callback_task_hdl;
   xTaskCreate( adafruit_callback_task, "Callback", CFG_CALLBACK_TASK_STACKSIZE, NULL, TASK_PRIO_NORMAL, &callback_task_hdl);
+}
+
+bool ada_callback_queue_resize(uint32_t new_depth)
+{
+  // create new queue
+  QueueHandle_t new_queue = xQueueCreate(new_depth, sizeof(void*));
+  VERIFY(new_queue);
+
+  LOG_LV1("MEMORY", "AdaCallback increase queue depth to %d", new_depth);
+
+  taskENTER_CRITICAL();
+
+  // move item from old queue
+  ada_callback_t* cb_data;
+  while ( xQueueReceive(_cb_queue, (void*) &cb_data, 0) )
+  {
+    xQueueSend(new_queue, (void*) &cb_data, CFG_CALLBACK_TIMEOUT);
+  }
+
+  // delete old queue
+  vQueueDelete(_cb_queue);
+
+  // Switch to new queue
+  _cb_queue = new_queue;
+
+  taskEXIT_CRITICAL();
+
+  return true;
 }
