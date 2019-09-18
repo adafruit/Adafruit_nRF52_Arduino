@@ -69,6 +69,7 @@ BLEUart::BLEUart(uint16_t fifo_depth)
 
   _rx_cb         = NULL;
   _notify_cb     = NULL;
+  _overflow_cb   = NULL;
 
   _tx_fifo       = NULL;
   _tx_buffered   = false;
@@ -84,8 +85,15 @@ BLEUart::~BLEUart()
 void BLEUart::bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
   BLEUart& svc = (BLEUart&) chr->parentService();
+  uint16_t wrcount = svc._rx_fifo->write(data, len);
 
-  svc._rx_fifo->write(data, len);
+  if ( wrcount < len )
+  {
+    LOG_LV1("MEMORY", "bleuart rxd fifo OVERFLOWED!");
+
+    // invoke overflow callback
+    if (svc._overflow_cb) svc._overflow_cb(conn_hdl, len - wrcount);
+  }
 
 #if CFG_DEBUG >= 2
   LOG_LV2("BLEUART", "RX: ");
@@ -106,6 +114,11 @@ void BLEUart::bleuart_txd_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uin
 void BLEUart::setRxCallback( rx_callback_t fp)
 {
   _rx_cb = fp;
+}
+
+void BLEUart::setRxOverflowCallback(rx_overflow_callback_t fp)
+{
+  _overflow_cb = fp;
 }
 
 void BLEUart::setNotifyCallback(notify_callback_t fp)

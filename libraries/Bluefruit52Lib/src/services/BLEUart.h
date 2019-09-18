@@ -53,6 +53,7 @@ class BLEUart : public BLEService, public Stream
   public:
     typedef void (*rx_callback_t) (uint16_t conn_hdl);
     typedef void (*notify_callback_t)(uint16_t conn_hdl, bool enabled);
+    typedef void (*rx_overflow_callback_t) (uint16_t conn_hdl, uint16_t leftover);
 
     BLEUart(uint16_t fifo_depth = BLE_UART_DEFAULT_FIFO_DEPTH);
     virtual ~BLEUart();
@@ -63,6 +64,7 @@ class BLEUart : public BLEService, public Stream
     bool notifyEnabled(uint16_t conn_hdl);
 
     void setRxCallback (rx_callback_t fp);
+    void setRxOverflowCallback(rx_overflow_callback_t fp);
     void setNotifyCallback(notify_callback_t fp);
 
     void bufferTXD(bool enable);
@@ -106,8 +108,9 @@ class BLEUart : public BLEService, public Stream
     bool           _tx_buffered; // default is false
 
     // Callbacks
-    rx_callback_t     _rx_cb;
-    notify_callback_t _notify_cb;
+    rx_callback_t           _rx_cb;
+    notify_callback_t       _notify_cb;
+    rx_overflow_callback_t  _overflow_cb;
 
     // Static Method for callbacks
     static void bleuart_rxd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
