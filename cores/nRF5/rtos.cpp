@@ -94,6 +94,7 @@ void yield(void)
 void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
 {
   LOG_LV1("RTOS", "%s Stack Overflow !!!", pcTaskName);
+  while(1) yield();
 }
 
 void vApplicationMallocFailedHook(void)

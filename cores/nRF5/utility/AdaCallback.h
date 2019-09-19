@@ -38,10 +38,6 @@
 
 #include "common_inc.h"
 
-#ifndef CFG_CALLBACK_TASK_STACKSIZE
-#define CFG_CALLBACK_TASK_STACKSIZE     (512*2)
-#endif
-
 #ifndef CFG_CALLBACK_TIMEOUT
 #define CFG_CALLBACK_TIMEOUT            100
 #endif
@@ -107,7 +103,7 @@ typedef void (*adacb_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 #define ada_callback(...)           _cb_setup(__VA_ARGS__)
 
 
-void ada_callback_init(void);
+void ada_callback_init(uint32_t stack_sz);
 void ada_callback_invoke(const void* mdata, uint32_t mlen, const void* func, uint32_t arguments[], uint8_t argcount);
 void ada_callback_queue(ada_callback_t* cb_item);
 bool ada_callback_queue_resize(uint32_t new_depth);

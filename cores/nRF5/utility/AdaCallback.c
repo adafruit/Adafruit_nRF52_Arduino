@@ -134,14 +134,14 @@ void ada_callback_invoke(const void* malloc_data, uint32_t malloc_len, const voi
   ada_callback_queue(cb_data);
 }
 
-void ada_callback_init(void)
+void ada_callback_init(uint32_t stack_sz)
 {
   // queue to hold "Pointer to callback data"
   _cb_qdepth = INITIAL_QUEUE_DEPTH;
   _cb_queue  = xQueueCreate(_cb_qdepth, sizeof(void*));
 
   TaskHandle_t callback_task_hdl;
-  xTaskCreate( adafruit_callback_task, "Callback", CFG_CALLBACK_TASK_STACKSIZE, NULL, TASK_PRIO_NORMAL, &callback_task_hdl);
+  xTaskCreate( adafruit_callback_task, "Callback", stack_sz, NULL, TASK_PRIO_NORMAL, &callback_task_hdl);
 }
 
 bool ada_callback_queue_resize(uint32_t new_depth)

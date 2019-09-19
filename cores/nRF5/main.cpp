@@ -37,7 +37,8 @@ static TaskHandle_t  _loopHandle;
 void initVariant() __attribute__((weak));
 void initVariant() { }
 
-#define LOOP_STACK_SZ   (512*3)
+#define LOOP_STACK_SZ       (256*4)
+#define CALLBACK_STACK_SZ   (256*3)
 
 static void loop_task(void* arg)
 {
@@ -81,7 +82,7 @@ int main( void )
   xTaskCreate( loop_task, "loop", LOOP_STACK_SZ, NULL, TASK_PRIO_LOW, &_loopHandle);
 
   // Initialize callback task
-  ada_callback_init();
+  ada_callback_init(CALLBACK_STACK_SZ);
 
   // Start FreeRTOS scheduler.
   vTaskStartScheduler();

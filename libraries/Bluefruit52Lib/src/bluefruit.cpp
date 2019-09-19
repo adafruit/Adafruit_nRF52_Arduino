@@ -38,20 +38,19 @@
 #include "utility/bonding.h"
 
 #ifndef CFG_BLE_TX_POWER_LEVEL
-#define CFG_BLE_TX_POWER_LEVEL           0
+#define CFG_BLE_TX_POWER_LEVEL    0
 #endif
 
 #ifndef CFG_DEFAULT_NAME
-#define CFG_DEFAULT_NAME                 "Bluefruit52"
+#define CFG_DEFAULT_NAME          "Bluefruit52"
 #endif
 
-
 #ifndef CFG_BLE_TASK_STACKSIZE
-#define CFG_BLE_TASK_STACKSIZE          (512*3)
+#define CFG_BLE_TASK_STACKSIZE    (256*5)
 #endif
 
 #ifndef CFG_SOC_TASK_STACKSIZE
-#define CFG_SOC_TASK_STACKSIZE          (200)
+#define CFG_SOC_TASK_STACKSIZE    (200)
 #endif
 
 #ifdef USE_TINYUSB
@@ -102,7 +101,6 @@ static void bluefruit_blinky_cb( TimerHandle_t xTimer )
   (void) xTimer;
   digitalToggle(LED_BLUE);
 }
-
 
 static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
 {
@@ -743,13 +741,14 @@ void adafruit_ble_task(void* arg)
 {
   (void) arg;
 
+  // malloc buffered is algined by 4
   uint8_t * ev_buf = (uint8_t*) rtos_malloc(BLE_EVT_LEN_MAX(BLE_GATT_ATT_MTU_MAX));
 
   while (1)
   {
     if ( xSemaphoreTake(Bluefruit._ble_event_sem, portMAX_DELAY) )
     {
-      uint32_t err = ERROR_NONE;
+      uint32_t err = NRF_SUCCESS;
 
       // Until no pending events
       while( NRF_ERROR_NOT_FOUND != err )
@@ -759,10 +758,13 @@ void adafruit_ble_task(void* arg)
         // Get BLE Event
         err = sd_ble_evt_get(ev_buf, &ev_len);
 
-        // Handle valid event, ignore error
-        if( ERROR_NONE == err)
+        // Handle valid event
+        if( NRF_SUCCESS == err)
         {
           Bluefruit._ble_handler( (ble_evt_t*) ev_buf );
+        }else if ( NRF_ERROR_NOT_FOUND != err )
+        {
+          LOG_LV1("BLE", "SD event error %s", dbg_err_str(err));
         }
       }
     }
