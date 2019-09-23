@@ -361,11 +361,8 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
       {
         ble_gatts_evt_read_t * rd_req = &request->request.read;
 
-        if ( _use_ada_cb.read_authorize )
-        {
-          ada_callback(rd_req, sizeof(*rd_req), _rd_authorize_cb, conn_hdl, this, rd_req);
-        }
-        else
+        if ( !(_use_ada_cb.read_authorize &&
+               ada_callback(rd_req, sizeof(*rd_req), _rd_authorize_cb, conn_hdl, this, rd_req)) )
         {
           _rd_authorize_cb(conn_hdl, this, rd_req);
         }
@@ -382,10 +379,8 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
             // Write Request with authorization
             if (_wr_authorize_cb != NULL)
             {
-              if ( _use_ada_cb.write_authorize )
-              {
-                ada_callback(wr_req, sizeof(*wr_req), _wr_authorize_cb, conn_hdl, this, wr_req);
-              }else
+              if ( !(_use_ada_cb.write_authorize &&
+                     ada_callback(wr_req, sizeof(*wr_req), _wr_authorize_cb, conn_hdl, this, wr_req)) )
               {
                 _wr_authorize_cb(conn_hdl, this, wr_req);
               }
@@ -435,13 +430,12 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
 
               sd_ble_gatts_rw_authorize_reply(conn_hdl, &reply);
 
-              // Long write complete, call write callback if set
               if (_wr_cb)
               {
-                if (_use_ada_cb.write)
-                {
-                  ada_callback(_long_wr.buffer, _long_wr.count, _wr_cb, conn_hdl, this, _long_wr.buffer, _long_wr.count);
-                }else
+                // Long write complete, call write callback if set
+                // If using ada callback but failed --> invoke callback immediately
+                if ( !(_use_ada_cb.write &&
+                       ada_callback(_long_wr.buffer, _long_wr.count, _wr_cb, conn_hdl, this, _long_wr.buffer, _long_wr.count)) )
                 {
                   _wr_cb(conn_hdl, this, _long_wr.buffer, _long_wr.count);
                 }
@@ -476,10 +470,8 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
 
         if (_wr_cb)
         {
-          if (_use_ada_cb.write)
-          {
-            ada_callback(request->data, request->len, _wr_cb, conn_hdl, this, request->data, request->len);
-          }else
+          if ( !(_use_ada_cb.write &&
+                 ada_callback(request->data, request->len, _wr_cb, conn_hdl, this, request->data, request->len)) )
           {
             _wr_cb(conn_hdl, this, request->data, request->len);
           }
@@ -496,11 +488,8 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
 
         if (_cccd_wr_cb)
         {
-          if ( _use_ada_cb.cccd_write )
-          {
-            ada_callback(NULL, 0, _cccd_wr_cb, conn_hdl, this, value);
-          }
-          else
+          if ( !(_use_ada_cb.cccd_write &&
+                 ada_callback(NULL, 0, _cccd_wr_cb, conn_hdl, this, value)) )
           {
             _cccd_wr_cb(conn_hdl, this, value);
           }

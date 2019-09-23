@@ -411,10 +411,8 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
           if (_notify_cb)
           {
             // use AdaCallback or invoke directly
-            if (_use_ada_cb.notify)
-            {
-              ada_callback(hvx->data, hvx->len, _notify_cb, this, hvx->data, hvx->len);
-            }else
+            if ( !(_use_ada_cb.notify &&
+                   ada_callback(hvx->data, hvx->len, _notify_cb, this, hvx->data, hvx->len)) )
             {
               _notify_cb(this, hvx->data, hvx->len);
             }
@@ -425,10 +423,8 @@ void BLEClientCharacteristic::_eventHandler(ble_evt_t* evt)
           if (_indicate_cb)
           {
             // use AdaCallback or invoke directly
-            if (_use_ada_cb.indicate)
-            {
-              ada_callback(hvx->data, hvx->len, _indicate_cb, this, hvx->data, hvx->len);
-            }else
+            if ( !(_use_ada_cb.indicate &&
+                   ada_callback(hvx->data, hvx->len, _indicate_cb, this, hvx->data, hvx->len)) )
             {
               _indicate_cb(this, hvx->data, hvx->len);
             }
