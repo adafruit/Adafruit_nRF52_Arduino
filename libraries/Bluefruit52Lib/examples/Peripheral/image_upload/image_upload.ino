@@ -16,10 +16,15 @@
  * Either 2.4" or 3.5" TFT FeatherWing is used to display uploaded image
  *  - https://www.adafruit.com/product/3315
  *  - https://www.adafruit.com/product/3651
+ *  - https://www.adafruit.com/product/4367
  */
 
-// if USE_35_TFT_FEATHERWING = 0 then the 2.4" TFT will be used instead
-#define USE_35_TFT_FEATHERWING    1
+#define TFT_35_FEATHERWING  1
+#define TFT_24_FEATHERWING  2
+#define TFT_15_GIZMO        3
+
+// one of above supported TFT add-on
+#define TFT_IN_USE          TFT_35_FEATHERWING
 
 #include <bluefruit.h>
 #include <SPI.h>
@@ -40,12 +45,16 @@
    #define TFT_CS   A6
 #endif
 
-#if USE_35_TFT_FEATHERWING
+#if   TFT_IN_USE == TFT_35_FEATHERWING
   #include "Adafruit_HX8357.h"
   Adafruit_HX8357 tft = Adafruit_HX8357(TFT_CS, TFT_DC);
-#else
+#elif TFT_IN_USE == TFT_24_FEATHERWING
   #include <Adafruit_ILI9341.h>
   Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+#elif TFT_IN_USE == TFT_15_GIZMO
+  #error "Not supported yet"
+#else
+  #error "TFT display is not supported"
 #endif
 
 #define COLOR_WHITE     0xFFFF
@@ -62,15 +71,17 @@ BLEUart bleuart(10*1024);
 /* The Image Transfer module sends the image of your choice to Bluefruit LE over UART.
  * Each image sent begins with
  * - A single byte char '!' (0x21) followed by 'I' helper for image
+ * - Color depth: 24-bit for RGB 888, 16-bit for RGB 655
  * - Image width (uint16 little endian, 2 bytes)
  * - Image height (uint16 little endian, 2 bytes)
  * - Pixel data encoded as RGB 24-bit and suffixed by a single byte CRC.
  *
- * Format: [ '!' ] [ 'I' ] [ uint16 width ] [ uint16 height ] [ r g b ] [ r g b ] [ r g b ] … [ CRC ]
+ * Format: [ '!' ] [ 'I' ] [uint8_t color bit] [ uint16 width ] [ uint16 height ] [ r g b ] [ r g b ] [ r g b ] … [ CRC ]
  */
 
 uint16_t imageWidth = 0;
 uint16_t imageHeight = 0;
+uint8_t  imageColorBit = 0;
 
 uint32_t totalPixel = 0; // received pixel
 
@@ -107,7 +118,21 @@ void setup()
 
   // Configure and Start BLE Uart Service
   bleuart.begin();
-  bleuart.setRxCallback(bleuart_rx_callback);
+
+  // Due to huge amount of image data
+  // NRF52832 doesn't have enough SRAM to queue up received packets using deferred callbacks.
+  // Therefore it must process data as soon as it comes, this can be done by
+  // changing the default "deferred" option to false to invoke callback immediately.
+  // However, the transfer speed will be affected since immediate callback will block BLE task
+  // to process data especially when tft.drawRGBBitmap() is calling.
+#ifdef NRF52840_XXAA
+  // 2nd argument is true to deferred callbacks i.e queue it up in seperated callback Task
+  bleuart.setRxCallback(bleuart_rx_callback, true);
+#else
+  // 2nd argument is false to invoke callbacks immediately (thus blocking other ble events)
+  bleuart.setRxCallback(bleuart_rx_callback, false);
+#endif
+
   bleuart.setRxOverflowCallback(bleuart_overflow_callback);
 
   // Set up and start advertising
@@ -171,11 +196,13 @@ void bleuart_rx_callback(uint16_t conn_hdl)
 
     if ( !bleuart.available() ) return;
 
+    imageColorBit = bleuart.read8();
     imageWidth  = bleuart.read16();
     imageHeight = bleuart.read16();
 
     totalPixel = 0;
 
+    PRINT_INT(imageColorBit);
     PRINT_INT(imageWidth);
     PRINT_INT(imageHeight);
 
@@ -186,10 +213,18 @@ void bleuart_rx_callback(uint16_t conn_hdl)
   // Extract pixel data to buffer and draw image line by line
   while ( bleuart.available() >= 3 )
   {
-    uint8_t rgb[3];
-    bleuart.read(rgb, 3);
-
-    pixel_buf[totalPixel % imageWidth] = ((rgb[0] & 0xF8) << 8) | ((rgb[1] & 0xFC) << 3) | (rgb[2] >> 3);
+    // TFT FeatherWing use 16-bit RGB 655 color, need to convert if input is 24-bit color
+    if ( imageColorBit == 24 )
+    {
+      uint8_t rgb[3];
+      bleuart.read(rgb, 3);
+      pixel_buf[totalPixel % imageWidth] = ((rgb[0] & 0xF8) << 8) | ((rgb[1] & 0xFC) << 3) | (rgb[2] >> 3);
+    }
+    else if ( imageColorBit == 16 )
+    {
+      // native 16-bit 655 color
+      pixel_buf[totalPixel % imageWidth] = bleuart.read16();
+    }
 
     totalPixel++;
 
@@ -207,10 +242,12 @@ void bleuart_rx_callback(uint16_t conn_hdl)
     // do checksum later
 
     // print speed summary
-    print_summary(totalPixel*3 + 7, rxLastTime-rxStartTime);
+    print_summary(totalPixel*(imageColorBit/8) + 8, rxLastTime-rxStartTime);
 
     // reset and waiting for new image
-    totalPixel = imageWidth = imageHeight = 0;
+    imageColorBit = 0;
+    imageWidth = imageHeight = 0;
+    totalPixel = 0;
   }
 }
 
@@ -220,6 +257,7 @@ void connect_callback(uint16_t conn_handle)
 
   tft.println("Connected");
 
+#if 1
   conn->requestPHY();
   tft.println("Switching PHY");
 
@@ -228,6 +266,7 @@ void connect_callback(uint16_t conn_handle)
 
   conn->requestMtuExchange(247);
   tft.println("Exchanging MTU");
+#endif
 
   tft.setTextColor(COLOR_GREEN);
   tft.println("Ready to receive new image");
@@ -251,14 +290,14 @@ void print_summary(uint32_t count, uint32_t ms)
 
   tft.println(" seconds");
 
-  tft.print("Speed ");
+  tft.print("Speed: ");
   tft.setTextColor(COLOR_YELLOW);
   tft.print( (count / 1000.0F) / (ms / 1000.0F), 2);
   tft.setTextColor(COLOR_WHITE);
-  tft.print(" KB/s with ");
+  tft.print(" KB/s for ");
 
   tft.setTextColor(COLOR_YELLOW);
-  tft.print(imageWidth); tft.print(" x "); tft.print(imageHeight);
+  tft.print(imageWidth); tft.print("x"); tft.print(imageHeight);
 
   tft.setTextColor(COLOR_WHITE);
   tft.println(" Image");
@@ -301,7 +340,9 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   tft.setCursor(0, 0);
   tft.println("Advertising ...");
 
-  totalPixel = imageWidth = imageHeight = 0;
+  imageColorBit = 0;
+  imageWidth = imageHeight = 0;
+  totalPixel = 0;
   bleuart_overflowed = false;
 
   bleuart.flush();
