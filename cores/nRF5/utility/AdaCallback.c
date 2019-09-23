@@ -40,6 +40,7 @@
 
 static QueueHandle_t _cb_queue = NULL;
 static uint32_t _cb_qdepth;
+static TaskHandle_t _cb_task;
 
 void adafruit_callback_task(void* arg)
 {
@@ -140,8 +141,7 @@ void ada_callback_init(uint32_t stack_sz)
   _cb_qdepth = INITIAL_QUEUE_DEPTH;
   _cb_queue  = xQueueCreate(_cb_qdepth, sizeof(void*));
 
-  TaskHandle_t callback_task_hdl;
-  xTaskCreate( adafruit_callback_task, "Callback", stack_sz, NULL, TASK_PRIO_NORMAL, &callback_task_hdl);
+  xTaskCreate( adafruit_callback_task, "Callback", stack_sz, NULL, TASK_PRIO_NORMAL, &_cb_task);
 }
 
 bool ada_callback_queue_resize(uint32_t new_depth)
@@ -152,6 +152,7 @@ bool ada_callback_queue_resize(uint32_t new_depth)
 
   LOG_LV1("MEMORY", "AdaCallback increase queue depth to %d", new_depth);
 
+  vTaskSuspend(_cb_task);
   taskENTER_CRITICAL();
 
   // move item from old queue
@@ -168,6 +169,7 @@ bool ada_callback_queue_resize(uint32_t new_depth)
   _cb_queue = new_queue;
 
   taskEXIT_CRITICAL();
+  vTaskResume(_cb_task);
 
   return true;
 }
