@@ -82,16 +82,6 @@ typedef void (*adacb_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 #define _ADA_CB_ARGS(...)  _GET_6TH_ARG(_0, ##__VA_ARGS__, _ADA_CB_ARGS_5, _ADA_CB_ARGS_4, _ADA_CB_ARGS_3, _ADA_CB_ARGS_2, _ADA_CB_ARGS_1, _ADA_CB_ARGS_0)(__VA_ARGS__)
 
 /**
- * Macro function is called by other module with all intended parameters.
- */
-#define _cb_setup(_malloc_data, _malloc_len, _func, ... )                               \
-  do {                                                                      \
-      uint8_t const _count = VA_ARGS_NUM(__VA_ARGS__);                      \
-      uint32_t arguments[] = { _ADA_CB_ARGS(__VA_ARGS__) };                 \
-      ada_callback_invoke(_malloc_data, _malloc_len, (void const*) _func, arguments, _count); \
-  } while(0)
-
-/**
  * Schedule an function and parameters to be invoked in Ada Callback Task
  * Macro can take at least 2 and at max 7 arguments
  * - 1st arg     : data pointer that need to be allocated and copied (e.g local variable). NULL if not used
@@ -100,11 +90,15 @@ typedef void (*adacb_5arg_t) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
  * - 3rd arg     : function to be invoked
  * - 3rd-7th arg : function argument, will be cast to uint32_t
  */
-#define ada_callback(...)           _cb_setup(__VA_ARGS__)
-
+#define ada_callback(_malloc_data, _malloc_len, _func, ... ) \
+  ({                                                                                          \
+      uint8_t const _count = VA_ARGS_NUM(__VA_ARGS__);                                        \
+      uint32_t arguments[] = { _ADA_CB_ARGS(__VA_ARGS__) };                                   \
+      ada_callback_invoke(_malloc_data, _malloc_len, (void const*) _func, arguments, _count); \
+  })
 
 void ada_callback_init(uint32_t stack_sz);
-void ada_callback_invoke(const void* mdata, uint32_t mlen, const void* func, uint32_t arguments[], uint8_t argcount);
+bool ada_callback_invoke(const void* mdata, uint32_t mlen, const void* func, uint32_t arguments[], uint8_t argcount);
 void ada_callback_queue(ada_callback_t* cb_item);
 bool ada_callback_queue_resize(uint32_t new_depth);
 

@@ -105,9 +105,11 @@ void ada_callback_queue(ada_callback_t* cb_item)
   }
 }
 
-void ada_callback_invoke(const void* malloc_data, uint32_t malloc_len, const void* func, uint32_t arguments[], uint8_t argcount)
+bool ada_callback_invoke(const void* malloc_data, uint32_t malloc_len, const void* func, uint32_t arguments[], uint8_t argcount)
 {
   ada_callback_t* cb_data = (ada_callback_t*) rtos_malloc( sizeof(ada_callback_t) + (argcount ? (argcount-1)*4 : 0) );
+  VERIFY(cb_data);
+
   cb_data->malloced_data = NULL;
   cb_data->callback_func = func;
   cb_data->arg_count = argcount;
@@ -115,6 +117,11 @@ void ada_callback_invoke(const void* malloc_data, uint32_t malloc_len, const voi
   if ( malloc_data && malloc_len )
   {
     cb_data->malloced_data = rtos_malloc(malloc_len);
+    if ( !cb_data->malloced_data )
+    {
+      rtos_free(cb_data);
+      return false;
+    }
     memcpy(cb_data->malloced_data, malloc_data, malloc_len);
   }
 
@@ -133,6 +140,8 @@ void ada_callback_invoke(const void* malloc_data, uint32_t malloc_len, const voi
   }
 
   ada_callback_queue(cb_data);
+
+  return true;
 }
 
 void ada_callback_init(uint32_t stack_sz)
