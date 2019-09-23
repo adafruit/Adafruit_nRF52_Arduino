@@ -93,13 +93,14 @@ void yield(void)
 
 void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
 {
-  LOG_LV1("RTOS", "%s Stack Overflow !!!", pcTaskName);
-  while(1) yield();
+  LOG_LV1("RTOS", "Task %s: stack Overflow !!!", pcTaskName);
+  while(CFG_DEBUG) yield();
 }
 
 void vApplicationMallocFailedHook(void)
 {
-  LOG_LV1("RTOS", "Failed to Malloc");
+  LOG_LV1("RTOS", "Task %s: failed to Malloc", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+  while(CFG_DEBUG) yield();
 }
 
 /* configSUPPORT_STATIC_ALLOCATION is set to 1, so the application must provide an

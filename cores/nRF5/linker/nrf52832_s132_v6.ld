@@ -5,7 +5,7 @@ GROUP(-lgcc -lc -lnosys)
 
 MEMORY
 {
-  FLASH (rx)     : ORIGIN = 0x26000, LENGTH = 0x6D000-0x26000
+  FLASH (rx)     : ORIGIN = 0x26000, LENGTH = 0x6D000 - 0x26000
 
   /* SRAM required by S132 depend on
    * - Attribute Table Size

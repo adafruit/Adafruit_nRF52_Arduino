@@ -60,7 +60,7 @@ Adafruit_FIFO::Adafruit_FIFO(uint8_t item_size, uint16_t depth)
 
 void Adafruit_FIFO::begin(void)
 {
-  _buffer = (uint8_t*) malloc(_item_size*_depth);
+  _buffer = (uint8_t*) rtos_malloc(_item_size*_depth);
   _mutex = xSemaphoreCreateMutex();
 }
 
