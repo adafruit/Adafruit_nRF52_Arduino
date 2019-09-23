@@ -63,7 +63,7 @@ class BLEUart : public BLEService, public Stream
     bool notifyEnabled(void);
     bool notifyEnabled(uint16_t conn_hdl);
 
-    void setRxCallback (rx_callback_t fp);
+    void setRxCallback (rx_callback_t fp, bool deferred = true);
     void setRxOverflowCallback(rx_overflow_callback_t fp);
     void setNotifyCallback(notify_callback_t fp);
 

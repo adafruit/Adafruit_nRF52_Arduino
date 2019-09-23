@@ -111,9 +111,11 @@ void BLEUart::bleuart_txd_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uin
   if ( svc._notify_cb ) svc._notify_cb(conn_hdl, value & BLE_GATT_HVX_NOTIFICATION);
 }
 
-void BLEUart::setRxCallback( rx_callback_t fp)
+void BLEUart::setRxCallback(rx_callback_t fp, bool deferred)
 {
   _rx_cb = fp;
+
+  _rxd.setWriteCallback(BLEUart::bleuart_rxd_cb, deferred);
 }
 
 void BLEUart::setRxOverflowCallback(rx_overflow_callback_t fp)
@@ -170,7 +172,7 @@ err_t BLEUart::begin(void)
 
   // Add RXD Characteristic
   _rxd.setProperties(CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP);
-  _rxd.setWriteCallback(BLEUart::bleuart_rxd_cb);
+  _rxd.setWriteCallback(BLEUart::bleuart_rxd_cb, true);
 
   // TODO enable encryption when bonding is enabled
   _rxd.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
