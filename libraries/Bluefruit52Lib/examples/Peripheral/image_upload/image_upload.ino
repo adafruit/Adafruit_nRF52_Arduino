@@ -257,7 +257,9 @@ void connect_callback(uint16_t conn_handle)
 
   tft.println("Connected");
 
-#if 1
+  // Requesting to Switching to 2MB PHY, larger data length and MTU
+  // will increase the throughput on supported central. This should be already done
+  // with latest Bluefruit app, but still put here for user reference
   conn->requestPHY();
   tft.println("Switching PHY");
 
@@ -266,7 +268,6 @@ void connect_callback(uint16_t conn_handle)
 
   conn->requestMtuExchange(247);
   tft.println("Exchanging MTU");
-#endif
 
   tft.setTextColor(COLOR_GREEN);
   tft.println("Ready to receive new image");
