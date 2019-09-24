@@ -166,8 +166,6 @@ TU_ATTR_WEAK bool tud_vendor_control_complete_cb(uint8_t rhport, tusb_control_re
 
 // CDC Descriptor Template
 // Interface number, string index, EP notification address and size, EP data address (out, in) and size.
-// NOTE: This returns an list of byte (uint_8) values
-// NOTE: Unwritten & unverified assumption: _itfnum is in range [0..254] (else overflows below adding 1)
 #define TUD_CDC_DESCRIPTOR(_itfnum, _stridx, _ep_notif, _ep_notif_size, _epout, _epin, _epsize) \
   /* Interface Associate */\
   8, TUSB_DESC_INTERFACE_ASSOCIATION, _itfnum, 2, TUSB_CLASS_CDC, CDC_COMM_SUBCLASS_ABSTRACT_CONTROL_MODEL, CDC_COMM_PROTOCOL_ATCOMMAND, 0,\
@@ -242,8 +240,6 @@ TU_ATTR_WEAK bool tud_vendor_control_complete_cb(uint8_t rhport, tusb_control_re
 // MIDI simple descriptor
 // - 1 Embedded Jack In connected to 1 External Jack Out
 // - 1 Embedded Jack out connected to 1 External Jack In
-// NOTE: This returns an list of byte (uint_8) values
-// NOTE: Unwritten & unverified assumption: _itfnum is in range [0..254] (else overflows below adding 1)
 #define TUD_MIDI_DESCRIPTOR(_itfnum, _stridx, _epout, _epin, _epsize) \
   /* Audio Control (AC) Interface */\
   9, TUSB_DESC_INTERFACE, _itfnum, 0, 0, TUSB_CLASS_AUDIO, AUDIO_SUBCLASS_CONTROL, AUDIO_PROTOCOL_V1, _stridx,\

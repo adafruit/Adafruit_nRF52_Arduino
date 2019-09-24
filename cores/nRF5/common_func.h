@@ -114,12 +114,6 @@
 //--------------------------------------------------------------------+
 // DEBUG HELPER
 //--------------------------------------------------------------------+
-#if CFG_DEBUG == 2
-  #define malloc_named( name, size )            ({ PRINTF("[malloc] %s : %d\r\n", name, size); malloc(size); })
-#else
-  #define malloc_named( name, size )            malloc ( size )
-#endif
-
 const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
 #if CFG_DEBUG

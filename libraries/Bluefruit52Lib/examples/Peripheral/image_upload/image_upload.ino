@@ -13,42 +13,22 @@
 *********************************************************************/
 
 /* This sketch demonstrates the "Image Upload" feature of Bluefruit Mobile App.
- * FeatherWing OLED is used to display uploaded image
+ * Either 2.4" or 3.5" TFT FeatherWing is used to display uploaded image
  *  - https://www.adafruit.com/product/3315
+ *  - https://www.adafruit.com/product/3651
+ *  - https://www.adafruit.com/product/4367
  */
+
+#define TFT_35_FEATHERWING  1
+#define TFT_24_FEATHERWING  2
+#define TFT_15_GIZMO        3
+
+// one of above supported TFT add-on
+#define TFT_IN_USE          TFT_35_FEATHERWING
 
 #include <bluefruit.h>
 #include <SPI.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_ILI9341.h>
-
-// Uart over BLE with large buffer to hold image data
-BLEUart bleuart(1024*10);
-
-/* The Image Transfer module sends the image of your choice to Bluefruit LE over UART.
- * Each image sent begins with
- * - A single byte char '!' (0x21) followed by 'I' helper for image
- * - Image width (uint16 little endian, 2 bytes)
- * - Image height (uint16 little endian, 2 bytes)
- * - Pixel data encoded as RGB 24-bit and suffixed by a single byte CRC.
- *
- * Format: [ '!' ] [ 'I' ] [ uint16 width ] [ uint16 height ] [ r g b ] [ r g b ] [ r g b ] … [ CRC ]
- */
-
-uint16_t imageWidth = 0;
-uint16_t imageHeight = 0;
-uint16_t imageX = 0;
-uint16_t imageY = 0;
-
-uint32_t totalPixel = 0; // received pixel
-
-// color buf must be large enough to consume incoming data fast enough
-// otherwise bleuart fifo could be overflow and start dropping data
-uint16_t color_buf[2048];
-
-// Statistics for speed testing
-uint32_t rxStartTime = 0;
-uint32_t rxLastTime = 0;
 
 #ifdef ARDUINO_NRF52832_FEATHER
    #define TFT_DC   11
@@ -65,16 +45,63 @@ uint32_t rxLastTime = 0;
    #define TFT_CS   A6
 #endif
 
+#if   TFT_IN_USE == TFT_35_FEATHERWING
+  #include "Adafruit_HX8357.h"
+  Adafruit_HX8357 tft = Adafruit_HX8357(TFT_CS, TFT_DC);
+#elif TFT_IN_USE == TFT_24_FEATHERWING
+  #include <Adafruit_ILI9341.h>
+  Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+#elif TFT_IN_USE == TFT_15_GIZMO
+  #error "Not supported yet"
+#else
+  #error "TFT display is not supported"
+#endif
 
-Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+#define COLOR_WHITE     0xFFFF
+#define COLOR_BLACK     0x0000
+#define COLOR_YELLOW    0xFFE0
+#define COLOR_GREEN     0x07E0
+#define COLOR_RED       0xF800
+
+// Declaring Uart over BLE with large buffer to hold image data
+// Depending on the Image Resolution and Transfer Mode especially without response
+// or Interleaved with high ratio. You may need to increase this buffer size
+BLEUart bleuart(10*1024);
+
+/* The Image Transfer module sends the image of your choice to Bluefruit LE over UART.
+ * Each image sent begins with
+ * - A single byte char '!' (0x21) followed by 'I' helper for image
+ * - Color depth: 24-bit for RGB 888, 16-bit for RGB 655
+ * - Image width (uint16 little endian, 2 bytes)
+ * - Image height (uint16 little endian, 2 bytes)
+ * - Pixel data encoded as RGB 24-bit and suffixed by a single byte CRC.
+ *
+ * Format: [ '!' ] [ 'I' ] [uint8_t color bit] [ uint16 width ] [ uint16 height ] [ r g b ] [ r g b ] [ r g b ] … [ CRC ]
+ */
+
+uint16_t imageWidth = 0;
+uint16_t imageHeight = 0;
+uint8_t  imageColorBit = 0;
+
+uint32_t totalPixel = 0; // received pixel
+
+// pixel line buffer, should be large enough to hold an image width
+uint16_t pixel_buf[512];
+
+// Statistics for speed testing
+uint32_t rxStartTime = 0;
+uint32_t rxLastTime = 0;
+
+// for print out message to TFT once
+bool bleuart_overflowed = false;
 
 void setup()
 {
   Serial.begin(115200);
 
   tft.begin();
-  tft.fillScreen(ILI9341_BLACK);
-  tft.setTextColor(ILI9341_WHITE);
+  tft.fillScreen(COLOR_BLACK);
+  tft.setTextColor(COLOR_WHITE);
   tft.setTextSize(1);
 
   // Config the peripheral connection with maximum bandwidth
@@ -91,7 +118,22 @@ void setup()
 
   // Configure and Start BLE Uart Service
   bleuart.begin();
-  bleuart.setRxCallback(bleuart_rx_callback);
+
+  // Due to huge amount of image data
+  // NRF52832 doesn't have enough SRAM to queue up received packets using deferred callbacks.
+  // Therefore it must process data as soon as it comes, this can be done by
+  // changing the default "deferred" option to false to invoke callback immediately.
+  // However, the transfer speed will be affected since immediate callback will block BLE task
+  // to process data especially when tft.drawRGBBitmap() is calling.
+#ifdef NRF52840_XXAA
+  // 2nd argument is true to deferred callbacks i.e queue it up in seperated callback Task
+  bleuart.setRxCallback(bleuart_rx_callback, true);
+#else
+  // 2nd argument is false to invoke callbacks immediately (thus blocking other ble events)
+  bleuart.setRxCallback(bleuart_rx_callback, false);
+#endif
+
+  bleuart.setRxOverflowCallback(bleuart_overflow_callback);
 
   // Set up and start advertising
   startAdv();
@@ -130,102 +172,12 @@ void startAdv(void)
 
 void loop()
 {
-  if ( !Bluefruit.connected()   ) return;
-  if ( !bleuart.notifyEnabled() ) return;
-  if ( !bleuart.available() ) return;
-
-  // all pixel data is received
-  if ( totalPixel == imageWidth*imageHeight )
-  {
-    uint8_t crc = bleuart.read();
-    // do checksum later
-
-    // print speed summary
-    print_speed(totalPixel*3 + 7, rxLastTime-rxStartTime);
-
-    // reset and waiting for new image
-    totalPixel = imageWidth = imageHeight = 0;
-  }
-
-  // extract pixel data and display on TFT
-  uint16_t pixelNum = bleuart.available() / 3;
-
-  // Draw multiple lines of image each time i.e pixelNum = n*imageWidth
-  // pixelNum is capped at color_buf size (512 pixel)
-  // the rest will be drawn in the next invocation of loop().
-  pixelNum = min(pixelNum, sizeof(color_buf)/2);
-
-  // Chop pixel number to multiple of image width
-  pixelNum = (pixelNum / imageWidth) * imageWidth;
-
-  if ( pixelNum )
-  {
-    for ( uint16_t i=0; i < pixelNum; i++)
-    {
-      uint8_t red   = bleuart.read();
-      uint8_t green = bleuart.read();
-      uint8_t blue  = bleuart.read();
-
-      color_buf[i] = ((red & 0xF8) << 8) | ((green & 0xFC) << 3) | ( blue >> 3);
-    }
-
-    tft.drawRGBBitmap(imageX, imageY, color_buf, imageWidth, imageHeight - imageY);
-
-    totalPixel += pixelNum;
-
-    imageX = totalPixel % imageWidth;
-    imageY = totalPixel / imageWidth;
-  }
+  // nothing to do
 }
 
-void connect_callback(uint16_t conn_handle)
-{
-  BLEConnection* conn = Bluefruit.Connection(conn_handle);
-
-  tft.println("Connected");
-
-  conn->requestPHY();
-  tft.println("Switching PHY");
-
-  conn->requestDataLengthUpdate();
-  tft.println("Updating Data Length");
-
-  conn->requestMtuExchange(247);
-  tft.println("Exchanging MTU");
-
-  tft.setTextColor(ILI9341_GREEN);
-  tft.println("Ready to receive new image");
-  tft.setTextColor(ILI9341_WHITE);
-}
-
-void print_speed(uint32_t count, uint32_t ms)
-{
-  tft.setCursor(0, imageHeight+5);
-  tft.print("Received ");
-
-  tft.setTextColor(ILI9341_YELLOW);
-  tft.print(count);
-  tft.setTextColor(ILI9341_WHITE);
-
-  tft.print(" bytes in ");
-
-  tft.setTextColor(ILI9341_YELLOW);
-  tft.print(ms / 1000.0F, 2);
-  tft.setTextColor(ILI9341_WHITE);
-
-  tft.println(" seconds");
-
-  tft.print("Speed: ");
-  tft.setTextColor(ILI9341_YELLOW);
-  tft.print( (count / 1000.0F) / (ms / 1000.0F), 2);
-  tft.setTextColor(ILI9341_WHITE);
-  tft.println(" KB/s");
-
-  tft.setTextColor(ILI9341_GREEN);
-  tft.println("Ready to receive new image");
-  tft.setTextColor(ILI9341_WHITE);
-}
-
+// Invoked when receiving data from bleuart
+// Pull data from bleuart fifo & draw image as soon as possible,
+// Otherwise bleuart fifo can be overflowed
 void bleuart_rx_callback(uint16_t conn_hdl)
 {
   (void) conn_hdl;
@@ -235,6 +187,7 @@ void bleuart_rx_callback(uint16_t conn_hdl)
   // Received new Image
   if ( (imageWidth == 0) && (imageHeight == 0) )
   {
+    // take note of time of first packet
     rxStartTime = millis();
 
     // Skip all data until '!I' is found
@@ -242,21 +195,141 @@ void bleuart_rx_callback(uint16_t conn_hdl)
     if (bleuart.read() != 'I') return;
 
     if ( !bleuart.available() ) return;
-    
-    imageWidth = bleuart.read16();
+
+    imageColorBit = bleuart.read8();
+    imageWidth  = bleuart.read16();
     imageHeight = bleuart.read16();
 
+    totalPixel = 0;
+
+    PRINT_INT(imageColorBit);
     PRINT_INT(imageWidth);
     PRINT_INT(imageHeight);
 
-    tft.fillScreen(ILI9341_BLACK);
+    tft.fillScreen(COLOR_BLACK);
     tft.setCursor(0, 0);
-    imageX = imageY = 0;
+  }
+
+  // Extract pixel data to buffer and draw image line by line
+  while ( bleuart.available() >= 3 )
+  {
+    // TFT FeatherWing use 16-bit RGB 655 color, need to convert if input is 24-bit color
+    if ( imageColorBit == 24 )
+    {
+      uint8_t rgb[3];
+      bleuart.read(rgb, 3);
+      pixel_buf[totalPixel % imageWidth] = ((rgb[0] & 0xF8) << 8) | ((rgb[1] & 0xFC) << 3) | (rgb[2] >> 3);
+    }
+    else if ( imageColorBit == 16 )
+    {
+      // native 16-bit 655 color
+      pixel_buf[totalPixel % imageWidth] = bleuart.read16();
+    }
+
+    totalPixel++;
+
+    // enough to draw an image line
+    if ( (totalPixel % imageWidth) == 0 )
+    {
+      tft.drawRGBBitmap(0, totalPixel/imageWidth, pixel_buf, imageWidth, 1);
+    }
+  }
+
+  // all pixel data is received
+  if ( totalPixel == imageWidth*imageHeight )
+  {
+    uint8_t crc = bleuart.read();
+    // do checksum later
+
+    // print speed summary
+    print_summary(totalPixel*(imageColorBit/8) + 8, rxLastTime-rxStartTime);
+
+    // reset and waiting for new image
+    imageColorBit = 0;
+    imageWidth = imageHeight = 0;
+    totalPixel = 0;
   }
 }
 
+void connect_callback(uint16_t conn_handle)
+{
+  BLEConnection* conn = Bluefruit.Connection(conn_handle);
+
+  tft.println("Connected");
+
+  // Requesting to Switching to 2MB PHY, larger data length and MTU
+  // will increase the throughput on supported central. This should be already done
+  // with latest Bluefruit app, but still put here for user reference
+  conn->requestPHY();
+  tft.println("Switching PHY");
+
+  conn->requestDataLengthUpdate();
+  tft.println("Updating Data Length");
+
+  conn->requestMtuExchange(247);
+  tft.println("Exchanging MTU");
+
+  tft.setTextColor(COLOR_GREEN);
+  tft.println("Ready to receive new image");
+  tft.setTextColor(COLOR_WHITE);
+}
+
+void print_summary(uint32_t count, uint32_t ms)
+{
+  tft.setCursor(0, imageHeight+5);
+  tft.print("Received ");
+
+  tft.setTextColor(COLOR_YELLOW);
+  tft.print(count);
+  tft.setTextColor(COLOR_WHITE);
+
+  tft.print(" bytes in ");
+
+  tft.setTextColor(COLOR_YELLOW);
+  tft.print(ms / 1000.0F, 2);
+  tft.setTextColor(COLOR_WHITE);
+
+  tft.println(" seconds");
+
+  tft.print("Speed: ");
+  tft.setTextColor(COLOR_YELLOW);
+  tft.print( (count / 1000.0F) / (ms / 1000.0F), 2);
+  tft.setTextColor(COLOR_WHITE);
+  tft.print(" KB/s for ");
+
+  tft.setTextColor(COLOR_YELLOW);
+  tft.print(imageWidth); tft.print("x"); tft.print(imageHeight);
+
+  tft.setTextColor(COLOR_WHITE);
+  tft.println(" Image");
+
+  tft.setTextColor(COLOR_GREEN);
+  tft.println("Ready to receive new image");
+  tft.setTextColor(COLOR_WHITE);
+}
+
+void bleuart_overflow_callback(uint16_t conn_hdl, uint16_t leftover)
+{
+  Serial.println("BLEUART rx buffer OVERFLOWED!");
+  Serial.println("Please increase buffer size for bleuart");
+
+  // only print the first time this occur, need disconnect to reset
+  if (!bleuart_overflowed)
+  {
+    tft.setCursor(0, imageHeight+5);
+
+    tft.setTextColor(COLOR_RED);
+    tft.println("BLEUART rx buffer OVERFLOWED!");
+
+    tft.setTextColor(COLOR_WHITE);
+    tft.print("Please increase buffer size for bleuart");
+  }
+
+  bleuart_overflowed = true;
+}
+
 /**
- * Callback invoked when a connection is dropped
+ * invoked when a connection is dropped
  * @param conn_handle connection where this event happens
  * @param reason is a BLE_HCI_STATUS_CODE which can be found in ble_hci.h
  */
@@ -264,9 +337,14 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
   (void) reason;
 
-  tft.fillScreen(ILI9341_BLACK);
+  tft.fillScreen(COLOR_BLACK);
   tft.setCursor(0, 0);
   tft.println("Advertising ...");
 
-  totalPixel = imageWidth = imageHeight = 0;
+  imageColorBit = 0;
+  imageWidth = imageHeight = 0;
+  totalPixel = 0;
+  bleuart_overflowed = false;
+
+  bleuart.flush();
 }
