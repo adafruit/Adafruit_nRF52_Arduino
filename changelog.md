@@ -1,6 +1,20 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-## Next Release
+## 0.14.0 - 2019.09.xx
+
+- Core
+  - Ada Callback task dynamically resize its queue size on demand. Also invoke function immediately if callback failed to allocate memory for deferring.
+  - Changde stack size for following task
+    - Task loop     : from 256*6 to 256*4
+    - Task Callback : from 256*4 to 256*3
+    - Task USBD     : from 150   to 200
+    - Task BLE      : from 256*6 to 256*5
+  - Added _sbkr() to handle heap overflowed
+- BLEUart
+  - Added setRxOverflowCallback()
+  - Added deferred option for setRxCallback()
+- Update `image_upload` example to work with both nRF52832 & nRF52840 with maximum throughput, also support 16 or 24-bit color
+- Update bootloader binary to to 0.2.13 version (upgrade is optional)
 
 ## 0.13.0 - 2019.08.22
 
