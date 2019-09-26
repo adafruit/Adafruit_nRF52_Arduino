@@ -100,11 +100,11 @@ static const uint8_t A9  = PIN_A9 ;
  */
 #define SPI_INTERFACES_COUNT 1
 
-#define PIN_SPI_MISO         (6)
-#define PIN_SPI_MOSI         (9)
-#define PIN_SPI_SCK          (10)
+#define PIN_SPI_MISO         (10)
+#define PIN_SPI_MOSI         (2)
+#define PIN_SPI_SCK          (3)
 
-static const uint8_t SS   = (5);
+static const uint8_t SS   = (0);
 static const uint8_t MOSI = PIN_SPI_MOSI ;
 static const uint8_t MISO = PIN_SPI_MISO ;
 static const uint8_t SCK  = PIN_SPI_SCK ;
