@@ -16,6 +16,7 @@
 - Update `image_upload` example to work with both nRF52832 & nRF52840 with maximum throughput, also support 16 or 24-bit color
 - Update bootloader binary to to 0.2.13 version (upgrade is optional)
 - Enhance BLEDis with new characteristic : system id, reg cert list, pnp id. PR #336 Thanks to @elral
+- Fixed SPI definition for circuitplayground Bluefruit
 
 ## 0.13.0 - 2019.08.22
 
