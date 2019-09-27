@@ -1,6 +1,6 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-## 0.14.0 - 2019.09.xx
+## 0.14.0 - 2019.09.27
 
 - Core
   - Ada Callback task dynamically resize its queue size on demand. Also invoke function immediately if callback failed to allocate memory for deferring.
