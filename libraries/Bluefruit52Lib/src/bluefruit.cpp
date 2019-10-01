@@ -205,7 +205,7 @@ void AdafruitBluefruit::configUuid128Count(uint8_t  uuid128_max)
 
 void AdafruitBluefruit::configAttrTableSize(uint32_t attr_table_size)
 {
-  _sd_cfg.attr_table_size = align4( maxof(attr_table_size, BLE_GATTS_ATTR_TAB_SIZE_MIN) );
+  _sd_cfg.attr_table_size = align4( maxof(attr_table_size, (uint32_t)(BLE_GATTS_ATTR_TAB_SIZE_MIN)) );
 }
 
 void AdafruitBluefruit::configPrphConn(uint16_t mtu_max, uint16_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
