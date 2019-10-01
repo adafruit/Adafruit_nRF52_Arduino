@@ -211,7 +211,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
 
       if (rd_rsp->count)
       {
-        ble_gattc_handle_value_t hdl_value = { 0, null };
+        ble_gattc_handle_value_t hdl_value = { 0, nullptr };
 
         if ( ERROR_NONE == sd_ble_gattc_evt_char_val_by_uuid_read_rsp_iter(&evt->evt.gattc_evt, &hdl_value) )
         {
