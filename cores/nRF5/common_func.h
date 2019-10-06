@@ -171,7 +171,8 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
 #define ADALOG_BUFFER(_tag, _buf, _n) \
   do {\
-    if ( _tag ) PRINTF("%-6s: len = %d\n", _tag, _n);\
+    const char * _xtag = _tag;\
+    if ( _xtag ) PRINTF("%-6s: len = %d\n", _xtag, _n);\
     dbgDumpMemory(_buf, 1, _n, true);\
   }while(0)
 
