@@ -62,7 +62,7 @@ extern "C"
     do { \
       const char* (*_fstr)(int32_t) = _funcstr;\
       printf("%s: %d: verify failed, error = ", __PRETTY_FUNCTION__, __LINE__);\
-      if (_fstr) printf(_fstr(_status)); else printf("%d", _status);\
+      if (_fstr) printf(_fstr(_status)); else printf("%ld", _status);\
       printf("\n");\
     }while(0)
 #else

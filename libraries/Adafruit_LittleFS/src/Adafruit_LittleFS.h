@@ -83,7 +83,7 @@ class Adafruit_LittleFS
   #define PRINT_LFS_ERR(_err)
 #else
   #define VERIFY_LFS(...)       _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, dbg_strerr_lfs)
-  #define PRINT_LFS_ERR(_err)   VERIFY_MESS(_err, dbg_strerr_lfs)
+  #define PRINT_LFS_ERR(_err)   VERIFY_MESS((long int)_err, dbg_strerr_lfs) // LFS_ERR are of type int, VERIFY_MESS expects long_int
 
   const char* dbg_strerr_lfs (int32_t err);
 #endif
