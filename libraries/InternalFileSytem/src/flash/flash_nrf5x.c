@@ -29,6 +29,17 @@
 #include "delay.h"
 #include "rtos.h"
 
+
+#ifdef NRF52840_XXAA
+  #define BOOTLOADER_ADDR        0xF4000
+#else
+  #define BOOTLOADER_ADDR        0x74000
+#endif
+
+// defined in linker script
+extern uint32_t __flash_arduino_start[];
+//extern uint32_t __flash_arduino_end[];
+
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
@@ -65,17 +76,20 @@ void flash_nrf5x_flush (void)
   flash_cache_flush(&_cache);
 }
 
-uint32_t flash_nrf5x_write (uint32_t dst, void const * src, uint32_t len)
+int flash_nrf5x_write (uint32_t dst, void const * src, uint32_t len)
 {
-  // TODO prevent write SD + bootloader region
+  // Softdevice region
+  VERIFY(dst >= ((uint32_t) __flash_arduino_start), -1);
+
+  // Bootloader region
+  VERIFY(dst < BOOTLOADER_ADDR, -1);
+
   return flash_cache_write(&_cache, dst, src, len);
 }
 
-uint32_t flash_nrf5x_read (void* dst, uint32_t src, uint32_t len)
+int flash_nrf5x_read (void* dst, uint32_t src, uint32_t len)
 {
-  // return cache value if available
-  flash_cache_read(&_cache, dst, src, len);
-  return len;
+  return flash_cache_read(&_cache, dst, src, len);
 }
 
 bool flash_nrf5x_erase(uint32_t addr)
