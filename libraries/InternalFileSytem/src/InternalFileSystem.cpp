@@ -48,7 +48,7 @@ static int _internal_flash_read (const struct lfs_config *c, lfs_block_t block, 
   (void) c;
 
   uint32_t addr = lba2addr(block) + off;
-  flash_nrf5x_read(buffer, addr, size);
+  VERIFY( flash_nrf5x_read(buffer, addr, size) > 0, -1);
 
   return 0;
 }
@@ -61,7 +61,7 @@ static int _internal_flash_prog (const struct lfs_config *c, lfs_block_t block, 
   (void) c;
 
   uint32_t addr = lba2addr(block) + off;
-  flash_nrf5x_write(addr, buffer, size);
+  VERIFY( flash_nrf5x_write(addr, buffer, size), -1)
 
   return 0;
 }

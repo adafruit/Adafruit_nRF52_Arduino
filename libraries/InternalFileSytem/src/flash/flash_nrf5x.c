@@ -59,13 +59,15 @@ static bool fal_verify (uint32_t addr, void const * buf, uint32_t len);
 
 static uint8_t _cache_buffer[FLASH_CACHE_SIZE] __attribute__((aligned(4)));
 
-static flash_cache_t _cache = {
-  .erase = fal_erase,
-  .program = fal_program,
-  .read = fal_read,
-  .verify = fal_verify,
+static flash_cache_t _cache =
+{
+  .erase      = fal_erase,
+  .program    = fal_program,
+  .read       = fal_read,
+  .verify     = fal_verify,
+
   .cache_addr = FLASH_CACHE_INVALID_ADDR,
-  .cache_buf = _cache_buffer
+  .cache_buf  = _cache_buffer
 };
 
 //--------------------------------------------------------------------+
@@ -100,7 +102,7 @@ bool flash_nrf5x_erase(uint32_t addr)
 //--------------------------------------------------------------------+
 // HAL for caching
 //--------------------------------------------------------------------+
-bool fal_erase (uint32_t addr)
+static bool fal_erase (uint32_t addr)
 {
   // Init semaphore for first call
   if ( _sem == NULL )
