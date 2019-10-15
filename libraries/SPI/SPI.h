@@ -23,6 +23,8 @@
 
 #include <Arduino.h>
 
+#include "nrfx_spim.h"
+
 // SPI_HAS_TRANSACTION means SPI has
 //   - beginTransaction()
 //   - endTransaction()
@@ -84,54 +86,43 @@ class SPISettings {
 
 class SPIClass {
   public:
-  SPIClass(NRF_SPI_Type *p_spi, uint8_t uc_pinMISO, uint8_t uc_pinSCK, uint8_t uc_pinMOSI);
+    SPIClass(NRF_SPI_Type *p_spi, uint8_t uc_pinMISO, uint8_t uc_pinSCK, uint8_t uc_pinMOSI);
 
+    byte transfer(uint8_t data);
+    uint16_t transfer16(uint16_t data);
+    void transfer(void *buf, size_t count);
 
-  byte transfer(uint8_t data);
-  uint16_t transfer16(uint16_t data);
-  inline void transfer(void *buf, size_t count);
+    // Transaction Functions
+    void usingInterrupt(int interruptNumber);
+    void beginTransaction(SPISettings settings);
+    void endTransaction(void);
 
-  // Transaction Functions
-  void usingInterrupt(int interruptNumber);
-  void beginTransaction(SPISettings settings);
-  void endTransaction(void);
+    // SPI Configuration methods
+    void attachInterrupt();
+    void detachInterrupt();
 
-  // SPI Configuration methods
-  void attachInterrupt();
-  void detachInterrupt();
+    void begin();
+    void end();
 
-  void begin();
-  void end();
-
-  void setBitOrder(BitOrder order);
-  void setDataMode(uint8_t uc_mode);
-  void setClockDivider(uint8_t uc_div);
+    void setBitOrder(BitOrder order);
+    void setDataMode(uint8_t uc_mode);
+    void setClockDivider(uint8_t uc_div);
 
   private:
-  void init();
-  void config(SPISettings settings);
+    void config(SPISettings settings);
 
-  NRF_SPI_Type *_p_spi;
-  uint8_t _uc_pinMiso;
-  uint8_t _uc_pinMosi;
-  uint8_t _uc_pinSCK;
+    NRF_SPI_Type *_p_spi;
+    nrfx_spim_t _spim;
 
-  uint8_t _dataMode;
-  uint32_t _bitOrder;
+    uint8_t _uc_pinMiso;
+    uint8_t _uc_pinMosi;
+    uint8_t _uc_pinSCK;
 
-  bool initialized;
-  uint8_t interruptMode;
-  char interruptSave;
-  uint32_t interruptMask;
+    uint8_t _dataMode;
+    uint32_t _bitOrder;
+
+    bool initialized;
 };
-
-void SPIClass::transfer(void *buf, size_t count)
-{
-  // TODO: Optimize for faster block-transfer
-  uint8_t *buffer = reinterpret_cast<uint8_t *>(buf);
-  for (size_t i=0; i<count; i++)
-    buffer[i] = transfer(buffer[i]);
-}
 
 #if SPI_INTERFACES_COUNT > 0
 extern SPIClass SPI;
