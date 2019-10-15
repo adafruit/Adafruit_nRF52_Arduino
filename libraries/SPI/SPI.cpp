@@ -36,8 +36,13 @@ SPIClass::SPIClass(NRF_SPI_Type *p_spi, uint8_t uc_pinMISO, uint8_t uc_pinSCK, u
   assert(p_spi != NULL);
   _p_spi = p_spi;
 
+#ifdef NRF52840_XXAA
+  _spim.p_reg = NRF_SPIM3;
+  _spim.drv_inst_idx = NRFX_SPIM3_INST_IDX;
+#else
   _spim.p_reg = NRF_SPIM0;
   _spim.drv_inst_idx = NRFX_SPIM0_INST_IDX;
+#endif
 
   // pins
   _uc_pinMiso = g_ADigitalPinMap[uc_pinMISO];
@@ -62,7 +67,7 @@ void SPIClass::begin()
     .ss_active_high = false,
     .irq_priority   = 3,
     .orc            = 0xFF,
-    .frequency      = NRF_SPIM_FREQ_8M, // NRF_SPIM_FREQ_4M,
+    .frequency      = NRF_SPIM_FREQ_32M, // NRF_SPIM_FREQ_4M,
     .mode           = NRF_SPIM_MODE_0,
     .bit_order      = NRF_SPIM_BIT_ORDER_MSB_FIRST,
   };
