@@ -31,9 +31,8 @@ SPIClass::SPIClass(NRF_SPIM_Type *p_spi, uint8_t uc_pinMISO, uint8_t uc_pinSCK, 
 
   _spim.p_reg = p_spi;
 
-  if ( NRF_SPIM0 == p_spi ) {
-    _spim.drv_inst_idx = NRFX_SPIM0_INST_IDX;
-  } else if ( NRF_SPIM1 == p_spi ) {
+  // NRF_SPIM0 is used for I2C
+  if ( NRF_SPIM1 == p_spi ) {
     _spim.drv_inst_idx = NRFX_SPIM1_INST_IDX;
   } else if ( NRF_SPIM2 == p_spi ) {
     _spim.drv_inst_idx = NRFX_SPIM2_INST_IDX;
@@ -213,15 +212,17 @@ void SPIClass::detachInterrupt() {
   // Should be disableInterrupt()
 }
 
+// SPIM0 is used as I2C
+
 #if SPI_INTERFACES_COUNT > 0
   #ifdef NRF52840_XXAA
     // use SPIM3 for nrf52840 for highspeed 32Mhz
     SPIClass SPI(NRF_SPIM3,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
   #else
-    SPIClass SPI(NRF_SPIM0,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
+    SPIClass SPI(NRF_SPIM1,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
   #endif
 #endif
 
 #if SPI_INTERFACES_COUNT > 1
-SPIClass SPI1(NRF_SPIM1, PIN_SPI1_MISO, PIN_SPI1_SCK, PIN_SPI1_MOSI);
+SPIClass SPI1(NRF_SPIM2, PIN_SPI1_MISO, PIN_SPI1_SCK, PIN_SPI1_MOSI);
 #endif
