@@ -37,7 +37,9 @@ SPIClass::SPIClass(NRF_SPIM_Type *p_spi, uint8_t uc_pinMISO, uint8_t uc_pinSCK, 
   } else if ( NRF_SPIM2 == p_spi ) {
     _spim.drv_inst_idx = NRFX_SPIM2_INST_IDX;
   } else {
+#ifdef NRF52840_XXAA
     _spim.drv_inst_idx = NRFX_SPIM3_INST_IDX;
+#endif
   }
 
   // pins
