@@ -24,25 +24,22 @@
 #include <wiring_private.h>
 #include <assert.h>
 
-#define SPI_IMODE_NONE   0
-#define SPI_IMODE_EXTINT 1
-#define SPI_IMODE_GLOBAL 2
-
-const SPISettings DEFAULT_SPI_SETTINGS = SPISettings();
-
-SPIClass::SPIClass(NRF_SPI_Type *p_spi, uint8_t uc_pinMISO, uint8_t uc_pinSCK, uint8_t uc_pinMOSI)
+SPIClass::SPIClass(NRF_SPIM_Type *p_spi, uint8_t uc_pinMISO, uint8_t uc_pinSCK, uint8_t uc_pinMOSI)
 {
   initialized = false;
   assert(p_spi != NULL);
-  _p_spi = p_spi;
 
-#ifdef NRF52840_XXAA
-  _spim.p_reg = NRF_SPIM3;
-  _spim.drv_inst_idx = NRFX_SPIM3_INST_IDX;
-#else
-  _spim.p_reg = NRF_SPIM0;
-  _spim.drv_inst_idx = NRFX_SPIM0_INST_IDX;
-#endif
+  _spim.p_reg = p_spi;
+
+  if ( NRF_SPIM0 == p_spi ) {
+    _spim.drv_inst_idx = NRFX_SPIM0_INST_IDX;
+  } else if ( NRF_SPIM1 == p_spi ) {
+    _spim.drv_inst_idx = NRFX_SPIM1_INST_IDX;
+  } else if ( NRF_SPIM2 == p_spi ) {
+    _spim.drv_inst_idx = NRFX_SPIM2_INST_IDX;
+  } else {
+    _spim.drv_inst_idx = NRFX_SPIM3_INST_IDX;
+  }
 
   // pins
   _uc_pinMiso = g_ADigitalPinMap[uc_pinMISO];
@@ -67,64 +64,22 @@ void SPIClass::begin()
     .ss_active_high = false,
     .irq_priority   = 3,
     .orc            = 0xFF,
-    .frequency      = NRF_SPIM_FREQ_32M, // NRF_SPIM_FREQ_4M,
+    // default setting 4 Mhz, Mode 0, MSB first
+    .frequency      = NRF_SPIM_FREQ_4M,
     .mode           = NRF_SPIM_MODE_0,
     .bit_order      = NRF_SPIM_BIT_ORDER_MSB_FIRST,
   };
 
+  _dataMode = SPI_MODE0;
+  _bitOrder = NRF_SPIM_BIT_ORDER_MSB_FIRST;
+
   // blocking
   nrfx_spim_init(&_spim, &cfg, NULL, NULL);
-
-  _p_spi->PSELSCK  = _uc_pinSCK;
-  _p_spi->PSELMOSI = _uc_pinMosi;
-  _p_spi->PSELMISO = _uc_pinMiso;
-
-  config(DEFAULT_SPI_SETTINGS);
-}
-
-void SPIClass::config(SPISettings settings)
-{
-#if 0
-  _p_spi->ENABLE = (SPI_ENABLE_ENABLE_Disabled << SPI_ENABLE_ENABLE_Pos);
-
-  uint32_t config = settings.bitOrder;
-
-  switch (settings.dataMode) {
-    default:
-    case SPI_MODE0:
-      config |= (SPI_CONFIG_CPOL_ActiveHigh << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Leading    << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE1:
-      config |= (SPI_CONFIG_CPOL_ActiveHigh << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Trailing   << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE2:
-      config |= (SPI_CONFIG_CPOL_ActiveLow  << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Leading    << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE3:
-      config |= (SPI_CONFIG_CPOL_ActiveLow  << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Trailing   << SPI_CONFIG_CPHA_Pos);
-      break;
-  }
-
-  _p_spi->CONFIG = config;
-  _p_spi->FREQUENCY = settings.clockFreq;
-
-  _p_spi->ENABLE = (SPI_ENABLE_ENABLE_Enabled << SPI_ENABLE_ENABLE_Pos);
-#endif
 }
 
 void SPIClass::end()
 {
-//  _p_spi->ENABLE = (SPI_ENABLE_ENABLE_Disabled << SPI_ENABLE_ENABLE_Pos);
-
   nrfx_spim_uninit(&_spim);
-
   initialized = false;
 }
 
@@ -134,116 +89,88 @@ void SPIClass::usingInterrupt(int /*interruptNumber*/)
 
 void SPIClass::beginTransaction(SPISettings settings)
 {
-//  config(settings);
+  nrf_spim_disable(_spim.p_reg);
+
+  this->_dataMode = settings.dataMode;
+  this->_bitOrder = (settings.bitOrder == MSBFIRST ? NRF_SPIM_BIT_ORDER_MSB_FIRST : NRF_SPIM_BIT_ORDER_LSB_FIRST);
+
+  nrf_spim_configure(_spim.p_reg, (nrf_spim_mode_t) _dataMode, (nrf_spim_bit_order_t) _bitOrder);
+
+  setClockDivider(F_CPU / settings.clockFreq);
+
+  nrf_spim_enable(_spim.p_reg);
 }
 
 void SPIClass::endTransaction(void)
 {
-//  _p_spi->ENABLE = (SPI_ENABLE_ENABLE_Disabled << SPI_ENABLE_ENABLE_Pos);
+  nrf_spim_disable(_spim.p_reg);
 }
 
 void SPIClass::setBitOrder(BitOrder order)
 {
-#if 0
-  this->_bitOrder = (order == MSBFIRST ? SPI_CONFIG_ORDER_MsbFirst : SPI_CONFIG_ORDER_LsbFirst);
-
-  uint32_t config = this->_bitOrder;
-
-  switch (this->_dataMode) {
-    default:
-    case SPI_MODE0:
-      config |= (SPI_CONFIG_CPOL_ActiveHigh << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Leading    << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE1:
-      config |= (SPI_CONFIG_CPOL_ActiveHigh << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Trailing   << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE2:
-      config |= (SPI_CONFIG_CPOL_ActiveLow  << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Leading    << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE3:
-      config |= (SPI_CONFIG_CPOL_ActiveLow  << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Trailing   << SPI_CONFIG_CPHA_Pos);
-      break;
-  }
-
-  _p_spi->CONFIG = config;
-#endif
+  this->_bitOrder = (order == MSBFIRST ? NRF_SPIM_BIT_ORDER_MSB_FIRST : NRF_SPIM_BIT_ORDER_LSB_FIRST);
+  nrf_spim_configure(_spim.p_reg, (nrf_spim_mode_t) _dataMode, (nrf_spim_bit_order_t) _bitOrder);
 }
 
 void SPIClass::setDataMode(uint8_t mode)
 {
-#if 0
   this->_dataMode = mode;
-
-  uint32_t config = this->_bitOrder;
-
-  switch (this->_dataMode) {
-    default:
-    case SPI_MODE0:
-      config |= (SPI_CONFIG_CPOL_ActiveHigh << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Leading    << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE1:
-      config |= (SPI_CONFIG_CPOL_ActiveHigh << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Trailing   << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE2:
-      config |= (SPI_CONFIG_CPOL_ActiveLow  << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Leading    << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE3:
-      config |= (SPI_CONFIG_CPOL_ActiveLow  << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Trailing   << SPI_CONFIG_CPHA_Pos);
-      break;
-  }
-
-  _p_spi->CONFIG = config;
-#endif
+  nrf_spim_configure(_spim.p_reg, (nrf_spim_mode_t) _dataMode, (nrf_spim_bit_order_t) _bitOrder);
 }
 
 void SPIClass::setClockDivider(uint8_t div)
 {
-#if 0
-  uint32_t clockFreq;
+  nrf_spim_frequency_t clockFreq;
 
   // Adafruit Note: nrf52 run at 64MHz
   if (div >= SPI_CLOCK_DIV512) {
-    clockFreq = SPI_FREQUENCY_FREQUENCY_K125;
+    clockFreq = NRF_SPIM_FREQ_125K;
   } else if (div >= SPI_CLOCK_DIV256) {
-    clockFreq = SPI_FREQUENCY_FREQUENCY_K250;
+    clockFreq = NRF_SPIM_FREQ_250K;
   } else if (div >= SPI_CLOCK_DIV128) {
-    clockFreq = SPI_FREQUENCY_FREQUENCY_K500;
+    clockFreq = NRF_SPIM_FREQ_500K;
   } else if (div >= SPI_CLOCK_DIV64) {
-    clockFreq = SPI_FREQUENCY_FREQUENCY_M1;
+    clockFreq = NRF_SPIM_FREQ_1M;
   } else if (div >= SPI_CLOCK_DIV32) {
-    clockFreq = SPI_FREQUENCY_FREQUENCY_M2;
+    clockFreq = NRF_SPIM_FREQ_2M;
   } else if (div >= SPI_CLOCK_DIV16) {
-    clockFreq = SPI_FREQUENCY_FREQUENCY_M4;
+    clockFreq = NRF_SPIM_FREQ_4M;
+  } else if (div >= SPI_CLOCK_DIV8) {
+    clockFreq = NRF_SPIM_FREQ_8M;
   } else {
-    clockFreq = SPI_FREQUENCY_FREQUENCY_M8;
+#ifdef NRF52840_XXAA
+    if ( _spim.drv_inst_idx == NRFX_SPIM3_INST_IDX )
+    {
+      if (div >= SPI_CLOCK_DIV4) {
+        clockFreq = NRF_SPIM_FREQ_16M;
+      }else {
+        clockFreq = NRF_SPIM_FREQ_32M;
+      }
+    }else
+#endif
+    {
+      clockFreq = NRF_SPIM_FREQ_8M;
+    }
   }
 
-  _p_spi->FREQUENCY = clockFreq;
-#endif
+  nrf_spim_frequency_set(_spim.p_reg, clockFreq);
+}
+
+void SPIClass::transfer(const void *tx_buf, void *rx_buf, size_t count)
+{
+  nrfx_spim_xfer_desc_t xfer_desc =
+  {
+    .p_tx_buffer = (uint8_t*) tx_buf,
+    .tx_length   = tx_buf ? count : 0,
+    .p_rx_buffer = (uint8_t*) rx_buf,
+    .rx_length   = rx_buf ? count : 0,
+  };
+
+  nrfx_spim_xfer(&_spim, &xfer_desc, 0);
 }
 
 void SPIClass::transfer(void *buf, size_t count)
 {
-#if 0
-  // TODO: Optimize for faster block-transfer
-  uint8_t *buffer = reinterpret_cast<uint8_t *>(buf);
-  for (size_t i=0; i<count; i++)
-    buffer[i] = transfer(buffer[i]);
-#else
   nrfx_spim_xfer_desc_t xfer_desc =
   {
     .p_tx_buffer = (uint8_t*) buf,
@@ -253,25 +180,12 @@ void SPIClass::transfer(void *buf, size_t count)
   };
 
   nrfx_spim_xfer(&_spim, &xfer_desc, 0);
-#endif
 }
 
 byte SPIClass::transfer(uint8_t data)
 {
-#if 0
-  _p_spi->TXD = data;
-
-  while(!_p_spi->EVENTS_READY);
-
-  data = _p_spi->RXD;
-
-  _p_spi->EVENTS_READY = 0x0UL;
-
-  return data;
-#else
   transfer(&data, 1);
   return data;
-#endif
 }
 
 uint16_t SPIClass::transfer16(uint16_t data) {
@@ -280,7 +194,7 @@ uint16_t SPIClass::transfer16(uint16_t data) {
 
   t.val = data;
 
-  if (_bitOrder == SPI_CONFIG_ORDER_LsbFirst) {
+  if (_bitOrder == NRF_SPIM_BIT_ORDER_LSB_FIRST) {
     t.lsb = transfer(t.lsb);
     t.msb = transfer(t.msb);
   } else {
@@ -300,9 +214,14 @@ void SPIClass::detachInterrupt() {
 }
 
 #if SPI_INTERFACES_COUNT > 0
-SPIClass SPI (NRF_SPI0,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
+  #ifdef NRF52840_XXAA
+    // use SPIM3 for nrf52840 for highspeed 32Mhz
+    SPIClass SPI(NRF_SPIM3,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
+  #else
+    SPIClass SPI(NRF_SPIM0,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
+  #endif
 #endif
 
 #if SPI_INTERFACES_COUNT > 1
-SPIClass SPI1(NRF_SPI1, PIN_SPI1_MISO, PIN_SPI1_SCK, PIN_SPI1_MOSI);
+SPIClass SPI1(NRF_SPIM1, PIN_SPI1_MISO, PIN_SPI1_SCK, PIN_SPI1_MOSI);
 #endif
