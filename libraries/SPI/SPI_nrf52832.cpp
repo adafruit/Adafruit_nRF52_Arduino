@@ -31,6 +31,37 @@
 
 const SPISettings DEFAULT_SPI_SETTINGS = SPISettings();
 
+uint32_t mode2config(uint8_t mode)
+{
+  uint32_t config = 0;
+
+  switch (mode)
+  {
+    default:
+    case SPI_MODE0:
+      config |= (SPI_CONFIG_CPOL_ActiveHigh << SPI_CONFIG_CPOL_Pos);
+      config |= (SPI_CONFIG_CPHA_Leading    << SPI_CONFIG_CPHA_Pos);
+      break;
+
+    case SPI_MODE1:
+      config |= (SPI_CONFIG_CPOL_ActiveHigh << SPI_CONFIG_CPOL_Pos);
+      config |= (SPI_CONFIG_CPHA_Trailing   << SPI_CONFIG_CPHA_Pos);
+      break;
+
+    case SPI_MODE2:
+      config |= (SPI_CONFIG_CPOL_ActiveLow  << SPI_CONFIG_CPOL_Pos);
+      config |= (SPI_CONFIG_CPHA_Leading    << SPI_CONFIG_CPHA_Pos);
+      break;
+
+    case SPI_MODE3:
+      config |= (SPI_CONFIG_CPOL_ActiveLow  << SPI_CONFIG_CPOL_Pos);
+      config |= (SPI_CONFIG_CPHA_Trailing   << SPI_CONFIG_CPHA_Pos);
+      break;
+  }
+
+  return config;
+}
+
 SPIClass::SPIClass(NRF_SPIM_Type *p_spi, uint8_t uc_pinMISO, uint8_t uc_pinSCK, uint8_t uc_pinMOSI)
 {
   initialized = false;
@@ -63,42 +94,6 @@ void SPIClass::begin()
   beginTransaction(DEFAULT_SPI_SETTINGS);
 }
 
-void SPIClass::beginTransaction(SPISettings settings)
-{
-  _p_spi->ENABLE = (SPI_ENABLE_ENABLE_Disabled << SPI_ENABLE_ENABLE_Pos);
-
-  this->_bitOrder = (settings.bitOrder == MSBFIRST ? SPI_CONFIG_ORDER_MsbFirst : SPI_CONFIG_ORDER_LsbFirst);
-  uint32_t config = this->_bitOrder;
-
-  switch (settings.dataMode) {
-    default:
-    case SPI_MODE0:
-      config |= (SPI_CONFIG_CPOL_ActiveHigh << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Leading    << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE1:
-      config |= (SPI_CONFIG_CPOL_ActiveHigh << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Trailing   << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE2:
-      config |= (SPI_CONFIG_CPOL_ActiveLow  << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Leading    << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE3:
-      config |= (SPI_CONFIG_CPOL_ActiveLow  << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Trailing   << SPI_CONFIG_CPHA_Pos);
-      break;
-  }
-
-  _p_spi->CONFIG = config;
-  setClockDivider(F_CPU / settings.clockFreq);
-
-  _p_spi->ENABLE = (SPI_ENABLE_ENABLE_Enabled << SPI_ENABLE_ENABLE_Pos);
-}
-
 void SPIClass::end()
 {
   _p_spi->ENABLE = (SPI_ENABLE_ENABLE_Disabled << SPI_ENABLE_ENABLE_Pos);
@@ -110,10 +105,18 @@ void SPIClass::usingInterrupt(int /*interruptNumber*/)
 {
 }
 
-//void SPIClass::beginTransaction(SPISettings settings)
-//{
-//  config(settings);
-//}
+void SPIClass::beginTransaction(SPISettings settings)
+{
+  _p_spi->ENABLE = (SPI_ENABLE_ENABLE_Disabled << SPI_ENABLE_ENABLE_Pos);
+
+  this->_bitOrder = (settings.bitOrder == MSBFIRST ? SPI_CONFIG_ORDER_MsbFirst : SPI_CONFIG_ORDER_LsbFirst);
+  this->_dataMode = settings.dataMode;
+
+  _p_spi->CONFIG = this->_bitOrder | mode2config(this->_dataMode);
+  setClockDivider(F_CPU / settings.clockFreq);
+
+  _p_spi->ENABLE = (SPI_ENABLE_ENABLE_Enabled << SPI_ENABLE_ENABLE_Pos);
+}
 
 void SPIClass::endTransaction(void)
 {
@@ -124,64 +127,13 @@ void SPIClass::setBitOrder(BitOrder order)
 {
   this->_bitOrder = (order == MSBFIRST ? SPI_CONFIG_ORDER_MsbFirst : SPI_CONFIG_ORDER_LsbFirst);
 
-  uint32_t config = this->_bitOrder;
-
-  switch (this->_dataMode) {
-    default:
-    case SPI_MODE0:
-      config |= (SPI_CONFIG_CPOL_ActiveHigh << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Leading    << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE1:
-      config |= (SPI_CONFIG_CPOL_ActiveHigh << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Trailing   << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE2:
-      config |= (SPI_CONFIG_CPOL_ActiveLow  << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Leading    << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE3:
-      config |= (SPI_CONFIG_CPOL_ActiveLow  << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Trailing   << SPI_CONFIG_CPHA_Pos);
-      break;
-  }
-
-  _p_spi->CONFIG = config;
+  _p_spi->CONFIG = this->_bitOrder | mode2config(this->_dataMode);
 }
 
 void SPIClass::setDataMode(uint8_t mode)
 {
   this->_dataMode = mode;
-
-  uint32_t config = this->_bitOrder;
-
-  switch (this->_dataMode) {
-    default:
-    case SPI_MODE0:
-      config |= (SPI_CONFIG_CPOL_ActiveHigh << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Leading    << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE1:
-      config |= (SPI_CONFIG_CPOL_ActiveHigh << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Trailing   << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE2:
-      config |= (SPI_CONFIG_CPOL_ActiveLow  << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Leading    << SPI_CONFIG_CPHA_Pos);
-      break;
-
-    case SPI_MODE3:
-      config |= (SPI_CONFIG_CPOL_ActiveLow  << SPI_CONFIG_CPOL_Pos);
-      config |= (SPI_CONFIG_CPHA_Trailing   << SPI_CONFIG_CPHA_Pos);
-      break;
-  }
-
-  _p_spi->CONFIG = config;
+  _p_spi->CONFIG = this->_bitOrder | mode2config(this->_dataMode);
 }
 
 void SPIClass::setClockDivider(uint32_t div)
