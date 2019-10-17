@@ -35,6 +35,9 @@ SPIClass::SPIClass(NRF_SPIM_Type *p_spi, uint8_t uc_pinMISO, uint8_t uc_pinSCK, 
 
   _spim.p_reg = p_spi;
 
+  // not used by SPIM module
+  _p_spi = NULL;
+
   // SPIM0 & SPIM1 are used for I2C
 #if NRFX_SPIM0_ENABLED
   if ( NRF_SPIM0 == p_spi ) {
