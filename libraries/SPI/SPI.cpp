@@ -31,16 +31,28 @@ SPIClass::SPIClass(NRF_SPIM_Type *p_spi, uint8_t uc_pinMISO, uint8_t uc_pinSCK, 
 
   _spim.p_reg = p_spi;
 
-  // NRF_SPIM0 is used for I2C
+  // SPIM0 & SPIM1 are used for I2C
+#if NRFX_SPIM0_ENABLED
+  if ( NRF_SPIM0 == p_spi ) {
+    _spim.drv_inst_idx = NRFX_SPIM0_INST_IDX;
+  }
+#endif
+
+#if NRFX_SPIM1_ENABLED
   if ( NRF_SPIM1 == p_spi ) {
     _spim.drv_inst_idx = NRFX_SPIM1_INST_IDX;
-  } else if ( NRF_SPIM2 == p_spi ) {
-    _spim.drv_inst_idx = NRFX_SPIM2_INST_IDX;
-  } else {
-#ifdef NRF52840_XXAA
-    _spim.drv_inst_idx = NRFX_SPIM3_INST_IDX;
-#endif
   }
+#endif
+
+  if ( NRF_SPIM2 == p_spi ) {
+    _spim.drv_inst_idx = NRFX_SPIM2_INST_IDX;
+  }
+
+#if NRFX_SPIM3_ENABLED
+  if ( NRF_SPIM3 == p_spi ) {
+    _spim.drv_inst_idx = NRFX_SPIM3_INST_IDX;
+  }
+#endif
 
   // pins
   _uc_pinMiso = g_ADigitalPinMap[uc_pinMISO];
@@ -48,7 +60,7 @@ SPIClass::SPIClass(NRF_SPIM_Type *p_spi, uint8_t uc_pinMISO, uint8_t uc_pinSCK, 
   _uc_pinMosi = g_ADigitalPinMap[uc_pinMOSI];
 
   _dataMode = SPI_MODE0;
-  _bitOrder = SPI_CONFIG_ORDER_MsbFirst;
+  _bitOrder = NRF_SPIM_BIT_ORDER_MSB_FIRST;
 }
 
 void SPIClass::begin()
@@ -119,7 +131,7 @@ void SPIClass::setDataMode(uint8_t mode)
   nrf_spim_configure(_spim.p_reg, (nrf_spim_mode_t) _dataMode, (nrf_spim_bit_order_t) _bitOrder);
 }
 
-void SPIClass::setClockDivider(uint8_t div)
+void SPIClass::setClockDivider(uint32_t div)
 {
   nrf_spim_frequency_t clockFreq;
 
@@ -214,17 +226,19 @@ void SPIClass::detachInterrupt() {
   // Should be disableInterrupt()
 }
 
-// SPIM0 is used as I2C
-
-#if SPI_INTERFACES_COUNT > 0
-  #ifdef NRF52840_XXAA
+// SPIM0, SPIM1 are configured as I2C
+#ifdef NRF52840_XXAA
+  #if SPI_INTERFACES_COUNT > 0
     // use SPIM3 for nrf52840 for highspeed 32Mhz
     SPIClass SPI(NRF_SPIM3,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
-  #else
-    SPIClass SPI(NRF_SPIM1,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
   #endif
+
+  #if SPI_INTERFACES_COUNT > 1
+    SPIClass SPI1(NRF_SPIM2, PIN_SPI1_MISO, PIN_SPI1_SCK, PIN_SPI1_MOSI);
+  #endif
+
+#else
+    SPIClass SPI(NRF_SPIM2,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
+
 #endif
 
-#if SPI_INTERFACES_COUNT > 1
-SPIClass SPI1(NRF_SPIM2, PIN_SPI1_MISO, PIN_SPI1_SCK, PIN_SPI1_MOSI);
-#endif

@@ -40,33 +40,25 @@
 
 class SPISettings {
   public:
-  SPISettings(uint32_t clock, BitOrder bitOrder, uint8_t dataMode) {
-    if (__builtin_constant_p(clock)) {
-      init_AlwaysInline(clock, bitOrder, dataMode);
-    } else {
-      init_MightInline(clock, bitOrder, dataMode);
+    SPISettings(uint32_t clock, BitOrder bitOrder, uint8_t dataMode) {
+      this->clockFreq = clock;
+      this->bitOrder = bitOrder;
+      this->dataMode = dataMode;
     }
-  }
 
-  // Default speed set to 4MHz, SPI mode set to MODE 0 and Bit order set to MSB first.
-  SPISettings() { init_AlwaysInline(4000000, MSBFIRST, SPI_MODE0); }
+    // Default speed set to 4MHz, SPI mode set to MODE 0 and Bit order set to MSB first.
+    SPISettings() {
+      this->clockFreq = 4000000;
+      this->bitOrder = MSBFIRST;
+      this->dataMode = SPI_MODE0;
+    }
 
   private:
-  void init_MightInline(uint32_t clock, BitOrder bitOrder, uint8_t dataMode) {
-    init_AlwaysInline(clock, bitOrder, dataMode);
-  }
+    uint32_t clockFreq;
+    uint8_t  dataMode;
+    uint8_t  bitOrder;
 
-  void init_AlwaysInline(uint32_t clock, BitOrder bitOrder, uint8_t dataMode) __attribute__((__always_inline__)) {
-    this->clockFreq = clock;
-    this->bitOrder = bitOrder;
-    this->dataMode = dataMode;
-  }
-
-  uint32_t clockFreq;
-  uint8_t dataMode;
-  uint32_t bitOrder;
-
-  friend class SPIClass;
+    friend class SPIClass;
 };
 
 class SPIClass {
@@ -92,7 +84,7 @@ class SPIClass {
 
     void setBitOrder(BitOrder order);
     void setDataMode(uint8_t uc_mode);
-    void setClockDivider(uint8_t uc_div);
+    void setClockDivider(uint32_t uc_div);
 
   private:
     nrfx_spim_t _spim;

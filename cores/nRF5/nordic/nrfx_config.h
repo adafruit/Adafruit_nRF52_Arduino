@@ -11,7 +11,7 @@
 #define NRFX_SPIM_EXTENDED_ENABLED   0
 
 #define NRFX_SPIM0_ENABLED           0 // used as I2C
-#define NRFX_SPIM1_ENABLED           1
+#define NRFX_SPIM1_ENABLED           0 // used as I2C
 #define NRFX_SPIM2_ENABLED           1
 
 #ifdef NRF52840_XXAA
