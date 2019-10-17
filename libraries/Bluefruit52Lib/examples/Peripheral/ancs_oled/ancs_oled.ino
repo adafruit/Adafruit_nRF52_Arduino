@@ -27,7 +27,7 @@
 #include <bluefruit.h>
 
 /*------------- OLED and Buttons -------------*/
-#if defined ARDUINO_NRF52_FEATHER
+#if defined ARDUINO_NRF52832_FEATHER
 // Feather nRF52832
 #define BUTTON_A    31
 #define BUTTON_B    30
@@ -457,3 +457,4 @@ uint32_t readPressedButtons(void)
 
   return result;
 }
+
