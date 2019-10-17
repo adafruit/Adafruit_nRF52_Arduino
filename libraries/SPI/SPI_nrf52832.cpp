@@ -237,6 +237,25 @@ uint16_t SPIClass::transfer16(uint16_t data) {
   return t.val;
 }
 
+void SPIClass::transfer(const void *tx_buf, void *rx_buf, size_t count)
+{
+  uint8_t *tx_buf8 = (uint8_t *) tx_buf;
+  uint8_t *rx_buf8 = (uint8_t *) rx_buf;
+
+  for (size_t i=0; i<count; i++) {
+    uint8_t rxbyte = transfer(tx_buf8 ? tx_buf8[i] : 0xFF);
+    if (rx_buf8) rx_buf8[i] = rxbyte;
+  }
+}
+
+void SPIClass::transfer(void *buf, size_t count)
+{
+  uint8_t *buffer = (uint8_t *) buf;
+  for (size_t i=0; i<count; i++) {
+    buffer[i] = transfer(buffer[i]);
+  }
+}
+
 void SPIClass::attachInterrupt() {
   // Should be enableInterrupt()
 }
