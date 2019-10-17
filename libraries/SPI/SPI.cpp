@@ -157,8 +157,7 @@ void SPIClass::setClockDivider(uint32_t div)
   } else if (div >= SPI_CLOCK_DIV8) {
     clockFreq = NRF_SPIM_FREQ_8M;
   } else {
-#ifdef NRF52840_XXAA
-    if ( _spim.drv_inst_idx == NRFX_SPIM3_INST_IDX )
+    if ( _spim.p_reg == NRF_SPIM3 )
     {
       if (div >= SPI_CLOCK_DIV4) {
         clockFreq = NRF_SPIM_FREQ_16M;
@@ -166,7 +165,6 @@ void SPIClass::setClockDivider(uint32_t div)
         clockFreq = NRF_SPIM_FREQ_32M;
       }
     }else
-#endif
     {
       clockFreq = NRF_SPIM_FREQ_8M;
     }
@@ -234,7 +232,7 @@ void SPIClass::detachInterrupt() {
 
 #if SPI_INTERFACES_COUNT > 0
 // use SPIM3 for highspeed 32Mhz
-SPIClass SPI(NRF_SPIM2,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
+SPIClass SPI(NRF_SPIM3,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
 #endif
 
 #if SPI_INTERFACES_COUNT > 1
