@@ -88,6 +88,7 @@ class SPIClass {
 
   private:
     nrfx_spim_t _spim;
+    NRF_SPI_Type *_p_spi;
 
     uint8_t _uc_pinMiso;
     uint8_t _uc_pinMosi;

@@ -19,6 +19,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+// Due to nRF52832 Errata with SPIM, we will only use SPIM for 840 variant
+// https://infocenter.nordicsemi.com/topic/errata_nRF52832_Rev2/ERR/nRF52832/Rev2/latest/anomaly_832_58.html
+#ifdef NRF52840_XXAA
+
 #include "SPI.h"
 #include <Arduino.h>
 #include <wiring_private.h>
@@ -44,9 +48,11 @@ SPIClass::SPIClass(NRF_SPIM_Type *p_spi, uint8_t uc_pinMISO, uint8_t uc_pinSCK, 
   }
 #endif
 
+#if NRFX_SPIM2_ENABLED
   if ( NRF_SPIM2 == p_spi ) {
     _spim.drv_inst_idx = NRFX_SPIM2_INST_IDX;
   }
+#endif
 
 #if NRFX_SPIM3_ENABLED
   if ( NRF_SPIM3 == p_spi ) {
@@ -226,19 +232,13 @@ void SPIClass::detachInterrupt() {
   // Should be disableInterrupt()
 }
 
-// SPIM0, SPIM1 are configured as I2C
-#ifdef NRF52840_XXAA
-  #if SPI_INTERFACES_COUNT > 0
-    // use SPIM3 for nrf52840 for highspeed 32Mhz
-    SPIClass SPI(NRF_SPIM3,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
-  #endif
-
-  #if SPI_INTERFACES_COUNT > 1
-    SPIClass SPI1(NRF_SPIM2, PIN_SPI1_MISO, PIN_SPI1_SCK, PIN_SPI1_MOSI);
-  #endif
-
-#else
-    SPIClass SPI(NRF_SPIM2,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
-
+#if SPI_INTERFACES_COUNT > 0
+// use SPIM3 for highspeed 32Mhz
+SPIClass SPI(NRF_SPIM2,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
 #endif
 
+#if SPI_INTERFACES_COUNT > 1
+SPIClass SPI1(NRF_SPIM2, PIN_SPI1_MISO, PIN_SPI1_SCK, PIN_SPI1_MOSI);
+#endif
+
+#endif // NRF52840_XXAA
