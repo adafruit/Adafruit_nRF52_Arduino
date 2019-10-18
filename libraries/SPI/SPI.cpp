@@ -97,6 +97,21 @@ void SPIClass::begin()
 
   // blocking
   nrfx_spim_init(&_spim, &cfg, NULL, NULL);
+
+  // highspeed SPIM should set SCK and MOSI to high drive
+  nrf_gpio_cfg(_uc_pinSCK,
+               NRF_GPIO_PIN_DIR_OUTPUT,
+               NRF_GPIO_PIN_INPUT_CONNECT,
+               NRF_GPIO_PIN_NOPULL,
+               NRF_GPIO_PIN_H0H1,
+               NRF_GPIO_PIN_NOSENSE);
+
+  nrf_gpio_cfg(_uc_pinMosi,
+               NRF_GPIO_PIN_DIR_OUTPUT,
+               NRF_GPIO_PIN_INPUT_DISCONNECT,
+               NRF_GPIO_PIN_NOPULL,
+               NRF_GPIO_PIN_H0H1,
+               NRF_GPIO_PIN_NOSENSE);
 }
 
 void SPIClass::end()
