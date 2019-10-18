@@ -392,9 +392,9 @@ void TwoWire::onService(void)
   }
 }
 
+#if WIRE_INTERFACES_COUNT > 0
 TwoWire Wire(NRF_TWIM0, NRF_TWIS0, SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQn, PIN_WIRE_SDA, PIN_WIRE_SCL);
 
-#if WIRE_INTERFACES_COUNT > 0
 extern "C"
 {
   void SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQHandler(void)
@@ -404,4 +404,16 @@ extern "C"
 }
 #endif
 
+#if WIRE_INTERFACES_COUNT > 1
+TwoWire Wire1(NRF_TWIM1, NRF_TWIS1, SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn, PIN_WIRE1_SDA, PIN_WIRE1_SCL);
+
+extern "C"
+{
+  void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void)
+  {
+    Wire1.onService();
+  }
+}
 #endif
+
+#endif // NRF52_SERIES
