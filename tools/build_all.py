@@ -37,7 +37,7 @@ def build_examples(variant):
     for sketch in glob.iglob('libraries/**/*.ino', recursive=True):
         start_time = time.monotonic()
 
-        if os.path.exists(os.path.dirname(sketch) + '/.skip.' + variant):
+        if os.path.exists(os.path.dirname(sketch) + '/.skip') or os.path.exists(os.path.dirname(sketch) + '/.skip.' + variant):
             success = "skipped"
         else:
             build_result = subprocess.run("arduino --verify {}".format(sketch), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
