@@ -41,7 +41,7 @@ static inline uint32_t page_offset_of (uint32_t addr)
   return addr & (FLASH_CACHE_SIZE - 1);
 }
 
-uint32_t flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, uint32_t len)
+int flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, uint32_t len)
 {
   uint8_t const * src8 = (uint8_t const *) src;
   uint32_t remain = len;
@@ -83,7 +83,7 @@ void flash_cache_flush (flash_cache_t* fc)
   // skip erase & program if verify() exists, and memory matches
   if ( !(fc->verify && fc->verify(fc->cache_addr, fc->cache_buf, FLASH_CACHE_SIZE)) )
   {
-    // indicator
+    // indicator TODO allow to disable flash indicator
     ledOn(LED_BUILTIN);
 
     fc->erase(fc->cache_addr);
@@ -95,7 +95,7 @@ void flash_cache_flush (flash_cache_t* fc)
   fc->cache_addr = FLASH_CACHE_INVALID_ADDR;
 }
 
-void flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t count)
+int flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t count)
 {
   // there is no check for overflow / wraparound for dst + count, addr + count.
   // this might be a useful thing to add for at least debug builds.
@@ -198,4 +198,6 @@ void flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t cou
     // not using the cache, so just forward to read from flash
     fc->read(dst, addr, count);
   }
+
+  return (int) count;
 }

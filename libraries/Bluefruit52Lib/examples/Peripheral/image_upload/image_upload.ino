@@ -239,6 +239,7 @@ void bleuart_rx_callback(uint16_t conn_hdl)
   if ( totalPixel == imageWidth*imageHeight )
   {
     uint8_t crc = bleuart.read();
+    (void) crc;
     // do checksum later
 
     // print speed summary
@@ -310,6 +311,9 @@ void print_summary(uint32_t count, uint32_t ms)
 
 void bleuart_overflow_callback(uint16_t conn_hdl, uint16_t leftover)
 {
+  (void) conn_hdl;
+  (void) leftover;
+  
   Serial.println("BLEUART rx buffer OVERFLOWED!");
   Serial.println("Please increase buffer size for bleuart");
 
@@ -335,6 +339,7 @@ void bleuart_overflow_callback(uint16_t conn_hdl, uint16_t leftover)
  */
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
+  (void) conn_handle;
   (void) reason;
 
   tft.fillScreen(COLOR_BLACK);
