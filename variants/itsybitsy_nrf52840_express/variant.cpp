@@ -31,26 +31,26 @@ const uint32_t g_ADigitalPinMap[] =
   34,  // D2  is P1.02
    6,  // D3  is P0.06 LED 
   29,  // D4  is P0.29 Button
-  40,  // D5  is P1.08
+  27,  // D5  is P0.27
   41,  // D6  is P1.09 (DotStar Clock)
-   7,  // D7  is P0.07
+  40,  // D7  is P1.08
    8,  // D8  is P0.08 (DotStar Data)
-   5,  // D9  is P0.05
-  26,  // D10 is P0.26
-  27,  // D11 is P0.27
+   7,  // D9  is P0.07
+   5,  // D10 is P0.05
+  26,  // D11 is P0.26
   11,  // D12 is P0.11
   12,  // D13 is P0.12
 
   // D14 .. D20 (aka A0 .. A7)
    4,  // D14 is P0.04 (A0)
-  31,  // D15 is P0.31 (A1)
-  30,  // D16 is P0.30 (A2)
-  28,  // D17 is P0.28 (A3)
+  30,  // D15 is P0.30 (A1)
+  28,  // D16 is P0.28 (A2)
+  31,  // D17 is P0.31 (A3)
    2,  // D18 is P0.02 (A4)
    3,  // D19 is P0.03 (A5)
 
   // Extra Analog pin #20
-   5,  // D20 is P0.05 (A6/A9)
+   5,  // D20 is P0.05 (A6/D10)
 
   // D21 .. D22 (aka I2C pins)
   16,  // D21 is P0.16 (SDA)
