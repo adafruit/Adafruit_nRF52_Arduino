@@ -95,7 +95,7 @@ BLEUuid uuid = BLEUuid(CUSTOM_UUID);
   #include <Adafruit_ILI9341.h>
 
    /* Pin setup for the TFT display over SPI */
-  #ifdef ARDUINO_NRF52_FEATHER
+  #ifdef ARDUINO_NRF52832_FEATHER
      #define TFT_DC   11
      #define TFT_CS   31
      #define STMPE_CS 30
@@ -114,7 +114,7 @@ BLEUuid uuid = BLEUuid(CUSTOM_UUID);
   #include <Adafruit_SSD1306.h>
 
   /* Pin setup for the OLED display */
-  #ifdef ARDUINO_NRF52_FEATHER
+  #ifdef ARDUINO_NRF52832_FEATHER
     #define BUTTON_A 31
     #define BUTTON_B 30
     #define BUTTON_C 27

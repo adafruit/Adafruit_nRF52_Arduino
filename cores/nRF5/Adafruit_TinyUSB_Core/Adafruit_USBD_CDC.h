@@ -51,7 +51,7 @@ public:
 	size_t write(const char *buffer, size_t size) {
 	  return write((const uint8_t *)buffer, size);
 	}
-	size_t availableForWrite(void);
+	virtual int availableForWrite(void);
 	operator bool();
 };
 

@@ -23,6 +23,8 @@
 
 #include <Arduino.h>
 
+#include "nrfx_spim.h"
+
 // SPI_HAS_TRANSACTION means SPI has
 //   - beginTransaction()
 //   - endTransaction()
@@ -30,111 +32,80 @@
 //   - SPISetting(clock, bitOrder, dataMode)
 #define SPI_HAS_TRANSACTION 1
 
-#define SPI_MODE0 0x02
-#define SPI_MODE1 0x00
-#define SPI_MODE2 0x03
-#define SPI_MODE3 0x01
+#define SPI_MODE0 0x00
+#define SPI_MODE1 0x01
+#define SPI_MODE2 0x02
+#define SPI_MODE3 0x03
 
 
 class SPISettings {
   public:
-  SPISettings(uint32_t clock, BitOrder bitOrder, uint8_t dataMode) {
-    if (__builtin_constant_p(clock)) {
-      init_AlwaysInline(clock, bitOrder, dataMode);
-    } else {
-      init_MightInline(clock, bitOrder, dataMode);
+    SPISettings(uint32_t clock, BitOrder bitOrder, uint8_t dataMode) {
+      this->clockFreq = clock;
+      this->bitOrder = bitOrder;
+      this->dataMode = dataMode;
     }
-  }
 
-  // Default speed set to 4MHz, SPI mode set to MODE 0 and Bit order set to MSB first.
-  SPISettings() { init_AlwaysInline(4000000, MSBFIRST, SPI_MODE0); }
+    // Default speed set to 4MHz, SPI mode set to MODE 0 and Bit order set to MSB first.
+    SPISettings() {
+      this->clockFreq = 4000000;
+      this->bitOrder = MSBFIRST;
+      this->dataMode = SPI_MODE0;
+    }
 
   private:
-  void init_MightInline(uint32_t clock, BitOrder bitOrder, uint8_t dataMode) {
-    init_AlwaysInline(clock, bitOrder, dataMode);
-  }
+    uint32_t clockFreq;
+    uint8_t  dataMode;
+    uint8_t  bitOrder;
 
-  void init_AlwaysInline(uint32_t clock, BitOrder bitOrder, uint8_t dataMode) __attribute__((__always_inline__)) {
-    if (clock <= 125000) {
-      this->clockFreq = SPI_FREQUENCY_FREQUENCY_K125;
-    } else if (clock <= 250000) {
-      this->clockFreq = SPI_FREQUENCY_FREQUENCY_K250;
-    } else if (clock <= 500000) {
-      this->clockFreq = SPI_FREQUENCY_FREQUENCY_K500;
-    } else if (clock <= 1000000) {
-      this->clockFreq = SPI_FREQUENCY_FREQUENCY_M1;
-    } else if (clock <= 2000000) {
-      this->clockFreq = SPI_FREQUENCY_FREQUENCY_M2;
-    } else if (clock <= 4000000) {
-      this->clockFreq = SPI_FREQUENCY_FREQUENCY_M4;
-    } else {
-      this->clockFreq = SPI_FREQUENCY_FREQUENCY_M8;
-    }
-
-    this->bitOrder = (bitOrder == MSBFIRST ? SPI_CONFIG_ORDER_MsbFirst : SPI_CONFIG_ORDER_LsbFirst);
-    this->dataMode = dataMode;
-  }
-
-  uint32_t clockFreq;
-  uint8_t dataMode;
-  uint32_t bitOrder;
-
-  friend class SPIClass;
+    friend class SPIClass;
 };
 
 class SPIClass {
   public:
-  SPIClass(NRF_SPI_Type *p_spi, uint8_t uc_pinMISO, uint8_t uc_pinSCK, uint8_t uc_pinMOSI);
+    SPIClass(NRF_SPIM_Type *p_spi, uint8_t uc_pinMISO, uint8_t uc_pinSCK, uint8_t uc_pinMOSI);
 
+    byte transfer(uint8_t data);
+    uint16_t transfer16(uint16_t data);
+    void transfer(void *buf, size_t count);
+    void transfer(const void *tx_buf, void *rx_buf, size_t count);
 
-  byte transfer(uint8_t data);
-  uint16_t transfer16(uint16_t data);
-  inline void transfer(void *buf, size_t count);
+    // Transaction Functions
+    void usingInterrupt(int interruptNumber);
+    void beginTransaction(SPISettings settings);
+    void endTransaction(void);
 
-  // Transaction Functions
-  void usingInterrupt(int interruptNumber);
-  void beginTransaction(SPISettings settings);
-  void endTransaction(void);
+    // SPI Configuration methods
+    void attachInterrupt();
+    void detachInterrupt();
 
-  // SPI Configuration methods
-  void attachInterrupt();
-  void detachInterrupt();
+    void begin();
+    void end();
 
-  void begin();
-  void end();
-
-  void setBitOrder(BitOrder order);
-  void setDataMode(uint8_t uc_mode);
-  void setClockDivider(uint8_t uc_div);
+    void setBitOrder(BitOrder order);
+    void setDataMode(uint8_t uc_mode);
+    void setClockDivider(uint32_t uc_div);
 
   private:
-  void init();
-  void config(SPISettings settings);
+    nrfx_spim_t _spim;
+    NRF_SPI_Type *_p_spi;
 
-  NRF_SPI_Type *_p_spi;
-  uint8_t _uc_pinMiso;
-  uint8_t _uc_pinMosi;
-  uint8_t _uc_pinSCK;
+    uint8_t _uc_pinMiso;
+    uint8_t _uc_pinMosi;
+    uint8_t _uc_pinSCK;
 
-  uint8_t _dataMode;
-  uint32_t _bitOrder;
+    uint8_t _dataMode;
+    uint8_t _bitOrder;
 
-  bool initialized;
-  uint8_t interruptMode;
-  char interruptSave;
-  uint32_t interruptMask;
+    bool initialized;
 };
-
-void SPIClass::transfer(void *buf, size_t count)
-{
-  // TODO: Optimize for faster block-transfer
-  uint8_t *buffer = reinterpret_cast<uint8_t *>(buf);
-  for (size_t i=0; i<count; i++)
-    buffer[i] = transfer(buffer[i]);
-}
 
 #if SPI_INTERFACES_COUNT > 0
 extern SPIClass SPI;
+#endif
+
+#if SPI_INTERFACES_COUNT > 1
+extern SPIClass SPI1;
 #endif
 
 // For compatibility with sketches designed for AVR @ 64 MHz

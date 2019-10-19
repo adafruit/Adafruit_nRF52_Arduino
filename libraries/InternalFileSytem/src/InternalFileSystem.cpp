@@ -47,24 +47,23 @@ static int _internal_flash_read (const struct lfs_config *c, lfs_block_t block, 
 {
   (void) c;
 
-   uint32_t addr = lba2addr(block) + off;
-  flash_nrf5x_read(buffer, addr, size);
+  uint32_t addr = lba2addr(block) + off;
+  VERIFY( flash_nrf5x_read(buffer, addr, size) > 0, -1);
 
-   return 0;
+  return 0;
 }
 
 // Program a region in a block. The block must have previously
 // been erased. Negative error codes are propogated to the user.
 // May return LFS_ERR_CORRUPT if the block should be considered bad.
-static int _internal_flash_prog (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer,
-                         lfs_size_t size)
+static int _internal_flash_prog (const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size)
 {
   (void) c;
 
-   uint32_t addr = lba2addr(block) + off;
-  flash_nrf5x_write(addr, buffer, size);
+  uint32_t addr = lba2addr(block) + off;
+  VERIFY( flash_nrf5x_write(addr, buffer, size), -1)
 
-   return 0;
+  return 0;
 }
 
 // Erase a block. A block must be erased before being programmed.
@@ -75,17 +74,17 @@ static int _internal_flash_erase (const struct lfs_config *c, lfs_block_t block)
 {
   (void) c;
 
-   uint32_t addr = lba2addr(block);
+  uint32_t addr = lba2addr(block);
 
-   // implement as write 0xff to whole block address
+  // implement as write 0xff to whole block address
   for(int i=0; i <LFS_BLOCK_SIZE; i++)
   {
     flash_nrf5x_write8(addr + i, 0xFF);
   }
 
-   // flash_nrf5x_flush();
+  // flash_nrf5x_flush();
 
-   return 0;
+  return 0;
 }
 
 // Sync the state of the underlying block device. Negative error codes

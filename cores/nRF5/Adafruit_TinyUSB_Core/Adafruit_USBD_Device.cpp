@@ -34,6 +34,14 @@
   #define USB_PRODUCT "Unknown"
 #endif
 
+#ifndef USB_LANGUAGE
+  #define USB_LANGUAGE  0x0409 // default is English
+#endif
+
+#ifndef USB_CONFIG_POWER
+  #define USB_CONFIG_POWER 100
+#endif
+
 extern uint8_t load_serial_number(uint16_t* serial_str);
 
 Adafruit_USBD_Device USBDevice;
@@ -76,14 +84,20 @@ Adafruit_USBD_Device::Adafruit_USBD_Device(void)
     .bConfigurationValue = 1,
     .iConfiguration      = 0x00,
     .bmAttributes        = TU_BIT(7) | TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP,
-    .bMaxPower           = TUSB_DESC_CONFIG_POWER_MA(100)
+    .bMaxPower           = TUSB_DESC_CONFIG_POWER_MA(USB_CONFIG_POWER)
   };
 
-  memcpy(_desc_cfg, &dev_cfg, sizeof(tusb_desc_configuration_t));
+  memcpy(_desc_cfg_buffer, &dev_cfg, sizeof(tusb_desc_configuration_t));
+  _desc_cfg        = _desc_cfg_buffer;
+  _desc_cfg_maxlen = sizeof(_desc_cfg_buffer);
+  _desc_cfg_len    = sizeof(tusb_desc_configuration_t);
 
-  _desc_cfglen = sizeof(tusb_desc_configuration_t);
-  _itf_count = 0;
-  _epin_count = _epout_count = 1;
+  _itf_count    = 0;
+  _epin_count   = _epout_count = 1;
+
+  _language_id  = USB_LANGUAGE;
+  _manufacturer = USB_MANUFACTURER;
+  _product      = USB_PRODUCT;
 }
 
 // Add interface descriptor
@@ -91,8 +105,8 @@ Adafruit_USBD_Device::Adafruit_USBD_Device(void)
 // - Endpoint number is updated to be unique
 bool Adafruit_USBD_Device::addInterface(Adafruit_USBD_Interface& itf)
 {
-  uint8_t* desc = _desc_cfg+_desc_cfglen;
-  uint16_t const len = itf.getDescriptor(_itf_count, desc, sizeof(_desc_cfg)-_desc_cfglen);
+  uint8_t* desc = _desc_cfg+_desc_cfg_len;
+  uint16_t const len = itf.getDescriptor(_itf_count, desc, _desc_cfg_maxlen-_desc_cfg_len);
   uint8_t* desc_end = desc+len;
 
   if ( !len ) return false;
@@ -113,25 +127,51 @@ bool Adafruit_USBD_Device::addInterface(Adafruit_USBD_Interface& itf)
     desc += desc[0]; // next
   }
 
-  _desc_cfglen += len;
+  _desc_cfg_len += len;
 
   // Update configuration descriptor
   tusb_desc_configuration_t* config = (tusb_desc_configuration_t*)_desc_cfg;
-  config->wTotalLength = _desc_cfglen;
+  config->wTotalLength = _desc_cfg_len;
   config->bNumInterfaces = _itf_count;
 
   return true;
 }
 
+void Adafruit_USBD_Device::setDescriptorBuffer(uint8_t* buf, uint32_t buflen)
+{
+  if (buflen < _desc_cfg_maxlen)
+    return;
+
+  memcpy(buf, _desc_cfg, _desc_cfg_len);
+  _desc_cfg        = buf;
+  _desc_cfg_maxlen = buflen;
+}
+
 void Adafruit_USBD_Device::setID(uint16_t vid, uint16_t pid)
 {
-  _desc_device.idVendor = vid;
+  _desc_device.idVendor  = vid;
   _desc_device.idProduct = pid;
 }
 
 void Adafruit_USBD_Device::setVersion(uint16_t bcd)
 {
   _desc_device.bcdUSB = bcd;
+}
+
+
+void Adafruit_USBD_Device::setLanguageDescriptor (uint16_t language_id)
+{
+  _language_id = language_id;
+}
+
+void Adafruit_USBD_Device::setManufacturerDescriptor(const char *s)
+{
+  _manufacturer = s;
+}
+
+void Adafruit_USBD_Device::setProductDescriptor(const char *s)
+{
+  _product = s;
 }
 
 bool Adafruit_USBD_Device::begin(void)
@@ -157,6 +197,84 @@ uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
   return USBDevice._desc_cfg;
 }
 
+static int utf8_to_unichar(const char *str8, int *unicharp)
+{
+  int unichar;
+  int len;
+
+  if (str8[0] < 0x80)
+    len = 1;
+  else if ((str8[0] & 0xe0) == 0xc0)
+    len = 2;
+  else if ((str8[0] & 0xf0) == 0xe0)
+    len = 3;
+  else if ((str8[0] & 0xf8) == 0xf0)
+    len = 4;
+  else if ((str8[0] & 0xfc) == 0xf8)
+    len = 5;
+  else if ((str8[0] & 0xfe) == 0xfc)
+    len = 6;
+  else
+    return -1;
+
+  switch (len) {
+    case 1:
+      unichar = str8[0];
+      break;
+    case 2:
+      unichar = str8[0] & 0x1f;
+      break;
+    case 3:
+      unichar = str8[0] & 0x0f;
+      break;
+    case 4:
+      unichar = str8[0] & 0x07;
+      break;
+    case 5:
+      unichar = str8[0] & 0x03;
+      break;
+    case 6:
+      unichar = str8[0] & 0x01;
+      break;
+  }
+
+  for (int i = 1; i < len; i++) {
+          if ((str8[i] & 0xc0) != 0x80)
+                  return -1;
+          unichar <<= 6;
+          unichar |= str8[i] & 0x3f;
+  }
+
+  *unicharp = unichar;
+  return len;
+}
+
+// Simple UCS-2/16-bit coversion, which handles the Basic Multilingual Plane
+static int strcpy_uni16(const char *s, uint16_t *buf, int bufsize) {
+  int i = 0;
+  int buflen = 0;
+
+  while (i < bufsize) {
+    int unichar;
+    int utf8len = utf8_to_unichar(s + i, &unichar);
+
+    if (utf8len < 0) {
+      // Invalid utf8 sequence, skip it
+      i++;
+      continue;
+    }
+
+    i += utf8len;
+
+    // If the codepoint is larger than 16 bit, skip it
+    if (unichar <= 0xffff)
+      buf[buflen++] = unichar;
+  }
+
+  buf[buflen] = '\0';
+  return buflen;
+}
+
 // up to 32 unicode characters (header make it 33)
 static uint16_t _desc_str[33];
 
@@ -169,25 +287,16 @@ uint16_t const* tud_descriptor_string_cb(uint8_t index)
   switch (index)
   {
     case 0:
-      // language = English
-      _desc_str[1] = 0x0409;
+      _desc_str[1] = USBDevice.getLanguageDescriptor();
       chr_count = 1;
     break;
 
-    case 1: // Manufacturer
-    case 2: // Product
-    {
-      char const * str = (index == 1) ? USB_MANUFACTURER : USB_PRODUCT;
+    case 1:
+      chr_count = strcpy_uni16(USBDevice.getManufacturerDescriptor(), _desc_str + 1, 32);
+    break;
 
-      // cap at max char
-      chr_count = strlen(str);
-      if ( chr_count > 32 ) chr_count = 32;
-
-      for(uint8_t i=0; i<chr_count; i++)
-      {
-        _desc_str[1+i] = str[i];
-      }
-    }
+    case 2:
+      chr_count = strcpy_uni16(USBDevice.getProductDescriptor(), _desc_str + 1, 32);
     break;
 
     case 3:
@@ -198,8 +307,8 @@ uint16_t const* tud_descriptor_string_cb(uint8_t index)
     default: return NULL;
   }
 
-  // first byte is len, second byte is string type
-  _desc_str[0] = TUD_DESC_STR_HEADER(chr_count);
+  // first byte is length (including header), second byte is string type
+  _desc_str[0] = (TUSB_DESC_STRING << 8 ) | (2*chr_count + 2);
 
   return _desc_str;
 }

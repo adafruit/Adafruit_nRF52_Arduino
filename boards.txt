@@ -40,11 +40,11 @@ feather52832.build.f_cpu=64000000
 feather52832.build.board=NRF52832_FEATHER
 feather52832.build.core=nRF5
 feather52832.build.variant=feather_nrf52832
-feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52 -DARDUINO_NRF52_FEATHER
+feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
 feather52832.build.ldscript=nrf52832_s132_v6.ld
 
 # SofDevice Menu
-feather52832.menu.softdevice.s132v6=0.2.11 SoftDevice s132 6.1.1
+feather52832.menu.softdevice.s132v6=0.2.13 SoftDevice s132 6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_fwid=0x00B7
@@ -91,13 +91,13 @@ feather52840.build.core=nRF5
 feather52840.build.variant=feather_nrf52840_express
 feather52840.build.usb_manufacturer="Adafruit LLC"
 feather52840.build.usb_product="Feather nRF52840 Express"
-feather52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_FEATHER {build.flags.usb}
+feather52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 feather52840.build.ldscript=nrf52840_s140_v6.ld
 feather52840.build.vid=0x239A
 feather52840.build.pid=0x8029
 
 # SofDevice Menu
-feather52840.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+feather52840.menu.softdevice.s140v6=0.2.13 SoftDevice s140 6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -166,6 +166,59 @@ itsybitsy52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 itsybitsy52840.menu.debug.l3=Level 3 (Segger SystemView)
 itsybitsy52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 
+# ---------------------------------------------
+# Bluefruit Circuit Playground nRF52840 Express
+# ---------------------------------------------
+cplaynrf52840.name=Adafruit Circuit Playground Bluefruit
+
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+cplaynrf52840.vid.0=0x239A
+cplaynrf52840.pid.0=0x8045
+cplaynrf52840.vid.1=0x239A
+cplaynrf52840.pid.1=0x0045
+cplaynrf52840.vid.2=0x239A
+cplaynrf52840.pid.2=0x0046
+cplaynrf52840.vid.3=0x239A
+cplaynrf52840.pid.3=0x8046
+
+# Upload
+cplaynrf52840.bootloader.tool=bootburn
+cplaynrf52840.upload.tool=nrfutil
+cplaynrf52840.upload.protocol=nrfutil
+cplaynrf52840.upload.use_1200bps_touch=true
+cplaynrf52840.upload.wait_for_upload_port=true
+cplaynrf52840.upload.maximum_size=815104
+cplaynrf52840.upload.maximum_data_size=248832
+
+# Build
+cplaynrf52840.build.mcu=cortex-m4
+cplaynrf52840.build.f_cpu=64000000
+cplaynrf52840.build.board=NRF52840_CIRCUITPLAY
+cplaynrf52840.build.core=nRF5
+cplaynrf52840.build.variant=circuitplayground_nrf52840
+cplaynrf52840.build.usb_manufacturer="Adafruit LLC"
+cplaynrf52840.build.usb_product="Adafruit Circuit Playground Bluefruit"
+cplaynrf52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+cplaynrf52840.build.ldscript=nrf52840_s140_v6.ld
+cplaynrf52840.build.vid=0x239A
+cplaynrf52840.build.pid=0x8045
+
+# SofDevice Menu
+cplaynrf52840.menu.softdevice.s140v6=0.2.13 SoftDevice s140 6.1.1
+cplaynrf52840.menu.softdevice.s140v6.build.sd_name=s140
+cplaynrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
+cplaynrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+cplaynrf52840.menu.debug.l0=Level 0 (Release)
+cplaynrf52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+cplaynrf52840.menu.debug.l1=Level 1 (Error Message)
+cplaynrf52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+cplaynrf52840.menu.debug.l2=Level 2 (Full Debug)
+cplaynrf52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+cplaynrf52840.menu.debug.l3=Level 3 (Segger SystemView)
+cplaynrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
 # ----------------------------------
 # Bluefruit Metro nRF52840 Express
 # ----------------------------------
@@ -198,13 +251,13 @@ metro52840.build.core=nRF5
 metro52840.build.variant=metro_nrf52840_express
 metro52840.build.usb_manufacturer="Adafruit LLC"
 metro52840.build.usb_product="Metro nRF52840 Express"
-metro52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_FEATHER {build.flags.usb}
+metro52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 metro52840.build.ldscript=nrf52840_s140_v6.ld
 metro52840.build.vid=0x239A
 metro52840.build.pid=0x803F
 
 # SofDevice Menu
-metro52840.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+metro52840.menu.softdevice.s140v6=0.2.13 SoftDevice s140 6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_name=s140
 metro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -222,7 +275,7 @@ metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 # ----------------------------------
 # Nordic nRF52840DK (PCA10056)
 # ----------------------------------
-pca10056.name=Noridc nRF52840DK (PCA10056)
+pca10056.name=Nordic nRF52840DK (PCA10056)
 pca10056.bootloader.tool=bootburn
 
 # Upload
@@ -247,7 +300,7 @@ pca10056.build.vid=0x239A
 pca10056.build.pid=0x8029
 
 # SofDevice Menu
-pca10056.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+pca10056.menu.softdevice.s140v6=0.2.13 SoftDevice s140 6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_fwid=0x00B6

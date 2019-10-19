@@ -27,7 +27,7 @@
 #include <bluefruit.h>
 
 /*------------- OLED and Buttons -------------*/
-#if defined ARDUINO_NRF52_FEATHER
+#if defined ARDUINO_NRF52832_FEATHER
 // Feather nRF52832
 #define BUTTON_A    31
 #define BUTTON_B    30
@@ -39,14 +39,17 @@
 #define BUTTON_B    6
 #define BUTTON_C    5
 
+#elif defined ARDUINO_NRF52840_CIRCUITPLAY
+// Circuit Playground nRF52840 - FYI doesnt work probably because of button polarity!
+#define BUTTON_A    4 // left button
+#define BUTTON_B    7 // center switch
+#define BUTTON_C    5 // right button
+
 #else
 #error board not supported
 #endif
 
-
-#define OLED_RESET 4 // TODO remove ?
-Adafruit_SSD1306 oled(OLED_RESET);
-
+Adafruit_SSD1306 oled(-1);
 
 /*------------- Notification List -------------*/
 #define MAX_COUNT   20
@@ -454,3 +457,4 @@ uint32_t readPressedButtons(void)
 
   return result;
 }
+

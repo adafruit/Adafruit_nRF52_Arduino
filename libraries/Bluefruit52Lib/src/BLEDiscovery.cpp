@@ -84,7 +84,7 @@ bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLEClientService& svc,
   // timeout or has no data (due to GATT Error)
   if ( bytecount <= 0 )
   {
-    LOG_LV1("DISC", "[SVC] timeout or error", start_handle);
+    LOG_LV1("DISC", "[SVC] timeout or error %ud", start_handle);
     return false;
   }
 

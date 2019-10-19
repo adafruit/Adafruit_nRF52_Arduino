@@ -179,7 +179,7 @@ const char* dbg_strerr_lfs (int32_t err)
 
     default:
       static char errcode[10];
-      sprintf(errcode, "%d", err);
+      sprintf(errcode, "%ld", err);
       return errcode;
   }
 

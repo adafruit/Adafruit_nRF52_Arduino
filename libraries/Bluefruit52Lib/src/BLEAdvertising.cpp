@@ -340,19 +340,18 @@ bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
   // ADV Params
   ble_gap_adv_params_t adv_para =
   {
-      .properties = {
-          .type       = _type,
-          .anonymous  = 0
-      },
-      .p_peer_addr    = NULL               , // Undirected advertisement
-      .interval       = interval           , // advertising interval (in units of 0.625 ms)
-      .duration       = (uint16_t) (timeout*100), // in 10-ms unit
+    .properties    = { .type = _type, .anonymous  = 0 },
+    .p_peer_addr   = NULL                     , // Undirected advertisement
+    .interval      = interval                 , // advertising interval (in units of 0.625 ms)
+    .duration      = (uint16_t) (timeout*100) , // in 10-ms unit
 
-      .max_adv_evts   = 0, // TODO can be used for fast/slow mode
-      .channel_mask   = { 0, 0, 0, 0, 0 }  , // 40 channel, set 1 to disable
-      .filter_policy  = BLE_GAP_ADV_FP_ANY ,
+    .max_adv_evts  = 0                        , // TODO can be used for fast/slow mode
+    .channel_mask  = { 0, 0, 0, 0, 0 }        , // 40 channel, set 1 to disable
+    .filter_policy = BLE_GAP_ADV_FP_ANY       ,
 
-      //.primary_phy, .secondary_phy, .set_id, .scan_req_notification
+    .primary_phy   = BLE_GAP_PHY_AUTO         , // 1 Mbps will be used
+    .secondary_phy = BLE_GAP_PHY_AUTO         , // 1 Mbps will be used
+      // , .set_id, .scan_req_notification
   };
 
   // gap_adv long-live is required by SD v6
