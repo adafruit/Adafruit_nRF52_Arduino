@@ -1,5 +1,24 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.14.5 - 2019.10.21
+
+- Added Itsy nRF52840 Express support
+- Replace legacy SPI by SPIM3 with maximum 32Mhz for nRF52840
+- Added support for 2nd I2C interface aka Wire1
+- Macro defines clean up
+  - remove ARDUINO_FEATHER52
+  - remove ARDUINO_NRF52_FEATHER use either ARDUINO_NRF52832_FEATHER or ARDUINO_NRF52840_FEATHER
+  - use ARDUINO_NRF52840_CIRCUITPLAY for Circuit Playground Bluefruit
+- ARDUINO_NRF52840_CIRCUITPLAY defined for circuit playground bluefruit
+- Updated nrfx module to 1.7.2
+- Fixed more warnings. better describe flash caching, PR #347 thanks to @henrygab
+- Improve tinyUSB thanks to @kaysievers
+  - Fixed warnings
+  - Allows configuration of power setting
+  - Allows to set USB Manufacturer/product ID
+  - Allow to set configuration descriptor buffer
+- Fixed missing bootloader binaries
+
 ## 0.14.0 - 2019.09.27
 
 - Core
