@@ -113,6 +113,59 @@ feather52840.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 
 
+# ----------------------------------
+# Bluefruit ItsyBitsy nRF52840 Express
+# ----------------------------------
+itsybitsy52840.name=Adafruit ItsyBitsy nRF52840 Express
+
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+itsybitsy52840.vid.0=0x239A
+itsybitsy52840.pid.0=0x8051
+itsybitsy52840.vid.1=0x239A
+itsybitsy52840.pid.1=0x0051
+itsybitsy52840.vid.2=0x239A
+itsybitsy52840.pid.2=0x0052
+itsybitsy52840.vid.3=0x239A
+itsybitsy52840.pid.3=0x8052
+
+# Upload
+itsybitsy52840.bootloader.tool=bootburn
+itsybitsy52840.upload.tool=nrfutil
+itsybitsy52840.upload.protocol=nrfutil
+itsybitsy52840.upload.use_1200bps_touch=true
+itsybitsy52840.upload.wait_for_upload_port=true
+itsybitsy52840.upload.maximum_size=815104
+itsybitsy52840.upload.maximum_data_size=248832
+
+# Build
+itsybitsy52840.build.mcu=cortex-m4
+itsybitsy52840.build.f_cpu=64000000
+itsybitsy52840.build.board=NRF52840_ITSYBITSY
+itsybitsy52840.build.core=nRF5
+itsybitsy52840.build.variant=itsybitsy_nrf52840_express
+itsybitsy52840.build.usb_manufacturer="Adafruit LLC"
+itsybitsy52840.build.usb_product="ItsyBitsy nRF52840 Express"
+itsybitsy52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_ITSYBITSY {build.flags.usb}
+itsybitsy52840.build.ldscript=nrf52840_s140_v6.ld
+itsybitsy52840.build.vid=0x239A
+itsybitsy52840.build.pid=0x8051
+
+# SofDevice Menu
+itsybitsy52840.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+itsybitsy52840.menu.softdevice.s140v6.build.sd_name=s140
+itsybitsy52840.menu.softdevice.s140v6.build.sd_version=6.1.1
+itsybitsy52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+itsybitsy52840.menu.debug.l0=Level 0 (Release)
+itsybitsy52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+itsybitsy52840.menu.debug.l1=Level 1 (Error Message)
+itsybitsy52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+itsybitsy52840.menu.debug.l2=Level 2 (Full Debug)
+itsybitsy52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+itsybitsy52840.menu.debug.l3=Level 3 (Segger SystemView)
+itsybitsy52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
 # ---------------------------------------------
 # Bluefruit Circuit Playground nRF52840 Express
 # ---------------------------------------------
@@ -165,7 +218,6 @@ cplaynrf52840.menu.debug.l2=Level 2 (Full Debug)
 cplaynrf52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 cplaynrf52840.menu.debug.l3=Level 3 (Segger SystemView)
 cplaynrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
-
 
 # ----------------------------------
 # Bluefruit Metro nRF52840 Express
