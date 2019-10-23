@@ -32,7 +32,7 @@ feather52832.upload.use_1200bps_touch=false
 feather52832.upload.wait_for_upload_port=false
 feather52832.upload.native_usb=false
 feather52832.upload.maximum_size=290816
-feather52832.upload.maximum_data_size=51072
+feather52832.upload.maximum_data_size=52224
 
 # Build
 feather52832.build.mcu=cortex-m4
