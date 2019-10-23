@@ -40,19 +40,25 @@
    #define TFT_CS   9
 #endif
 
+// Circuit Playground Bluefruit for use with TFT 1.5" GIZMO
 #ifdef ARDUINO_NRF52840_CIRCUITPLAY
-   #define TFT_DC   A7
-   #define TFT_CS   A6
+   #define TFT_DC         1
+   #define TFT_CS         0
+   #define TFT_BACKLIGHT  A3
 #endif
 
 #if   TFT_IN_USE == TFT_35_FEATHERWING
   #include "Adafruit_HX8357.h"
   Adafruit_HX8357 tft = Adafruit_HX8357(TFT_CS, TFT_DC);
+  
 #elif TFT_IN_USE == TFT_24_FEATHERWING
   #include <Adafruit_ILI9341.h>
   Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+  
 #elif TFT_IN_USE == TFT_15_GIZMO
-  #error "Not supported yet"
+  #include "Adafruit_ST7789.h"
+  Adafruit_ST7789 tft = Adafruit_ST7789(&SPI, TFT_CS, TFT_DC, -1);
+  
 #else
   #error "TFT display is not supported"
 #endif
@@ -99,7 +105,17 @@ void setup()
 {
   Serial.begin(115200);
 
+#if TFT_IN_USE == TFT_15_GIZMO
+  tft.init(240, 240);
+  tft.setRotation(2);
+  pinMode(TFT_BACKLIGHT, OUTPUT);
+  digitalWrite(TFT_BACKLIGHT, HIGH); // Backlight on
+
+#else
   tft.begin();
+
+#endif
+  
   tft.fillScreen(COLOR_BLACK);
   tft.setTextColor(COLOR_WHITE);
   tft.setTextSize(1);
