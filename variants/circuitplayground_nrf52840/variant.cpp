@@ -69,7 +69,8 @@ const uint32_t g_ADigitalPinMap[] =
   32,  // D33 is P1.00 (QSPI Data 2)
   22,  // D34 is P0.22 (QSPI Data 3)
 
-
+  // D35 power switch
+   6,  // D36  is P0.06 (NeoPixel / Sensor switch)
 };
 
 void initVariant()
