@@ -1,5 +1,10 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.14.6 - 2019.10.30
+
+- Added power switch pin for Circuit Playground Bluefruit
+- Make min/max templates
+
 ## 0.14.5 - 2019.10.21
 
 - Added Itsy nRF52840 Express support
