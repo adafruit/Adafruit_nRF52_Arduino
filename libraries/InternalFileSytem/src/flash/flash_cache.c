@@ -22,11 +22,61 @@
  * THE SOFTWARE.
  */
 
+#include <FreeRTOS.h>
+#include <semphr.h> // This ties to FreeRTOS ... used to serialize flash access
+
+#include "flash_nrf5x.h"
+#include "flash_cache.h"
+#include "nrf_sdm.h"
+#include "nrf_soc.h"
+#include "delay.h"
+#include "rtos.h"
+
+
 #include <string.h>
 #include "flash_cache.h"
 #include "common_func.h"
 #include "variant.h"
 #include "wiring_digital.h"
+
+
+
+static volatile SemaphoreHandle_t _serializeFlashAccess = NULL;
+
+static inline void EnsureSemaphoreInitialized()
+{
+  // once the value is non-null, no synchronization required
+  while (NULL == _serializeFlashAccess)
+  {
+    SemaphoreHandle_t newSemaphore = xSemaphoreCreateRecursiveMutex();
+    if (NULL == newSemaphore)
+    {
+      LOG_LV2("IFLASH", "Unable to allocate semaphore for InternalFS ... will retry");
+      delay(1);
+    }
+    // want one, and exactly one, semaphore to be stored in the global
+    // if multiple initializations, only one will replace a NULL value
+    // note that this atomic intrinsic has built-in memory barrier semantics
+    (void)__sync_bool_compare_and_swap(&_serializeFlashAccess, NULL, newSemaphore);
+  }
+}
+static inline void TakeMutex()
+{
+  EnsureSemaphoreInitialized();
+  if (pdTRUE == xSemaphoreTakeRecursive(_serializeFlashAccess, 0)) {
+    return;
+  }
+  LOG_LV2("IFLASH", "Blocked parallel write attempt ... waiting for mutex");
+  while (pdTRUE != xSemaphoreTakeRecursive(_serializeFlashAccess,  portMAX_DELAY))
+  {
+    // nothing
+  }
+}
+static inline void ReleaseMutex()
+{
+  xSemaphoreGiveRecursive(_serializeFlashAccess);
+}
+
 
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
@@ -43,6 +93,8 @@ static inline uint32_t page_offset_of (uint32_t addr)
 
 int flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, uint32_t len)
 {
+  TakeMutex();
+
   uint8_t const * src8 = (uint8_t const *) src;
   uint32_t remain = len;
 
@@ -73,12 +125,19 @@ int flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, uint32
     dst += wr_bytes;
   }
 
+  ReleaseMutex();
   return len - remain;
 }
 
 void flash_cache_flush (flash_cache_t* fc)
 {
-  if ( fc->cache_addr == FLASH_CACHE_INVALID_ADDR ) return;
+  TakeMutex();
+
+  if ( fc->cache_addr == FLASH_CACHE_INVALID_ADDR )
+  {
+    ReleaseMutex();
+    return;
+  }
 
   // skip erase & program if verify() exists, and memory matches
   if ( !(fc->verify && fc->verify(fc->cache_addr, fc->cache_buf, FLASH_CACHE_SIZE)) )
@@ -97,6 +156,7 @@ void flash_cache_flush (flash_cache_t* fc)
 
 int flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t count)
 {
+  TakeMutex();
   // there is no check for overflow / wraparound for dst + count, addr + count.
   // this might be a useful thing to add for at least debug builds.
 
@@ -198,6 +258,7 @@ int flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t coun
     // not using the cache, so just forward to read from flash
     fc->read(dst, addr, count);
   }
+  ReleaseMutex();
 
   return (int) count;
 }
