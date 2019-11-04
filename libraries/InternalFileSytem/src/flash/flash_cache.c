@@ -48,7 +48,7 @@ static inline void EnsureFlashCacheSemaphoreInitialized()
   // once the value is non-null, no synchronization required
   while (NULL == _serializeFlashAccess)
   {
-    SemaphoreHandle_t newSemaphore = xSemaphoreCreateRecursiveMutex();
+    SemaphoreHandle_t newSemaphore = xSemaphoreCreateMutex();
     if (NULL == newSemaphore)
     {
       LOG_LV2("IFLASH", "Unable to allocate semaphore for InternalFS ... will retry");
@@ -57,24 +57,28 @@ static inline void EnsureFlashCacheSemaphoreInitialized()
     // want one, and exactly one, semaphore to be stored in the global
     // if multiple initializations, only one will replace a NULL value
     // note that this atomic intrinsic has built-in memory barrier semantics
-    (void)__sync_bool_compare_and_swap(&_serializeFlashAccess, NULL, newSemaphore);
+    if (!__sync_bool_compare_and_swap(&_serializeFlashAccess, NULL, newSemaphore))
+    {
+      // someone else created and stored a semaphore in this tiny time window
+      vSemaphoreDelete(newSemaphore);
+    }
   }
 }
 static inline void TakeFlashCacheSerialization()
 {
   EnsureFlashCacheSemaphoreInitialized();
-  if (pdTRUE == xSemaphoreTakeRecursive(_serializeFlashAccess, 0)) {
+  if (pdTRUE == xSemaphoreTake(_serializeFlashAccess, 0)) {
     return;
   }
   LOG_LV2("IFLASH", "Blocked parallel write attempt ... waiting for mutex");
-  while (pdTRUE != xSemaphoreTakeRecursive(_serializeFlashAccess,  portMAX_DELAY))
+  while (pdTRUE != xSemaphoreTake(_serializeFlashAccess,  portMAX_DELAY))
   {
     // nothing
   }
 }
 static inline void ReleaseFlashCacheSerialization()
 {
-  xSemaphoreGiveRecursive(_serializeFlashAccess);
+  xSemaphoreGive(_serializeFlashAccess);
 }
 
 
