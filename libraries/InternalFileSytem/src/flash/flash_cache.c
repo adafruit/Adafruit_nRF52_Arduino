@@ -43,7 +43,7 @@
 
 static volatile SemaphoreHandle_t _serializeFlashAccess = NULL;
 
-static inline void EnsureSemaphoreInitialized()
+static inline void EnsureFlashCacheSemaphoreInitialized()
 {
   // once the value is non-null, no synchronization required
   while (NULL == _serializeFlashAccess)
@@ -60,9 +60,9 @@ static inline void EnsureSemaphoreInitialized()
     (void)__sync_bool_compare_and_swap(&_serializeFlashAccess, NULL, newSemaphore);
   }
 }
-static inline void TakeMutex()
+static inline void TakeFlashCacheSerialization()
 {
-  EnsureSemaphoreInitialized();
+  EnsureFlashCacheSemaphoreInitialized();
   if (pdTRUE == xSemaphoreTakeRecursive(_serializeFlashAccess, 0)) {
     return;
   }
@@ -72,7 +72,7 @@ static inline void TakeMutex()
     // nothing
   }
 }
-static inline void ReleaseMutex()
+static inline void ReleaseFlashCacheSerialization()
 {
   xSemaphoreGiveRecursive(_serializeFlashAccess);
 }
@@ -93,7 +93,7 @@ static inline uint32_t page_offset_of (uint32_t addr)
 
 int flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, uint32_t len)
 {
-  TakeMutex();
+  TakeFlashCacheSerialization();
 
   uint8_t const * src8 = (uint8_t const *) src;
   uint32_t remain = len;
@@ -125,17 +125,17 @@ int flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, uint32
     dst += wr_bytes;
   }
 
-  ReleaseMutex();
+  ReleaseFlashCacheSerialization();
   return len - remain;
 }
 
 void flash_cache_flush (flash_cache_t* fc)
 {
-  TakeMutex();
+  TakeFlashCacheSerialization();
 
   if ( fc->cache_addr == FLASH_CACHE_INVALID_ADDR )
   {
-    ReleaseMutex();
+    ReleaseFlashCacheSerialization();
     return;
   }
 
@@ -152,11 +152,12 @@ void flash_cache_flush (flash_cache_t* fc)
   }
 
   fc->cache_addr = FLASH_CACHE_INVALID_ADDR;
+  ReleaseFlashCacheSerialization();
 }
 
 int flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t count)
 {
-  TakeMutex();
+  TakeFlashCacheSerialization();
   // there is no check for overflow / wraparound for dst + count, addr + count.
   // this might be a useful thing to add for at least debug builds.
 
@@ -258,7 +259,7 @@ int flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t coun
     // not using the cache, so just forward to read from flash
     fc->read(dst, addr, count);
   }
-  ReleaseMutex();
+  ReleaseFlashCacheSerialization();
 
   return (int) count;
 }
