@@ -5,8 +5,14 @@ git:
   quiet: true
 
 env:
-  - BSP_PATH="$HOME/.arduino15/packages/adafruit/hardware/nrf52"
-  
+  global:
+    - BSP_PATH="$HOME/.arduino15/packages/adafruit/hardware/nrf52"
+  jobs:
+    # Split into one job per board (aka variant)
+    - VARIANT="feather52840"
+    - VARIANT="cplaynrf52840"
+    - VARIANT="feather52832"
+    
 addons:
   apt:
     packages:
