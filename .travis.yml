@@ -1,3 +1,4 @@
+sudo: required
 language: c
 dist: xenial
 git:
@@ -8,10 +9,28 @@ env:
   global:
     - BSP_PATH="$HOME/.arduino15/packages/adafruit/hardware/nrf52"
   jobs:
-    # Split into one job per board (aka variant)
-    - VARIANT="feather52840"
-    - VARIANT="cplaynrf52840"
-    - VARIANT="feather52832"
+    # empty env required, else allow_failures will SILENTY IGNORE matching against env...
+    -
+
+jobs:
+  fast_finish: true
+  include:
+    - name: "Feather 52840"
+      env:  VARIANT="feather52840"
+    - name: "Feather 52840 (All warnings)"
+      env:  ALL_WARNINGS="true" VARIANT="feather52840"
+    - name: "Circuit Playground 52840"
+      env:  VARIANT="cplaynrf52840"
+    - name: "Circuit Playground 52840 (All warnings)"
+      env:  ALL_WARNINGS="true" VARIANT="cplaynrf52840"
+    - name: "Feather 52832"
+      env:  VARIANT="feather52832"
+    - name: "Feather 52832 (All warnings)"
+      env:  ALL_WARNINGS="true" VARIANT="feather52832"
+  allow_failures:
+    - env:  ALL_WARNINGS="true" VARIANT="feather52840"
+    - env:  ALL_WARNINGS="true" VARIANT="cplaynrf52840"
+    - env:  ALL_WARNINGS="true" VARIANT="feather52832"
     
 addons:
   apt:
@@ -34,6 +53,17 @@ install:
   - rm -r $BSP_PATH/*
   - ln -s $TRAVIS_BUILD_DIR $BSP_PATH/$BSP_VERSION
   - arduino --install-library "Adafruit NeoPixel","Adafruit NeoMatrix","Adafruit GFX Library","Adafruit SSD1306","MIDI Library","Adafruit ILI9341","Adafruit HX8357 Library"
+  # TODO: find way to filter out the noisy mDNS output from arduino IDE...
+  # See https://forum.arduino.cc/index.php?topic=469428.0
+  # See https://github.com/per1234/arduino-ci-script/issues/1
+  # Arduino IDE adds a lot of noise caused by network traffic (mDNS?)
+  # The following lines attempt to firewall it to prevent polluted error logs....
+  - sudo iptables -P INPUT DROP
+  - sudo iptables -P FORWARD DROP
+  - sudo iptables -P OUTPUT ACCEPT
+  - sudo iptables -A INPUT -i lo -j ACCEPT
+  - sudo iptables -A OUTPUT -o lo -j ACCEPT
+  - sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 before_script:
   
