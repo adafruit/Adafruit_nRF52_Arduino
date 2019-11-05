@@ -103,14 +103,14 @@ def build_examples(variant):
 
         print((build_format + '| {:5.2f}s |').format(sketch.split(os.path.sep)[1], os.path.basename(sketch), success, build_duration))
 
-        if build_result.returncode != 0:
-            print(build_result.stdout.decode("utf-8"))
-            if (build_result.stderr):
-                print(build_result.stderr.decode("utf-8"))
-
-        if len(warningLines) != 0:
-            for line in warningLines:
-                print(line)
+        if success != "skipped":
+            if build_result.returncode != 0:
+                print(build_result.stdout.decode("utf-8"))
+                if (build_result.stderr):
+                    print(build_result.stderr.decode("utf-8"))
+            if len(warningLines) != 0:
+                for line in warningLines:
+                    print(line)
 
         if travis:
             print('travis_fold:end:build-{}\\r'.format(sketch))
