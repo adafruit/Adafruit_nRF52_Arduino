@@ -65,8 +65,23 @@ def build_examples(variant):
 
 build_time = time.monotonic()
 
-for var in variants_dict:
-    build_examples(var)
+ENV_VARIABLE_NAME = 'VARIANT'
+
+# build only one variant if the environment variable is specified
+if (ENV_VARIABLE_NAME in os.environ):
+    variant = os.environ.get(ENV_VARIABLE_NAME)
+    # only use the environment variable if the variant exists in the dictionary
+    if (variant in variants_dict):
+        build_examples(variant)
+    else:
+        print('\033[31failed\033[0m - invalid variant name "{}"'.format(variant))
+        fail_count += 1
+        exit_status = -1
+
+else: # no environment variable specified, so build all variants
+    for var in variants_dict:
+        build_examples(var)
+
 
 print(build_separator)
 build_time = time.monotonic() - build_time
