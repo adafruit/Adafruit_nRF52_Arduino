@@ -60,6 +60,8 @@
 #include "services/BLEMidi.h"
 #include "services/EddyStone.h"
 
+#include "services/BLEAdafruitTemperature.h"
+
 #include "clients/BLEAncs.h"
 #include "clients/BLEClientUart.h"
 #include "clients/BLEClientDis.h"
