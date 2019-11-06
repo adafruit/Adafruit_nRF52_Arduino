@@ -61,6 +61,7 @@
 #include "services/EddyStone.h"
 
 #include "services/BLEAdafruitTemperature.h"
+#include "services/BLEAdafruitNeopixel.h"
 
 #include "clients/BLEAncs.h"
 #include "clients/BLEClientUart.h"

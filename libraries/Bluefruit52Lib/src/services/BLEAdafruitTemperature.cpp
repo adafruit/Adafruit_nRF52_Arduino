@@ -24,16 +24,14 @@
 
 #include "bluefruit.h"
 
-#include "BLEAdafruitTemperature.h"
-
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
 
 /* Adafruit Temperature Service
- * - Service: 20E6-0001-C332-42A8-93BD-25E905756CB8
- * - Temperature Celsius  : 0x2A6E
- * - Measurement Interval : 0x2A21
+ * - Service: ADAF-0001-C332-42A8-93BD-25E905756CB8
+ *    - Temperature Celsius  : 0x2A6E
+ *    - Measurement Interval : 0x2A21
  *
  * https://www.bluetooth.com/wp-content/uploads/Sitecore-Media-Library/Gatt/Xml/Characteristics/org.bluetooth.characteristic.temperature.xml
  * https://www.bluetooth.com/wp-content/uploads/Sitecore-Media-Library/Gatt/Xml/Characteristics/org.bluetooth.characteristic.measurement_interval.xml
@@ -42,7 +40,7 @@
 const uint8_t BLEAdafruitTemperature::UUID128_SERVICE[16] =
 {
   0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
-  0xA8, 0x42, 0x32, 0xC3, 0x01, 0x00, 0xE6, 0x20
+  0xA8, 0x42, 0x32, 0xC3, 0x01, 0x00, 0xAF, 0xAD
 };
 
 // Constructor
