@@ -62,6 +62,7 @@
 
 #include "services/BLEAdafruitTemperature.h"
 #include "services/BLEAdafruitNeopixel.h"
+#include "services/BLEAdafruitAccel.h"
 
 #include "clients/BLEAncs.h"
 #include "clients/BLEClientUart.h"

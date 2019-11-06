@@ -122,7 +122,10 @@ static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
     LOG_LV1("SD Err", "assert at %s : %d", assert_info->p_file_name, assert_info->line_num);
   }
 
-  while(1) { }
+  while(1)
+  {
+    yield();
+  }
 #endif
 }
 

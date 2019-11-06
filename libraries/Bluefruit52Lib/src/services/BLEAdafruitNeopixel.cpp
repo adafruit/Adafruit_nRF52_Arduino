@@ -29,7 +29,7 @@
 //--------------------------------------------------------------------+
 
 
-//------------- IMPLEMENTATION -------------//
+
 /* Adafruit NeoPixel Service
  * - Service: ADAF-0002-C332-42A8-93BD-25E905756CB8
  *    - Count : ADAF-0003-C332-42A8-93BD-25E905756CB8
@@ -92,7 +92,10 @@ err_t BLEAdafruitNeopixel::begin (void)
   // Add Characteristic
   Data.setProperties(CHR_PROPS_WRITE);
   Data.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
-  Data.setMaxLen(Bluefruit.getMaxMtu(BLE_GAP_ROLE_PERIPH));
+  // Change to use VLOC STACK to USER due to lack of memroy
+  // Data.setMaxLen(Bluefruit.getMaxMtu(BLE_GAP_ROLE_PERIPH));
+  Data.setMaxLen(20);
+
   Data.setUserDescriptor("Data");
   VERIFY_STATUS( Data.begin() );
 
