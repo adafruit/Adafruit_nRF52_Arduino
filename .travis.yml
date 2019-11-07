@@ -45,7 +45,6 @@ addons:
 install:
   # Filter only mDNS / Bonjour traffic
   - sudo iptables --insert INPUT  --jump DROP --protocol udp --dport 5353  -m comment --comment "silently drop all 5353/udp input"
-  - sudo iptables --insert OUTPUT --jump DROP --protocol udp --dport 5353  -m comment --comment "silently drop all 5353/udp output"
   - sudo iptables --insert INPUT  --jump DROP --destination 224.0.0.251    -m comment --comment "silently drop all mDNS ipv4 broadcast"
   #- sudo iptables --insert INPUT  --jump DROP --destination FF02::FB       -m comment --comment "silently drop all mDNS ipv6 broadcast"
   # Hopefully, the above is enough to prevent arduino dumpings tons of mDNS messages to the log
