@@ -19,14 +19,14 @@ jobs:
       env:  VARIANT="feather52840"
     - name: "Feather 52840 (All warnings)"
       env:  ALL_WARNINGS="true" VARIANT="feather52840"
-    - name: "Circuit Playground 52840"
-      env:  VARIANT="cplaynrf52840"
-    - name: "Circuit Playground 52840 (All warnings)"
-      env:  ALL_WARNINGS="true" VARIANT="cplaynrf52840"
-    - name: "Feather 52832"
-      env:  VARIANT="feather52832"
-    - name: "Feather 52832 (All warnings)"
-      env:  ALL_WARNINGS="true" VARIANT="feather52832"
+    #- name: "Circuit Playground 52840"
+    #  env:  VARIANT="cplaynrf52840"
+    #- name: "Circuit Playground 52840 (All warnings)"
+    #  env:  ALL_WARNINGS="true" VARIANT="cplaynrf52840"
+    #- name: "Feather 52832"
+    #  env:  VARIANT="feather52832"
+    #- name: "Feather 52832 (All warnings)"
+    #  env:  ALL_WARNINGS="true" VARIANT="feather52832"
   allow_failures:
     - env:  ALL_WARNINGS="true" VARIANT="feather52840"
     - env:  ALL_WARNINGS="true" VARIANT="cplaynrf52840"
@@ -43,6 +43,12 @@ addons:
       confinement: classic
 
 install:
+  # Filter only mDNS / Bonjour traffic
+  - sudo iptables --insert INPUT  --jump DROP --protocol udp --dport 5353  -m comment --comment "silently drop all 5353/udp input"
+  - sudo iptables --insert OUTPUT --jump DROP --protocol udp --dport 5353  -m comment --comment "silently drop all 5353/udp output"
+  - sudo iptables --insert INPUT  --jump DROP --destination 224.0.0.251    -m comment --comment "silently drop all mDNS ipv4 broadcast"
+  - sudo iptables --insert INPUT  --jump DROP --destination FF02::FB       -m comment --comment "silently drop all mDNS ipv6 broadcast"
+  # Hopefully, the above is enough to prevent arduino dumpings tons of mDNS messages to the log
   - pip3 install --user adafruit-nrfutil
   - umake electronics arduino $HOME/arduino_ide
   - export PATH=$HOME/arduino_ide:$PATH
@@ -53,11 +59,6 @@ install:
   - rm -r $BSP_PATH/*
   - ln -s $TRAVIS_BUILD_DIR $BSP_PATH/$BSP_VERSION
   - arduino --install-library "Adafruit NeoPixel","Adafruit NeoMatrix","Adafruit GFX Library","Adafruit SSD1306","MIDI Library","Adafruit ILI9341","Adafruit HX8357 Library"
-  # Filter only mDNS / Bonjour traffic
-  - sudo iptables --insert INPUT  --jump DROP --protocol udp --dport 5353  -m comment --comment "silently drop all 5353/udp input"
-  - sudo iptables --insert OUTPUT --jump DROP --protocol udp --dport 5353  -m comment --comment "silently drop all 5353/udp output"
-  - sudo iptables --insert INPUT  --jump DROP --destination 224.0.0.251    -m comment --comment "silently drop all mDNS ipv4 broadcast"
-  - sudo iptables --insert INPUT  --jump DROP --destination FF02::FB       -m comment --comment "silently drop all mDNS ipv6 broadcast"
 
 before_script:
   
