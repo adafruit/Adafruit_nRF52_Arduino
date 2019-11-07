@@ -22,22 +22,60 @@ BLEDis  bledis;  // device information
 BLEUart bleuart; // uart over ble
 BLEBas  blebas;  // battery
 
-// Base UUID : ADAF0000-C332-42A8-93BD-25E905756CB8
-
-/* CPB Temperature
- * - Service: ADAF-0001-C332-42A8-93BD-25E905756CB8
- * - Temperature Celsius  : 0x2A6E
- * - Measurement Interval : 0x2A21
+/* All Adafruit Service/Characteristic UUID128 share the same
+ * Base UUID : ADAF0000-C332-42A8-93BD-25E905756CB8
+ *
+ * Temperature service    0100
+ *  - Temperature         0101 | float    | Read + Notify | degree in Celsius
+ *  - Measurement Period  0001 | uint32_t | Read + Write
+ *
+ * Accelerometer service  0200
+ *  - Accel Data          0201 | float (x, y, z) | Read + Notify | accel x, y, z
+ *  - Measurement Period  0001 | uint32_t | Read + Write
+ *
+ * Light sensor service   0300
+ *  - Light Data          0301 | uint16_t | Read + Notify
+ *  - Measurement Period  0001 | uint32_t | Read + Write
+ *
+ * Sound sensor service   0400
+ *  - Sound Data          0401 | int16_t  | Read + Notify
+ *  - Measurement Period  0001 | uint32_t | Read + Write
+ *
+ * Captouch service       0500
+ *  - Sensitivity         0501 | uint32_t | difference that Capn should report immediately
+ *  - Cap0                0510 | int32_t  | Read + Notify
+ *  - .........................
+ *  - Cap7                0517 | int32_t  | Read + Notify
+ *  - Measurement Period  0001 | uint32_t | Read + Write
+ *
+ * Button service         0600
+ *  - Button Data         0601 | uint16_t | Read + Notify | e.g (Slide sw, Left, Right)
+ *  - Measurement Period  0001 | uint32_t | Read + Write
+ *
+ * PIN I/O service        0700
+ *  - Pin Dir             0701 | uint64_t | Read + Write | bit 1 is In, 0 is Out
+ *  - Pin Data            0702 | uint64_t | Read + Write |
+ *  - PWM Control         0710 | struct { uint8_t pin, uint16_t value, uint32_t period_ms} | as microbit value is 0-1024 for duty cycle
+ *
+ * PIN Analog             0800
+ *  - A0                  0810 | uint16_t | Read + Notify
+ *    .........................
+ *  - A7                  0817 | uint16_t | Read + Notify
+ *  - Measurement Period  0001 | uint32_t | Read + Write
+ *
+ * Neopixel Service       0900
+ *   - Pixel Pin          0901 | uint8_t  | Read + Write
+ *   - Pixel Count        0902 | uint16_t | Read + Write
+ *   - Pixel Type         0903 | uint16_t | Read + Write | NEO_RGB, NEO_GRB etc ..
+ *   - Pixel Data         0904 | RGB array| Write
  */
-BLEAdafruitTemperature bleTemp;
 
 /* Adafruit NeoPixel Service
- * - Service: ADAF-0002-C332-42A8-93BD-25E905756CB8
- *    - Count : ADAF-0003-C332-42A8-93BD-25E905756CB8
- *    - Type  : ADAF-0004-C332-42A8-93BD-25E905756CB8
- *    - Data  : ADAF-0005-C332-42A8-93BD-25E905756CB8
+ * - Service: ADAF0002-C332-42A8-93BD-25E905756CB8
+ *    - Count : ADAF0003-C332-42A8-93BD-25E905756CB8
+ *    - Type  : ADAF0004-C332-42A8-93BD-25E905756CB8
+ *    - Data  : ADAF0005-C332-42A8-93BD-25E905756CB8
  */
-BLEAdafruitNeopixel bleNeopixel;
 
 /* Adafruit Accelerometer Service
  * using micro:bit Accelerometer Service definition
@@ -47,7 +85,12 @@ BLEAdafruitNeopixel bleNeopixel;
  *    - Data   : E95D-CA4B-251D-470A-A062-FA1922DFA9A8
  *    - Period : E95D-FB24-251D-470A-A062-FA1922DFA9A8
  */
+
+BLEAdafruitTemperature bleTemp;
+BLEAdafruitNeopixel bleNeopixel;
 BLEAdafruitAccel bleAccel;
+
+
  
 void setup()
 {
