@@ -128,10 +128,10 @@ BLEUuid uuid = BLEUuid(CUSTOM_UUID);
 /* This struct is used to track detected nodes */
 typedef struct node_record_s
 {
-  uint8_t addr[6];    // Six byte device address
-  int8_t  rssi;       // RSSI value
-  int32_t timestamp;  // Timestamp for invalidation purposes
-  int8_t  reserved;   // Padding for word alignment
+  uint8_t  addr[6];    // Six byte device address
+  int8_t   rssi;       // RSSI value
+  uint32_t timestamp;  // Timestamp for invalidation purposes
+  int8_t   reserved;   // Padding for word alignment
 } node_record_t;
 
 node_record_t records[ARRAY_SIZE];
@@ -530,7 +530,7 @@ int invalidateRecords(void)
   {
     if (records[i].timestamp) // Ignore zero"ed records
     {
-      if (records[i].timestamp <= millis() - TIMEOUT_MS)
+      if (millis() - records[i].timestamp >= TIMEOUT_MS)
       {
         /* Record has expired, zero it out */
         memset(&records[i], 0, sizeof(node_record_t));
