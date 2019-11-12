@@ -76,6 +76,7 @@ class BLEUuid
 // Custom UUID Service
 //--------------------------------------------------------------------+
 extern const uint8_t UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD[16];
+extern const uint8_t UUID128_CHR_ADAFRUIT_VERSION[16];
 
 /*------------------------------------------------------------------*/
 /* Service UUID
