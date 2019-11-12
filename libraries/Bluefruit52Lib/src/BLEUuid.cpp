@@ -36,13 +36,11 @@
 
 #include "BLEUuid.h"
 
-//void reverse_uuid128(uint8_t const in[16], uint8_t out[16])
-//{
-//  for(uint8_t i=0; i<16; i++)
-//  {
-//    out[i] = in[15-i];
-//  }
-//}
+const uint8_t UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD[16] =
+{
+  0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
+  0xA8, 0x42, 0x32, 0xC3, 0x01, 0x00, 0xAF, 0xAD
+};
 
 void BLEUuid::set(uint16_t uuid16)
 {

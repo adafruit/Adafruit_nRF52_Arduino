@@ -35,9 +35,8 @@ class BLEAdafruitAccel : public BLEService
   public:
     static const uint8_t UUID128_SERVICE[16];
     static const uint8_t UUID128_CHR_DATA[16];
-    static const uint8_t UUID128_CHR_PERIOD[16];
 
-    BLECharacteristic Data;
+    BLECharacteristic Accel;
     BLECharacteristic Period;
 
     BLEAdafruitAccel(void);

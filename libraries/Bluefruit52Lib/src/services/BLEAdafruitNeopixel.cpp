@@ -77,7 +77,6 @@ err_t BLEAdafruitNeopixel::begin (void)
   Count.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
   Count.setPermission(SECMODE_OPEN, SECMODE_OPEN);
   Count.setFixedLen(2);
-  Count.setUserDescriptor("Count");
   VERIFY_STATUS( Count.begin() );
   Count.write16(0);
 
@@ -85,7 +84,6 @@ err_t BLEAdafruitNeopixel::begin (void)
   Type.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
   Type.setPermission(SECMODE_OPEN, SECMODE_OPEN);
   Type.setFixedLen(2);
-  Type.setUserDescriptor("Type");
   VERIFY_STATUS( Type.begin() );
   Type.write16(0);
 
@@ -95,8 +93,6 @@ err_t BLEAdafruitNeopixel::begin (void)
   // Change to use VLOC STACK to USER due to lack of memroy
   // Data.setMaxLen(Bluefruit.getMaxMtu(BLE_GAP_ROLE_PERIPH));
   Data.setMaxLen(20);
-
-  Data.setUserDescriptor("Data");
   VERIFY_STATUS( Data.begin() );
 
   return ERROR_NONE;

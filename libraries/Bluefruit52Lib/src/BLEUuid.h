@@ -72,6 +72,11 @@ class BLEUuid
     BLEUuid& operator=(ble_uuid_t uuid);
 };
 
+//--------------------------------------------------------------------+
+// Custom UUID Service
+//--------------------------------------------------------------------+
+extern const uint8_t UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD[16];
+
 /*------------------------------------------------------------------*/
 /* Service UUID
  * https://www.bluetooth.com/specifications/gatt/services

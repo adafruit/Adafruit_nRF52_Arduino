@@ -29,35 +29,33 @@
 //--------------------------------------------------------------------+
 
 
-/* Adafruit Accelerometer Service
- * using micro:bit Accelerometer Service definition
- * https://lancaster-university.github.io/microbit-docs/resources/bluetooth/bluetooth_profile.html
+/* All Adafruit Service/Characteristic UUID128 share the same Base UUID:
+ *    ADAFxxx-C332-42A8-93BD-25E905756CB8
  *
- * - Service: E95D-0753-251D-470A-A062-FA1922DFA9A8
- *    - Data   : E95D-CA4B-251D-470A-A062-FA1922DFA9A8
- *    - Period : E95D-FB24-251D-470A-A062-FA1922DFA9A8
+ * Shared Characteristics
+ *  - Measurement Period  0001 | int32_t | Read + Write |
+ *    ms between measurements, -1: stop reading, 0: update when changes
+ *
+ * Accelerometer service  0200
+ *  - Accel                0201 | float[3] | Read + Notify | x, y, z
+ *  - Measurement Period  0001
  */
+
 const uint8_t BLEAdafruitAccel::UUID128_SERVICE[16] =
 {
-  0xA8, 0xA9, 0xDF, 0x22, 0x19, 0xFA, 0x62, 0xA0,
-  0x0A, 0x47, 0x1D, 0x25, 0x53, 0x07, 0x5D, 0xE9
+  0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
+  0xA8, 0x42, 0x32, 0xC3, 0x00, 0x02, 0xAF, 0xAD
 };
 
 const uint8_t BLEAdafruitAccel::UUID128_CHR_DATA[16] =
 {
-  0xA8, 0xA9, 0xDF, 0x22, 0x19, 0xFA, 0x62, 0xA0,
-  0x0A, 0x47, 0x1D, 0x25, 0x4B, 0xCA, 0x5D, 0xE9
-};
-
-const uint8_t BLEAdafruitAccel::UUID128_CHR_PERIOD[16] =
-{
-  0xA8, 0xA9, 0xDF, 0x22, 0x19, 0xFA, 0x62, 0xA0,
-  0x0A, 0x47, 0x1D, 0x25, 0x24, 0xFB, 0x5D, 0xE9
+  0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
+  0xA8, 0x42, 0x32, 0xC3, 0x01, 0x02, 0xAF, 0xAD
 };
 
 // Constructor
 BLEAdafruitAccel::BLEAdafruitAccel(void)
-  : BLEService(UUID128_SERVICE), Data(UUID128_CHR_DATA), Period(UUID128_CHR_PERIOD)
+  : BLEService(UUID128_SERVICE), Accel(UUID128_CHR_DATA), Period(UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD)
 {
 
 }
@@ -68,19 +66,17 @@ err_t BLEAdafruitAccel::begin (void)
   VERIFY_STATUS( BLEService::begin() );
 
   // Add Characteristic
-  Data.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
-  Data.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  Data.setFixedLen(6);
-  Data.setUserDescriptor("Data");
-  VERIFY_STATUS( Data.begin() );
+  Accel.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
+  Accel.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  Accel.setFixedLen(4*3);
+  VERIFY_STATUS( Accel.begin() );
 
   // Add Characteristic
   Period.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
   Period.setPermission(SECMODE_OPEN, SECMODE_OPEN);
-  Period.setFixedLen(2);
-  Period.setUserDescriptor("Period");
+  Period.setFixedLen(4);
   VERIFY_STATUS( Period.begin() );
-  Period.write16(10);
+  Period.write32(10);
 
   return ERROR_NONE;
 }

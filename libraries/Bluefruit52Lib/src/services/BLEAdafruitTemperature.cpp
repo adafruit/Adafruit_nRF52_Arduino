@@ -28,24 +28,33 @@
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
 
-/* Adafruit Temperature Service
- * - Service: ADAF-0001-C332-42A8-93BD-25E905756CB8
- *    - Temperature Celsius  : 0x2A6E
- *    - Measurement Interval : 0x2A21
+/* All Adafruit Service/Characteristic UUID128 share the same Base UUID:
+ *    ADAFxxx-C332-42A8-93BD-25E905756CB8
  *
- * https://www.bluetooth.com/wp-content/uploads/Sitecore-Media-Library/Gatt/Xml/Characteristics/org.bluetooth.characteristic.temperature.xml
- * https://www.bluetooth.com/wp-content/uploads/Sitecore-Media-Library/Gatt/Xml/Characteristics/org.bluetooth.characteristic.measurement_interval.xml
+ * Shared Characteristics
+ *  - Measurement Period  0001 | int32_t | Read + Write |
+ *    ms between measurements, -1: stop reading, 0: update when changes
+ *
+ * Temperature service    0100
+ *  - Temperature         0101 | float   | Read + Notify | degree in Celsius
+ *  - Measurement Period  0001
  */
 
 const uint8_t BLEAdafruitTemperature::UUID128_SERVICE[16] =
 {
   0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
-  0xA8, 0x42, 0x32, 0xC3, 0x01, 0x00, 0xAF, 0xAD
+  0xA8, 0x42, 0x32, 0xC3, 0x00, 0x01, 0xAF, 0xAD
+};
+
+const uint8_t BLEAdafruitTemperature::UUID128_CHR_TEMPERATURE[16] =
+{
+  0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
+  0xA8, 0x42, 0x32, 0xC3, 0x01, 0x01, 0xAF, 0xAD
 };
 
 // Constructor
 BLEAdafruitTemperature::BLEAdafruitTemperature(void)
-  : BLEService(UUID128_SERVICE), Temperature(UUID16_CHR_TEMPERATURE), MeasurementInterval(UUID16_CHR_MEASUREMENT_INTERVAL)
+  : BLEService(UUID128_SERVICE), Temperature(UUID128_CHR_TEMPERATURE), Period(UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD)
 {
 
 }
@@ -59,17 +68,15 @@ err_t BLEAdafruitTemperature::begin (void)
   Temperature.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
   Temperature.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   Temperature.setFixedLen(2);
-  Temperature.setUserDescriptor("Temperature");
   VERIFY_STATUS( Temperature.begin() );
 
   // Add Measurement Interval Characteristic
-  MeasurementInterval.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
-  MeasurementInterval.setPermission(SECMODE_OPEN, SECMODE_OPEN);
-  MeasurementInterval.setFixedLen(2);
-  MeasurementInterval.setUserDescriptor("Measurement Interval");
-  VERIFY_STATUS( MeasurementInterval.begin() );
+  Period.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
+  Period.setPermission(SECMODE_OPEN, SECMODE_OPEN);
+  Period.setFixedLen(4);
+  VERIFY_STATUS( Period.begin() );
 
-  MeasurementInterval.write16(30); // measure every 30 seconds
+  Period.write32(30); // measure every 30 seconds
 
   return ERROR_NONE;
 }

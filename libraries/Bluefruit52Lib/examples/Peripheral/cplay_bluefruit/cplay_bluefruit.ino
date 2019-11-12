@@ -23,23 +23,26 @@ BLEUart bleuart; // uart over ble
 BLEBas  blebas;  // battery
 
 /* All Adafruit Service/Characteristic UUID128 share the same
- * Base UUID : ADAF0000-C332-42A8-93BD-25E905756CB8
+ * Base UUID : ADAFxxx-C332-42A8-93BD-25E905756CB8
+ *
+ * Share Characteristics
+ *  - Measurement Period  0001 | int32_t | Read + Write | ms between measurements, -1: stop reading, 0: update when changes
  *
  * Temperature service    0100
  *  - Temperature         0101 | float    | Read + Notify | degree in Celsius
- *  - Measurement Period  0001 | uint32_t | Read + Write
+ *  - Measurement Period  0001
  *
  * Accelerometer service  0200
  *  - Accel Data          0201 | float (x, y, z) | Read + Notify | accel x, y, z
- *  - Measurement Period  0001 | uint32_t | Read + Write
+ *  - Measurement Period  0001
  *
  * Light sensor service   0300
- *  - Light Data          0301 | uint16_t | Read + Notify
- *  - Measurement Period  0001 | uint32_t | Read + Write
+ *  - Lux Data            0301 | uint16_t | Read + Notify
+ *  - Measurement Period  0001
  *
  * Sound sensor service   0400
  *  - Sound Data          0401 | int16_t  | Read + Notify
- *  - Measurement Period  0001 | uint32_t | Read + Write
+ *  - Measurement Period  0001
  *
  * Captouch service       0500
  *  - Sensitivity         0501 | uint32_t | difference that Capn should report immediately
@@ -55,7 +58,7 @@ BLEBas  blebas;  // battery
  * PIN I/O service        0700
  *  - Pin Dir             0701 | uint64_t | Read + Write | bit 1 is In, 0 is Out
  *  - Pin Data            0702 | uint64_t | Read + Write |
- *  - PWM Control         0710 | struct { uint8_t pin, uint16_t value, uint32_t period_ms} | as microbit value is 0-1024 for duty cycle
+ *  - PWM Control         0710 | struct { uint8_t pin, uint16_t value, uint32_t period_ms} | as microbit, value is 0-1024 for duty cycle
  *
  * PIN Analog             0800
  *  - A0                  0810 | uint16_t | Read + Notify
@@ -68,6 +71,17 @@ BLEBas  blebas;  // battery
  *   - Pixel Count        0902 | uint16_t | Read + Write
  *   - Pixel Type         0903 | uint16_t | Read + Write | NEO_RGB, NEO_GRB etc ..
  *   - Pixel Data         0904 | RGB array| Write
+ *
+ * Gamepad Service        0A00
+ *   - Gamepad Button     0A01 | uint16_t  | Write
+ *   - Left XY            0A02 | int8_t[2] | Write
+ *   - Right XY           0A03 | int8_t[2] | Write
+ *
+ * Image Service          0B00
+ *    - Format            0B01 | uint16_t[3] | Write | width + height + type, type is enum value e.g RGB_655, RGB_888, JPG, GIF etc ...
+ *    - Data              0B02 | pixel[]     | Write | will save to flash as `default_image`, and auto load on reset ?
+ *    - Fill              0B03 | uint8_t[3]  | Write | Fill with solid color
+ *    - Load File         0B04 | utf8_t      | Write | Load image from qspi flash ?
  */
 
 /* Adafruit NeoPixel Service

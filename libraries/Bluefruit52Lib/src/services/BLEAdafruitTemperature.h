@@ -34,9 +34,10 @@ class BLEAdafruitTemperature : public BLEService
 {
   public:
     static const uint8_t UUID128_SERVICE[16];
+    static const uint8_t UUID128_CHR_TEMPERATURE[16];
 
     BLECharacteristic Temperature;
-    BLECharacteristic MeasurementInterval;
+    BLECharacteristic Period;
 
     BLEAdafruitTemperature();
     virtual err_t begin(void);
