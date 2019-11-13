@@ -73,15 +73,9 @@ void adafruit_callback_task(void* arg)
   }
 }
 
-//! Test if in interrupt mode
-static inline bool is_isr(void)
-{
-  return (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0 ;
-}
-
 void ada_callback_queue(ada_callback_t* cb_item)
 {
-  BaseType_t ret = is_isr() ? xQueueSendFromISR(_cb_queue, (void*) &cb_item, NULL) : xQueueSend(_cb_queue, (void*) &cb_item, CFG_CALLBACK_TIMEOUT);
+  BaseType_t ret = isInISR() ? xQueueSendFromISR(_cb_queue, (void*) &cb_item, NULL) : xQueueSend(_cb_queue, (void*) &cb_item, CFG_CALLBACK_TIMEOUT);
 
   if ( ret != pdTRUE )
   {
@@ -91,7 +85,7 @@ void ada_callback_queue(ada_callback_t* cb_item)
       _cb_qdepth = 2*_cb_qdepth;
 
       // try again
-      if ( is_isr() )
+      if ( isInISR() )
       {
         xQueueSendFromISR(_cb_queue, (void*) &cb_item, NULL);
       }else

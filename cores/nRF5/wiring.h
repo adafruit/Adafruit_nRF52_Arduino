@@ -36,6 +36,12 @@ void enterUf2Dfu(void);
 void waitForEvent(void);
 void systemOff(uint32_t pin, uint8_t wake_logic);
 
+// Test if in interrupt mode
+static inline bool isInISR(void)
+{
+  return (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0 ;
+}
+
 #ifdef __cplusplus
 }
 #endif
