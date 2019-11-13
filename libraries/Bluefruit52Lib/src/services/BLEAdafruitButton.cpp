@@ -55,28 +55,21 @@ const uint8_t BLEAdafruitButton::UUID128_CHR_DATA[16] =
 
 // Constructor
 BLEAdafruitButton::BLEAdafruitButton(void)
-  : BLEService(UUID128_SERVICE), Button(UUID128_CHR_DATA), Period(UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD)
+  : BLEAdafruitSensor(UUID128_SERVICE), Button(UUID128_CHR_DATA)
 {
 
 }
 
 err_t BLEAdafruitButton::begin (void)
 {
-  // Invoke base class begin()
-  VERIFY_STATUS( BLEService::begin() );
+  // Invoke base class begin(), this will add service and Period chr
+  VERIFY_STATUS( BLEAdafruitSensor::begin(100) );
 
   // Add Characteristic
   Button.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
   Button.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   Button.setFixedLen(4);
   VERIFY_STATUS( Button.begin() );
-
-  // Add Characteristic
-  Period.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
-  Period.setPermission(SECMODE_OPEN, SECMODE_OPEN);
-  Period.setFixedLen(4);
-  VERIFY_STATUS( Period.begin() );
-  Period.write32(10);
 
   return ERROR_NONE;
 }

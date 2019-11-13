@@ -54,29 +54,21 @@ const uint8_t BLEAdafruitTemperature::UUID128_CHR_TEMPERATURE[16] =
 
 // Constructor
 BLEAdafruitTemperature::BLEAdafruitTemperature(void)
-  : BLEService(UUID128_SERVICE), Temperature(UUID128_CHR_TEMPERATURE), Period(UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD)
+  : BLEAdafruitSensor(UUID128_SERVICE), Temperature(UUID128_CHR_TEMPERATURE)
 {
 
 }
 
 err_t BLEAdafruitTemperature::begin (void)
 {
-  // Invoke base class begin()
-  VERIFY_STATUS( BLEService::begin() );
+  // Invoke base class begin(), this will add service and Period chr
+  VERIFY_STATUS( BLEAdafruitSensor::begin(1000) );
 
   // Add Temperature Characteristic
   Temperature.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
   Temperature.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   Temperature.setFixedLen(4);
   VERIFY_STATUS( Temperature.begin() );
-
-  // Add Measurement Interval Characteristic
-  Period.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
-  Period.setPermission(SECMODE_OPEN, SECMODE_OPEN);
-  Period.setFixedLen(4);
-  VERIFY_STATUS( Period.begin() );
-
-  Period.write32(30); // measure every 30 seconds
 
   return ERROR_NONE;
 }

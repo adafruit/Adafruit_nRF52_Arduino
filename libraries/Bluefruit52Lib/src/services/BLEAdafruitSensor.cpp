@@ -29,8 +29,8 @@
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
 
-BLEAdafruitSensor::BLEAdafruitSensor(void) :
-  Period(UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD)
+BLEAdafruitSensor::BLEAdafruitSensor(BLEUuid bleuuid)
+  : BLEService(bleuuid), Period(UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD)
 {
   _measure_cb = NULL;
 }
@@ -40,7 +40,7 @@ void BLEAdafruitSensor::setMeasureCallback(measure_callback_t fp)
   _measure_cb = fp;
 }
 
-bool BLEAdafruitSensor::begin(int32_t ms)
+err_t BLEAdafruitSensor::begin(int32_t ms)
 {
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
@@ -56,9 +56,18 @@ bool BLEAdafruitSensor::begin(int32_t ms)
   // setup timer
   _timer.begin(ms, sensor_timer_cb, this, true);
 
-  return true;
+  return ERROR_NONE;
 }
 
+void BLEAdafruitSensor::startMeasuring(void)
+{
+  _timer.start();
+}
+
+void BLEAdafruitSensor::stopMeasuring(void)
+{
+  _timer.stop();
+}
 
 void BLEAdafruitSensor::sensor_timer_cb(TimerHandle_t xTimer)
 {

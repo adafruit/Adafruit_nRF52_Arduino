@@ -55,28 +55,21 @@ const uint8_t BLEAdafruitAccel::UUID128_CHR_DATA[16] =
 
 // Constructor
 BLEAdafruitAccel::BLEAdafruitAccel(void)
-  : BLEService(UUID128_SERVICE), Accel(UUID128_CHR_DATA), Period(UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD)
+  : BLEAdafruitSensor(UUID128_SERVICE), Accel(UUID128_CHR_DATA)
 {
 
 }
 
 err_t BLEAdafruitAccel::begin (void)
 {
-  // Invoke base class begin()
-  VERIFY_STATUS( BLEService::begin() );
+  // Invoke base class begin(), this will add service and Period chr
+  VERIFY_STATUS( BLEAdafruitSensor::begin(1000) );
 
   // Add Characteristic
   Accel.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
   Accel.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   Accel.setFixedLen(4*3);
   VERIFY_STATUS( Accel.begin() );
-
-  // Add Characteristic
-  Period.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
-  Period.setPermission(SECMODE_OPEN, SECMODE_OPEN);
-  Period.setFixedLen(4);
-  VERIFY_STATUS( Period.begin() );
-  Period.write32(10);
 
   return ERROR_NONE;
 }

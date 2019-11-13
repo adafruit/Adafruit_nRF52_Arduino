@@ -30,14 +30,15 @@
 #include "BLECharacteristic.h"
 #include "BLEService.h"
 
-class BLEAdafruitLightSensor : public BLEService
+#include "BLEAdafruitSensor.h"
+
+class BLEAdafruitLightSensor : public BLEAdafruitSensor
 {
   public:
     static const uint8_t UUID128_SERVICE[16];
     static const uint8_t UUID128_CHR_DATA[16];
 
     BLECharacteristic Lux;
-    BLECharacteristic Period;
 
     BLEAdafruitLightSensor(void);
     virtual err_t begin(void);

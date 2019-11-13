@@ -35,16 +35,19 @@ class BLEAdafruitSensor : public BLEService
   public:
     typedef void (*measure_callback_t )(void);
 
-    BLEAdafruitSensor(void);
-    virtual bool begin(int32_t ms);
+    BLEAdafruitSensor(BLEUuid bleuuid);
+    virtual err_t begin(int32_t ms);
 
     void setMeasureCallback(measure_callback_t fp);
+    void startMeasuring(void);
+    void stopMeasuring(void);
+
+    BLECharacteristic Period;
 
   protected:
     measure_callback_t _measure_cb;
     SoftwareTimer _timer;
 
-    BLECharacteristic Period;
 
     static void sensor_timer_cb(TimerHandle_t xTimer);
     static void sensor_period_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
