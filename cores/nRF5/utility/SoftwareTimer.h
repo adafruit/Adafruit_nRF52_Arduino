@@ -47,7 +47,7 @@ class SoftwareTimer
     SoftwareTimer();
     virtual ~SoftwareTimer();
 
-    void begin(uint32_t ms, TimerCallbackFunction_t callback, bool repeating = true);
+    void begin(uint32_t ms, TimerCallbackFunction_t callback, void* timerID = NULL, bool repeating = true);
     TimerHandle_t getHandle(void) { return _handle; }
 
     bool start(void);

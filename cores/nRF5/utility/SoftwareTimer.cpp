@@ -34,9 +34,9 @@ SoftwareTimer::~SoftwareTimer ()
   if ( _handle != NULL ) xTimerDelete(_handle, 0);
 }
 
-void SoftwareTimer::begin(uint32_t ms, TimerCallbackFunction_t callback, bool repeating)
+void SoftwareTimer::begin(uint32_t ms, TimerCallbackFunction_t callback, void* timerID, bool repeating)
 {
-  _handle = xTimerCreate(NULL, ms2tick(ms), repeating, NULL, callback);
+  _handle = xTimerCreate(NULL, ms2tick(ms), repeating, timerID, callback);
 }
 
 bool SoftwareTimer::start(void)
