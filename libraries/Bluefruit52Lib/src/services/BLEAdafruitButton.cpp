@@ -55,21 +55,19 @@ const uint8_t BLEAdafruitButton::UUID128_CHR_DATA[16] =
 
 // Constructor
 BLEAdafruitButton::BLEAdafruitButton(void)
-  : BLEAdafruitSensor(UUID128_SERVICE), Button(UUID128_CHR_DATA)
+  : BLEAdafruitSensor(UUID128_SERVICE, UUID128_CHR_DATA)
 {
-
 }
 
 err_t BLEAdafruitButton::begin (void)
 {
-  // Invoke base class begin(), this will add service and Period chr
-  VERIFY_STATUS( BLEAdafruitSensor::begin(100) );
+  // Setup Measurement Characteristic
+  _measurement.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
+  _measurement.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  _measurement.setFixedLen(4);
 
-  // Add Characteristic
-  Button.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
-  Button.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  Button.setFixedLen(4);
-  VERIFY_STATUS( Button.begin() );
+  // Invoke base class begin(), this will add Service, Measurement and Period characteristics
+  VERIFY_STATUS( BLEAdafruitSensor::begin(100) );
 
   return ERROR_NONE;
 }

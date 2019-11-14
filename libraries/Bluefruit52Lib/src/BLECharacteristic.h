@@ -100,6 +100,8 @@ class BLECharacteristic
     void setFixedLen(uint16_t fixed_len);
     void setBuffer(void* buf, uint16_t bufsize);
 
+    uint16_t getMaxLen(void);
+
     /*------------- Descriptors -------------*/
     void setUserDescriptor(const char* descriptor); // aka user descriptor
     void setReportRefDescriptor(uint8_t id, uint8_t type); // TODO refactor to use addDescriptor()
@@ -187,7 +189,7 @@ class BLECharacteristic
     uint16_t _max_len;
     BLEService* _service; // pointer to parent's service
 
-    void* _userbuf;
+    uint8_t* _userbuf;
 
     /*------------- Descriptors -------------*/
     const char* _usr_descriptor;

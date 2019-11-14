@@ -46,7 +46,7 @@ const uint8_t BLEAdafruitTemperature::UUID128_SERVICE[16] =
   0xA8, 0x42, 0x32, 0xC3, 0x00, 0x01, 0xAF, 0xAD
 };
 
-const uint8_t BLEAdafruitTemperature::UUID128_CHR_TEMPERATURE[16] =
+const uint8_t BLEAdafruitTemperature::UUID128_CHR_DATA[16] =
 {
   0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
   0xA8, 0x42, 0x32, 0xC3, 0x01, 0x01, 0xAF, 0xAD
@@ -54,21 +54,20 @@ const uint8_t BLEAdafruitTemperature::UUID128_CHR_TEMPERATURE[16] =
 
 // Constructor
 BLEAdafruitTemperature::BLEAdafruitTemperature(void)
-  : BLEAdafruitSensor(UUID128_SERVICE), Temperature(UUID128_CHR_TEMPERATURE)
+  : BLEAdafruitSensor(UUID128_SERVICE, UUID128_CHR_DATA)
 {
 
 }
 
 err_t BLEAdafruitTemperature::begin (void)
 {
-  // Invoke base class begin(), this will add service and Period chr
-  VERIFY_STATUS( BLEAdafruitSensor::begin(1000) );
+  // Setup Measurement Characteristic
+  _measurement.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
+  _measurement.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  _measurement.setFixedLen(4);
 
-  // Add Temperature Characteristic
-  Temperature.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
-  Temperature.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  Temperature.setFixedLen(4);
-  VERIFY_STATUS( Temperature.begin() );
+  // Invoke base class begin(), this will add Service, Measurement and Period characteristics
+  VERIFY_STATUS( BLEAdafruitSensor::begin(1000) );
 
   return ERROR_NONE;
 }

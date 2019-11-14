@@ -29,8 +29,8 @@
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
 
-BLEAdafruitSensor::BLEAdafruitSensor(BLEUuid bleuuid)
-  : BLEService(bleuuid), Period(UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD)
+BLEAdafruitSensor::BLEAdafruitSensor(BLEUuid service_uuid, BLEUuid data_uuid)
+  : BLEService(service_uuid), _measurement(data_uuid), Period(UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD)
 {
   _measure_cb = NULL;
 }
@@ -44,6 +44,10 @@ err_t BLEAdafruitSensor::begin(int32_t ms)
 {
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
+
+  _measurement.setCccdWriteCallback(sensor_data_cccd_cb, true);
+
+  VERIFY_STATUS( _measurement.begin() );
 
   Period.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
   Period.setPermission(SECMODE_OPEN, SECMODE_OPEN);
@@ -69,12 +73,23 @@ void BLEAdafruitSensor::stopMeasuring(void)
   _timer.stop();
 }
 
+//--------------------------------------------------------------------+
+// Static Callbacks
+//--------------------------------------------------------------------+
+
 void BLEAdafruitSensor::sensor_timer_cb(TimerHandle_t xTimer)
 {
   BLEAdafruitSensor* svc = (BLEAdafruitSensor*) pvTimerGetTimerID(xTimer);
 
-  // invoke measure callback
-  if (svc->_measure_cb) svc->_measure_cb();
+  if (svc->_measure_cb)
+  {
+    uint8_t buf[svc->_measurement.getMaxLen()];
+    uint16_t len = svc->_measure_cb(buf, sizeof(buf));
+    len = min(len, sizeof(buf));
+
+    // notify
+    svc->_measurement.notify(buf, len);
+  }
 }
 
 // Client update period, adjust timer accordingly
@@ -92,6 +107,20 @@ void BLEAdafruitSensor::sensor_period_write_cb(uint16_t conn_hdl, BLECharacteris
   }else
   {
     svc._timer.setPeriod(ms);
+  }
+}
+
+void BLEAdafruitSensor::sensor_data_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value)
+{
+  BLEAdafruitSensor& svc = (BLEAdafruitSensor&) chr->parentService();
+
+  // notify enabled
+  if (value & BLE_GATT_HVX_NOTIFICATION)
+  {
+    svc._timer.start();
+  }else
+  {
+    svc._timer.stop();
   }
 }
 

@@ -37,8 +37,6 @@ class BLEAdafruitButton : public BLEAdafruitSensor
     static const uint8_t UUID128_SERVICE[16];
     static const uint8_t UUID128_CHR_DATA[16];
 
-    BLECharacteristic Button;
-
     BLEAdafruitButton(void);
     virtual err_t begin(void);
 };

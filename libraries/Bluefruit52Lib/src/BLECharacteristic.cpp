@@ -122,6 +122,11 @@ void BLECharacteristic::setMaxLen(uint16_t max_len)
   _max_len = max_len;
 }
 
+uint16_t BLECharacteristic::getMaxLen(void)
+{
+  return _max_len;
+}
+
 void BLECharacteristic::setFixedLen(uint16_t fixed_len)
 {
   if ( fixed_len )
@@ -138,7 +143,7 @@ void BLECharacteristic::setFixedLen(uint16_t fixed_len)
 void BLECharacteristic::setBuffer(void* buf, uint16_t bufsize)
 {
   _max_len = bufsize;
-  _userbuf = buf;
+  _userbuf = (uint8_t*) buf;
   _attr_meta.vloc = buf ? BLE_GATTS_VLOC_USER : BLE_GATTS_VLOC_STACK;
 }
 
