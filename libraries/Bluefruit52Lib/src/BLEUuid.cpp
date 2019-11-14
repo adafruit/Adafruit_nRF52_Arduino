@@ -102,7 +102,7 @@ size_t BLEUuid::size (void) const
   return 0;
 }
 
-err_t BLEUuid::begin(void)
+bool BLEUuid::begin(void)
 {
   /* Add base uuid and decode to get uuid16
    * This should cover the already added base uuid128 previously
@@ -110,10 +110,10 @@ err_t BLEUuid::begin(void)
   if (_uuid.type == BLE_UUID_TYPE_UNKNOWN && _uuid128 != NULL )
   {
     (void) sd_ble_uuid_vs_add( (ble_uuid128_t const*) _uuid128, &_uuid.type );
-    VERIFY_STATUS( sd_ble_uuid_decode(16, _uuid128, &_uuid) );
+    VERIFY_STATUS( sd_ble_uuid_decode(16, _uuid128, &_uuid), false );
   }
 
-  return ERROR_NONE;
+  return true;
 }
 
 bool BLEUuid::operator== (const BLEUuid& uuid) const

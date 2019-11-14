@@ -59,7 +59,7 @@ class BLEUuid
     size_t size (void) const;
 
     // Add UUID128 if needed, in case of UUID16, no actions is required
-    err_t begin(void);
+    bool begin(void);
 
     bool operator==(const BLEUuid&   uuid) const;
     bool operator!=(const BLEUuid&   uuid) const;
