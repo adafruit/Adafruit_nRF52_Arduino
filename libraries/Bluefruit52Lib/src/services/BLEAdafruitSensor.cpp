@@ -30,7 +30,7 @@
 //--------------------------------------------------------------------+
 
 BLEAdafruitSensor::BLEAdafruitSensor(BLEUuid service_uuid, BLEUuid data_uuid)
-  : BLEService(service_uuid), _measurement(data_uuid), Period(UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD)
+  : BLEService(service_uuid), _measurement(data_uuid), _period(UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD)
 {
   _measure_cb = NULL;
 }
@@ -49,19 +49,26 @@ err_t BLEAdafruitSensor::begin(int32_t ms)
 
   VERIFY_STATUS( _measurement.begin() );
 
-  Period.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
-  Period.setPermission(SECMODE_OPEN, SECMODE_OPEN);
-  Period.setFixedLen(4);
-  VERIFY_STATUS( Period.begin() );
-  Period.write32(ms);
+  _period.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
+  _period.setPermission(SECMODE_OPEN, SECMODE_OPEN);
+  _period.setFixedLen(4);
+  VERIFY_STATUS( _period.begin() );
+  _period.write32(ms);
 
-  Period.setWriteCallback(sensor_period_write_cb, true);
+  _period.setWriteCallback(sensor_period_write_cb, true);
 
   // setup timer
   _timer.begin(ms, sensor_timer_cb, this, true);
 
   return ERROR_NONE;
 }
+
+void BLEAdafruitSensor::setPeriod(int32_t period_ms)
+{
+  _period.write32(period_ms);
+  _update_timer(period_ms);
+}
+
 
 void BLEAdafruitSensor::startMeasuring(void)
 {
@@ -73,6 +80,44 @@ void BLEAdafruitSensor::stopMeasuring(void)
   _timer.stop();
 }
 
+
+void BLEAdafruitSensor::_update_timer(int32_t ms)
+{
+  // TODO handle period = 0 which notify on changes ASAP
+  if ( ms < 0 )
+  {
+    _timer.stop();
+  }else if ( ms > 0)
+  {
+    _timer.setPeriod(ms);
+  }else
+  {
+    // Period = 0: keeping the current interval, but report on changes only
+  }
+}
+
+void BLEAdafruitSensor::_timer_callback(void)
+{
+  if (_measure_cb)
+  {
+    uint8_t buf[_measurement.getMaxLen()];
+    uint16_t len = _measure_cb(buf, sizeof(buf));
+    len = min(len, sizeof(buf));
+
+    // Period = 0, compare with old data, only update on changes
+    if ( 0 == _period.read32() )
+    {
+      uint8_t prev_buf[_measurement.getMaxLen()];
+      _measurement.read(prev_buf, sizeof(prev_buf));
+
+      // skip notify if there is no changes
+      if ( 0 == memcmp(prev_buf, buf, len) ) return;
+    }
+
+    _measurement.notify(buf, len);
+  }
+}
+
 //--------------------------------------------------------------------+
 // Static Callbacks
 //--------------------------------------------------------------------+
@@ -80,16 +125,7 @@ void BLEAdafruitSensor::stopMeasuring(void)
 void BLEAdafruitSensor::sensor_timer_cb(TimerHandle_t xTimer)
 {
   BLEAdafruitSensor* svc = (BLEAdafruitSensor*) pvTimerGetTimerID(xTimer);
-
-  if (svc->_measure_cb)
-  {
-    uint8_t buf[svc->_measurement.getMaxLen()];
-    uint16_t len = svc->_measure_cb(buf, sizeof(buf));
-    len = min(len, sizeof(buf));
-
-    // notify
-    svc->_measurement.notify(buf, len);
-  }
+  svc->_timer_callback();
 }
 
 // Client update period, adjust timer accordingly
@@ -100,14 +136,7 @@ void BLEAdafruitSensor::sensor_period_write_cb(uint16_t conn_hdl, BLECharacteris
   int32_t ms = 0;
   memcpy(&ms, data, len);
 
-  // TODO handle period = 0 which notify on changes ASAP
-  if ( ms < 0 )
-  {
-    svc._timer.stop();
-  }else
-  {
-    svc._timer.setPeriod(ms);
-  }
+  svc._update_timer(ms);
 }
 
 void BLEAdafruitSensor::sensor_data_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value)

@@ -59,7 +59,7 @@ BLEAdafruitButton::BLEAdafruitButton(void)
 {
 }
 
-err_t BLEAdafruitButton::begin (void)
+err_t BLEAdafruitButton::begin(void)
 {
   // Setup Measurement Characteristic
   _measurement.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
