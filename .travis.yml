@@ -33,7 +33,7 @@ install:
   - BSP_VERSION=`eval ls $BSP_PATH`
   - rm -r $BSP_PATH/*
   - ln -s $TRAVIS_BUILD_DIR $BSP_PATH/$BSP_VERSION
-  - arduino --install-library "Adafruit NeoPixel","Adafruit NeoMatrix","Adafruit GFX Library","Adafruit SSD1306","MIDI Library","Adafruit ILI9341","Adafruit HX8357 Library"
+  - arduino --install-library "Adafruit NeoPixel","Adafruit NeoMatrix","Adafruit GFX Library","Adafruit SSD1306","MIDI Library","Adafruit ILI9341","Adafruit HX8357 Library", "Adafruit Circuit Playground"
 
 before_script:
   
