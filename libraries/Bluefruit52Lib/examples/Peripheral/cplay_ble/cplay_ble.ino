@@ -27,6 +27,7 @@ BLEAdafruitTemperature  bleTemp;
 BLEAdafruitAccel        bleAccel;
 BLEAdafruitLightSensor  bleLight;
 BLEAdafruitButton       bleButton;
+BLEAdafruitTone         bleTone;
 
 uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 {
@@ -120,6 +121,8 @@ void setup()
   bleButton.begin();
   bleButton.setMeasureCallback(measure_button);
   bleButton.setPeriod(0); // only notify if there is changes with buttons
+
+  bleTone.begin(CPLAY_BUZZER);
 
   // Set up and start advertising
   startAdv();

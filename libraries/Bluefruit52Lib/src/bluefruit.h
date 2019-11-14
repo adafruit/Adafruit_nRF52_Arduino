@@ -65,6 +65,7 @@
 #include "services/BLEAdafruitAccel.h"
 #include "services/BLEAdafruitLightSensor.h"
 #include "services/BLEAdafruitButton.h"
+#include "services/BLEAdafruitTone.h"
 
 #include "clients/BLEAncs.h"
 #include "clients/BLEClientUart.h"
