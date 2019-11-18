@@ -151,5 +151,11 @@ void BLEAdafruitSensor::sensor_data_cccd_cb(uint16_t conn_hdl, BLECharacteristic
   {
     svc._timer.stop();
   }
+
+  // send initial notification if period = 0
+//  if ( 0 == svc._period.read32() )
+//  {
+//    svc._measurement.notify();
+//  }
 }
 
