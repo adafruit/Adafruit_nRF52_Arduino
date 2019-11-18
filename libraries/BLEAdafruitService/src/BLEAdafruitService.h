@@ -31,12 +31,11 @@
 
 #include "services/BLEAdafruitSensor.h"
 #include "services/BLEAdafruitTemperature.h"
-#include "services/BLEAdafruitTemperature.h"
-#include "services/BLEAdafruitRgbPixel.h"
 #include "services/BLEAdafruitAccel.h"
 #include "services/BLEAdafruitLightSensor.h"
 #include "services/BLEAdafruitButton.h"
 #include "services/BLEAdafruitTone.h"
+#include "services/BLEAdafruitRgbPixel.h"
 
 
 #endif /* BLEADAFRUITSERVICE_H_ */

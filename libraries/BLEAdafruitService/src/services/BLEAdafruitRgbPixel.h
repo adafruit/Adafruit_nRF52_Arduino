@@ -25,6 +25,17 @@
 #ifndef BLEADAFRUITRGBPIXEL_H_
 #define BLEADAFRUITRGBPIXEL_H_
 
+// use Adafruit_CPlay_NeoPixel instead of Adafruit_NeoPixel
+#define USE_CPLAY_NEOPIXEL  0
+
+#if USE_CPLAY_NEOPIXEL
+  #include "Adafruit_CPlay_NeoPixel.h"
+  #define Adafruit_NeoPixel_Type  Adafruit_CPlay_NeoPixel
+#else
+  #include "Adafruit_NeoPixel.h"
+  #define Adafruit_NeoPixel_Type  Adafruit_NeoPixel
+#endif
+
 class BLEAdafruitRgbPixel : public BLEService
 {
   public:
@@ -40,7 +51,12 @@ class BLEAdafruitRgbPixel : public BLEService
     BLECharacteristic Data;
 
     BLEAdafruitRgbPixel(void);
-    virtual err_t begin(void);
+    virtual err_t begin(Adafruit_NeoPixel_Type* neo);
+
+  private:
+    Adafruit_NeoPixel_Type* _neo;
+
+    err_t begin(uint8_t pin, uint8_t type);
 };
 
 

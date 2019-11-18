@@ -22,7 +22,11 @@
  * THE SOFTWARE.
  */
 
-#include "BLEAdafruitService.h"
+#include "bluefruit_common.h"
+#include "BLECharacteristic.h"
+#include "BLEService.h"
+
+#include "BLEAdafruitRgbPixel.h"
 
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
@@ -66,10 +70,16 @@ const uint8_t BLEAdafruitRgbPixel::UUID128_CHR_DATA[16] =
 BLEAdafruitRgbPixel::BLEAdafruitRgbPixel(void)
   : BLEService(UUID128_SERVICE), Pin(UUID128_CHR_PIN), Type(UUID128_CHR_TYPE), Data(UUID128_CHR_DATA)
 {
-
+  _neo = NULL;
 }
 
-err_t BLEAdafruitRgbPixel::begin (/*Adafruit_NeoPixel* neo_pixel*/)
+err_t BLEAdafruitRgbPixel::begin (Adafruit_NeoPixel_Type* neo_pixel)
+{
+  _neo = neo_pixel;
+  return begin((uint8_t) _neo->getPin(), 0);
+}
+
+err_t BLEAdafruitRgbPixel::begin(uint8_t pin, uint8_t type)
 {
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
@@ -79,14 +89,14 @@ err_t BLEAdafruitRgbPixel::begin (/*Adafruit_NeoPixel* neo_pixel*/)
   Pin.setPermission(SECMODE_OPEN, SECMODE_OPEN);
   Pin.setFixedLen(1);
   VERIFY_STATUS( Pin.begin() );
-  Pin.write8(0);
+  Pin.write8(pin);
 
   // Add Characteristic
   Type.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
   Type.setPermission(SECMODE_OPEN, SECMODE_OPEN);
   Type.setFixedLen(1);
   VERIFY_STATUS( Type.begin() );
-  Type.write16(0);
+  Type.write8(type);
 
   // Add Characteristic
   Data.setProperties(CHR_PROPS_WRITE);
