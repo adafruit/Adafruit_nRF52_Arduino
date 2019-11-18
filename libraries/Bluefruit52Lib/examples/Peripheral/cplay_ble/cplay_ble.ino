@@ -11,11 +11,11 @@
  All text above, and the splash screen below must be included in
  any redistribution
 *********************************************************************/
-#include <bluefruit.h>
+#include <Adafruit_CircuitPlayground.h>
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
+#include <bluefruit.h>
 #include <BLEAdafruitService.h>
-#include <Adafruit_CircuitPlayground.h>
 
 // BLE Service
 BLEDfu  bledfu;  // OTA DFU service
@@ -31,6 +31,8 @@ BLEAdafruitButton       bleButton;
 BLEAdafruitTone         bleTone;
 
 BLEAdafruitRgbPixel     blePixel;
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(10, CPLAY_NEOPIXELPIN, NEO_GRB + NEO_KHZ800);
 
 uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 {
@@ -127,7 +129,8 @@ void setup()
 
   bleTone.begin(CPLAY_BUZZER);
 
-  blePixel.begin();
+  strip.begin();
+  blePixel.begin(&strip);
 
   // Set up and start advertising
   startAdv();

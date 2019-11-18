@@ -103,8 +103,36 @@ err_t BLEAdafruitRgbPixel::begin(uint8_t pin, uint8_t type)
   Data.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
   // Change to use VLOC STACK to USER due to lack of memroy
   // Data.setMaxLen(Bluefruit.getMaxMtu(BLE_GAP_ROLE_PERIPH));
-  Data.setMaxLen(20);
+  Data.setMaxLen(BLE_GATTS_VAR_ATTR_LEN_MAX);
   VERIFY_STATUS( Data.begin() );
 
+  Data.setWriteCallback(pixel_data_write_cb, true);
+
   return ERROR_NONE;
+}
+
+//--------------------------------------------------------------------+
+// Static callbacks
+//--------------------------------------------------------------------+
+void BLEAdafruitRgbPixel::pixel_data_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
+{
+  (void) conn_hdl;
+
+  if (len < 3) return;
+
+  BLEAdafruitRgbPixel& svc = (BLEAdafruitRgbPixel&) chr->parentService();
+
+  uint16_t index;
+  memcpy(&index, data, 2);
+  uint8_t flag = data[2];
+
+  uint8_t* buffer = svc._neo->getPixels();
+
+  memcpy(buffer, data+3, len-3);
+
+  // show flag
+  if ( flag & 0x01 )
+  {
+    svc._neo->show();
+  }
 }

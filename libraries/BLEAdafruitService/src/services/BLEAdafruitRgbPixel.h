@@ -57,6 +57,8 @@ class BLEAdafruitRgbPixel : public BLEService
     Adafruit_NeoPixel_Type* _neo;
 
     err_t begin(uint8_t pin, uint8_t type);
+
+    static void pixel_data_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
 };
 
 
