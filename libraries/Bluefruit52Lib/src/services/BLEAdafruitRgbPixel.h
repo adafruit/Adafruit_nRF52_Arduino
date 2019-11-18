@@ -22,30 +22,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLEADAFRUITNEOPIXEL_H_
-#define BLEADAFRUITNEOPIXEL_H_
+#ifndef BLEADAFRUITRGBPIXEL_H_
+#define BLEADAFRUITRGBPIXEL_H_
 
 #include "bluefruit_common.h"
 
 #include "BLECharacteristic.h"
 #include "BLEService.h"
 
-class BLEAdafruitNeopixel : public BLEService
+class BLEAdafruitRgbPixel : public BLEService
 {
   public:
     static const uint8_t UUID128_SERVICE[16];
-    static const uint8_t UUID128_CHR_COUNT[16];
+    static const uint8_t UUID128_CHR_PIN[16];
+//    static const uint8_t UUID128_CHR_COUNT[16];
     static const uint8_t UUID128_CHR_TYPE[16];
     static const uint8_t UUID128_CHR_DATA[16];
 
-    BLECharacteristic Count;
+//    BLECharacteristic Count;
+    BLECharacteristic Pin;
     BLECharacteristic Type;
     BLECharacteristic Data;
 
-    BLEAdafruitNeopixel(void);
+    BLEAdafruitRgbPixel(void);
     virtual err_t begin(void);
 };
 
 
 
-#endif /* BLEADAFRUITNEOPIXEL_H_ */
+#endif /* BLEADAFRUITRGBPIXEL_H_ */

@@ -28,62 +28,63 @@
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
 
-
-
-/* Adafruit NeoPixel Service
- * - Service: ADAF-0002-C332-42A8-93BD-25E905756CB8
- *    - Count : ADAF-0003-C332-42A8-93BD-25E905756CB8
- *    - Type  : ADAF-0004-C332-42A8-93BD-25E905756CB8
- *    - Data  : ADAF-0005-C332-42A8-93BD-25E905756CB8
+/* All Adafruit Service/Characteristic UUID128 share the same Base UUID:
+ *    ADAFxxx-C332-42A8-93BD-25E905756CB8
+ *
+ * Adafruit NeoPixel Service  0900
+ *  - Pin   0901  | uint8_t | Read + Write |
+ *  - Type  0902  | uint8_t | Read + Write | 0: neopixel, 1: dotstar
+ *  - Data  0903  | { uint16_t start, uint8_t flags, data }
+ *  - Count
  */
 
-const uint8_t BLEAdafruitNeopixel::UUID128_SERVICE[16] =
+const uint8_t BLEAdafruitRgbPixel::UUID128_SERVICE[16] =
 {
   0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
-  0xA8, 0x42, 0x32, 0xC3, 0x02, 0x00, 0xAF, 0xAD
+  0xA8, 0x42, 0x32, 0xC3, 0x00, 0x09, 0xAF, 0xAD
 };
 
-const uint8_t BLEAdafruitNeopixel::UUID128_CHR_COUNT[16] =
+const uint8_t BLEAdafruitRgbPixel::UUID128_CHR_PIN[16] =
 {
   0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
-  0xA8, 0x42, 0x32, 0xC3, 0x03, 0x00, 0xAF, 0xAD
+  0xA8, 0x42, 0x32, 0xC3, 0x01, 0x09, 0xAF, 0xAD
 };
 
-const uint8_t BLEAdafruitNeopixel::UUID128_CHR_TYPE[16] =
+const uint8_t BLEAdafruitRgbPixel::UUID128_CHR_TYPE[16] =
 {
   0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
-  0xA8, 0x42, 0x32, 0xC3, 0x04, 0x00, 0xAF, 0xAD
+  0xA8, 0x42, 0x32, 0xC3, 0x02, 0x09, 0xAF, 0xAD
 };
 
-const uint8_t BLEAdafruitNeopixel::UUID128_CHR_DATA[16] =
+const uint8_t BLEAdafruitRgbPixel::UUID128_CHR_DATA[16] =
 {
   0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
-  0xA8, 0x42, 0x32, 0xC3, 0x05, 0x00, 0xAF, 0xAD
+  0xA8, 0x42, 0x32, 0xC3, 0x03, 0x09, 0xAF, 0xAD
 };
 
 // Constructor
-BLEAdafruitNeopixel::BLEAdafruitNeopixel(void)
-  : BLEService(UUID128_SERVICE), Count(UUID128_CHR_COUNT), Type(UUID128_CHR_TYPE), Data(UUID128_CHR_DATA)
+BLEAdafruitRgbPixel::BLEAdafruitRgbPixel(void)
+  : BLEService(UUID128_SERVICE), Pin(UUID128_CHR_PIN), Type(UUID128_CHR_TYPE), Data(UUID128_CHR_DATA)
 {
 
 }
 
-err_t BLEAdafruitNeopixel::begin (void)
+err_t BLEAdafruitRgbPixel::begin (void)
 {
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
 
   // Add Characteristic
-  Count.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
-  Count.setPermission(SECMODE_OPEN, SECMODE_OPEN);
-  Count.setFixedLen(2);
-  VERIFY_STATUS( Count.begin() );
-  Count.write16(0);
+  Pin.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
+  Pin.setPermission(SECMODE_OPEN, SECMODE_OPEN);
+  Pin.setFixedLen(1);
+  VERIFY_STATUS( Pin.begin() );
+  Pin.write8(0);
 
   // Add Characteristic
   Type.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
   Type.setPermission(SECMODE_OPEN, SECMODE_OPEN);
-  Type.setFixedLen(2);
+  Type.setFixedLen(1);
   VERIFY_STATUS( Type.begin() );
   Type.write16(0);
 

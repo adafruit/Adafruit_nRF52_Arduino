@@ -29,6 +29,8 @@ BLEAdafruitLightSensor  bleLight;
 BLEAdafruitButton       bleButton;
 BLEAdafruitTone         bleTone;
 
+BLEAdafruitRgbPixel     blePixel;
+
 uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 {
   uint32_t button = 0;
@@ -69,7 +71,7 @@ uint16_t measure_accel(uint8_t* buf, uint16_t bufsize)
 void setup()
 {
   Serial.begin(115200);
-  //while ( !Serial ) delay(10);   // for nrf52840 with native usb
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
   
   Serial.println("Bluefruit52 BLEUART Example");
   Serial.println("---------------------------\n");
@@ -123,6 +125,8 @@ void setup()
   bleButton.setPeriod(0); // only notify if there is changes with buttons
 
   bleTone.begin(CPLAY_BUZZER);
+
+  blePixel.begin();
 
   // Set up and start advertising
   startAdv();

@@ -61,7 +61,7 @@
 #include "services/EddyStone.h"
 
 #include "services/BLEAdafruitTemperature.h"
-#include "services/BLEAdafruitNeopixel.h"
+#include "services/BLEAdafruitRgbPixel.h"
 #include "services/BLEAdafruitAccel.h"
 #include "services/BLEAdafruitLightSensor.h"
 #include "services/BLEAdafruitButton.h"
