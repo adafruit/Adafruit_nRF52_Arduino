@@ -36,6 +36,8 @@
 #define BLE_GATT_ATT_MTU_MAX      247
 #define BLE_MAX_CONNECTION        20 // SD support up to 20 connections
 
+#define CFG_SD_ATTR_TABLE_SIZE    0xC00
+
 #include "BLEUuid.h"
 #include "BLEAdvertising.h"
 #include "BLECharacteristic.h"

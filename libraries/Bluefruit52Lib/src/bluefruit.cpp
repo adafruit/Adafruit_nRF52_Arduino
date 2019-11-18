@@ -144,7 +144,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   /*------------------------------------------------------------------*/
   varclr(&_sd_cfg);
 
-  _sd_cfg.attr_table_size = 0x800;
+  _sd_cfg.attr_table_size = CFG_SD_ATTR_TABLE_SIZE;
   _sd_cfg.uuid128_max     = BLE_UUID_VS_COUNT_DEFAULT;
   _sd_cfg.service_changed = 1;
 
@@ -329,7 +329,7 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
    * prph and central connections for optimal SRAM usage.
    *
    * - If Peripheral mode is enabled
-   *   - ATTR Table Size          = 0x800.
+   *   - ATTR Table Size          = CFG_SD_ATTR_TABLE_SIZE.
    *   - HVN TX Queue Size        = 3
    *
    * - If Central mode is enabled
