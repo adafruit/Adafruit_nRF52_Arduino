@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-#include "bluefruit.h"
+#include "BLEAdafruitService.h"
 
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
@@ -69,7 +69,7 @@ BLEAdafruitRgbPixel::BLEAdafruitRgbPixel(void)
 
 }
 
-err_t BLEAdafruitRgbPixel::begin (Adafruit_NeoPixel* neo_pixel)
+err_t BLEAdafruitRgbPixel::begin (/*Adafruit_NeoPixel* neo_pixel*/)
 {
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );

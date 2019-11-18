@@ -25,11 +25,6 @@
 #ifndef BLE_ADAFRUIT_SENSOR_H_
 #define BLE_ADAFRUIT_SENSOR_H_
 
-#include "bluefruit_common.h"
-
-#include "BLECharacteristic.h"
-#include "BLEService.h"
-
 class BLEAdafruitSensor : public BLEService
 {
   public:

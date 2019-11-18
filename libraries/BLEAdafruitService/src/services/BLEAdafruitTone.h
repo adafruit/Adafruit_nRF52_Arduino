@@ -25,11 +25,6 @@
 #ifndef BLEADAFRUITTONE_H_
 #define BLEADAFRUITTONE_H_
 
-#include "bluefruit_common.h"
-
-#include "BLECharacteristic.h"
-#include "BLEService.h"
-
 class BLEAdafruitTone : public BLEService
 {
   public:

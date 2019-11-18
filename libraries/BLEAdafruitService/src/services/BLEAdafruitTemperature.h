@@ -25,13 +25,6 @@
 #ifndef BLEADAFRUITTEMPERATURE_H_
 #define BLEADAFRUITTEMPERATURE_H_
 
-#include "bluefruit_common.h"
-
-#include "BLECharacteristic.h"
-#include "BLEService.h"
-
-#include "BLEAdafruitSensor.h"
-
 class BLEAdafruitTemperature : public BLEAdafruitSensor
 {
   public:

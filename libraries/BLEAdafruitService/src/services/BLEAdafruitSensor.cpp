@@ -22,8 +22,7 @@
  * THE SOFTWARE.
  */
 
-#include "bluefruit.h"
-#include "BLEAdafruitSensor.h"
+#include "BLEAdafruitService.h"
 
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION

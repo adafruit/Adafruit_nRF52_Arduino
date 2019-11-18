@@ -25,13 +25,6 @@
 #ifndef BLEADAFRUITACCEL_H_
 #define BLEADAFRUITACCEL_H_
 
-#include "bluefruit_common.h"
-
-#include "BLECharacteristic.h"
-#include "BLEService.h"
-
-#include "BLEAdafruitSensor.h"
-
 class BLEAdafruitAccel : public BLEAdafruitSensor
 {
   public:

@@ -25,11 +25,6 @@
 #ifndef BLEADAFRUITRGBPIXEL_H_
 #define BLEADAFRUITRGBPIXEL_H_
 
-#include "bluefruit_common.h"
-
-#include "BLECharacteristic.h"
-#include "BLEService.h"
-
 class BLEAdafruitRgbPixel : public BLEService
 {
   public:

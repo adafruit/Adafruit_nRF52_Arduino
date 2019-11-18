@@ -14,6 +14,7 @@
 #include <bluefruit.h>
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
+#include <BLEAdafruitService.h>
 #include <Adafruit_CircuitPlayground.h>
 
 // BLE Service
@@ -71,7 +72,7 @@ uint16_t measure_accel(uint8_t* buf, uint16_t bufsize)
 void setup()
 {
   Serial.begin(115200);
-  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+  //while ( !Serial ) delay(10);   // for nrf52840 with native usb
   
   Serial.println("Bluefruit52 BLEUART Example");
   Serial.println("---------------------------\n");

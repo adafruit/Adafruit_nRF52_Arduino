@@ -143,6 +143,7 @@ class BLECharacteristic
     bool notifyEnabled(uint16_t conn_hdl);
 
     /*------------- Notify -------------*/
+//    bool notify   (void);
     bool notify   (const void* data, uint16_t len);
     bool notify   (const char* str);
 
@@ -152,6 +153,7 @@ class BLECharacteristic
     bool notify32 (int      num);
 
     /*------------- Notify multiple connections -------------*/
+//    bool notify   (uint16_t conn_hdl);
     bool notify   (uint16_t conn_hdl, const void* data, uint16_t len);
     bool notify   (uint16_t conn_hdl, const char* str);
 
