@@ -126,7 +126,7 @@ void BLEAdafruitRgbPixel::pixel_data_write_cb(uint16_t conn_hdl, BLECharacterist
   memcpy(&index, data, 2);
   uint8_t flag = data[2];
 
-  uint8_t* buffer = svc._neo->getPixels();
+  uint8_t* buffer = svc._neo->getPixels() + index;
 
   memcpy(buffer, data+3, len-3);
 
