@@ -72,11 +72,18 @@ void BLEAdafruitTone::tone_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, u
       uint32_t duration;
   } tone_data;
 
-  PRINT_LOCATION();
   // invalid length
   if (len != sizeof(tone_data)) return;
+
+  // extra data
   memcpy(&tone_data, data, len);
 
-  PRINT_LOCATION();
-  tone(svc._pin, tone_data.freq, tone_data.duration);
+  // frequency = 0 means no tone
+  if (tone_data.freq == 0)
+  {
+    noTone(svc._pin);
+  }else
+  {
+    tone(svc._pin, tone_data.freq, tone_data.duration);
+  }
 }
