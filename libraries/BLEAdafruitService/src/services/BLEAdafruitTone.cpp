@@ -54,8 +54,8 @@ err_t BLEAdafruitTone::begin(int pin)
   VERIFY_STATUS( BLEService::begin() );
 
   // Setup Characteristic
-  _tone.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
-  _tone.setPermission(SECMODE_OPEN, SECMODE_OPEN);
+  _tone.setProperties(CHR_PROPS_WRITE);
+  _tone.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
   _tone.setFixedLen(6); // uint16_t freq, uint32_t duration
   _tone.setWriteCallback(tone_write_cb, true);
   VERIFY_STATUS( _tone.begin() );
