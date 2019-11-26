@@ -30,7 +30,7 @@ BLEAdafruitLightSensor  bleLight;
 BLEAdafruitButton       bleButton;
 BLEAdafruitTone         bleTone;
 
-BLEAdafruitRgbPixel     blePixel;
+BLEAdafruitAddressablePixel     blePixel;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(10, CPLAY_NEOPIXELPIN, NEO_GRB + NEO_KHZ800);
 

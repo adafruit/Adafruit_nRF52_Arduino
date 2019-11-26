@@ -36,7 +36,7 @@
   #define Adafruit_NeoPixel_Type  Adafruit_NeoPixel
 #endif
 
-class BLEAdafruitRgbPixel : public BLEService
+class BLEAdafruitAddressablePixel : public BLEService
 {
   public:
     static const uint8_t UUID128_SERVICE[16];
@@ -50,7 +50,7 @@ class BLEAdafruitRgbPixel : public BLEService
     BLECharacteristic Type;
     BLECharacteristic Data;
 
-    BLEAdafruitRgbPixel(void);
+    BLEAdafruitAddressablePixel(void);
     virtual err_t begin(Adafruit_NeoPixel_Type* neo);
 
   private:

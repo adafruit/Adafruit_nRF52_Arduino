@@ -42,44 +42,44 @@
  *  - Count
  */
 
-const uint8_t BLEAdafruitRgbPixel::UUID128_SERVICE[16] =
+const uint8_t BLEAdafruitAddressablePixel::UUID128_SERVICE[16] =
 {
   0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
   0xA8, 0x42, 0x32, 0xC3, 0x00, 0x09, 0xAF, 0xAD
 };
 
-const uint8_t BLEAdafruitRgbPixel::UUID128_CHR_PIN[16] =
+const uint8_t BLEAdafruitAddressablePixel::UUID128_CHR_PIN[16] =
 {
   0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
   0xA8, 0x42, 0x32, 0xC3, 0x01, 0x09, 0xAF, 0xAD
 };
 
-const uint8_t BLEAdafruitRgbPixel::UUID128_CHR_TYPE[16] =
+const uint8_t BLEAdafruitAddressablePixel::UUID128_CHR_TYPE[16] =
 {
   0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
   0xA8, 0x42, 0x32, 0xC3, 0x02, 0x09, 0xAF, 0xAD
 };
 
-const uint8_t BLEAdafruitRgbPixel::UUID128_CHR_DATA[16] =
+const uint8_t BLEAdafruitAddressablePixel::UUID128_CHR_DATA[16] =
 {
   0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
   0xA8, 0x42, 0x32, 0xC3, 0x03, 0x09, 0xAF, 0xAD
 };
 
 // Constructor
-BLEAdafruitRgbPixel::BLEAdafruitRgbPixel(void)
+BLEAdafruitAddressablePixel::BLEAdafruitAddressablePixel(void)
   : BLEService(UUID128_SERVICE), Pin(UUID128_CHR_PIN), Type(UUID128_CHR_TYPE), Data(UUID128_CHR_DATA)
 {
   _neo = NULL;
 }
 
-err_t BLEAdafruitRgbPixel::begin (Adafruit_NeoPixel_Type* neo_pixel)
+err_t BLEAdafruitAddressablePixel::begin (Adafruit_NeoPixel_Type* neo_pixel)
 {
   _neo = neo_pixel;
   return begin((uint8_t) _neo->getPin(), 0);
 }
 
-err_t BLEAdafruitRgbPixel::begin(uint8_t pin, uint8_t type)
+err_t BLEAdafruitAddressablePixel::begin(uint8_t pin, uint8_t type)
 {
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
@@ -114,13 +114,13 @@ err_t BLEAdafruitRgbPixel::begin(uint8_t pin, uint8_t type)
 //--------------------------------------------------------------------+
 // Static callbacks
 //--------------------------------------------------------------------+
-void BLEAdafruitRgbPixel::pixel_data_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
+void BLEAdafruitAddressablePixel::pixel_data_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
   (void) conn_hdl;
 
   if (len < 3) return;
 
-  BLEAdafruitRgbPixel& svc = (BLEAdafruitRgbPixel&) chr->parentService();
+  BLEAdafruitAddressablePixel& svc = (BLEAdafruitAddressablePixel&) chr->parentService();
 
   uint16_t index;
   memcpy(&index, data, 2);
