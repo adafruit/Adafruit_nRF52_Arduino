@@ -66,47 +66,62 @@ const uint8_t BLEAdafruitAddressablePixel::UUID128_CHR_DATA[16] =
   0xA8, 0x42, 0x32, 0xC3, 0x03, 0x09, 0xAF, 0xAD
 };
 
+const uint8_t BLEAdafruitAddressablePixel::UUID128_CHR_BUFSIZE[16] =
+{
+  0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
+  0xA8, 0x42, 0x32, 0xC3, 0x04, 0x09, 0xAF, 0xAD
+};
+
 // Constructor
 BLEAdafruitAddressablePixel::BLEAdafruitAddressablePixel(void)
-  : BLEService(UUID128_SERVICE), Pin(UUID128_CHR_PIN), Type(UUID128_CHR_TYPE), Data(UUID128_CHR_DATA)
+  : BLEService(UUID128_SERVICE), _pin(UUID128_CHR_PIN), _type(UUID128_CHR_TYPE),
+    _data(UUID128_CHR_DATA), _bufsize(UUID128_CHR_BUFSIZE)
 {
   _neo = NULL;
 }
 
-err_t BLEAdafruitAddressablePixel::begin (Adafruit_NeoPixel_Type* neo_pixel)
+err_t BLEAdafruitAddressablePixel::begin(Adafruit_NeoPixel* neo_pixel)
 {
   _neo = neo_pixel;
-  return begin((uint8_t) _neo->getPin(), 0);
+  uint16_t bufsize = _neo->numPixels()*3; // TODO actual bufsize for 3 RGB or 4 RGBW later
+  return begin((uint8_t) _neo->getPin(), 0, bufsize); // TODO dotstart support
 }
 
-err_t BLEAdafruitAddressablePixel::begin(uint8_t pin, uint8_t type)
+err_t BLEAdafruitAddressablePixel::begin(uint8_t pin, uint8_t type, uint16_t bufsize)
 {
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
 
   // Add Characteristic
-  Pin.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
-  Pin.setPermission(SECMODE_OPEN, SECMODE_OPEN);
-  Pin.setFixedLen(1);
-  VERIFY_STATUS( Pin.begin() );
-  Pin.write8(pin);
+  _pin.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
+  _pin.setPermission(SECMODE_OPEN, SECMODE_OPEN);
+  _pin.setFixedLen(1);
+  VERIFY_STATUS( _pin.begin() );
+  _pin.write8(pin);
 
   // Add Characteristic
-  Type.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
-  Type.setPermission(SECMODE_OPEN, SECMODE_OPEN);
-  Type.setFixedLen(1);
-  VERIFY_STATUS( Type.begin() );
-  Type.write8(type);
+  _type.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
+  _type.setPermission(SECMODE_OPEN, SECMODE_OPEN);
+  _type.setFixedLen(1);
+  VERIFY_STATUS( _type.begin() );
+  _type.write8(type);
 
   // Add Characteristic
-  Data.setProperties(CHR_PROPS_WRITE);
-  Data.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
+  _data.setProperties(CHR_PROPS_WRITE);
+  _data.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
   // Change to use VLOC STACK to USER due to lack of memroy
   // Data.setMaxLen(Bluefruit.getMaxMtu(BLE_GAP_ROLE_PERIPH));
-  Data.setMaxLen(BLE_GATTS_VAR_ATTR_LEN_MAX);
-  VERIFY_STATUS( Data.begin() );
+  _data.setMaxLen(BLE_GATTS_VAR_ATTR_LEN_MAX);
+  VERIFY_STATUS( _data.begin() );
 
-  Data.setWriteCallback(pixel_data_write_cb, true);
+  // Add Characteristic
+  _bufsize.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
+  _bufsize.setPermission(SECMODE_OPEN, SECMODE_OPEN);
+  _bufsize.setFixedLen(2);
+  VERIFY_STATUS( _bufsize.begin() );
+  _bufsize.write16(bufsize);
+
+  _data.setWriteCallback(pixel_data_write_cb, true);
 
   return ERROR_NONE;
 }

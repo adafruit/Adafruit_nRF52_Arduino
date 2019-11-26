@@ -25,38 +25,29 @@
 #ifndef BLEADAFRUITADDRESSABLEPIXEL_H_
 #define BLEADAFRUITADDRESSABLEPIXEL_H_
 
-// use Adafruit_CPlay_NeoPixel instead of Adafruit_NeoPixel
-#define USE_CPLAY_NEOPIXEL  0
-
-#if USE_CPLAY_NEOPIXEL
-  #include "Adafruit_CPlay_NeoPixel.h"
-  #define Adafruit_NeoPixel_Type  Adafruit_CPlay_NeoPixel
-#else
-  #include "Adafruit_NeoPixel.h"
-  #define Adafruit_NeoPixel_Type  Adafruit_NeoPixel
-#endif
+#include "Adafruit_NeoPixel.h"
 
 class BLEAdafruitAddressablePixel : public BLEService
 {
   public:
     static const uint8_t UUID128_SERVICE[16];
     static const uint8_t UUID128_CHR_PIN[16];
-//    static const uint8_t UUID128_CHR_COUNT[16];
     static const uint8_t UUID128_CHR_TYPE[16];
     static const uint8_t UUID128_CHR_DATA[16];
-
-//    BLECharacteristic Count;
-    BLECharacteristic Pin;
-    BLECharacteristic Type;
-    BLECharacteristic Data;
+    static const uint8_t UUID128_CHR_BUFSIZE[16];
 
     BLEAdafruitAddressablePixel(void);
-    virtual err_t begin(Adafruit_NeoPixel_Type* neo);
+    virtual err_t begin(Adafruit_NeoPixel* neo);
 
   private:
-    Adafruit_NeoPixel_Type* _neo;
+    BLECharacteristic _pin;
+    BLECharacteristic _type;
+    BLECharacteristic _data;
+    BLECharacteristic _bufsize;
 
-    err_t begin(uint8_t pin, uint8_t type);
+    Adafruit_NeoPixel* _neo;
+
+    err_t begin(uint8_t pin, uint8_t type, uint16_t bufsize);
 
     static void pixel_data_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
 };
