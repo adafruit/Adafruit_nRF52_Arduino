@@ -143,10 +143,22 @@ void startAdv(void)
 {
   // Advertising packet
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
-  Bluefruit.Advertising.addTxPower();
 
-  // Include bleuart 128-bit uuid
-  Bluefruit.Advertising.addService(bleuart);
+  // Advertising with only board ID
+  struct ATTR_PACKED {
+    uint16_t mfr_id;
+    
+    uint8_t  field_len;
+    uint16_t field_key;
+    uint16_t field_value;
+  } mfr_adv;
+
+  mfr_adv.mfr_id = UUID16_COMPANY_ID_ADAFRUIT;
+  mfr_adv.field_len = 4;
+  mfr_adv.field_key = 1; // board id
+  mfr_adv.field_value = USB_PID;
+
+  Bluefruit.Advertising.addManufacturerData(&mfr_adv, sizeof(mfr_adv));
 
   // Secondary Scan Response packet (optional)
   // Since there is no room for 'Name' in Advertising packet

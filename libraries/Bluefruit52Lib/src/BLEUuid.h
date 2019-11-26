@@ -227,7 +227,7 @@ extern const uint8_t UUID128_CHR_ADAFRUIT_VERSION[16];
  * https://www.bluetooth.com/specifications/assigned-numbers/company-identifiers
  *------------------------------------------------------------------*/
 #define UUID16_COMPANY_ID_APPLE         0x004C
-
+#define UUID16_COMPANY_ID_ADAFRUIT      0x0822
 
 /*------------------------------------------------------------------*/
 /* Unit values ( used in Characteristic Presentation Format )
