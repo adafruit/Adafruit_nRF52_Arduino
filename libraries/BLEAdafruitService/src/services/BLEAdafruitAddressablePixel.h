@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLEADAFRUITRGBPIXEL_H_
-#define BLEADAFRUITRGBPIXEL_H_
+#ifndef BLEADAFRUITADDRESSABLEPIXEL_H_
+#define BLEADAFRUITADDRESSABLEPIXEL_H_
 
 // use Adafruit_CPlay_NeoPixel instead of Adafruit_NeoPixel
 #define USE_CPLAY_NEOPIXEL  0
@@ -63,4 +63,4 @@ class BLEAdafruitRgbPixel : public BLEService
 
 
 
-#endif /* BLEADAFRUITRGBPIXEL_H_ */
+#endif /* BLEADAFRUITADDRESSABLEPIXEL_H_ */

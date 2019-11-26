@@ -26,7 +26,7 @@
 #include "BLECharacteristic.h"
 #include "BLEService.h"
 
-#include "BLEAdafruitRgbPixel.h"
+#include "BLEAdafruitAddressablePixel.h"
 
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION

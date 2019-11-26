@@ -35,7 +35,6 @@
 #include "services/BLEAdafruitLightSensor.h"
 #include "services/BLEAdafruitButton.h"
 #include "services/BLEAdafruitTone.h"
-#include "services/BLEAdafruitRgbPixel.h"
-
+#include "services/BLEAdafruitAddressablePixel.h"
 
 #endif /* BLEADAFRUITSERVICE_H_ */
