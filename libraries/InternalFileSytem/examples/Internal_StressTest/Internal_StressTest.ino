@@ -25,9 +25,9 @@ using namespace Adafruit_LittleFS_Namespace;
  */
 
 // timeout in seconds
-#define TIME_OUT      5
+#define TIME_OUT      600
 
-bool summarized = false;
+uint32_t writeCount = 0;
 
 // the setup function runs once when you press reset or power the board
 void setup() 
@@ -65,7 +65,7 @@ void write_files(const char * name)
 
   if ( file.open(fname, FILE_O_WRITE) )
   {
-    file.println(name);
+    file.printf("%d\n", writeCount++);
     file.close();
   }else
   {
@@ -91,11 +91,11 @@ void list_files(void)
       readlen = file.read(buffer, sizeof(buffer));
 
       Serial.print(buffer);
+      delay(100);
     }
     file.close();
 
     Serial.println("---------------\n");
-    Serial.flush();
   }
 }
 
@@ -107,9 +107,9 @@ void loop()
   if ( millis() > TIME_OUT*1000 )
   {
     // low priority task print summary
-    if ( !summarized && (TASK_PRIO_LOW == uxTaskPriorityGet(th)))
+    if (TASK_PRIO_LOW == uxTaskPriorityGet(th))
     {
-      summarized = true;
+      Serial.printf("Total write count = %d\n", writeCount);
       list_files();
     }
 
@@ -125,5 +125,5 @@ void loop()
   write_files(name);
 
   // lower delay increase chance for high prio task preempt others.
-  delay(100);
+  delay(500);
 }
