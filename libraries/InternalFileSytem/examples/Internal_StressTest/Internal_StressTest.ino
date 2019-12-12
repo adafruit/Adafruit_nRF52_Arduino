@@ -52,8 +52,10 @@ void setup()
 
   // Note: default loop() is running at LOW
   Scheduler.startLoop(loop, 1024, TASK_PRIO_NORMAL, "normal");
+  Scheduler.startLoop(loop, 1024, TASK_PRIO_NORMAL, "normal");
+  Scheduler.startLoop(loop, 1024, TASK_PRIO_NORMAL, "normal");
   Scheduler.startLoop(loop, 1024, TASK_PRIO_HIGH, "high");
-  Scheduler.startLoop(loop, 1024, TASK_PRIO_HIGHEST, "highest");
+  //Scheduler.startLoop(loop, 1024, TASK_PRIO_HIGHEST, "highest");
 }
 
 void write_files(const char * name)
@@ -65,7 +67,7 @@ void write_files(const char * name)
 
   if ( file.open(fname, FILE_O_WRITE) )
   {
-    file.printf("%d\n", writeCount++);
+    file.printf("%s %d\n", name, writeCount++);
     file.close();
   }else
   {
@@ -86,9 +88,8 @@ void list_files(void)
 
     while ( file.available() )
     {
-      uint32_t readlen;
       char buffer[64] = { 0 };
-      readlen = file.read(buffer, sizeof(buffer));
+      file.read(buffer, sizeof(buffer)-1);
 
       Serial.print(buffer);
       delay(100);
