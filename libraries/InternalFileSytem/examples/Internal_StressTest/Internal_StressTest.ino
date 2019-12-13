@@ -15,6 +15,9 @@
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
 
+// hardware random generator
+#include "nrf_rng.h"
+
 using namespace Adafruit_LittleFS_Namespace;
 
 /* This example perform a stress test on Little FileSystem on internal flash.
@@ -25,7 +28,10 @@ using namespace Adafruit_LittleFS_Namespace;
  */
 
 // timeout in seconds
-#define TIME_OUT      20
+#define TIME_OUT      600
+
+// Limit number of writes since our internal flash is limited (28 KB in total)
+#define WRITE_COUNT   2000
 
 uint32_t writeCount = 0;
 
@@ -117,21 +123,39 @@ void list_files(void)
   }
 }
 
+// Use random generator (requires Softdevice disabled)
+uint16_t get_rand(void)
+{
+  uint8_t bytes[2];
+
+  for(int i=0; i<2; i++)
+  {
+    nrf_rng_event_clear(NRF_RNG_EVENT_VALRDY);
+    nrf_rng_task_trigger(NRF_RNG_TASK_START);
+
+    while ( !nrf_rng_event_get(NRF_RNG_EVENT_VALRDY) ) yield();
+
+    bytes[i] = nrf_rng_random_value_get();
+  }
+
+  return (bytes[0] << 8) + bytes[1];
+}
+
 // the loop function runs over and over again forever
 void loop() 
 {
   TaskHandle_t th = xTaskGetCurrentTaskHandle();
 
-  if ( millis() > TIME_OUT*1000 )
+  if ( (millis() > TIME_OUT*1000) || (writeCount > WRITE_COUNT) )
   {
     // low priority task print summary
     if (TASK_PRIO_LOW == uxTaskPriorityGet(th))
     {
-      Serial.printf("Total write count = %d\n", writeCount);
+      Serial.printf("Total write count = %d in %f seconds\n", writeCount, millis()/1000);
       list_files();
     }
 
-    delay(1000);
+    delay(1000);uint32_t duration_ms = 0;
     vTaskSuspend(NULL); // suspend task
     return;
   }
@@ -141,8 +165,11 @@ void loop()
   Serial.flush();
 
   // Write files
+  uint32_t duration_ms = 0;
   write_files(name);
 
   // lower delay increase chance for high prio task preempt others.
-  delay(100);
+  // delay is from 0-5000
+  uint16_t ms = get_rand() % 5000;
+  delay(ms);
 }
