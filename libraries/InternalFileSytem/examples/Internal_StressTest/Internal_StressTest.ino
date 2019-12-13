@@ -105,13 +105,15 @@ void list_files(void)
           file.read(buffer, sizeof(buffer)-1);
 
           Serial.print(buffer);
-          delay(100);
+          delay(10);
         }
         file.close();
 
         Serial.println("---------------\n");
       }
     }
+
+    subdir.close();
   }
 }
 
@@ -129,7 +131,7 @@ void loop()
       list_files();
     }
 
-    delay(100);
+    delay(1000);
     vTaskSuspend(NULL); // suspend task
     return;
   }
@@ -142,5 +144,5 @@ void loop()
   write_files(name);
 
   // lower delay increase chance for high prio task preempt others.
-  delay(500);
+  delay(100);
 }
