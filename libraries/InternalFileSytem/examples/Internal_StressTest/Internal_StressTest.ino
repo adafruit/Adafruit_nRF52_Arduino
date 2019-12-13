@@ -28,7 +28,7 @@ using namespace Adafruit_LittleFS_Namespace;
  */
 
 // timeout in seconds
-#define TIME_OUT      600
+#define TIME_OUT      60
 
 // Limit number of writes since our internal flash is limited (28 KB in total)
 #define WRITE_COUNT   2000
@@ -151,7 +151,7 @@ void loop()
     // low priority task print summary
     if (TASK_PRIO_LOW == uxTaskPriorityGet(th))
     {
-      Serial.printf("Total write count = %d in %f seconds\n", writeCount, millis()/1000);
+      Serial.printf("Total write count = %d in %.2f seconds\n", writeCount, millis()/1000.0);
       list_files();
     }
 
