@@ -46,13 +46,20 @@ void setup()
   InternalFS.format();
   Serial.println("Done"); Serial.flush();
 
+  // Create a folder for each thread
+  InternalFS.mkdir("high");
+  InternalFS.mkdir("n1");
+  InternalFS.mkdir("n2");
+  InternalFS.mkdir("n3");
+  InternalFS.mkdir("loop");
+
   // Create thread with different priority
   // Although all the thread share loop() code, they are separated threads
   // and running with different priorities
 
   // Note: default loop() is running at LOW
   //Scheduler.startLoop(loop, 1024, TASK_PRIO_HIGHEST, "highest");
-  Scheduler.startLoop(loop, 1024, TASK_PRIO_HIGH, "high");
+  Scheduler.startLoop(loop, 1024, TASK_PRIO_HIGH  , "high");
   Scheduler.startLoop(loop, 1024, TASK_PRIO_NORMAL, "n1");
   Scheduler.startLoop(loop, 1024, TASK_PRIO_NORMAL, "n2");
   Scheduler.startLoop(loop, 1024, TASK_PRIO_NORMAL, "n3");
@@ -60,8 +67,8 @@ void setup()
 
 void write_files(const char * name)
 {
-  char fname[20] = { 0 };
-  sprintf(fname, "%s.txt", name);
+  char fname[30] = { 0 };
+  sprintf(fname, "%s/%s.txt", name, name); // each task has its own folder and file
 
   File file(InternalFS);
 
@@ -77,26 +84,34 @@ void write_files(const char * name)
 
 void list_files(void)
 {
-  File dir("/", FILE_O_READ, InternalFS);
+  File root("/", FILE_O_READ, InternalFS);
+  File subdir(InternalFS);
   File file(InternalFS);
 
-  while( (file = dir.openNextFile(FILE_O_READ)) )
+  while( (subdir = root.openNextFile(FILE_O_READ)) )
   {
-    if ( file.isDirectory() ) continue;
-
-    Serial.printf("--- %s ---\n", file.name());
-
-    while ( file.available() )
+    if ( subdir.isDirectory() )
     {
-      char buffer[64] = { 0 };
-      file.read(buffer, sizeof(buffer)-1);
+      char fname[30];
+      sprintf(fname, "%s/%s.txt", subdir.name(), subdir.name());
 
-      Serial.print(buffer);
-      delay(100);
+      if ( file.open(fname, FILE_O_READ) )
+      {
+        Serial.printf("--- %s ---\n", fname);
+
+        while ( file.available() )
+        {
+          char buffer[64] = { 0 };
+          file.read(buffer, sizeof(buffer)-1);
+
+          Serial.print(buffer);
+          delay(100);
+        }
+        file.close();
+
+        Serial.println("---------------\n");
+      }
     }
-    file.close();
-
-    Serial.println("---------------\n");
   }
 }
 
