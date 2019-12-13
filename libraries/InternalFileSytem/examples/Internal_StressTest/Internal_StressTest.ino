@@ -25,7 +25,7 @@ using namespace Adafruit_LittleFS_Namespace;
  */
 
 // timeout in seconds
-#define TIME_OUT      600
+#define TIME_OUT      20
 
 uint32_t writeCount = 0;
 
@@ -51,11 +51,11 @@ void setup()
   // and running with different priorities
 
   // Note: default loop() is running at LOW
-  Scheduler.startLoop(loop, 1024, TASK_PRIO_NORMAL, "normal");
-  Scheduler.startLoop(loop, 1024, TASK_PRIO_NORMAL, "normal");
-  Scheduler.startLoop(loop, 1024, TASK_PRIO_NORMAL, "normal");
-  Scheduler.startLoop(loop, 1024, TASK_PRIO_HIGH, "high");
   //Scheduler.startLoop(loop, 1024, TASK_PRIO_HIGHEST, "highest");
+  Scheduler.startLoop(loop, 1024, TASK_PRIO_HIGH, "high");
+  Scheduler.startLoop(loop, 1024, TASK_PRIO_NORMAL, "n1");
+  Scheduler.startLoop(loop, 1024, TASK_PRIO_NORMAL, "n2");
+  Scheduler.startLoop(loop, 1024, TASK_PRIO_NORMAL, "n3");
 }
 
 void write_files(const char * name)
@@ -67,7 +67,7 @@ void write_files(const char * name)
 
   if ( file.open(fname, FILE_O_WRITE) )
   {
-    file.printf("%s %d\n", name, writeCount++);
+    file.printf("%d\n", writeCount++);
     file.close();
   }else
   {
@@ -114,6 +114,7 @@ void loop()
       list_files();
     }
 
+    delay(100);
     vTaskSuspend(NULL); // suspend task
     return;
   }

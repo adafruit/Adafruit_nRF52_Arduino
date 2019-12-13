@@ -45,6 +45,7 @@ static void _redirect_task(void* arg)
   while(1)
   {
     taskfunc();
+    yield();
   }
 }
 
@@ -55,11 +56,11 @@ SchedulerRTOS::SchedulerRTOS(void)
 
 bool SchedulerRTOS::startLoop(taskfunc_t task, uint32_t stack_size, uint32_t prio, const char* name)
 {
-  char name_default[8] = "loop0";
-  name_default[4] += _num;
+  char name_default[10];
 
   if (name == NULL)
   {
+    sprintf(name_default, "loop%d", _num++);
     name = name_default;
   }
 
