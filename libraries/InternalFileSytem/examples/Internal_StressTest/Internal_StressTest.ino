@@ -155,7 +155,7 @@ void loop()
       list_files();
     }
 
-    delay(1000);uint32_t duration_ms = 0;
+    delay(1000);
     vTaskSuspend(NULL); // suspend task
     return;
   }
@@ -165,7 +165,6 @@ void loop()
   Serial.flush();
 
   // Write files
-  uint32_t duration_ms = 0;
   write_files(name);
 
   // lower delay increase chance for high prio task preempt others.
