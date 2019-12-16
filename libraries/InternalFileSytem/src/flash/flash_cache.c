@@ -22,52 +22,51 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
 #include <string.h>
 #include "flash_cache.h"
 #include "common_func.h"
 #include "variant.h"
 #include "wiring_digital.h"
-#include "rtos.h"
+
+//--------------------------------------------------------------------+
+// MACRO TYPEDEF CONSTANT ENUM DECLARATION
+//--------------------------------------------------------------------+
+
+static int  _internal_flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, uint32_t len);
+static int  _internal_flash_cache_read  (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t count);
+static void _internal_flash_cache_flush (flash_cache_t* fc);
 
 
-static StaticSemaphore_t _mutex_storage;
-static volatile SemaphoreHandle_t _serializeFlashAccess = NULL;
-
-int  _internal_flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, uint32_t len);
-int  _internal_flash_cache_read  (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t count);
-void _internal_flash_cache_flush (flash_cache_t* fc);
-
-
-static inline void _internal_TakeFlashCacheSerialization()
+//--------------------------------------------------------------------+
+// Helper
+//--------------------------------------------------------------------+
+static inline void _internal_TakeFlashCacheSerialization(flash_cache_t* fc)
 {
   // This only executes one
-  if ( _serializeFlashAccess == NULL )
+  if ( fc->mutex == NULL )
   {
-    _serializeFlashAccess = xSemaphoreCreateMutexStatic(&_mutex_storage);
+    fc->mutex = xSemaphoreCreateMutexStatic(&fc->mutex_storage);
   }
 
 #if CFG_DEBUG >= 2
-  if ( 0 == uxSemaphoreGetCount(_serializeFlashAccess) )
+  if ( 0 == uxSemaphoreGetCount(fc->mutex) )
   {
     LOG_LV2("IFLASH", "Blocked parallel write attempt ... waiting for mutex");
   }
 #endif
 
-  xSemaphoreTake(_serializeFlashAccess,  portMAX_DELAY);
+  xSemaphoreTake(fc->mutex,  portMAX_DELAY);
 }
 
-static inline void _internal_ReleaseFlashCacheSerialization()
+static inline void _internal_ReleaseFlashCacheSerialization(flash_cache_t* fc)
 {
-  if ( _serializeFlashAccess )
+  if ( fc->mutex )
   {
-    xSemaphoreGive(_serializeFlashAccess);
+    xSemaphoreGive(fc->mutex);
   }
 }
 
-
-//--------------------------------------------------------------------+
-// MACRO TYPEDEF CONSTANT ENUM DECLARATION
-//--------------------------------------------------------------------+
 static inline uint32_t page_addr_of (uint32_t addr)
 {
   return addr & ~(FLASH_CACHE_SIZE - 1);
@@ -78,6 +77,9 @@ static inline uint32_t page_offset_of (uint32_t addr)
   return addr & (FLASH_CACHE_SIZE - 1);
 }
 
+//--------------------------------------------------------------------+
+// Cache Write
+//--------------------------------------------------------------------+
 int _internal_flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, uint32_t len)
 {
   uint8_t const * src8 = (uint8_t const *) src;
@@ -115,12 +117,15 @@ int _internal_flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * s
 
 int flash_cache_write(flash_cache_t* fc, uint32_t dst, void const * src, uint32_t len)
 {
-  _internal_TakeFlashCacheSerialization();
+  _internal_TakeFlashCacheSerialization(fc);
   int result = _internal_flash_cache_write(fc, dst, src, len);
-  _internal_ReleaseFlashCacheSerialization();
+  _internal_ReleaseFlashCacheSerialization(fc);
   return result;
 }
 
+//--------------------------------------------------------------------+
+// Cache Flush
+//--------------------------------------------------------------------+
 void _internal_flash_cache_flush (flash_cache_t* fc)
 {
   if ( fc->cache_addr == FLASH_CACHE_INVALID_ADDR )
@@ -145,11 +150,14 @@ void _internal_flash_cache_flush (flash_cache_t* fc)
 
 void flash_cache_flush(flash_cache_t* fc)
 {
-  _internal_TakeFlashCacheSerialization();
+  _internal_TakeFlashCacheSerialization(fc);
   _internal_flash_cache_flush(fc);
-  _internal_ReleaseFlashCacheSerialization();
+  _internal_ReleaseFlashCacheSerialization(fc);
 }
 
+//--------------------------------------------------------------------+
+// Cache Read
+//--------------------------------------------------------------------+
 int _internal_flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t count)
 {
   // there is no check for overflow / wraparound for dst + count, addr + count.
@@ -258,8 +266,8 @@ int _internal_flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uin
 
 int flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t count)
 {
-  _internal_TakeFlashCacheSerialization();
+  _internal_TakeFlashCacheSerialization(fc);
   int result = _internal_flash_cache_read(fc, dst, addr, count);
-  _internal_ReleaseFlashCacheSerialization();
+  _internal_ReleaseFlashCacheSerialization(fc);
   return result;
 }

@@ -27,6 +27,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "FreeRTOS.h"
+#include "semphr.h"
 
 #define FLASH_CACHE_SIZE          4096        // must be a erasable page size
 #define FLASH_CACHE_INVALID_ADDR  0xffffffff
@@ -40,6 +42,9 @@ typedef struct
 
     uint32_t cache_addr;
     uint8_t* cache_buf;
+
+    SemaphoreHandle_t mutex;
+    StaticSemaphore_t mutex_storage;
 } flash_cache_t;
 
 #ifdef __cplusplus

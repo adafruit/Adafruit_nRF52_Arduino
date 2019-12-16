@@ -67,7 +67,10 @@ static flash_cache_t _cache =
   .verify     = fal_verify,
 
   .cache_addr = FLASH_CACHE_INVALID_ADDR,
-  .cache_buf  = _cache_buffer
+  .cache_buf  = _cache_buffer,
+
+  .mutex      = NULL,
+  //.mutex_storage = { 0 }  // no need to initialize mutex storage
 };
 
 //--------------------------------------------------------------------+

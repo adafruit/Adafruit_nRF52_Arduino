@@ -28,7 +28,7 @@ using namespace Adafruit_LittleFS_Namespace;
  */
 
 // timeout in seconds
-#define TIME_OUT      30
+#define TIME_OUT      60
 
 // Limit number of writes since our internal flash is limited (28 KB in total)
 #define WRITE_COUNT   2000
