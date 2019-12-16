@@ -22,66 +22,46 @@
  * THE SOFTWARE.
  */
 
-#include <FreeRTOS.h>
-#include <semphr.h> // This ties to FreeRTOS ... used to serialize flash access
-
-#include "flash_nrf5x.h"
-#include "flash_cache.h"
-#include "nrf_sdm.h"
-#include "nrf_soc.h"
-#include "delay.h"
-#include "rtos.h"
-
-
 #include <string.h>
 #include "flash_cache.h"
 #include "common_func.h"
 #include "variant.h"
 #include "wiring_digital.h"
+#include "rtos.h"
 
 
-
+static StaticSemaphore_t _mutex_storage;
 static volatile SemaphoreHandle_t _serializeFlashAccess = NULL;
 
 int  _internal_flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, uint32_t len);
 int  _internal_flash_cache_read  (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t count);
 void _internal_flash_cache_flush (flash_cache_t* fc);
 
-static inline void _internal_EnsureFlashCacheSemaphoreInitialized()
-{
-  // once the value is non-null, no synchronization required
-  while (NULL == _serializeFlashAccess)
-  {
-    SemaphoreHandle_t newSemaphore = xSemaphoreCreateMutex();
-    if (NULL == newSemaphore)
-    {
-      LOG_LV2("IFLASH", "Unable to allocate semaphore for InternalFS ... will retry");
-      delay(1);
-    }
-    // want one, and exactly one, semaphore to be stored in the global
-    // if multiple initializations, only one will replace a NULL value
-    // note that this atomic intrinsic has built-in memory barrier semantics
-    if (!__sync_bool_compare_and_swap(&_serializeFlashAccess, NULL, newSemaphore))
-    {
-      // someone else created and stored a semaphore in this tiny time window
-      vSemaphoreDelete(newSemaphore);
-    }
-  }
-}
+
 static inline void _internal_TakeFlashCacheSerialization()
 {
-  _internal_EnsureFlashCacheSemaphoreInitialized();
-  if (pdTRUE != xSemaphoreTake(_serializeFlashAccess, 0)) {
-    LOG_LV2("IFLASH", "Blocked parallel write attempt ... waiting for mutex");
-    while (pdTRUE != xSemaphoreTake(_serializeFlashAccess,  portMAX_DELAY))
-    {
-      // nothing
-    }
+  // This only executes one
+  if ( _serializeFlashAccess == NULL )
+  {
+    _serializeFlashAccess = xSemaphoreCreateMutexStatic(&_mutex_storage);
   }
+
+#if CFG_DEBUG >= 2
+  if ( 0 == uxSemaphoreGetCount(_serializeFlashAccess) )
+  {
+    LOG_LV2("IFLASH", "Blocked parallel write attempt ... waiting for mutex");
+  }
+#endif
+
+  xSemaphoreTake(_serializeFlashAccess,  portMAX_DELAY);
 }
+
 static inline void _internal_ReleaseFlashCacheSerialization()
 {
-  xSemaphoreGive(_serializeFlashAccess);
+  if ( _serializeFlashAccess )
+  {
+    xSemaphoreGive(_serializeFlashAccess);
+  }
 }
 
 
@@ -100,7 +80,6 @@ static inline uint32_t page_offset_of (uint32_t addr)
 
 int _internal_flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * src, uint32_t len)
 {
-
   uint8_t const * src8 = (uint8_t const *) src;
   uint32_t remain = len;
 
@@ -133,6 +112,7 @@ int _internal_flash_cache_write (flash_cache_t* fc, uint32_t dst, void const * s
 
   return len - remain;
 }
+
 int flash_cache_write(flash_cache_t* fc, uint32_t dst, void const * src, uint32_t len)
 {
   _internal_TakeFlashCacheSerialization();
@@ -162,6 +142,7 @@ void _internal_flash_cache_flush (flash_cache_t* fc)
 
   fc->cache_addr = FLASH_CACHE_INVALID_ADDR;
 }
+
 void flash_cache_flush(flash_cache_t* fc)
 {
   _internal_TakeFlashCacheSerialization();
@@ -274,6 +255,7 @@ int _internal_flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uin
   }
   return (int) count;
 }
+
 int flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t count)
 {
   _internal_TakeFlashCacheSerialization();
