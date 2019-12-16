@@ -43,12 +43,6 @@ static void _internal_flash_cache_flush (flash_cache_t* fc);
 //--------------------------------------------------------------------+
 static inline void _internal_TakeFlashCacheSerialization(flash_cache_t* fc)
 {
-  // This only executes one
-  if ( fc->mutex == NULL )
-  {
-    fc->mutex = xSemaphoreCreateMutexStatic(&fc->mutex_storage);
-  }
-
 #if CFG_DEBUG >= 2
   if ( 0 == uxSemaphoreGetCount(fc->mutex) )
   {
@@ -61,10 +55,7 @@ static inline void _internal_TakeFlashCacheSerialization(flash_cache_t* fc)
 
 static inline void _internal_ReleaseFlashCacheSerialization(flash_cache_t* fc)
 {
-  if ( fc->mutex )
-  {
-    xSemaphoreGive(fc->mutex);
-  }
+  xSemaphoreGive(fc->mutex);
 }
 
 static inline uint32_t page_addr_of (uint32_t addr)
@@ -75,6 +66,16 @@ static inline uint32_t page_addr_of (uint32_t addr)
 static inline uint32_t page_offset_of (uint32_t addr)
 {
   return addr & (FLASH_CACHE_SIZE - 1);
+}
+
+
+// Should be safe to call multiple times
+void flash_cache_init (flash_cache_t* fc)
+{
+  if ( fc->mutex == NULL )
+  {
+    fc->mutex = xSemaphoreCreateMutexStatic(&fc->mutex_storage);
+  }
 }
 
 //--------------------------------------------------------------------+

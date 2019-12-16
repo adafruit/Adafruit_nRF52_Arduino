@@ -43,12 +43,13 @@ extern uint32_t __flash_arduino_start[];
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
-static SemaphoreHandle_t _sem = NULL;
+static StaticSemaphore_t _fal_sem_storage;
+static SemaphoreHandle_t _fal_sem = NULL;
 
 void flash_nrf5x_event_cb (uint32_t event)
 {
 //  if (event != NRF_EVT_FLASH_OPERATION_SUCCESS) LOG_LV1("IFLASH", "Flash op Failed");
-  if ( _sem ) xSemaphoreGive(_sem);
+  xSemaphoreGive(_fal_sem);
 }
 
 // Flash Abstraction Layer
@@ -76,6 +77,19 @@ static flash_cache_t _cache =
 //--------------------------------------------------------------------+
 // Application API
 //--------------------------------------------------------------------+
+
+// Should be safe to call multiple times
+void flash_nrf5x_init(void)
+{
+  // fal operation semaphore
+  if (_fal_sem == NULL)
+  {
+    _fal_sem = xSemaphoreCreateCountingStatic(10, 0, &_fal_sem_storage);
+  }
+
+  flash_cache_init(&_cache);
+}
+
 void flash_nrf5x_flush (void)
 {
   flash_cache_flush(&_cache);
@@ -107,13 +121,6 @@ bool flash_nrf5x_erase(uint32_t addr)
 //--------------------------------------------------------------------+
 static bool fal_erase (uint32_t addr)
 {
-  // Init semaphore for first call
-  if ( _sem == NULL )
-  {
-    _sem = xSemaphoreCreateCounting(10, 0);
-    VERIFY(_sem);
-  }
-
   // retry if busy
   uint32_t err;
   while ( NRF_ERROR_BUSY == (err = sd_flash_page_erase(addr / FLASH_NRF52_PAGE_SIZE)) )
@@ -126,7 +133,7 @@ static bool fal_erase (uint32_t addr)
   uint8_t sd_en = 0;
   (void) sd_softdevice_is_enabled(&sd_en);
 
-  if ( sd_en ) xSemaphoreTake(_sem, portMAX_DELAY);
+  if ( sd_en ) xSemaphoreTake(_fal_sem, portMAX_DELAY);
 
   return true;
 }
@@ -149,21 +156,21 @@ static uint32_t fal_program (uint32_t dst, void const * src, uint32_t len)
   }
   VERIFY_STATUS(err, 0);
 
-  if ( sd_en ) xSemaphoreTake(_sem, portMAX_DELAY);
+  if ( sd_en ) xSemaphoreTake(_fal_sem, portMAX_DELAY);
 #else
   while ( NRF_ERROR_BUSY == (err = sd_flash_write((uint32_t*) dst, (uint32_t const *) src, len/8)) )
   {
     delay(1);
   }
   VERIFY_STATUS(err, 0);
-  if ( sd_en ) xSemaphoreTake(_sem, portMAX_DELAY);
+  if ( sd_en ) xSemaphoreTake(_fal_sem, portMAX_DELAY);
 
   while ( NRF_ERROR_BUSY == (err = sd_flash_write((uint32_t*) (dst+ len/2), (uint32_t const *) (src + len/2), len/8)) )
   {
     delay(1);
   }
   VERIFY_STATUS(err, 0);
-  if ( sd_en ) xSemaphoreTake(_sem, portMAX_DELAY);
+  if ( sd_en ) xSemaphoreTake(_fal_sem, portMAX_DELAY);
 #endif
 
   return len;

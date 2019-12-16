@@ -33,6 +33,7 @@
  extern "C" {
 #endif
 
+void flash_nrf5x_init(void);
 void flash_nrf5x_flush (void);
 bool flash_nrf5x_erase(uint32_t addr);
 

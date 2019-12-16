@@ -132,6 +132,8 @@ InternalFileSystem::InternalFileSystem(void)
 
 bool InternalFileSystem::begin(void)
 {
+  flash_nrf5x_init();
+
   // failed to mount, erase all sector then format and mount again
   if ( !Adafruit_LittleFS::begin() )
   {
