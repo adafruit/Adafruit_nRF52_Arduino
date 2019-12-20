@@ -3,7 +3,7 @@
 *.obj
 
 # Visual Studio Code
-.vscode/
+**/.vscode/
 
 # Executables
 *.out
