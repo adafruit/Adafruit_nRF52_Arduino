@@ -2,7 +2,7 @@
 name: Questions please use our forum support
 about: Don't open issue, post your question at forums.adafruit.com
 title: ''
-labels: ''
+labels: wontfix
 assignees: ''
 
 ---

@@ -28,7 +28,7 @@ BLEMidi blemidi;
 MIDI_CREATE_BLE_INSTANCE(blemidi);
 
 // Variable that holds the current position in the sequence.
-int position = 0;
+unsigned int position = 0;
 
 // Store example melody as an array of note values
 byte note_sequence[] = {
@@ -137,14 +137,10 @@ void loop()
 
   // Setup variables for the current and previous
   // positions in the note sequence.
-  int current = position;
-  int previous  = position - 1;
-
+  unsigned int current = position;
   // If we currently are at position 0, set the
   // previous position to the last note in the sequence.
-  if (previous < 0) {
-    previous = sizeof(note_sequence) - 1;
-  }
+  unsigned int previous = (current == 0) ? (sizeof(note_sequence)-1) : current - 1;
 
   // Send Note On for current position at full velocity (127) on channel 1.
   MIDI.sendNoteOn(note_sequence[current], 127, 1);
