@@ -30,8 +30,8 @@
 // Internal Flash uses ARM Little FileSystem
 // https://github.com/ARMmbed/littlefs
 #include "littlefs/lfs.h"
-
 #include "Adafruit_LittleFS_File.h"
+#include "rtos.h" // tied to FreeRTOS for serialization
 
 class Adafruit_LittleFS
 {
@@ -76,6 +76,26 @@ class Adafruit_LittleFS
     bool _mounted;
     struct lfs_config* _lfs_cfg;
     lfs_t _lfs;
+
+    //static_assert(configSUPPORT_STATIC_ALLOCATION == 1, "Currently only supports configuration with STATIC_ALLOCATION enabled");
+    SemaphoreHandle_t _mutex;
+
+  private:
+    StaticSemaphore_t xMutexStorageSpace;
+
+    // these wrapped functions are needed to simplify
+    // change to serialize access via a mutex, at least in part
+    // because the VERIFY_LFS() macro includes a return statement,
+    // which would otherwise exit the functions without releasing the mutex.
+    bool xWrap_begin(struct lfs_config * cfg = NULL);
+    void xWrap_end(void);
+    Adafruit_LittleFS_Namespace::File xWrap_open (char const *filename, uint8_t mode = Adafruit_LittleFS_Namespace::FILE_O_READ);
+    bool xWrap_exists (char const *filepath);
+    bool xWrap_mkdir (char const *filepath);
+    bool xWrap_remove (char const *filepath);
+    bool xWrap_rmdir (char const *filepath);
+    bool xWrap_rmdir_r (char const *filepath);
+    bool xWrap_format (void);
 };
 
 #if !CFG_DEBUG
