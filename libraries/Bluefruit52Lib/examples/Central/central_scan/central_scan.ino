@@ -36,8 +36,43 @@ void setup()
   Serial.println("Scanning ...");
 }
 
+//
+// Parse the bluetooth device name from the scan data record
+//
+bool get_device_name(uint8_t *pData, int iLen, char *szName)
+{
+int iOff = 0;
+unsigned char ucType, ucLen;
+bool bGotString = false;
+
+   while (iOff < iLen)
+   {
+      ucType = pData[iOff++]; // device type
+      ucLen = pData[iOff++];  // followed by 1 byte field length
+      if (ucType == 0x13) // device name
+      {
+         if (ucLen + iOff <= iLen) // valid length?
+         {
+            memcpy(szName, &pData[iOff], ucLen);
+            szName[ucLen] = 0; // zero terminate the string
+            bGotString = true;
+         }
+      }
+      iOff += ucLen; // next data field
+   }
+   return bGotString;
+} /* get_device_name() */
+
 void scan_callback(ble_gap_evt_adv_report_t* report)
 {
+char szName[32];
+ 
+  if (get_device_name(report->data.p_data, report->data.len, szName))
+  {
+    Serial.printf("Device Name = ");
+    Serial.println(szName);
+  }
+
   Serial.println("Timestamp Addr              Rssi Data");
 
   Serial.printf("%09d ", millis());
