@@ -133,6 +133,7 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 void bleuart_rx_callback(BLEClientUart& uart_svc)
 {
   int count = uart_svc.available();
+  (void)count;
   uart_svc.flush();
 }
 

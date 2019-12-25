@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2018, hathach for Adafruit
+ * Copyright (c) 2019, hathach for Adafruit
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,6 +54,10 @@ static void usb_device_task(void* param)
   }
 }
 
+//--------------------------------------------------------------------+
+// Core Init & Touch1200
+//--------------------------------------------------------------------+
+
 // Init usb hardware when starting up. Softdevice is not enabled yet
 static void usb_hardware_init(void)
 {
@@ -99,7 +103,20 @@ void Adafruit_TinyUSB_Core_touch1200(void)
   enterSerialDfu();
 }
 
-uint8_t load_serial_number(uint16_t* serial_str)
+//--------------------------------------------------------------------+
+// Adafruit_USBD_Device platform dependent
+//--------------------------------------------------------------------+
+void Adafruit_USBD_Device::detach(void)
+{
+  NRF_USBD->USBPULLUP = 0;
+}
+
+void Adafruit_USBD_Device::attach(void)
+{
+  NRF_USBD->USBPULLUP = 1;
+}
+
+uint8_t Adafruit_USBD_Device::getSerialDescriptor(uint16_t* serial_str)
 {
   // Serial is 64-bit DeviceID -> 16 chars len
   char tmp_serial[17];

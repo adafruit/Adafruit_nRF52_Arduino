@@ -1,3 +1,4 @@
+sudo: required
 language: c
 dist: xenial
 git:
@@ -8,10 +9,28 @@ env:
   global:
     - BSP_PATH="$HOME/.arduino15/packages/adafruit/hardware/nrf52"
   jobs:
-    # Split into one job per board (aka variant)
-    - VARIANT="feather52840"
-    - VARIANT="cplaynrf52840"
-    - VARIANT="feather52832"
+    # empty env required, else allow_failures will SILENTY IGNORE matching against env...
+    -
+
+jobs:
+  fast_finish: true
+  include:
+    - name: "Feather 52840"
+      env:  VARIANT="feather52840"
+    - name: "Feather 52840 (All warnings)"
+      env:  ALL_WARNINGS="true" VARIANT="feather52840"
+    - name: "Circuit Playground 52840"
+      env:  VARIANT="cplaynrf52840"
+    - name: "Circuit Playground 52840 (All warnings)"
+      env:  ALL_WARNINGS="true" VARIANT="cplaynrf52840"
+    - name: "Feather 52832"
+      env:  VARIANT="feather52832"
+    - name: "Feather 52832 (All warnings)"
+      env:  ALL_WARNINGS="true" VARIANT="feather52832"
+  allow_failures:
+    - env:  ALL_WARNINGS="true" VARIANT="feather52840"
+    - env:  ALL_WARNINGS="true" VARIANT="cplaynrf52840"
+    - env:  ALL_WARNINGS="true" VARIANT="feather52832"
     
 addons:
   apt:
@@ -24,6 +43,10 @@ addons:
       confinement: classic
 
 install:
+  # Filter only mDNS / Bonjour traffic
+  - sudo iptables --insert INPUT  --jump DROP --protocol udp --dport 5353  -m comment --comment "silently drop all 5353/udp input"
+  - sudo iptables --insert INPUT  --jump DROP --destination 224.0.0.251    -m comment --comment "silently drop all mDNS ipv4 broadcast"
+  # Install the nRF52 support files for arduino
   - pip3 install --user adafruit-nrfutil
   - umake electronics arduino $HOME/arduino_ide
   - export PATH=$HOME/arduino_ide:$PATH
