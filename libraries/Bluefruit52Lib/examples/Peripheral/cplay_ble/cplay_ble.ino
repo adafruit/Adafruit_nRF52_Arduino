@@ -11,11 +11,11 @@
  All text above, and the splash screen below must be included in
  any redistribution
 *********************************************************************/
-#include <Adafruit_CircuitPlayground.h>
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
 #include <bluefruit.h>
 #include <BLEAdafruitService.h>
+#include <Adafruit_CircuitPlayground.h>
 
 // BLE Service
 BLEDfu  bledfu;  // OTA DFU service
