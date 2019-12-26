@@ -45,13 +45,12 @@ static void _redirect_task(void* arg)
   while(1)
   {
     taskfunc();
-    delay(0);
+    yield();
   }
 }
 
 SchedulerRTOS::SchedulerRTOS(void)
 {
-  _num = 1; // loop is already created by default
 }
 
 bool SchedulerRTOS::startLoop(taskfunc_t task, uint32_t stack_size, uint32_t prio, const char* name)

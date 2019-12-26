@@ -85,9 +85,6 @@ static inline void rtos_free( void *pv )
 
 class SchedulerRTOS
 {
-private:
-  uint8_t _num;
-
 public:
   typedef void (*taskfunc_t)(void);
 
