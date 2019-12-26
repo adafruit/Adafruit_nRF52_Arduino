@@ -44,7 +44,7 @@ Adafruit_LittleFS::Adafruit_LittleFS (struct lfs_config* cfg)
   varclr(&_lfs);
   _lfs_cfg = cfg;
   _mounted = false;
-  _mutex = xSemaphoreCreateMutexStatic(&this->xMutexStorageSpace);
+  _mutex = xSemaphoreCreateMutexStatic(&this->_MutexStorageSpace);
 }
 
 Adafruit_LittleFS::~Adafruit_LittleFS ()
@@ -57,176 +57,159 @@ Adafruit_LittleFS::~Adafruit_LittleFS ()
 // User should format the disk and try again
 bool Adafruit_LittleFS::begin (struct lfs_config * cfg)
 {
-  while (pdTRUE != xSemaphoreTake(_mutex,  portMAX_DELAY)) {}
-  bool retval = this->xWrap_begin(cfg);
+  xSemaphoreTake(_mutex,  portMAX_DELAY);
+  bool ret;
+  // not a loop, just an quick way to short-circuit on error
+  do {
+    if (_mounted) { ret = true; break; }
+    if (cfg) { _lfs_cfg = cfg; }
+    if (nullptr == _lfs_cfg) { ret = false; break; }
+    // actually attempt to mount, and log error if one occurs
+    int err = lfs_mount(&_lfs, _lfs_cfg);
+    PRINT_LFS_ERR(err);
+    _mounted = (err == LFS_ERR_OK);
+    ret = _mounted;
+  } while(0);
   xSemaphoreGive(_mutex);
-  return retval;
-}
-
-bool Adafruit_LittleFS::xWrap_begin (struct lfs_config * cfg)
-{
-  if ( _mounted ) return true;
-
-  if (cfg) _lfs_cfg = cfg;
-  if (!_lfs_cfg) return false;
-
-  VERIFY_LFS(lfs_mount(&_lfs, _lfs_cfg), false);
-  _mounted = true;
-
-  return true;
+  return ret;
 }
 
 // Tear down and unmount file system
 void Adafruit_LittleFS::end(void)
 {
-  while (pdTRUE != xSemaphoreTake(_mutex,  portMAX_DELAY)) {}
-  this->xWrap_end();
+  xSemaphoreTake(_mutex,  portMAX_DELAY);
+  if (_mounted)
+  {
+    _mounted = false;
+    int err = lfs_unmount(&_lfs);
+    PRINT_LFS_ERR(err);
+    (void)err;
+  }
   xSemaphoreGive(_mutex);
-}
-
-void Adafruit_LittleFS::xWrap_end(void)
-{
-  if (!_mounted) return;
-
-  _mounted = false;
-  VERIFY_LFS(lfs_unmount(&_lfs), );
 }
 
 bool Adafruit_LittleFS::format (void)
 {
-  while (pdTRUE != xSemaphoreTake(_mutex,  portMAX_DELAY)) {}
-  bool retval = this->xWrap_format();
+  xSemaphoreTake(_mutex,  portMAX_DELAY);
+  int err = LFS_ERR_OK;
+  bool attemptMount = _mounted;
+  // not a loop, just an quick way to short-circuit on error
+  do
+  {
+    // if already mounted: umount first -> format -> remount
+    if (_mounted)
+    {
+      _mounted = false;
+      err = lfs_unmount(&_lfs);
+      if ( LFS_ERR_OK != err) { PRINT_LFS_ERR(err); break; }
+    }
+    err = lfs_format(&_lfs, _lfs_cfg);
+    if ( LFS_ERR_OK != err ) { PRINT_LFS_ERR(err); break; }
+
+    if (attemptMount)
+    {
+      err = lfs_mount(&_lfs, _lfs_cfg);
+      if ( LFS_ERR_OK != err ) { PRINT_LFS_ERR(err); break; }
+      _mounted = true;
+    }
+    // success!
+  } while(0);
   xSemaphoreGive(_mutex);
-  return retval;
-}
-
-bool Adafruit_LittleFS::xWrap_format (void)
-{
-  // if already mounted: umount -> format -> remount
-  if(_mounted) VERIFY_LFS(lfs_unmount(&_lfs), false);
-
-  VERIFY_LFS(lfs_format(&_lfs, _lfs_cfg), false);
-
-  if (_mounted) VERIFY_LFS(lfs_mount(&_lfs, _lfs_cfg), false);
-
-  return true;
+  return LFS_ERR_OK == err;
 }
 
 // Open a file or folder
 Adafruit_LittleFS_Namespace::File Adafruit_LittleFS::open (char const *filepath, uint8_t mode)
 {
-  while (pdTRUE != xSemaphoreTake(_mutex,  portMAX_DELAY)) {}
-  Adafruit_LittleFS_Namespace::File retval = this->xWrap_open(filepath, mode);
+  xSemaphoreTake(_mutex,  portMAX_DELAY);
+  Adafruit_LittleFS_Namespace::File ret = Adafruit_LittleFS_Namespace::File(filepath, mode, *this);
   xSemaphoreGive(_mutex);
-  return retval;
-}
-
-Adafruit_LittleFS_Namespace::File Adafruit_LittleFS::xWrap_open (char const *filepath, uint8_t mode)
-{
-  return Adafruit_LittleFS_Namespace::File(filepath, mode, *this);
+  return ret;
 }
 
 // Check if file or folder exists
 bool Adafruit_LittleFS::exists (char const *filepath)
 {
-  while (pdTRUE != xSemaphoreTake(_mutex,  portMAX_DELAY)) {}
-  bool retval = this->xWrap_exists(filepath);
+  struct lfs_info info;
+  xSemaphoreTake(_mutex,  portMAX_DELAY);
+  bool ret = (0 == lfs_stat(&_lfs, filepath, &info));
   xSemaphoreGive(_mutex);
-  return retval;
+  return ret;
 }
 
-bool Adafruit_LittleFS::xWrap_exists (char const *filepath)
-{
-  struct lfs_info info;
-  return 0 == lfs_stat(&_lfs, filepath, &info);
-}
 
 // Create a directory, create intermediate parent if needed
 bool Adafruit_LittleFS::mkdir (char const *filepath)
 {
-  while (pdTRUE != xSemaphoreTake(_mutex,  portMAX_DELAY)) {}
-  bool retval = this->xWrap_mkdir(filepath);
-  xSemaphoreGive(_mutex);
-  return retval;
-}
-
-bool Adafruit_LittleFS::xWrap_mkdir (char const *filepath)
-{
+  bool ret = true;
   const char* slash = filepath;
   if ( slash[0] == '/' ) slash++;    // skip root '/'
 
+  xSemaphoreTake(_mutex,  portMAX_DELAY);
+
+  // make intermediate parent directory(ies)
   while ( NULL != (slash = strchr(slash, '/')) )
   {
     char parent[slash - filepath + 1] = { 0 };
     memcpy(parent, filepath, slash - filepath);
 
-    // make intermediate parent
     int rc = lfs_mkdir(&_lfs, parent);
     if ( rc != LFS_ERR_OK && rc != LFS_ERR_EXIST )
     {
       PRINT_LFS_ERR(rc);
-      return false;
+      ret = false;
+      break;
     }
-
     slash++;
   }
-  
-  int rc = lfs_mkdir(&_lfs, filepath);
-  if ( rc != LFS_ERR_OK && rc != LFS_ERR_EXIST )
+  // make the final requested directory
+  if (ret)
   {
-    PRINT_LFS_ERR(rc);
-    return false;
+    int rc = lfs_mkdir(&_lfs, filepath);
+    if ( rc != LFS_ERR_OK && rc != LFS_ERR_EXIST )
+    {
+      PRINT_LFS_ERR(rc);
+      ret = false;
+    }
   }
-
-  return true;
+  xSemaphoreGive(_mutex);
+  return ret;
 }
 
 // Remove a file
 bool Adafruit_LittleFS::remove (char const *filepath)
 {
-  while (pdTRUE != xSemaphoreTake(_mutex,  portMAX_DELAY)) {}
-  bool retval = this->xWrap_remove(filepath);
+  xSemaphoreTake(_mutex,  portMAX_DELAY);
+  int err = lfs_remove(&_lfs, filepath);
+  PRINT_LFS_ERR(err);
   xSemaphoreGive(_mutex);
-  return retval;
-}
-
-bool Adafruit_LittleFS::xWrap_remove (char const *filepath)
-{
-  VERIFY_LFS(lfs_remove(&_lfs, filepath), false);
-  return true;
+  return LFS_ERR_OK == err;
 }
 
 // Remove a folder
 bool Adafruit_LittleFS::rmdir (char const *filepath)
 {
-  while (pdTRUE != xSemaphoreTake(_mutex,  portMAX_DELAY)) {}
-  bool retval = this->xWrap_rmdir(filepath);
+  xSemaphoreTake(_mutex,  portMAX_DELAY);
+  int err = lfs_remove(&_lfs, filepath);
+  PRINT_LFS_ERR(err);
   xSemaphoreGive(_mutex);
-  return retval;
-}
-
-bool Adafruit_LittleFS::xWrap_rmdir (char const *filepath)
-{
-  VERIFY_LFS(lfs_remove(&_lfs, filepath));
-  return true;
+  return LFS_ERR_OK == err;
 }
 
 // Remove a folder recursively
 bool Adafruit_LittleFS::rmdir_r (char const *filepath)
 {
-  while (pdTRUE != xSemaphoreTake(_mutex,  portMAX_DELAY)) {}
-  bool retval = this->xWrap_rmdir_r(filepath);
-  xSemaphoreGive(_mutex);
-  return retval;
-}
-
-bool Adafruit_LittleFS::xWrap_rmdir_r (char const *filepath)
-{
   /* adafruit: lfs is modified to remove non-empty folder,
    According to below issue, comment these 2 line won't corrupt filesystem
-   https://github.com/ARMmbed/littlefs/issues/43 */
-  VERIFY_LFS(lfs_remove(&_lfs, filepath));
-  return true;
+   at least when using LFS v1.  If moving to LFS v2, see tracked issue
+   to see if issues (such as the orphans in threaded linked list) are resolved.
+   https://github.com/ARMmbed/littlefs/issues/43
+   */
+  xSemaphoreTake(_mutex,  portMAX_DELAY);
+  int err = lfs_remove(&_lfs, filepath);
+  PRINT_LFS_ERR(err);
+  xSemaphoreGive(_mutex);
+  return LFS_ERR_OK == err;
 }
 
 //------------- Debug -------------//

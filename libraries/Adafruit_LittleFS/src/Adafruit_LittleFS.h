@@ -81,29 +81,17 @@ class Adafruit_LittleFS
     SemaphoreHandle_t _mutex;
 
   private:
-    StaticSemaphore_t xMutexStorageSpace;
-
-    // these wrapped functions are needed to simplify
-    // change to serialize access via a mutex, at least in part
-    // because the VERIFY_LFS() macro includes a return statement,
-    // which would otherwise exit the functions without releasing the mutex.
-    bool xWrap_begin(struct lfs_config * cfg = NULL);
-    void xWrap_end(void);
-    Adafruit_LittleFS_Namespace::File xWrap_open (char const *filename, uint8_t mode = Adafruit_LittleFS_Namespace::FILE_O_READ);
-    bool xWrap_exists (char const *filepath);
-    bool xWrap_mkdir (char const *filepath);
-    bool xWrap_remove (char const *filepath);
-    bool xWrap_rmdir (char const *filepath);
-    bool xWrap_rmdir_r (char const *filepath);
-    bool xWrap_format (void);
+    StaticSemaphore_t _MutexStorageSpace;
 };
 
 #if !CFG_DEBUG
   #define VERIFY_LFS(...)       _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, NULL)
   #define PRINT_LFS_ERR(_err)
 #else
-  #define VERIFY_LFS(...)       _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, dbg_strerr_lfs)
-  #define PRINT_LFS_ERR(_err)   VERIFY_MESS((long int)_err, dbg_strerr_lfs) // LFS_ERR are of type int, VERIFY_MESS expects long_int
+  #define VERIFY_LFS(...)       _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, NULL)
+  #define PRINT_LFS_ERR(_err)
+  //#define VERIFY_LFS(...)       _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, dbg_strerr_lfs)
+  //#define PRINT_LFS_ERR(_err)   do { if (_err) { VERIFY_MESS((long int)_err, dbg_strerr_lfs); } } while(0) // LFS_ERR are of type int, VERIFY_MESS expects long_int
 
   const char* dbg_strerr_lfs (int32_t err);
 #endif
