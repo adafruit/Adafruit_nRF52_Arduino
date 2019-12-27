@@ -219,6 +219,60 @@ cplaynrf52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 cplaynrf52840.menu.debug.l3=Level 3 (Segger SystemView)
 cplaynrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 
+
+# ---------------------------------------------
+# Clue nRF52840
+# ---------------------------------------------
+cluenrf52840.name=Adafruit Clue
+
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+cluenrf52840.vid.0=0x239A
+cluenrf52840.pid.0=0x8072
+cluenrf52840.vid.1=0x239A
+cluenrf52840.pid.1=0x0072
+cluenrf52840.vid.2=0x239A
+cluenrf52840.pid.2=0x0071
+cluenrf52840.vid.3=0x239A
+cluenrf52840.pid.3=0x8071
+
+# Upload
+cluenrf52840.bootloader.tool=bootburn
+cluenrf52840.upload.tool=nrfutil
+cluenrf52840.upload.protocol=nrfutil
+cluenrf52840.upload.use_1200bps_touch=true
+cluenrf52840.upload.wait_for_upload_port=true
+cluenrf52840.upload.maximum_size=815104
+cluenrf52840.upload.maximum_data_size=248832
+
+# Build
+cluenrf52840.build.mcu=cortex-m4
+cluenrf52840.build.f_cpu=64000000
+cluenrf52840.build.board=NRF52840_CLUE
+cluenrf52840.build.core=nRF5
+cluenrf52840.build.variant=clue_nrf52840
+cluenrf52840.build.usb_manufacturer="Adafruit LLC"
+cluenrf52840.build.usb_product="Adafruit Clue"
+cluenrf52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+cluenrf52840.build.ldscript=nrf52840_s140_v6.ld
+cluenrf52840.build.vid=0x239A
+cluenrf52840.build.pid=0x8071
+
+# SofDevice Menu
+cluenrf52840.menu.softdevice.s140v6=0.2.13 SoftDevice s140 6.1.1
+cluenrf52840.menu.softdevice.s140v6.build.sd_name=s140
+cluenrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
+cluenrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+cluenrf52840.menu.debug.l0=Level 0 (Release)
+cluenrf52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+cluenrf52840.menu.debug.l1=Level 1 (Error Message)
+cluenrf52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+cluenrf52840.menu.debug.l2=Level 2 (Full Debug)
+cluenrf52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+cluenrf52840.menu.debug.l3=Level 3 (Segger SystemView)
+cluenrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
 # ----------------------------------
 # Bluefruit Metro nRF52840 Express
 # ----------------------------------
