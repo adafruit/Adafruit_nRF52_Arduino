@@ -30,22 +30,23 @@
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 
-#ifdef ARDUINO_NRF52832_FEATHER
-   #define TFT_DC   11
-   #define TFT_CS   31
+#if defined(ARDUINO_NRF52832_FEATHER)
+  // Feather nRF52832
+  #define TFT_DC   11
+  #define TFT_CS   31
+
+#elif defined(ARDUINO_NRF52840_CIRCUITPLAY)
+  // Circuit Playground Bluefruit for use with TFT 1.5" GIZMO
+  #define TFT_DC         1
+  #define TFT_CS         0
+  #define TFT_BACKLIGHT  A3
+
+#else
+  // Default for others
+  #define TFT_DC   10
+  #define TFT_CS   9
 #endif
 
-#ifdef ARDUINO_NRF52840_FEATHER
-   #define TFT_DC   10
-   #define TFT_CS   9
-#endif
-
-// Circuit Playground Bluefruit for use with TFT 1.5" GIZMO
-#ifdef ARDUINO_NRF52840_CIRCUITPLAY
-   #define TFT_DC         1
-   #define TFT_CS         0
-   #define TFT_BACKLIGHT  A3
-#endif
 
 #if   TFT_IN_USE == TFT_35_FEATHERWING
   #include "Adafruit_HX8357.h"

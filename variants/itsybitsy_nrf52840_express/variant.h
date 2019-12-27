@@ -73,6 +73,7 @@ extern "C"
 #define PIN_A4               (18)
 #define PIN_A5               (19)
 #define PIN_A6               (20)
+#define PIN_A7               (0xff) // to compile with Firmata library
 
 static const uint8_t A0  = PIN_A0 ;
 static const uint8_t A1  = PIN_A1 ;
@@ -83,7 +84,7 @@ static const uint8_t A5  = PIN_A5 ;
 static const uint8_t A6  = PIN_A6 ;
 #define ADC_RESOLUTION    14
 
-  //static const uint8_t AREF = PIN_AREF;
+//static const uint8_t AREF = PIN_AREF;
 
 /*
  * Serial interfaces
