@@ -15,18 +15,22 @@ env:
 jobs:
   fast_finish: true
   include:
-    - name: "Feather 52840"
+    - name: "Feather nRF52840"
       env:  VARIANT="feather52840"
-    - name: "Feather 52840 (All warnings)"
+    - name: "Feather nRF52840 (All warnings)"
       env:  ALL_WARNINGS="true" VARIANT="feather52840"
-    - name: "Circuit Playground 52840"
+    - name: "Circuit Playground nRF52840"
       env:  VARIANT="cplaynrf52840"
-    - name: "Circuit Playground 52840 (All warnings)"
+    - name: "Circuit Playground nRF52840 (All warnings)"
       env:  ALL_WARNINGS="true" VARIANT="cplaynrf52840"
-    - name: "Feather 52832"
+    - name: "Feather nRF52832"
       env:  VARIANT="feather52832"
-    - name: "Feather 52832 (All warnings)"
+    - name: "Feather nRF52832 (All warnings)"
       env:  ALL_WARNINGS="true" VARIANT="feather52832"
+    - name: "ItsyBitsy nRF52840 Express" 
+      env:  VARIANT="itsybitsy52840"
+    - name: "Clue nRF52840" 
+      env:  VARIANT="cluenrf52840"      
   allow_failures:
     - env:  ALL_WARNINGS="true" VARIANT="feather52840"
     - env:  ALL_WARNINGS="true" VARIANT="cplaynrf52840"
