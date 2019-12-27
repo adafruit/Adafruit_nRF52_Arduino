@@ -121,10 +121,8 @@ bool Adafruit_LittleFS::format (void)
 // Open a file or folder
 Adafruit_LittleFS_Namespace::File Adafruit_LittleFS::open (char const *filepath, uint8_t mode)
 {
-  xSemaphoreTake(_mutex,  portMAX_DELAY);
-  Adafruit_LittleFS_Namespace::File ret = Adafruit_LittleFS_Namespace::File(filepath, mode, *this);
-  xSemaphoreGive(_mutex);
-  return ret;
+  // No lock is required here ... the File() object will synchronize with the mutex provided
+  return Adafruit_LittleFS_Namespace::File(filepath, mode, *this);
 }
 
 // Check if file or folder exists

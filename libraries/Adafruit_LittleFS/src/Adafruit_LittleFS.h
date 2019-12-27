@@ -77,6 +77,9 @@ class Adafruit_LittleFS
     struct lfs_config* _lfs_cfg;
     lfs_t _lfs;
 
+    // these two functions need access to the private _mutex variable:
+    friend void Adafruit_LittleFS_Namespace::File::DoNotCallFromOutsideClass_LockFilesystem(void);
+    friend void Adafruit_LittleFS_Namespace::File::DoNotCallFromOutsideClass_UnlockFilesystem(void);
     //static_assert(configSUPPORT_STATIC_ALLOCATION == 1, "Currently only supports configuration with STATIC_ALLOCATION enabled");
     SemaphoreHandle_t _mutex;
 
