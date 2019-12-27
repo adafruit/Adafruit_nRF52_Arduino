@@ -53,6 +53,7 @@ void BLECharacteristic::_init(void)
   _attr_meta.read_perm = _attr_meta.write_perm = BLE_SECMODE_OPEN;
   _attr_meta.vlen = 1;
   _attr_meta.vloc = BLE_GATTS_VLOC_STACK;
+  _userbuf = NULL;
 
   _handles.value_handle     = BLE_GATT_HANDLE_INVALID;
   _handles.user_desc_handle = BLE_GATT_HANDLE_INVALID;
@@ -121,6 +122,11 @@ void BLECharacteristic::setMaxLen(uint16_t max_len)
   _max_len = max_len;
 }
 
+uint16_t BLECharacteristic::getMaxLen(void)
+{
+  return _max_len;
+}
+
 void BLECharacteristic::setFixedLen(uint16_t fixed_len)
 {
   if ( fixed_len )
@@ -131,6 +137,14 @@ void BLECharacteristic::setFixedLen(uint16_t fixed_len)
   {
     _attr_meta.vlen = 1;
   }
+}
+
+// Use application buffer instead of SD stack buffer
+void BLECharacteristic::setBuffer(void* buf, uint16_t bufsize)
+{
+  _max_len = bufsize;
+  _userbuf = (uint8_t*) buf;
+  _attr_meta.vloc = buf ? BLE_GATTS_VLOC_USER : BLE_GATTS_VLOC_STACK;
 }
 
 void BLECharacteristic::setPermission(BleSecurityMode read_perm, BleSecurityMode write_perm)
@@ -270,7 +284,7 @@ err_t BLECharacteristic::begin(void)
     .init_len  = (_attr_meta.vlen == 1) ? (uint16_t) 0 : _max_len,
     .init_offs = 0,
     .max_len   = _max_len,
-    .p_value   = NULL
+    .p_value   = _userbuf
   };
 
   VERIFY_STATUS( sd_ble_gatts_characteristic_add(BLE_GATT_HANDLE_INVALID, &char_md, &attr_char_value, &_handles) );
@@ -541,6 +555,11 @@ uint16_t BLECharacteristic::write32(uint32_t num)
 }
 
 uint16_t BLECharacteristic::write32(int num)
+{
+  return write32( (uint32_t) num );
+}
+
+uint16_t BLECharacteristic::write32(int32_t num)
 {
   return write32( (uint32_t) num );
 }

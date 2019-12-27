@@ -32,7 +32,7 @@ feather52832.upload.use_1200bps_touch=false
 feather52832.upload.wait_for_upload_port=false
 feather52832.upload.native_usb=false
 feather52832.upload.maximum_size=290816
-feather52832.upload.maximum_data_size=51072
+feather52832.upload.maximum_data_size=52224
 
 # Build
 feather52832.build.mcu=cortex-m4
@@ -81,7 +81,7 @@ feather52840.upload.protocol=nrfutil
 feather52840.upload.use_1200bps_touch=true
 feather52840.upload.wait_for_upload_port=true
 feather52840.upload.maximum_size=815104
-feather52840.upload.maximum_data_size=248832
+feather52840.upload.maximum_data_size=237568
 
 # Build
 feather52840.build.mcu=cortex-m4
@@ -135,7 +135,7 @@ itsybitsy52840.upload.protocol=nrfutil
 itsybitsy52840.upload.use_1200bps_touch=true
 itsybitsy52840.upload.wait_for_upload_port=true
 itsybitsy52840.upload.maximum_size=815104
-itsybitsy52840.upload.maximum_data_size=248832
+itsybitsy52840.upload.maximum_data_size=237568
 
 # Build
 itsybitsy52840.build.mcu=cortex-m4
@@ -188,7 +188,7 @@ cplaynrf52840.upload.protocol=nrfutil
 cplaynrf52840.upload.use_1200bps_touch=true
 cplaynrf52840.upload.wait_for_upload_port=true
 cplaynrf52840.upload.maximum_size=815104
-cplaynrf52840.upload.maximum_data_size=248832
+cplaynrf52840.upload.maximum_data_size=237568
 
 # Build
 cplaynrf52840.build.mcu=cortex-m4
@@ -295,7 +295,7 @@ metro52840.upload.protocol=nrfutil
 metro52840.upload.use_1200bps_touch=true
 metro52840.upload.wait_for_upload_port=true
 metro52840.upload.maximum_size=815104
-metro52840.upload.maximum_data_size=248832
+metro52840.upload.maximum_data_size=237568
 
 # Build
 metro52840.build.mcu=cortex-m4
@@ -338,7 +338,7 @@ pca10056.upload.protocol=nrfutil
 pca10056.upload.use_1200bps_touch=true
 pca10056.upload.wait_for_upload_port=true
 pca10056.upload.maximum_size=815104
-pca10056.upload.maximum_data_size=248832
+pca10056.upload.maximum_data_size=237568
 
 # Build
 pca10056.build.mcu=cortex-m4

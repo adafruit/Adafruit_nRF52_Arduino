@@ -67,7 +67,11 @@ def build_examples(variant):
     for sketch in glob.iglob('libraries/**/*.ino', recursive=True):
         start_time = time.monotonic()
 
-        if os.path.exists(os.path.dirname(sketch) + '/.skip') or os.path.exists(os.path.dirname(sketch) + '/.skip.' + variant):
+        # skip if example contains: ".skip" or ".skip.variant"
+        # however ".build.variant" file can overwrite ".skip", used to build a specific variant only
+        sketchdir = os.path.dirname(sketch)
+        if ( (os.path.exists(sketchdir + '/.skip') or os.path.exists(sketchdir + '/.skip.' + variant)) and
+                not os.path.exists(sketchdir + '/.build.' + variant)):
             success = "skipped"
         else:
             # TODO - preferably, would have STDERR show up in **both** STDOUT and STDERR.

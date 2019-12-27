@@ -232,7 +232,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
  *------------------------------------------------------------------*/
 bool BLEGatt::_addCharacteristic(BLECharacteristic* chr)
 {
-  if ( _server.chr_count == CFG_GATT_MAX_SERVER_CHARS ) return false;
+  VERIFY( _server.chr_count < CFG_GATT_MAX_SERVER_CHARS );
   _server.chr_list[ _server.chr_count++ ] = chr;
 
   return true;

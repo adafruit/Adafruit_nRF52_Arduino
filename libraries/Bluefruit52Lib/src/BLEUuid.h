@@ -59,7 +59,7 @@ class BLEUuid
     size_t size (void) const;
 
     // Add UUID128 if needed, in case of UUID16, no actions is required
-    err_t begin(void);
+    bool begin(void);
 
     bool operator==(const BLEUuid&   uuid) const;
     bool operator!=(const BLEUuid&   uuid) const;
@@ -71,6 +71,12 @@ class BLEUuid
     BLEUuid& operator=(uint8_t const uuid128[16]);
     BLEUuid& operator=(ble_uuid_t uuid);
 };
+
+//--------------------------------------------------------------------+
+// Custom UUID Service
+//--------------------------------------------------------------------+
+extern const uint8_t UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD[16];
+extern const uint8_t UUID128_CHR_ADAFRUIT_VERSION[16];
 
 /*------------------------------------------------------------------*/
 /* Service UUID
@@ -101,13 +107,20 @@ class BLEUuid
 #define UUID16_SVC_BMS                                        0x181E
 #define UUID16_SVC_CGM                                        0x181F
 #define UUID16_SVC_PLX                                        0x1822
+#define UUID16_SVC_OTS                                        0x1825
 
 #define UUID16_SVC_EDDYSTONE                                  0xFEAA
+
+//
+#define UUID16_EXTERNAL_REPORT_REF_DESCR                      0x2907
+#define UUID16_REPORT_REF_DESCR                               0x2908
 
 /*------------------------------------------------------------------*/
 /* Characteristic UUID
  * https://www.bluetooth.com/specifications/gatt/characteristics
  *------------------------------------------------------------------*/
+#define UUID16_CHR_TEMPERATURE_CELSIUS                        0x2A1F
+#define UUID16_CHR_TEMPERATURE_FAHRENHEIT                     0x2A20
 #define UUID16_CHR_REMOVABLE                                  0x2A3A
 #define UUID16_CHR_SERVICE_REQUIRED                           0x2A3B
 #define UUID16_CHR_ALERT_CATEGORY_ID                          0x2A43
@@ -178,32 +191,43 @@ class BLEUuid
 #define UUID16_CHR_SC_CTRLPT                                  0x2A55
 #define UUID16_CHR_RSC_MEASUREMENT                            0x2A53
 #define UUID16_CHR_SENSOR_LOCATION                            0x2A5D
-#define UUID16_EXTERNAL_REPORT_REF_DESCR                      0x2907
-#define UUID16_REPORT_REF_DESCR                               0x2908
 #define UUID16_CHR_LN_FEATURE                                 0x2A6A
 #define UUID16_CHR_LN_POSITION_QUALITY                        0x2A69
 #define UUID16_CHR_LN_LOCATION_AND_SPEED                      0x2A67
 #define UUID16_CHR_LN_NAVIGATION                              0x2A68
 #define UUID16_CHR_LN_CONTROL_POINT                           0x2A6B
-#define UUID16_BMS_CTRLPT                                     0x2AA4
-#define UUID16_BMS_FEATURE                                    0x2AA5
-#define UUID16_CGM_MEASUREMENT                                0x2AA7
-#define UUID16_CGM_FEATURE                                    0x2AA8
-#define UUID16_CGM_STATUS                                     0x2AA9
-#define UUID16_CGM_SESSION_START_TIME                         0x2AAA
-#define UUID16_CGM_SESSION_RUN_TIME                           0x2AAB
-#define UUID16_CGM_SPECIFIC_OPS_CTRLPT                        0x2AAC
-#define UUID16_PLX_SPOT_CHECK_MEAS                            0x2A5E
-#define UUID16_PLX_CONTINUOUS_MEAS                            0x2A5F
-#define UUID16_PLX_FEATURES                                   0x2A60
+#define UUID16_CHR_BMS_CTRLPT                                 0x2AA4
+#define UUID16_CHR_BMS_FEATURE                                0x2AA5
+#define UUID16_CHR_CGM_MEASUREMENT                            0x2AA7
+#define UUID16_CHR_CGM_FEATURE                                0x2AA8
+#define UUID16_CHR_CGM_STATUS                                 0x2AA9
+#define UUID16_CHR_CGM_SESSION_START_TIME                     0x2AAA
+#define UUID16_CHR_CGM_SESSION_RUN_TIME                       0x2AAB
+#define UUID16_CHR_CGM_SPECIFIC_OPS_CTRLPT                    0x2AAC
+#define UUID16_CHR_PLX_SPOT_CHECK_MEAS                        0x2A5E
+#define UUID16_CHR_PLX_CONTINUOUS_MEAS                        0x2A5F
+#define UUID16_CHR_PLX_FEATURES                               0x2A60
+#define UUID16_CHR_TEMPERATURE                                0x2A6E
 #define UUID16_CHR_UV_INDEX                                   0x2A76
+#define UUID16_CHR_OTS_FEATURES                               0x2ABD
+#define UUID16_CHR_OTS_OBJECT_NAME                            0x2ABE
+#define UUID16_CHR_OTS_OBJECT_TYPE                            0x2ABF
+#define UUID16_CHR_OTS_OBJECT_SIZE                            0x2AC0
+#define UUID16_CHR_OTS_OBJECT_FIRST_CREATED                   0x2AC1
+#define UUID16_CHR_OTS_OBJECT_LAST_MODIFIED                   0x2AC2
+#define UUID16_CHR_OTS_OBJECT_ID                              0x2AC3
+#define UUID16_CHR_OTS_OBJECT_PROPERTIES                      0x2AC4
+#define UUID16_CHR_OTS_OACP                                   0x2AC5
+#define UUID16_CHR_OTS_OLCP                                   0x2AC6
+#define UUID16_CHR_OTS_LF                                     0x2AC7
+#define UUID16_CHR_OTS_OBJECT_CHANGED                         0x2AC8
 
 /*------------------------------------------------------------------*/
 /* Company UUID
  * https://www.bluetooth.com/specifications/assigned-numbers/company-identifiers
  *------------------------------------------------------------------*/
 #define UUID16_COMPANY_ID_APPLE         0x004C
-
+#define UUID16_COMPANY_ID_ADAFRUIT      0x0822
 
 /*------------------------------------------------------------------*/
 /* Unit values ( used in Characteristic Presentation Format )
