@@ -46,10 +46,9 @@ install:
   # Filter only mDNS / Bonjour traffic
   - sudo iptables --insert INPUT  --jump DROP --protocol udp --dport 5353  -m comment --comment "silently drop all 5353/udp input"
   - sudo iptables --insert INPUT  --jump DROP --destination 224.0.0.251    -m comment --comment "silently drop all mDNS ipv4 broadcast"
-  # Install the nRF52 support files for arduino, remove IDE-included Adafruit_Circuit_Playground
+  # Install the nRF52 support files for arduino
   - pip3 install --user adafruit-nrfutil
   - umake electronics arduino $HOME/arduino_ide
-  - rm -rf $HOME/arduino_ide/libraries/Adafruit_Circuit_Playground
   - export PATH=$HOME/arduino_ide:$PATH
   - arduino --pref "boardsmanager.additional.urls=https://adafruit.github.io/arduino-board-index/package_adafruit_index.json" --save-prefs
   # Install BSP for tools, then remove and create symlink the git code
@@ -57,7 +56,7 @@ install:
   - BSP_VERSION=`eval ls $BSP_PATH`
   - rm -r $BSP_PATH/*
   - ln -s $TRAVIS_BUILD_DIR $BSP_PATH/$BSP_VERSION
-  - arduino --install-library "Adafruit NeoPixel","Adafruit NeoMatrix","Adafruit GFX Library","Adafruit SSD1306","MIDI Library","Adafruit ILI9341","Adafruit HX8357 Library", "Adafruit Circuit Playground"
+  - arduino --install-library "Adafruit NeoPixel","Adafruit NeoMatrix","Adafruit GFX Library","Adafruit SSD1306","MIDI Library","Adafruit ILI9341","Adafruit HX8357 Library","Adafruit Circuit Playground"
 
 before_script:
   
