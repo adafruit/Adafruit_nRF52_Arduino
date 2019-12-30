@@ -1,5 +1,27 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.15.0 - 2019.12.30
+
+### Core
+
+- Add Clue variant
+- Clean up warnings, thanks to @henrygab
+- Enhance Software Timer
+
+### BLE
+ 
+- Increase sd attribute table size from 0x800 to 0xC00, increase linker memory for SD 840 from 3400 to 6000
+- Add Adafruit BLE Service library (used by Circuit Playground Bluefruit App): Temperature, Addressable Pixel, Accel, Button
+  - Add `cplay_ble.ino` example sketch
+- Change BLEUuid begin's return type to bool
+- BLECharacteristic allow user to set buffer
+
+### USB
+
+- Moved TinyUSB core into submodule at https://github.com/adafruit/Adafruit_TinyUSB_ArduinoCore
+- Added USBD detach/attach API
+- Synced TinyUSB with upstream
+
 ## 0.14.6 - 2019.10.30
 
 - Added power switch pin for Circuit Playground Bluefruit
