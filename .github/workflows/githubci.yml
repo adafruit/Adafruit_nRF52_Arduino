@@ -20,6 +20,7 @@ jobs:
       with:
          repository: hathach/ci-arduino
          path: ci
+         ref: build-bsp
 
     - name: pre-install
       run: bash ci/actions_install.sh
