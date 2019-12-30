@@ -25,6 +25,8 @@ build_separator = '-' * 78
 variants_dict = {
     'feather52840': 'Feather nRF52840 Express',
     'cplaynrf52840': 'Circuit Playground Bluefruit Express',
+    'itsybitsy52840': 'ItsyBitsy nRF52840 Express',
+    'cluenrf52840': 'Clue nRF52840',
     'feather52832': 'Feather nRF52832'
 }
 
