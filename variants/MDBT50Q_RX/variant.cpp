@@ -26,9 +26,9 @@
 const uint32_t g_ADigitalPinMap[] =
 {
   // D0 .. D13
-  45,  // D3  is P1.13 (LED1)
-  43,  // D4  is P1.11 (LED2)
-  15,  // D7  is P0.15 (Button)
+  45,  // D0  is P1.13 (LED1)
+  43,  // D1  is P1.11 (LED2)
+  15,  // D2  is P0.15 (Button)
 };
 
 void initVariant()
