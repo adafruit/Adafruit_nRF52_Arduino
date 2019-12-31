@@ -38,7 +38,7 @@ jobs:
         mkdir ${HOME}/.arduino15/packages
         mkdir ${HOME}/Arduino
         mkdir ${HOME}/Arduino/libraries
-        curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=$HOME/bin sh
+        curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=${HOME}/bin sh
         #echo "::add-path:$GITHUB_WORKSPACE/bin"
         
     - name: Install BSP and Libraries
