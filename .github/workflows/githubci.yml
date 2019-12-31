@@ -7,29 +7,46 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["nrf52840"]
+        arduino-platform: ["feather52840"]
 
     runs-on: ubuntu-latest
+    env:
+      BSP_URL: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+      BSP_PATH: $HOME/.arduino15/packages/adafruit/hardware/nrf52
     
     steps:
     - name: Setup Python
       uses: actions/setup-python@v1
       with:
         python-version: '3.x'
+        
     - name: Checkout code
-      uses: actions/checkout@v2  
-    - name: Checkout adafruit/ci-arduino
       uses: actions/checkout@v2
-      with:
-         repository: hathach/ci-arduino
-         ref: build-bsp
-         path: ci
 
-    - name: pre-install
-      run: bash ci/actions_install.sh
+    - name: Checkout submodules
+      shell: bash
+      run: |
+        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+        git submodule sync --recursive
+        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive      
+        
+    - name: Install Tools
+      run: |
+        pip3 install --user adafruit-nrfutil
+        umake electronics arduino $HOME/arduino_ide
+        echo "::add-path:$HOME/arduino_ide"
+        
+    - name: Install BSP and Libraries
+      run: |
+        arduino --pref "boardsmanager.additional.urls=$BSP_URL" --save-prefs
+        arduino --install-boards adafruit:nrf52
+        BSP_VERSION=`eval ls $BSP_PATH`
+        rm -r $BSP_PATH/*
+        ln -s $GITHUB_WORKSPACE $BSP_PATH/$BSP_VERSION
+        arduino --install-library "Adafruit NeoPixel","Adafruit NeoMatrix","Adafruit GFX Library","Adafruit SSD1306","MIDI Library","Adafruit ILI9341","Adafruit HX8357 Library","Adafruit Circuit Playground"
 
-    - name: test platforms
-      run: python3 ci/build_platform.py ${{ matrix.arduino-platform }}
+    - name: Build examples
+      run: python3 $(GITHUB_WORKSPACE)/build_all.py ${{ matrix.arduino-platform }}
       
     - name: Failed on purpose
       run: exit 1
