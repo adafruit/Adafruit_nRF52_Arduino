@@ -34,6 +34,8 @@ jobs:
       run: |
         pip3 install --user adafruit-nrfutil
         # make all our directories we need for files and libraries
+        echo $HOME
+        echo ${HOME}
         mkdir ${HOME}/.arduino15
         mkdir ${HOME}/.arduino15/packages
         mkdir ${HOME}/Arduino
