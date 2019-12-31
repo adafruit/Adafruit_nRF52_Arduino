@@ -32,15 +32,21 @@ jobs:
         
     - name: Install Tools
       run: |
-        sudo snap install ubuntu-make --classic
         pip3 install --user adafruit-nrfutil
-        sudo umake electronics arduino $HOME/arduino_ide
-        echo "::add-path:$HOME/arduino_ide"
+        # make all our directories we need for files and libraries
+        mkdir ${HOME}/.arduino15
+        mkdir ${HOME}/.arduino15/packages
+        mkdir ${HOME}/Arduino
+        mkdir ${HOME}/Arduino/libraries
+        curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+        #echo "::add-path:$HOME/arduino_ide"
         
     - name: Install BSP and Libraries
       run: |
-        arduino --pref "boardsmanager.additional.urls=$BSP_URL" --save-prefs
-        arduino --install-boards adafruit:nrf52
+        arduino-cli config init
+        arduino-cli core update-index
+        arduino-cli core update-index --additional-urls $BSP_URL
+        arduino-cli core install adafruit:nrf52 --additional-urls $BSP_URL
         BSP_VERSION=`eval ls $BSP_PATH`
         rm -r $BSP_PATH/*
         ln -s $GITHUB_WORKSPACE $BSP_PATH/$BSP_VERSION

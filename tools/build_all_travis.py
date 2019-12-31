@@ -23,32 +23,28 @@ build_format = '| {:20} | {:30} | {:9} '
 build_separator = '-' * 78
 
 variants_dict = {
-    'feather52832': 'Feather nRF52832',
     'feather52840': 'Feather nRF52840 Express',
     'cplaynrf52840': 'Circuit Playground Bluefruit Express',
     'itsybitsy52840': 'ItsyBitsy nRF52840 Express',
-    'cluenrf52840': 'CLUE nRF52840'
+    'cluenrf52840': 'Clue nRF52840',
+    'feather52832': 'Feather nRF52832'
 }
 
-all_variants = []
-
-# build all variants if input not existed
-if len(sys.argv) > 1:
-    if (sys.argv[1] in variants_dict):
-        all_variants.append(sys.argv[1])
-    else:
-        print('\033[31INTERNAL ERR\033[0m - invalid variant name "{}"'.format(sys.argv[1]))
-        sys.exit(-1)
-else:
-    all_variants = list(variants_dict.keys())
-
-print(all_variants)
-exit
+# STDERR receives output that starts with the following text, none of which should be considered a warning or error...
+output_to_ignore = (
+    'Picked up JAVA_TOOL_OPTIONS:',
+    'Loading configuration...',
+    'Initializing packages...',
+    'Preparing boards...',
+    'Verifying...',
+)
 
 def errorOutputFilter(line):
     if len(line) == 0:
         return False
     if line.isspace(): # Note: empty string does not match here!
+        return False
+    if line.startswith(output_to_ignore): # alternatively, can trim() each line, but that would create lots of short-lived strings...
         return False
     # TODO: additional items to remove?
     return True
@@ -63,8 +59,12 @@ def build_examples(variant):
     print(build_separator)
     print((build_format + '| {:6} |').format('Library', 'Example', 'Result', 'Time'))
     print(build_separator)
+    subprocess.run("arduino --board adafruit:nrf52:{}:softdevice={},debug=l0 --save-prefs".format(variant, 's140v6' if variant != 'feather52832' else 's132v6'), shell=True,
+                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     
-    fqbn = "adafruit:nrf52:{}:softdevice={},debug=l0".format(variant, 's140v6' if variant != 'feather52832' else 's132v6')
+    if all_warnings:
+        subprocess.run("arduino --pref 'compiler.warning_level=all' --save-prefs", shell=True,
+                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     for sketch in glob.iglob('libraries/**/*.ino', recursive=True):
         start_time = time.monotonic()
@@ -80,9 +80,9 @@ def build_examples(variant):
             #        preferably, would use Python logging handler to get both distinct outputs and one merged output
             #        for now, split STDERR when building with all warnings enabled, so can detect warning/error output.
             if all_warnings:
-                build_result = subprocess.run("arduino-cli compile --warnings all --fqbn {} {}".format(fqbn, sketch), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                build_result = subprocess.run("arduino --verify {}".format(sketch), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             else:
-                build_result = subprocess.run("arduino-cli compile --warnings default --fqbn {} {}".format(fqbn, sketch), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                build_result = subprocess.run("arduino --verify {}".format(sketch), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
             # get stderr into a form where len(warningLines) indicates a true warning was output to stderr
             warningLines = [];
@@ -104,6 +104,9 @@ def build_examples(variant):
 
         build_duration = time.monotonic() - start_time
 
+        if travis:
+            print('travis_fold:start:build-{}\\r'.format(sketch))
+
         print((build_format + '| {:5.2f}s |').format(sketch.split(os.path.sep)[1], os.path.basename(sketch), success, build_duration))
 
         if success != "skipped":
@@ -114,14 +117,29 @@ def build_examples(variant):
             if len(warningLines) != 0:
                 for line in warningLines:
                     print(line)
-                                
-        return
+
+        if travis:
+            print('travis_fold:end:build-{}\\r'.format(sketch))            
 
 
 build_time = time.monotonic()
 
-for var in all_variants:
-    build_examples(var)
+
+# build only one variant if the environment variable is specified
+if (ENV_VARIABLE_NAME in os.environ):
+    variant = os.environ.get(ENV_VARIABLE_NAME)
+    # only use the environment variable if the variant exists in the dictionary
+    if (variant in variants_dict):
+        build_examples(variant)
+    else:
+        print('\033[31INTERNAL ERR\033[0m - invalid variant name "{}"'.format(variant))
+        fail_count += 1
+        exit_status = -1
+
+else: # no environment variable specified, so build all variants
+    for var in variants_dict:
+        build_examples(var)
+
 
 print(build_separator)
 build_time = time.monotonic() - build_time
