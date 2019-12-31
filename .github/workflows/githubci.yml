@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BSP_URL: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
-      BSP_PATH: $HOME/.arduino15/packages/adafruit/hardware/nrf52
+      BSP_PATH: ${HOME}/.arduino15/packages/adafruit/hardware/nrf52
     
     steps:
     - name: Setup Python
