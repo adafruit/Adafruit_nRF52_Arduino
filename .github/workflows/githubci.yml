@@ -39,7 +39,7 @@ jobs:
         mkdir ${HOME}/Arduino
         mkdir ${HOME}/Arduino/libraries
         curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
-        echo "::add-path:$GITHUB_WORKSPACE/bin"
+        echo "::add-path::$GITHUB_WORKSPACE/bin"
         
     - name: Install BSP and Libraries
       run: |
