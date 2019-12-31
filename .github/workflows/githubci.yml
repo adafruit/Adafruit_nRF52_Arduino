@@ -30,7 +30,7 @@ jobs:
         git submodule sync --recursive
         git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive      
         
-    - name: Install Tools
+    - name: Install Arduino CLI and Tools
       run: |
         pip3 install --user adafruit-nrfutil
         # make all our directories we need for files and libraries
@@ -38,8 +38,8 @@ jobs:
         mkdir ${HOME}/.arduino15/packages
         mkdir ${HOME}/Arduino
         mkdir ${HOME}/Arduino/libraries
-        curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=${HOME}/bin sh
-        #echo "::add-path:$GITHUB_WORKSPACE/bin"
+        curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+        echo "::add-path:$GITHUB_WORKSPACE/bin"
         
     - name: Install BSP and Libraries
       run: |
