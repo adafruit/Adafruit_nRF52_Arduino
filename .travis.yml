@@ -65,4 +65,4 @@ install:
 before_script:
   
 script:
-  - python3 tools/build_all.py
+  - python3 tools/build_all_travis.py
