@@ -10,9 +10,6 @@ jobs:
         arduino-platform: ["feather52840"]
 
     runs-on: ubuntu-latest
-    env:
-      BSP_URL: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
-      BSP_PATH: ${HOME}/.arduino15/packages/adafruit/hardware/nrf52
     
     steps:
     - name: Setup Python
@@ -34,22 +31,26 @@ jobs:
       run: |
         pip3 install --user adafruit-nrfutil
         # make all our directories we need for files and libraries
-        echo $HOME
-        echo ${HOME}
-        mkdir ${HOME}/.arduino15
-        mkdir ${HOME}/.arduino15/packages
-        mkdir ${HOME}/Arduino
-        mkdir ${HOME}/Arduino/libraries
+        #mkdir $HOME/.arduino15
+        #mkdir $HOME/.arduino15/packages
+        #mkdir $HOME/Arduino
+        #mkdir $HOME/Arduino/libraries
         curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
         echo "::add-path::$GITHUB_WORKSPACE/bin"
         
     - name: Install BSP and Libraries
+      env:
+        BSP_URL: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+        BSP_PATH: "$HOME/.arduino15/packages/adafruit/hardware/nrf52"
       run: |
+        echo $BSP_PATH
+        echo $HOME/.arduino15/packages/adafruit/hardware/nrf52
         arduino-cli config init
         arduino-cli core update-index
         arduino-cli core update-index --additional-urls $BSP_URL
         arduino-cli core install adafruit:nrf52 --additional-urls $BSP_URL
         BSP_VERSION=`eval ls $BSP_PATH`
+        echo $BSP_VERSION
         rm -r $BSP_PATH/*
         ln -s $GITHUB_WORKSPACE $BSP_PATH/$BSP_VERSION
         arduino --install-library "Adafruit NeoPixel","Adafruit NeoMatrix","Adafruit GFX Library","Adafruit SSD1306","MIDI Library","Adafruit ILI9341","Adafruit HX8357 Library","Adafruit Circuit Playground"
