@@ -32,6 +32,7 @@ jobs:
         
     - name: Install Tools
       run: |
+        snap install ubuntu-make --classic
         pip3 install --user adafruit-nrfutil
         umake electronics arduino $HOME/arduino_ide
         echo "::add-path:$HOME/arduino_ide"
