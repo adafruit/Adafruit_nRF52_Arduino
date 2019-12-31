@@ -223,7 +223,7 @@ cplaynrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 # ---------------------------------------------
 # Clue nRF52840
 # ---------------------------------------------
-cluenrf52840.name=Adafruit Clue
+cluenrf52840.name=Adafruit CLUE
 
 # VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
 cluenrf52840.vid.0=0x239A

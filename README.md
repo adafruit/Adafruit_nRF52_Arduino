@@ -1,11 +1,14 @@
 # Arduino Core for Adafruit Bluefruit nRF52 Boards
 
+[![Build Status](https://github.com/adafruit/Adafruit_nRF52_Arduino/workflows/Build/badge.svg)](https://github.com/adafruit/Adafruit_nRF52_Arduino/actions)
+
 This repository contains the Arduino BSP for Adafruit Bluefruit nRF52 series:
 
+- Adafruit CLUE nRF52840
 - [Adafruit Feather nRF52832](https://www.adafruit.com/product/3406)
 - [Adafruit Feather nRF52840 Express](https://www.adafruit.com/product/4062)
 - [Adafruit Circuit Playground Bluefruit](https://www.adafruit.com/product/4333)
-- Adafruit Itsy nRF52840
+- Adafruit ItsyBitsy nRF52840
 - Adafruit Metro nRF52840 Express
 
 Following boards are also included but are not officially supported:
@@ -49,9 +52,9 @@ There are two methods that you can use to install this BSP. We highly recommend 
 - For Windows and macOS, pre-built executable binaries are included in the BSP at `tools/adafruit-nrfutil/`. It should work out of the box.
 - Linux user need to run follow command to install it from PyPi
 
-    ```
-    $ pip3 install adafruit-nrfutil --user
-	```
+```
+$ pip3 install adafruit-nrfutil --user
+```
 
 ### Drivers
 
