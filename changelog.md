@@ -3,6 +3,7 @@
 ## 0.15.1 - 2019.12.31
 
 - Print::availableForWrite() return int instead of size_t
+- Migrate CI from travis to actions
 
 ## 0.15.0 - 2019.12.30
 
