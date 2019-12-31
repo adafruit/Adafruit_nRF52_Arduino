@@ -114,8 +114,6 @@ def build_examples(variant):
             if len(warningLines) != 0:
                 for line in warningLines:
                     print(line)
-                                
-        return
 
 
 build_time = time.monotonic()

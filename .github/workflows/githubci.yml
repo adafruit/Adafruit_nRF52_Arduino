@@ -7,7 +7,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ["feather52840"]
+        arduino-platform: ['feather52832', 'feather52840', 'cplaynrf52840', 'itsybitsy52840', 'cluenrf52840' ]
 
     runs-on: ubuntu-latest
     
@@ -54,6 +54,3 @@ jobs:
 
     - name: Build examples
       run: python3 tools/build_all.py ${{ matrix.arduino-platform }}
-      
-    - name: Failed on purpose
-      run: exit 1
