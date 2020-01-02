@@ -8,23 +8,20 @@ all_warnings = False
 exit_status = 0
 success_count = 0
 fail_count = 0
+skip_count = 0
 
 build_format = '| {:20} | {:35} | {:9} '
 build_separator = '-' * 83
 
-all_boards = [ 'feather52832', 'feather52840', 'cplaynrf52840', 'itsybitsy52840', 'cluenrf52840' ]
+default_boards = [ 'feather52832', 'feather52840', 'cplaynrf52840', 'itsybitsy52840', 'cluenrf52840' ]
 
 build_boards = []
 
 # build all variants if input not existed
 if len(sys.argv) > 1:
-    if (sys.argv[1] in all_boards):
-        build_boards.append(sys.argv[1])
-    else:
-        print('\033[31INTERNAL ERR\033[0m - invalid variant name "{}"'.format(sys.argv[1]))
-        sys.exit(-1)
+    build_boards.append(sys.argv[1])
 else:
-    build_boards = all_boards
+    build_boards = default_boards
 
 def errorOutputFilter(line):
     if len(line) == 0:
@@ -36,7 +33,7 @@ def errorOutputFilter(line):
 
 
 def build_examples(variant):
-    global exit_status, success_count, fail_count, build_format, build_separator
+    global exit_status, success_count, fail_count, skip_count, build_format, build_separator
 
     print('\n')
     print(build_separator)
@@ -54,9 +51,9 @@ def build_examples(variant):
         # Skip if not contains: ".board.test.only" for a specific board
         sketchdir = os.path.dirname(sketch)
         if os.path.exists(sketchdir + '/.all.test.skip') or os.path.exists(sketchdir + '/.' + variant + '.test.skip'):
-            success = "skipped"
+            success = "\033[33mskipped\033[0m  "
         elif glob.glob(sketchdir+"/.*.test.only") and not os.path.exists(sketchdir + '/.build.' + variant):
-            success = "skipped"
+            success = "\033[33mskipped\033[0m  "
         else:
             # TODO - preferably, would have STDERR show up in **both** STDOUT and STDERR.
             #        preferably, would use Python logging handler to get both distinct outputs and one merged output
@@ -88,7 +85,7 @@ def build_examples(variant):
 
         print((build_format + '| {:5.2f}s |').format(sketch.split(os.path.sep)[1], os.path.basename(sketch), success, build_duration))
 
-        if success != "skipped":
+        if success != "\033[33mskipped\033[0m  ":
             if build_result.returncode != 0:
                 print(build_result.stdout.decode("utf-8"))
                 if (build_result.stderr):
@@ -96,6 +93,8 @@ def build_examples(variant):
             if len(warningLines) != 0:
                 for line in warningLines:
                     print(line)
+        else:
+            skip_count += 1
 
 
 build_time = time.monotonic()
@@ -105,7 +104,7 @@ for board in build_boards:
 
 print(build_separator)
 build_time = time.monotonic() - build_time
-print("Build Summary: {} \033[32msucceeded\033[0m, {} \033[31mfailed\033[0m and took {:.2f}s".format(success_count, fail_count, build_time))
+print("Build Summary: {} \033[32msucceeded\033[0m, {} \033[31mfailed\033[0m, {} \033[33mskipped\033[0m and took {:.2f}s".format(success_count, fail_count, skip_count, build_time))
 print(build_separator)
 
 sys.exit(exit_status)
