@@ -4,17 +4,7 @@ import sys
 import subprocess
 import time
 
-travis = False
-if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
-    travis = True
-
 all_warnings = False
-if "ALL_WARNINGS" in os.environ and os.environ["ALL_WARNINGS"] == "true":
-    all_warnings = True
-
-ENV_VARIABLE_NAME = 'VARIANT'
-
-
 exit_status = 0
 success_count = 0
 fail_count = 0
@@ -22,28 +12,19 @@ fail_count = 0
 build_format = '| {:20} | {:30} | {:9} '
 build_separator = '-' * 78
 
-variants_dict = {
-    'feather52832': 'Feather nRF52832',
-    'feather52840': 'Feather nRF52840 Express',
-    'cplaynrf52840': 'Circuit Playground Bluefruit Express',
-    'itsybitsy52840': 'ItsyBitsy nRF52840 Express',
-    'cluenrf52840': 'CLUE nRF52840'
-}
+all_boards = [ 'feather52832', 'feather52840', 'cplaynrf52840', 'itsybitsy52840', 'cluenrf52840' ]
 
-all_variants = []
+build_boards = []
 
 # build all variants if input not existed
 if len(sys.argv) > 1:
-    if (sys.argv[1] in variants_dict):
-        all_variants.append(sys.argv[1])
+    if (sys.argv[1] in all_boards):
+        build_boards.append(sys.argv[1])
     else:
         print('\033[31INTERNAL ERR\033[0m - invalid variant name "{}"'.format(sys.argv[1]))
         sys.exit(-1)
 else:
-    all_variants = list(variants_dict.keys())
-
-print(all_variants)
-exit
+    build_boards = all_boards
 
 def errorOutputFilter(line):
     if len(line) == 0:
@@ -59,7 +40,7 @@ def build_examples(variant):
 
     print('\n')
     print(build_separator)
-    print('| {:^74} |'.format(variants_dict[variant]))
+    print('| {:^74} |'.format('Board ' + variant))
     print(build_separator)
     print((build_format + '| {:6} |').format('Library', 'Example', 'Result', 'Time'))
     print(build_separator)
@@ -118,8 +99,8 @@ def build_examples(variant):
 
 build_time = time.monotonic()
 
-for var in all_variants:
-    build_examples(var)
+for board in build_boards:
+    build_examples(board)
 
 print(build_separator)
 build_time = time.monotonic() - build_time

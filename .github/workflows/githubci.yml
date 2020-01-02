@@ -41,12 +41,13 @@ jobs:
     - name: Install BSP and Libraries
       env:
         BSP_URL: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+        BSP_PATH: `echo $HOME/.arduino15/packages/adafruit/hardware/nrf52`
       run: |
         arduino-cli config init
         arduino-cli core update-index
         arduino-cli core update-index --additional-urls $BSP_URL
         arduino-cli core install adafruit:nrf52 --additional-urls $BSP_URL
-        BSP_PATH=$HOME/.arduino15/packages/adafruit/hardware/nrf52
+        #BSP_PATH=$HOME/.arduino15/packages/adafruit/hardware/nrf52
         BSP_VERSION=`eval ls $BSP_PATH`
         rm -r $BSP_PATH/*
         ln -s $GITHUB_WORKSPACE $BSP_PATH/$BSP_VERSION
