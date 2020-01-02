@@ -9,8 +9,8 @@ exit_status = 0
 success_count = 0
 fail_count = 0
 
-build_format = '| {:20} | {:30} | {:9} '
-build_separator = '-' * 78
+build_format = '| {:20} | {:35} | {:9} '
+build_separator = '-' * 83
 
 all_boards = [ 'feather52832', 'feather52840', 'cplaynrf52840', 'itsybitsy52840', 'cluenrf52840' ]
 
@@ -40,7 +40,7 @@ def build_examples(variant):
 
     print('\n')
     print(build_separator)
-    print('| {:^74} |'.format('Board ' + variant))
+    print('| {:^79} |'.format('Board ' + variant))
     print(build_separator)
     print((build_format + '| {:6} |').format('Library', 'Example', 'Result', 'Time'))
     print(build_separator)
@@ -50,11 +50,12 @@ def build_examples(variant):
     for sketch in glob.iglob('libraries/**/*.ino', recursive=True):
         start_time = time.monotonic()
 
-        # skip if example contains: ".skip" or ".skip.variant"
-        # however ".build.variant" file can overwrite ".skip", used to build a specific variant only
+        # Skip if contains: ".board.test.skip" or ".all.test.skip"
+        # Skip if not contains: ".board.test.only" for a specific board
         sketchdir = os.path.dirname(sketch)
-        if ( (os.path.exists(sketchdir + '/.skip') or os.path.exists(sketchdir + '/.skip.' + variant)) and
-                not os.path.exists(sketchdir + '/.build.' + variant)):
+        if os.path.exists(sketchdir + '/.all.test.skip') or os.path.exists(sketchdir + '/.' + variant + '.test.skip'):
+            success = "skipped"
+        elif glob.glob(sketchdir+"/.*.test.only") and not os.path.exists(sketchdir + '/.build.' + variant):
             success = "skipped"
         else:
             # TODO - preferably, would have STDERR show up in **both** STDOUT and STDERR.
