@@ -68,7 +68,7 @@ const uint32_t g_ADigitalPinMap[] =
 
   // 35 & 36 - PDM mic
   40,  // D35 is P1.08 (PDM DAT)
-  43,  // D36 is P1.11 (PDM CLK)
+  11,  // D36 is P0.11 (PDM CLK)
 
   // QSPI pins (not exposed via any header / test point)
   19,  // D37 is P0.19 (QSPI CLK)
