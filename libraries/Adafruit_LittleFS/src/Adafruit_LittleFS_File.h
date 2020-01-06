@@ -82,8 +82,8 @@ class File : public Stream
     void rewindDirectory (void);
 
     // Has to be public, in order to grant 'friend' permissions to Adafruit_LittleFS private member _mutex
-    void DoNotCallFromOutsideClass_LockFilesystem(void);
-    void DoNotCallFromOutsideClass_UnlockFilesystem(void);
+    void _LockFilesystem(void);
+    void _UnlockFilesystem(void);
 
   private:
     Adafruit_LittleFS* _fs;
