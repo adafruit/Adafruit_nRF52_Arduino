@@ -405,7 +405,7 @@ arduinonano33ble.build.vid=0x239A
 arduinonano33ble.build.pid=0x8063
 
 # SoftDevice Menu
-arduinonano33ble.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+arduinonano33ble.menu.softdevice.s140v6=0.2.13-23~ga9e8804 SoftDevice s140 6.1.1
 arduinonano33ble.menu.softdevice.s140v6.build.sd_name=s140
 arduinonano33ble.menu.softdevice.s140v6.build.sd_version=6.1.1
 arduinonano33ble.menu.softdevice.s140v6.build.sd_fwid=0x00B6
