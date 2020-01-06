@@ -44,10 +44,6 @@ class File : public Stream
     File (Adafruit_LittleFS &fs);
     File (char const *filename, uint8_t mode, Adafruit_LittleFS &fs);
 
-  private:
-    // openNextFile() needs a constructor that does NOT take the mutex.
-    File (uint8_t differentiator, char const *filename, uint8_t mode, Adafruit_LittleFS &fs);
-
   public:
 
     bool open (char const *filename, uint8_t mode);

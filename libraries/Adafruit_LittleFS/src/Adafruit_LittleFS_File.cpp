@@ -50,16 +50,6 @@ File::File (char const *filename, uint8_t mode, Adafruit_LittleFS &fs)
   this->open(filename, mode);
 }
 
-File::File (uint8_t differentiator, char const *filename, uint8_t mode, Adafruit_LittleFS &fs)
- : File(fs)
-{
-  // private constructor calls private API _open(), which does NOT obtain the mutex
-  (void)differentiator;
-  this->_open(filename, mode);
-}
-
-
-
 bool File::_open_file (char const *filepath, uint8_t mode)
 {
   int flags = (mode == FILE_O_READ) ? LFS_O_RDONLY :
