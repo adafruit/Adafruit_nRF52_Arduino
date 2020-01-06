@@ -297,11 +297,7 @@ void File::_close(void)
 
 File::operator bool (void)
 {
-  bool ret = false;
-  this->DoNotCallFromOutsideClass_LockFilesystem();
-  ret = this->_isOpen();
-  this->DoNotCallFromOutsideClass_UnlockFilesystem();
-  return ret;
+  return isOpen();
 }
 bool File::isOpen(void)
 {
