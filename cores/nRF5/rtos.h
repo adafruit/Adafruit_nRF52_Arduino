@@ -85,16 +85,12 @@ static inline void rtos_free( void *pv )
 
 class SchedulerRTOS
 {
-private:
-  uint8_t _num;
-
 public:
   typedef void (*taskfunc_t)(void);
 
   SchedulerRTOS(void);
 
-  bool startLoop(taskfunc_t task, uint32_t stack_size = SCHEDULER_STACK_SIZE_DFLT);
-  bool startLoop(taskfunc_t task, const char* name, uint32_t stack_size = SCHEDULER_STACK_SIZE_DFLT);
+  bool startLoop(taskfunc_t task, uint32_t stack_size = SCHEDULER_STACK_SIZE_DFLT, uint32_t prio = TASK_PRIO_LOW, const char* name = NULL);
 };
 
 extern SchedulerRTOS Scheduler;

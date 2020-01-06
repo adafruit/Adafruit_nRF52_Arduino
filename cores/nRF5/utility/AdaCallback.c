@@ -153,7 +153,7 @@ bool ada_callback_queue_resize(uint32_t new_depth)
   QueueHandle_t new_queue = xQueueCreate(new_depth, sizeof(void*));
   VERIFY(new_queue);
 
-  LOG_LV1("MEMORY", "AdaCallback increase queue depth to %d", new_depth);
+  LOG_LV1("MEMORY", "AdaCallback increase queue depth to %" PRId32, new_depth);
 
   vTaskSuspend(_cb_task);
   taskENTER_CRITICAL();

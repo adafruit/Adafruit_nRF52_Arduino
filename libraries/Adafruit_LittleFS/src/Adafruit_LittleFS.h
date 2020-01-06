@@ -30,8 +30,8 @@
 // Internal Flash uses ARM Little FileSystem
 // https://github.com/ARMmbed/littlefs
 #include "littlefs/lfs.h"
-
 #include "Adafruit_LittleFS_File.h"
+#include "rtos.h" // tied to FreeRTOS for serialization
 
 class Adafruit_LittleFS
 {
@@ -76,6 +76,15 @@ class Adafruit_LittleFS
     bool _mounted;
     struct lfs_config* _lfs_cfg;
     lfs_t _lfs;
+
+    // these two functions need access to the private _mutex variable:
+    friend void Adafruit_LittleFS_Namespace::File::_LockFilesystem(void);
+    friend void Adafruit_LittleFS_Namespace::File::_UnlockFilesystem(void);
+    //static_assert(configSUPPORT_STATIC_ALLOCATION == 1, "Currently only supports configuration with STATIC_ALLOCATION enabled");
+    SemaphoreHandle_t _mutex;
+
+  private:
+    StaticSemaphore_t _MutexStorageSpace;
 };
 
 #if !CFG_DEBUG
@@ -83,7 +92,7 @@ class Adafruit_LittleFS
   #define PRINT_LFS_ERR(_err)
 #else
   #define VERIFY_LFS(...)       _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, dbg_strerr_lfs)
-  #define PRINT_LFS_ERR(_err)   VERIFY_MESS((long int)_err, dbg_strerr_lfs) // LFS_ERR are of type int, VERIFY_MESS expects long_int
+  #define PRINT_LFS_ERR(_err)   do { if (_err) { VERIFY_MESS((long int)_err, dbg_strerr_lfs); } } while(0) // LFS_ERR are of type int, VERIFY_MESS expects long_int
 
   const char* dbg_strerr_lfs (int32_t err);
 #endif

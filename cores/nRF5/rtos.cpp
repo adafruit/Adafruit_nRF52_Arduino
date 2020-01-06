@@ -45,33 +45,23 @@ static void _redirect_task(void* arg)
   while(1)
   {
     taskfunc();
+    yield();
   }
 }
 
 SchedulerRTOS::SchedulerRTOS(void)
 {
-  _num = 1; // loop is already created by default
 }
 
-bool SchedulerRTOS::startLoop(taskfunc_t task, uint32_t stack_size)
+bool SchedulerRTOS::startLoop(taskfunc_t task, uint32_t stack_size, uint32_t prio, const char* name)
 {
-  char name[8] = "loop0";
-  name[4] += _num;
-
-  if ( startLoop(task, name, stack_size) )
+  static char const * const name_default = "unnamed_task";
+  if (name == NULL)
   {
-    _num++;
-    return true;
-  }else
-  {
-    return false;
+    name = name_default;
   }
-}
-
-bool SchedulerRTOS::startLoop(taskfunc_t task, const char* name, uint32_t stack_size)
-{
   TaskHandle_t  handle;
-  return pdPASS == xTaskCreate( _redirect_task, name, stack_size, (void*) task, TASK_PRIO_LOW, &handle);
+  return pdPASS == xTaskCreate( _redirect_task, name, stack_size, (void*) task, prio, &handle);
 }
 
 
