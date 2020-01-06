@@ -110,9 +110,6 @@ bool File::_open_dir (char const *filepath)
   return true;
 }
 
-// TODO: wrap close() because it must be called by open()
-// TODO: wrap open() because it is called by openNextFile()
-
 bool File::open (char const *filepath, uint8_t mode)
 {
   bool ret = false;
@@ -308,7 +305,6 @@ void File::_close(void)
   }
 }
 
-[[deprecated("Recommend use of isOpen() for clarity")]]
 File::operator bool (void)
 {
   bool ret = false;
