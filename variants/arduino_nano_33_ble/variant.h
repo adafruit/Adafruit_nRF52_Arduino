@@ -38,7 +38,7 @@ extern "C" unsigned int PINCOUNT_fn();
 #endif // __cplusplus
 
 // Number of pins defined in PinDescription array
-#define PINS_COUNT           (33)
+#define PINS_COUNT           (33u)
 #define NUM_DIGITAL_PINS     (21u)
 #define NUM_ANALOG_INPUTS    (7u)
 #define NUM_ANALOG_OUTPUTS   (0u)
@@ -56,6 +56,7 @@ extern "C" unsigned int PINCOUNT_fn();
 #define LED_CONN             PIN_LED
 #define LED_RED              PIN_LED
 #define LED_BLUE             LEDB
+
 #define LED_STATE_ON         1         // State when LED is lit
 
 // Analog pins
