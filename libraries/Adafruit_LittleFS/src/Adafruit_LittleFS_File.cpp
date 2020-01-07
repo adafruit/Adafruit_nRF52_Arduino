@@ -104,7 +104,9 @@ bool File::open (char const *filepath, uint8_t mode)
 {
   bool ret = false;
   _fs->_lockFS();
+
   ret = this->_open(filepath, mode);
+
   _fs->_unlockFS();
   return ret;
 }
@@ -114,7 +116,7 @@ bool File::_open (char const *filepath, uint8_t mode)
   bool ret = false;
 
   // close if currently opened
-  if ( this->_isOpen() ) _close();
+  if ( this->isOpen() ) _close();
 
   struct lfs_info info;
   int rc = lfs_stat(_fs->_getFS(), filepath, &info);
@@ -152,6 +154,7 @@ size_t File::write (uint8_t const *buf, size_t size)
 {
   lfs_ssize_t wrcount = 0;
   _fs->_lockFS();
+
   if (!this->_is_dir)
   {
     wrcount = lfs_file_write(_fs->_getFS(), _file, buf, size);
@@ -160,6 +163,7 @@ size_t File::write (uint8_t const *buf, size_t size)
       wrcount = 0;
     }
   }
+
   _fs->_unlockFS();
   return wrcount;
 }
@@ -180,10 +184,12 @@ int File::read (void *buf, uint16_t nbyte)
 {
   int ret = 0;
   _fs->_lockFS();
+
   if (!this->_is_dir)
   {
     ret = lfs_file_read(_fs->_getFS(), _file, buf, nbyte);
   }
+
   _fs->_unlockFS();
   return ret;
 }
@@ -192,6 +198,7 @@ int File::peek (void)
 {
   int ret = -1;
   _fs->_lockFS();
+
   if (!this->_is_dir)
   {
     uint32_t pos = lfs_file_tell(_fs->_getFS(), _file);
@@ -200,8 +207,9 @@ int File::peek (void)
     {
       ret = static_cast<int>(ch);
     }
-    (void)lfs_file_seek(_fs->_getFS(), _file, pos, LFS_SEEK_SET);
+    (void) lfs_file_seek(_fs->_getFS(), _file, pos, LFS_SEEK_SET);
   }
+
   _fs->_unlockFS();
   return ret;
 }
@@ -210,12 +218,14 @@ int File::available (void)
 {
   int ret = 0;
   _fs->_lockFS();
+
   if (!this->_is_dir)
   {
     uint32_t size = lfs_file_size(_fs->_getFS(), _file);
     uint32_t pos  = lfs_file_tell(_fs->_getFS(), _file);
     ret = size - pos;
   }
+
   _fs->_unlockFS();
   return ret;
 }
@@ -224,10 +234,12 @@ bool File::seek (uint32_t pos)
 {
   bool ret = false;
   _fs->_lockFS();
+
   if (!this->_is_dir)
   {
     ret = lfs_file_seek(_fs->_getFS(), _file, pos, LFS_SEEK_SET) >= 0;
   }
+
   _fs->_unlockFS();
   return ret;
 }
@@ -236,10 +248,12 @@ uint32_t File::position (void)
 {
   uint32_t ret = 0;
   _fs->_lockFS();
+
   if (!this->_is_dir)
   {
     ret = lfs_file_tell(_fs->_getFS(), _file);
   }
+
   _fs->_unlockFS();
   return ret;
 }
@@ -248,22 +262,25 @@ uint32_t File::size (void)
 {
   uint32_t ret = 0;
   _fs->_lockFS();
+
   if (!this->_is_dir)
   {
     ret = lfs_file_size(_fs->_getFS(), _file);
   }
+
   _fs->_unlockFS();
   return ret;
-
 }
 
 void File::flush (void)
 {
   _fs->_lockFS();
+
   if (!this->_is_dir)
   {
     lfs_file_sync(_fs->_getFS(), _file);
   }
+
   _fs->_unlockFS();
   return;
 }
@@ -277,7 +294,7 @@ void File::close (void)
 
 void File::_close(void)
 {
-  if ( this->_isOpen() )
+  if ( this->isOpen() )
   {
     if ( this->_is_dir )
     {
@@ -304,14 +321,6 @@ File::operator bool (void)
 
 bool File::isOpen(void)
 {
-  bool ret = 0;
-  _fs->_lockFS();
-  ret = this->_isOpen();
-  _fs->_unlockFS();
-  return ret;
-}
-bool File::_isOpen(void)
-{
   return (_file != NULL) || (_dir != NULL);
 }
 
@@ -322,19 +331,12 @@ bool File::_isOpen(void)
 //            suddenly (unexpectedly?) have different values.
 char const* File::name (void)
 {
-  _fs->_lockFS();
-  char const* ret = this->_name;
-  _fs->_unlockFS();
-  return ret;
+  return this->_name;
 }
 
 bool File::isDirectory (void)
 {
-  _fs->_lockFS();
-  bool ret = this->_is_dir;
-  _fs->_unlockFS();
-  return ret;
-
+  return this->_is_dir;
 }
 
 File File::openNextFile (uint8_t mode)
@@ -381,6 +383,5 @@ void File::rewindDirectory (void)
     lfs_dir_rewind(_fs->_getFS(), _dir);
   }
   _fs->_unlockFS();
-  return;
 }
 

@@ -98,7 +98,6 @@ class File : public Stream
     bool _open_file(char const *filepath, uint8_t mode);
     bool _open_dir (char const *filepath);
     void _close(void);
-    bool _isOpen(void);
 };
 
 }
