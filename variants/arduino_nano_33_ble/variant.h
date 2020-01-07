@@ -135,10 +135,6 @@ static const uint8_t SCK  = PIN_SPI_SCK;
 #define SPI_MOSI			(digitalPinToPinName(PIN_SPI_MOSI))
 #define SPI_SCK				(digitalPinToPinName(PIN_SPI_SCK))
 
-
-uint8_t getUniqueSerialNumber(uint8_t* name);
-void _ontouch1200bps_();
-
 #ifdef __cplusplus
 }
 #endif
