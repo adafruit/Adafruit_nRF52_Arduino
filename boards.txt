@@ -378,9 +378,9 @@ arduinonano33ble.name=Arduino Nano 33 BLE (Adafruit/FreeRTOS)
 
 # VID/PID for the Adafruit bootloader with/without UF2
 arduinonano33ble.vid.0=0x239A
-arduinonano33ble.pid.0=0x8063
+arduinonano33ble.pid.0=0x0063
 arduinonano33ble.vid.1=0x239A
-arduinonano33ble.pid.1=0x0063
+arduinonano33ble.pid.1=0x0064
 
 # Upload
 arduinonano33ble.bootloader.tool=bootburn
