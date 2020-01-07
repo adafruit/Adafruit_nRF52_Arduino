@@ -81,10 +81,6 @@ class File : public Stream
     File openNextFile (uint8_t mode = FILE_O_READ);
     void rewindDirectory (void);
 
-    // Has to be public, in order to grant 'friend' permissions to Adafruit_LittleFS private member _mutex
-    void _LockFilesystem(void);
-    void _UnlockFilesystem(void);
-
   private:
     Adafruit_LittleFS* _fs;
 
