@@ -374,7 +374,7 @@ pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 # ----------------------------------
 # Arduino Nano 33 BLE
 # ----------------------------------
-arduinonano33ble.name=Arduino Nano 33 BLE (Adafruit/FreeRTOS)
+arduinonano33ble.name=Arduino Nano 33 BLE (Unsupported)
 
 # VID/PID for the Adafruit bootloader with/without UF2
 arduinonano33ble.vid.0=0x239A
