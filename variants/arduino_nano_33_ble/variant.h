@@ -98,11 +98,12 @@ static const uint8_t MISO = PIN_SPI_MISO;
 static const uint8_t SCK  = PIN_SPI_SCK;
 
 // Wire
+#define WIRE_INTERFACES_COUNT 2
 #define PIN_WIRE_SDA        (18u)
 #define PIN_WIRE_SCL        (19u)
 
-#define PIN_WIRE_SDA1       (30u)
-#define PIN_WIRE_SCL1       (31u)
+#define PIN_WIRE1_SDA       (30u)
+#define PIN_WIRE1_SCL       (31u)
 
 #define PIN_ENABLE_SENSORS_3V3     (32u)
 #define PIN_ENABLE_I2C_PULLUP      (33u)
@@ -128,9 +129,10 @@ static const uint8_t SCK  = PIN_SPI_SCK;
 
 #define I2C_SDA				(digitalPinToPinName(PIN_WIRE_SDA))
 #define I2C_SCL				(digitalPinToPinName(PIN_WIRE_SCL))
-#define I2C_SDA1			(digitalPinToPinName(PIN_WIRE_SDA1))
-#define I2C_SCL1			(digitalPinToPinName(PIN_WIRE_SCL1))
+#define I2C1_SDA			(digitalPinToPinName(PIN_WIRE1_SDA))
+#define I2C1_SCL			(digitalPinToPinName(PIN_WIRE1_SCL))
 
+#define SPI_INTERFACES_COUNT 1
 #define SPI_MISO			(digitalPinToPinName(PIN_SPI_MISO))
 #define SPI_MOSI			(digitalPinToPinName(PIN_SPI_MOSI))
 #define SPI_SCK				(digitalPinToPinName(PIN_SPI_SCK))
