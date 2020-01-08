@@ -60,7 +60,7 @@ bool File::_open_file (char const *filepath, uint8_t mode)
     _file = (lfs_file_t*) rtos_malloc(sizeof(lfs_file_t));
     if (!_file) return false;
 
-    int rc = lfs_file_open(_fs->getFS(), _file, filepath, flags);
+    int rc = lfs_file_open(_fs->_getFS(), _file, filepath, flags);
 
     if ( rc )
     {
@@ -70,7 +70,7 @@ bool File::_open_file (char const *filepath, uint8_t mode)
     }
 
     // move to end of file
-    if ( mode == FILE_O_WRITE ) lfs_file_seek(_fs->getFS(), _file, 0, LFS_SEEK_END);
+    if ( mode == FILE_O_WRITE ) lfs_file_seek(_fs->_getFS(), _file, 0, LFS_SEEK_END);
 
     _is_dir = false;
   }
@@ -83,7 +83,7 @@ bool File::_open_dir (char const *filepath)
   _dir = (lfs_dir_t*) rtos_malloc(sizeof(lfs_dir_t));
   if (!_dir) return false;
 
-  int rc = lfs_dir_open(_fs->getFS(), _dir, filepath);
+  int rc = lfs_dir_open(_fs->_getFS(), _dir, filepath);
 
   if ( rc )
   {
@@ -103,20 +103,23 @@ bool File::_open_dir (char const *filepath)
 bool File::open (char const *filepath, uint8_t mode)
 {
   bool ret = false;
-  this->_LockFilesystem();
+  _fs->_lockFS();
+
   ret = this->_open(filepath, mode);
-  this->_UnlockFilesystem();
+
+  _fs->_unlockFS();
   return ret;
 }
+
 bool File::_open (char const *filepath, uint8_t mode)
 {
   bool ret = false;
 
   // close if currently opened
-  if ( this->_isOpen() ) _close();
+  if ( this->isOpen() ) _close();
 
   struct lfs_info info;
-  int rc = lfs_stat(_fs->getFS(), filepath, &info);
+  int rc = lfs_stat(_fs->_getFS(), filepath, &info);
 
   if ( LFS_ERR_OK == rc )
   {
@@ -150,16 +153,18 @@ size_t File::write (uint8_t ch)
 size_t File::write (uint8_t const *buf, size_t size)
 {
   lfs_ssize_t wrcount = 0;
-  this->_LockFilesystem();
+  _fs->_lockFS();
+
   if (!this->_is_dir)
   {
-    wrcount = lfs_file_write(_fs->getFS(), _file, buf, size);
+    wrcount = lfs_file_write(_fs->_getFS(), _file, buf, size);
     if (wrcount < 0)
     {
       wrcount = 0;
-    };
+    }
   }
-  this->_UnlockFilesystem();
+
+  _fs->_unlockFS();
   return wrcount;
 }
 
@@ -178,108 +183,122 @@ int File::read (void)
 int File::read (void *buf, uint16_t nbyte)
 {
   int ret = 0;
-  this->_LockFilesystem();
+  _fs->_lockFS();
+
   if (!this->_is_dir)
   {
-    ret = lfs_file_read(_fs->getFS(), _file, buf, nbyte);
+    ret = lfs_file_read(_fs->_getFS(), _file, buf, nbyte);
   }
-  this->_UnlockFilesystem();
+
+  _fs->_unlockFS();
   return ret;
 }
 
 int File::peek (void)
 {
   int ret = -1;
-  this->_LockFilesystem();
+  _fs->_lockFS();
+
   if (!this->_is_dir)
   {
-    uint32_t pos = lfs_file_tell(_fs->getFS(), _file);
+    uint32_t pos = lfs_file_tell(_fs->_getFS(), _file);
     uint8_t ch = 0;
-    if (lfs_file_read(_fs->getFS(), _file, &ch, 1) > 0)
+    if (lfs_file_read(_fs->_getFS(), _file, &ch, 1) > 0)
     {
       ret = static_cast<int>(ch);
     }
-    (void)lfs_file_seek(_fs->getFS(), _file, pos, LFS_SEEK_SET);
+    (void) lfs_file_seek(_fs->_getFS(), _file, pos, LFS_SEEK_SET);
   }
-  this->_UnlockFilesystem();
+
+  _fs->_unlockFS();
   return ret;
 }
 
 int File::available (void)
 {
   int ret = 0;
-  this->_LockFilesystem();
+  _fs->_lockFS();
+
   if (!this->_is_dir)
   {
-    uint32_t size = lfs_file_size(_fs->getFS(), _file);
-    uint32_t pos  = lfs_file_tell(_fs->getFS(), _file);
+    uint32_t size = lfs_file_size(_fs->_getFS(), _file);
+    uint32_t pos  = lfs_file_tell(_fs->_getFS(), _file);
     ret = size - pos;
   }
-  this->_UnlockFilesystem();
+
+  _fs->_unlockFS();
   return ret;
 }
 
 bool File::seek (uint32_t pos)
 {
   bool ret = false;
-  this->_LockFilesystem();
+  _fs->_lockFS();
+
   if (!this->_is_dir)
   {
-    ret = lfs_file_seek(_fs->getFS(), _file, pos, LFS_SEEK_SET) >= 0;
+    ret = lfs_file_seek(_fs->_getFS(), _file, pos, LFS_SEEK_SET) >= 0;
   }
-  this->_UnlockFilesystem();
+
+  _fs->_unlockFS();
   return ret;
 }
 
 uint32_t File::position (void)
 {
   uint32_t ret = 0;
-  this->_LockFilesystem();
+  _fs->_lockFS();
+
   if (!this->_is_dir)
   {
-    ret = lfs_file_tell(_fs->getFS(), _file);
+    ret = lfs_file_tell(_fs->_getFS(), _file);
   }
-  this->_UnlockFilesystem();
+
+  _fs->_unlockFS();
   return ret;
 }
 
 uint32_t File::size (void)
 {
   uint32_t ret = 0;
-  this->_LockFilesystem();
+  _fs->_lockFS();
+
   if (!this->_is_dir)
   {
-    ret = lfs_file_size(_fs->getFS(), _file);
+    ret = lfs_file_size(_fs->_getFS(), _file);
   }
-  this->_UnlockFilesystem();
-  return ret;
 
+  _fs->_unlockFS();
+  return ret;
 }
 
 void File::flush (void)
 {
-  this->_LockFilesystem();
+  _fs->_lockFS();
+
   if (!this->_is_dir)
   {
-    lfs_file_sync(_fs->getFS(), _file);
+    lfs_file_sync(_fs->_getFS(), _file);
   }
-  this->_UnlockFilesystem();
+
+  _fs->_unlockFS();
   return;
 }
 
 void File::close (void)
 {
-  this->_LockFilesystem();
+  _fs->_lockFS();
   this->_close();
-  this->_UnlockFilesystem();
+  _fs->_unlockFS();
 }
+
 void File::_close(void)
 {
-  if ( this->_isOpen() )
+  if ( this->isOpen() )
   {
     if ( this->_is_dir )
     {
-      lfs_dir_close(_fs->getFS(), _dir);
+      lfs_dir_close(_fs->_getFS(), _dir);
       rtos_free(_dir);
       _dir = NULL;
 
@@ -288,7 +307,7 @@ void File::_close(void)
     }
     else
     {
-      lfs_file_close(this->_fs->getFS(), _file);
+      lfs_file_close(this->_fs->_getFS(), _file);
       rtos_free(_file);
       _file = NULL;
     }
@@ -299,15 +318,8 @@ File::operator bool (void)
 {
   return isOpen();
 }
+
 bool File::isOpen(void)
-{
-  bool ret = 0;
-  this->_LockFilesystem();
-  ret = this->_isOpen();
-  this->_UnlockFilesystem();
-  return ret;
-}
-bool File::_isOpen(void)
 {
   return (_file != NULL) || (_dir != NULL);
 }
@@ -319,24 +331,17 @@ bool File::_isOpen(void)
 //            suddenly (unexpectedly?) have different values.
 char const* File::name (void)
 {
-  this->_LockFilesystem();
-  char const* ret = this->_name;
-  this->_UnlockFilesystem();
-  return ret;
+  return this->_name;
 }
 
 bool File::isDirectory (void)
 {
-  this->_LockFilesystem();
-  bool ret = this->_is_dir;
-  this->_UnlockFilesystem();
-  return ret;
-
+  return this->_is_dir;
 }
 
 File File::openNextFile (uint8_t mode)
 {
-  this->_LockFilesystem();
+  _fs->_lockFS();
 
   File ret(*_fs);
   if (this->_is_dir)
@@ -348,7 +353,7 @@ File File::openNextFile (uint8_t mode)
     // Skip the "." and ".." entries ...
     do
     {
-      rc = lfs_dir_read(_fs->getFS(), _dir, &info);
+      rc = lfs_dir_read(_fs->_getFS(), _dir, &info);
     } while ( rc == 1 && (!strcmp(".", info.name) || !strcmp("..", info.name)) );
 
     if ( rc == 1 )
@@ -366,28 +371,17 @@ File File::openNextFile (uint8_t mode)
       PRINT_LFS_ERR(rc);
     }
   }
-  this->_UnlockFilesystem();
+  _fs->_unlockFS();
   return ret;
 }
 
 void File::rewindDirectory (void)
 {
-  this->_LockFilesystem();
+  _fs->_lockFS();
   if (this->_is_dir)
   {
-    lfs_dir_rewind(_fs->getFS(), _dir);
+    lfs_dir_rewind(_fs->_getFS(), _dir);
   }
-  this->_UnlockFilesystem();
-  return;
+  _fs->_unlockFS();
 }
-
-void File::_LockFilesystem(void)
-{
-  xSemaphoreTake(this->_fs->_mutex,  portMAX_DELAY);
-}
-void File::_UnlockFilesystem(void)
-{
-  xSemaphoreGive(this->_fs->_mutex);
-}
-
 

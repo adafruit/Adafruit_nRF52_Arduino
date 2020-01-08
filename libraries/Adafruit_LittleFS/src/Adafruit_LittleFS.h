@@ -67,20 +67,19 @@ class Adafruit_LittleFS
     // format file system
     bool format (void);
 
-    lfs_t* getFS(void)
-    {
-      return &_lfs;
-    }
+    /*------------------------------------------------------------------*/
+    /* INTERNAL USAGE ONLY
+     * Although declare as public, it is meant to be invoked by internal
+     * code. User should not call these directly
+     *------------------------------------------------------------------*/
+    lfs_t* _getFS   (void) { return &_lfs; }
+    void   _lockFS  (void) { xSemaphoreTake(_mutex,  portMAX_DELAY); }
+    void   _unlockFS(void) { xSemaphoreGive(_mutex); }
 
   protected:
     bool _mounted;
     struct lfs_config* _lfs_cfg;
     lfs_t _lfs;
-
-    // these two functions need access to the private _mutex variable:
-    friend void Adafruit_LittleFS_Namespace::File::_LockFilesystem(void);
-    friend void Adafruit_LittleFS_Namespace::File::_UnlockFilesystem(void);
-    //static_assert(configSUPPORT_STATIC_ALLOCATION == 1, "Currently only supports configuration with STATIC_ALLOCATION enabled");
     SemaphoreHandle_t _mutex;
 
   private:
