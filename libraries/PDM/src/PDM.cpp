@@ -44,15 +44,28 @@ PDMClass::~PDMClass()
 {
 }
 
+void PDMClass::setPins(int dataPin, int clkPin, int pwrPin)
+{
+  _dinPin = dataPin;
+  _clkPin = clkPin;
+  _pwrPin = pwrPin;
+}
+
 int PDMClass::begin(int channels, long sampleRate)
 {
   _channels = channels;
 
-  /*
+  // Enable high frequency oscillator if not already enabled
+  if (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0) {
+    NRF_CLOCK->TASKS_HFCLKSTART    = 1;
+    while (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0) { }
+  }
+
   // configure the sample rate and channels
   switch (sampleRate) {
     case 16000:
-      nrf_pdm_clock_set(NRF_PDM_FREQ_1032K);
+      NRF_PDM->RATIO = ((PDM_RATIO_RATIO_Ratio80 << PDM_RATIO_RATIO_Pos) & PDM_RATIO_RATIO_Msk);
+      nrf_pdm_clock_set(NRF_PDM_FREQ_1280K);
       break;
     case 41667:
       nrf_pdm_clock_set(NRF_PDM_FREQ_2667K);
@@ -60,7 +73,6 @@ int PDMClass::begin(int channels, long sampleRate)
     default:
       return 0; // unsupported
   }
-  */
 
   switch (channels) {
     case 2:
@@ -74,6 +86,7 @@ int PDMClass::begin(int channels, long sampleRate)
     default:
       return 0; // unsupported
   }
+
   setGain(DEFAULT_PDM_GAIN);  
 
   // configure the I/O and mux
@@ -81,8 +94,6 @@ int PDMClass::begin(int channels, long sampleRate)
   digitalWrite(_clkPin, LOW);
 
   pinMode(_dinPin, INPUT);
-
-  Serial.printf("Clock P %d Data P %d\n", digitalPinToPinName(_clkPin), digitalPinToPinName(_dinPin));
 
   nrf_pdm_psel_connect(digitalPinToPinName(_clkPin), digitalPinToPinName(_dinPin));
 
@@ -98,14 +109,13 @@ int PDMClass::begin(int channels, long sampleRate)
     digitalWrite(_pwrPin, HIGH);
   }
 
-
   // clear the buffer
   _doubleBuffer.reset();
+
   // set the PDM IRQ priority and enable
   NVIC_SetPriority(PDM_IRQn, PDM_IRQ_PRIORITY);
   NVIC_ClearPendingIRQ(PDM_IRQn);
   NVIC_EnableIRQ(PDM_IRQn);
-  
 
   // set the buffer for transfer
   // nrf_pdm_buffer_set((uint32_t*)_doubleBuffer.data(), _doubleBuffer.availableForWrite() / (sizeof(int16_t) * _channels));
@@ -115,7 +125,6 @@ int PDMClass::begin(int channels, long sampleRate)
   nrf_pdm_enable();
   nrf_pdm_event_clear(NRF_PDM_EVENT_STARTED);
   nrf_pdm_task_trigger(NRF_PDM_TASK_START);
-
 
   return 1;
 }
@@ -133,6 +142,8 @@ void PDMClass::end()
     pinMode(_pwrPin, INPUT);
   }
 
+  // Don't disable high frequency oscillator since it could be in use by RADIO
+
   // unconfigure the I/O and un-mux
   nrf_pdm_psel_disconnect();
 
@@ -145,7 +156,7 @@ int PDMClass::available()
 
   size_t avail = _doubleBuffer.available();
 
-  //NVIC_EnableIRQ(PDM_IRQn);
+  NVIC_EnableIRQ(PDM_IRQn);
 
   return avail;
 }
@@ -156,7 +167,7 @@ int PDMClass::read(void* buffer, size_t size)
 
   int read = _doubleBuffer.read(buffer, size);
 
-  //NVIC_EnableIRQ(PDM_IRQn);
+  NVIC_EnableIRQ(PDM_IRQn);
 
   return read;
 }
@@ -203,13 +214,24 @@ void PDMClass::IrqHandler()
   }
 }
 
-extern "C" {
-  void PDM_IRQHandler(void);
-}
-
-void PDM_IRQHandler(void)
+extern "C"
 {
-  PDM.IrqHandler();
+  void PDM_IRQHandler(void)
+  {
+    PDM.IrqHandler();
+  }
 }
 
-extern PDMClass PDM;
+#ifndef PIN_PDM_DIN
+#define PIN_PDM_DIN -1
+#endif
+
+#ifndef PIN_PDM_CLK
+#define PIN_PDM_CLK -1
+#endif
+
+#ifndef PIN_PDM_PWR
+#define PIN_PDM_PWR -1
+#endif
+
+PDMClass PDM(PIN_PDM_DIN, PIN_PDM_CLK, PIN_PDM_PWR);

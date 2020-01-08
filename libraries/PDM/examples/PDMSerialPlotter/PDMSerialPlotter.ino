@@ -10,10 +10,6 @@
 
 #include <PDM.h>
 
-// The default Circuit Playground Bluefruit pins 
-// data pin, clock pin, power pin (-1 if not used)
-PDMClass PDM(24, 25, -1);
-
 // buffer to read samples into, each sample is 16-bits
 short sampleBuffer[256];
 
@@ -41,8 +37,6 @@ void setup() {
 
 void loop() {
   // wait for samples to be read
-  PDM.IrqHandler();
-
   if (samplesRead) {
     // print samples to the serial monitor or plotter
     for (int i = 0; i < samplesRead; i++) {
@@ -63,3 +57,4 @@ void onPDMdata() {
   // 16-bit, 2 bytes per sample
   samplesRead = bytesAvailable / 2;
 }
+

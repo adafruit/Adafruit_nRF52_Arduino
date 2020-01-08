@@ -54,8 +54,8 @@ extern "C"
 #define LED_STATE_ON         1         // State when LED is litted
 
 // Buttons
-#define PIN_BUTTON1             (4)
-#define PIN_BUTTON2             (5)
+#define PIN_BUTTON1          (4)
+#define PIN_BUTTON2          (5)
 
 // Microphone
 #define PIN_PDM_DIN           24
@@ -120,7 +120,9 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 #define PIN_WIRE1_SDA       (28)
 #define PIN_WIRE1_SCL       (26)
 
-// QSPI Pins
+/*
+ * QSPI Interfaces
+ */
 #define PIN_QSPI_SCK         29
 #define PIN_QSPI_CS          30
 #define PIN_QSPI_IO0         31
@@ -133,6 +135,13 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 
 #define USB_MSC_BLOCK_SIZE    512
 #define USB_MSC_BLOCK_COUNT   ((2*1024*1024) / USB_MSC_BLOCK_SIZE)
+
+/*
+ * PDM Interfaces
+ */
+#define PIN_PDM_DIN         24
+#define PIN_PDM_CLK         25
+#define PIN_PDM_PWR         -1 // not used
 
 #ifdef __cplusplus
 }
