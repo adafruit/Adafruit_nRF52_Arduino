@@ -64,7 +64,9 @@ int PDMClass::begin(int channels, long sampleRate)
   // configure the sample rate and channels
   switch (sampleRate) {
     case 16000:
+      #ifndef NRF52832_XXAA
       NRF_PDM->RATIO = ((PDM_RATIO_RATIO_Ratio80 << PDM_RATIO_RATIO_Pos) & PDM_RATIO_RATIO_Msk);
+      #endif
       nrf_pdm_clock_set(NRF_PDM_FREQ_1280K);
       break;
     case 41667:
