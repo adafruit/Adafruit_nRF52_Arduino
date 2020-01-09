@@ -44,7 +44,7 @@ bool SoftwareTimer::start(void)
   bool ret = true;
   if ( isInISR() )
   {
-    BaseType_t ret, xHigherPriorityTaskWoken = pdFALSE;
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     ret = (pdPASS == xTimerStartFromISR(_handle, &xHigherPriorityTaskWoken));
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
   }else
