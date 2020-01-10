@@ -77,6 +77,10 @@ const uint32_t g_ADigitalPinMap[] =
   22,  // D40 is P0.22 (QSPI Data 1)
   23,  // D41 is P0.23 (QSPI Data 2)
   21,  // D42 is P0.21 (QSPI Data 3)
+
+  10,  // D43 is P0.10 white LED control
+   9,  // D44 is P0.09 APDS IRQ
+  38,  // D45 is P1.06 LSM6DS33 IRQ
 };
 
 void initVariant()

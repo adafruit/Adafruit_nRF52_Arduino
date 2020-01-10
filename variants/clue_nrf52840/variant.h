@@ -21,8 +21,6 @@
 
 /** Master clock frequency */
 #define VARIANT_MCK       (64000000ul)
-
-//#define USE_LFXO      // Board uses 32khz crystal for LF
 #define USE_LFRC    // Board uses RC for LF
 
 /*----------------------------------------------------------------------------
@@ -37,8 +35,8 @@ extern "C"
 #endif // __cplusplus
 
 // Number of pins defined in PinDescription array
-#define PINS_COUNT           (43)
-#define NUM_DIGITAL_PINS     (43)
+#define PINS_COUNT           (46)
+#define NUM_DIGITAL_PINS     (46)
 #define NUM_ANALOG_INPUTS    (8)
 #define NUM_ANALOG_OUTPUTS   (0)
 
