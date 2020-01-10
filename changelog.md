@@ -1,5 +1,12 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.16.0 - 2020.01.10
+
+- Fix Little FileSystem (LFS) reentrance issue, by serialize access to lfs_* API(). Huge thanks to @hentrygab for spending lots of his time on PR #397
+- Fix SPIM transfer with length > 64 KB bytes
+- Fix #352 PDM issue
+- SchedulerRTOS::startLoop() support stack size and task priority parameters
+
 ## 0.15.1 - 2019.12.31
 
 - Print::availableForWrite() return int instead of size_t
