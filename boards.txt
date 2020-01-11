@@ -368,3 +368,54 @@ pca10056.menu.debug.l2=Level 2 (Full Debug)
 pca10056.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 pca10056.menu.debug.l3=Level 3 (Segger SystemView)
 pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
+
+
+# ----------------------------------
+# Arduino Nano 33 BLE
+# ----------------------------------
+arduinonano33ble.name=Arduino Nano 33 BLE (Unsupported)
+
+# VID/PID for the Adafruit bootloader with/without UF2
+arduinonano33ble.vid.0=0x239A
+arduinonano33ble.pid.0=0x0063
+arduinonano33ble.vid.1=0x239A
+arduinonano33ble.pid.1=0x0064
+
+# Upload
+arduinonano33ble.bootloader.tool=bootburn
+arduinonano33ble.upload.tool=nrfutil
+arduinonano33ble.upload.protocol=nrfutil
+arduinonano33ble.upload.use_1200bps_touch=true
+arduinonano33ble.upload.wait_for_upload_port=true
+arduinonano33ble.upload.maximum_size=815104
+arduinonano33ble.upload.maximum_data_size=237568
+
+# Build
+arduinonano33ble.build.mcu=cortex-m4
+arduinonano33ble.build.f_cpu=64000000
+arduinonano33ble.build.board=NRF52840_NANO33BLE
+arduinonano33ble.build.core=nRF5
+arduinonano33ble.build.variant=arduino_nano_33_ble
+arduinonano33ble.build.usb_manufacturer="Arduino"
+arduinonano33ble.build.usb_product="Nano 33 BLE"
+arduinonano33ble.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_NANO33BLE {build.flags.usb}
+arduinonano33ble.build.ldscript=nrf52840_s140_v6.ld
+arduinonano33ble.build.vid=0x239A
+arduinonano33ble.build.pid=0x8063
+
+# SoftDevice Menu
+arduinonano33ble.menu.softdevice.s140v6=0.2.13-23~ga9e8804 SoftDevice s140 6.1.1
+arduinonano33ble.menu.softdevice.s140v6.build.sd_name=s140
+arduinonano33ble.menu.softdevice.s140v6.build.sd_version=6.1.1
+arduinonano33ble.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+arduinonano33ble.menu.debug.l0=Level 0 (Release)
+arduinonano33ble.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+arduinonano33ble.menu.debug.l1=Level 1 (Error Message)
+arduinonano33ble.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+arduinonano33ble.menu.debug.l2=Level 2 (Full Debug)
+arduinonano33ble.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+arduinonano33ble.menu.debug.l3=Level 3 (Segger SystemView)
+arduinonano33ble.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
