@@ -63,6 +63,7 @@ static void loop_task(void* arg)
 
     // Serial events
     if (serialEvent && serialEventRun) serialEventRun();
+
   }
 }
 
@@ -117,13 +118,20 @@ void suspendLoop(void)
     class Segger_RTT_Stream_t : public Stream {
     public:
       Segger_RTT_Stream_t(void);
-      virtual size_t write(uint8_t b);
-      virtual size_t write(const uint8_t *buffer, size_t size);
-      virtual int availableForWrite();
-      virtual int available();
-      virtual int read();
-      virtual int peek();
-      virtual void flush();
+      virtual size_t write(uint8_t b) override;
+      virtual size_t write(const uint8_t *buffer, size_t size) override;
+      virtual int availableForWrite() override;
+      virtual int available() override;
+      virtual int read() override;
+      virtual int peek() override;
+      virtual void flush() override;
+      // Additional non-virtual functions to emulate `Serial`
+      operator bool();
+      void begin(uint32_t baud);
+      void begin(uint32_t baud, uint8_t config);
+      void end(void);
+      // serialEvent() -- No support for SVC when host sends data
+
     };
     Segger_RTT_Stream_t::Segger_RTT_Stream_t(void) {}
     size_t Segger_RTT_Stream_t::write(uint8_t b) {
@@ -147,6 +155,25 @@ void suspendLoop(void)
     void Segger_RTT_Stream_t::flush() {
       // no-op -- cannot flush as cannot control host
     }
+    // Baud and config are ignored for RTT
+    void Segger_RTT_Stream_t::begin (uint32_t baud)
+    {
+      (void) baud;
+    }
+    void Segger_RTT_Stream_t::begin (uint32_t baud, uint8_t config)
+    {
+      (void) baud;
+      (void) config;
+    }
+    void Segger_RTT_Stream_t::end(void)
+    {
+      // nothing to do
+    }
+    Segger_RTT_Stream_t::operator bool()
+    {
+      return true;
+    }
+
 
     Segger_RTT_Stream_t s_Segger_RTT_Stream;
     Stream& Adalog_Default_Logger = s_Segger_RTT_Stream;
