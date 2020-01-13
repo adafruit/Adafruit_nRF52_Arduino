@@ -602,6 +602,46 @@ unsigned SEGGER_RTT_ReadUpBufferNoLock(unsigned BufferIndex, void* pData, unsign
 
 /*********************************************************************
 *
+*       SEGGER_RTT_Peek
+*
+*  Function description
+*    Reads one character from the SEGGER RTT buffer.
+*    Host has previously stored data there.
+*
+*  Return value
+*    <  0 -   No character available (buffer empty).
+*    >= 0 -   Character which is next in the buffer.
+*
+*  Notes
+*    (1) This function is only specified for accesses to RTT buffer 0.
+*/
+int SEGGER_RTT_Peek(void) {
+  char      c;
+  int       r;
+  unsigned  RdOff;
+  unsigned  WrOff;
+  SEGGER_RTT_BUFFER_DOWN* pRing;
+
+  SEGGER_RTT_LOCK();
+  INIT();
+  pRing = &_SEGGER_RTT.aDown[0]; // Note (1)  This function is only specified for accesses to RTT buffer 0.
+  RdOff = pRing->RdOff;
+  WrOff = pRing->WrOff;
+
+  /* WrOff == RdOff: Buffer is empty */
+  if (WrOff == RdOff) { // Buffer is empty when these are equal
+    r = -1;
+  } else {
+    c = *(pRing->pBuffer + RdOff);
+    r = (int)(unsigned char)c;
+  }
+  SEGGER_RTT_UNLOCK();
+  return r;
+}
+
+
+/*********************************************************************
+*
 *       SEGGER_RTT_ReadNoLock()
 *
 *  Function description

@@ -201,6 +201,7 @@ unsigned     SEGGER_RTT_HasDataUp               (unsigned BufferIndex);
 void         SEGGER_RTT_Init                    (void);
 unsigned     SEGGER_RTT_Read                    (unsigned BufferIndex,       void* pBuffer, unsigned BufferSize);
 unsigned     SEGGER_RTT_ReadNoLock              (unsigned BufferIndex,       void* pData,   unsigned BufferSize);
+int          SEGGER_RTT_Peek                    (void);
 int          SEGGER_RTT_SetNameDownBuffer       (unsigned BufferIndex, const char* sName);
 int          SEGGER_RTT_SetNameUpBuffer         (unsigned BufferIndex, const char* sName);
 int          SEGGER_RTT_SetFlagsDownBuffer      (unsigned BufferIndex, unsigned Flags);
@@ -216,6 +217,7 @@ unsigned     SEGGER_RTT_PutCharSkip             (unsigned BufferIndex, char c);
 unsigned     SEGGER_RTT_PutCharSkipNoLock       (unsigned BufferIndex, char c);
 unsigned     SEGGER_RTT_GetAvailWriteSpace      (unsigned BufferIndex);
 unsigned     SEGGER_RTT_GetBytesInBuffer        (unsigned BufferIndex);
+
 //
 // Function macro for performance optimization
 //
