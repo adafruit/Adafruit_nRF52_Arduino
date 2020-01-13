@@ -113,6 +113,7 @@ int PDMClass::begin(int channels, long sampleRate)
 
   // clear the buffer
   _doubleBuffer.reset();
+  // BUGBUG -- _doubleBuffer.size is never validated?
 
   // set the PDM IRQ priority and enable
   NVIC_SetPriority(PDM_IRQn, PDM_IRQ_PRIORITY);
@@ -186,6 +187,7 @@ void PDMClass::setGain(int gain)
 
 void PDMClass::setBufferSize(int bufferSize)
 {
+  // NOTE: should only allow to call when not started .. else bad things can occur?
   _doubleBuffer.setSize(bufferSize);
 }
 

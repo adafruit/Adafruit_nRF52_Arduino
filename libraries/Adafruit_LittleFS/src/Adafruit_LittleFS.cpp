@@ -246,7 +246,7 @@ const char* dbg_strerr_lfs (int32_t err)
     case LFS_ERR_NOMEM    : return "LFS_ERR_NOMEM";
 
     default:
-      static char errcode[10];
+      static char errcode[10]; // !!! not multi-thread safe !!!
       sprintf(errcode, "%ld", err);
       return errcode;
   }
