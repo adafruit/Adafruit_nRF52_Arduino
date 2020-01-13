@@ -399,7 +399,15 @@ extern "C"
 {
   void SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQHandler(void)
   {
+    #if CFG_DEBUG >= 3
+    SEGGER_SYSVIEW_RecordEnterISR();
+    #endif
+
     Wire.onService();
+
+    #if CFG_DEBUG >= 3
+    SEGGER_SYSVIEW_RecordExitISR();
+    #endif
   }
 }
 #endif
@@ -411,7 +419,15 @@ extern "C"
 {
   void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void)
   {
+    #if CFG_DEBUG >= 3
+    SEGGER_SYSVIEW_RecordEnterISR();
+    #endif
+
     Wire1.onService();
+
+    #if CFG_DEBUG >= 3
+    SEGGER_SYSVIEW_RecordExitISR();
+    #endif
   }
 }
 #endif
