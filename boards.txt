@@ -44,7 +44,7 @@ feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
 feather52832.build.ldscript=nrf52832_s132_v6.ld
 
 # SofDevice Menu
-feather52832.menu.softdevice.s132v6=0.2.13 SoftDevice s132 6.1.1
+feather52832.menu.softdevice.s132v6=0.3.0 SoftDevice s132 6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_fwid=0x00B7
@@ -97,7 +97,7 @@ feather52840.build.vid=0x239A
 feather52840.build.pid=0x8029
 
 # SofDevice Menu
-feather52840.menu.softdevice.s140v6=0.2.13 SoftDevice s140 6.1.1
+feather52840.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -204,7 +204,7 @@ cplaynrf52840.build.vid=0x239A
 cplaynrf52840.build.pid=0x8045
 
 # SofDevice Menu
-cplaynrf52840.menu.softdevice.s140v6=0.2.13 SoftDevice s140 6.1.1
+cplaynrf52840.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
 cplaynrf52840.menu.softdevice.s140v6.build.sd_name=s140
 cplaynrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 cplaynrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -258,7 +258,7 @@ cluenrf52840.build.vid=0x239A
 cluenrf52840.build.pid=0x8071
 
 # SofDevice Menu
-cluenrf52840.menu.softdevice.s140v6=0.2.13 SoftDevice s140 6.1.1
+cluenrf52840.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
 cluenrf52840.menu.softdevice.s140v6.build.sd_name=s140
 cluenrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 cluenrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -311,7 +311,7 @@ metro52840.build.vid=0x239A
 metro52840.build.pid=0x803F
 
 # SofDevice Menu
-metro52840.menu.softdevice.s140v6=0.2.13 SoftDevice s140 6.1.1
+metro52840.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_name=s140
 metro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -354,7 +354,7 @@ pca10056.build.vid=0x239A
 pca10056.build.pid=0x8029
 
 # SofDevice Menu
-pca10056.menu.softdevice.s140v6=0.2.13 SoftDevice s140 6.1.1
+pca10056.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -372,7 +372,7 @@ pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 # ----------------------------------
 # Raytac MDBT50Q – RX
 # ----------------------------------
-mdbt50qrx.name=Raytac MDBT50Q-RX dongle
+mdbt50qrx.name=Raytac MDBT50Q-RX Dongle
 
 # VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
 mdbt50qrx.vid.0=0x239A
@@ -407,7 +407,7 @@ mdbt50qrx.build.vid=0x239A
 mdbt50qrx.build.pid=0x8029
 
 # SofDevice Menu
-mdbt50qrx.menu.softdevice.s140v6=0.2.13 SoftDevice s140 6.1.1
+mdbt50qrx.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
 mdbt50qrx.menu.softdevice.s140v6.build.sd_name=s140
 mdbt50qrx.menu.softdevice.s140v6.build.sd_version=6.1.1
 mdbt50qrx.menu.softdevice.s140v6.build.sd_fwid=0x00B6
