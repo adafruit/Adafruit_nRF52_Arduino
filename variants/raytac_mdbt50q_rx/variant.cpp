@@ -18,7 +18,8 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "variant.h"
+#include "../raytac_mdbt50q_rx/variant.h"
+
 #include "wiring_constants.h"
 #include "wiring_digital.h"
 #include "nrf.h"
