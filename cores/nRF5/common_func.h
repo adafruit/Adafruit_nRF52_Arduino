@@ -146,7 +146,6 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
   #define LOG_LV2_BUFFER(...)
 #endif
 
-
 #if (CFG_LOGGER & ADALOG_TYPE_RTT)
   #define PRINTF(...)           SEGGER_RTT_printf(0, __VA_ARGS__)
 #elif __cplusplus

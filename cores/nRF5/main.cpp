@@ -102,10 +102,57 @@ void suspendLoop(void)
   vTaskSuspend(_loopHandle);
 }
 
+
+
+
+
 #if CFG_DEBUG
+  // DESIGN CHOICE -- Order of preference for logging is first of these enabled:
+  // 1. RTT, if enabled
+  // 2. SWO, if enabled
+  // 3. Serial, if enabled
+
   #if (CFG_LOGGER & ADALOG_TYPE_RTT)
     // _write overload provided in SEGGER_RTT_Print
+    class Segger_RTT_Stream_t : public Stream {
+    public:
+      Segger_RTT_Stream_t(void);
+      virtual size_t write(uint8_t b);
+      virtual size_t write(const uint8_t *buffer, size_t size);
+      virtual int availableForWrite();
+      virtual int available();
+      virtual int read();
+      virtual int peek();
+      virtual void flush();
+    };
+    Segger_RTT_Stream_t::Segger_RTT_Stream_t(void) {}
+    size_t Segger_RTT_Stream_t::write(uint8_t b) {
+      return SEGGER_RTT_PutChar(0, (char)b);
+    }
+    size_t Segger_RTT_Stream_t::write(const uint8_t *buffer, size_t size) {
+      return SEGGER_RTT_Write(0, buffer, size);
+    }
+    int Segger_RTT_Stream_t::availableForWrite() {
+      return SEGGER_RTT_GetAvailWriteSpace(0);
+    }
+    int Segger_RTT_Stream_t::available() { // to read
+      return SEGGER_RTT_HasData(0);
+    }
+    int Segger_RTT_Stream_t::read() {
+      return SEGGER_RTT_GetKey();
+    }
+    int Segger_RTT_Stream_t::peek() {
+      return SEGGER_RTT_Peek();
+    }
+    void Segger_RTT_Stream_t::flush() {
+      // no-op -- cannot flush as cannot control host
+    }
+
+    Segger_RTT_Stream_t s_Segger_RTT_Stream;
+    Stream& Adalog_Default_Logger = s_Segger_RTT_Stream;
+
   #elif (CFG_LOGGER & ADALOG_TYPE_SERIAL)
+
     extern "C"
     {
       // nanolib printf() retarget
@@ -120,5 +167,7 @@ void suspendLoop(void)
         return 0;
       }
     }
+    Stream& Adalog_Default_Logger = Serial;
+
   #endif
 #endif

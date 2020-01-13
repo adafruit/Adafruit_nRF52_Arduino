@@ -58,6 +58,9 @@ void suspendLoop(void);
   #include "utility/SoftwareTimer.h"
 
   #include "Uart.h"
+
+  extern Stream& Adalog_Default_Logger;
+
 #endif
 
 #include "delay.h"
