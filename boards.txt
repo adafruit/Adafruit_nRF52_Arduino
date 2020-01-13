@@ -368,3 +368,57 @@ pca10056.menu.debug.l2=Level 2 (Full Debug)
 pca10056.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 pca10056.menu.debug.l3=Level 3 (Segger SystemView)
 pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
+# ----------------------------------
+# Raytac MDBT50Q – RX
+# ----------------------------------
+MDBT50QRX.name=Raytac MDBT50Q-RX dongle
+
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+MDBT50QRX.vid.0=0x239A
+MDBT50QRX.pid.0=0x8029
+MDBT50QRX.vid.1=0x239A
+MDBT50QRX.pid.1=0x0029
+MDBT50QRX.vid.2=0x239A
+MDBT50QRX.pid.2=0x002A
+MDBT50QRX.vid.3=0x239A
+MDBT50QRX.pid.3=0x802A
+
+# Upload
+MDBT50QRX.bootloader.tool=bootburn
+MDBT50QRX.upload.tool=nrfutil
+MDBT50QRX.upload.protocol=nrfutil
+MDBT50QRX.upload.use_1200bps_touch=true
+MDBT50QRX.upload.wait_for_upload_port=true
+MDBT50QRX.upload.maximum_size=815104
+MDBT50QRX.upload.maximum_data_size=248832
+
+# Build
+MDBT50QRX.build.mcu=cortex-m4
+MDBT50QRX.build.f_cpu=64000000
+MDBT50QRX.build.board=MDBT50Q_RX
+MDBT50QRX.build.core=nRF5
+MDBT50QRX.build.variant=MDBT50Q_RX
+MDBT50QRX.build.usb_manufacturer="Raytac Corporation"
+MDBT50QRX.build.usb_product="Raytac MDBT50Q - RX"
+MDBT50QRX.build.extra_flags=-DNRF52840_XXAA -DARDUINO_MDBT50Q_RX {build.flags.usb}
+MDBT50QRX.build.ldscript=nrf52840_s140_v6.ld
+MDBT50QRX.build.vid=0x239A
+MDBT50QRX.build.pid=0x8029
+
+# SofDevice Menu
+MDBT50QRX.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+MDBT50QRX.menu.softdevice.s140v6.build.sd_name=s140
+MDBT50QRX.menu.softdevice.s140v6.build.sd_version=6.1.1
+MDBT50QRX.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+MDBT50QRX.menu.debug.l0=Level 0 (Release)
+MDBT50QRX.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+MDBT50QRX.menu.debug.l1=Level 1 (Error Message)
+MDBT50QRX.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+MDBT50QRX.menu.debug.l2=Level 2 (Full Debug)
+MDBT50QRX.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+MDBT50QRX.menu.debug.l3=Level 3 (Segger SystemView)
+MDBT50QRX.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
