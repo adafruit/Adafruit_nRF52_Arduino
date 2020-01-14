@@ -235,7 +235,7 @@ Additional information:
 **********************************************************************
 */
 
-static unsigned char _aTerminalId[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+static unsigned char _aTerminalId[SEGGER_RTT_NUMBER_OF_TERMINALS] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
 /*********************************************************************
 *
@@ -1874,7 +1874,7 @@ void SEGGER_RTT_Init (void) {
 *     < 0  Error (e.g. if RTT is configured for non-blocking mode and there was no space in the buffer to set the new terminal Id)
 */
 int SEGGER_RTT_SetTerminal (unsigned char TerminalId) {
-  unsigned char         ac[2];
+  unsigned char         ac[2]; // SEGGER_RTT_TERMINAL_OUT_OVERHEAD is 2x this...
   SEGGER_RTT_BUFFER_UP* pRing;
   unsigned Avail;
   int r;
@@ -1883,7 +1883,7 @@ int SEGGER_RTT_SetTerminal (unsigned char TerminalId) {
   //
   r = 0;
   ac[0] = 0xFFu;
-  if (TerminalId < sizeof(_aTerminalId)) { // We only support a certain number of channels
+  if (TerminalId < SEGGER_RTT_NUMBER_OF_TERMINALS) { // We only support a certain number of channels
     ac[1] = _aTerminalId[TerminalId];
     pRing = &_SEGGER_RTT.aUp[0];    // Buffer 0 is always reserved for terminal I/O, so we can use index 0 here, fixed
     SEGGER_RTT_LOCK();    // Lock to make sure that no other task is writing into buffer, while we are and number of free bytes in buffer does not change downwards after checking and before writing
@@ -1924,8 +1924,37 @@ int SEGGER_RTT_SetTerminal (unsigned char TerminalId) {
 *
 */
 int SEGGER_RTT_TerminalOut (unsigned char TerminalId, const char* s) {
+  int Status;
+  INIT();
+  if (TerminalId < SEGGER_RTT_NUMBER_OF_TERMINALS) { // We only support a certain number of channels
+    Status = SEGGER_RTT_TerminalOutBuffer(TerminalId, s, STRLEN(s));
+  } else {
+    Status = -1;
+  }
+  return Status;
+}
+
+
+/*********************************************************************
+*
+*       SEGGER_RTT_TerminalOutBuffer
+*
+*  Function description
+*    Writes a string to the given terminal
+*     without changing the terminal for channel 0.
+*
+*  Parameters
+*    TerminalId   Index of the terminal.
+*    buffer       Array of bytes to be printed to the terminal.
+*    fragLen      The count of bytes to be printed to the terminal.
+*
+*  Return value
+*    >= 0 - Number of bytes written.
+*     < 0 - Error.
+*
+*/
+int SEGGER_RTT_TerminalOutBuffer (unsigned char TerminalId, const void* pBuffer, size_t BufferSize) {
   int                   Status;
-  unsigned              FragLen;
   unsigned              Avail;
   SEGGER_RTT_BUFFER_UP* pRing;
   //
@@ -1933,20 +1962,19 @@ int SEGGER_RTT_TerminalOut (unsigned char TerminalId, const char* s) {
   //
   // Validate terminal ID.
   //
-  if (TerminalId < (char)sizeof(_aTerminalId)) { // We only support a certain number of channels
+  if (TerminalId < SEGGER_RTT_NUMBER_OF_TERMINALS) { // We only support a certain number of channels
     //
     // Get "to-host" ring buffer.
     //
     pRing = &_SEGGER_RTT.aUp[0];
+
     //
     // Need to be able to change terminal, write data, change back.
     // Compute the fixed and variable sizes.
-    //
-    FragLen = STRLEN(s);
-    //
     // How we output depends upon the mode...
     //
     SEGGER_RTT_LOCK();
+
     Avail = _GetAvailWriteSpace(pRing);
     switch (pRing->Flags & SEGGER_RTT_MODE_MASK) {
     case SEGGER_RTT_MODE_NO_BLOCK_SKIP:
@@ -1954,11 +1982,11 @@ int SEGGER_RTT_TerminalOut (unsigned char TerminalId, const char* s) {
       // If we are in skip mode and there is no space for the whole
       // of this output, don't bother switching terminals at all.
       //
-      if (Avail < (FragLen + 4u)) {
+      if (Avail < (BufferSize + SEGGER_RTT_TERMINAL_OUT_OVERHEAD)) {
         Status = 0;
       } else {
         _PostTerminalSwitch(pRing, TerminalId);
-        Status = (int)_WriteBlocking(pRing, s, FragLen);
+        Status = (int)_WriteBlocking(pRing, pBuffer, BufferSize);
         _PostTerminalSwitch(pRing, _ActiveTerminal);
       }
       break;
@@ -1968,11 +1996,11 @@ int SEGGER_RTT_TerminalOut (unsigned char TerminalId, const char* s) {
       // trim the output but always include the terminal switch.  If no room
       // for terminal switch, skip that totally.
       //
-      if (Avail < 4u) {
+      if (Avail < SEGGER_RTT_TERMINAL_OUT_OVERHEAD) {
         Status = -1;
       } else {
         _PostTerminalSwitch(pRing, TerminalId);
-        Status = (int)_WriteBlocking(pRing, s, (FragLen < (Avail - 4u)) ? FragLen : (Avail - 4u));
+        Status = (int)_WriteBlocking(pRing, pBuffer, (BufferSize < (Avail - 4u)) ? BufferSize : (Avail - 4u));
         _PostTerminalSwitch(pRing, _ActiveTerminal);
       }
       break;
@@ -1981,7 +2009,7 @@ int SEGGER_RTT_TerminalOut (unsigned char TerminalId, const char* s) {
       // If we are in blocking mode, output everything.
       //
       _PostTerminalSwitch(pRing, TerminalId);
-      Status = (int)_WriteBlocking(pRing, s, FragLen);
+      Status = (int)_WriteBlocking(pRing, pBuffer, BufferSize);
       _PostTerminalSwitch(pRing, _ActiveTerminal);
       break;
     default:

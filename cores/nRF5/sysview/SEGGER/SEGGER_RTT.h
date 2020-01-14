@@ -134,6 +134,9 @@ Revision: $Rev: 17066 $
 **********************************************************************
 */
 
+#define SEGGER_RTT_NUMBER_OF_TERMINALS 16
+#define SEGGER_RTT_TERMINAL_OUT_OVERHEAD 4
+
 //
 // Description for a circular buffer (also called "ring buffer")
 // which is used as up-buffer (T->H)
@@ -249,6 +252,7 @@ unsigned     SEGGER_RTT_WriteDownBufferNoLock   (unsigned BufferIndex, const voi
 */
 int     SEGGER_RTT_SetTerminal        (unsigned char TerminalId);
 int     SEGGER_RTT_TerminalOut        (unsigned char TerminalId, const char* s);
+int     SEGGER_RTT_TerminalOutBuffer  (unsigned char TerminalId, const void* pBuffer, size_t BufferSize);
 
 /*********************************************************************
 *
