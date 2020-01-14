@@ -53,6 +53,7 @@ void suspendLoop(void);
   #include "Tone.h"
   #include "WMath.h"
   #include "HardwareSerial.h"
+  #include "SeggerRTTSerial.h"
   #include "pulse.h"
   #include "HardwarePWM.h"
   #include "utility/SoftwareTimer.h"

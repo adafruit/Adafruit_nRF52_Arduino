@@ -103,10 +103,6 @@ void suspendLoop(void)
   vTaskSuspend(_loopHandle);
 }
 
-
-
-
-
 #if CFG_DEBUG
   // DESIGN CHOICE -- Order of preference for logging is first of these enabled:
   // 1. RTT, if enabled
@@ -114,69 +110,28 @@ void suspendLoop(void)
   // 3. Serial, if enabled
 
   #if (CFG_LOGGER & ADALOG_TYPE_RTT)
-    // _write overload provided in SEGGER_RTT_Print
-    class Segger_RTT_Stream_t : public Stream {
-    public:
-      Segger_RTT_Stream_t(void);
-      virtual size_t write(uint8_t b) override;
-      virtual size_t write(const uint8_t *buffer, size_t size) override;
-      virtual int availableForWrite() override;
-      virtual int available() override;
-      virtual int read() override;
-      virtual int peek() override;
-      virtual void flush() override;
-      // Additional non-virtual functions to emulate `Serial`
-      operator bool();
-      void begin(uint32_t baud);
-      void begin(uint32_t baud, uint8_t config);
-      void end(void);
-      // serialEvent() -- No support for SVC when host sends data
 
-    };
-    Segger_RTT_Stream_t::Segger_RTT_Stream_t(void) {}
-    size_t Segger_RTT_Stream_t::write(uint8_t b) {
-      return SEGGER_RTT_PutChar(0, (char)b);
-    }
-    size_t Segger_RTT_Stream_t::write(const uint8_t *buffer, size_t size) {
-      return SEGGER_RTT_Write(0, buffer, size);
-    }
-    int Segger_RTT_Stream_t::availableForWrite() {
-      return SEGGER_RTT_GetAvailWriteSpace(0);
-    }
-    int Segger_RTT_Stream_t::available() { // to read
-      return SEGGER_RTT_HasData(0);
-    }
-    int Segger_RTT_Stream_t::read() {
-      return SEGGER_RTT_GetKey();
-    }
-    int Segger_RTT_Stream_t::peek() {
-      return SEGGER_RTT_Peek();
-    }
-    void Segger_RTT_Stream_t::flush() {
-      // no-op -- cannot flush as cannot control host
-    }
-    // Baud and config are ignored for RTT
-    void Segger_RTT_Stream_t::begin (uint32_t baud)
+    Segger_RTT_Serial_t SerialRTT;
+    Stream& Adalog_Default_Logger = SerialRTT;
+
+    extern "C"
     {
-      (void) baud;
-    }
-    void Segger_RTT_Stream_t::begin (uint32_t baud, uint8_t config)
-    {
-      (void) baud;
-      (void) config;
-    }
-    void Segger_RTT_Stream_t::end(void)
-    {
-      // nothing to do
-    }
-    Segger_RTT_Stream_t::operator bool()
-    {
-      return true;
+      // RTT printf() retarget
+      int _write (int fd, const void *buf, size_t count)
+      {
+        int retval;
+        if (fd < SEGGER_RTT_NUMBER_OF_TERMINALS) {
+          retval = SEGGER_RTT_TerminalOutBuffer((unsigned char)fd, buf, count);
+          if (retval < 0) {
+            retval = -1;
+          }
+        } else {
+          retval = -1;
+        }
+        return retval;
+      }
     }
 
-
-    Segger_RTT_Stream_t s_Segger_RTT_Stream;
-    Stream& Adalog_Default_Logger = s_Segger_RTT_Stream;
 
   #elif (CFG_LOGGER & ADALOG_TYPE_SERIAL)
 
@@ -197,4 +152,5 @@ void suspendLoop(void)
     Stream& Adalog_Default_Logger = Serial;
 
   #endif
+
 #endif
