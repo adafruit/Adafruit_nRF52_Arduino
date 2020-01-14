@@ -19,6 +19,7 @@
 */
 
 #include "variant.h"
+
 #include "wiring_constants.h"
 #include "wiring_digital.h"
 #include "nrf.h"
