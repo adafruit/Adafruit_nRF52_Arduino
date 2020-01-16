@@ -41,13 +41,13 @@ static void loop_task(void* arg)
 {
   (void) arg;
 
-#if CFG_DEBUG && (CFG_LOGGER & ADALOG_TYPE_SERIAL)
-  // initialize this before setup() to allow simplified logging in setup
-  // If Serial is not begin(), call it to avoid hard fault
-  if ( !Serial ) Serial.begin(115200);
-#endif
-
   setup();
+
+#if CFG_DEBUG && (CFG_LOGGER & ADALOG_TYPE_SERIAL)
+  // If Serial is not begin(), call it to avoid hard fault
+  // But, for nRF52832 / nRF52840 boards, Serial is USB CDC, so these are no-op...
+  if (!Serial) Serial.begin(115200);
+#endif
 
   dbgPrintVersion();
   // dbgMemInfo();
@@ -63,7 +63,6 @@ static void loop_task(void* arg)
 
     // Serial events
     if (serialEvent && serialEventRun) serialEventRun();
-
   }
 }
 
@@ -73,7 +72,7 @@ int main( void )
 
 #if (CFG_LOGGER & ADALOG_TYPE_RTT)
   SEGGER_RTT_Init();
-  SEGGER_RTT_ConfigUpBuffer(0, nullptr, nullptr, 0, SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL);
+  SEGGER_RTT_ConfigUpBuffer(0, nullptr, nullptr, 0, SEGGER_RTT_MODE_NO_BLOCK_SKIP);
   SEGGER_RTT_WriteString(0, "SEGGER Real-Time-Terminal Initialized");
 #endif
 
@@ -103,54 +102,51 @@ void suspendLoop(void)
   vTaskSuspend(_loopHandle);
 }
 
-#if CFG_DEBUG
-  // DESIGN CHOICE -- Order of preference for logging is first of these enabled:
-  // 1. RTT, if enabled
-  // 2. SWO, if enabled
-  // 3. Serial, if enabled
+// DESIGN CHOICE -- Order of preference for logging is first of these enabled:
+// 1. RTT, if enabled
+// 2. SWO, if enabled
+// 3. Serial, if enabled
 
-  #if (CFG_LOGGER & ADALOG_TYPE_RTT)
+#if (CFG_LOGGER & ADALOG_TYPE_RTT)
 
-    Segger_RTT_Serial_t SerialRTT;
-    Stream& Adalog_Default_Logger = SerialRTT;
+  Segger_RTT_Serial_t SerialRTT;
+  Stream& Adalog_Default_Logger = SerialRTT;
 
-    extern "C"
+  extern "C"
+  {
+    // RTT printf() retarget
+    int _write (int fd, const void *buf, size_t count)
     {
-      // RTT printf() retarget
-      int _write (int fd, const void *buf, size_t count)
-      {
-        int retval;
-        if (fd < SEGGER_RTT_NUMBER_OF_TERMINALS) {
-          retval = SEGGER_RTT_TerminalOutBuffer((unsigned char)fd, buf, count);
-          if (retval < 0) {
-            retval = -1;
-          }
-        } else {
+      int retval;
+      if (fd < SEGGER_RTT_NUMBER_OF_TERMINALS) {
+        retval = SEGGER_RTT_TerminalOutBuffer((unsigned char)fd, buf, count);
+        if (retval < 0) {
           retval = -1;
         }
-        return retval;
+      } else {
+        retval = -1;
       }
+      return retval;
     }
+  }
 
 
-  #elif (CFG_LOGGER & ADALOG_TYPE_SERIAL)
+#elif (CFG_LOGGER & ADALOG_TYPE_SERIAL)
 
-    extern "C"
+  extern "C"
+  {
+    // nanolib printf() retarget
+    int _write (int fd, const void *buf, size_t count)
     {
-      // nanolib printf() retarget
-      int _write (int fd, const void *buf, size_t count)
+      (void) fd;
+
+      if ( Serial )
       {
-        (void) fd;
-
-        if ( Serial )
-        {
-          return Serial.write( (const uint8_t *) buf, count);
-        }
-        return 0;
+        return Serial.write( (const uint8_t *) buf, count);
       }
+      return 0;
     }
-    Stream& Adalog_Default_Logger = Serial;
-
-  #endif
+  }
+  Stream& Adalog_Default_Logger = Serial;
 
 #endif
