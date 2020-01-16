@@ -978,7 +978,7 @@ void Bluefruit_printInfo(void)
 void AdafruitBluefruit::printInfo(void)
 {
   // Skip if logger is not initialised
-  if ( !Adalog_Default_Logger ) return;
+  // if ( !Adalog_Default_Logger ) return; // Adalog_Default_Logger is always initialized
 
   // Skip if Bluefruit.begin() is not called
   if ( _ble_event_sem == NULL ) return;
@@ -1055,7 +1055,7 @@ void AdafruitBluefruit::printInfo(void)
   Adalog_Default_Logger.println();
 
   // Max Connections
-  SerAdalog_Default_Loggerial.printf(title_fmt, "Max Connections");
+  Adalog_Default_Logger.printf(title_fmt, "Max Connections");
   Adalog_Default_Logger.printf("Peripheral = %d, ", _prph_count);
   Adalog_Default_Logger.printf("Central = %d ", _central_count);
   Adalog_Default_Logger.println();
