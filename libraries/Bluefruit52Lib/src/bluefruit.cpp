@@ -977,122 +977,122 @@ void Bluefruit_printInfo(void)
 
 void AdafruitBluefruit::printInfo(void)
 {
-  // Skip if Serial is not initialised
-  if ( !Serial ) return;
+  // Skip if logger is not initialised
+  if ( !Adalog_Default_Logger ) return;
 
   // Skip if Bluefruit.begin() is not called
   if ( _ble_event_sem == NULL ) return;
 
-  Serial.println("--------- SoftDevice Config ---------");
+  Adalog_Default_Logger.println("--------- SoftDevice Config ---------");
 
   char const * title_fmt = "%-16s: ";
 
   /*------------- SoftDevice Config -------------*/
   // Max uuid128
-  Serial.printf(title_fmt, "Max UUID128");
-  Serial.println(_sd_cfg.uuid128_max);
+  Adalog_Default_Logger.printf(title_fmt, "Max UUID128");
+  Adalog_Default_Logger.println(_sd_cfg.uuid128_max);
 
   // ATTR Table Size
-  Serial.printf(title_fmt, "ATTR Table Size");
-  Serial.println(_sd_cfg.attr_table_size);
+  Adalog_Default_Logger.printf(title_fmt, "ATTR Table Size");
+  Adalog_Default_Logger.println(_sd_cfg.attr_table_size);
 
   // Service Changed
-  Serial.printf(title_fmt, "Service Changed");
-  Serial.println(_sd_cfg.service_changed);
+  Adalog_Default_Logger.printf(title_fmt, "Service Changed");
+  Adalog_Default_Logger.println(_sd_cfg.service_changed);
 
   if ( _prph_count )
   {
-    Serial.println("Peripheral Connect Setting");
+    Adalog_Default_Logger.println("Peripheral Connect Setting");
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Max MTU");
-    Serial.println(_sd_cfg.prph.mtu_max);
+    Adalog_Default_Logger.print("  - ");
+    Adalog_Default_Logger.printf(title_fmt, "Max MTU");
+    Adalog_Default_Logger.println(_sd_cfg.prph.mtu_max);
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Event Length");
-    Serial.println(_sd_cfg.prph.event_len);
+    Adalog_Default_Logger.print("  - ");
+    Adalog_Default_Logger.printf(title_fmt, "Event Length");
+    Adalog_Default_Logger.println(_sd_cfg.prph.event_len);
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "HVN Queue Size");
-    Serial.println(_sd_cfg.prph.hvn_qsize);
+    Adalog_Default_Logger.print("  - ");
+    Adalog_Default_Logger.printf(title_fmt, "HVN Queue Size");
+    Adalog_Default_Logger.println(_sd_cfg.prph.hvn_qsize);
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "WrCmd Queue Size");
-    Serial.println(_sd_cfg.prph.wrcmd_qsize);
+    Adalog_Default_Logger.print("  - ");
+    Adalog_Default_Logger.printf(title_fmt, "WrCmd Queue Size");
+    Adalog_Default_Logger.println(_sd_cfg.prph.wrcmd_qsize);
   }
 
   if ( _central_count )
   {
-    Serial.println("Central Connect Setting");
+    Adalog_Default_Logger.println("Central Connect Setting");
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Max MTU");
-    Serial.println(_sd_cfg.central.mtu_max);
+    Adalog_Default_Logger.print("  - ");
+    Adalog_Default_Logger.printf(title_fmt, "Max MTU");
+    Adalog_Default_Logger.println(_sd_cfg.central.mtu_max);
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Event Length");
-    Serial.println(_sd_cfg.central.event_len);
+    Adalog_Default_Logger.print("  - ");
+    Adalog_Default_Logger.printf(title_fmt, "Event Length");
+    Adalog_Default_Logger.println(_sd_cfg.central.event_len);
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "HVN Queue Size");
-    Serial.println(_sd_cfg.central.hvn_qsize);
+    Adalog_Default_Logger.print("  - ");
+    Adalog_Default_Logger.printf(title_fmt, "HVN Queue Size");
+    Adalog_Default_Logger.println(_sd_cfg.central.hvn_qsize);
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "WrCmd Queue Size");
-    Serial.println(_sd_cfg.central.wrcmd_qsize);
+    Adalog_Default_Logger.print("  - ");
+    Adalog_Default_Logger.printf(title_fmt, "WrCmd Queue Size");
+    Adalog_Default_Logger.println(_sd_cfg.central.wrcmd_qsize);
   }
 
   /*------------- Settings -------------*/
-  Serial.println("\n--------- BLE Settings ---------");
+  Adalog_Default_Logger.println("\n--------- BLE Settings ---------");
   // Name
-  Serial.printf(title_fmt, "Name");
+  Adalog_Default_Logger.printf(title_fmt, "Name");
   {
     char name[32];
     memclr(name, sizeof(name));
     getName(name, sizeof(name));
-    Serial.printf(name);
+    Adalog_Default_Logger.printf(name);
   }
-  Serial.println();
+  Adalog_Default_Logger.println();
 
   // Max Connections
-  Serial.printf(title_fmt, "Max Connections");
-  Serial.printf("Peripheral = %d, ", _prph_count);
-  Serial.printf("Central = %d ", _central_count);
-  Serial.println();
+  SerAdalog_Default_Loggerial.printf(title_fmt, "Max Connections");
+  Adalog_Default_Logger.printf("Peripheral = %d, ", _prph_count);
+  Adalog_Default_Logger.printf("Central = %d ", _central_count);
+  Adalog_Default_Logger.println();
 
   // Address
-  Serial.printf(title_fmt, "Address");
+  Adalog_Default_Logger.printf(title_fmt, "Address");
   {
     char const * type_str[] = { "Public", "Static", "Private Resolvable", "Private Non Resolvable" };
     ble_gap_addr_t gap_addr = this->getAddr();
 
     // MAC is in little endian --> print reverse
-    Serial.printBufferReverse(gap_addr.addr, 6, ':');
-    Serial.printf(" (%s)", type_str[gap_addr.addr_type]);
+    Adalog_Default_Logger.printBufferReverse(gap_addr.addr, 6, ':');
+    Adalog_Default_Logger.printf(" (%s)", type_str[gap_addr.addr_type]);
   }
-  Serial.println();
+  Adalog_Default_Logger.println();
 
   // Tx Power
-  Serial.printf(title_fmt, "TX Power");
-  Serial.printf("%d dBm", _tx_power);
-  Serial.println();
+  Adalog_Default_Logger.printf(title_fmt, "TX Power");
+  Adalog_Default_Logger.printf("%d dBm", _tx_power);
+  Adalog_Default_Logger.println();
 
   Periph.printInfo();
 
   /*------------- List the paried device -------------*/
   if ( _prph_count )
   {
-    Serial.printf(title_fmt, "Peripheral Paired Devices");
-    Serial.println();
+    Adalog_Default_Logger.printf(title_fmt, "Peripheral Paired Devices");
+    Adalog_Default_Logger.println();
     bond_print_list(BLE_GAP_ROLE_PERIPH);
   }
 
   if ( _central_count )
   {
-    Serial.printf(title_fmt, "Central Paired Devices");
-    Serial.println();
+    Adalog_Default_Logger.printf(title_fmt, "Central Paired Devices");
+    Adalog_Default_Logger.println();
     bond_print_list(BLE_GAP_ROLE_CENTRAL);
   }
 
-  Serial.println();
+  Adalog_Default_Logger.println();
 }
