@@ -6,7 +6,7 @@
   
   This example code is in the public domain.
 
-  modified 19 Jan 2010
+  created 19 Jan 2010
   by Pierre Constantineau
 
 */
