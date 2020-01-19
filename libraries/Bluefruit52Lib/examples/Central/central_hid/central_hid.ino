@@ -41,7 +41,7 @@ void setup()
   
   Bluefruit.setName("Bluefruit52 Central");
 
-  // Init BLE Central Uart Serivce
+  // Init BLE Central Hid Serivce
   hid.begin();
 
   #if POLLING == 0  
@@ -126,7 +126,7 @@ void connect_callback(uint16_t conn_handle)
   {
     Serial.println("Found NONE");
     
-    // disconnect since we couldn't find bleuart service
+    // disconnect since we couldn't find blehid service
     Bluefruit.disconnect(conn_handle);
   }  
 }
