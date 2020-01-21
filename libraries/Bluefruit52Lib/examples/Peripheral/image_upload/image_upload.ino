@@ -13,7 +13,7 @@
 *********************************************************************/
 
 /* This sketch demonstrates the "Image Upload" feature of Bluefruit Mobile App.
- * Either 2.4" or 3.5" TFT FeatherWing is used to display uploaded image
+ * Following TFT Display are supported
  *  - https://www.adafruit.com/product/3315
  *  - https://www.adafruit.com/product/3651
  *  - https://www.adafruit.com/product/4367
@@ -21,9 +21,9 @@
 
 #define TFT_35_FEATHERWING  1
 #define TFT_24_FEATHERWING  2
-#define TFT_15_GIZMO        3
+#define TFT_GIZMO           3
 
-// one of above supported TFT add-on
+// [Configurable] Please select one of above supported Display to match your hardware setup
 #define TFT_IN_USE          TFT_35_FEATHERWING
 
 #include <bluefruit.h>
@@ -56,7 +56,7 @@
   #include <Adafruit_ILI9341.h>
   Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
   
-#elif TFT_IN_USE == TFT_15_GIZMO
+#elif TFT_IN_USE == TFT_GIZMO
   #include "Adafruit_ST7789.h"
   Adafruit_ST7789 tft = Adafruit_ST7789(&SPI, TFT_CS, TFT_DC, -1);
   
@@ -78,10 +78,10 @@ BLEUart bleuart(10*1024);
 /* The Image Transfer module sends the image of your choice to Bluefruit LE over UART.
  * Each image sent begins with
  * - A single byte char '!' (0x21) followed by 'I' helper for image
- * - Color depth: 24-bit for RGB 888, 16-bit for RGB 655
+ * - Color depth: 24-bit for RGB 888, 16-bit for RGB 565
  * - Image width (uint16 little endian, 2 bytes)
  * - Image height (uint16 little endian, 2 bytes)
- * - Pixel data encoded as RGB 24-bit and suffixed by a single byte CRC.
+ * - Pixel data encoded as RGB 16/24 bit and suffixed by a single byte CRC.
  *
  * Format: [ '!' ] [ 'I' ] [uint8_t color bit] [ uint16 width ] [ uint16 height ] [ r g b ] [ r g b ] [ r g b ] … [ CRC ]
  */
@@ -106,7 +106,7 @@ void setup()
 {
   Serial.begin(115200);
 
-#if TFT_IN_USE == TFT_15_GIZMO
+#if TFT_IN_USE == TFT_GIZMO
   tft.init(240, 240);
   tft.setRotation(2);
   pinMode(TFT_BACKLIGHT, OUTPUT);
@@ -143,7 +143,7 @@ void setup()
   // However, the transfer speed will be affected since immediate callback will block BLE task
   // to process data especially when tft.drawRGBBitmap() is calling.
 #ifdef NRF52840_XXAA
-  // 2nd argument is true to deferred callbacks i.e queue it up in seperated callback Task
+  // 2nd argument is true to deferred callbacks i.e queue it up in separated callback Task
   bleuart.setRxCallback(bleuart_rx_callback, true);
 #else
   // 2nd argument is false to invoke callbacks immediately (thus blocking other ble events)
