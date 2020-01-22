@@ -61,6 +61,9 @@ uint32_t totalPixel = 0; // received pixel
 // pixel line buffer, should be large enough to hold an image width
 uint16_t pixel_buf[512];
 
+// Use software timer to schedule bandwidth negotiation a few seconds after connection
+SoftwareTimer negoTimer;
+
 // Statistics for speed testing
 uint32_t rxStartTime = 0;
 uint32_t rxLastTime = 0;
@@ -108,6 +111,9 @@ void setup()
 #endif
 
   bleuart.setRxOverflowCallback(bleuart_overflow_callback);
+
+  // one-shot (non-repeating) 2 seconds timer
+  negoTimer.begin(2000, negotiate_bandwidth, NULL, false);
 
   // Set up and start advertising
   startAdv();
@@ -176,11 +182,15 @@ void bleuart_rx_callback(uint16_t conn_hdl)
 
     totalPixel = 0;
 
-    Serial.printf("Image resolution: %dx%d with %d bit color\n", imageWidth, imageHeight, imageColorBit);
-
     display.clearBuffer();
     display.fillScreen(EPD_WHITE);
     display.setCursor(0, 0);
+
+    // Print out the current connection info
+    BLEConnection* conn = Bluefruit.Connection(conn_hdl);
+    Serial.printf("Connection Info: PHY = %d Mbps, Conn Interval = %.2f ms, Data Length = %d, MTU = %d\n",
+                  conn->getPHY(), conn->getConnectionInterval()*1.25f, conn->getDataLength(), conn->getMtu());
+    Serial.printf("Receving an %dx%d Image with %d bit color\n", imageWidth, imageHeight, imageColorBit);
   }
 
   // Extract pixel data to buffer and draw image line by line
@@ -238,6 +248,7 @@ void bleuart_rx_callback(uint16_t conn_hdl)
     print_summary(totalPixel*(imageColorBit/8) + 8, rxLastTime-rxStartTime);
 
     // Display on Eink, will probably take dozens of seconds
+    Serial.println("Displaying image (~20 seconds) .....");
     display.display();
 
     // reset and waiting for new image
@@ -249,24 +260,44 @@ void bleuart_rx_callback(uint16_t conn_hdl)
   }
 }
 
+void negotiate_bandwidth(TimerHandle_t xTimer)
+{
+  (void) xTimer;
+
+  uint16_t conn_hdl = (uint16_t) ((uint32_t) negoTimer.getID());
+  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
+
+  // Switching from 1 Mb to 2 Mb PHY if needed
+  if ( conn->connected() )
+  {
+    // Requesting to Switching to 2MB PHY, larger data length and bigger MTU
+    // will increase the throughput on supported central. This should already
+    // be done with latest Bluefruit app.
+    //
+    // However, some Android devices require 2Mb PHY switching must be initiated
+    // from nRF side
+    if ( conn->getPHY() == BLE_GAP_PHY_1MBPS )
+    {
+      Serial.println("Requesting PHY change from 1 Mb to 2Mb");
+      conn->requestPHY();
+
+      // Data Length and MTU should already be done by Bluefruit app
+      // conn->requestDataLengthUpdate();
+      // conn->requestMtuExchange(247);
+    }
+  }
+}
+
 void connect_callback(uint16_t conn_handle)
 {
-  BLEConnection* conn = Bluefruit.Connection(conn_handle);
+  // Set connection handle as timer ID
+  // Then schedule negotiation after a few seconds, we should not
+  // negotiate here since it increases chance to conflict with other
+  // on-going negotiation from central after connection
+  negoTimer.setID((void*) conn_handle);
+  negoTimer.start();
 
   Serial.println("Connected");
-
-  // Requesting to Switching to 2MB PHY, larger data length and MTU
-  // will increase the throughput on supported central. This should be already done
-  // with latest Bluefruit app, but still put here for user reference
-  conn->requestPHY();
-  Serial.println("Switching PHY");
-
-  conn->requestDataLengthUpdate();
-  Serial.println("Updating Data Length");
-
-  conn->requestMtuExchange(247);
-  Serial.println("Exchanging MTU");
-
   Serial.println("Ready to receive new image");
 }
 
@@ -275,7 +306,7 @@ void print_summary(uint32_t count, uint32_t ms)
   float sec = ms / 1000.0F;
 
   Serial.printf("Received %d bytes in %.2f seconds\n", count, sec);
-  Serial.printf("Speed: %.2f KB/s for %dx%d Image\n", (count / 1024.0F) / sec, imageWidth, imageHeight);
+  Serial.printf("Speed: %.2f KB/s\n\n", (count / 1024.0F) / sec);
 }
 
 void bleuart_overflow_callback(uint16_t conn_hdl, uint16_t leftover)
