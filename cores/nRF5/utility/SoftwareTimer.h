@@ -50,6 +50,9 @@ class SoftwareTimer
     void begin(uint32_t ms, TimerCallbackFunction_t callback, void* timerID = NULL, bool repeating = true);
     TimerHandle_t getHandle(void) { return _handle; }
 
+    void  setID(void* id);
+    void* getID(void);
+
     bool start(void);
     bool stop (void);
     bool reset (void);
