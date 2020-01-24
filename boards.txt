@@ -116,6 +116,60 @@ feather52840.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 feather52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
+# ----------------------------------
+# Bluefruit Feather nRF52840 Express s340
+# ----------------------------------
+feather52840_s340.name=Adafruit Bluefruit Feather nRF52840 Express S340
+
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+feather52840_s340.vid.0=0x239A
+feather52840_s340.pid.0=0x8029
+feather52840_s340.vid.1=0x239A
+feather52840_s340.pid.1=0x0029
+feather52840_s340.vid.2=0x239A
+feather52840_s340.pid.2=0x002A
+feather52840_s340.vid.3=0x239A
+feather52840_s340.pid.3=0x802A
+
+# Upload
+feather52840_s340.bootloader.tool=bootburn
+feather52840_s340.upload.tool=nrfutil
+feather52840_s340.upload.protocol=nrfutil
+feather52840_s340.upload.use_1200bps_touch=true
+feather52840_s340.upload.wait_for_upload_port=true
+feather52840_s340.upload.maximum_size=815104
+feather52840_s340.upload.maximum_data_size=237568
+#TODO: fix sizes above
+
+# Build
+feather52840_s340.build.mcu=cortex-m4
+feather52840_s340.build.f_cpu=64000000
+feather52840_s340.build.board=NRF52840_FEATHER
+feather52840_s340.build.core=nRF5
+feather52840_s340.build.variant=feather_nrf52840_express
+feather52840_s340.build.usb_manufacturer="Adafruit LLC"
+feather52840_s340.build.usb_product="Feather nRF52840 Express"
+feather52840_s340.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+feather52840_s340.build.ldscript=nrf52840_s340_v6.ld
+feather52840_s340.build.vid=0x239A
+feather52840_s340.build.pid=0x8029
+
+# SofDevice Menu
+feather52840_s340.menu.softdevice.s340v6=0.3.0 SoftDevice s340 6.1.1
+feather52840_s340.menu.softdevice.s340v6.build.sd_name=s340
+feather52840_s340.menu.softdevice.s340v6.build.sd_version=6.1.1
+feather52840_s340.menu.softdevice.s340v6.build.sd_fwid=0x00B9
+
+# Debug Menu
+feather52840_s340.menu.debug.l0=Level 0 (Release)
+feather52840_s340.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+feather52840_s340.menu.debug.l1=Level 1 (Error Message)
+feather52840_s340.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+feather52840_s340.menu.debug.l2=Level 2 (Full Debug)
+feather52840_s340.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+feather52840_s340.menu.debug.l3=Level 3 (Segger SystemView)
+feather52840_s340.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
 
 # ----------------------------------
 # Feather Bluefruit sense

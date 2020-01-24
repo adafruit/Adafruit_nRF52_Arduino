@@ -179,6 +179,11 @@ class AdafruitBluefruit
     BLEConnection* Connection(uint16_t conn_hdl);
 
     /*------------------------------------------------------------------*/
+    /* ANT semaphore to signal when an SD event arrives if S340 Softdevice is used. 
+     *------------------------------------------------------------------*/
+    void setANTprotocolSemaphore(SemaphoreHandle_t* p_ant_event_semaphore) { _ant_event_sem= p_ant_event_semaphore;} 
+
+    /*------------------------------------------------------------------*/
     /* Callbacks
      *------------------------------------------------------------------*/
     void setRssiCallback(rssi_callback_t fp);
@@ -222,6 +227,8 @@ class AdafruitBluefruit
 
     SemaphoreHandle_t _ble_event_sem;
     SemaphoreHandle_t _soc_event_sem;
+    SemaphoreHandle_t* _ant_event_sem;
+
 
     TimerHandle_t _led_blink_th;
     bool _led_conn;
