@@ -73,7 +73,7 @@ int main( void )
 #if (CFG_LOGGER & ADALOG_TYPE_RTT)
   SEGGER_RTT_Init();
   SEGGER_RTT_ConfigUpBuffer(0, nullptr, nullptr, 0, SEGGER_RTT_MODE_NO_BLOCK_SKIP);
-  SEGGER_RTT_WriteString(0, "SEGGER Real-Time-Terminal Initialized");
+  SEGGER_RTT_WriteString(0, "SEGGER Real-Time-Terminal Initialized\n");
 #endif
 
   init();
@@ -110,7 +110,7 @@ void suspendLoop(void)
 #if (CFG_LOGGER & ADALOG_TYPE_RTT)
 
   Segger_RTT_Serial_t SerialRTT;
-  Stream& Adalog_Default_Logger = SerialRTT;
+  Segger_RTT_Serial_t& Adalog_Default_Logger = SerialRTT;
 
   extern "C"
   {
@@ -147,6 +147,6 @@ void suspendLoop(void)
       return 0;
     }
   }
-  Stream& Adalog_Default_Logger = Serial;
+  Adafruit_USBD_CDC& Adalog_Default_Logger = Serial;
 
 #endif

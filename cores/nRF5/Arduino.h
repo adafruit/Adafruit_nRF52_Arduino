@@ -59,9 +59,6 @@ void suspendLoop(void);
   #include "utility/SoftwareTimer.h"
 
   #include "Uart.h"
-
-  extern Stream& Adalog_Default_Logger;
-
 #endif
 
 #include "delay.h"
@@ -83,6 +80,17 @@ void suspendLoop(void);
 #include "wiring_analog.h"
 #include "wiring_shift.h"
 #include "WInterrupts.h"
+
+#ifdef __cplusplus
+  #if   (CFG_LOGGER & ADALOG_TYPE_RTT)
+    extern Segger_RTT_Serial_t& Adalog_Default_Logger;
+  #elif (CFG_LOGGER & ADALOG_TYPE_SERIAL)
+    #ifndef USE_TINYUSB
+      #error "USE_TINYUSB is always defined for nRF52xxx boards"
+    #endif
+    extern Adafruit_USBD_CDC& Adalog_Default_Logger;
+  #endif
+#endif
 
 // undefine stdlib's abs if encountered
 #ifdef abs
