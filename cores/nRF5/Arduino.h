@@ -82,15 +82,7 @@ void suspendLoop(void);
 #include "WInterrupts.h"
 
 #ifdef __cplusplus
-  #if   (CFG_LOGGER & ADALOG_TYPE_RTT)
-    extern Segger_RTT_Serial_t& Adalog_Default_Logger;
-  #elif (CFG_LOGGER & ADALOG_TYPE_SERIAL)
-    #ifdef USE_TINYUSB
-      extern Adafruit_USBD_CDC& Adalog_Default_Logger;
-    #else
-      extern UART Adalog_Default_Logger;
-    #endif
-  #endif
+  extern Stream& Adalog_Default_Logger;
 #endif
 
 // undefine stdlib's abs if encountered

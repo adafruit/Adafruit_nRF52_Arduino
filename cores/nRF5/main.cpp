@@ -110,7 +110,7 @@ void suspendLoop(void)
 #if (CFG_LOGGER & ADALOG_TYPE_RTT)
 
   Segger_RTT_Serial_t SerialRTT;
-  Segger_RTT_Serial_t& Adalog_Default_Logger = SerialRTT;
+  Stream& Adalog_Default_Logger = SerialRTT;
 
   extern "C"
   {
@@ -147,6 +147,6 @@ void suspendLoop(void)
       return 0;
     }
   }
-  auto& Adalog_Default_Logger = Serial;
+  Stream& Adalog_Default_Logger = Serial;
 
 #endif
