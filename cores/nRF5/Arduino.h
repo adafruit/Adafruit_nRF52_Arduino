@@ -85,10 +85,11 @@ void suspendLoop(void);
   #if   (CFG_LOGGER & ADALOG_TYPE_RTT)
     extern Segger_RTT_Serial_t& Adalog_Default_Logger;
   #elif (CFG_LOGGER & ADALOG_TYPE_SERIAL)
-    #ifndef USE_TINYUSB
-      #error "USE_TINYUSB is always defined for nRF52xxx boards"
+    #ifdef USE_TINYUSB
+      extern Adafruit_USBD_CDC& Adalog_Default_Logger;
+    #else
+      extern UART Adalog_Default_Logger;
     #endif
-    extern Adafruit_USBD_CDC& Adalog_Default_Logger;
   #endif
 #endif
 

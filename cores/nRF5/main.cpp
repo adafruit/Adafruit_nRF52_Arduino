@@ -147,6 +147,6 @@ void suspendLoop(void)
       return 0;
     }
   }
-  Adafruit_USBD_CDC& Adalog_Default_Logger = Serial;
+  auto& Adalog_Default_Logger = Serial;
 
 #endif
