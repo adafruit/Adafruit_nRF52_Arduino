@@ -67,8 +67,8 @@ const uint32_t g_ADigitalPinMap[] =
   37, // P1.05 (TFT LITE)
 
   // 35 & 36 - PDM mic
-  40,  // D35 is P1.08 (PDM DAT)
-  11,  // D36 is P0.11 (PDM CLK)
+  0,   // D35 is P0.00 (PDM DAT)
+  1,   // D36 is P0.01 (PDM CLK)
 
   // QSPI pins (not exposed via any header / test point)
   19,  // D37 is P0.19 (QSPI CLK)
@@ -81,6 +81,7 @@ const uint32_t g_ADigitalPinMap[] =
   10,  // D43 is P0.10 white LED control
    9,  // D44 is P0.09 APDS IRQ
   38,  // D45 is P1.06 LSM6DS33 IRQ
+  32,  // D46 is P1.00 Speaker/buzzer
 };
 
 void initVariant()
