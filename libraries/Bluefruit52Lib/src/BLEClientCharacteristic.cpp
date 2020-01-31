@@ -155,6 +155,8 @@ bool BLEClientCharacteristic::_discoverDescriptor(uint16_t conn_handle, ble_gatt
     {
       LOG_LV2("DISC", "Found CCDD: handle = %d", disc_rsp.descs[i].handle);
       _cccd_handle = disc_rsp.descs[i].handle;
+
+      break;
     }
   }
 

@@ -134,6 +134,9 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
     {
       for (uint8_t i=0; i<count; i++)
       {
+        if ( chr[i]->discovered() )
+          continue;
+
         if ( chr[i]->uuid == disc_chr->chars[d].uuid )
         {
           LOG_LV2("DISC", "[CHR] Found 0x%04X, handle = %d\n-----------------", disc_chr->chars[d].uuid.uuid,  disc_chr->chars[d].handle_value);
