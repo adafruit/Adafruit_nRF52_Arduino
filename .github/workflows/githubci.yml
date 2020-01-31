@@ -42,6 +42,10 @@ jobs:
       env:
         BSP_URL: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
         BSP_PATH: .arduino15/packages/adafruit/hardware/nrf52
+        LIB_DEPS: >
+          "Adafruit Circuit Playground" "Adafruit NeoPixel" "Adafruit NeoMatrix" 
+          "Adafruit GFX Library" "Adafruit SSD1306" "Adafruit ILI9341" "Adafruit HX8357 Library" "Adafruit EPD"
+          "MIDI Library" "Firmata"
       run: |
         arduino-cli config init
         arduino-cli core update-index
@@ -51,7 +55,7 @@ jobs:
         BSP_VERSION=`eval ls $HOME/$BSP_PATH`
         rm -r $HOME/$BSP_PATH/*
         ln -s $GITHUB_WORKSPACE $HOME/$BSP_PATH/$BSP_VERSION
-        arduino-cli lib install "Adafruit NeoPixel" "Adafruit NeoMatrix" "Adafruit GFX Library" "Adafruit SSD1306" "MIDI Library" "Adafruit ILI9341" "Adafruit HX8357 Library" "Adafruit Circuit Playground" "Firmata"
+        arduino-cli lib install $(LIB_DEPS)
 
     - name: Build examples
       run: python3 tools/build_all.py ${{ matrix.arduino-platform }}
