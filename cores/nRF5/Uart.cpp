@@ -25,6 +25,14 @@
 void serialEventRun(void)
 {
   if (serialEvent && Serial.available() ) serialEvent();
+
+#ifndef NRF52832_XXAA // 832 only has 1 UART for Serial
+  if (serialEvent1 && Serial1.available() ) serialEvent1();
+
+  #if SERIAL_INTERFACES_COUNT >= 2
+  if (serialEvent2 && Serial2.available() ) serialEvent2();
+  #endif
+#endif
 }
 
 Uart::Uart(NRF_UARTE_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _pinTX)
