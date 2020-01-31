@@ -39,6 +39,16 @@ void SoftwareTimer::begin(uint32_t ms, TimerCallbackFunction_t callback, void* t
   _handle = xTimerCreate(NULL, ms2tick(ms), repeating, timerID, callback);
 }
 
+void SoftwareTimer::setID(void* id)
+{
+  vTimerSetTimerID(_handle, id);
+}
+
+void* SoftwareTimer::getID(void)
+{
+  return pvTimerGetTimerID(_handle);
+}
+
 bool SoftwareTimer::start(void)
 {
   bool ret = true;

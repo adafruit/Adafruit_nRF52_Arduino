@@ -15,61 +15,26 @@
 #include <bluefruit.h>
 #include <SPI.h>
 #include <Adafruit_GFX.h>
+#include "Adafruit_EPD.h"
 
 /* This sketch demonstrates the "Image Upload" feature of Bluefruit Mobile App.
  * Following TFT Display are supported
- *  - https://www.adafruit.com/product/3315
- *  - https://www.adafruit.com/product/3651
- *  - https://www.adafruit.com/product/4367
+ *  - https://www.adafruit.com/product/4428
  */
 
-#define TFT_35_FEATHERWING  1
-#define TFT_24_FEATHERWING  2
-#define TFT_GIZMO           3
+#define EINK_GIZMO          1
 
-// [Configurable] Please select one of above supported Display to match your hardware setup
-#define TFT_IN_USE          TFT_35_FEATHERWING
+// one of above supported TFT add-on
+#define DISPLAY_IN_USE      EINK_GIZMO
 
+#define EPD_CS      0
+#define EPD_DC      1
+#define SRAM_CS     -1
+#define EPD_RESET   PIN_A3 // can set to -1 and share with microcontroller Reset!
+#define EPD_BUSY    -1 // can set to -1 to not use a pin (will wait a fixed delay)
 
-#if defined(ARDUINO_NRF52832_FEATHER)
-  // Feather nRF52832
-  #define TFT_DC   11
-  #define TFT_CS   31
+Adafruit_IL0373 display(152, 152, EPD_DC, EPD_RESET, EPD_CS, SRAM_CS, EPD_BUSY);
 
-#elif defined(ARDUINO_NRF52840_CIRCUITPLAY)
-  // Circuit Playground Bluefruit for use with TFT 1.5" GIZMO
-  #define TFT_DC         1
-  #define TFT_CS         0
-  #define TFT_BACKLIGHT  A3
-
-#else
-  // Default for others
-  #define TFT_DC   10
-  #define TFT_CS   9
-#endif
-
-
-#if   TFT_IN_USE == TFT_35_FEATHERWING
-  #include "Adafruit_HX8357.h"
-  Adafruit_HX8357 tft = Adafruit_HX8357(TFT_CS, TFT_DC);
-  
-#elif TFT_IN_USE == TFT_24_FEATHERWING
-  #include <Adafruit_ILI9341.h>
-  Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
-  
-#elif TFT_IN_USE == TFT_GIZMO
-  #include "Adafruit_ST7789.h"
-  Adafruit_ST7789 tft = Adafruit_ST7789(&SPI, TFT_CS, TFT_DC, -1);
-  
-#else
-  #error "TFT display is not supported"
-#endif
-
-#define COLOR_WHITE     0xFFFF
-#define COLOR_BLACK     0x0000
-#define COLOR_YELLOW    0xFFE0
-#define COLOR_GREEN     0x07E0
-#define COLOR_RED       0xF800
 
 // Declaring Uart over BLE with large buffer to hold image data
 // Depending on the Image Resolution and Transfer Mode especially without response
@@ -103,27 +68,18 @@ SoftwareTimer negoTimer;
 uint32_t rxStartTime = 0;
 uint32_t rxLastTime = 0;
 
-// for print out message to TFT once
-bool bleuart_overflowed = false;
-
 void setup()
 {
   Serial.begin(115200);
 
-#if TFT_IN_USE == TFT_GIZMO
-  tft.init(240, 240);
-  tft.setRotation(2);
-  pinMode(TFT_BACKLIGHT, OUTPUT);
-  digitalWrite(TFT_BACKLIGHT, HIGH); // Backlight on
+  display.begin();
+  display.clearBuffer();
 
+#if DISPLAY_IN_USE == EINK_GIZMO
+  display.setRotation(3);
 #else
-  tft.begin();
-
+  // todo more eink displays
 #endif
-  
-  tft.fillScreen(COLOR_BLACK);
-  tft.setTextColor(COLOR_WHITE);
-  tft.setTextSize(1);
 
   // Config the peripheral connection with maximum bandwidth
   // more SRAM required by SoftDevice
@@ -162,7 +118,7 @@ void setup()
   // Set up and start advertising
   startAdv();
 
-  tft.println("Advertising ... ");
+  Serial.println("Advertising ... ");
 }
 
 void startAdv(void)
@@ -226,39 +182,58 @@ void bleuart_rx_callback(uint16_t conn_hdl)
 
     totalPixel = 0;
 
-    tft.fillScreen(COLOR_BLACK);
-    tft.setCursor(0, 0);
+    display.clearBuffer();
+    display.fillScreen(EPD_WHITE);
+    display.setCursor(0, 0);
 
     // Print out the current connection info
     BLEConnection* conn = Bluefruit.Connection(conn_hdl);
     Serial.printf("Connection Info: PHY = %d Mbps, Conn Interval = %.2f ms, Data Length = %d, MTU = %d\n",
                   conn->getPHY(), conn->getConnectionInterval()*1.25f, conn->getDataLength(), conn->getMtu());
-
-    Serial.printf("Receiving an %dx%d Image with %d-bit color\n", imageWidth, imageHeight, imageColorBit);
+    Serial.printf("Receving an %dx%d Image with %d bit color\n", imageWidth, imageHeight, imageColorBit);
   }
 
   // Extract pixel data to buffer and draw image line by line
   while ( bleuart.available() >= 3 )
   {
-    // TFT FeatherWing use 16-bit RGB 655 color, need to convert if input is 24-bit color
+    uint8_t red, green, blue;
+
     if ( imageColorBit == 24 )
     {
-      uint8_t rgb[3];
-      bleuart.read(rgb, 3);
-      pixel_buf[totalPixel % imageWidth] = ((rgb[0] & 0xF8) << 8) | ((rgb[1] & 0xFC) << 3) | (rgb[2] >> 3);
+      // Application send 24-bit color
+      red = bleuart.read();
+      green = bleuart.read();
+      blue = bleuart.read();
     }
     else if ( imageColorBit == 16 )
     {
-      // native 16-bit 655 color
-      pixel_buf[totalPixel % imageWidth] = bleuart.read16();
+      // Application send 16-bit 565 color
+      uint16_t c565 = bleuart.read16();
+
+      red = (c565 & 0xf800) >> 8;
+      green = (c565 & 0x07e0) >> 3;
+      blue = (c565 & 0x001f) << 3;
     }
+
+    // Convert RGB into Eink Color
+    uint8_t c = 0;
+    if ((red < 0x80) && (green < 0x80) && (blue < 0x80)) {
+      c = EPD_BLACK; // try to infer black
+    } else if ((red >= 0x80) && (green >= 0x80) && (blue >= 0x80)) {
+      c = EPD_WHITE;
+    } else if (red >= 0x80) {
+      c = EPD_RED; // try to infer red color
+    }
+
+    // store to pixel buffer
+    pixel_buf[totalPixel % imageWidth] = c;
 
     totalPixel++;
 
     // have enough to draw an image line
     if ( (totalPixel % imageWidth) == 0 )
     {
-      tft.drawRGBBitmap(0, totalPixel/imageWidth, pixel_buf, imageWidth, 1);
+      display.drawRGBBitmap(0, totalPixel/imageWidth, pixel_buf, imageWidth, 1);
     }
   }
 
@@ -272,10 +247,16 @@ void bleuart_rx_callback(uint16_t conn_hdl)
     // print speed summary
     print_summary(totalPixel*(imageColorBit/8) + 8, rxLastTime-rxStartTime);
 
+    // Display on Eink, will probably take dozens of seconds
+    Serial.println("Displaying image (~20 seconds) .....");
+    display.display();
+
     // reset and waiting for new image
     imageColorBit = 0;
     imageWidth = imageHeight = 0;
     totalPixel = 0;
+
+    Serial.println("Ready to receive new image");
   }
 }
 
@@ -316,52 +297,16 @@ void connect_callback(uint16_t conn_handle)
   negoTimer.setID((void*) conn_handle);
   negoTimer.start();
 
-  tft.println("Connected");
-  tft.setTextColor(COLOR_GREEN);
-  tft.println("Ready to receive new image");
-  tft.setTextColor(COLOR_WHITE);
+  Serial.println("Connected");
+  Serial.println("Ready to receive new image");
 }
 
 void print_summary(uint32_t count, uint32_t ms)
 {
   float sec = ms / 1000.0F;
 
-  // Print to serial
   Serial.printf("Received %d bytes in %.2f seconds\n", count, sec);
   Serial.printf("Speed: %.2f KB/s\n\n", (count / 1024.0F) / sec);
-  Serial.println("Ready to receive new image");
-
-  // Also print to TFT with color text
-  tft.setCursor(0, imageHeight+5);
-  tft.print("Received ");
-
-  tft.setTextColor(COLOR_YELLOW);
-  tft.print(count);
-  tft.setTextColor(COLOR_WHITE);
-
-  tft.print(" bytes in ");
-
-  tft.setTextColor(COLOR_YELLOW);
-  tft.print(sec, 2);
-  tft.setTextColor(COLOR_WHITE);
-
-  tft.println(" seconds");
-
-  tft.print("Speed: ");
-  tft.setTextColor(COLOR_YELLOW);
-  tft.print( (count / 1024.0F) / sec, 2);
-  tft.setTextColor(COLOR_WHITE);
-  tft.print(" KB/s for ");
-
-  tft.setTextColor(COLOR_YELLOW);
-  tft.print(imageWidth); tft.print("x"); tft.print(imageHeight);
-
-  tft.setTextColor(COLOR_WHITE);
-  tft.println(" Image");
-
-  tft.setTextColor(COLOR_GREEN);
-  tft.println("Ready to receive new image");
-  tft.setTextColor(COLOR_WHITE);
 }
 
 void bleuart_overflow_callback(uint16_t conn_hdl, uint16_t leftover)
@@ -371,20 +316,6 @@ void bleuart_overflow_callback(uint16_t conn_hdl, uint16_t leftover)
   
   Serial.println("BLEUART rx buffer OVERFLOWED!");
   Serial.println("Please increase buffer size for bleuart");
-
-  // only print the first time this occur, need disconnect to reset
-  if (!bleuart_overflowed)
-  {
-    tft.setCursor(0, imageHeight+5);
-
-    tft.setTextColor(COLOR_RED);
-    tft.println("BLEUART rx buffer OVERFLOWED!");
-
-    tft.setTextColor(COLOR_WHITE);
-    tft.print("Please increase buffer size for bleuart");
-  }
-
-  bleuart_overflowed = true;
 }
 
 /**
@@ -397,14 +328,9 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   (void) conn_handle;
   (void) reason;
 
-  tft.fillScreen(COLOR_BLACK);
-  tft.setCursor(0, 0);
-  tft.println("Advertising ...");
-
   imageColorBit = 0;
   imageWidth = imageHeight = 0;
   totalPixel = 0;
-  bleuart_overflowed = false;
 
   bleuart.flush();
 }
