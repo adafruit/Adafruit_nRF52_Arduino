@@ -337,7 +337,7 @@ pca10056.upload.protocol=nrfutil
 pca10056.upload.use_1200bps_touch=true
 pca10056.upload.wait_for_upload_port=true
 pca10056.upload.maximum_size=815104
- -DCFG_SYSVIEW=0xFFFFFFFFpca10056.upload.maximum_data_size=237568
+pca10056.upload.maximum_data_size=237568
 
 # Build
 pca10056.build.mcu=cortex-m4
