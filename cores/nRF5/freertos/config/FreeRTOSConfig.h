@@ -201,7 +201,6 @@ standard names - or at least those used in the unmodified vector table. */
     #include "sysview/SEGGER_SYSVIEW_FreeRTOS.h"
 #endif
 
-// Segger RTT output requires at least debug level 20
 #if (CFG_LOGGER & ADALOG_TYPE_RTT)
     #include "sysview/SEGGER/SEGGER_RTT.h"
 #endif
