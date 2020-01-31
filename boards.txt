@@ -18,8 +18,6 @@
 
 menu.softdevice=Bootloader
 menu.debug=Debug
-menu.logger=Logger
-menu.sysview=SystemView
 
 # ----------------------------------
 # Bluefruit Feather nRF52832
@@ -51,18 +49,6 @@ feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_fwid=0x00B7
 
-# Output logging destination -- distinct from debug level
-feather52832.menu.logger.serial=Serial (Default)
-feather52832.menu.logger.serial.build.logger_flags=-DCFG_LOGGER=1
-feather52832.menu.logger.rtt=Segger RTT (requires JLink)
-feather52832.menu.logger.rtt.build.logger_flags=-DCFG_LOGGER=2
-
-# Enabling SystemView -- distinct from debug level
-feather52832.menu.sysview.disabled=Disable SysView (Default)
-feather52832.menu.sysview.disabled.build.sysview_flags=-DCFG_SYSVIEW=0
-feather52832.menu.sysview.enabled=Enable SysView (requires JLink)
-feather52832.menu.sysview.enabled.build.sysview_flags=-DCFG_SYSVIEW=0xFFFFFFFFu
-
 # Debug Menu
 feather52832.menu.debug.l0=Level 0 (Release)
 feather52832.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
@@ -70,8 +56,8 @@ feather52832.menu.debug.l1=Level 1 (Error Message)
 feather52832.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 feather52832.menu.debug.l2=Level 2 (Full Debug)
 feather52832.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
-feather52832.menu.debug.l3=Level 3 (Full Debug ++)
-feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+feather52832.menu.debug.l3=Level 3 (Segger SystemView)
+feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=0xFFFFFFFF
 
 # ----------------------------------
 # Bluefruit Feather nRF52840 Express
@@ -116,18 +102,6 @@ feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Output logging destination -- distinct from debug level
-feather52840.menu.logger.serial=Serial (Default)
-feather52840.menu.logger.serial.build.logger_flags=-DCFG_LOGGER=1
-feather52840.menu.logger.rtt=Segger RTT (requires JLink)
-feather52840.menu.logger.rtt.build.logger_flags=-DCFG_LOGGER=2
-
-# Enabling SystemView -- distinct from debug level
-feather52840.menu.sysview.disabled=Disable SysView (Default)
-feather52840.menu.sysview.disabled.build.sysview_flags=-DCFG_SYSVIEW=0
-feather52840.menu.sysview.enabled=Enable SysView (requires JLink)
-feather52840.menu.sysview.enabled.build.sysview_flags=-DCFG_SYSVIEW=0xFFFFFFFFu
-
 # Debug Menu
 feather52840.menu.debug.l0=Level 0 (Release)
 feather52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
@@ -135,8 +109,8 @@ feather52840.menu.debug.l1=Level 1 (Error Message)
 feather52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 feather52840.menu.debug.l2=Level 2 (Full Debug)
 feather52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
-feather52840.menu.debug.l3=Level 3 (Full Debug ++)
-feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+feather52840.menu.debug.l3=Level 3 (Segger SystemView)
+feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=0xFFFFFFFF
 
 # ----------------------------------
 # Bluefruit ItsyBitsy nRF52840 Express
@@ -181,18 +155,6 @@ itsybitsy52840.menu.softdevice.s140v6.build.sd_name=s140
 itsybitsy52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 itsybitsy52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Output logging destination -- distinct from debug level
-itsybitsy52840.menu.logger.serial=Serial (Default)
-itsybitsy52840.menu.logger.serial.build.logger_flags=-DCFG_LOGGER=1
-itsybitsy52840.menu.logger.rtt=Segger RTT (requires JLink)
-itsybitsy52840.menu.logger.rtt.build.logger_flags=-DCFG_LOGGER=2
-
-# Enabling SystemView -- distinct from debug level
-itsybitsy52840.menu.sysview.disabled=Disable SysView (Default)
-itsybitsy52840.menu.sysview.disabled.build.sysview_flags=-DCFG_SYSVIEW=0
-itsybitsy52840.menu.sysview.enabled=Enable SysView (requires JLink)
-itsybitsy52840.menu.sysview.enabled.build.sysview_flags=-DCFG_SYSVIEW=0xFFFFFFFFu
-
 # Debug Menu
 itsybitsy52840.menu.debug.l0=Level 0 (Release)
 itsybitsy52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
@@ -200,8 +162,8 @@ itsybitsy52840.menu.debug.l1=Level 1 (Error Message)
 itsybitsy52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 itsybitsy52840.menu.debug.l2=Level 2 (Full Debug)
 itsybitsy52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
-itsybitsy52840.menu.debug.l3=Level 3 (Full Debug ++)
-itsybitsy52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+itsybitsy52840.menu.debug.l3=Level 3 (Segger SystemView)
+itsybitsy52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=0xFFFFFFFF
 
 # ---------------------------------------------
 # Bluefruit Circuit Playground nRF52840 Express
@@ -246,18 +208,6 @@ cplaynrf52840.menu.softdevice.s140v6.build.sd_name=s140
 cplaynrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 cplaynrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Output logging destination -- distinct from debug level
-cplaynrf52840.menu.logger.serial=Serial (Default)
-cplaynrf52840.menu.logger.serial.build.logger_flags=-DCFG_LOGGER=1
-cplaynrf52840.menu.logger.rtt=Segger RTT (requires JLink)
-cplaynrf52840.menu.logger.rtt.build.logger_flags=-DCFG_LOGGER=2
-
-# Enabling SystemView -- distinct from debug level
-cplaynrf52840.menu.sysview.disabled=Disable SysView (Default)
-cplaynrf52840.menu.sysview.disabled.build.sysview_flags=-DCFG_SYSVIEW=0
-cplaynrf52840.menu.sysview.enabled=Enable SysView (requires JLink)
-cplaynrf52840.menu.sysview.enabled.build.sysview_flags=-DCFG_SYSVIEW=0xFFFFFFFFu
-
 # Debug Menu
 cplaynrf52840.menu.debug.l0=Level 0 (Release)
 cplaynrf52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
@@ -265,8 +215,8 @@ cplaynrf52840.menu.debug.l1=Level 1 (Error Message)
 cplaynrf52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 cplaynrf52840.menu.debug.l2=Level 2 (Full Debug)
 cplaynrf52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
-cplaynrf52840.menu.debug.l3=Level 3 (Full Debug ++)
-cplaynrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+cplaynrf52840.menu.debug.l3=Level 3 (Segger SystemView)
+cplaynrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=0xFFFFFFFF
 
 
 # ---------------------------------------------
@@ -312,18 +262,6 @@ cluenrf52840.menu.softdevice.s140v6.build.sd_name=s140
 cluenrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 cluenrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Output logging destination -- distinct from debug level
-cluenrf52840.menu.logger.serial=Serial (Default)
-cluenrf52840.menu.logger.serial.build.logger_flags=-DCFG_LOGGER=1
-cluenrf52840.menu.logger.rtt=Segger RTT (requires JLink)
-cluenrf52840.menu.logger.rtt.build.logger_flags=-DCFG_LOGGER=2
-
-# Enabling SystemView -- distinct from debug level
-cluenrf52840.menu.sysview.disabled=Disable SysView (Default)
-cluenrf52840.menu.sysview.disabled.build.sysview_flags=-DCFG_SYSVIEW=0
-cluenrf52840.menu.sysview.enabled=Enable SysView (requires JLink)
-cluenrf52840.menu.sysview.enabled.build.sysview_flags=-DCFG_SYSVIEW=0xFFFFFFFFu
-
 # Debug Menu
 cluenrf52840.menu.debug.l0=Level 0 (Release)
 cluenrf52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
@@ -331,8 +269,8 @@ cluenrf52840.menu.debug.l1=Level 1 (Error Message)
 cluenrf52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 cluenrf52840.menu.debug.l2=Level 2 (Full Debug)
 cluenrf52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
-cluenrf52840.menu.debug.l3=Level 3 (Full Debug ++)
-cluenrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+cluenrf52840.menu.debug.l3=Level 3 (Segger SystemView)
+cluenrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=0xFFFFFFFF
 
 # ----------------------------------
 # Bluefruit Metro nRF52840 Express
@@ -377,18 +315,6 @@ metro52840.menu.softdevice.s140v6.build.sd_name=s140
 metro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Output logging destination -- distinct from debug level
-metro52840.menu.logger.serial=Serial (Default)
-metro52840.menu.logger.serial.build.logger_flags=-DCFG_LOGGER=1
-metro52840.menu.logger.rtt=Segger RTT (requires JLink)
-metro52840.menu.logger.rtt.build.logger_flags=-DCFG_LOGGER=2
-
-# Enabling SystemView -- distinct from debug level
-metro52840.menu.sysview.disabled=Disable SysView (Default)
-metro52840.menu.sysview.disabled.build.sysview_flags=-DCFG_SYSVIEW=0
-metro52840.menu.sysview.enabled=Enable SysView (requires JLink)
-metro52840.menu.sysview.enabled.build.sysview_flags=-DCFG_SYSVIEW=0xFFFFFFFFu
-
 # Debug Menu
 metro52840.menu.debug.l0=Level 0 (Release)
 metro52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
@@ -396,8 +322,8 @@ metro52840.menu.debug.l1=Level 1 (Error Message)
 metro52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 metro52840.menu.debug.l2=Level 2 (Full Debug)
 metro52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
-metro52840.menu.debug.l3=Level 3 (Full Debug ++)
-metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+metro52840.menu.debug.l3=Level 3 (Segger SystemView)
+metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=0xFFFFFFFF
 
 # ----------------------------------
 # Nordic nRF52840DK (PCA10056)
@@ -432,18 +358,6 @@ pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Output logging destination -- distinct from debug level
-pca10056.menu.logger.serial=Serial (Default)
-pca10056.menu.logger.serial.build.logger_flags=-DCFG_LOGGER=1
-pca10056.menu.logger.rtt=Segger RTT (requires JLink)
-pca10056.menu.logger.rtt.build.logger_flags=-DCFG_LOGGER=2
-
-# Enabling SystemView -- distinct from debug level
-pca10056.menu.sysview.disabled=Disable SysView (Default)
-pca10056.menu.sysview.disabled.build.sysview_flags=-DCFG_SYSVIEW=0
-pca10056.menu.sysview.enabled=Enable SysView (requires JLink)
-pca10056.menu.sysview.enabled.build.sysview_flags=-DCFG_SYSVIEW=0xFFFFFFFFu
-
 # Debug Menu
 pca10056.menu.debug.l0=Level 0 (Release)
 pca10056.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
@@ -451,5 +365,5 @@ pca10056.menu.debug.l1=Level 1 (Error Message)
 pca10056.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 pca10056.menu.debug.l2=Level 2 (Full Debug)
 pca10056.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
-pca10056.menu.debug.l3=Level 3 (Full Debug ++)
-pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+pca10056.menu.debug.l3=Level 3 (Segger SystemView)
+pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=0xFFFFFFFF
