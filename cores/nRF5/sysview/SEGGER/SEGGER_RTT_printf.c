@@ -9,7 +9,7 @@
 *                                                                    *
 **********************************************************************
 *                                                                    *
-*       SEGGER RTT * Real Time Transfer for embedded targets         *
+*       SEGGER SystemView * Real-time application analysis           *
 *                                                                    *
 **********************************************************************
 *                                                                    *
@@ -17,7 +17,7 @@
 *                                                                    *
 * SEGGER strongly recommends to not make any changes                 *
 * to or modify the source code of this software in order to stay     *
-* compatible with the RTT protocol and J-Link.                       *
+* compatible with the SystemView and RTT protocol, and J-Link.       *
 *                                                                    *
 * Redistribution and use in source and binary forms, with or         *
 * without modification, are permitted provided that the following    *
@@ -42,10 +42,9 @@
 *                                                                    *
 **********************************************************************
 *                                                                    *
-*       RTT version: 6.60d                                           *
+*       SystemView version: 3.10                                    *
 *                                                                    *
 **********************************************************************
-
 ---------------------------END-OF-HEADER------------------------------
 File    : SEGGER_RTT_printf.c
 Purpose : Replacement for printf to write formatted data via RTT

@@ -9,7 +9,7 @@
 *                                                                    *
 **********************************************************************
 *                                                                    *
-*       SEGGER RTT * Real Time Transfer for embedded targets         *
+*       SEGGER SystemView * Real-time application analysis           *
 *                                                                    *
 **********************************************************************
 *                                                                    *
@@ -17,7 +17,7 @@
 *                                                                    *
 * SEGGER strongly recommends to not make any changes                 *
 * to or modify the source code of this software in order to stay     *
-* compatible with the RTT protocol and J-Link.                       *
+* compatible with the SystemView and RTT protocol, and J-Link.       *
 *                                                                    *
 * Redistribution and use in source and binary forms, with or         *
 * without modification, are permitted provided that the following    *
@@ -42,10 +42,9 @@
 *                                                                    *
 **********************************************************************
 *                                                                    *
-*       RTT version: 6.60d                                           *
+*       SystemView version: 3.10                                    *
 *                                                                    *
 **********************************************************************
-
 ---------------------------END-OF-HEADER------------------------------
 File    : SEGGER_RTT_Conf.h
 Purpose : Implementation of SEGGER real-time transfer (RTT) which
@@ -90,10 +89,6 @@ Revision: $Rev: 17066 $
 
 #ifndef   SEGGER_RTT_MODE_DEFAULT
   #define SEGGER_RTT_MODE_DEFAULT                   SEGGER_RTT_MODE_NO_BLOCK_SKIP // Mode for pre-initialized terminal channel (buffer 0)
-#endif
-
-#ifndef RTT_USE_ASM
-  #define RTT_USE_ASM 0 // Use assembler version of SEGGER_RTT.c when 1
 #endif
 
 /*********************************************************************
@@ -328,8 +323,8 @@ Revision: $Rev: 17066 $
   #define SEGGER_RTT_LOCK()   {                                                                     \
                                 unsigned long LockState;                                            \
                                 LockState = get_psw() & 0x010000;                                   \
-                                clrpsw_i();
-
+                                clrpsw_i();                           
+                                    
   #define SEGGER_RTT_UNLOCK()   set_psw(get_psw() | LockState);                                     \
                               }
 #endif
@@ -362,7 +357,6 @@ void OS_SIM_LeaveCriticalSection(void);
 #ifndef   SEGGER_RTT_UNLOCK
   #define SEGGER_RTT_UNLOCK()              // Unlock RTT (nestable) (i.e. enable previous interrupt lock state)
 #endif
-
 
 #endif
 /*************************** End of file ****************************/

@@ -9,7 +9,7 @@
 *                                                                    *
 **********************************************************************
 *                                                                    *
-*       SEGGER RTT * Real Time Transfer for embedded targets         *
+*       SEGGER SystemView * Real-time application analysis           *
 *                                                                    *
 **********************************************************************
 *                                                                    *
@@ -17,7 +17,7 @@
 *                                                                    *
 * SEGGER strongly recommends to not make any changes                 *
 * to or modify the source code of this software in order to stay     *
-* compatible with the RTT protocol and J-Link.                       *
+* compatible with the SystemView and RTT protocol, and J-Link.       *
 *                                                                    *
 * Redistribution and use in source and binary forms, with or         *
 * without modification, are permitted provided that the following    *
@@ -42,10 +42,9 @@
 *                                                                    *
 **********************************************************************
 *                                                                    *
-*       RTT version: 6.60d                                           *
+*       SystemView version: 3.10                                    *
 *                                                                    *
 **********************************************************************
-
 ---------------------------END-OF-HEADER------------------------------
 File    : SEGGER_RTT.h
 Purpose : Implementation of SEGGER real-time transfer which allows
@@ -68,7 +67,6 @@ Revision: $Rev: 17066 $
 *
 **********************************************************************
 */
-
 #ifndef RTT_USE_ASM
   #if (defined __SES_ARM)                       // SEGGER Embedded Studio
     #define _CC_HAS_RTT_ASM_SUPPORT 1
@@ -133,9 +131,6 @@ Revision: $Rev: 17066 $
 *
 **********************************************************************
 */
-
-#define SEGGER_RTT_NUMBER_OF_TERMINALS 16
-#define SEGGER_RTT_TERMINAL_OUT_OVERHEAD 4
 
 //
 // Description for a circular buffer (also called "ring buffer")
@@ -204,7 +199,6 @@ unsigned     SEGGER_RTT_HasDataUp               (unsigned BufferIndex);
 void         SEGGER_RTT_Init                    (void);
 unsigned     SEGGER_RTT_Read                    (unsigned BufferIndex,       void* pBuffer, unsigned BufferSize);
 unsigned     SEGGER_RTT_ReadNoLock              (unsigned BufferIndex,       void* pData,   unsigned BufferSize);
-int          SEGGER_RTT_Peek                    (void);
 int          SEGGER_RTT_SetNameDownBuffer       (unsigned BufferIndex, const char* sName);
 int          SEGGER_RTT_SetNameUpBuffer         (unsigned BufferIndex, const char* sName);
 int          SEGGER_RTT_SetFlagsDownBuffer      (unsigned BufferIndex, unsigned Flags);
@@ -213,6 +207,7 @@ int          SEGGER_RTT_WaitKey                 (void);
 unsigned     SEGGER_RTT_Write                   (unsigned BufferIndex, const void* pBuffer, unsigned NumBytes);
 unsigned     SEGGER_RTT_WriteNoLock             (unsigned BufferIndex, const void* pBuffer, unsigned NumBytes);
 unsigned     SEGGER_RTT_WriteSkipNoLock         (unsigned BufferIndex, const void* pBuffer, unsigned NumBytes);
+unsigned     SEGGER_RTT_ASM_WriteSkipNoLock     (unsigned BufferIndex, const void* pBuffer, unsigned NumBytes);
 unsigned     SEGGER_RTT_WriteString             (unsigned BufferIndex, const char* s);
 void         SEGGER_RTT_WriteWithOverwriteNoLock(unsigned BufferIndex, const void* pBuffer, unsigned NumBytes);
 unsigned     SEGGER_RTT_PutChar                 (unsigned BufferIndex, char c);
@@ -220,7 +215,6 @@ unsigned     SEGGER_RTT_PutCharSkip             (unsigned BufferIndex, char c);
 unsigned     SEGGER_RTT_PutCharSkipNoLock       (unsigned BufferIndex, char c);
 unsigned     SEGGER_RTT_GetAvailWriteSpace      (unsigned BufferIndex);
 unsigned     SEGGER_RTT_GetBytesInBuffer        (unsigned BufferIndex);
-
 //
 // Function macro for performance optimization
 //
@@ -228,7 +222,6 @@ unsigned     SEGGER_RTT_GetBytesInBuffer        (unsigned BufferIndex);
 
 #if RTT_USE_ASM
   #define SEGGER_RTT_WriteSkipNoLock  SEGGER_RTT_ASM_WriteSkipNoLock
-  unsigned     SEGGER_RTT_ASM_WriteSkipNoLock     (unsigned BufferIndex, const void* pBuffer, unsigned NumBytes);
 #endif
 
 /*********************************************************************
@@ -252,7 +245,6 @@ unsigned     SEGGER_RTT_WriteDownBufferNoLock   (unsigned BufferIndex, const voi
 */
 int     SEGGER_RTT_SetTerminal        (unsigned char TerminalId);
 int     SEGGER_RTT_TerminalOut        (unsigned char TerminalId, const char* s);
-int     SEGGER_RTT_TerminalOutBuffer  (unsigned char TerminalId, const void* pBuffer, size_t BufferSize);
 
 /*********************************************************************
 *
