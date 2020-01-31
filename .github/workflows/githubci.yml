@@ -55,7 +55,7 @@ jobs:
         BSP_VERSION=`eval ls $HOME/$BSP_PATH`
         rm -r $HOME/$BSP_PATH/*
         ln -s $GITHUB_WORKSPACE $HOME/$BSP_PATH/$BSP_VERSION
-        arduino-cli lib install $(LIB_DEPS)
+        arduino-cli lib install $LIB_DEPS
 
     - name: Build examples
       run: python3 tools/build_all.py ${{ matrix.arduino-platform }}
