@@ -98,6 +98,9 @@ class BLECharacteristic
     void setPermission(BleSecurityMode read_perm, BleSecurityMode write_perm);
     void setMaxLen(uint16_t max_len);
     void setFixedLen(uint16_t fixed_len);
+    void setBuffer(void* buf, uint16_t bufsize);
+
+    uint16_t getMaxLen(void);
 
     /*------------- Descriptors -------------*/
     void setUserDescriptor(const char* descriptor); // aka user descriptor
@@ -125,6 +128,7 @@ class BLECharacteristic
     uint16_t write16 (uint16_t num);
     uint16_t write32 (uint32_t num);
     uint16_t write32 (int      num);
+    uint16_t write32 (int32_t  num);
 
     /*------------- Read -------------*/
     uint16_t read  (void* buffer, uint16_t bufsize, uint16_t offset = 0);
@@ -139,6 +143,7 @@ class BLECharacteristic
     bool notifyEnabled(uint16_t conn_hdl);
 
     /*------------- Notify -------------*/
+//    bool notify   (void);
     bool notify   (const void* data, uint16_t len);
     bool notify   (const char* str);
 
@@ -148,6 +153,7 @@ class BLECharacteristic
     bool notify32 (int      num);
 
     /*------------- Notify multiple connections -------------*/
+//    bool notify   (uint16_t conn_hdl);
     bool notify   (uint16_t conn_hdl, const void* data, uint16_t len);
     bool notify   (uint16_t conn_hdl, const char* str);
 
@@ -181,16 +187,11 @@ class BLECharacteristic
     virtual void _eventHandler(ble_evt_t* event);
 
   protected:
-    struct ATTR_PACKED {
-      uint8_t write           : 1;
-      uint8_t cccd_write      : 1;
-      uint8_t read_authorize  : 1;
-      uint8_t write_authorize : 1;
-    } _use_ada_cb;
-
     bool _is_temp;
     uint16_t _max_len;
     BLEService* _service; // pointer to parent's service
+
+    uint8_t* _userbuf;
 
     /*------------- Descriptors -------------*/
     const char* _usr_descriptor;
@@ -211,11 +212,18 @@ class BLECharacteristic
     }_long_wr;
 
     /*------------- Callback pointers -------------*/
-    read_authorize_cb_t       _rd_authorize_cb;
-    write_authorize_cb_t      _wr_authorize_cb;
+    struct ATTR_PACKED {
+      uint8_t write           : 1;
+      uint8_t cccd_write      : 1;
+      uint8_t read_authorize  : 1;
+      uint8_t write_authorize : 1;
+    } _use_ada_cb;
 
-    write_cb_t                _wr_cb;
-    write_cccd_cb_t           _cccd_wr_cb;
+    read_authorize_cb_t   _rd_authorize_cb;
+    write_authorize_cb_t  _wr_authorize_cb;
+
+    write_cb_t            _wr_cb;
+    write_cccd_cb_t       _cccd_wr_cb;
 
     /*------------- Internal Functions -------------*/
     void _init(void);

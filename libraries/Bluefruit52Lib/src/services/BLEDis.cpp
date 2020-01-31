@@ -40,62 +40,104 @@
 BLEDis::BLEDis(void)
   : BLEService(UUID16_SVC_DEVICE_INFORMATION)
 {
+  memclr(_strarr, sizeof(_strarr));
+  memclr(_strarr_length, sizeof(_strarr_length));
+
 #ifdef NRF52840_XXAA
-  _model        = "Bluefruit Feather nRF52840";
+  this->setModel("Bluefruit Feather nRF52840");
 #else
-  _model        = "Bluefruit Feather nRF52832";
+  this->setModel("Bluefruit Feather nRF52832");
 #endif
 
-  _serial       = NULL;
-  _firmware_rev = NULL;
-  _hardware_rev = NULL;
-  _software_rev = ARDUINO_BSP_VERSION;
-  _manufacturer = "Adafruit Industries";
+  this->setSoftwareRev(ARDUINO_BSP_VERSION);
+  this->setManufacturer("Adafruit Industries");
 }
 
-void BLEDis::setModel(const char* model)
+void BLEDis::setSystemID(const char* system_id, uint8_t length)
+{
+  _system_id = system_id;
+  _system_id_length = length;
+}
+
+void BLEDis::setModel(const char* model,uint8_t length)
 {
   _model = model;
+  _model_length = length;
 }
 
-void BLEDis::setHardwareRev(const char* hw_rev)
+void BLEDis::setSerialNum(const char* serial_num, uint8_t length)
+{
+  _serial = serial_num;
+  _serial_length = length;
+}
+
+void BLEDis::setFirmwareRev(const char* firmware_rev, uint8_t length)
+{
+  _firmware_rev = firmware_rev;
+  _firmware_rev_length = length;
+}
+
+void BLEDis::setHardwareRev(const char* hw_rev,uint8_t length)
 {
   _hardware_rev = hw_rev;
+  _hardware_rev_length = length;
 }
 
-void BLEDis::setSoftwareRev(const char* sw_rev)
+void BLEDis::setSoftwareRev(const char* sw_rev, uint8_t length)
 {
   _software_rev = sw_rev;
+  _software_rev_length = length;
 }
 
-void BLEDis::setManufacturer(const char* manufacturer)
+void BLEDis::setManufacturer(const char* manufacturer, uint8_t length)
 {
   _manufacturer = manufacturer;
+  _manufacturer_length = length;
 }
+
+void BLEDis::setRegCertList(const char* reg_cert_list, uint8_t length)
+{
+  _reg_cert_list = reg_cert_list;
+  _reg_cert_list_length = length;
+}
+
+void BLEDis::setPNPID(const char* pnp_id, uint8_t length)
+{
+  _pnp_id = pnp_id;
+  _pnp_id_length = length;
+}
+
 
 err_t BLEDis::begin(void)
 {
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
 
-  _serial       = getMcuUniqueID();
-  _firmware_rev = getBootloaderVersion();
+  if (!_serial) setSerialNum(getMcuUniqueID());
+  if (!_firmware_rev) setFirmwareRev(getBootloaderVersion());
 
   for(uint8_t i=0; i<arrcount(_strarr); i++)
   {
     if ( _strarr[i] != NULL )
     {
-      BLECharacteristic chars(UUID16_CHR_MODEL_NUMBER_STRING+i);
+      BLECharacteristic chars;
+
+      // PNP_ID is not consecutive with the rest
+      if ( _strarr[i] == _pnp_id )
+      {
+        chars.setUuid(UUID16_CHR_PNP_ID);
+      }else
+      {
+        chars.setUuid(UUID16_CHR_SYSTEM_ID+i);
+      }
+
       chars.setTempMemory();
-
       chars.setProperties(CHR_PROPS_READ);
-      chars.setFixedLen(strlen(_strarr[i]));
-
+      chars.setFixedLen(_strarr_length[i]);
       VERIFY_STATUS( chars.begin() );
-      chars.write(_strarr[i]);
+      chars.write(_strarr[i], _strarr_length[i]);
     }
   }
 
   return ERROR_NONE;
 }
-

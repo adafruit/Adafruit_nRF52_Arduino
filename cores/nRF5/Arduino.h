@@ -85,8 +85,33 @@ void suspendLoop(void);
 #undef abs
 #endif // abs
 
-#define min(a,b) ((a)<(b)?(a):(b))
-#define max(a,b) ((a)>(b)?(a):(b))
+#ifdef __cplusplus
+  template<class T, class L> 
+  auto min(const T& a, const L& b) -> decltype((b < a) ? b : a)
+  {
+    return (b < a) ? b : a;
+  }
+
+  template<class T, class L> 
+  auto max(const T& a, const L& b) -> decltype((b < a) ? b : a)
+  {
+    return (a < b) ? b : a;
+  }
+#else
+#ifndef min
+#define min(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a < _b ? _a : _b; })
+#endif
+#ifndef max
+#define max(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a > _b ? _a : _b; })
+#endif
+#endif
+
 #define abs(x) ((x)>0?(x):-(x))
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 #define round(x)     ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
@@ -114,11 +139,15 @@ void suspendLoop(void);
 #endif
 
 #define digitalPinToBitMask(P)     ( 1UL << ( g_ADigitalPinMap[P] < 32 ? g_ADigitalPinMap[P] : (g_ADigitalPinMap[P]-32) ) )
+
+#define digitalPinToPinName(P)     g_ADigitalPinMap[P]
+
 //#define analogInPinToBit(P)        ( )
 #define portOutputRegister(port)   ( &(port->OUT) )
 #define portInputRegister(port)    ( (volatile uint32_t*) &(port->IN) )
 #define portModeRegister(port)     ( &(port->DIR) )
 #define digitalPinHasPWM(P)        ( g_ADigitalPinMap[P] > 1 )
+
 /*
  * digitalPinToTimer(..) is AVR-specific and is not defined for nRF52
  * architecture. If you need to check if a pin supports PWM you must

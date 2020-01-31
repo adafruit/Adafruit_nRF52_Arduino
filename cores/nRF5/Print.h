@@ -21,6 +21,7 @@
 
 #include <inttypes.h>
 #include <stdio.h> // for size_t
+#include <stdarg.h>
 
 #include "WString.h"
 #include "Printable.h"
@@ -54,6 +55,10 @@ class Print
     size_t write(const char *buffer, size_t size) {
       return write((const uint8_t *)buffer, size);
     }
+
+    // default to zero, meaning "a single write may block"
+    // should be overriden by subclasses with buffering
+    virtual int availableForWrite() { return 0; }
 
     size_t print(const __FlashStringHelper *);
     size_t print(const String &);

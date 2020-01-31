@@ -1,9 +1,14 @@
 # Arduino Core for Adafruit Bluefruit nRF52 Boards
 
+[![Build Status](https://github.com/adafruit/Adafruit_nRF52_Arduino/workflows/Build/badge.svg)](https://github.com/adafruit/Adafruit_nRF52_Arduino/actions)
+
 This repository contains the Arduino BSP for Adafruit Bluefruit nRF52 series:
 
+- Adafruit CLUE nRF52840
 - [Adafruit Feather nRF52832](https://www.adafruit.com/product/3406)
 - [Adafruit Feather nRF52840 Express](https://www.adafruit.com/product/4062)
+- [Adafruit Circuit Playground Bluefruit](https://www.adafruit.com/product/4333)
+- Adafruit ItsyBitsy nRF52840
 - Adafruit Metro nRF52840 Express
 
 Following boards are also included but are not officially supported:
@@ -36,7 +41,7 @@ There are two methods that you can use to install this BSP. We highly recommend 
   * Linux  : `~/Arduino`
   * Windows: `~/Documents/Arduino`
  4. Create a folder named `hardware/Adafruit`, if it does not exist, and change directories to it
- 5. Clone this repo: `git clone https://github.com/adafruit/Adafruit_nRF52_Arduino.git`
+ 5. Clone this repo & its submodules: `git clone --recurse-submodules https://github.com/adafruit/Adafruit_nRF52_Arduino.git`
  6. Restart the Arduino IDE
  7. Once the BSP is installed, select 'Adafruit Bluefruit nRF52 Feather' from the Tools -> Board menu, which will update your system config to use the right compiler and settings for the nRF52.
 
@@ -47,9 +52,9 @@ There are two methods that you can use to install this BSP. We highly recommend 
 - For Windows and macOS, pre-built executable binaries are included in the BSP at `tools/adafruit-nrfutil/`. It should work out of the box.
 - Linux user need to run follow command to install it from PyPi
 
-    ```
-    $ pip3 install adafruit-nrfutil --user
-	```
+```
+$ pip3 install adafruit-nrfutil --user
+```
 
 ### Drivers
 
@@ -74,7 +79,7 @@ To burn the bootloader from within the Arduino IDE, you will need the following 
 on your system and available in the system path:
 
 - Segger [JLink Software and Documentation Pack](https://www.segger.com/downloads/jlink)
-- Nordic [nRF5x Command Line Tools](http://infocenter.nordicsemi.com/index.jsp?topic=%2Fcom.nordic.infocenter.tools%2Fdita%2Ftools%2Fnrf5x_command_line_tools%2Fnrf5x_installation.html)
+- Nordic [nRF5x Command Line Tools](https://www.nordicsemi.com/Software-and-Tools/Development-Tools/nRF-Command-Line-Tools)
 
 Check to make sure you can run `nrfjprog` from your terminal/command prompt
 

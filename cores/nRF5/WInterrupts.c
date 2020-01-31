@@ -144,6 +144,10 @@ void detachInterrupt(uint32_t pin)
 
 void GPIOTE_IRQHandler()
 {
+#if CFG_DEBUG >= 3
+  SEGGER_SYSVIEW_RecordEnterISR();
+#endif
+
   uint32_t event = offsetof(NRF_GPIOTE_Type, EVENTS_IN[0]);
 
   for (int ch = 0; ch < NUMBER_OF_GPIO_TE; ch++) {
@@ -166,4 +170,8 @@ void GPIOTE_IRQHandler()
 
     event = (uint32_t)((uint32_t)event + 4);
   }
+
+#if CFG_DEBUG >= 3
+    SEGGER_SYSVIEW_RecordExitISR();
+#endif
 }

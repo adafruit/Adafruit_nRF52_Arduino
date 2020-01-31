@@ -44,52 +44,19 @@ class SoftwareTimer
     TimerHandle_t _handle;
 
   public:
-    SoftwareTimer()          { _handle = NULL; }
-    virtual ~SoftwareTimer() { if(_handle != NULL) xTimerDelete(_handle, 0); }
+    SoftwareTimer();
+    virtual ~SoftwareTimer();
 
-    void begin(uint32_t ms, TimerCallbackFunction_t callback, bool repeating = true)
-    {
-      _handle = xTimerCreate(NULL, ms2tick(ms), repeating, NULL, callback);
-    }
+    void begin(uint32_t ms, TimerCallbackFunction_t callback, void* timerID = NULL, bool repeating = true);
+    TimerHandle_t getHandle(void) { return _handle; }
 
-    TimerHandle_t getHandle(void)
-    {
-      return _handle;
-    }
+    void  setID(void* id);
+    void* getID(void);
 
-    void start(void) { xTimerStart(_handle, 0); }
-    void stop (void) { xTimerStop (_handle, 0); }
-    void reset(void) { xTimerReset(_handle, 0); }
-
-    bool startFromISR(void) {
-      BaseType_t ret, xHigherPriorityTaskWoken = pdFALSE;
-      ret = xTimerStartFromISR(_handle, &xHigherPriorityTaskWoken);
-      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-      return (ret == pdPASS);
-    }
-
-    bool stopFromISR(void) {
-      BaseType_t ret, xHigherPriorityTaskWoken = pdFALSE;
-      ret = xTimerStopFromISR(_handle, &xHigherPriorityTaskWoken);
-      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-      return (ret == pdPASS);
-    }
-
-    bool resetFromISR(void) {
-      BaseType_t ret, xHigherPriorityTaskWoken = pdFALSE;
-      ret = xTimerResetFromISR(_handle, &xHigherPriorityTaskWoken);
-      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-      return (ret == pdPASS);
-    }
-
-    void setPeriod(uint32_t ms)
-    {
-      BaseType_t active = xTimerIsTimerActive(_handle);
-      xTimerChangePeriod(_handle, ms2tick(ms), 0);
-
-      // Change period of inactive timer will also start it !!
-      if ( !active ) xTimerStop(_handle, 0);
-    }
+    bool start(void);
+    bool stop (void);
+    bool reset (void);
+    bool setPeriod(uint32_t ms);
 };
 
 #endif /* SOFTWARETIMER_H_ */

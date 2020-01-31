@@ -54,8 +54,11 @@ class Adafruit_FIFO
 
     SemaphoreHandle_t _mutex;
 
-    bool _mutex_lock(bool isr);
-    bool _mutex_unlock(bool isr);
+    bool _mutex_lock  (void) { return xSemaphoreTake(_mutex, portMAX_DELAY); }
+    bool _mutex_unlock(void) { return xSemaphoreGive(_mutex); }
+
+    void _pull(void * buffer);
+    void _push(void const* item);
 
   public:
     // Constructor
@@ -75,8 +78,8 @@ class Adafruit_FIFO
     uint16_t read(void* buffer);
     uint16_t read(void * buffer, uint16_t n);
 
-    bool peek(void* buffer);
-    bool peekAt(uint16_t position, void * p_buffer);
+    bool peekAt(uint16_t position, void * buffer);
+    bool peek(void* buffer) { return peekAt(0, buffer); }
 
     inline bool     empty(void)     { return _count == 0;      }
     inline bool     full(void)      { return _count == _depth; }

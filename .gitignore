@@ -2,6 +2,9 @@
 *.o
 *.obj
 
+# Visual Studio Code
+**/.vscode/
+
 # Executables
 *.out
 *.app

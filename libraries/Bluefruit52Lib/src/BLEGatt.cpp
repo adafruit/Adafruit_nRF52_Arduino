@@ -54,7 +54,7 @@ uint16_t BLEGatt::readCharByUuid(uint16_t conn_hdl, BLEUuid bleuuid, void* buffe
 
   while( _adamsg.isWaiting() )
   {
-    delay( conn->getConnInterval() );
+    delay( conn->getConnectionInterval() );
   }
 
   _adamsg.begin(true);
@@ -183,21 +183,21 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
   // disconnect Client Services & Characteristics of the disconnected handle
   if ( evt_id == BLE_GAP_EVT_DISCONNECTED )
   {
-    // Client
-    for(uint8_t i=0; i<_client.svc_count; i++)
-    {
-      if ( evt_conn_hdl == _client.svc_list[i]->_conn_hdl)
-      {
-        _client.svc_list[i]->disconnect();
-      }
-    }
-
-    // TODO merge to above loop
+    // Client Chr
     for(uint8_t i=0; i<_client.chr_count; i++)
     {
       if ( evt_conn_hdl == _client.chr_list[i]->connHandle() )
       {
         _client.chr_list[i]->disconnect();
+      }
+    }
+
+    // Client Service TODO merge to above loop
+    for(uint8_t i=0; i<_client.svc_count; i++)
+    {
+      if ( evt_conn_hdl == _client.svc_list[i]->_conn_hdl)
+      {
+        _client.svc_list[i]->disconnect();
       }
     }
   }
@@ -211,7 +211,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
 
       if (rd_rsp->count)
       {
-        ble_gattc_handle_value_t hdl_value;
+        ble_gattc_handle_value_t hdl_value = { 0, nullptr };
 
         if ( ERROR_NONE == sd_ble_gattc_evt_char_val_by_uuid_read_rsp_iter(&evt->evt.gattc_evt, &hdl_value) )
         {
@@ -232,7 +232,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
  *------------------------------------------------------------------*/
 bool BLEGatt::_addCharacteristic(BLECharacteristic* chr)
 {
-  if ( _server.chr_count == CFG_GATT_MAX_SERVER_CHARS ) return false;
+  VERIFY( _server.chr_count < CFG_GATT_MAX_SERVER_CHARS );
   _server.chr_list[ _server.chr_count++ ] = chr;
 
   return true;

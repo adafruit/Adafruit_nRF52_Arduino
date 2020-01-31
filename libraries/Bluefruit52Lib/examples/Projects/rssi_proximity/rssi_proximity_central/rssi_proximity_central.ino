@@ -95,7 +95,7 @@ BLEUuid uuid = BLEUuid(CUSTOM_UUID);
   #include <Adafruit_ILI9341.h>
 
    /* Pin setup for the TFT display over SPI */
-  #ifdef ARDUINO_NRF52_FEATHER
+  #ifdef ARDUINO_NRF52832_FEATHER
      #define TFT_DC   11
      #define TFT_CS   31
      #define STMPE_CS 30
@@ -114,7 +114,7 @@ BLEUuid uuid = BLEUuid(CUSTOM_UUID);
   #include <Adafruit_SSD1306.h>
 
   /* Pin setup for the OLED display */
-  #ifdef ARDUINO_NRF52_FEATHER
+  #ifdef ARDUINO_NRF52832_FEATHER
     #define BUTTON_A 31
     #define BUTTON_B 30
     #define BUTTON_C 27
@@ -128,10 +128,10 @@ BLEUuid uuid = BLEUuid(CUSTOM_UUID);
 /* This struct is used to track detected nodes */
 typedef struct node_record_s
 {
-  uint8_t addr[6];    // Six byte device address
-  int8_t  rssi;       // RSSI value
-  int32_t timestamp;  // Timestamp for invalidation purposes
-  int8_t  reserved;   // Padding for word alignment
+  uint8_t  addr[6];    // Six byte device address
+  int8_t   rssi;       // RSSI value
+  uint32_t timestamp;  // Timestamp for invalidation purposes
+  int8_t   reserved;   // Padding for word alignment
 } node_record_t;
 
 node_record_t records[ARRAY_SIZE];
@@ -245,7 +245,7 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   memset(buffer, 0, sizeof(buffer));
 
   /* Display the timestamp and device address */
-  if (report->scan_rsp)
+  if (report->type.scan_response)
   {
     Serial.printf("[SR%10d] Packet received from ", millis());
   }
@@ -258,11 +258,11 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
   Serial.println("");
   
   /* Raw buffer contents */
-  Serial.printf("%14s %d bytes\n", "PAYLOAD", report->dlen);
-  if (report->dlen)
+  Serial.printf("%14s %d bytes\n", "PAYLOAD", report->data.len);
+  if (report->data.len)
   {
     Serial.printf("%15s", " ");
-    Serial.printBuffer(report->data, report->dlen, '-');
+    Serial.printBuffer(report->data.p_data, report->data.len, '-');
     Serial.println();
   }
 
@@ -271,20 +271,20 @@ void scan_callback(ble_gap_evt_adv_report_t* report)
 
   /* Adv Type */
   Serial.printf("%14s ", "ADV TYPE");
-  switch (report->type)
+  if ( report->type.connectable )
   {
-    case BLE_GAP_ADV_TYPE_ADV_IND:
-      Serial.printf("Connectable undirected\n");
-      break;
-    case BLE_GAP_ADV_TYPE_ADV_DIRECT_IND:
-      Serial.printf("Connectable directed\n");
-      break;
-    case BLE_GAP_ADV_TYPE_ADV_SCAN_IND:
-      Serial.printf("Scannable undirected\n");
-      break;
-    case BLE_GAP_ADV_TYPE_ADV_NONCONN_IND:
-      Serial.printf("Non-connectable undirected\n");
-      break;
+    Serial.print("Connectable ");
+  }else
+  {
+    Serial.print("Non-connectable ");
+  }
+
+  if ( report->type.directed )
+  {
+    Serial.println("directed");
+  }else
+  {
+    Serial.println("undirected");
   }
 
   /* Shortened Local Name */
@@ -530,7 +530,7 @@ int invalidateRecords(void)
   {
     if (records[i].timestamp) // Ignore zero"ed records
     {
-      if (records[i].timestamp <= millis() - TIMEOUT_MS)
+      if (millis() - records[i].timestamp >= TIMEOUT_MS)
       {
         /* Record has expired, zero it out */
         memset(&records[i], 0, sizeof(node_record_t));

@@ -1,11 +1,15 @@
 #include <Arduino.h>
 
+#if defined ARDUINO_NRF52840_CIRCUITPLAY
+#define  PIN_VBAT          A8   // this is just a mock read, we'll use the light sensor, so we can run the test
+#endif
+
 uint32_t vbat_pin = PIN_VBAT;             // A7 for feather nRF52832, A6 for nRF52840
 
 #define VBAT_MV_PER_LSB   (0.73242188F)   // 3.0V ADC range and 12-bit ADC resolution = 3000mV/4096
 
-#ifdef NRF52840_XXAA    // if this is for nrf52840
-#define VBAT_DIVIDER      (0.5F)               // 150K + 150K voltage divider on VBAT
+#ifdef NRF52840_XXAA
+#define VBAT_DIVIDER      (0.5F)          // 150K + 150K voltage divider on VBAT
 #define VBAT_DIVIDER_COMP (2.0F)          // Compensation factor for the VBAT divider
 #else
 #define VBAT_DIVIDER      (0.71275837F)   // 2M + 0.806M voltage divider on VBAT = (2M / (0.806M + 2M))
@@ -78,3 +82,4 @@ void loop() {
 
   delay(1000);
 }
+

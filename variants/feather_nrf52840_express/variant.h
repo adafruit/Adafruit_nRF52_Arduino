@@ -55,13 +55,10 @@ extern "C"
 
 #define LED_STATE_ON         1         // State when LED is litted
 
-// Buttons
 /*
-#define PIN_BUTTON1             (2)
-#define PIN_BUTTON2             (3)
-#define PIN_BUTTON3             (4)
-#define PIN_BUTTON4             (5)
-*/
+ * Buttons
+ */
+#define PIN_BUTTON1             (7)
 
 /*
  * Analog pins
