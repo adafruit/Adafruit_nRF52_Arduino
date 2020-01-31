@@ -184,20 +184,20 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
   if ( evt_id == BLE_GAP_EVT_DISCONNECTED )
   {
     // Client
-    for(uint8_t i=0; i<_client.svc_count; i++)
-    {
-      if ( evt_conn_hdl == _client.svc_list[i]->_conn_hdl)
-      {
-        _client.svc_list[i]->disconnect();
-      }
-    }
-
-    // TODO merge to above loop
     for(uint8_t i=0; i<_client.chr_count; i++)
     {
       if ( evt_conn_hdl == _client.chr_list[i]->connHandle() )
       {
         _client.chr_list[i]->disconnect();
+      }
+    }
+
+    // TODO merge to above loop
+    for(uint8_t i=0; i<_client.svc_count; i++)
+    {
+      if ( evt_conn_hdl == _client.svc_list[i]->_conn_hdl)
+      {
+        _client.svc_list[i]->disconnect();
       }
     }
   }
