@@ -134,8 +134,8 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
     {
       for (uint8_t i=0; i<count; i++)
       {
-        if ( chr[i]->discovered() )
-          continue;
+        // Skip if output chr is already discovered, happens with multiple instances of same UUIDs
+        if ( chr[i]->discovered() ) continue;
 
         if ( chr[i]->uuid == disc_chr->chars[d].uuid )
         {
