@@ -93,9 +93,10 @@ static const uint8_t AREF = PIN_AREF;
 /*
  * Serial interfaces
  */
-// Serial
-#define PIN_SERIAL_RX       (1)
-#define PIN_SERIAL_TX       (0)
+#define SERIAL_INTERFACES_COUNT 1
+
+#define PIN_SERIAL1_RX       (1)
+#define PIN_SERIAL1_TX       (0)
 
 /*
  * SPI Interfaces

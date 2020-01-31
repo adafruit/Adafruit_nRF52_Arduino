@@ -95,11 +95,6 @@ class Uart : public HardwareSerial
 
   #define SERIAL_PORT_HARDWARE        Serial1
   #define SERIAL_PORT_HARDWARE_OPEN   Serial1
-
-  #ifdef HAVE_HWSERIAL2
-    #define SERIAL_PORT_HARDWARE1       Serial2
-    #define SERIAL_PORT_HARDWARE_OPEN1  Serial2
-  #endif
 #else
   #define SERIAL_PORT_MONITOR         Serial
   #define SERIAL_PORT_HARDWARE        Serial
@@ -107,6 +102,6 @@ class Uart : public HardwareSerial
 
 extern Uart SERIAL_PORT_HARDWARE;
 
-#ifdef SERIAL_PORT_HARDWARE1
-extern Uart SERIAL_PORT_HARDWARE1;
+#if SERIAL_INTERFACES_COUNT >= 2
+extern Uart Serial2;
 #endif

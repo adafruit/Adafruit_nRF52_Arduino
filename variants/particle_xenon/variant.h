@@ -91,23 +91,23 @@ static const uint8_t D19 = PIN_D4;
 static const uint8_t D20 = PIN_D5;
 
 // LEDs
- #define LEDS_NUMBER    1
- #define LED_PRIMARY_PIN            _PINNUM(1, 12)
- #define LED_STATE_ON   1
- #define LED_PRIMARY_IDX 0
- #define LED_RGB_RED_IDX 1
- #define LED_RGB_GREEN_IDX 2
- #define LED_RGB_BLUE_IDX 3
+#define LEDS_NUMBER    1
+#define LED_PRIMARY_PIN            _PINNUM(1, 12)
+#define LED_STATE_ON   1
+#define LED_PRIMARY_IDX 0
+#define LED_RGB_RED_IDX 1
+#define LED_RGB_GREEN_IDX 2
+#define LED_RGB_BLUE_IDX 3
 
- #define LED_RGB_RED_PIN            _PINNUM(0, 13)
- #define LED_RGB_GREEN_PIN          _PINNUM(0, 14)
- #define LED_RGB_BLUE_PIN           _PINNUM(0, 15)
- #define BOARD_RGB_BRIGHTNESS 0x202020
+#define LED_RGB_RED_PIN            _PINNUM(0, 13)
+#define LED_RGB_GREEN_PIN          _PINNUM(0, 14)
+#define LED_RGB_BLUE_PIN           _PINNUM(0, 15)
+#define BOARD_RGB_BRIGHTNESS 0x202020
 
- static const uint8_t LED_BUILTIN   = LED_PRIMARY_PIN;
- static const uint8_t LED_RGB_RED   = LED_RGB_RED_PIN;
- static const uint8_t LED_RGB_GREEN = LED_RGB_GREEN_PIN;
- static const uint8_t LED_RGB_BLUE  = LED_RGB_BLUE_PIN;
+static const uint8_t LED_BUILTIN   = LED_PRIMARY_PIN;
+static const uint8_t LED_RGB_RED   = LED_RGB_RED_PIN;
+static const uint8_t LED_RGB_GREEN = LED_RGB_GREEN_PIN;
+static const uint8_t LED_RGB_BLUE  = LED_RGB_BLUE_PIN;
 
 // Buttons
 #define BUTTONS_NUMBER 2
@@ -146,12 +146,10 @@ static const uint8_t A5  = PIN_A5 ;
 /*
  * Serial interfaces
  */
-// Serial
-#define PIN_SERIAL_RX         PIN_D9
-#define PIN_SERIAL_TX         PIN_D10
-#define PIN_SERIAL2_RX        PIN_D5
-#define PIN_SERIAL2_TX        PIN_D6
-//#define HAVE_HWSERIAL2  true  // TODO: implement UARTE in Uart.cpp
+#define SERIAL_INTERFACES_COUNT 1
+
+#define PIN_SERIAL1_RX         PIN_D9
+#define PIN_SERIAL1_TX         PIN_D10
 
 /*
  * SPI Interfaces
