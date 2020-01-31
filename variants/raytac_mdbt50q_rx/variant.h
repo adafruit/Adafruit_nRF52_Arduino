@@ -74,8 +74,8 @@ extern "C"
 // Bad things happen if the serial pins aren't defined. Instead
 // define them with an invalid pin number
 // Serial
-#define PIN_SERIAL_RX       (3)
-#define PIN_SERIAL_TX       (3)
+#define PIN_SERIAL1_RX       (3)
+#define PIN_SERIAL1_TX       (3)
 
 
 #ifdef __cplusplus

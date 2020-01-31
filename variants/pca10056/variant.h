@@ -94,11 +94,12 @@ static const uint8_t AREF = PIN_AREF;
 /*
  * Serial interfaces
  */
-#define HAVE_HWSERIAL2
 
-#define PIN_SERIAL_RX       (33)
-#define PIN_SERIAL_TX       (34)
+// Arduino Header D0, D1
+#define PIN_SERIAL1_RX      (33) // P1.01
+#define PIN_SERIAL1_TX      (34) // P1.02
 
+// Connected to Jlink CDC
 #define PIN_SERIAL2_RX      (8)
 #define PIN_SERIAL2_TX      (6)
 

@@ -313,7 +313,7 @@ void connect_callback(uint16_t conn_handle)
   // Then schedule negotiation after a few seconds, we should not
   // negotiate here since it increases chance to conflict with other
   // on-going negotiation from central after connection
-  negoTimer.setID((void*) conn_handle);
+  negoTimer.setID((void*) ((uint32_t)conn_handle));
   negoTimer.start();
 
   tft.println("Connected");
