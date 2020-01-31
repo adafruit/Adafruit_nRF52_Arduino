@@ -94,7 +94,6 @@ static const uint8_t AREF = PIN_AREF;
 /*
  * Serial interfaces
  */
-#define SERIAL_INTERFACES_COUNT 2
 
 // Arduino Header D0, D1
 #define PIN_SERIAL1_RX      (33) // P1.01

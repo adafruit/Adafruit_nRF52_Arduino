@@ -26,12 +26,12 @@ void serialEventRun(void)
 {
   if (serialEvent && Serial.available() ) serialEvent();
 
-#ifndef NRF52832_XXAA // 832 only has 1 UART for Serial
+#if defined(PIN_SERIAL1_RX) && defined(PIN_SERIAL1_TX)
   if (serialEvent1 && Serial1.available() ) serialEvent1();
+#endif
 
-  #if SERIAL_INTERFACES_COUNT >= 2
+#if defined(PIN_SERIAL2_RX) && defined(PIN_SERIAL2_TX)
   if (serialEvent2 && Serial2.available() ) serialEvent2();
-  #endif
 #endif
 }
 
@@ -241,7 +241,11 @@ size_t Uart::write(const uint8_t *buffer, size_t size)
 }
 
 //------------- Serial1 (or Serial in case of nRF52832) -------------//
-Uart SERIAL_PORT_HARDWARE( NRF_UARTE0, UARTE0_UART0_IRQn, PIN_SERIAL1_RX, PIN_SERIAL1_TX );
+#ifdef NRF52832_XXAA
+  Uart Serial( NRF_UARTE0, UARTE0_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX );
+#else
+  Uart Serial1( NRF_UARTE0, UARTE0_UART0_IRQn, PIN_SERIAL1_RX, PIN_SERIAL1_TX );
+#endif
 
 extern "C"
 {
@@ -252,7 +256,7 @@ extern "C"
 }
 
 //------------- Serial2 -------------//
-#if SERIAL_INTERFACES_COUNT >= 2
+#if defined(PIN_SERIAL2_RX) && defined(PIN_SERIAL2_TX)
 Uart Serial2( NRF_UARTE1, UARTE1_IRQn, PIN_SERIAL2_RX, PIN_SERIAL2_TX );
 
 extern "C"

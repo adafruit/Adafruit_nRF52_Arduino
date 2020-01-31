@@ -104,6 +104,6 @@ class Uart : public HardwareSerial
 
 extern Uart SERIAL_PORT_HARDWARE;
 
-#if SERIAL_INTERFACES_COUNT >= 2
+#if defined(PIN_SERIAL2_RX) && defined(PIN_SERIAL2_TX)
 extern Uart Serial2;
 #endif
