@@ -114,9 +114,9 @@ feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 
 
 # ----------------------------------
-# Bluefruit Feather nRF52840 sense
+# Feather Bluefruit sense
 # ----------------------------------
-feather52840sense.name=Adafruit Feather nRF52840 Sense
+feather52840sense.name=Adafruit Feather Bluefruit Sense
 
 # VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
 feather52840sense.vid.0=0x239A
@@ -144,7 +144,7 @@ feather52840sense.build.board=NRF52840_FEATHER_SENSE
 feather52840sense.build.core=nRF5
 feather52840sense.build.variant=feather_nrf52840_sense
 feather52840sense.build.usb_manufacturer="Adafruit LLC"
-feather52840sense.build.usb_product="Feather nRF52840 Sense"
+feather52840sense.build.usb_product="Feather Bluefruit Sense"
 feather52840sense.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 feather52840sense.build.ldscript=nrf52840_s140_v6.ld
 feather52840sense.build.vid=0x239A
