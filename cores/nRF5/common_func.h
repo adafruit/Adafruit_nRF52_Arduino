@@ -41,6 +41,20 @@
  extern "C" {
 #endif
 
+// bitmask of loggers to be enabled -- currently boards.txt only enables one at a time.
+#define ADALOG_TYPE_SERIAL  1
+#define ADALOG_TYPE_RTT     2
+//#define ADALOG_TYPE_SWO     4
+
+#if (CFG_LOGGER & ADALOG_TYPE_SERIAL)
+  // ? Maybe stdio.h?
+#endif
+
+#if (CFG_LOGGER & ADALOG_TYPE_RTT)
+  #include "SEGGER_RTT.h"
+#endif
+
+
 #define COMMENT_OUT(x)
 
 #define memclr(buffer, size)  memset(buffer, 0, size)
@@ -117,75 +131,76 @@
 const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
 #if CFG_DEBUG
-#define LOG_LV1(...)          ADALOG(__VA_ARGS__)
-#define LOG_LV1_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
+  #define LOG_LV1(...)          ADALOG(__VA_ARGS__)
+  #define LOG_LV1_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
 #else
-#define LOG_LV1(...)
-#define LOG_LV1_BUFFER(...)
+  #define LOG_LV1(...)
+  #define LOG_LV1_BUFFER(...)
 #endif
 
 #if CFG_DEBUG >= 2
-#define LOG_LV2(...)          ADALOG(__VA_ARGS__)
-#define LOG_LV2_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
+  #define LOG_LV2(...)          ADALOG(__VA_ARGS__)
+  #define LOG_LV2_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
 #else
-#define LOG_LV2(...)
-#define LOG_LV2_BUFFER(...)
+  #define LOG_LV2(...)
+  #define LOG_LV2_BUFFER(...)
+#endif
+
+#if (CFG_LOGGER & ADALOG_TYPE_RTT)
+  #define PRINTF(...)           SEGGER_RTT_printf(0, __VA_ARGS__)
+#elif __cplusplus
+  #define PRINTF    ::printf
+#else
+  #define PRINTF    printf
 #endif
 
 #if CFG_DEBUG
+  #define PRINT_LOCATION()      PRINTF("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)
+  #define PRINT_MESS(x)         PRINTF("%s: %d: %s \n"   , __FUNCTION__, __LINE__, (char*)(x))
+  #define PRINT_HEAP()          if (CFG_DEBUG >= 2) PRINTF("\n%s: %d: Heap free: %d\n", __FUNCTION__, __LINE__, util_heap_get_free_size())
+  #define PRINT_STR(x)          PRINTF("%s: %d: " #x " = %s\n"   , __FUNCTION__, __LINE__, (char*)(x) )
+  #define PRINT_INT(x)          PRINTF("%s: %d: " #x " = %ld\n"  , __FUNCTION__, __LINE__, (uint32_t) (x) )
 
-#if __cplusplus
-#define PRINTF    ::printf
-#else
-#define PRINTF    printf
-#endif
+  #define PRINT_HEX(x) \
+    do {\
+      PRINTF("%s: %d: " #x " = 0x", __PRETTY_FUNCTION__, __LINE__);\
+      char fmt[] = "%00X\n";\
+      fmt[2] += 2*sizeof(x); /* Hex with correct size */\
+      PRINTF(fmt, (x) );\
+    }while(0)
 
-#define PRINT_LOCATION()      PRINTF("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)
-#define PRINT_MESS(x)         PRINTF("%s: %d: %s \n"   , __FUNCTION__, __LINE__, (char*)(x))
-#define PRTNT_HEAP()          if (CFG_DEBUG == 3) PRINTF("\n%s: %d: Heap free: %d\n", __FUNCTION__, __LINE__, util_heap_get_free_size())
-#define PRINT_STR(x)          PRINTF("%s: %d: " #x " = %s\n"   , __FUNCTION__, __LINE__, (char*)(x) )
-#define PRINT_INT(x)          PRINTF("%s: %d: " #x " = %ld\n"  , __FUNCTION__, __LINE__, (uint32_t) (x) )
+  #define PRINT_BUFFER(buf, n) \
+    do {\
+      uint8_t const* p8 = (uint8_t const*) (buf);\
+      PRINTF(#buf ": ");\
+      for(uint32_t i=0; i<(n); i++) PRINTF("%02x ", p8[i]);\
+      PRINTF("\n");\
+    }while(0)
 
-#define PRINT_HEX(x) \
-  do {\
-    PRINTF("%s: %d: " #x " = 0x", __PRETTY_FUNCTION__, __LINE__);\
-    char fmt[] = "%00X\n";\
-    fmt[2] += 2*sizeof(x); /* Hex with correct size */\
-    PRINTF(fmt, (x) );\
-  }while(0)
+  #define ADALOG(tag, ...) \
+    do { \
+      if ( tag ) PRINTF("[%-6s] ", tag);\
+      PRINTF(__VA_ARGS__);\
+      PRINTF("\n");\
+    }while(0)
 
-#define PRINT_BUFFER(buf, n) \
-  do {\
-    uint8_t const* p8 = (uint8_t const*) (buf);\
-    PRINTF(#buf ": ");\
-    for(uint32_t i=0; i<(n); i++) PRINTF("%02x ", p8[i]);\
-    PRINTF("\n");\
-  }while(0)
-
-#define ADALOG(tag, ...) \
-  do { \
-    if ( tag ) PRINTF("[%-6s] ", tag);\
-    PRINTF(__VA_ARGS__);\
-    PRINTF("\n");\
-  }while(0)
-
-#define ADALOG_BUFFER(_tag, _buf, _n) \
-  do {\
-    const char * _xtag = _tag;\
-    if ( _xtag ) PRINTF("%-6s: len = %d\n", _xtag, _n);\
-    dbgDumpMemory(_buf, 1, _n, true);\
-  }while(0)
+  #define ADALOG_BUFFER(_tag, _buf, _n) \
+    do {\
+      const char * _xtag = _tag;\
+      if ( _xtag ) PRINTF("%-6s: len = %d\n", _xtag, _n);\
+      dbgDumpMemory(_buf, 1, _n, true);\
+    }while(0)
 
 #else
 
-#define PRINT_LOCATION()
-#define PRINT_MESS(x)
-#define PRTNT_HEAP()
-#define PRINT_STR(x)
-#define PRINT_INT(x)
-#define PRINT_HEX(x)
-#define PRINT_BUFFER(buf, n)
-#define ADALOG(...)
+  #define PRINT_LOCATION()
+  #define PRINT_MESS(x)
+  #define PRINT_HEAP()
+  #define PRINT_STR(x)
+  #define PRINT_INT(x)
+  #define PRINT_HEX(x)
+  #define PRINT_BUFFER(buf, n)
+  #define ADALOG(...)
 
 #endif
 

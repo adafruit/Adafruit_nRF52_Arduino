@@ -53,6 +53,7 @@ void suspendLoop(void);
   #include "Tone.h"
   #include "WMath.h"
   #include "HardwareSerial.h"
+  #include "SeggerRTTSerial.h"
   #include "pulse.h"
   #include "HardwarePWM.h"
   #include "utility/SoftwareTimer.h"
@@ -79,6 +80,10 @@ void suspendLoop(void);
 #include "wiring_analog.h"
 #include "wiring_shift.h"
 #include "WInterrupts.h"
+
+#ifdef __cplusplus
+  extern Stream& Adalog_Default_Logger;
+#endif
 
 // undefine stdlib's abs if encountered
 #ifdef abs
