@@ -1,5 +1,26 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.17.0 - 2020.02.01
+
+### Core
+
+- Add board support for Adafruit CLUE, Feather nRF52840 Sense
+- Add board support Raytac MDBT50Q_RX dongle, thanks to @pyro9 PR #328
+- Update bootloader binary to 0.3.0
+- Addd PIN_BUTTON for variants
+- Add SoftwareTimer getID/setID
+- Add **INPUT_PULLUP/DOWN_SENSE** mode, PR #427, thanks to @jpconstantineau
+- Support Serial event parity SERIAL_8E1, PR #369, thanks to @prjh
+- Support Serial2, migrate uart driver to UARTE, PR #315, thanks to @ogatatsu
+- Fix various bugs
+
+### BLE
+
+- Add **image_eink_upload8* example sketch
+- Add Nordic Led Button service example **nrf_blinky** sketch
+- Increase SD RAM for nRF52832
+- Fix Discovery bug, PR #413, thanks to @ogatatsu
+
 ## 0.16.0 - 2020.01.10
 
 - Fix Little FileSystem (LFS) reentrance issue, by serialize access to lfs_* API(). Huge thanks to @hentrygab for spending lots of his time on PR #397
