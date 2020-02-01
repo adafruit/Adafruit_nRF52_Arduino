@@ -23,7 +23,9 @@
  *
  */
 
-#include "SeggerRTTSerial.h"
+#include <SeggerRTTSerial.h>
+#include <SEGGER_Extensions.h>
+
 
 size_t Segger_RTT_Serial_t::write(uint8_t b) {
     return SEGGER_RTT_PutChar(0, (char)b);
@@ -41,7 +43,7 @@ int Segger_RTT_Serial_t::read() {
     return SEGGER_RTT_GetKey();
 }
 int Segger_RTT_Serial_t::peek() {
-    return SEGGER_RTT_Peek();
+    return -1; // return SEGGER_RTT_Peek();
 }
 void Segger_RTT_Serial_t::flush() {
     // no-op -- cannot flush as cannot control host

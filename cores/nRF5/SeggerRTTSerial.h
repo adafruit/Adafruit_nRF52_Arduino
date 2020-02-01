@@ -30,6 +30,7 @@
 #include <stdint.h>
 #include <Stream.h>
 #include <SEGGER_RTT.h>
+#include <SEGGER_Extensions.h>
 
 class Segger_RTT_Serial_t : public Stream {
 public:
