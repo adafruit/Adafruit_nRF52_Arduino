@@ -43,7 +43,7 @@ int Segger_RTT_Serial_t::read() {
     return SEGGER_RTT_GetKey();
 }
 int Segger_RTT_Serial_t::peek() {
-    return -1; // return SEGGER_RTT_Peek();
+    return SEGGER_RTT_Peek();
 }
 void Segger_RTT_Serial_t::flush() {
     // no-op -- cannot flush as cannot control host

@@ -58,14 +58,23 @@
 #define SEGGER_RTT_TERMINAL_OUT_OVERHEAD  4
 
 
-/*
- * See comments in SEGGER_Extensions.c
- */
-int SEGGER_RTT_Peek(void);
+#ifdef __cplusplus
+  extern "C" {
+#endif
 
-/*
- * See comments in SEGGER_Extensions.c
- */
-int SEGGER_RTT_TerminalOutBuffer(unsigned char TerminalId, const void* pBuffer, size_t BufferSize);
+    /*
+    * See comments in SEGGER_Extensions.c
+    */
+    int SEGGER_RTT_Peek(void);
+
+    /*
+    * See comments in SEGGER_Extensions.c
+    */
+    int SEGGER_RTT_TerminalOutBuffer(unsigned char TerminalId, const void* pBuffer, size_t BufferSize);
+
+#ifdef __cplusplus
+  }
+#endif
+
 
 #endif /* EXTENSIONS_TO_SEGGER */

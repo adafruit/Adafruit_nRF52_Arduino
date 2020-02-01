@@ -34,6 +34,7 @@
  */
 #include "SEGGER_RTT.c.orig" // HACK to directly include the original source file, 
 
+
 /*********************************************************************
  * New function, based substantially on `SEGGER_RTT_TerminalOut()`.
  * 
