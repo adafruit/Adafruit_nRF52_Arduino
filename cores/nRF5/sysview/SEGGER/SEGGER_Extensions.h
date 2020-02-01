@@ -31,7 +31,7 @@
 #ifndef EXTENSIONS_TO_SEGGER
 #define EXTENSIONS_TO_SEGGER
 
-#include "arduino.h"
+#include "Arduino.h"
 #include "SEGGER_SYSVIEW.h"
 #include "SEGGER_RTT.h"
 
