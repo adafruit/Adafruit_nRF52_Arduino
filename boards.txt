@@ -22,7 +22,7 @@ menu.debug=Debug
 # ----------------------------------
 # Bluefruit Feather nRF52832
 # ----------------------------------
-feather52832.name=Adafruit Bluefruit Feather nRF52832
+feather52832.name=Adafruit Feather nRF52832
 feather52832.bootloader.tool=bootburn
 
 # Upload
@@ -62,7 +62,7 @@ feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 # ----------------------------------
 # Bluefruit Feather nRF52840 Express
 # ----------------------------------
-feather52840.name=Adafruit Bluefruit Feather nRF52840 Express
+feather52840.name=Adafruit Feather nRF52840 Express
 
 # VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
 feather52840.vid.0=0x239A
@@ -111,6 +111,60 @@ feather52840.menu.debug.l2=Level 2 (Full Debug)
 feather52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 feather52840.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
+
+# ----------------------------------
+# Bluefruit Feather nRF52840 sense
+# ----------------------------------
+feather52840sense.name=Adafruit Feather nRF52840 Sense
+
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+feather52840sense.vid.0=0x239A
+feather52840sense.pid.0=0x8087
+feather52840sense.vid.1=0x239A
+feather52840sense.pid.1=0x0087
+feather52840sense.vid.2=0x239A
+feather52840sense.pid.2=0x0088
+feather52840sense.vid.3=0x239A
+feather52840sense.pid.3=0x8088
+
+# Upload
+feather52840sense.bootloader.tool=bootburn
+feather52840sense.upload.tool=nrfutil
+feather52840sense.upload.protocol=nrfutil
+feather52840sense.upload.use_1200bps_touch=true
+feather52840sense.upload.wait_for_upload_port=true
+feather52840sense.upload.maximum_size=815104
+feather52840sense.upload.maximum_data_size=237568
+
+# Build
+feather52840sense.build.mcu=cortex-m4
+feather52840sense.build.f_cpu=64000000
+feather52840sense.build.board=NRF52840_FEATHER_SENSE
+feather52840sense.build.core=nRF5
+feather52840sense.build.variant=feather_nrf52840_sense
+feather52840sense.build.usb_manufacturer="Adafruit LLC"
+feather52840sense.build.usb_product="Feather nRF52840 Sense"
+feather52840sense.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+feather52840sense.build.ldscript=nrf52840_s140_v6.ld
+feather52840sense.build.vid=0x239A
+feather52840sense.build.pid=0x8087
+
+# SofDevice Menu
+feather52840sense.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
+feather52840sense.menu.softdevice.s140v6.build.sd_name=s140
+feather52840sense.menu.softdevice.s140v6.build.sd_version=6.1.1
+feather52840sense.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+feather52840sense.menu.debug.l0=Level 0 (Release)
+feather52840sense.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+feather52840sense.menu.debug.l1=Level 1 (Error Message)
+feather52840sense.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+feather52840sense.menu.debug.l2=Level 2 (Full Debug)
+feather52840sense.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+feather52840sense.menu.debug.l3=Level 3 (Segger SystemView)
+feather52840sense.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 
 
 # ----------------------------------
