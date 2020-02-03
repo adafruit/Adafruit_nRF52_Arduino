@@ -45,18 +45,39 @@
     #error "SEGGER SYSVIEW revision mismatch -- requires review of this file and .C counterpart"
 #endif
 
-/* NOTE: SEGGER_RTT_Syscalls_GCC.c is *NOT* included in this depot.
- *       instead, those system calls are handled in ....
+/* Checklist for upgrading version of SEGGER SYSTEMVIEW:
+ * [ ] copy new files from segger release
+ *     [ ] Do not copy the following four files, because the override
+ *         for `int _write(int file, char *ptr, int len);` is already
+ *         handled elsewhere in the this project (main.cpp).
+ *         [ ] SEGGER_RTT_Syscalls_GCC.c
+ *         [ ] SEGGER_RTT_Syscalls_IAR.c
+ *         [ ] SEGGER_RTT_Syscalls_KEIL.c
+ *         [ ] SEGGER_RTT_Syscalls_SES.c
+ * [ ] check if `SEGGER_RTT_Peek()` is implemented in `SEGGER_RTT.c`
+ *     [ ] If it is, can remove that function from this header
+ *         and corresponding `SEGGER_Extensions.c` file
+ * [ ] check if `SEGGER_RTT_TerminalOutBuffer()` is implemented
+ *     in `SEGGER_RTT.c`
+ *     [ ] If it is, remove that function from this header
+ *         and corresponding `SEGGER_Extensions.c` file
+ *
+ * Finally, if both functions were implemented, can remove both
+ * this header and corresponding `SEGGER_Extensions.c` file.
+ * Otherwise, rename `SEGGER_RTT.c` to `SEGGER_RTT.c.orig`, and
+ * then review comments in `SEGGER_Extensions.c`.
  */
 
-/*
- * See SEGGER_RTT.c:
- *     `_aTerminalId[]` -- must match this static allocation size
- *     `SEGGER_RTT_SetTerminal()` -- matches limit of terminal count here also
+/* On version updgrade, if keeping this file, check if the following
+ * are now defined in a public manner:
+ *     SEGGER_RTT_NUMBER_OF_TERMINALS -- Must match count of terminals
+ *         allocated for `_aTerminalId[]` in SEGGER_RTT.c
+ *     SEGGER_RTT_TERMINAL_OUT_OVERHEAD -- Must match the count of
+ *         bytes overhead to switch terminals _twice_.  This value is
+ *         not expected to change.
  */
 #define SEGGER_RTT_NUMBER_OF_TERMINALS   16
 #define SEGGER_RTT_TERMINAL_OUT_OVERHEAD  4
-
 
 #ifdef __cplusplus
   extern "C" {

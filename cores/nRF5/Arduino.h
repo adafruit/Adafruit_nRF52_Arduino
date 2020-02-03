@@ -1,6 +1,11 @@
 #ifndef Arduino_h
 #define Arduino_h
 
+// Sysview require at least debug level 3
+#if !defined(CFG_SYSVIEW) && defined(CFG_DEBUG) && CFG_DEBUG >= 3
+    #define CFG_SYSVIEW 0xFFFFFFFFu
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>

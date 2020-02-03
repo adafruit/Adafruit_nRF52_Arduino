@@ -31,8 +31,32 @@
  * This is a hack to include the original source file directly into this file.
  * This keeps the changes localized, while giving access to the static variables
  * and functions which are only available within that one compilation unit.
+ *
+ * Specifically, this hack was necessary because the varialble `_ActiveTerminal`,
+ * which keeps track of the current terminal being written to, was marked
+ * static in that file and not exposed by any getter function.  This made it
+ * impossible to provide the functionality of `SEGGER_RTT_TerminalOutBuffer()`
+ * function in a safe manner, as it needs to set a terminal, write buffered
+ * data, and then ***RESTORE THE PRIOR ACTIVE TERMINAL***.
+ *
+ * That said, this is still the cleanest solution, given the requirement to
+ * no modify the source SEGGER files.  This is because both the conditional
+ * `#define` statements and other static functions would need to be duplicated
+ * wholesale from that file, if implementing this in an entirely stand-alone
+ * file.
+ *
+ * For example, the functions needed to avoid this hack use at least the
+ * following static (and thus defined only within the compilation unit) items:
+ * [ ] _aTerminalId
+ * [ ] _ActiveTerminal
+ * [ ] INIT() -- which is conditional and thus VERY DIFFERENT from SEGGER_RTT_Init()
+ * [ ] _PostTerminalSwitch()
+ * [ ] _WriteBlocking()
+ *
+ * Therefore, this hack remains the cleanest solution until the functions are
+ * integrated into SEGGER's own distribution.
  */
-#include "SEGGER_RTT.c.orig" // HACK to directly include the original source file, 
+#include "SEGGER_RTT.c.orig"
 
 
 /*********************************************************************
@@ -101,10 +125,6 @@ int SEGGER_RTT_TerminalOutBuffer (unsigned char TerminalId, const void* pBuffer,
       } else {
         _PostTerminalSwitch(pRing, TerminalId);
         Status = (int)_WriteBlocking(pRing, pBuffer, BufferSize);
-        
-        // IMPOSSIBLE TO FIX WITHOUT MODIFICATION TO SEGGER_RTT.c
-        // THE VARIABLE _ActiveTerminal is not exposed, and it
-        // is not 
         _PostTerminalSwitch(pRing, _ActiveTerminal);
       }
       break;
