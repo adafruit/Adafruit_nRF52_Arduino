@@ -132,10 +132,6 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 #define EXTERNAL_FLASH_DEVICES   GD25Q16C
 #define EXTERNAL_FLASH_USE_QSPI
 
-#define USB_MSC_BLOCK_SIZE    512
-#define USB_MSC_BLOCK_COUNT   ((2*1024*1024) / USB_MSC_BLOCK_SIZE)
-
-
 #ifdef __cplusplus
 }
 #endif
