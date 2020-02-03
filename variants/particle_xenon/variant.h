@@ -184,18 +184,6 @@ static const uint8_t SCK1  = PIN_SPI1_SCK;
 #define EXTERNAL_FLASH_DEVICES   GD25Q16C
 #define EXTERNAL_FLASH_USE_QSPI
 
-#define USB_MSC_BLOCK_SIZE    512
-#define USB_MSC_BLOCK_COUNT   ((2*1024*1024) / USB_MSC_BLOCK_SIZE)
-
-void switch_antenna(bool useExternal);
-
-// led pwm
-void led_pwm_init(uint32_t led_index, uint32_t led_pin);
-void led_pwm_teardown(void);
-void led_pwm_duty_cycle(uint32_t led_index, uint16_t duty_cycle);
-void pwm_teardown(NRF_PWM_Type* pwm);
-static uint16_t led_duty_cycles[PWM0_CH_NUM] = { 0 };
-
 #ifdef __cplusplus
 }
 #endif

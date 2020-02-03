@@ -137,9 +137,6 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 #define EXTERNAL_FLASH_DEVICES   MX25R6435F
 #define EXTERNAL_FLASH_USE_QSPI
 
-#define USB_MSC_BLOCK_SIZE    512
-#define USB_MSC_BLOCK_COUNT   ((8*1024*1024) / USB_MSC_BLOCK_SIZE)
-
 #ifdef __cplusplus
 }
 #endif

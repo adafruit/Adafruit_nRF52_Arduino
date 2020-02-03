@@ -1,5 +1,9 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.18.0 - 2020.02.03
+
+- Add EXTERNAL_FLASH_USE_QSPI to all variants that has on-board flash
+
 ## 0.17.0 - 2020.02.01
 
 ### Core
