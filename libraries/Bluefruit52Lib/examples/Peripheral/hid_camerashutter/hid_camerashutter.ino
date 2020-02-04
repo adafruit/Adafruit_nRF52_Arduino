@@ -16,8 +16,6 @@
  * This sketch uses the HID Consumer Key API to send the Volume Down
  * key when pinShutter is grounded. This will cause your mobile device
  * to capture a photo when you are in the camera app.
- *
- * For Feather nRF52840 pinShutter is conveniently user switch.
  */
 #include <bluefruit.h>
 

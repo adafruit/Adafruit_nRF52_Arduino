@@ -656,20 +656,30 @@ void AdafruitBluefruit::setRssiCallback(rssi_callback_t fp)
 // Use Legacy SC static Passkey
 bool AdafruitBluefruit::setPIN(const char* pin)
 {
-  VERIFY ( strlen(pin) == BLE_GAP_PASSKEY_LEN );
+  // back to open mode
+  if (pin == NULL)
+  {
+    _sec_param.lesc = 0;
+    _sec_param.mitm = 0;
+    _sec_param.bond = 1;
+    _sec_param.io_caps = BLE_GAP_IO_CAPS_NONE;
+  }else
+  {
+    VERIFY ( strlen(pin) == BLE_GAP_PASSKEY_LEN );
 
-  // Static Passkey requires using
-  // - Legacy SC
-  // - IO cap: Display
-  // - MITM is on
-  _sec_param.lesc = 0;
-  _sec_param.mitm = 1;
-  _sec_param.bond = 1;
-  _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
+    // Static Passkey requires using
+    // - Legacy SC
+    // - IO cap: Display
+    // - MITM is on
+    _sec_param.lesc = 0;
+    _sec_param.mitm = 1;
+    _sec_param.bond = 1;
+    _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
 
-  ble_opt_t opt;
-  opt.gap_opt.passkey.p_passkey = (const uint8_t*) pin;
-  VERIFY_STATUS( sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &opt), false);
+    ble_opt_t opt;
+    opt.gap_opt.passkey.p_passkey = (const uint8_t*) pin;
+    VERIFY_STATUS( sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &opt), false);
+  }
 
   return true;
 }
