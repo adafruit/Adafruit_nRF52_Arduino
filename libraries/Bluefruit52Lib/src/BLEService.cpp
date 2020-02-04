@@ -61,12 +61,12 @@ void BLEService::setUuid(BLEUuid bleuuid)
   uuid = bleuuid;
 }
 
-void BLEService::setPermission(BleSecurityMode permission)
+void BLEService::setPermission(SecureMode_t permission)
 {
   _permission = permission;
 }
 
-BleSecurityMode BLEService::getPermission(void)
+SecureMode_t BLEService::getPermission(void)
 {
   return _permission;
 }

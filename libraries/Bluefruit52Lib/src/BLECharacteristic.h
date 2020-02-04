@@ -78,7 +78,7 @@ class BLECharacteristic
     /*------------- Configure -------------*/
     void setUuid(BLEUuid bleuuid);
     void setProperties(uint8_t prop);
-    void setPermission(BleSecurityMode read_perm, BleSecurityMode write_perm);
+    void setPermission(SecureMode_t read_perm, SecureMode_t write_perm);
     void setMaxLen(uint16_t max_len);
     void setFixedLen(uint16_t fixed_len);
     void setBuffer(void* buf, uint16_t bufsize);
@@ -99,7 +99,7 @@ class BLECharacteristic
     virtual err_t begin(void);
 
     // Add Descriptor function must be called right after begin()
-    err_t addDescriptor(BLEUuid bleuuid, void const * content, uint16_t len, BleSecurityMode read_perm = SECMODE_OPEN, BleSecurityMode write_perm = SECMODE_NO_ACCESS);
+    err_t addDescriptor(BLEUuid bleuuid, void const * content, uint16_t len, SecureMode_t read_perm = SECMODE_OPEN, SecureMode_t write_perm = SECMODE_NO_ACCESS);
 
     ble_gatts_char_handles_t handles(void);
 

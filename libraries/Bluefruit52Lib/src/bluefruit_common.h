@@ -68,7 +68,7 @@
 typedef void (*ble_connect_callback_t    ) (uint16_t conn_hdl);
 typedef void (*ble_disconnect_callback_t ) (uint16_t conn_hdl, uint8_t reason);
 
-enum BleSecurityMode
+enum SecureMode_t
 {
   SECMODE_NO_ACCESS          = 0x00,
   SECMODE_OPEN               = 0x11,

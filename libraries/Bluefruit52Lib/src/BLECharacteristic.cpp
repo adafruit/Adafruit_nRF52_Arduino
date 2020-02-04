@@ -148,7 +148,7 @@ void BLECharacteristic::setBuffer(void* buf, uint16_t bufsize)
   _attr_meta.vloc = buf ? BLE_GATTS_VLOC_USER : BLE_GATTS_VLOC_STACK;
 }
 
-void BLECharacteristic::setPermission(BleSecurityMode read_perm, BleSecurityMode write_perm)
+void BLECharacteristic::setPermission(SecureMode_t read_perm, SecureMode_t write_perm)
 {
   memcpy(&_attr_meta.read_perm , &read_perm, 1);
   memcpy(&_attr_meta.write_perm, &write_perm, 1);
@@ -240,7 +240,7 @@ err_t BLECharacteristic::begin(void)
 
   // Correct Read/Write permission according to parent service
   // Use service permission if it has higher secure mode
-  BleSecurityMode svc_secmode = _service->getPermission();
+  SecureMode_t svc_secmode = _service->getPermission();
   ble_gap_conn_sec_mode_t svc_perm;
   memcpy(&svc_perm, &svc_secmode, 1);
 
@@ -348,7 +348,7 @@ err_t BLECharacteristic::begin(void)
   return ERROR_NONE;
 }
 
-err_t BLECharacteristic::addDescriptor(BLEUuid bleuuid, void const * content, uint16_t len, BleSecurityMode read_perm, BleSecurityMode write_perm)
+err_t BLECharacteristic::addDescriptor(BLEUuid bleuuid, void const * content, uint16_t len, SecureMode_t read_perm, SecureMode_t write_perm)
 {
   // Meta Data
   ble_gatts_attr_md_t meta;
