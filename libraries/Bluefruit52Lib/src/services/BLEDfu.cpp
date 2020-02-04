@@ -190,7 +190,8 @@ static void bledfu_control_wr_authorize_cb(uint16_t conn_hdl, BLECharacteristic*
   }
 }
 
-BLEDfu::BLEDfu(void) : BLEService(UUID128_SVC_DFU_OTA), _chr_control(UUID128_CHR_DFU_CONTROL)
+BLEDfu::BLEDfu(void)
+ : BLEService(UUID128_SVC_DFU_OTA), _chr_control(UUID128_CHR_DFU_CONTROL)
 {
 
 }

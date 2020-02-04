@@ -146,11 +146,6 @@ class AdafruitBluefruit
     bool     setAppearance      (uint16_t appear);
     uint16_t getAppearance      (void);
 
-    ble_gap_sec_params_t getSecureParam(void)
-    {
-      return _sec_param;
-    }
-
     void     autoConnLed        (bool enabled);
     void     setConnLedInterval (uint32_t ms);
 
@@ -173,13 +168,17 @@ class AdafruitBluefruit
 
     BLEConnection* Connection(uint16_t conn_hdl);
 
+    //--------------------------------------------------------------------+
+    // Security
+    //--------------------------------------------------------------------+
+    ble_gap_sec_params_t getSecureParam(void) { return _sec_param; }
+    bool setPIN(const char* pin); // Static Passkey
+
     /*------------------------------------------------------------------*/
     /* Callbacks
      *------------------------------------------------------------------*/
     void setRssiCallback(rssi_callback_t fp);
     void setEventCallback( void (*fp) (ble_evt_t*) );
-
-    COMMENT_OUT ( bool setPIN(const char* pin); )
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
@@ -227,11 +226,6 @@ class AdafruitBluefruit
 
     rssi_callback_t _rssi_cb;
     void (*_event_cb) (ble_evt_t*);
-
-COMMENT_OUT(
-    uint8_t _auth_type;
-    char _pin[BLE_GAP_PASSKEY_LEN];
-)
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY

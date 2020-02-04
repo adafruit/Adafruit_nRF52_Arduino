@@ -41,6 +41,7 @@ BLEService* BLEService::lastService = NULL;
 void BLEService::_init(void)
 {
   _handle = BLE_GATT_HANDLE_INVALID;
+  _permission = SECMODE_OPEN;
 }
 
 BLEService::BLEService(void)
@@ -58,6 +59,16 @@ BLEService::BLEService(BLEUuid bleuuid)
 void BLEService::setUuid(BLEUuid bleuuid)
 {
   uuid = bleuuid;
+}
+
+void BLEService::setPermission(BleSecurityMode permission)
+{
+  _permission = permission;
+}
+
+BleSecurityMode BLEService::getPermission(void)
+{
+  return _permission;
 }
 
 err_t BLEService::begin(void)

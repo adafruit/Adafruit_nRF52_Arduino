@@ -189,11 +189,6 @@ AdafruitBluefruit::AdafruitBluefruit(void)
                   .kdist_own    = { .enc = 1, .id = 1},
                   .kdist_peer   = { .enc = 1, .id = 1},
                 });
-
-COMMENT_OUT(
-  _auth_type = BLE_GAP_AUTH_KEY_TYPE_NONE;
-  varclr(_pin);
-)
 }
 
 void AdafruitBluefruit::configServiceChanged(bool changed)
@@ -658,23 +653,26 @@ void AdafruitBluefruit::setRssiCallback(rssi_callback_t fp)
 }
 
 
-COMMENT_OUT (
+// Use Legacy SC static Passkey
 bool AdafruitBluefruit::setPIN(const char* pin)
 {
   VERIFY ( strlen(pin) == BLE_GAP_PASSKEY_LEN );
 
-  _auth_type = BLE_GAP_AUTH_KEY_TYPE_PASSKEY;
-  memcpy(_pin, pin, BLE_GAP_PASSKEY_LEN);
+  // Static Passkey requires using
+  // - Legacy SC
+  // - IO cap: Display
+  // - MITM is on
+  _sec_param.lesc = 0;
+  _sec_param.mitm = 1;
+  _sec_param.bond = 1;
+  _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
 
-// Config Static Passkey
-//  ble_opt_t opt
-//	uint8_t passkey[] = STATIC_PASSKEY;
-//	m_static_pin_option.gap.passkey.p_passkey = passkey;
-//err_code = sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &m_static_pin_option);
+  ble_opt_t opt;
+  opt.gap_opt.passkey.p_passkey = (const uint8_t*) pin;
+  VERIFY_STATUS( sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &opt), false);
 
   return true;
 }
-)
 
 /*------------------------------------------------------------------*/
 /* Thread & SoftDevice Event handler
