@@ -12,18 +12,71 @@
  any redistribution
 *********************************************************************/
 
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <bluefruit.h>
+#include <Adafruit_LittleFS.h>
+#include <InternalFileSystem.h>
+
 /* This sketch demonstrates Pairing process using static Passkey aka PIN.
  * This sketch is essentially the same as bleuart.ino except the BLE Uart
  * service requires Security Mode with Man-In-The-Middle protection i.e
  * using 6 digits PIN for pairing.
  */
 
-#include <bluefruit.h>
-#include <Adafruit_LittleFS.h>
-#include <InternalFileSystem.h>
+/* This sketch demonstrates the "Image Upload" feature of Bluefruit Mobile App.
+ * Following TFT Display are supported
+ *  - https://www.adafruit.com/product/3315
+ *  - https://www.adafruit.com/product/3651
+ *  - https://www.adafruit.com/product/4367
+ */
 
-// Static PIN is 6 digits from 000000-999999
-#define PAIRING_PIN     "123456"
+#define TFT_NONE            0
+#define TFT_35_FEATHERWING  1
+#define TFT_24_FEATHERWING  2
+#define TFT_GIZMO           3
+
+// [Configurable] Please select one of above supported Display to match your hardware setup
+#define TFT_IN_USE          TFT_NONE
+
+
+#if defined(ARDUINO_NRF52832_FEATHER)
+  // Feather nRF52832
+  #define TFT_DC   11
+  #define TFT_CS   31
+
+#elif defined(ARDUINO_NRF52840_CIRCUITPLAY)
+  // Circuit Playground Bluefruit for use with TFT 1.5" GIZMO
+  #define TFT_DC         1
+  #define TFT_CS         0
+  #define TFT_BACKLIGHT  A3
+
+#else
+  // Default for others
+  #define TFT_DC   10
+  #define TFT_CS   9
+#endif
+
+
+#if   TFT_IN_USE == TFT_35_FEATHERWING
+  #include "Adafruit_HX8357.h"
+  Adafruit_HX8357 tft = Adafruit_HX8357(TFT_CS, TFT_DC);
+
+#elif TFT_IN_USE == TFT_24_FEATHERWING
+  #include <Adafruit_ILI9341.h>
+  Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+
+#elif TFT_IN_USE == TFT_GIZMO
+  #include "Adafruit_ST7789.h"
+  Adafruit_ST7789 tft = Adafruit_ST7789(&SPI, TFT_CS, TFT_DC, -1);
+
+#endif
+
+#define COLOR_WHITE     0xFFFF
+#define COLOR_BLACK     0x0000
+#define COLOR_YELLOW    0xFFE0
+#define COLOR_GREEN     0x07E0
+#define COLOR_RED       0xF800
 
 // BLE Service
 BLEUart bleuart; // uart over ble
@@ -31,8 +84,18 @@ BLEUart bleuart; // uart over ble
 void setup()
 {
   Serial.begin(115200);
-  while ( !Serial ) delay(10);   // for nrf52840 with native usb
-  
+
+#if TFT_IN_USE == TFT_GIZMO
+  tft.init(240, 240);
+  tft.setRotation(2);
+  pinMode(TFT_BACKLIGHT, OUTPUT);
+  digitalWrite(TFT_BACKLIGHT, HIGH); // Backlight on
+
+#elif TFT_IN_USE != TFT_NONE
+  tft.begin();
+
+#endif
+
   Serial.println("Bluefruit52 BLEUART Example");
   Serial.println("---------------------------\n");
 
@@ -50,8 +113,9 @@ void setup()
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   Bluefruit.setName("Bluefruit52");
 
-  Serial.println("Setting pairing PIN to: " PAIRING_PIN);
-  Bluefruit.setPIN(PAIRING_PIN);
+//  Serial.println("Setting pairing PIN to: " PAIRING_PIN);
+  Bluefruit.setPairingDisplayCallback(pairing_display_callback);
+  Bluefruit.setPairingCompleteCallback(pairing_complete_callback);
 
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
@@ -69,6 +133,13 @@ void setup()
   Serial.println("Please use Adafruit's Bluefruit LE app to connect in UART mode");
   Serial.println("Your phone should pop-up PIN input");
   Serial.println("Once connected, enter character(s) that you wish to send");
+
+#if TFT_IN_USE != TFT_NONE
+  tft.fillScreen(COLOR_BLACK);
+  tft.setTextColor(COLOR_WHITE);
+  tft.setTextSize(2);
+  tft.println("Advertising ... ");
+#endif
 }
 
 void startAdv(void)
@@ -121,6 +192,48 @@ void loop()
   }
 }
 
+void pairing_display_callback(uint16_t conn_handle, uint8_t const passkey[6])
+{
+  Serial.println("Enter this code on your phone to pair with Bluefruit:");
+  Serial.printf("    %.6s\n", passkey);
+
+#if TFT_IN_USE != TFT_NONE
+  tft.printf("Enter this code on your phone to pair with Bluefruit:\n\n");
+  tft.setTextColor(COLOR_YELLOW);
+  tft.setTextSize(4);
+  tft.printf("  %.6s\n", passkey);
+
+  tft.setTextColor(COLOR_WHITE);
+  tft.setTextSize(2);
+#endif
+}
+
+void pairing_complete_callback(uint16_t conn_handle, uint8_t auth_status)
+{
+  if (auth_status == BLE_GAP_SEC_STATUS_SUCCESS)
+  {
+    Serial.println("Succeeded");
+  }else
+  {
+    Serial.println("Failed");
+  }
+
+#if TFT_IN_USE != TFT_NONE
+  if (auth_status == BLE_GAP_SEC_STATUS_SUCCESS)
+  {
+    tft.setTextColor(COLOR_GREEN);
+    tft.println("Succeeded");
+  }else
+  {
+    tft.setTextColor(COLOR_RED);
+    tft.println("Failed");
+  }
+
+  tft.setTextColor(COLOR_WHITE);
+  tft.setTextSize(2);
+#endif
+}
+
 // callback invoked when central connects
 void connect_callback(uint16_t conn_handle)
 {
@@ -132,6 +245,13 @@ void connect_callback(uint16_t conn_handle)
 
   Serial.print("Connected to ");
   Serial.println(central_name);
+
+#if TFT_IN_USE != TFT_NONE
+  tft.fillScreen(COLOR_BLACK);
+  tft.setTextSize(2);
+  tft.setCursor(0, 0);
+  tft.println("Connected");
+#endif
 }
 
 /**
@@ -146,4 +266,8 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 
   Serial.println();
   Serial.print("Disconnected, reason = 0x"); Serial.println(reason, HEX);
+
+#if TFT_IN_USE != TFT_NONE
+  tft.println("Advertising ...");
+#endif
 }

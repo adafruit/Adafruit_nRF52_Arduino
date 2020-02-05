@@ -95,7 +95,10 @@ extern "C"
 class AdafruitBluefruit
 {
   public:
-    typedef void (*rssi_callback_t) (uint16_t conn_hdl, int8_t rssi);
+    typedef void (*event_cb_t) (ble_evt_t* evt);
+    typedef void (*rssi_cb_t) (uint16_t conn_hdl, int8_t rssi);
+    typedef void (*pair_display_cb_t ) (uint16_t conn_hdl, uint8_t const passkey[6]);
+    typedef void (*pair_complete_cb_t) (uint16_t conn_hdl, uint8_t auth_status);
 
     AdafruitBluefruit(void); // Constructor
 
@@ -173,12 +176,14 @@ class AdafruitBluefruit
     //--------------------------------------------------------------------+
     ble_gap_sec_params_t getSecureParam(void) { return _sec_param; }
     bool setPIN(const char* pin); // Static Passkey
+    bool setPairingDisplayCallback(pair_display_cb_t fp);
+    void setPairingCompleteCallback(pair_complete_cb_t fp);
 
     /*------------------------------------------------------------------*/
     /* Callbacks
      *------------------------------------------------------------------*/
-    void setRssiCallback(rssi_callback_t fp);
-    void setEventCallback( void (*fp) (ble_evt_t*) );
+    void setRssiCallback(rssi_cb_t fp);
+    void setEventCallback(event_cb_t fp);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
@@ -224,8 +229,11 @@ class AdafruitBluefruit
 
     BLEConnection* _connection[BLE_MAX_CONNECTION];
 
-    rssi_callback_t _rssi_cb;
-    void (*_event_cb) (ble_evt_t*);
+    //------------- Callbacks -------------//
+    rssi_cb_t _rssi_cb;
+    event_cb_t _event_cb;
+    pair_display_cb_t  _pair_display_cb;
+    pair_complete_cb_t _pair_complete_cb;
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY

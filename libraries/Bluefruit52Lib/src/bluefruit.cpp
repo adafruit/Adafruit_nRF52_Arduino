@@ -175,6 +175,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _event_cb = NULL;
   _rssi_cb = NULL;
+  _pair_display_cb = NULL;
 
   _sec_param = ((ble_gap_sec_params_t)
                 {
@@ -621,7 +622,7 @@ bool AdafruitBluefruit::disconnect(uint16_t conn_hdl)
   return true; // not connected still return true
 }
 
-void AdafruitBluefruit::setEventCallback ( void (*fp) (ble_evt_t*) )
+void AdafruitBluefruit::setEventCallback (event_cb_t fp)
 {
   _event_cb = fp;
 }
@@ -647,7 +648,7 @@ BLEConnection* AdafruitBluefruit::Connection(uint16_t conn_hdl)
   return (conn_hdl < BLE_MAX_CONNECTION) ? _connection[conn_hdl] : NULL;
 }
 
-void AdafruitBluefruit::setRssiCallback(rssi_callback_t fp)
+void AdafruitBluefruit::setRssiCallback(rssi_cb_t fp)
 {
   _rssi_cb = fp;
 }
@@ -659,9 +660,9 @@ bool AdafruitBluefruit::setPIN(const char* pin)
   // back to open mode
   if (pin == NULL)
   {
-    _sec_param.lesc = 0;
-    _sec_param.mitm = 0;
     _sec_param.bond = 1;
+    _sec_param.mitm = 0;
+    _sec_param.lesc = 0;
     _sec_param.io_caps = BLE_GAP_IO_CAPS_NONE;
   }else
   {
@@ -671,9 +672,9 @@ bool AdafruitBluefruit::setPIN(const char* pin)
     // - Legacy SC
     // - IO cap: Display
     // - MITM is on
-    _sec_param.lesc = 0;
-    _sec_param.mitm = 1;
     _sec_param.bond = 1;
+    _sec_param.mitm = 1;
+    _sec_param.lesc = 0;
     _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
 
     ble_opt_t opt;
@@ -682,6 +683,34 @@ bool AdafruitBluefruit::setPIN(const char* pin)
   }
 
   return true;
+}
+
+// Pairing using LESC with peripheral display
+bool AdafruitBluefruit::setPairingDisplayCallback(pair_display_cb_t fp)
+{
+  _pair_display_cb = fp;
+
+  if ( fp == NULL )
+  {
+    // TODO callback clear
+  }else
+  {
+    _sec_param.bond = 1;
+    _sec_param.mitm = 1;
+    _sec_param.lesc = 0;
+    _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
+
+    ble_opt_t opt;
+    opt.gap_opt.passkey.p_passkey = NULL; // generate Passkey randomly
+    VERIFY_STATUS( sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &opt), false);
+  }
+
+  return true;
+}
+
+void AdafruitBluefruit::setPairingCompleteCallback(pair_complete_cb_t fp)
+{
+  _pair_complete_cb = fp;
 }
 
 /*------------------------------------------------------------------*/
@@ -865,6 +894,30 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       {
          ada_callback(NULL, 0, _rssi_cb, conn_hdl, rssi_changed->rssi);
       }
+    }
+    break;
+
+    case BLE_GAP_EVT_PASSKEY_DISPLAY:
+    {
+       ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
+       LOG_LV2("PAIR", "Passkey = %.6s, match request = %d", passkey_display->passkey, passkey_display->match_request);
+
+       // Invoke display callback
+       if ( _pair_display_cb ) ada_callback(passkey_display->passkey, 6, _pair_display_cb, conn_hdl, passkey_display->passkey);
+
+       if (passkey_display->match_request)
+       {
+         // Match request require to report the match
+         // sd_ble_gap_auth_key_reply();
+       }
+    }
+    break;
+
+    case BLE_GAP_EVT_AUTH_STATUS:
+    {
+      ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
+
+      if (_pair_complete_cb) ada_callback(NULL, 0, _pair_complete_cb, conn_hdl, status->auth_status);
     }
     break;
 

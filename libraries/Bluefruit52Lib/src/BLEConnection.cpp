@@ -304,7 +304,7 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
 
     //--------------------------------------------------------------------+
     /* First-time Pairing
-     * Connect -> SEC_PARAMS_REQUEST -> CONN_SEC_UPDATE -> AUTH_STATUS
+     * Connect -> SEC_PARAMS_REQUEST -> PASSKEY_DISPLAY -> CONN_SEC_UPDATE -> AUTH_STATUS
      * 1. Either we or peer initiate the process
      * 2. Peer ask for Secure Parameter ( I/O Caps ) BLE_GAP_EVT_SEC_PARAMS_REQUEST
      * 3. Pair Key exchange ( PIN code)
@@ -331,15 +331,10 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
        * - Central supplies its parameters
        * - We replies with our security parameters
        */
-      // ble_gap_sec_params_t* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
-      COMMENT_OUT(
-          // Change security parameter according to authentication type
-          if ( _auth_type == BLE_GAP_AUTH_KEY_TYPE_PASSKEY)
-          {
-            sec_para.mitm    = 1;
-            sec_para.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
-          }
-      )
+      ble_gap_sec_params_t const* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
+      (void) peer;
+      LOG_LV2("PAIR", "Peer Params: bond = %d, mitm = %d, lesc = %d, io_caps = %d",
+                                    peer->bond, peer->mitm, peer->lesc, peer->io_caps);
 
       ble_gap_sec_keyset_t keyset =
       {
@@ -372,6 +367,8 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
       // Pairing process completed
       ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
 
+      LOG_LV2("PAIR", "Auth Status = 0x%02x (BLE_GAP_SEC_STATUS)", status->auth_status);
+
       // Pairing succeeded --> save encryption keys ( Bonding )
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
@@ -379,9 +376,6 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
         _ediv   = _bond_keys->own_enc.master_id.ediv;
 
         bond_save_keys(_role, _conn_hdl, _bond_keys);
-      }else
-      {
-        PRINT_HEX(status->auth_status);
       }
 
       rtos_free(_bond_keys);
@@ -411,15 +405,20 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
     }
     break;
 
-    case BLE_GAP_EVT_PASSKEY_DISPLAY:
-    {
-      // ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
-      // PRINT_INT(passkey_display->match_request);
-      // PRINT_BUFFER(passkey_display->passkey, 6);
-
-      // sd_ble_gap_auth_key_reply
-    }
-    break;
+//    case BLE_GAP_EVT_PASSKEY_DISPLAY:
+//    {
+//       ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
+//       LOG_LV2("PAIR", "Passkey = %.6s, match request = %d", passkey_display->passkey, passkey_display->match_request);
+//
+//       if ( Bluefruit._pair_display_cb ) ada_callback(passkey_display->passkey, 6, )
+//
+//       if (passkey_display->match_request)
+//       {
+//         // Match request require to report the match
+//         // sd_ble_gap_auth_key_reply();
+//       }
+//    }
+//    break;
 
     case BLE_GAP_EVT_CONN_SEC_UPDATE:
     {
