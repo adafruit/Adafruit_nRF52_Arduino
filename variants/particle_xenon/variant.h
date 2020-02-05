@@ -197,6 +197,8 @@ void led_pwm_init(uint32_t led_index, uint32_t led_pin);
 void led_pwm_teardown(void);
 void led_pwm_duty_cycle(uint32_t led_index, uint16_t duty_cycle);
 void pwm_teardown(NRF_PWM_Type* pwm);
+void ledWrite(uint32_t led_pin, uint8_t value);
+void rgbLedWrite(uint8_t red, uint8_t green, uint8_t blue);
 static uint16_t led_duty_cycles[PWM0_CH_NUM] = { 0 };
 
 #ifdef __cplusplus

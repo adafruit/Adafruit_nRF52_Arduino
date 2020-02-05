@@ -56,6 +56,11 @@ const uint32_t g_ADigitalPinMap[] =
 void initVariant()
 {
   switch_antenna(false);
+
+  led_pwm_init(LED_PRIMARY_IDX, LED_PRIMARY_PIN);
+  led_pwm_init(LED_RGB_RED_IDX, LED_RGB_RED_PIN);
+  led_pwm_init(LED_RGB_BLUE_IDX, LED_RGB_BLUE_PIN);
+  led_pwm_init(LED_RGB_GREEN_IDX, LED_RGB_GREEN_PIN);
 }
 
 void switch_antenna(bool useExternal) {
@@ -104,6 +109,33 @@ void led_pwm_duty_cycle(uint32_t led_index, uint16_t duty_cycle) {
   led_duty_cycles[led_index] = duty_cycle;
   nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_SEQEND0);
   nrf_pwm_task_trigger(NRF_PWM0, NRF_PWM_TASK_SEQSTART0);
+}
+
+void ledWrite(uint32_t led_pin, uint8_t value) {
+  uint32_t index = -1;
+  switch (led_pin) {
+    case LED_PRIMARY_PIN:
+      index = LED_PRIMARY_IDX;
+      break;
+    case LED_RGB_RED_PIN:
+      index = LED_RGB_RED_IDX;
+      break;
+    case LED_RGB_GREEN_PIN:
+      index = LED_RGB_GREEN_IDX;
+      break;
+    case LED_RGB_BLUE_PIN:
+      index = LED_RGB_BLUE_IDX;
+      break;
+  }
+
+  if (index != -1)
+    led_pwm_duty_cycle(index, value);
+}
+
+void rgbLedWrite(uint8_t red, uint8_t green, uint8_t blue) {
+  led_pwm_duty_cycle(LED_RGB_RED_IDX, red);
+  led_pwm_duty_cycle(LED_RGB_GREEN_IDX, green);
+  led_pwm_duty_cycle(LED_RGB_BLUE_IDX, blue);
 }
 
 void pwm_teardown(NRF_PWM_Type* pwm) {

@@ -9,6 +9,7 @@ This repository contains the Arduino BSP for Adafruit Bluefruit nRF52 series:
 Following boards are also included but are not officially supported:
 
 - [Nordic nRF52840DK PCA10056](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-DK)
+- [Particle Xenon](https://store.particle.io/products/xenon)
 
 ## BSP Installation
 
@@ -101,6 +102,20 @@ The bootloader hex file can be found at `bin/bootloader` run the command as foll
 $ nrfjprog -e -f nrf52
 $ nrfjprog --program feather_nrf52832_bootloader.hex -f nrf52
 $ nrfjprog --reset -f nrf52
+```
+
+## Particle Xenon Specific
+```c++
+// Swap between the internal antenna and external u.FL antenna
+switchAntenna(bool useExternal);
+
+// Control RGB led / primary LED individually
+ledWrite(LED_RGB_RED, 255);
+ledWrite(LED_PRIMARY, 127);
+
+// Control RGB leds in one shot
+rgbLedWrite(50, 100, 150);
+
 ```
 
 ## Credits
