@@ -22,7 +22,7 @@ menu.debug=Debug
 # ----------------------------------
 # Bluefruit Feather nRF52832
 # ----------------------------------
-feather52832.name=Adafruit Bluefruit Feather nRF52832
+feather52832.name=Adafruit Feather nRF52832
 feather52832.bootloader.tool=bootburn
 
 # Upload
@@ -32,7 +32,7 @@ feather52832.upload.use_1200bps_touch=false
 feather52832.upload.wait_for_upload_port=false
 feather52832.upload.native_usb=false
 feather52832.upload.maximum_size=290816
-feather52832.upload.maximum_data_size=51072
+feather52832.upload.maximum_data_size=52224
 
 # Build
 feather52832.build.mcu=cortex-m4
@@ -40,11 +40,11 @@ feather52832.build.f_cpu=64000000
 feather52832.build.board=NRF52832_FEATHER
 feather52832.build.core=nRF5
 feather52832.build.variant=feather_nrf52832
-feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52 -DARDUINO_NRF52_FEATHER
+feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
 feather52832.build.ldscript=nrf52832_s132_v6.ld
 
 # SofDevice Menu
-feather52832.menu.softdevice.s132v6=0.2.11 SoftDevice s132 6.1.1
+feather52832.menu.softdevice.s132v6=0.3.0 SoftDevice s132 6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_fwid=0x00B7
@@ -62,7 +62,7 @@ feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 # ----------------------------------
 # Bluefruit Feather nRF52840 Express
 # ----------------------------------
-feather52840.name=Adafruit Bluefruit Feather nRF52840 Express
+feather52840.name=Adafruit Feather nRF52840 Express
 
 # VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
 feather52840.vid.0=0x239A
@@ -81,7 +81,7 @@ feather52840.upload.protocol=nrfutil
 feather52840.upload.use_1200bps_touch=true
 feather52840.upload.wait_for_upload_port=true
 feather52840.upload.maximum_size=815104
-feather52840.upload.maximum_data_size=248832
+feather52840.upload.maximum_data_size=237568
 
 # Build
 feather52840.build.mcu=cortex-m4
@@ -91,13 +91,13 @@ feather52840.build.core=nRF5
 feather52840.build.variant=feather_nrf52840_express
 feather52840.build.usb_manufacturer="Adafruit LLC"
 feather52840.build.usb_product="Feather nRF52840 Express"
-feather52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_FEATHER {build.flags.usb}
+feather52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 feather52840.build.ldscript=nrf52840_s140_v6.ld
 feather52840.build.vid=0x239A
 feather52840.build.pid=0x8029
 
 # SofDevice Menu
-feather52840.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+feather52840.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -111,6 +111,221 @@ feather52840.menu.debug.l2=Level 2 (Full Debug)
 feather52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 feather52840.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
+
+# ----------------------------------
+# Feather Bluefruit sense
+# ----------------------------------
+feather52840sense.name=Adafruit Feather Bluefruit Sense
+
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+feather52840sense.vid.0=0x239A
+feather52840sense.pid.0=0x8087
+feather52840sense.vid.1=0x239A
+feather52840sense.pid.1=0x0087
+feather52840sense.vid.2=0x239A
+feather52840sense.pid.2=0x0088
+feather52840sense.vid.3=0x239A
+feather52840sense.pid.3=0x8088
+
+# Upload
+feather52840sense.bootloader.tool=bootburn
+feather52840sense.upload.tool=nrfutil
+feather52840sense.upload.protocol=nrfutil
+feather52840sense.upload.use_1200bps_touch=true
+feather52840sense.upload.wait_for_upload_port=true
+feather52840sense.upload.maximum_size=815104
+feather52840sense.upload.maximum_data_size=237568
+
+# Build
+feather52840sense.build.mcu=cortex-m4
+feather52840sense.build.f_cpu=64000000
+feather52840sense.build.board=NRF52840_FEATHER_SENSE
+feather52840sense.build.core=nRF5
+feather52840sense.build.variant=feather_nrf52840_sense
+feather52840sense.build.usb_manufacturer="Adafruit LLC"
+feather52840sense.build.usb_product="Feather Bluefruit Sense"
+feather52840sense.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+feather52840sense.build.ldscript=nrf52840_s140_v6.ld
+feather52840sense.build.vid=0x239A
+feather52840sense.build.pid=0x8087
+
+# SofDevice Menu
+feather52840sense.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
+feather52840sense.menu.softdevice.s140v6.build.sd_name=s140
+feather52840sense.menu.softdevice.s140v6.build.sd_version=6.1.1
+feather52840sense.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+feather52840sense.menu.debug.l0=Level 0 (Release)
+feather52840sense.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+feather52840sense.menu.debug.l1=Level 1 (Error Message)
+feather52840sense.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+feather52840sense.menu.debug.l2=Level 2 (Full Debug)
+feather52840sense.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+feather52840sense.menu.debug.l3=Level 3 (Segger SystemView)
+feather52840sense.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
+
+# ----------------------------------
+# Bluefruit ItsyBitsy nRF52840 Express
+# ----------------------------------
+itsybitsy52840.name=Adafruit ItsyBitsy nRF52840 Express
+
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+itsybitsy52840.vid.0=0x239A
+itsybitsy52840.pid.0=0x8051
+itsybitsy52840.vid.1=0x239A
+itsybitsy52840.pid.1=0x0051
+itsybitsy52840.vid.2=0x239A
+itsybitsy52840.pid.2=0x0052
+itsybitsy52840.vid.3=0x239A
+itsybitsy52840.pid.3=0x8052
+
+# Upload
+itsybitsy52840.bootloader.tool=bootburn
+itsybitsy52840.upload.tool=nrfutil
+itsybitsy52840.upload.protocol=nrfutil
+itsybitsy52840.upload.use_1200bps_touch=true
+itsybitsy52840.upload.wait_for_upload_port=true
+itsybitsy52840.upload.maximum_size=815104
+itsybitsy52840.upload.maximum_data_size=237568
+
+# Build
+itsybitsy52840.build.mcu=cortex-m4
+itsybitsy52840.build.f_cpu=64000000
+itsybitsy52840.build.board=NRF52840_ITSYBITSY
+itsybitsy52840.build.core=nRF5
+itsybitsy52840.build.variant=itsybitsy_nrf52840_express
+itsybitsy52840.build.usb_manufacturer="Adafruit LLC"
+itsybitsy52840.build.usb_product="ItsyBitsy nRF52840 Express"
+itsybitsy52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_ITSYBITSY {build.flags.usb}
+itsybitsy52840.build.ldscript=nrf52840_s140_v6.ld
+itsybitsy52840.build.vid=0x239A
+itsybitsy52840.build.pid=0x8051
+
+# SofDevice Menu
+itsybitsy52840.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+itsybitsy52840.menu.softdevice.s140v6.build.sd_name=s140
+itsybitsy52840.menu.softdevice.s140v6.build.sd_version=6.1.1
+itsybitsy52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+itsybitsy52840.menu.debug.l0=Level 0 (Release)
+itsybitsy52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+itsybitsy52840.menu.debug.l1=Level 1 (Error Message)
+itsybitsy52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+itsybitsy52840.menu.debug.l2=Level 2 (Full Debug)
+itsybitsy52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+itsybitsy52840.menu.debug.l3=Level 3 (Segger SystemView)
+itsybitsy52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
+# ---------------------------------------------
+# Bluefruit Circuit Playground nRF52840 Express
+# ---------------------------------------------
+cplaynrf52840.name=Adafruit Circuit Playground Bluefruit
+
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+cplaynrf52840.vid.0=0x239A
+cplaynrf52840.pid.0=0x8045
+cplaynrf52840.vid.1=0x239A
+cplaynrf52840.pid.1=0x0045
+cplaynrf52840.vid.2=0x239A
+cplaynrf52840.pid.2=0x0046
+cplaynrf52840.vid.3=0x239A
+cplaynrf52840.pid.3=0x8046
+
+# Upload
+cplaynrf52840.bootloader.tool=bootburn
+cplaynrf52840.upload.tool=nrfutil
+cplaynrf52840.upload.protocol=nrfutil
+cplaynrf52840.upload.use_1200bps_touch=true
+cplaynrf52840.upload.wait_for_upload_port=true
+cplaynrf52840.upload.maximum_size=815104
+cplaynrf52840.upload.maximum_data_size=237568
+
+# Build
+cplaynrf52840.build.mcu=cortex-m4
+cplaynrf52840.build.f_cpu=64000000
+cplaynrf52840.build.board=NRF52840_CIRCUITPLAY
+cplaynrf52840.build.core=nRF5
+cplaynrf52840.build.variant=circuitplayground_nrf52840
+cplaynrf52840.build.usb_manufacturer="Adafruit LLC"
+cplaynrf52840.build.usb_product="Adafruit Circuit Playground Bluefruit"
+cplaynrf52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+cplaynrf52840.build.ldscript=nrf52840_s140_v6.ld
+cplaynrf52840.build.vid=0x239A
+cplaynrf52840.build.pid=0x8045
+
+# SofDevice Menu
+cplaynrf52840.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
+cplaynrf52840.menu.softdevice.s140v6.build.sd_name=s140
+cplaynrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
+cplaynrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+cplaynrf52840.menu.debug.l0=Level 0 (Release)
+cplaynrf52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+cplaynrf52840.menu.debug.l1=Level 1 (Error Message)
+cplaynrf52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+cplaynrf52840.menu.debug.l2=Level 2 (Full Debug)
+cplaynrf52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+cplaynrf52840.menu.debug.l3=Level 3 (Segger SystemView)
+cplaynrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
+
+# ---------------------------------------------
+# Clue nRF52840
+# ---------------------------------------------
+cluenrf52840.name=Adafruit CLUE
+
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+cluenrf52840.vid.0=0x239A
+cluenrf52840.pid.0=0x8072
+cluenrf52840.vid.1=0x239A
+cluenrf52840.pid.1=0x0072
+cluenrf52840.vid.2=0x239A
+cluenrf52840.pid.2=0x0071
+cluenrf52840.vid.3=0x239A
+cluenrf52840.pid.3=0x8071
+
+# Upload
+cluenrf52840.bootloader.tool=bootburn
+cluenrf52840.upload.tool=nrfutil
+cluenrf52840.upload.protocol=nrfutil
+cluenrf52840.upload.use_1200bps_touch=true
+cluenrf52840.upload.wait_for_upload_port=true
+cluenrf52840.upload.maximum_size=815104
+cluenrf52840.upload.maximum_data_size=248832
+
+# Build
+cluenrf52840.build.mcu=cortex-m4
+cluenrf52840.build.f_cpu=64000000
+cluenrf52840.build.board=NRF52840_CLUE
+cluenrf52840.build.core=nRF5
+cluenrf52840.build.variant=clue_nrf52840
+cluenrf52840.build.usb_manufacturer="Adafruit LLC"
+cluenrf52840.build.usb_product="Adafruit Clue"
+cluenrf52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+cluenrf52840.build.ldscript=nrf52840_s140_v6.ld
+cluenrf52840.build.vid=0x239A
+cluenrf52840.build.pid=0x8071
+
+# SofDevice Menu
+cluenrf52840.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
+cluenrf52840.menu.softdevice.s140v6.build.sd_name=s140
+cluenrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
+cluenrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+cluenrf52840.menu.debug.l0=Level 0 (Release)
+cluenrf52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+cluenrf52840.menu.debug.l1=Level 1 (Error Message)
+cluenrf52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+cluenrf52840.menu.debug.l2=Level 2 (Full Debug)
+cluenrf52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+cluenrf52840.menu.debug.l3=Level 3 (Segger SystemView)
+cluenrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 
 # ----------------------------------
 # Bluefruit Metro nRF52840 Express
@@ -134,7 +349,7 @@ metro52840.upload.protocol=nrfutil
 metro52840.upload.use_1200bps_touch=true
 metro52840.upload.wait_for_upload_port=true
 metro52840.upload.maximum_size=815104
-metro52840.upload.maximum_data_size=248832
+metro52840.upload.maximum_data_size=237568
 
 # Build
 metro52840.build.mcu=cortex-m4
@@ -144,13 +359,13 @@ metro52840.build.core=nRF5
 metro52840.build.variant=metro_nrf52840_express
 metro52840.build.usb_manufacturer="Adafruit LLC"
 metro52840.build.usb_product="Metro nRF52840 Express"
-metro52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_FEATHER {build.flags.usb}
+metro52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 metro52840.build.ldscript=nrf52840_s140_v6.ld
 metro52840.build.vid=0x239A
 metro52840.build.pid=0x803F
 
 # SofDevice Menu
-metro52840.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+metro52840.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_name=s140
 metro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -168,7 +383,7 @@ metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 # ----------------------------------
 # Nordic nRF52840DK (PCA10056)
 # ----------------------------------
-pca10056.name=Noridc nRF52840DK (PCA10056)
+pca10056.name=Nordic nRF52840DK (PCA10056)
 pca10056.bootloader.tool=bootburn
 
 # Upload
@@ -177,7 +392,7 @@ pca10056.upload.protocol=nrfutil
 pca10056.upload.use_1200bps_touch=true
 pca10056.upload.wait_for_upload_port=true
 pca10056.upload.maximum_size=815104
-pca10056.upload.maximum_data_size=248832
+pca10056.upload.maximum_data_size=237568
 
 # Build
 pca10056.build.mcu=cortex-m4
@@ -193,7 +408,7 @@ pca10056.build.vid=0x239A
 pca10056.build.pid=0x8029
 
 # SofDevice Menu
-pca10056.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+pca10056.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -260,3 +475,54 @@ particle_xenon.menu.debug.l2=Level 2 (Full Debug)
 particle_xenon.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 particle_xenon.menu.debug.l3=Level 3 (Segger SystemView)
 particle_xenon.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+# Raytac MDBT50Q – RX
+# ----------------------------------
+mdbt50qrx.name=Raytac MDBT50Q-RX Dongle
+
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+mdbt50qrx.vid.0=0x239A
+mdbt50qrx.pid.0=0x8029
+mdbt50qrx.vid.1=0x239A
+mdbt50qrx.pid.1=0x0029
+mdbt50qrx.vid.2=0x239A
+mdbt50qrx.pid.2=0x002A
+mdbt50qrx.vid.3=0x239A
+mdbt50qrx.pid.3=0x802A
+
+# Upload
+mdbt50qrx.bootloader.tool=bootburn
+mdbt50qrx.upload.tool=nrfutil
+mdbt50qrx.upload.protocol=nrfutil
+mdbt50qrx.upload.use_1200bps_touch=true
+mdbt50qrx.upload.wait_for_upload_port=true
+mdbt50qrx.upload.maximum_size=815104
+mdbt50qrx.upload.maximum_data_size=248832
+
+# Build
+mdbt50qrx.build.mcu=cortex-m4
+mdbt50qrx.build.f_cpu=64000000
+mdbt50qrx.build.board=MDBT50Q_RX
+mdbt50qrx.build.core=nRF5
+mdbt50qrx.build.variant=raytac_mdbt50q_rx
+mdbt50qrx.build.usb_manufacturer="Raytac Corporation"
+mdbt50qrx.build.usb_product="Raytac MDBT50Q - RX"
+mdbt50qrx.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+mdbt50qrx.build.ldscript=nrf52840_s140_v6.ld
+mdbt50qrx.build.vid=0x239A
+mdbt50qrx.build.pid=0x8029
+
+# SofDevice Menu
+mdbt50qrx.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
+mdbt50qrx.menu.softdevice.s140v6.build.sd_name=s140
+mdbt50qrx.menu.softdevice.s140v6.build.sd_version=6.1.1
+mdbt50qrx.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+mdbt50qrx.menu.debug.l0=Level 0 (Release)
+mdbt50qrx.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+mdbt50qrx.menu.debug.l1=Level 1 (Error Message)
+mdbt50qrx.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+mdbt50qrx.menu.debug.l2=Level 2 (Full Debug)
+mdbt50qrx.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+mdbt50qrx.menu.debug.l3=Level 3 (Segger SystemView)
+mdbt50qrx.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3

@@ -34,15 +34,9 @@
 class TwoWire : public Stream
 {
   public:
-#if defined(NRF52) || defined(NRF52_SERIES)
     TwoWire(NRF_TWIM_Type * p_twim, NRF_TWIS_Type * p_twis, IRQn_Type IRQn, uint8_t pinSDA, uint8_t pinSCL);
-#else
-    TwoWire(NRF_TWI_Type * p_twi, uint8_t pinSDA, uint8_t pinSCL);
-#endif
     void begin();
-#if defined(NRF52) || defined(NRF52_SERIES)
     void begin(uint8_t);
-#endif
     void end();
     void setClock(uint32_t);
 
@@ -60,11 +54,10 @@ class TwoWire : public Stream
     virtual int read(void);
     virtual int peek(void);
     virtual void flush(void);
-#if defined(NRF52) || defined(NRF52_SERIES)
+
     void onReceive(void(*)(int));
     void onRequest(void(*)(void));
     void onService(void);
-#endif
 
     using Print::write;
 
@@ -103,6 +96,10 @@ class TwoWire : public Stream
 
 #if WIRE_INTERFACES_COUNT > 0
 extern TwoWire Wire;
+#endif
+
+#if WIRE_INTERFACES_COUNT > 1
+extern TwoWire Wire1;
 #endif
 
 #endif

@@ -392,16 +392,44 @@ void TwoWire::onService(void)
   }
 }
 
-TwoWire Wire(NRF_TWIM1, NRF_TWIS1, SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn, PIN_WIRE_SDA, PIN_WIRE_SCL);
-
 #if WIRE_INTERFACES_COUNT > 0
+TwoWire Wire(NRF_TWIM0, NRF_TWIS0, SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQn, PIN_WIRE_SDA, PIN_WIRE_SCL);
+
 extern "C"
 {
-  void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void)
+  void SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0_IRQHandler(void)
   {
+    #if CFG_DEBUG >= 3
+    SEGGER_SYSVIEW_RecordEnterISR();
+    #endif
+
     Wire.onService();
+
+    #if CFG_DEBUG >= 3
+    SEGGER_SYSVIEW_RecordExitISR();
+    #endif
   }
 }
 #endif
 
+#if WIRE_INTERFACES_COUNT > 1
+TwoWire Wire1(NRF_TWIM1, NRF_TWIS1, SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQn, PIN_WIRE1_SDA, PIN_WIRE1_SCL);
+
+extern "C"
+{
+  void SPIM1_SPIS1_TWIM1_TWIS1_SPI1_TWI1_IRQHandler(void)
+  {
+    #if CFG_DEBUG >= 3
+    SEGGER_SYSVIEW_RecordEnterISR();
+    #endif
+
+    Wire1.onService();
+
+    #if CFG_DEBUG >= 3
+    SEGGER_SYSVIEW_RecordExitISR();
+    #endif
+  }
+}
 #endif
+
+#endif // NRF52_SERIES

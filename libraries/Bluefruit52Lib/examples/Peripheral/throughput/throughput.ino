@@ -14,15 +14,25 @@
 
 #include <bluefruit.h>
 
-// String to send in the throughput test
-#define TEST_STRING     "01234567899876543210"
-const int TEST_STRLEN = strlen(TEST_STRING);
+/* Best result is 
+ *  - 8.74 KB/s with 20 ms, MTU = 23
+ *  - 23.62 KB/s with 7.5 ms, MTU = 23
+ *  - 47.85 KB/s with 15 ms, MTU = 247 
+ */
 
-// Number of total data sent ( 1024 times the test string)
-#define TOTAL_BYTES     (1024 * strlen(TEST_STRING))
+// data to send in the throughput test
+char test_data[256] = { 0 };
+
+// Number of packet to sent
+// actualy number of bytes depends on the MTU of the connection
+#define PACKET_NUM    1000
 
 BLEDis bledis;
 BLEUart bleuart;
+
+uint32_t rxCount = 0;
+uint32_t rxStartTime = 0;
+uint32_t rxLastTime = 0;
 
 /**************************************************************************/
 /*!
@@ -31,7 +41,7 @@ BLEUart bleuart;
 */
 /**************************************************************************/
 void setup(void)
-{
+{  
   Serial.begin(115200);
   while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
@@ -43,11 +53,17 @@ void setup(void)
   // here in case you want to control this manually via PIN 19
   Bluefruit.autoConnLed(true);
 
+  // Config the peripheral connection with maximum bandwidth 
+  // more SRAM required by SoftDevice
+  // Note: All config***() function must be called before begin()
+  Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);  
+
   Bluefruit.begin();
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   Bluefruit.setName("Bluefruit52");
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
+  Bluefruit.Periph.setConnInterval(6, 12); // 7.5 - 15 ms
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
@@ -56,6 +72,9 @@ void setup(void)
 
   // Configure and Start BLE Uart Service
   bleuart.begin();
+
+  bleuart.setRxCallback(bleuart_rx_callback);
+  bleuart.setNotifyCallback(bleuart_notify_callback);
 
   // Set up and start advertising
   startAdv();
@@ -90,8 +109,26 @@ void startAdv(void)
 
 void connect_callback(uint16_t conn_handle)
 {
-  (void) conn_handle;
+  BLEConnection* conn = Bluefruit.Connection(conn_handle);
   Serial.println("Connected");
+
+  // request PHY changed to 2MB
+  Serial.println("Request to change PHY");
+  conn->requestPHY();
+
+  // request to update data length
+  Serial.println("Request to change Data Length");
+  conn->requestDataLengthUpdate();
+    
+  // request mtu exchange
+  Serial.println("Request to change MTU");
+  conn->requestMtuExchange(247);
+
+  // request connection interval of 7.5 ms
+  //conn->requestConnectionParameter(6); // in unit of 1.25
+
+  // delay a bit for all the request to complete
+  delay(1000);
 }
 
 /**
@@ -105,56 +142,96 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   (void) reason;
 
   Serial.println();
-  Serial.println("Disconnected");
+  Serial.print("Disconnected, reason = 0x"); Serial.println(reason, HEX);
 }
 
-/**************************************************************************/
-/*!
-    @brief  Constantly poll for new command or response data
-*/
-/**************************************************************************/
-void loop(void)
+void bleuart_rx_callback(uint16_t conn_hdl)
 {
-  uint32_t start, stop, sent;
-  uint32_t remaining = TOTAL_BYTES;
-  start = stop = sent = 0;
+  (void) conn_hdl;
+  
+  rxLastTime = millis();
+  
+  // first packet
+  if ( rxCount == 0 )
+  {
+    rxStartTime = millis();
+  }
 
+  uint32_t count = bleuart.available();
+
+  rxCount += count;
+  bleuart.flush(); // empty rx fifo
+
+  // Serial.printf("RX %d bytes\n", count);
+}
+
+void bleuart_notify_callback(uint16_t conn_hdl, bool enabled)
+{
+  if ( enabled )
+  {
+    Serial.println("Send a key and press enter to start test");
+  }
+}
+
+void print_speed(const char* text, uint32_t count, uint32_t ms)
+{
+  Serial.print(text);
+  Serial.print(count);
+  Serial.print(" bytes in ");
+  Serial.print(ms / 1000.0F, 2);
+  Serial.println(" seconds.");
+
+  Serial.print("Speed : ");
+  Serial.print( (count / 1000.0F) / (ms / 1000.0F), 2);
+  Serial.println(" KB/s.\r\n");  
+}
+
+void test_throughput(void)
+{
+  uint32_t start, sent;
+  start = sent = 0;
+
+  const uint16_t data_mtu = Bluefruit.Connection(0)->getMtu() - 3;
+  memset(test_data, '1', data_mtu);
+
+  uint32_t remaining = data_mtu*PACKET_NUM;
+
+  Serial.print("Sending ");
+  Serial.print(remaining);
+  Serial.println(" bytes ...");
+  Serial.flush();
+  delay(1);  
+
+  start = millis();
+  while ( (remaining > 0) && Bluefruit.connected() && bleuart.notifyEnabled() )
+  {
+    if ( !bleuart.write(test_data, data_mtu) ) break;
+
+    sent      += data_mtu;
+    remaining -= data_mtu;
+  }
+
+  print_speed("Sent ", sent, millis() - start);
+}
+
+void loop(void)
+{  
   if (Bluefruit.connected() && bleuart.notifyEnabled())
   {
     // Wait for user input before trying again
-    Serial.println("Connected. Send a key and press enter to start test");
-    getUserInput();
-    
-    Serial.print("Sending ");
-    Serial.print(remaining);
-    Serial.println(" bytes ...");
-
-    start = millis();
-    while ( (remaining > 0) && Bluefruit.connected() && bleuart.notifyEnabled() )
+    if ( Serial.available() )
     {
-      if ( !bleuart.print(TEST_STRING) ) break;
-
-      sent      += TEST_STRLEN;
-      remaining -= TEST_STRLEN;
-
-      // Only print every 100th time
-      // if ( (sent % (100*TEST_STRLEN) ) == 0 )
-      // {
-      //  Serial.print("Sent: "); Serial.print(sent);
-      //  Serial.print(" Remaining: "); Serial.println(remaining);
-      // }
+      getUserInput();
+      test_throughput();
     }
-    stop = millis() - start;
-
-    Serial.print("Sent ");
-    Serial.print(sent);
-    Serial.print(" bytes in ");
-    Serial.print(stop / 1000.0F, 2);
-    Serial.println(" seconds.");
-
-    Serial.println("Speed ");
-    Serial.print( (sent / 1000.0F) / (stop / 1000.0F), 2);
-    Serial.println(" KB/s.\r\n");
+    
+    // 3 seconds has passed and there is no data received
+    // then reset rx count
+    if ( (rxCount > 0) && (rxLastTime + 1000 < millis()) )
+    {
+      print_speed("Received ", rxCount, rxLastTime-rxStartTime);
+      rxCount = 0;
+    }
   }
 }
 

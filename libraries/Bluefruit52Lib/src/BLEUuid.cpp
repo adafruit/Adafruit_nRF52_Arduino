@@ -36,13 +36,17 @@
 
 #include "BLEUuid.h"
 
-//void reverse_uuid128(uint8_t const in[16], uint8_t out[16])
-//{
-//  for(uint8_t i=0; i<16; i++)
-//  {
-//    out[i] = in[15-i];
-//  }
-//}
+const uint8_t UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD[16] =
+{
+  0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
+  0xA8, 0x42, 0x32, 0xC3, 0x01, 0x00, 0xAF, 0xAD
+};
+
+const uint8_t UUID128_CHR_ADAFRUIT_VERSION[16] =
+{
+  0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
+  0xA8, 0x42, 0x32, 0xC3, 0x02, 0x00, 0xAF, 0xAD
+};
 
 void BLEUuid::set(uint16_t uuid16)
 {
@@ -98,7 +102,7 @@ size_t BLEUuid::size (void) const
   return 0;
 }
 
-err_t BLEUuid::begin(void)
+bool BLEUuid::begin(void)
 {
   /* Add base uuid and decode to get uuid16
    * This should cover the already added base uuid128 previously
@@ -106,10 +110,10 @@ err_t BLEUuid::begin(void)
   if (_uuid.type == BLE_UUID_TYPE_UNKNOWN && _uuid128 != NULL )
   {
     (void) sd_ble_uuid_vs_add( (ble_uuid128_t const*) _uuid128, &_uuid.type );
-    VERIFY_STATUS( sd_ble_uuid_decode(16, _uuid128, &_uuid) );
+    VERIFY_STATUS( sd_ble_uuid_decode(16, _uuid128, &_uuid), false );
   }
 
-  return ERROR_NONE;
+  return true;
 }
 
 bool BLEUuid::operator== (const BLEUuid& uuid) const

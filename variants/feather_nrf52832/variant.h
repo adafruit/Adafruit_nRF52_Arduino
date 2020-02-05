@@ -87,7 +87,6 @@ static const uint8_t AREF = PIN_AREF;
 /*
  * Serial interfaces
  */
-// Serial
 #define PIN_SERIAL_RX       (8)
 #define PIN_SERIAL_TX       (6)
 
@@ -100,7 +99,7 @@ static const uint8_t AREF = PIN_AREF;
 #define PIN_SPI_MOSI         (13)
 #define PIN_SPI_SCK          (12)
 
-static const uint8_t SS   = 18 ;
+static const uint8_t SS   = 27 ;
 static const uint8_t MOSI = PIN_SPI_MOSI ;
 static const uint8_t MISO = PIN_SPI_MISO ;
 static const uint8_t SCK  = PIN_SPI_SCK ;

@@ -314,7 +314,7 @@ bool BLEMidi::isStatusByte( uint8_t b )
 bool BLEMidi::oneByteMessage( uint8_t status )
 {
   // system messages
-  if (status >= 0xF4 && status <= 0xFF) return true;
+  if (status >= 0xF4) return true;
 
   // system common
   if (status == 0xF1) return true;

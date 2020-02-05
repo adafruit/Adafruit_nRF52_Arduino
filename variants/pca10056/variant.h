@@ -55,6 +55,14 @@ extern "C"
 #define LED_STATE_ON         0         // State when LED is litted
 
 /*
+ * Buttons
+ */
+#define PIN_BUTTON1          11
+#define PIN_BUTTON2          12
+#define PIN_BUTTON3          24
+#define PIN_BUTTON4          25
+
+/*
  * Analog pins
  */
 #define PIN_A0               (3)
@@ -86,11 +94,14 @@ static const uint8_t AREF = PIN_AREF;
 /*
  * Serial interfaces
  */
-#define PIN_SERIAL_RX       (33)
-#define PIN_SERIAL_TX       (34)
 
-//#define PIN_SERIAL2_RX      (8)
-//#define PIN_SERIAL2_TX      (6)
+// Arduino Header D0, D1
+#define PIN_SERIAL1_RX      (33) // P1.01
+#define PIN_SERIAL1_TX      (34) // P1.02
+
+// Connected to Jlink CDC
+#define PIN_SERIAL2_RX      (8)
+#define PIN_SERIAL2_TX      (6)
 
 /*
  * SPI Interfaces
@@ -124,9 +135,7 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 
 // On-board QSPI Flash
 #define EXTERNAL_FLASH_DEVICES   MX25R6435F
-
-#define USB_MSC_BLOCK_SIZE    512
-#define USB_MSC_BLOCK_COUNT   ((8*1024*1024) / USB_MSC_BLOCK_SIZE)
+#define EXTERNAL_FLASH_USE_QSPI
 
 #ifdef __cplusplus
 }

@@ -46,9 +46,9 @@ typedef struct
 extern "C" {
 #endif
 
-uint32_t flash_cache_write (flash_cache_t* fc, uint32_t dst, void const *src, uint32_t count);
+int flash_cache_write (flash_cache_t* fc, uint32_t dst, void const *src, uint32_t count);
 void flash_cache_flush (flash_cache_t* fc);
-void flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t count);
+int flash_cache_read (flash_cache_t* fc, void* dst, uint32_t addr, uint32_t count);
 
 #ifdef __cplusplus
  }

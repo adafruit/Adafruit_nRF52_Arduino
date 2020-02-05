@@ -38,20 +38,19 @@
 #include "utility/bonding.h"
 
 #ifndef CFG_BLE_TX_POWER_LEVEL
-#define CFG_BLE_TX_POWER_LEVEL           0
+#define CFG_BLE_TX_POWER_LEVEL    0
 #endif
 
 #ifndef CFG_DEFAULT_NAME
-#define CFG_DEFAULT_NAME                 "Bluefruit52"
+#define CFG_DEFAULT_NAME          "Bluefruit52"
 #endif
 
-
 #ifndef CFG_BLE_TASK_STACKSIZE
-#define CFG_BLE_TASK_STACKSIZE          (512*3)
+#define CFG_BLE_TASK_STACKSIZE    (256*5)
 #endif
 
 #ifndef CFG_SOC_TASK_STACKSIZE
-#define CFG_SOC_TASK_STACKSIZE          (200)
+#define CFG_SOC_TASK_STACKSIZE    (200)
 #endif
 
 #ifdef USE_TINYUSB
@@ -103,7 +102,6 @@ static void bluefruit_blinky_cb( TimerHandle_t xTimer )
   digitalToggle(LED_BLUE);
 }
 
-
 static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
 {
 #if CFG_DEBUG
@@ -124,7 +122,10 @@ static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
     LOG_LV1("SD Err", "assert at %s : %d", assert_info->p_file_name, assert_info->line_num);
   }
 
-  while(1) { }
+  while(1)
+  {
+    yield();
+  }
 #endif
 }
 
@@ -143,7 +144,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   /*------------------------------------------------------------------*/
   varclr(&_sd_cfg);
 
-  _sd_cfg.attr_table_size = 0x800;
+  _sd_cfg.attr_table_size = CFG_SD_ATTR_TABLE_SIZE;
   _sd_cfg.uuid128_max     = BLE_UUID_VS_COUNT_DEFAULT;
   _sd_cfg.service_changed = 1;
 
@@ -207,10 +208,10 @@ void AdafruitBluefruit::configUuid128Count(uint8_t  uuid128_max)
 
 void AdafruitBluefruit::configAttrTableSize(uint32_t attr_table_size)
 {
-  _sd_cfg.attr_table_size = align4( maxof(attr_table_size, BLE_GATTS_ATTR_TAB_SIZE_MIN) );
+  _sd_cfg.attr_table_size = align4( maxof(attr_table_size, (uint32_t)(BLE_GATTS_ATTR_TAB_SIZE_MIN)) );
 }
 
-void AdafruitBluefruit::configPrphConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
+void AdafruitBluefruit::configPrphConn(uint16_t mtu_max, uint16_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
 {
   _sd_cfg.prph.mtu_max     = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);;
   _sd_cfg.prph.event_len   = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
@@ -218,7 +219,7 @@ void AdafruitBluefruit::configPrphConn(uint16_t mtu_max, uint8_t event_len, uint
   _sd_cfg.prph.wrcmd_qsize = wrcmd_qsize;
 }
 
-void AdafruitBluefruit::configCentralConn(uint16_t mtu_max, uint8_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
+void AdafruitBluefruit::configCentralConn(uint16_t mtu_max, uint16_t event_len, uint8_t hvn_qsize, uint8_t wrcmd_qsize)
 {
   _sd_cfg.central.mtu_max     = maxof(mtu_max, BLE_GATT_ATT_MTU_DEFAULT);;
   _sd_cfg.central.event_len   = maxof(event_len, BLE_GAP_EVENT_LENGTH_MIN);
@@ -249,7 +250,7 @@ void AdafruitBluefruit::configPrphBandwidth(uint8_t bw)
     break;
 
     case BANDWIDTH_MAX:
-      configPrphConn(247, 6, 3, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
+      configPrphConn(247, 100, 3, BLE_GATTC_WRITE_CMD_TX_QUEUE_SIZE_DEFAULT);
     break;
 
     default: break;
@@ -328,7 +329,7 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
    * prph and central connections for optimal SRAM usage.
    *
    * - If Peripheral mode is enabled
-   *   - ATTR Table Size          = 0x800.
+   *   - ATTR Table Size          = CFG_SD_ATTR_TABLE_SIZE.
    *   - HVN TX Queue Size        = 3
    *
    * - If Central mode is enabled
@@ -439,11 +440,11 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   if ( err )
   {
     LOG_LV1("CFG", "SoftDevice config require more SRAM than provided by linker.\n"
-                 "App Ram Start must be at least 0x%08X (provided 0x%08X)\n"
+                 "App Ram Start must be at least 0x%08lX (provided 0x%08lX)\n"
                  "Please update linker file or re-config SoftDevice", ram_start, (uint32_t) __data_start__);
   }
 
-  LOG_LV1("CFG", "SoftDevice's RAM requires: 0x%08X", ram_start);
+  LOG_LV1("CFG", "SoftDevice's RAM requires: 0x%08lX", ram_start);
   VERIFY_STATUS(err, false);
 
   /*------------- Configure BLE Option -------------*/
@@ -743,13 +744,14 @@ void adafruit_ble_task(void* arg)
 {
   (void) arg;
 
+  // malloc buffered is algined by 4
   uint8_t * ev_buf = (uint8_t*) rtos_malloc(BLE_EVT_LEN_MAX(BLE_GATT_ATT_MTU_MAX));
 
   while (1)
   {
     if ( xSemaphoreTake(Bluefruit._ble_event_sem, portMAX_DELAY) )
     {
-      uint32_t err = ERROR_NONE;
+      uint32_t err = NRF_SUCCESS;
 
       // Until no pending events
       while( NRF_ERROR_NOT_FOUND != err )
@@ -759,10 +761,13 @@ void adafruit_ble_task(void* arg)
         // Get BLE Event
         err = sd_ble_evt_get(ev_buf, &ev_len);
 
-        // Handle valid event, ignore error
-        if( ERROR_NONE == err)
+        // Handle valid event
+        if( NRF_SUCCESS == err)
         {
           Bluefruit._ble_handler( (ble_evt_t*) ev_buf );
+        }else if ( NRF_ERROR_NOT_FOUND != err )
+        {
+          LOG_LV1("BLE", "SD event error %s", dbg_err_str(err));
         }
       }
     }
@@ -779,7 +784,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   uint16_t const conn_hdl = evt->evt.common_evt.conn_handle;
   BLEConnection* conn = this->Connection(conn_hdl);
 
-  LOG_LV1("BLE", "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), conn_hdl);
+  LOG_LV2("BLE", "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), conn_hdl);
 
   // GAP handler
   if ( conn ) conn->_eventHandler(evt);
@@ -793,6 +798,9 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       _setConnLed(true);
 
       ble_gap_evt_connected_t const * para = &evt->evt.gap_evt.params.connected;
+
+      LOG_LV1("GAP", "Conn Interval= %.2f ms, Latency = %d, Supervisor Timeout = %d ms",
+              para->conn_params.max_conn_interval*1.25f, para->conn_params.slave_latency, 10*para->conn_params.conn_sup_timeout);
 
       if ( _connection[conn_hdl] )
       {
@@ -848,60 +856,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       if ( _rssi_cb )
       {
          ada_callback(NULL, 0, _rssi_cb, conn_hdl, rssi_changed->rssi);
-      }
-    }
-    break;
-
-    case BLE_GAP_EVT_DATA_LENGTH_UPDATE_REQUEST:
-    {
-      ble_gap_data_length_params_t* param = &evt->evt.gap_evt.params.data_length_update_request.peer_params;
-      (void) param;
-
-      LOG_LV2("GAP", "Data Length Req is (tx, rx) octets = (%d, %d), (tx, rx) time = (%d, %d) us",
-              param->max_tx_octets, param->max_rx_octets, param->max_tx_time_us, param->max_rx_time_us);
-
-      // Let Softdevice decide the data length
-      VERIFY_STATUS( sd_ble_gap_data_length_update(conn_hdl, NULL, NULL), );
-    }
-    break;
-
-    case BLE_GAP_EVT_DATA_LENGTH_UPDATE:
-    {
-      ble_gap_data_length_params_t* datalen =  &evt->evt.gap_evt.params.data_length_update.effective_params;
-      (void) datalen;
-
-      LOG_LV2("GAP", "Data Length is (tx, rx) octets = (%d, %d), (tx, rx) time = (%d, %d) us",
-                   datalen->max_tx_octets, datalen->max_rx_octets, datalen->max_tx_time_us, datalen->max_rx_time_us);
-    }
-    break;
-
-    case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
-    {
-      ble_gap_phys_t* req_phy = &evt->evt.gap_evt.params.phy_update_request.peer_preferred_phys;
-      char const *phy_str[] = { "Auto", "1 Mbps", "2 Mbps", "Coded" };
-
-      (void) req_phy;
-      (void) phy_str;
-      LOG_LV1("GAP", "PHY request tx: %s, rx: %s", phy_str[req_phy->tx_phys], phy_str[req_phy->rx_phys]);
-
-      // Tell SoftDevice to choose PHY automatically
-      ble_gap_phys_t phy = { BLE_GAP_PHY_AUTO, BLE_GAP_PHY_AUTO };
-      (void) sd_ble_gap_phy_update(conn_hdl, &phy);
-    }
-    break;
-
-    case BLE_GAP_EVT_PHY_UPDATE:
-    {
-      ble_gap_evt_phy_update_t* active_phy = &evt->evt.gap_evt.params.phy_update;
-
-      if ( active_phy->status != BLE_HCI_STATUS_CODE_SUCCESS )
-      {
-        LOG_LV1("GAP", "Failed HCI status = 0x%02X", active_phy->status);
-      }else
-      {
-        char const *phy_str[] = { "Auto", "1 Mbps", "2 Mbps", "Coded" };
-        (void) phy_str;
-        LOG_LV1("GAP", "PHY active tx: %s, rx: %s", phy_str[active_phy->tx_phy], phy_str[active_phy->rx_phy]);
       }
     }
     break;

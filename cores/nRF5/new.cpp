@@ -19,6 +19,10 @@
 #include <stdlib.h>
 #include "rtos.h"
 
+#include <errno.h>
+#include <sys/stat.h>
+#include <malloc.h>
+
 void *operator new(size_t size) {
   return rtos_malloc(size);
 }
@@ -41,4 +45,47 @@ void operator delete(void * ptr, unsigned int) {
 
 void operator delete[](void * ptr, unsigned int) {
   rtos_free(ptr);
+}
+
+
+extern "C"
+{
+
+// defined in linker script
+extern unsigned char __HeapBase[];
+extern unsigned char __HeapLimit[];
+
+static unsigned char *sbrk_heap_top = __HeapBase;
+
+__attribute__((used))
+caddr_t _sbrk( int incr )
+{
+  unsigned char *prev_heap;
+
+  if ( sbrk_heap_top + incr > __HeapLimit )
+  {
+    /* Out of dynamic memory heap space */
+    errno = ENOMEM;
+    return (caddr_t) -1;
+  }
+
+  prev_heap = sbrk_heap_top;
+
+  sbrk_heap_top += incr;
+
+  return (caddr_t) prev_heap;
+}
+
+void __malloc_lock(struct _reent *ptr)
+{
+  (void) ptr;
+  vTaskSuspendAll();
+}
+
+void __malloc_unlock(struct _reent *ptr)
+{
+  (void) ptr;
+  xTaskResumeAll();
+}
+
 }

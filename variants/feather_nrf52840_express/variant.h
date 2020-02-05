@@ -55,13 +55,10 @@ extern "C"
 
 #define LED_STATE_ON         1         // State when LED is litted
 
-// Buttons
 /*
-#define PIN_BUTTON1             (2)
-#define PIN_BUTTON2             (3)
-#define PIN_BUTTON3             (4)
-#define PIN_BUTTON4             (5)
-*/
+ * Buttons
+ */
+#define PIN_BUTTON1             (7)
 
 /*
  * Analog pins
@@ -96,9 +93,8 @@ static const uint8_t AREF = PIN_AREF;
 /*
  * Serial interfaces
  */
-// Serial
-#define PIN_SERIAL_RX       (1)
-#define PIN_SERIAL_TX       (0)
+#define PIN_SERIAL1_RX       (1)
+#define PIN_SERIAL1_TX       (0)
 
 /*
  * SPI Interfaces
@@ -132,9 +128,7 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 
 // On-board QSPI Flash
 #define EXTERNAL_FLASH_DEVICES   GD25Q16C
-
-#define USB_MSC_BLOCK_SIZE    512
-#define USB_MSC_BLOCK_COUNT   ((2*1024*1024) / USB_MSC_BLOCK_SIZE)
+#define EXTERNAL_FLASH_USE_QSPI
 
 #ifdef __cplusplus
 }

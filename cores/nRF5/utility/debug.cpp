@@ -425,12 +425,13 @@ lookup_table_t const _strerr_table =
 
 const char* dbg_err_str(int32_t err_id)
 {
+  // TODO: verify it would be safe to change to int16_t
   const char * str = (const char *) lookup_find(&_strerr_table, err_id);
   static char unknown_str[7] = {0};
 
   if ( str == NULL )
   {
-    sprintf(unknown_str, "0x%04X", err_id);
+    sprintf(unknown_str, "0x%04lX", (uint32_t)err_id);
     str = unknown_str;
   }
 

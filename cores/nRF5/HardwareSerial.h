@@ -20,49 +20,43 @@
 #define HardwareSerial_h
 
 #include <inttypes.h>
+#include <nrf.h>
 
 #include "Stream.h"
 
-#define HARDSER_PARITY_EVEN (0x1ul)
-#define HARDSER_PARITY_ODD	(0x2ul)
-#define HARDSER_PARITY_NONE (0x3ul)
-#define HARDSER_PARITY_MASK	(0xFul)
+// below configs are not supported by nRF52
+// #define SERIAL_5N1
+// #define SERIAL_6N1
+// #define SERIAL_7N1
+// #define SERIAL_5N2
+// #define SERIAL_6N2
+// #define SERIAL_7N2
+// #define SERIAL_5E1
+// #define SERIAL_6E1
+// #define SERIAL_7E1
+// #define SERIAL_5E2
+// #define SERIAL_6E2
+// #define SERIAL_7E2
+// #define SERIAL_5O1
+// #define SERIAL_6O1
+// #define SERIAL_7O1
+// #define SERIAL_8O1
+// #define SERIAL_5O2
+// #define SERIAL_6O2
+// #define SERIAL_7O2
+// #define SERIAL_8O2
 
-#define HARDSER_STOP_BIT_1		(0x10ul)
-#define HARDSER_STOP_BIT_1_5	(0x20ul)
-#define HARDSER_STOP_BIT_2	 	(0x30ul)
-#define HARDSER_STOP_BIT_MASK	(0xF0ul)
-
-#define HARDSER_DATA_5	 	(0x100ul)
-#define HARDSER_DATA_6	 	(0x200ul)
-#define HARDSER_DATA_7	 	(0x300ul)
-#define HARDSER_DATA_8	 	(0x400ul)
-#define HARDSER_DATA_MASK	(0xF00ul)
-
-#define SERIAL_5N1	(HARDSER_STOP_BIT_1 | HARDSER_PARITY_NONE | HARDSER_DATA_5)
-#define SERIAL_6N1	(HARDSER_STOP_BIT_1 | HARDSER_PARITY_NONE | HARDSER_DATA_6)
-#define SERIAL_7N1	(HARDSER_STOP_BIT_1 | HARDSER_PARITY_NONE | HARDSER_DATA_7)
-#define SERIAL_8N1	(HARDSER_STOP_BIT_1 | HARDSER_PARITY_NONE | HARDSER_DATA_8)
-#define SERIAL_5N2	(HARDSER_STOP_BIT_2 | HARDSER_PARITY_NONE | HARDSER_DATA_5)
-#define SERIAL_6N2	(HARDSER_STOP_BIT_2 | HARDSER_PARITY_NONE | HARDSER_DATA_6)
-#define SERIAL_7N2	(HARDSER_STOP_BIT_2 | HARDSER_PARITY_NONE | HARDSER_DATA_7)
-#define SERIAL_8N2	(HARDSER_STOP_BIT_2 | HARDSER_PARITY_NONE | HARDSER_DATA_8)
-#define SERIAL_5E1	(HARDSER_STOP_BIT_1 | HARDSER_PARITY_EVEN | HARDSER_DATA_5)
-#define SERIAL_6E1	(HARDSER_STOP_BIT_1 | HARDSER_PARITY_EVEN | HARDSER_DATA_6)
-#define SERIAL_7E1	(HARDSER_STOP_BIT_1 | HARDSER_PARITY_EVEN | HARDSER_DATA_7)
-#define SERIAL_8E1	(HARDSER_STOP_BIT_1 | HARDSER_PARITY_EVEN | HARDSER_DATA_8)
-#define SERIAL_5E2	(HARDSER_STOP_BIT_2 | HARDSER_PARITY_EVEN | HARDSER_DATA_5)
-#define SERIAL_6E2	(HARDSER_STOP_BIT_2 | HARDSER_PARITY_EVEN | HARDSER_DATA_6)
-#define SERIAL_7E2	(HARDSER_STOP_BIT_2 | HARDSER_PARITY_EVEN | HARDSER_DATA_7)
-#define SERIAL_8E2	(HARDSER_STOP_BIT_2 | HARDSER_PARITY_EVEN | HARDSER_DATA_8)
-#define SERIAL_5O1	(HARDSER_STOP_BIT_1 | HARDSER_PARITY_ODD  | HARDSER_DATA_5)
-#define SERIAL_6O1	(HARDSER_STOP_BIT_1 | HARDSER_PARITY_ODD  | HARDSER_DATA_6)
-#define SERIAL_7O1	(HARDSER_STOP_BIT_1 | HARDSER_PARITY_ODD  | HARDSER_DATA_7)
-#define SERIAL_8O1	(HARDSER_STOP_BIT_1 | HARDSER_PARITY_ODD  | HARDSER_DATA_8)
-#define SERIAL_5O2	(HARDSER_STOP_BIT_2 | HARDSER_PARITY_ODD  | HARDSER_DATA_5)
-#define SERIAL_6O2	(HARDSER_STOP_BIT_2 | HARDSER_PARITY_ODD  | HARDSER_DATA_6)
-#define SERIAL_7O2	(HARDSER_STOP_BIT_2 | HARDSER_PARITY_ODD  | HARDSER_DATA_7)
-#define SERIAL_8O2	(HARDSER_STOP_BIT_2 | HARDSER_PARITY_ODD  | HARDSER_DATA_8)
+#ifdef NRF52832_XXAA
+  #define SERIAL_8N1	(UARTE_CONFIG_PARITY_Excluded << UARTE_CONFIG_PARITY_Pos)
+  #define SERIAL_8E1	(UARTE_CONFIG_PARITY_Included << UARTE_CONFIG_PARITY_Pos)
+#elif defined(NRF52840_XXAA)
+  #define SERIAL_8N1	((UARTE_CONFIG_STOP_One << UARTE_CONFIG_STOP_Pos) | (UARTE_CONFIG_PARITY_Excluded << UARTE_CONFIG_PARITY_Pos))
+  #define SERIAL_8N2	((UARTE_CONFIG_STOP_Two << UARTE_CONFIG_STOP_Pos) | (UARTE_CONFIG_PARITY_Excluded << UARTE_CONFIG_PARITY_Pos))
+  #define SERIAL_8E1	((UARTE_CONFIG_STOP_One << UARTE_CONFIG_STOP_Pos) | (UARTE_CONFIG_PARITY_Included << UARTE_CONFIG_PARITY_Pos))
+  #define SERIAL_8E2	((UARTE_CONFIG_STOP_Two << UARTE_CONFIG_STOP_Pos) | (UARTE_CONFIG_PARITY_Included << UARTE_CONFIG_PARITY_Pos))
+#else
+  #error Unsupported MCU
+#endif
 
 class HardwareSerial : public Stream
 {
@@ -75,11 +69,17 @@ class HardwareSerial : public Stream
     virtual int read(void) = 0;
     virtual void flush(void) = 0;
     virtual size_t write(uint8_t) = 0;
-    using Print::write; // pull in write(str) and write(buf, size) from Print
+    virtual size_t write(const uint8_t *buffer, size_t size) = 0;
+    using Print::write; // pull in write(str) from Print
     virtual operator bool() = 0;
 };
 
 extern void serialEventRun(void) __attribute__((weak));
 extern void serialEvent() __attribute__((weak));
+
+#ifndef NRF52832_XXAA // 832 only has 1 UART for Serial
+extern void serialEvent1() __attribute__((weak));
+extern void serialEvent2() __attribute__((weak));
+#endif
 
 #endif

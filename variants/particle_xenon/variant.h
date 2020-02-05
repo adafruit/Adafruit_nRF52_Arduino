@@ -74,40 +74,40 @@ static const uint8_t D1  = PIN_D1;
 static const uint8_t D2  = PIN_D2;
 static const uint8_t D3  = PIN_D4;
 static const uint8_t D5  = PIN_D5;
-static const uint8_t D6  = PIN_D0;
-static const uint8_t D7  = PIN_D1;
-static const uint8_t D8  = PIN_D2;
-static const uint8_t D9  = PIN_D4;
-static const uint8_t D10 = PIN_D5;
-static const uint8_t D11 = PIN_D0;
-static const uint8_t D12 = PIN_D1;
-static const uint8_t D13 = PIN_D2;
-static const uint8_t D14 = PIN_D4;
-static const uint8_t D15 = PIN_D5;
-static const uint8_t D16 = PIN_D0;
-static const uint8_t D17 = PIN_D1;
-static const uint8_t D18 = PIN_D2;
-static const uint8_t D19 = PIN_D4;
-static const uint8_t D20 = PIN_D5;
+static const uint8_t D6  = PIN_D6;
+static const uint8_t D7  = PIN_D7;
+static const uint8_t D8  = PIN_D8;
+static const uint8_t D9  = PIN_D9;
+static const uint8_t D10 = PIN_D10;
+static const uint8_t D11 = PIN_D11;
+static const uint8_t D12 = PIN_D12;
+static const uint8_t D13 = PIN_D13;
+static const uint8_t D14 = PIN_D14;
+static const uint8_t D15 = PIN_D15;
+static const uint8_t D16 = PIN_D16;
+static const uint8_t D17 = PIN_D17;
+static const uint8_t D18 = PIN_D18;
+static const uint8_t D19 = PIN_D19;
+static const uint8_t D20 = PIN_D20;
 
 // LEDs
- #define LEDS_NUMBER    1
- #define LED_PRIMARY_PIN            _PINNUM(1, 12)
- #define LED_STATE_ON   1
- #define LED_PRIMARY_IDX 0
- #define LED_RGB_RED_IDX 1
- #define LED_RGB_GREEN_IDX 2
- #define LED_RGB_BLUE_IDX 3
+#define LEDS_NUMBER    1
+#define LED_PRIMARY_PIN            _PINNUM(1, 12)
+#define LED_STATE_ON   1
+#define LED_PRIMARY_IDX 0
+#define LED_RGB_RED_IDX 1
+#define LED_RGB_GREEN_IDX 2
+#define LED_RGB_BLUE_IDX 3
 
- #define LED_RGB_RED_PIN            _PINNUM(0, 13)
- #define LED_RGB_GREEN_PIN          _PINNUM(0, 14)
- #define LED_RGB_BLUE_PIN           _PINNUM(0, 15)
- #define BOARD_RGB_BRIGHTNESS 0x202020
+#define LED_RGB_RED_PIN            _PINNUM(0, 13)
+#define LED_RGB_GREEN_PIN          _PINNUM(0, 14)
+#define LED_RGB_BLUE_PIN           _PINNUM(0, 15)
+#define BOARD_RGB_BRIGHTNESS 0x202020
 
- static const uint8_t LED_BUILTIN   = LED_PRIMARY_PIN;
- static const uint8_t LED_RGB_RED   = LED_RGB_RED_PIN;
- static const uint8_t LED_RGB_GREEN = LED_RGB_GREEN_PIN;
- static const uint8_t LED_RGB_BLUE  = LED_RGB_BLUE_PIN;
+static const uint8_t LED_BUILTIN   = LED_PRIMARY_PIN;
+static const uint8_t LED_RGB_RED   = LED_RGB_RED_PIN;
+static const uint8_t LED_RGB_GREEN = LED_RGB_GREEN_PIN;
+static const uint8_t LED_RGB_BLUE  = LED_RGB_BLUE_PIN;
 
 // Buttons
 #define BUTTONS_NUMBER 2
@@ -146,12 +146,8 @@ static const uint8_t A5  = PIN_A5 ;
 /*
  * Serial interfaces
  */
-// Serial
-#define PIN_SERIAL_RX         (10)
-#define PIN_SERIAL_TX         (9)
-#define PIN_SERIAL2_RX        (5)
-#define PIN_SERIAL2_TX        (6)
-//#define HAVE_HWSERIAL2  true  // TODO: implement UARTE in Uart.cpp
+#define PIN_SERIAL1_RX         PIN_D9
+#define PIN_SERIAL1_TX         PIN_D10
 
 /*
  * SPI Interfaces
@@ -200,6 +196,7 @@ void pwm_teardown(NRF_PWM_Type* pwm);
 void ledWrite(uint32_t led_pin, uint8_t value);
 void rgbLedWrite(uint8_t red, uint8_t green, uint8_t blue);
 static uint16_t led_duty_cycles[PWM0_CH_NUM] = { 0 };
+#define EXTERNAL_FLASH_USE_QSPI
 
 #ifdef __cplusplus
 }

@@ -57,14 +57,20 @@ extern "C"
 //--------------------------------------------------------------------+
 #if CFG_DEBUG >= 1
 #include <stdio.h>
-
-  #define VERIFY_MESS(_status, _funcstr) \
-    do { \
-      const char* (*_fstr)(int32_t) = _funcstr;\
-      printf("%s: %d: verify failed, error = ", __PRETTY_FUNCTION__, __LINE__);\
-      if (_fstr) printf(_fstr(_status)); else printf("%d", _status);\
-      printf("\n");\
-    }while(0)
+  #define VERIFY_MESS(_status, _functstr) VERIFY_MESS_impl(_status, _functstr, __PRETTY_FUNCTION__, __LINE__)
+  static inline void VERIFY_MESS_impl(int32_t _status, const char* (*_fstr)(int32_t), const char* func_name, int line_number)
+  {
+      printf("%s: %d: verify failed, error = ", func_name, line_number);
+      if (_fstr)
+      {
+        printf(_fstr(_status));
+      }
+      else
+      {
+        printf("%ld", _status);
+      }
+      printf("\n");
+  }
 #else
   #define VERIFY_MESS(_status, _funcstr)
 #endif

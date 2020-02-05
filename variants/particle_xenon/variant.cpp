@@ -53,6 +53,7 @@ const uint32_t g_ADigitalPinMap[] =
   _PINNUM(0, 18),   // P0.18 (RESET)
 };
 
+<<<<<<< HEAD
 void initVariant()
 {
   switch_antenna(false);
@@ -64,6 +65,9 @@ void initVariant()
 }
 
 void switch_antenna(bool useExternal) {
+=======
+static void switch_antenna(bool useExternal) {
+>>>>>>> fd02ea28ba967223d8c04ba1719bf59c57a56d5e
   if (useExternal) {
     digitalWrite(ANTENNA_SWITCH_1, LOW);
     digitalWrite(ANTENNA_SWITCH_2, HIGH);
@@ -74,42 +78,11 @@ void switch_antenna(bool useExternal) {
   }
 }
 
-void led_pwm_init(uint32_t led_index, uint32_t led_pin) {
-  NRF_PWM_Type* pwm    = NRF_PWM0;
-
-  pwm->ENABLE = 0;
-
-  nrf_gpio_cfg_output(led_pin);
-  nrf_gpio_pin_write(led_pin, 1 - LED_STATE_ON);
-
-  pwm->PSEL.OUT[led_index] = led_pin;
-
-  pwm->MODE            = PWM_MODE_UPDOWN_Up;
-  pwm->COUNTERTOP      = 0xff;
-  pwm->PRESCALER       = PWM_PRESCALER_PRESCALER_DIV_16;
-  pwm->DECODER         = PWM_DECODER_LOAD_Individual;
-  pwm->LOOP            = 0;
-
-  pwm->SEQ[0].PTR      = (uint32_t) (led_duty_cycles);
-  pwm->SEQ[0].CNT      = 4; // default mode is Individual --> count must be 4
-  pwm->SEQ[0].REFRESH  = 0;
-  pwm->SEQ[0].ENDDELAY = 0;
-
-  pwm->ENABLE = 1;
-
-  pwm->EVENTS_SEQEND[0] = 0;
-//  pwm->TASKS_SEQSTART[0] = 1;
+void initVariant()
+{
+  switch_antenna(false);
 }
-
-void led_pwm_teardown(void) {
-  pwm_teardown(NRF_PWM0);
-}
-
-void led_pwm_duty_cycle(uint32_t led_index, uint16_t duty_cycle) {
-  led_duty_cycles[led_index] = duty_cycle;
-  nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_SEQEND0);
-  nrf_pwm_task_trigger(NRF_PWM0, NRF_PWM_TASK_SEQSTART0);
-}
+<<<<<<< HEAD
 
 void ledWrite(uint32_t led_pin, uint8_t value) {
   uint32_t index = -1;
@@ -155,3 +128,5 @@ void pwm_teardown(NRF_PWM_Type* pwm) {
   pwm->SEQ[0].PTR  = 0;
   pwm->SEQ[0].CNT  = 0;
 }
+=======
+>>>>>>> fd02ea28ba967223d8c04ba1719bf59c57a56d5e

@@ -1,0 +1,59 @@
+name: Build
+
+on: [pull_request, push]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        arduino-platform: ['feather52832', 'feather52840', 'feather52840sense', 'cplaynrf52840', 'itsybitsy52840', 'cluenrf52840' ]
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Setup Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+        
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Checkout submodules
+      shell: bash
+      run: |
+        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+        git submodule sync --recursive
+        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive      
+        
+    - name: Install Arduino CLI and Tools
+      run: |
+        pip3 install adafruit-nrfutil
+        # make all our directories we need for files and libraries
+        mkdir $HOME/.arduino15
+        mkdir $HOME/.arduino15/packages
+        mkdir $HOME/Arduino
+        mkdir $HOME/Arduino/libraries
+        curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+        echo "::add-path::$GITHUB_WORKSPACE/bin"
+        
+    - name: Install BSP and Libraries
+      env:
+        BSP_URL: https://adafruit.github.io/arduino-board-index/package_adafruit_index.json
+        BSP_PATH: .arduino15/packages/adafruit/hardware/nrf52
+      run: |
+        arduino-cli config init
+        arduino-cli core update-index
+        arduino-cli core update-index --additional-urls $BSP_URL
+        arduino-cli core install adafruit:nrf52 --additional-urls $BSP_URL
+        # Repalce release BSP with our code
+        BSP_VERSION=`eval ls $HOME/$BSP_PATH`
+        rm -r $HOME/$BSP_PATH/*
+        ln -s $GITHUB_WORKSPACE $HOME/$BSP_PATH/$BSP_VERSION
+        # Install library dependency
+        arduino-cli lib install "Adafruit GFX Library" "Adafruit SSD1306" "Adafruit ILI9341" "Adafruit HX8357 Library" "Adafruit EPD" 
+        arduino-cli lib install "Adafruit Circuit Playground" "Adafruit NeoPixel" "Adafruit NeoMatrix" "MIDI Library" "Firmata"
+
+    - name: Build examples
+      run: python3 tools/build_all.py ${{ matrix.arduino-platform }}

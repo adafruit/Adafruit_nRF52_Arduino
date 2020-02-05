@@ -167,9 +167,6 @@ void connect_callback(uint16_t conn_handle)
   Serial.print("Connect Callback, conn_handle: "); 
   Serial.println( conn_handle );
    
-  /* Complete Local Name */
-  uint8_t buffer[BLE_GAP_ADV_SET_DATA_SIZE_MAX] = { 0 };
-  
   // If Service is not found, disconnect and return
   Serial.print("Discovering Optical Service ... ");
   if ( !sensorTagOpticalService.discover(conn_handle) )
@@ -244,7 +241,7 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   (void) conn_handle;
   (void) reason;
 
-  Serial.println("Disconnected");
+  Serial.print("Disconnected, reason = 0x"); Serial.println(reason, HEX);
 }
 
 /**
