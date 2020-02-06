@@ -53,7 +53,6 @@ const uint32_t g_ADigitalPinMap[] =
   _PINNUM(0, 18),   // P0.18 (RESET)
 };
 
-<<<<<<< HEAD
 void initVariant()
 {
   switch_antenna(false);
@@ -64,10 +63,7 @@ void initVariant()
   led_pwm_init(LED_RGB_GREEN_IDX, LED_RGB_GREEN_PIN);
 }
 
-void switch_antenna(bool useExternal) {
-=======
 static void switch_antenna(bool useExternal) {
->>>>>>> fd02ea28ba967223d8c04ba1719bf59c57a56d5e
   if (useExternal) {
     digitalWrite(ANTENNA_SWITCH_1, LOW);
     digitalWrite(ANTENNA_SWITCH_2, HIGH);
@@ -82,7 +78,6 @@ void initVariant()
 {
   switch_antenna(false);
 }
-<<<<<<< HEAD
 
 void ledWrite(uint32_t led_pin, uint8_t value) {
   uint32_t index = -1;
@@ -128,5 +123,3 @@ void pwm_teardown(NRF_PWM_Type* pwm) {
   pwm->SEQ[0].PTR  = 0;
   pwm->SEQ[0].CNT  = 0;
 }
-=======
->>>>>>> fd02ea28ba967223d8c04ba1719bf59c57a56d5e
