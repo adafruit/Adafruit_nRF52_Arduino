@@ -186,7 +186,9 @@ static const uint8_t SCK1  = PIN_SPI1_SCK;
 #define USB_MSC_BLOCK_SIZE    512
 #define USB_MSC_BLOCK_COUNT   ((2*1024*1024) / USB_MSC_BLOCK_SIZE)
 
-void switch_antenna(bool useExternal);
+#define EXTERNAL_FLASH_USE_QSPI
+
+static void switch_antenna(bool useExternal);
 
 // led pwm
 void led_pwm_init(uint32_t led_index, uint32_t led_pin);
@@ -196,7 +198,7 @@ void pwm_teardown(NRF_PWM_Type* pwm);
 void ledWrite(uint32_t led_pin, uint8_t value);
 void rgbLedWrite(uint8_t red, uint8_t green, uint8_t blue);
 static uint16_t led_duty_cycles[PWM0_CH_NUM] = { 0 };
-#define EXTERNAL_FLASH_USE_QSPI
+
 
 #ifdef __cplusplus
 }

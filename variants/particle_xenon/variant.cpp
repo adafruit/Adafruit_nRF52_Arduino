@@ -63,7 +63,7 @@ void initVariant()
   led_pwm_init(LED_RGB_GREEN_IDX, LED_RGB_GREEN_PIN);
 }
 
-static void switch_antenna(bool useExternal) {
+void switch_antenna(bool useExternal) {
   if (useExternal) {
     digitalWrite(ANTENNA_SWITCH_1, LOW);
     digitalWrite(ANTENNA_SWITCH_2, HIGH);
