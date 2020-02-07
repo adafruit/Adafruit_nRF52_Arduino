@@ -37,7 +37,7 @@ const uint32_t g_ADigitalPinMap[] =
   _PINNUM(1, 26),   // P1.12 (PWM0)
   _PINNUM(1, 26),   // P1.03 (UART2_RTS)
 
-  // D9 .. D20
+  // D9 .. D21
   _PINNUM(0, 6),    // P0.06 (UART1_TX)
   _PINNUM(0, 8),    // P0.08 (UART1_RX)
   _PINNUM(1, 14),   // P1.14 (SPI_MISO)
@@ -51,75 +51,30 @@ const uint32_t g_ADigitalPinMap[] =
   _PINNUM(0, 3),    // P0.03 (PWM2) (ADC0)
   _PINNUM(0, 11),   // P0.11 (MODE)
   _PINNUM(0, 18),   // P0.18 (RESET)
+
+  // LEDS
+  _PINNUM(1, 12),   // P1.12 (PRIMARY_LED)
+  _PINNUM(0, 13),   // P0.13 (RGB_RED)
+  _PINNUM(0, 14),   // P0.14 (RGB_GREEN)
+  _PINNUM(0, 15),   // P0.15 (RGB_BLUE) 
+
+  // Antenna
+  _PINNUM(0, 24),   // P0.24 (ANTENNA_SWITCH_1 - PCB ANTENNA)
+  _PINNUM(0, 25),   // P0.25 (ANTENNA_SWITCH_2 - EXTERNAL u.FL)
+
+  // NFC
+  _PINNUM(0, 9),    // P0.09 (u.FL FOR NFC ANTENNA)
+  _PINNUM(0, 10),   // P0.10 (u.FL FOR NFC ANTENNA)
+
+  // Analog Pins A0 .. A5
+  _PINNUM(0, 3),    // P0.03 (A0)
+  _PINNUM(0, 4),    // P0.04 (A1)
+  _PINNUM(0, 28),   // P0.04 (A2)
+  _PINNUM(0, 29),   // P0.04 (A3)
+  _PINNUM(0, 30),   // P0.04 (A4)
+  _PINNUM(0, 31),   // P0.04 (A5)
 };
 
 void initVariant()
 {
-  switch_antenna(false);
-
-  led_pwm_init(LED_PRIMARY_IDX, LED_PRIMARY_PIN);
-  led_pwm_init(LED_RGB_RED_IDX, LED_RGB_RED_PIN);
-  led_pwm_init(LED_RGB_BLUE_IDX, LED_RGB_BLUE_PIN);
-  led_pwm_init(LED_RGB_GREEN_IDX, LED_RGB_GREEN_PIN);
-}
-
-void switch_antenna(bool useExternal) {
-  if (useExternal) {
-    digitalWrite(ANTENNA_SWITCH_1, LOW);
-    digitalWrite(ANTENNA_SWITCH_2, HIGH);
-  }
-  else {
-    digitalWrite(ANTENNA_SWITCH_1, HIGH);
-    digitalWrite(ANTENNA_SWITCH_2, LOW);
-  }
-}
-
-void initVariant()
-{
-  switch_antenna(false);
-}
-
-void ledWrite(uint32_t led_pin, uint8_t value) {
-  uint32_t index = -1;
-  switch (led_pin) {
-    case LED_PRIMARY_PIN:
-      index = LED_PRIMARY_IDX;
-      break;
-    case LED_RGB_RED_PIN:
-      index = LED_RGB_RED_IDX;
-      break;
-    case LED_RGB_GREEN_PIN:
-      index = LED_RGB_GREEN_IDX;
-      break;
-    case LED_RGB_BLUE_PIN:
-      index = LED_RGB_BLUE_IDX;
-      break;
-  }
-
-  if (index != -1)
-    led_pwm_duty_cycle(index, value);
-}
-
-void rgbLedWrite(uint8_t red, uint8_t green, uint8_t blue) {
-  led_pwm_duty_cycle(LED_RGB_RED_IDX, red);
-  led_pwm_duty_cycle(LED_RGB_GREEN_IDX, green);
-  led_pwm_duty_cycle(LED_RGB_BLUE_IDX, blue);
-}
-
-void pwm_teardown(NRF_PWM_Type* pwm) {
-  pwm->TASKS_SEQSTART[0] = 0;
-  pwm->ENABLE            = 0;
-
-  pwm->PSEL.OUT[0] = 0xFFFFFFFF;
-  pwm->PSEL.OUT[1] = 0xFFFFFFFF;
-  pwm->PSEL.OUT[2] = 0xFFFFFFFF;
-  pwm->PSEL.OUT[3] = 0xFFFFFFFF;
-
-  pwm->MODE        = 0;
-  pwm->COUNTERTOP  = 0x3FF;
-  pwm->PRESCALER   = 0;
-  pwm->DECODER     = 0;
-  pwm->LOOP        = 0;
-  pwm->SEQ[0].PTR  = 0;
-  pwm->SEQ[0].CNT  = 0;
 }

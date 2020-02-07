@@ -20,6 +20,7 @@
 #define _VARIANT_PARTICLE_XENON_
 
 #define _PINNUM(port, pin)    ((port)*32 + (pin))
+#define NRF52
 
 /** Master clock frequency */
 #define VARIANT_MCK       (64000000ul)
@@ -69,98 +70,91 @@ extern "C"
 #define PIN_D19              _PINNUM(0, 3)
 #define PIN_D20              _PINNUM(0, 11)
 
-static const uint8_t D0  = PIN_D0;
-static const uint8_t D1  = PIN_D1;
-static const uint8_t D2  = PIN_D2;
-static const uint8_t D3  = PIN_D4;
-static const uint8_t D5  = PIN_D5;
-static const uint8_t D6  = PIN_D6;
-static const uint8_t D7  = PIN_D7;
-static const uint8_t D8  = PIN_D8;
-static const uint8_t D9  = PIN_D9;
-static const uint8_t D10 = PIN_D10;
-static const uint8_t D11 = PIN_D11;
-static const uint8_t D12 = PIN_D12;
-static const uint8_t D13 = PIN_D13;
-static const uint8_t D14 = PIN_D14;
-static const uint8_t D15 = PIN_D15;
-static const uint8_t D16 = PIN_D16;
-static const uint8_t D17 = PIN_D17;
-static const uint8_t D18 = PIN_D18;
-static const uint8_t D19 = PIN_D19;
-static const uint8_t D20 = PIN_D20;
+static const uint8_t D0  = (0);
+static const uint8_t D1  = (1);
+static const uint8_t D2  = (2);
+static const uint8_t D3  = (3);
+static const uint8_t D4  = (4);
+static const uint8_t D5  = (5);
+static const uint8_t D6  = (6);
+static const uint8_t D7  = (7);
+static const uint8_t D8  = (8);
+static const uint8_t D9  = (9);
+static const uint8_t D10 = (10);
+static const uint8_t D11 = (11);
+static const uint8_t D12 = (12);
+static const uint8_t D13 = (13);
+static const uint8_t D14 = (14);
+static const uint8_t D15 = (15);
+static const uint8_t D16 = (16);
+static const uint8_t D17 = (17);
+static const uint8_t D18 = (18);
+static const uint8_t D19 = (19);
+static const uint8_t D20 = (20);
 
 // LEDs
 #define LEDS_NUMBER    1
-#define LED_PRIMARY_PIN            _PINNUM(1, 12)
 #define LED_STATE_ON   1
-#define LED_PRIMARY_IDX 0
-#define LED_RGB_RED_IDX 1
-#define LED_RGB_GREEN_IDX 2
-#define LED_RGB_BLUE_IDX 3
 
-#define LED_RGB_RED_PIN            _PINNUM(0, 13)
-#define LED_RGB_GREEN_PIN          _PINNUM(0, 14)
-#define LED_RGB_BLUE_PIN           _PINNUM(0, 15)
 #define BOARD_RGB_BRIGHTNESS 0x202020
 
-static const uint8_t LED_BUILTIN   = LED_PRIMARY_PIN;
-static const uint8_t LED_RGB_RED   = LED_RGB_RED_PIN;
-static const uint8_t LED_RGB_GREEN = LED_RGB_GREEN_PIN;
-static const uint8_t LED_RGB_BLUE  = LED_RGB_BLUE_PIN;
+static const uint8_t LED_BUILTIN   = (22);
+static const uint8_t LED_RGB_RED   = (23);
+static const uint8_t LED_RGB_GREEN = (24);
+static const uint8_t LED_RGB_BLUE  = (25);
 
 // Buttons
 #define BUTTONS_NUMBER 2
-#define BUTTON_DFU                  _PINNUM(0, 11)
-#define BUTTON_FRESET               _PINNUM(0, 03) // A0
+#define BUTTON_DFU                  (20)
+#define BUTTON_FRESET               (21) // A0
 #define BUTTON_PULL    NRF_GPIO_PIN_PULLUP
 
-static const uint8_t BUTTON_MODE = PIN_D20;
+static const uint8_t BUTTON_MODE =  (20);
 
 // Antenna
-#define ANTENNA_SWITCH_1            _PINNUM(0, 24)
-#define ANTENNA_SWITCH_2            _PINNUM(0, 25)
+#define ANTENNA_SWITCH_1            (26)
+#define ANTENNA_SWITCH_2            (27)
 
 // NFC
-#define NFC1                        _PINNUM(0, 9)
-#define NFC2                        _PINNUM(0, 10)
+#define NFC1                        (28)
+#define NFC2                        (29)
 
 /*
  * Analog pins
  */
-#define PIN_A0                      _PINNUM(0, 3)
-#define PIN_A1                      _PINNUM(0, 4)
-#define PIN_A2                      _PINNUM(0, 28)
-#define PIN_A3                      _PINNUM(0, 29)
-#define PIN_A4                      _PINNUM(0, 30)
-#define PIN_A5                      _PINNUM(0, 31)
+#define PIN_A0                      (30)
+#define PIN_A1                      (31)
+#define PIN_A2                      (32)
+#define PIN_A3                      (33)
+#define PIN_A4                      (34)
+#define PIN_A5                      (35)
 
-static const uint8_t A0  = PIN_A0 ;
-static const uint8_t A1  = PIN_A1 ;
-static const uint8_t A2  = PIN_A2 ;
-static const uint8_t A3  = PIN_A3 ;
-static const uint8_t A4  = PIN_A4 ;
-static const uint8_t A5  = PIN_A5 ;
+static const uint8_t A0 = PIN_A0;
+static const uint8_t A1 = PIN_A1;
+static const uint8_t A2 = PIN_A2;
+static const uint8_t A3 = PIN_A3;
+static const uint8_t A4 = PIN_A4;
+static const uint8_t A5 = PIN_A5;
 #define ADC_RESOLUTION    14
 
 /*
  * Serial interfaces
  */
-#define PIN_SERIAL1_RX         PIN_D9
-#define PIN_SERIAL1_TX         PIN_D10
+#define PIN_SERIAL_RX         PIN_D9
+#define PIN_SERIAL_TX         PIN_D10
 
 /*
  * SPI Interfaces
  */
 #define SPI_INTERFACES_COUNT 2
 
-#define PIN_SPI_SS           PIN_A0
-#define PIN_SPI_MISO         _PINNUM(1, 14)
-#define PIN_SPI_MOSI         _PINNUM(1, 13)
-#define PIN_SPI_SCK          _PINNUM(1, 15)
-#define PIN_SPI1_MISO        _PINNUM(1, 8)
-#define PIN_SPI1_MOSI        _PINNUM(1, 2)
-#define PIN_SPI1_SCK         _PINNUM(1, 1)
+#define PIN_SPI_SS                  PIN_A0
+#define PIN_SPI_MISO                _PINNUM(1, 14)
+#define PIN_SPI_MOSI                _PINNUM(1, 13)
+#define PIN_SPI_SCK                 _PINNUM(1, 15)
+#define PIN_SPI1_MISO               _PINNUM(1, 8)
+#define PIN_SPI1_MOSI               _PINNUM(1, 2)
+#define PIN_SPI1_SCK                _PINNUM(1, 1)
 
 static const uint8_t SS   = PIN_SPI_SS;
 static const uint8_t MOSI = PIN_SPI_MOSI;
@@ -175,10 +169,10 @@ static const uint8_t SCK1  = PIN_SPI1_SCK;
  */
 #define WIRE_INTERFACES_COUNT 2
 
-#define PIN_WIRE_SDA         _PINNUM(0, 26)
-#define PIN_WIRE_SCL         _PINNUM(0, 27)
-#define PIN_WIRE1_SDA        _PINNUM(1, 1)
-#define PIN_WIRE1_SCL        _PINNUM(1, 2)
+#define PIN_WIRE_SDA               _PINNUM(0, 26)
+#define PIN_WIRE_SCL               _PINNUM(0, 27)
+#define PIN_WIRE1_SDA              _PINNUM(1, 1)
+#define PIN_WIRE1_SCL              _PINNUM(1, 2)
 
 // On-board QSPI Flash
 #define EXTERNAL_FLASH_DEVICES   GD25Q16C
@@ -187,18 +181,6 @@ static const uint8_t SCK1  = PIN_SPI1_SCK;
 #define USB_MSC_BLOCK_COUNT   ((2*1024*1024) / USB_MSC_BLOCK_SIZE)
 
 #define EXTERNAL_FLASH_USE_QSPI
-
-static void switch_antenna(bool useExternal);
-
-// led pwm
-void led_pwm_init(uint32_t led_index, uint32_t led_pin);
-void led_pwm_teardown(void);
-void led_pwm_duty_cycle(uint32_t led_index, uint16_t duty_cycle);
-void pwm_teardown(NRF_PWM_Type* pwm);
-void ledWrite(uint32_t led_pin, uint8_t value);
-void rgbLedWrite(uint8_t red, uint8_t green, uint8_t blue);
-static uint16_t led_duty_cycles[PWM0_CH_NUM] = { 0 };
-
 
 #ifdef __cplusplus
 }

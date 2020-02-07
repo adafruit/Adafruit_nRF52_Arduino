@@ -110,20 +110,6 @@ $ nrfjprog --program feather_nrf52832_bootloader.hex -f nrf52
 $ nrfjprog --reset -f nrf52
 ```
 
-## Particle Xenon Specific
-```c++
-// Swap between the internal antenna and external u.FL antenna
-switchAntenna(bool useExternal);
-
-// Control RGB led / primary LED individually
-ledWrite(LED_RGB_RED, 255);
-ledWrite(LED_PRIMARY, 127);
-
-// Control RGB leds in one shot
-rgbLedWrite(50, 100, 150);
-
-```
-
 ## Credits
 
 This core is based on [Arduino-nRF5](https://github.com/sandeepmistry/arduino-nRF5) by Sandeep Mistry,
