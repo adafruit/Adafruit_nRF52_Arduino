@@ -33,9 +33,9 @@ const uint32_t g_ADigitalPinMap[] =
   _PINNUM(1, 2),    // P1.02 (SCL1) (UART1_CTS) (SPI1_MOSI) (PWM3)
   _PINNUM(1, 8),    // P1.08 (UART2_TX) (SPI1_MISO) (PWM1)
   _PINNUM(1, 10),   // P1.10 (UART2_RX) (PWM1)
-  _PINNUM(1, 26),   // P1.11 (UART2_CTS) (PWM1)
-  _PINNUM(1, 26),   // P1.12 (PWM0)
-  _PINNUM(1, 26),   // P1.03 (UART2_RTS)
+  _PINNUM(1, 11),   // P1.11 (UART2_CTS) (PWM1)
+  _PINNUM(1, 12),   // P1.12 (PWM0)
+  _PINNUM(1, 03),   // P1.03 (UART2_RTS)
 
   // D9 .. D21
   _PINNUM(0, 6),    // P0.06 (UART1_TX)
