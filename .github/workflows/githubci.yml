@@ -7,7 +7,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ['feather52832', 'feather52840', 'feather52840sense', 'cplaynrf52840', 'itsybitsy52840', 'cluenrf52840', 'particle_xenon' ]
+        arduino-platform: ['feather52832', 'feather52840', 'feather52840sense', 'cplaynrf52840', 'itsybitsy52840', 'cluenrf52840' ]
 
     runs-on: ubuntu-latest
     
