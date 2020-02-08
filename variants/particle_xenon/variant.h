@@ -152,6 +152,8 @@ static const uint8_t A7 = PIN_A7;
 #define PIN_AREF           PIN_A7
 #define PIN_VBAT           PIN_A6
 
+static const uint8_t AREF = PIN_AREF;
+
 /*
  * Serial interfaces
  */
