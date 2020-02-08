@@ -66,13 +66,15 @@ const uint32_t g_ADigitalPinMap[] =
   _PINNUM(0, 9),    // P0.09 (u.FL FOR NFC ANTENNA)
   _PINNUM(0, 10),   // P0.10 (u.FL FOR NFC ANTENNA)
 
-  // Analog Pins A0 .. A5
+  // Analog Pins A0 .. A7
   _PINNUM(0, 3),    // P0.03 (A0)
   _PINNUM(0, 4),    // P0.04 (A1)
   _PINNUM(0, 28),   // P0.04 (A2)
   _PINNUM(0, 29),   // P0.04 (A3)
   _PINNUM(0, 30),   // P0.04 (A4)
   _PINNUM(0, 31),   // P0.04 (A5)
+  _PINNUM(0, 5),   // P0.04 (BAT_DET/VBAT)
+  _PINNUM(0, 2),   // P0.02 (AREF)
 };
 
 void initVariant()
