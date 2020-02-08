@@ -190,7 +190,7 @@ static const uint8_t SCK1  = PIN_SPI1_SCK;
 #define PIN_WIRE1_SCL              _PINNUM(1, 2)
 
 // On-board QSPI Flash
-#define EXTERNAL_FLASH_DEVICES   GD25Q16C
+#define EXTERNAL_FLASH_DEVICES   MX25L3233F
 
 #define USB_MSC_BLOCK_SIZE    512
 #define USB_MSC_BLOCK_COUNT   ((2*1024*1024) / USB_MSC_BLOCK_SIZE)
