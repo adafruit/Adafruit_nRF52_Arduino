@@ -20,7 +20,6 @@
 #define _VARIANT_PARTICLE_XENON_
 
 #define _PINNUM(port, pin)    ((port)*32 + (pin))
-#define NRF52
 
 /** Master clock frequency */
 #define VARIANT_MCK       (64000000ul)
