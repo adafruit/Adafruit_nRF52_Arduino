@@ -140,21 +140,27 @@ static const uint8_t A5 = PIN_A5;
 /*
  * Serial interfaces
  */
-#define PIN_SERIAL1_RX         PIN_D9
-#define PIN_SERIAL1_TX         PIN_D10
+#define PIN_SERIAL1_RX         D9
+#define PIN_SERIAL1_TX         D10
+#define PIN_SERIAL1_CTS        D4
+#define PIN_SERIAL1_RTS        D3
+#define PIN_SERIAL2_RX         D5
+#define PIN_SERIAL2_TX         D4
+#define PIN_SERIAL2_CTS        D6
+#define PIN_SERIAL2_RTS        D8
 
 /*
  * SPI Interfaces
  */
 #define SPI_INTERFACES_COUNT 2
 
-#define PIN_SPI_SS                  PIN_A0
-#define PIN_SPI_MISO                _PINNUM(1, 14)
-#define PIN_SPI_MOSI                _PINNUM(1, 13)
-#define PIN_SPI_SCK                 _PINNUM(1, 15)
-#define PIN_SPI1_MISO               _PINNUM(1, 8)
-#define PIN_SPI1_MOSI               _PINNUM(1, 2)
-#define PIN_SPI1_SCK                _PINNUM(1, 1)
+#define PIN_SPI_SS                  D14
+#define PIN_SPI_MISO                D11
+#define PIN_SPI_MOSI                D12
+#define PIN_SPI_SCK                 D13
+#define PIN_SPI1_MISO               D4
+#define PIN_SPI1_MOSI               D3
+#define PIN_SPI1_SCK                D2
 
 static const uint8_t SS   = PIN_SPI_SS;
 static const uint8_t MOSI = PIN_SPI_MOSI;
@@ -169,10 +175,10 @@ static const uint8_t SCK1  = PIN_SPI1_SCK;
  */
 #define WIRE_INTERFACES_COUNT 2
 
-#define PIN_WIRE_SDA               _PINNUM(0, 26)
-#define PIN_WIRE_SCL               _PINNUM(0, 27)
-#define PIN_WIRE1_SDA              _PINNUM(1, 1)
-#define PIN_WIRE1_SCL              _PINNUM(1, 2)
+#define PIN_WIRE_SDA               D0
+#define PIN_WIRE_SCL               D1
+#define PIN_WIRE1_SDA              D2
+#define PIN_WIRE1_SCL              D3
 
 // On-board QSPI Flash
 #define EXTERNAL_FLASH_DEVICES   GD25Q16C
