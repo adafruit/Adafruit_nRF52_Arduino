@@ -42,7 +42,7 @@ extern "C"
 #define PINS_COUNT           (34)
 #define NUM_DIGITAL_PINS     (20)
 #define NUM_ANALOG_INPUTS    (6) // A6 is used for battery, A7 is analog reference
-#define NUM_ANALOG_OUTPUTS   (6)
+#define NUM_ANALOG_OUTPUTS   (0)
 
 /*
  * Digital pins
