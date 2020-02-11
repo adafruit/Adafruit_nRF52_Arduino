@@ -52,6 +52,8 @@ Purpose : Interface between FreeRTOS and SystemView.
 Revision: $Rev: 7947 $
 */
 
+#if CFG_DEBUG >= 3
+
 #include "FreeRTOS.h"
 #include "task.h"
 #include "SEGGER_SYSVIEW.h"
@@ -249,5 +251,7 @@ const SEGGER_SYSVIEW_OS_API SYSVIEW_X_OS_TraceAPI = {
   _cbGetTime,
   _cbSendTaskList,
 };
+
+#endif // CFG_DEBUG >= 3
 
 /*************************** End of file ****************************/
