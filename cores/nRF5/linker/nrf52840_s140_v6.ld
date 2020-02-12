@@ -7,7 +7,7 @@ MEMORY
 {
   FLASH (rx)     : ORIGIN = 0x26000, LENGTH = 0xED000 - 0x26000
 
-  /* SRAM required by S132 depend on
+  /* SRAM required by Softdevice depend on
    * - Attribute Table Size (Number of Services and Characteristics)
    * - Vendor UUID count
    * - Max ATT MTU
