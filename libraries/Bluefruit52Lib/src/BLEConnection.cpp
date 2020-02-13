@@ -318,8 +318,9 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
 
     //--------------------------------------------------------------------+
     /* First-time Pairing
-     * BLE_GAP_EVT_LESC_DHKEY_REQUEST
-     * Connect -> SEC_PARAMS_REQUEST -> PASSKEY_DISPLAY -> CONN_SEC_UPDATE -> AUTH_STATUS
+     *
+     * Connect -> SEC_PARAMS_REQUEST -> PASSKEY_DISPLAY -> BLE_GAP_EVT_LESC_DHKEY_REQUEST ->
+     *            CONN_SEC_UPDATE -> AUTH_STATUS
      * 1. Either we or peer initiate the process
      * 2. Peer ask for Secure Parameter ( I/O Caps ) BLE_GAP_EVT_SEC_PARAMS_REQUEST
      * 3. Pair PassKey exchange
@@ -381,6 +382,21 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
     }
     break;
 
+    //    case BLE_GAP_EVT_PASSKEY_DISPLAY:
+//    {
+//       ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
+//       LOG_LV2("PAIR", "Passkey = %.6s, match request = %d", passkey_display->passkey, passkey_display->match_request);
+//
+//       if ( Bluefruit._pair_display_cb ) ada_callback(passkey_display->passkey, 6, )
+//
+//       if (passkey_display->match_request)
+//       {
+//         // Match request require to report the match
+//         // sd_ble_gap_auth_key_reply();
+//       }
+//    }
+//    break;
+
     case BLE_GAP_EVT_LESC_DHKEY_REQUEST:
     {
       ble_gap_evt_lesc_dhkey_request_t* dhkey_req = &evt->evt.gap_evt.params.lesc_dhkey_request;
@@ -415,15 +431,20 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
       // Pairing process completed
       ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
 
-      LOG_LV2("PAIR", "Auth Status = 0x%02x (BLE_GAP_SEC_STATUS)", status->auth_status);
+      LOG_LV2("PAIR", "Auth Status = 0x%02X, Bonded = %d, LESC = %d, Our Kdist = 0x%02X, Peer Kdist = 0x%02X ",
+              status->auth_status, status->bonded, status->lesc, *((uint8_t*) &status->kdist_own), *((uint8_t*) &status->kdist_peer));
 
       // Pairing succeeded --> save encryption keys ( Bonding )
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
         _paired = true;
-        _ediv   = _bond_keys->own_enc.master_id.ediv;
 
-        bond_save_keys(_role, _conn_hdl, _bond_keys);
+        // Save LTK if peer distribute to us
+        if ( status->kdist_peer.enc )
+        {
+          _ediv   = _bond_keys->own_enc.master_id.ediv;
+          bond_save_keys(_role, _conn_hdl, _bond_keys);
+        }
       }
 
       rtos_free(_bond_keys);
@@ -453,24 +474,10 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
     }
     break;
 
-//    case BLE_GAP_EVT_PASSKEY_DISPLAY:
-//    {
-//       ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
-//       LOG_LV2("PAIR", "Passkey = %.6s, match request = %d", passkey_display->passkey, passkey_display->match_request);
-//
-//       if ( Bluefruit._pair_display_cb ) ada_callback(passkey_display->passkey, 6, )
-//
-//       if (passkey_display->match_request)
-//       {
-//         // Match request require to report the match
-//         // sd_ble_gap_auth_key_reply();
-//       }
-//    }
-//    break;
-
     case BLE_GAP_EVT_CONN_SEC_UPDATE:
     {
       const ble_gap_conn_sec_t* conn_sec = &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
+      LOG_LV2("PAIR", "Security Mode = %d, Level = %d", conn_sec->sec_mode.sm, conn_sec->sec_mode.lv);
 
       // Connection is secured (paired) if encryption level > 1
       if ( !( conn_sec->sec_mode.sm == 1 && conn_sec->sec_mode.lv == 1) )
