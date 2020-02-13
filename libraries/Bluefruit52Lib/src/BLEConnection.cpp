@@ -439,12 +439,8 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
       {
         _paired = true;
 
-        // Save LTK if peer distribute to us
-        if ( status->kdist_peer.enc )
-        {
-          _ediv   = _bond_keys->own_enc.master_id.ediv;
-          bond_save_keys(_role, _conn_hdl, _bond_keys);
-        }
+        _ediv   = _bond_keys->own_enc.master_id.ediv;
+        bond_save_keys(_role, _conn_hdl, _bond_keys);
       }
 
       rtos_free(_bond_keys);

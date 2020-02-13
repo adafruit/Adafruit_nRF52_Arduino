@@ -755,7 +755,7 @@ bool AdafruitBluefruit::setPairingDisplayCallback(pair_display_cb_t fp)
 //    _sec_param.lesc = 0;
 //    _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
     _sec_param.lesc = 1;
-    _sec_param.io_caps = BLE_GAP_IO_CAPS_NONE;
+    _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
 
     ble_opt_t opt;
     opt.gap_opt.passkey.p_passkey = NULL; // generate Passkey randomly
