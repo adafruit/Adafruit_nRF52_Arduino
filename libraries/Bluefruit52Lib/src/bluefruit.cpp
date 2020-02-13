@@ -37,6 +37,32 @@
 #include "bluefruit.h"
 #include "utility/bonding.h"
 
+#ifdef NRF_CRYPTOCELL
+#include "Adafruit_nRFCrypto.h"
+
+nRFCrypto_ECC _ecpki;
+nRFCrypto_ECC_PrivateKey _private_key;
+nRFCrypto_ECC_PublicKey _public_key;
+
+uint8_t _lesc_public_rawkey[1+64]; // 1 byte for header
+
+// convert 32-byte Number from Big <-> Little Endian to use with BLE
+// Public Key = 32-byte N1 + 32-byte N2
+void swap_key_endian(uint8_t rawkey[])
+{
+  for(uint8_t i=0; i<32/2; i++)
+  {
+    uint8_t const p1 = i;
+    uint8_t const p2 = (31-i);
+
+    uint8_t temp = rawkey[p1];
+    rawkey[p1] = rawkey[p2];
+    rawkey[p2] = temp;
+  }
+}
+
+#endif
+
 #ifndef CFG_BLE_TX_POWER_LEVEL
 #define CFG_BLE_TX_POWER_LEVEL    0
 #endif
@@ -113,6 +139,8 @@ static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
   {
     typedef struct
     {
+        // convert from Big to Little Endian to use with BLE
+        // Public Key = 32-byte N1 + 32-byte N2
         uint16_t        line_num;    /**< The line number where the error occurred. */
         uint8_t const * p_file_name; /**< The file in which the error occurred. */
     } assert_info_t;
@@ -176,6 +204,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _event_cb = NULL;
   _rssi_cb = NULL;
   _pair_display_cb = NULL;
+  _pair_complete_cb = NULL;
 
   _sec_param = ((ble_gap_sec_params_t)
                 {
@@ -190,6 +219,10 @@ AdafruitBluefruit::AdafruitBluefruit(void)
                   .kdist_own    = { .enc = 1, .id = 1},
                   .kdist_peer   = { .enc = 1, .id = 1},
                 });
+
+#ifdef NRF_CRYPTOCELL
+//  _sec_param.lesc = 1; // enable LESC if CryptoCell is present
+#endif
 }
 
 void AdafruitBluefruit::configServiceChanged(bool changed)
@@ -489,6 +522,26 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   // Initialize bonding
   bond_init();
 
+  // Initalize Crypto lib for LESC
+#ifdef NRF_CRYPTOCELL
+  nRFCrypto.begin();
+  _ecpki.begin();
+
+  _private_key.begin(CRYS_ECPKI_DomainID_secp256r1);
+  _public_key.begin(CRYS_ECPKI_DomainID_secp256r1);
+
+  nRFCrypto_ECC::genKeyPair(_private_key, _public_key);
+
+  _public_key.toRaw(_lesc_public_rawkey, sizeof(_lesc_public_rawkey));
+//  PRINT_BUFFER(_lesc_public_rawkey+1, sizeof(_lesc_public_rawkey)-1);
+
+  // Public Key = 32-byte N1 + 32-byte N2
+  swap_key_endian(_lesc_public_rawkey+1);
+  swap_key_endian(_lesc_public_rawkey+1+32);
+
+//  PRINT_BUFFER(_lesc_public_rawkey+1, sizeof(_lesc_public_rawkey)-1);
+#endif
+
   return true;
 }
 
@@ -662,7 +715,7 @@ bool AdafruitBluefruit::setPIN(const char* pin)
   {
     _sec_param.bond = 1;
     _sec_param.mitm = 0;
-    _sec_param.lesc = 0;
+    _sec_param.lesc = 0; // TODO NRF_CRYPTOCELL
     _sec_param.io_caps = BLE_GAP_IO_CAPS_NONE;
   }else
   {
@@ -697,8 +750,12 @@ bool AdafruitBluefruit::setPairingDisplayCallback(pair_display_cb_t fp)
   {
     _sec_param.bond = 1;
     _sec_param.mitm = 1;
-    _sec_param.lesc = 0;
-    _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
+
+    // TODO NRF_CRYPTOCELL
+//    _sec_param.lesc = 0;
+//    _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
+    _sec_param.lesc = 1;
+    _sec_param.io_caps = BLE_GAP_IO_CAPS_NONE;
 
     ble_opt_t opt;
     opt.gap_opt.passkey.p_passkey = NULL; // generate Passkey randomly
@@ -716,7 +773,7 @@ void AdafruitBluefruit::setPairingCompleteCallback(pair_complete_cb_t fp)
 /*------------------------------------------------------------------*/
 /* Thread & SoftDevice Event handler
  *------------------------------------------------------------------*/
-void SD_EVT_IRQHandler(void)
+extern "C" void SD_EVT_IRQHandler(void)
 {
   // Notify both BLE & SOC Task
   xSemaphoreGiveFromISR(Bluefruit._soc_event_sem, NULL);
@@ -1038,7 +1095,7 @@ void Bluefruit_printInfo(void)
 
 void AdafruitBluefruit::printInfo(void)
 {
-  // Skip if Serial is not initialised
+  // Skip if Serial is not initialized
   if ( !Serial ) return;
 
   // Skip if Bluefruit.begin() is not called

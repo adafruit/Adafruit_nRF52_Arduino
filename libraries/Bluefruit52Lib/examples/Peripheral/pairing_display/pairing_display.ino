@@ -17,6 +17,7 @@
 #include <bluefruit.h>
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
+#include <Adafruit_nRFCrypto.h>
 
 /* This sketch demonstrates Pairing process using static Passkey aka PIN.
  * This sketch is essentially the same as bleuart.ino except the BLE Uart
@@ -84,6 +85,7 @@ BLEUart bleuart; // uart over ble
 void setup()
 {
   Serial.begin(115200);
+  while(!Serial) delay(1);
 
 #if TFT_IN_USE == TFT_GIZMO
   tft.init(240, 240);

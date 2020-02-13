@@ -157,8 +157,11 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
 #define PRINT_BUFFER(buf, n) \
   do {\
     uint8_t const* p8 = (uint8_t const*) (buf);\
-    PRINTF(#buf ": ");\
-    for(uint32_t i=0; i<(n); i++) PRINTF("%02x ", p8[i]);\
+    PRINTF(#buf ": \n");\
+    for(uint32_t i=0; i<(n); i++) {\
+      if (i%16 == 0) PRINTF("\n"); \
+      PRINTF("%02x ", p8[i]); \
+    }\
     PRINTF("\n");\
   }while(0)
 

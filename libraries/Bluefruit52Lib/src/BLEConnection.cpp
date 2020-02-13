@@ -36,6 +36,20 @@
 
 #include "bluefruit.h"
 
+
+#ifdef NRF_CRYPTOCELL
+#include "Adafruit_nRFCrypto.h"
+
+extern nRFCrypto_ECC _ecpki;
+extern nRFCrypto_ECC_PrivateKey _private_key;
+extern nRFCrypto_ECC_PublicKey _public_key;
+
+extern uint8_t _lesc_public_rawkey[1+64]; // 1 byte for header
+static ble_gap_lesc_p256_pk_t _lesc_peer_pubkey;
+
+extern void swap_key_endian(uint8_t rawkey[]);
+#endif
+
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
@@ -304,10 +318,11 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
 
     //--------------------------------------------------------------------+
     /* First-time Pairing
+     * BLE_GAP_EVT_LESC_DHKEY_REQUEST
      * Connect -> SEC_PARAMS_REQUEST -> PASSKEY_DISPLAY -> CONN_SEC_UPDATE -> AUTH_STATUS
      * 1. Either we or peer initiate the process
      * 2. Peer ask for Secure Parameter ( I/O Caps ) BLE_GAP_EVT_SEC_PARAMS_REQUEST
-     * 3. Pair Key exchange ( PIN code)
+     * 3. Pair PassKey exchange
      * 4. Connection is secured BLE_GAP_EVT_CONN_SEC_UPDATE
      * 5. Long term Keys exchanged BLE_GAP_EVT_AUTH_STATUS
      *
@@ -342,23 +357,56 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
               .p_enc_key  = &_bond_keys->own_enc,
               .p_id_key   = NULL,
               .p_sign_key = NULL,
-              .p_pk       = NULL
+              .p_pk       = (ble_gap_lesc_p256_pk_t*) (_lesc_public_rawkey+1)
           },
 
           .keys_peer = {
               .p_enc_key  = &_bond_keys->peer_enc,
               .p_id_key   = &_bond_keys->peer_id,
               .p_sign_key = NULL,
-              .p_pk       = NULL
+              .p_pk       = &_lesc_peer_pubkey
           }
       };
 
       ble_gap_sec_params_t sec_param = Bluefruit.getSecureParam();
-      VERIFY_STATUS(sd_ble_gap_sec_params_reply(_conn_hdl,
-                                                BLE_GAP_SEC_STATUS_SUCCESS,
-                                                _role == BLE_GAP_ROLE_PERIPH ? &sec_param : NULL,
-                                                &keyset),
-      );
+
+      // use LESC when both support it
+      if ( peer->lesc && sec_param.lesc )
+      {
+//        keyset.
+      }
+
+      VERIFY_STATUS(sd_ble_gap_sec_params_reply(_conn_hdl, BLE_GAP_SEC_STATUS_SUCCESS,
+                                                _role == BLE_GAP_ROLE_PERIPH ? &sec_param : NULL, &keyset), );
+    }
+    break;
+
+    case BLE_GAP_EVT_LESC_DHKEY_REQUEST:
+    {
+      ble_gap_evt_lesc_dhkey_request_t* dhkey_req = &evt->evt.gap_evt.params.lesc_dhkey_request;
+
+      if ( dhkey_req->oobd_req )
+      {
+        // Out of Band not supported yet
+      }
+
+      uint8_t peer_raw_pubkey[64+1];
+      ble_gap_lesc_dhkey_t dhkey;
+
+      peer_raw_pubkey[0] = CRYS_EC_PointUncompressed;
+      memcpy(peer_raw_pubkey+1, dhkey_req->p_pk_peer->pk, 64);
+
+      swap_key_endian(peer_raw_pubkey+1);
+      swap_key_endian(peer_raw_pubkey+1+32);
+
+      nRFCrypto_ECC_PublicKey peer_pubkey;
+      peer_pubkey.begin(CRYS_ECPKI_DomainID_secp256r1);
+      peer_pubkey.fromRaw(peer_raw_pubkey, sizeof(peer_raw_pubkey));
+
+      nRFCrypto_ECC::SVDP_DH(_private_key, peer_pubkey, dhkey.key, sizeof(dhkey.key));
+      swap_key_endian(dhkey.key);
+
+      sd_ble_gap_lesc_dhkey_reply(_conn_hdl, &dhkey);
     }
     break;
 
