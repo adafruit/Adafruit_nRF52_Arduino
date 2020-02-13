@@ -53,9 +53,9 @@ using namespace Adafruit_LittleFS_Namespace;
 
 /*------------------------------------------------------------------*/
 /* Bond Key is saved in following layout
- * - Bond Data : 80 bytes
- * - Name      : variable (including null char)
- * - CCCD      : variable
+ * - Keyset : 80 bytes (sizeof(bond_keys_t))
+ * - Name   : variable (including null char)
+ * - CCCD   : variable
  *
  * Each field has an 1-byte preceding length
  *------------------------------------------------------------------*/

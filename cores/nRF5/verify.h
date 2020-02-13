@@ -61,13 +61,13 @@ extern "C"
   static inline void VERIFY_MESS_impl(int32_t _status, const char* (*_fstr)(int32_t), const char* func_name, int line_number)
   {
       printf("%s: %d: verify failed, error = ", func_name, line_number);
-      if (_fstr)
+      if (_fstr && _fstr(_status))
       {
         printf(_fstr(_status));
       }
       else
       {
-        printf("%ld", _status);
+        printf("0x%lX (%ld)", _status, _status);
       }
       printf("\n");
   }
