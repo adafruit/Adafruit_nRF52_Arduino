@@ -52,9 +52,6 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
   _peer_addr = evt_connected->peer_addr;
   _role = evt_connected->role;
 
-  _ediv = 0xFFFF;
-  _bond_keys = NULL;
-
   _hvn_sem   = xSemaphoreCreateCounting(hvn_qsize, hvn_qsize);
   _wrcmd_sem = xSemaphoreCreateCounting(wrcmd_qsize, wrcmd_qsize);
 
@@ -62,6 +59,10 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
   _hvc_sem = NULL;
   _hvc_received = false;
   _pair_sem = NULL;
+
+  _ediv = 0xFFFF;
+  _bond_keys = NULL;
+  _peer_pubkey = NULL;
 }
 
 BLEConnection::~BLEConnection()
@@ -69,10 +70,12 @@ BLEConnection::~BLEConnection()
   vSemaphoreDelete( _hvn_sem );
   vSemaphoreDelete( _wrcmd_sem );
 
+  //------------- on-the-fly data must be freed -------------//
   if (_hvc_sem  ) vSemaphoreDelete(_hvc_sem );
   if (_pair_sem ) vSemaphoreDelete(_pair_sem);
 
-  if (_bond_keys  ) rtos_free(_bond_keys);
+  if (_bond_keys   ) rtos_free(_bond_keys);
+  if (_peer_pubkey ) rtos_free(_peer_pubkey);
 }
 
 uint16_t BLEConnection::handle (void)

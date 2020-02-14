@@ -71,8 +71,6 @@ BLEPairing::BLEPairing(void)
 
   _display_cb = NULL;
   _complete_cb = NULL;
-
-//  _peer_pubkey_raw = NULL;
 }
 
 bool BLEPairing::begin(void)
@@ -232,10 +230,10 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       VERIFY(_bond_keys, );
       memclr(_bond_keys, sizeof(bond_keys_t));
 
-      // storing peer public key
-//      if (_peer_pubkey_raw) rtos_free(_peer_pubkey_raw);
-//      _peer_pubkey_raw = (uint8_t*) rtos_malloc(1+64);
-//      VERIFY(_peer_pubkey_raw, );
+      // storing peer public key in connection
+      if (conn->_peer_pubkey) rtos_free(conn->_peer_pubkey);
+      conn->_peer_pubkey = (uint8_t*) rtos_malloc(1+BLE_GAP_LESC_P256_PK_LEN);
+      VERIFY(conn->_peer_pubkey, );
 
       _ediv = EDIV_INVALID;
 
@@ -261,7 +259,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
               .p_enc_key  = &_bond_keys->peer_enc,
               .p_id_key   = &_bond_keys->peer_id,
               .p_sign_key = NULL,
-              .p_pk       = (ble_gap_lesc_p256_pk_t*) (_peer_pubkey_raw+1)
+              .p_pk       = (ble_gap_lesc_p256_pk_t*) (conn->_peer_pubkey+1)
           }
       };
 
@@ -302,31 +300,32 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       }
 
       // Raw public key from peer device is uncompressed
-      // _peer_pubkey_raw is dhkey_req->p_pk_peer->pk
-      _peer_pubkey_raw[0] = CRYS_EC_PointUncompressed;
+      // _peer_pubkey + 1 == dhkey_req->p_pk_peer->pk
+      uint8_t* peer_pubkey = conn->_peer_pubkey;
+      peer_pubkey[0] = CRYS_EC_PointUncompressed;
 
       // Swap Endian data from air
-      swap_endian(_peer_pubkey_raw+1   , 32);
-      swap_endian(_peer_pubkey_raw+1+32, 32);
+      swap_endian(peer_pubkey+1   , 32);
+      swap_endian(peer_pubkey+1+32, 32);
 
       // Create nRFCrypto pubkey from raw format
-      nRFCrypto_ECC_PublicKey peer_pubkey;
-      peer_pubkey.begin(CRYS_ECPKI_DomainID_secp256r1);
+      nRFCrypto_ECC_PublicKey peerPublickKey;
+      peerPublickKey.begin(CRYS_ECPKI_DomainID_secp256r1);
 
-      peer_pubkey.fromRaw(_peer_pubkey_raw, 1+64);
+      peerPublickKey.fromRaw(peer_pubkey, 1+BLE_GAP_LESC_P256_PK_LEN);
 
       // Create shared secret derivation primitive using ECC Diffie-Hellman
       ble_gap_lesc_dhkey_t dhkey;
-      nRFCrypto_ECC::SVDP_DH(_private_key, peer_pubkey, dhkey.key, sizeof(dhkey.key));
+      nRFCrypto_ECC::SVDP_DH(_private_key, peerPublickKey, dhkey.key, sizeof(dhkey.key));
 
-      peer_pubkey.end();
+      peerPublickKey.end();
 
       // Swap Endian before sending to air
       swap_endian(dhkey.key, 32);
 
       // Swap back the peer pubkey since SoftDevice still need this until Authentication is complete
-      swap_endian(_peer_pubkey_raw+1   , 32);
-      swap_endian(_peer_pubkey_raw+1+32, 32);
+      swap_endian(peer_pubkey+1   , 32);
+      swap_endian(peer_pubkey+1+32, 32);
 
       sd_ble_gap_lesc_dhkey_reply(conn_hdl, &dhkey);
     }
@@ -340,8 +339,8 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       LOG_LV2("PAIR", "Auth Status = 0x%02X, Bonded = %d, LESC = %d, Our Kdist = 0x%02X, Peer Kdist = 0x%02X ",
               status->auth_status, status->bonded, status->lesc, *((uint8_t*) &status->kdist_own), *((uint8_t*) &status->kdist_peer));
 
-//      rtos_free(_peer_pubkey_raw);
-//      _peer_pubkey_raw = NULL;
+      rtos_free(conn->_peer_pubkey);
+      conn->_peer_pubkey = NULL;
 
       // Pairing succeeded --> save encryption keys ( Bonding )
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)

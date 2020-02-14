@@ -64,9 +64,10 @@ class BLEConnection
 
     // On-demand semaphore/data that are created on the fly
     SemaphoreHandle_t _hvc_sem;
-
     SemaphoreHandle_t _pair_sem;
-    bond_keys_t*     _bond_keys; // Shared keys with bonded device, size ~ 80 bytes
+
+    bond_keys_t*  _bond_keys;   // Shared keys with bonded device, size ~ 80 bytes
+    uint8_t*      _peer_pubkey; // LESC Peer public key
 
   public:
     BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const * evt_connected, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
@@ -111,6 +112,8 @@ class BLEConnection
      * Although declare as public, it is meant to be invoked by internal code.
      *------------------------------------------------------------------*/
     void _eventHandler(ble_evt_t* evt);
+
+    friend class BLEPairing;
 };
 
 

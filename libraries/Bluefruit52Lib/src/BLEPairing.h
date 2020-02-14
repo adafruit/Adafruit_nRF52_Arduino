@@ -65,9 +65,7 @@ class BLEPairing
 
     nRFCrypto_ECC_PrivateKey _private_key;
 
-    uint8_t _pubkey_raw[1+64]; // raw key: 1 header + 64 data
-
-    uint8_t _peer_pubkey_raw[1+64]; // filled by SoftDevice
+    uint8_t _pubkey_raw[1+BLE_GAP_LESC_P256_PK_LEN]; // raw key: 1 header + 64 data
 
     uint16_t      _ediv;
     bond_keys_t*  _bond_keys; // Shared keys with bonded device, size ~ 80 bytes
