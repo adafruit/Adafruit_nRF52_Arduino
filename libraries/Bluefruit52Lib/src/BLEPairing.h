@@ -45,6 +45,9 @@ class BLEPairing
     // Static Passkey
     bool setPIN(const char* pin);
 
+    // resolve address with IRK to see if it matches
+    bool resolveAddress(ble_gap_addr_t const * p_addr, ble_gap_irk_t const * irk);
+
     //------------- Callbacks -------------//
     bool setDisplayCallback(pair_display_cb_t fp);
     void setCompleteCallback(pair_complete_cb_t fp);

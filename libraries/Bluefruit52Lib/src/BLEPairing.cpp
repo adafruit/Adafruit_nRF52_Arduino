@@ -33,16 +33,16 @@
 
 // convert 32-byte Number from Big <-> Little Endian to use with BLE
 // Public Key = 32-byte N1 + 32-byte N2
-static void swap_key_endian(uint8_t key[])
+static void swap_endian(uint8_t data[], uint32_t bytes)
 {
-  for(uint8_t i=0; i<32/2; i++)
+  for(uint8_t i=0; i<bytes/2; i++)
   {
     uint8_t const p1 = i;
     uint8_t const p2 = (31-i);
 
-    uint8_t temp = key[p1];
-    key[p1] = key[p2];
-    key[p2] = temp;
+    uint8_t temp = data[p1];
+    data[p1] = data[p2];
+    data[p2] = temp;
   }
 }
 
@@ -98,11 +98,44 @@ bool BLEPairing::begin(void)
 
   // BLE use Little Endian, swap public key endian
   // Public Key = 32-byte N1 + 32-byte N2
-  swap_key_endian(_pubkey_raw+1);
-  swap_key_endian(_pubkey_raw+1+32);
+  swap_endian(_pubkey_raw+1,    32);
+  swap_endian(_pubkey_raw+1+32, 32);
 #endif
 
   return true;
+}
+
+/* Resolvable Address = Hash (24 bit) | Random (24 bit)
+ * in which
+ *  - Hash = AES(random) using IRK
+ *
+ * To check if it matches we recreate local AES Hash with IRK to compare with
+*/
+bool BLEPairing::resolveAddress(ble_gap_addr_t const * p_addr, ble_gap_irk_t const * irk)
+{
+  VERIFY(p_addr->addr_type == BLE_GAP_ADDR_TYPE_RANDOM_PRIVATE_RESOLVABLE);
+
+  uint8_t const* hash = p_addr->addr;
+  uint8_t const* rand = p_addr->addr+3;
+
+  nrf_ecb_hal_data_t ecb_data;
+  memclr(&ecb_data, sizeof(nrf_ecb_hal_data_t));
+
+  // Swap Endian for IRK (other padding with 0s)
+  memcpy(ecb_data.key, irk->irk, SOC_ECB_KEY_LENGTH);
+  swap_endian(ecb_data.key, SOC_ECB_KEY_LENGTH);
+
+  // Swap input endian
+  memcpy(ecb_data.cleartext, rand, 3);
+  swap_endian(ecb_data.cleartext, SOC_ECB_CLEARTEXT_LENGTH);
+
+  // compute using HW AES peripherals
+ (void) sd_ecb_block_encrypt(&ecb_data);
+
+ // Swap output endian
+ swap_endian(ecb_data.ciphertext, SOC_ECB_CIPHERTEXT_LENGTH);
+
+ return 0 == memcmp(hash, ecb_data.ciphertext, 3);
 }
 
 // Use Legacy SC static Passkey
@@ -273,8 +306,8 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       _peer_pubkey_raw[0] = CRYS_EC_PointUncompressed;
 
       // Swap Endian data from air
-      swap_key_endian(_peer_pubkey_raw+1);
-      swap_key_endian(_peer_pubkey_raw+1+32);
+      swap_endian(_peer_pubkey_raw+1   , 32);
+      swap_endian(_peer_pubkey_raw+1+32, 32);
 
       // Create nRFCrypto pubkey from raw format
       nRFCrypto_ECC_PublicKey peer_pubkey;
@@ -289,11 +322,11 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       peer_pubkey.end();
 
       // Swap Endian before sending to air
-      swap_key_endian(dhkey.key);
+      swap_endian(dhkey.key, 32);
 
       // Swap back the peer pubkey since SoftDevice still need this until Authentication is complete
-      swap_key_endian(_peer_pubkey_raw+1);
-      swap_key_endian(_peer_pubkey_raw+1+32);
+      swap_endian(_peer_pubkey_raw+1   , 32);
+      swap_endian(_peer_pubkey_raw+1+32, 32);
 
       sd_ble_gap_lesc_dhkey_reply(conn_hdl, &dhkey);
     }
@@ -315,6 +348,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       {
         _ediv   = _bond_keys->own_enc.master_id.ediv;
         LOG_LV2("PAIR", "Ediv = 0x%02X", _ediv);
+        LOG_LV2_BUFFER("Rand", _bond_keys->own_enc.master_id.rand, 8);
 
         bond_save_keys(conn->getRole(), conn_hdl, _bond_keys);
 
@@ -339,6 +373,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       LOG_LV2("PAIR", "Addr ID = %d, Addr Type = 0x%02X, ediv = 0x%02X",
               sec_info->peer_addr.addr_id_peer, sec_info->peer_addr.addr_type, sec_info->master_id.ediv);
       LOG_LV2_BUFFER("Address", sec_info->peer_addr.addr, 6);
+      LOG_LV2_BUFFER("Rand", sec_info->master_id.rand, 8);
 
       bond_keys_t bkeys;
       varclr(&bkeys);
