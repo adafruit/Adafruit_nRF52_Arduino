@@ -286,9 +286,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       ble_gap_lesc_dhkey_t dhkey;
       nRFCrypto_ECC::SVDP_DH(_private_key, peer_pubkey, dhkey.key, sizeof(dhkey.key));
 
-      //peer_pubkey.end();
-//      rtos_free(_peer_pubkey_raw);
-//      _peer_pubkey_raw = NULL;
+      peer_pubkey.end();
 
       // Swap Endian before sending to air
       swap_key_endian(dhkey.key);
@@ -309,10 +307,15 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       LOG_LV2("PAIR", "Auth Status = 0x%02X, Bonded = %d, LESC = %d, Our Kdist = 0x%02X, Peer Kdist = 0x%02X ",
               status->auth_status, status->bonded, status->lesc, *((uint8_t*) &status->kdist_own), *((uint8_t*) &status->kdist_peer));
 
+//      rtos_free(_peer_pubkey_raw);
+//      _peer_pubkey_raw = NULL;
+
       // Pairing succeeded --> save encryption keys ( Bonding )
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
         _ediv   = _bond_keys->own_enc.master_id.ediv;
+        LOG_LV2("PAIR", "Ediv = 0x%02X", _ediv);
+
         bond_save_keys(conn->getRole(), conn_hdl, _bond_keys);
 
 //        _paired = true;
@@ -331,12 +334,16 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       // Peer asks for the stored keys.
       // - load key and return if bonded previously.
       // - Else return NULL --> Initiate key exchange
-      ble_gap_evt_sec_info_request_t* sec_req = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
+      ble_gap_evt_sec_info_request_t* sec_info = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
+
+      LOG_LV2("PAIR", "Addr ID = %d, Addr Type = 0x%02X, ediv = 0x%02X",
+              sec_info->peer_addr.addr_id_peer, sec_info->peer_addr.addr_type, sec_info->master_id.ediv);
+      LOG_LV2_BUFFER("Address", sec_info->peer_addr.addr, 6);
 
       bond_keys_t bkeys;
       varclr(&bkeys);
 
-      if ( bond_load_keys(conn->getRole(), sec_req->master_id.ediv, &bkeys) )
+      if ( bond_load_keys(conn->getRole(), sec_info->master_id.ediv, &bkeys) )
       {
         sd_ble_gap_sec_info_reply(conn_hdl, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
 
