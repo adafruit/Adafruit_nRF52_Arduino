@@ -52,6 +52,9 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
   _peer_addr = evt_connected->peer_addr;
   _role = evt_connected->role;
 
+  _ediv = 0xFFFF;
+  _bond_keys = NULL;
+
   _hvn_sem   = xSemaphoreCreateCounting(hvn_qsize, hvn_qsize);
   _wrcmd_sem = xSemaphoreCreateCounting(wrcmd_qsize, wrcmd_qsize);
 
@@ -66,7 +69,10 @@ BLEConnection::~BLEConnection()
   vSemaphoreDelete( _hvn_sem );
   vSemaphoreDelete( _wrcmd_sem );
 
-  if ( _hvc_sem ) vSemaphoreDelete( _hvc_sem );
+  if (_hvc_sem  ) vSemaphoreDelete(_hvc_sem );
+  if (_pair_sem ) vSemaphoreDelete(_pair_sem);
+
+  if (_bond_keys  ) rtos_free(_bond_keys);
 }
 
 uint16_t BLEConnection::handle (void)
@@ -228,7 +234,7 @@ bool BLEConnection::requestPairing(void)
   // skip if already paired
   if ( _paired ) return true;
 
-  ble_gap_sec_params_t sec_param = Bluefruit.getSecureParam();
+  ble_gap_sec_params_t sec_param = Bluefruit.Pairing.getSecureParam();
 
   // on-the-fly semaphore
   _pair_sem = xSemaphoreCreateBinary();

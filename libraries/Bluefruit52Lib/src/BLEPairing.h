@@ -41,7 +41,6 @@ class BLEPairing
     BLEPairing(void);
 
     bool begin(void);
-    uint8_t* getPublicKey(void);
 
     // Static Passkey
     bool setPIN(const char* pin);
@@ -55,15 +54,17 @@ class BLEPairing
      * Although declare as public, it is meant to be invoked by internal
      * code. User should not call these directly
      *------------------------------------------------------------------*/
+    ble_gap_sec_params_t getSecureParam(void) { return _sec_param; }
     void _eventHandler(ble_evt_t* evt);
 
   private:
     ble_gap_sec_params_t _sec_param;
 
-    uint8_t _public_key_raw[1+64]; // raw key: 1 header + 64 data
-    uint8_t _peer_pubkey_raw[1+64];
-
     nRFCrypto_ECC_PrivateKey _private_key;
+
+    uint8_t _pubkey_raw[1+64]; // raw key: 1 header + 64 data
+
+    uint8_t _peer_pubkey_raw[1+64]; // filled by SoftDevice
 
     uint16_t      _ediv;
     bond_keys_t*  _bond_keys; // Shared keys with bonded device, size ~ 80 bytes

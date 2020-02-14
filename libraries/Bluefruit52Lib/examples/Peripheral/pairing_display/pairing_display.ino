@@ -197,7 +197,7 @@ void loop()
 void pairing_display_callback(uint16_t conn_handle, uint8_t const passkey[6])
 {
   Serial.println("Enter this code on your phone to pair with Bluefruit:");
-  Serial.printf("    %.6s\n", passkey);
+  Serial.printf("    %.3s %.3s\n", passkey, passkey+3);
 
 #if TFT_IN_USE != TFT_NONE
   tft.printf("Enter this code on your phone to pair with Bluefruit:\n\n");

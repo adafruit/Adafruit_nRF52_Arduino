@@ -33,16 +33,16 @@
 
 // convert 32-byte Number from Big <-> Little Endian to use with BLE
 // Public Key = 32-byte N1 + 32-byte N2
-void swap_key_endian(uint8_t rawkey[])
+static void swap_key_endian(uint8_t key[])
 {
   for(uint8_t i=0; i<32/2; i++)
   {
     uint8_t const p1 = i;
     uint8_t const p2 = (31-i);
 
-    uint8_t temp = rawkey[p1];
-    rawkey[p1] = rawkey[p2];
-    rawkey[p2] = temp;
+    uint8_t temp = key[p1];
+    key[p1] = key[p2];
+    key[p2] = temp;
   }
 }
 
@@ -62,11 +62,17 @@ BLEPairing::BLEPairing(void)
                   .kdist_peer   = { .enc = 1, .id = 1},
                 });
 
+#ifdef NRF_CRYPTOCELL
+//  _sec_param.lesc = 1; // enable LESC if CryptoCell is present
+#endif
+
   _ediv = EDIV_INVALID;
   _bond_keys = NULL;
 
   _display_cb = NULL;
   _complete_cb = NULL;
+
+//  _peer_pubkey_raw = NULL;
 }
 
 bool BLEPairing::begin(void)
@@ -87,22 +93,16 @@ bool BLEPairing::begin(void)
   nRFCrypto_ECC::genKeyPair(_private_key, pubkey);
 
   // Convert to Raw bytes to response to LESC event
-  pubkey.toRaw(_public_key_raw, sizeof(_public_key_raw));
+  pubkey.toRaw(_pubkey_raw, sizeof(_pubkey_raw));
   pubkey.end();
 
   // BLE use Little Endian, swap public key endian
   // Public Key = 32-byte N1 + 32-byte N2
-  swap_key_endian(_public_key_raw+1);
-  swap_key_endian(_public_key_raw+1+32);
+  swap_key_endian(_pubkey_raw+1);
+  swap_key_endian(_pubkey_raw+1+32);
 #endif
 
   return true;
-}
-
-uint8_t* BLEPairing::getPublicKey(void)
-{
-  // skip header byte
-  return _public_key_raw+1;
 }
 
 // Use Legacy SC static Passkey
@@ -151,7 +151,6 @@ bool BLEPairing::setDisplayCallback(pair_display_cb_t fp)
 
     // TODO NRF_CRYPTOCELL
 //    _sec_param.lesc = 0;
-//    _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
     _sec_param.lesc = 1;
     _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
 
@@ -200,6 +199,11 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       VERIFY(_bond_keys, );
       memclr(_bond_keys, sizeof(bond_keys_t));
 
+      // storing peer public key
+//      if (_peer_pubkey_raw) rtos_free(_peer_pubkey_raw);
+//      _peer_pubkey_raw = (uint8_t*) rtos_malloc(1+64);
+//      VERIFY(_peer_pubkey_raw, );
+
       _ediv = EDIV_INVALID;
 
       /* Step 1: Pairing/Bonding
@@ -217,7 +221,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
               .p_enc_key  = &_bond_keys->own_enc,
               .p_id_key   = NULL,
               .p_sign_key = NULL,
-              .p_pk       = (ble_gap_lesc_p256_pk_t*) (_public_key_raw+1)
+              .p_pk       = (ble_gap_lesc_p256_pk_t*) (_pubkey_raw+1)
           },
 
           .keys_peer = {
@@ -264,21 +268,34 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
         // Out of Band not supported yet
       }
 
-      uint8_t peer_raw_pubkey[64+1];
-      ble_gap_lesc_dhkey_t dhkey;
+      // Raw public key from peer device is uncompressed
+      // _peer_pubkey_raw is dhkey_req->p_pk_peer->pk
+      _peer_pubkey_raw[0] = CRYS_EC_PointUncompressed;
 
-      peer_raw_pubkey[0] = CRYS_EC_PointUncompressed;
-      memcpy(peer_raw_pubkey+1, dhkey_req->p_pk_peer->pk, 64);
+      // Swap Endian data from air
+      swap_key_endian(_peer_pubkey_raw+1);
+      swap_key_endian(_peer_pubkey_raw+1+32);
 
-      swap_key_endian(peer_raw_pubkey+1);
-      swap_key_endian(peer_raw_pubkey+1+32);
-
+      // Create nRFCrypto pubkey from raw format
       nRFCrypto_ECC_PublicKey peer_pubkey;
       peer_pubkey.begin(CRYS_ECPKI_DomainID_secp256r1);
-      peer_pubkey.fromRaw(peer_raw_pubkey, sizeof(peer_raw_pubkey));
 
+      peer_pubkey.fromRaw(_peer_pubkey_raw, 1+64);
+
+      // Create shared secret derivation primitive using ECC Diffie-Hellman
+      ble_gap_lesc_dhkey_t dhkey;
       nRFCrypto_ECC::SVDP_DH(_private_key, peer_pubkey, dhkey.key, sizeof(dhkey.key));
+
+      //peer_pubkey.end();
+//      rtos_free(_peer_pubkey_raw);
+//      _peer_pubkey_raw = NULL;
+
+      // Swap Endian before sending to air
       swap_key_endian(dhkey.key);
+
+      // Swap back the peer pubkey since SoftDevice still need this until Authentication is complete
+      swap_key_endian(_peer_pubkey_raw+1);
+      swap_key_endian(_peer_pubkey_raw+1+32);
 
       sd_ble_gap_lesc_dhkey_reply(conn_hdl, &dhkey);
     }

@@ -177,10 +177,6 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _event_cb = NULL;
   _rssi_cb = NULL;
-
-#ifdef NRF_CRYPTOCELL
-//  _sec_param.lesc = 1; // enable LESC if CryptoCell is present
-#endif
 }
 
 void AdafruitBluefruit::configServiceChanged(bool changed)
