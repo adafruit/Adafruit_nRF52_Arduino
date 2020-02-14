@@ -475,6 +475,8 @@ particle_xenon.menu.debug.l2=Level 2 (Full Debug)
 particle_xenon.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 particle_xenon.menu.debug.l3=Level 3 (Segger SystemView)
 particle_xenon.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
+# ----------------------------------
 # Raytac MDBT50Q – RX
 # ----------------------------------
 mdbt50qrx.name=Raytac MDBT50Q-RX Dongle
