@@ -50,6 +50,7 @@
 #include "BLEDiscovery.h"
 #include "BLEConnection.h"
 #include "BLEGatt.h"
+#include "BLEPairing.h"
 
 // Services
 #include "services/BLEDis.h"
@@ -97,21 +98,20 @@ class AdafruitBluefruit
   public:
     typedef void (*event_cb_t) (ble_evt_t* evt);
     typedef void (*rssi_cb_t) (uint16_t conn_hdl, int8_t rssi);
-    typedef void (*pair_display_cb_t ) (uint16_t conn_hdl, uint8_t const passkey[6]);
-    typedef void (*pair_complete_cb_t) (uint16_t conn_hdl, uint8_t auth_status);
 
-    AdafruitBluefruit(void); // Constructor
+    AdafruitBluefruit(void);
 
     /*------------------------------------------------------------------*/
     /* Lower Level Classes (Bluefruit.Advertising.*, etc.)
      *------------------------------------------------------------------*/
+    BLEPeriph          Periph;
+    BLECentral         Central;
+    BLEPairing         Pairing;
     BLEGatt            Gatt;
 
     BLEAdvertising     Advertising;
     BLEAdvertisingData ScanResponse;
     BLEScanner         Scanner;
-    BLEPeriph          Periph;
-    BLECentral         Central;
     BLEDiscovery       Discovery;
 
     /*------------------------------------------------------------------*/
@@ -175,9 +175,6 @@ class AdafruitBluefruit
     // Security
     //--------------------------------------------------------------------+
     ble_gap_sec_params_t getSecureParam(void) { return _sec_param; }
-    bool setPIN(const char* pin); // Static Passkey
-    bool setPairingDisplayCallback(pair_display_cb_t fp);
-    void setPairingCompleteCallback(pair_complete_cb_t fp);
 
     /*------------------------------------------------------------------*/
     /* Callbacks
@@ -222,6 +219,7 @@ class AdafruitBluefruit
     SemaphoreHandle_t _ble_event_sem;
     SemaphoreHandle_t _soc_event_sem;
 
+    // Auto LED Blinky
     TimerHandle_t _led_blink_th;
     bool _led_conn;
 
@@ -232,8 +230,6 @@ class AdafruitBluefruit
     //------------- Callbacks -------------//
     rssi_cb_t _rssi_cb;
     event_cb_t _event_cb;
-    pair_display_cb_t  _pair_display_cb;
-    pair_complete_cb_t _pair_complete_cb;
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY

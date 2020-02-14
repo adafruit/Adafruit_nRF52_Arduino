@@ -50,7 +50,10 @@
 #include "queue.h"
 #include "semphr.h"
 
+#define DEBUG_MALLOC    1
+
 #define DELAY_FOREVER   portMAX_DELAY
+
 enum
 {
   TASK_PRIO_LOWEST  = 0, // Idle task, should not be used
@@ -65,8 +68,11 @@ enum
 #define tick2ms(tck)         ( ( ((uint64_t)(tck)) * 1000) / configTICK_RATE_HZ )
 #define tick2us(tck)         ( ( ((uint64_t)(tck)) * 1000000) / configTICK_RATE_HZ )
 
-#define malloc_type(type)    rtos_malloc( sizeof(type) )
-#define rtos_malloc_type(_type)   (_type*) rtos_malloc(sizeof(_type))
+#if DEBUG_MALLOC
+  #define rtos_malloc_type(_type)   ({ LOG_LV2("MALLOC", #_type " = %d bytes", sizeof(_type)); ((_type*) rtos_malloc(sizeof(_type))); })
+#else
+  #define rtos_malloc_type(_type)   ((_type*) rtos_malloc(sizeof(_type)))
+#endif
 
 static inline void* rtos_malloc(size_t _size)
 {

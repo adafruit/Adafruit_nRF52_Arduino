@@ -36,20 +36,6 @@
 
 #include "bluefruit.h"
 
-
-#ifdef NRF_CRYPTOCELL
-#include "Adafruit_nRFCrypto.h"
-
-extern nRFCrypto_ECC _ecpki;
-extern nRFCrypto_ECC_PrivateKey _private_key;
-extern nRFCrypto_ECC_PublicKey _public_key;
-
-extern uint8_t _lesc_public_rawkey[1+64]; // 1 byte for header
-static ble_gap_lesc_p256_pk_t _lesc_peer_pubkey;
-
-extern void swap_key_endian(uint8_t rawkey[]);
-#endif
-
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
@@ -73,8 +59,6 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
   _hvc_sem = NULL;
   _hvc_received = false;
   _pair_sem = NULL;
-  _ediv = 0xFFFF; // invalid ediv value
-  _bond_keys = NULL;
 }
 
 BLEConnection::~BLEConnection()
@@ -334,157 +318,23 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
      * 3. Connection is secured BLE_GAP_EVT_CONN_SEC_UPDATE
      */
     //--------------------------------------------------------------------+
-    case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-    {
-      // Pairing in progress, Peer asking for our info
-      _bond_keys = (bond_keys_t*) rtos_malloc( sizeof(bond_keys_t));
-      VERIFY(_bond_keys, );
-      memclr(_bond_keys, sizeof(bond_keys_t));
-
-      _ediv = 0xFFFF; // invalid value for ediv
-
-      /* Step 1: Pairing/Bonding
-       * - Central supplies its parameters
-       * - We replies with our security parameters
-       */
-      ble_gap_sec_params_t const* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
-      (void) peer;
-      LOG_LV2("PAIR", "Peer Params: bond = %d, mitm = %d, lesc = %d, io_caps = %d",
-                                    peer->bond, peer->mitm, peer->lesc, peer->io_caps);
-
-      ble_gap_sec_keyset_t keyset =
-      {
-          .keys_own = {
-              .p_enc_key  = &_bond_keys->own_enc,
-              .p_id_key   = NULL,
-              .p_sign_key = NULL,
-              .p_pk       = (ble_gap_lesc_p256_pk_t*) (_lesc_public_rawkey+1)
-          },
-
-          .keys_peer = {
-              .p_enc_key  = &_bond_keys->peer_enc,
-              .p_id_key   = &_bond_keys->peer_id,
-              .p_sign_key = NULL,
-              .p_pk       = &_lesc_peer_pubkey
-          }
-      };
-
-      ble_gap_sec_params_t sec_param = Bluefruit.getSecureParam();
-
-      // use LESC when both support it
-      if ( peer->lesc && sec_param.lesc )
-      {
-//        keyset.
-      }
-
-      VERIFY_STATUS(sd_ble_gap_sec_params_reply(_conn_hdl, BLE_GAP_SEC_STATUS_SUCCESS,
-                                                _role == BLE_GAP_ROLE_PERIPH ? &sec_param : NULL, &keyset), );
-    }
-    break;
-
-    //    case BLE_GAP_EVT_PASSKEY_DISPLAY:
-//    {
-//       ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
-//       LOG_LV2("PAIR", "Passkey = %.6s, match request = %d", passkey_display->passkey, passkey_display->match_request);
-//
-//       if ( Bluefruit._pair_display_cb ) ada_callback(passkey_display->passkey, 6, )
-//
-//       if (passkey_display->match_request)
-//       {
-//         // Match request require to report the match
-//         // sd_ble_gap_auth_key_reply();
-//       }
-//    }
-//    break;
-
-    case BLE_GAP_EVT_LESC_DHKEY_REQUEST:
-    {
-      ble_gap_evt_lesc_dhkey_request_t* dhkey_req = &evt->evt.gap_evt.params.lesc_dhkey_request;
-
-      if ( dhkey_req->oobd_req )
-      {
-        // Out of Band not supported yet
-      }
-
-      uint8_t peer_raw_pubkey[64+1];
-      ble_gap_lesc_dhkey_t dhkey;
-
-      peer_raw_pubkey[0] = CRYS_EC_PointUncompressed;
-      memcpy(peer_raw_pubkey+1, dhkey_req->p_pk_peer->pk, 64);
-
-      swap_key_endian(peer_raw_pubkey+1);
-      swap_key_endian(peer_raw_pubkey+1+32);
-
-      nRFCrypto_ECC_PublicKey peer_pubkey;
-      peer_pubkey.begin(CRYS_ECPKI_DomainID_secp256r1);
-      peer_pubkey.fromRaw(peer_raw_pubkey, sizeof(peer_raw_pubkey));
-
-      nRFCrypto_ECC::SVDP_DH(_private_key, peer_pubkey, dhkey.key, sizeof(dhkey.key));
-      swap_key_endian(dhkey.key);
-
-      sd_ble_gap_lesc_dhkey_reply(_conn_hdl, &dhkey);
-    }
-    break;
 
     case BLE_GAP_EVT_AUTH_STATUS:
     {
-      // Pairing process completed
       ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
 
-      LOG_LV2("PAIR", "Auth Status = 0x%02X, Bonded = %d, LESC = %d, Our Kdist = 0x%02X, Peer Kdist = 0x%02X ",
-              status->auth_status, status->bonded, status->lesc, *((uint8_t*) &status->kdist_own), *((uint8_t*) &status->kdist_peer));
-
-      // Pairing succeeded --> save encryption keys ( Bonding )
-      if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
-      {
-        _paired = true;
-
-        _ediv   = _bond_keys->own_enc.master_id.ediv;
-        bond_save_keys(_role, _conn_hdl, _bond_keys);
-      }
-
-      rtos_free(_bond_keys);
-      _bond_keys = NULL;
-    }
-    break;
-
-    case BLE_GAP_EVT_SEC_INFO_REQUEST:
-    {
-      // Peer asks for the stored keys.
-      // - load key and return if bonded previously.
-      // - Else return NULL --> Initiate key exchange
-      ble_gap_evt_sec_info_request_t* sec_req = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
-
-      bond_keys_t bkeys;
-      varclr(&bkeys);
-
-      if ( bond_load_keys(_role, sec_req->master_id.ediv, &bkeys) )
-      {
-        sd_ble_gap_sec_info_reply(_conn_hdl, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
-
-        _ediv = bkeys.own_enc.master_id.ediv;
-      } else
-      {
-        sd_ble_gap_sec_info_reply(_conn_hdl, NULL, NULL, NULL);
-      }
+      // Pairing succeeded
+      if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status) _paired = true;
     }
     break;
 
     case BLE_GAP_EVT_CONN_SEC_UPDATE:
     {
       const ble_gap_conn_sec_t* conn_sec = &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
-      LOG_LV2("PAIR", "Security Mode = %d, Level = %d", conn_sec->sec_mode.sm, conn_sec->sec_mode.lv);
 
       // Connection is secured (paired) if encryption level > 1
       if ( !( conn_sec->sec_mode.sm == 1 && conn_sec->sec_mode.lv == 1) )
       {
-        // Previously bonded --> secure by re-connection process --> Load & Set SysAttr (Apply Service Context)
-        // Else Init SysAttr (first bonded)
-        if ( !bond_load_cccd(_role, _conn_hdl, _ediv) )
-        {
-          sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
-        }
-
         _paired = true;
       }
 

@@ -37,32 +37,6 @@
 #include "bluefruit.h"
 #include "utility/bonding.h"
 
-#ifdef NRF_CRYPTOCELL
-#include "Adafruit_nRFCrypto.h"
-
-nRFCrypto_ECC _ecpki;
-nRFCrypto_ECC_PrivateKey _private_key;
-nRFCrypto_ECC_PublicKey _public_key;
-
-uint8_t _lesc_public_rawkey[1+64]; // 1 byte for header
-
-// convert 32-byte Number from Big <-> Little Endian to use with BLE
-// Public Key = 32-byte N1 + 32-byte N2
-void swap_key_endian(uint8_t rawkey[])
-{
-  for(uint8_t i=0; i<32/2; i++)
-  {
-    uint8_t const p1 = i;
-    uint8_t const p2 = (31-i);
-
-    uint8_t temp = rawkey[p1];
-    rawkey[p1] = rawkey[p2];
-    rawkey[p2] = temp;
-  }
-}
-
-#endif
-
 #ifndef CFG_BLE_TX_POWER_LEVEL
 #define CFG_BLE_TX_POWER_LEVEL    0
 #endif
@@ -203,22 +177,6 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _event_cb = NULL;
   _rssi_cb = NULL;
-  _pair_display_cb = NULL;
-  _pair_complete_cb = NULL;
-
-  _sec_param = ((ble_gap_sec_params_t)
-                {
-                  .bond         = 1,
-                  .mitm         = 0,
-                  .lesc         = 0,
-                  .keypress     = 0,
-                  .io_caps      = BLE_GAP_IO_CAPS_NONE,
-                  .oob          = 0,
-                  .min_key_size = 7,
-                  .max_key_size = 16,
-                  .kdist_own    = { .enc = 1, .id = 1},
-                  .kdist_peer   = { .enc = 1, .id = 1},
-                });
 
 #ifdef NRF_CRYPTOCELL
 //  _sec_param.lesc = 1; // enable LESC if CryptoCell is present
@@ -486,6 +444,8 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   // Init Peripheral role
   VERIFY( Periph.begin() );
 
+  Pairing.begin();
+
   // Default device name
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
   VERIFY_STATUS(sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)), false);
@@ -521,26 +481,6 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 
   // Initialize bonding
   bond_init();
-
-  // Initalize Crypto lib for LESC
-#ifdef NRF_CRYPTOCELL
-  nRFCrypto.begin();
-  _ecpki.begin();
-
-  _private_key.begin(CRYS_ECPKI_DomainID_secp256r1);
-  _public_key.begin(CRYS_ECPKI_DomainID_secp256r1);
-
-  nRFCrypto_ECC::genKeyPair(_private_key, _public_key);
-
-  _public_key.toRaw(_lesc_public_rawkey, sizeof(_lesc_public_rawkey));
-//  PRINT_BUFFER(_lesc_public_rawkey+1, sizeof(_lesc_public_rawkey)-1);
-
-  // Public Key = 32-byte N1 + 32-byte N2
-  swap_key_endian(_lesc_public_rawkey+1);
-  swap_key_endian(_lesc_public_rawkey+1+32);
-
-//  PRINT_BUFFER(_lesc_public_rawkey+1, sizeof(_lesc_public_rawkey)-1);
-#endif
 
   return true;
 }
@@ -707,69 +647,6 @@ void AdafruitBluefruit::setRssiCallback(rssi_cb_t fp)
 }
 
 
-// Use Legacy SC static Passkey
-bool AdafruitBluefruit::setPIN(const char* pin)
-{
-  // back to open mode
-  if (pin == NULL)
-  {
-    _sec_param.bond = 1;
-    _sec_param.mitm = 0;
-    _sec_param.lesc = 0; // TODO NRF_CRYPTOCELL
-    _sec_param.io_caps = BLE_GAP_IO_CAPS_NONE;
-  }else
-  {
-    VERIFY ( strlen(pin) == BLE_GAP_PASSKEY_LEN );
-
-    // Static Passkey requires using
-    // - Legacy SC
-    // - IO cap: Display
-    // - MITM is on
-    _sec_param.bond = 1;
-    _sec_param.mitm = 1;
-    _sec_param.lesc = 0;
-    _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
-
-    ble_opt_t opt;
-    opt.gap_opt.passkey.p_passkey = (const uint8_t*) pin;
-    VERIFY_STATUS( sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &opt), false);
-  }
-
-  return true;
-}
-
-// Pairing using LESC with peripheral display
-bool AdafruitBluefruit::setPairingDisplayCallback(pair_display_cb_t fp)
-{
-  _pair_display_cb = fp;
-
-  if ( fp == NULL )
-  {
-    // TODO callback clear
-  }else
-  {
-    _sec_param.bond = 1;
-    _sec_param.mitm = 1;
-
-    // TODO NRF_CRYPTOCELL
-//    _sec_param.lesc = 0;
-//    _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
-    _sec_param.lesc = 1;
-    _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
-
-    ble_opt_t opt;
-    opt.gap_opt.passkey.p_passkey = NULL; // generate Passkey randomly
-    VERIFY_STATUS( sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &opt), false);
-  }
-
-  return true;
-}
-
-void AdafruitBluefruit::setPairingCompleteCallback(pair_complete_cb_t fp)
-{
-  _pair_complete_cb = fp;
-}
-
 /*------------------------------------------------------------------*/
 /* Thread & SoftDevice Event handler
  *------------------------------------------------------------------*/
@@ -881,7 +758,11 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   LOG_LV2("BLE", "%s : Conn Handle = %d", dbg_ble_event_str(evt->header.evt_id), conn_hdl);
 
   // GAP handler
-  if ( conn ) conn->_eventHandler(evt);
+  if ( conn )
+  {
+    conn->_eventHandler(evt);
+    Pairing._eventHandler(evt);
+  }
 
   switch(evt->header.evt_id)
   {
@@ -951,30 +832,6 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       {
          ada_callback(NULL, 0, _rssi_cb, conn_hdl, rssi_changed->rssi);
       }
-    }
-    break;
-
-    case BLE_GAP_EVT_PASSKEY_DISPLAY:
-    {
-       ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
-       LOG_LV2("PAIR", "Passkey = %.6s, match request = %d", passkey_display->passkey, passkey_display->match_request);
-
-       // Invoke display callback
-       if ( _pair_display_cb ) ada_callback(passkey_display->passkey, 6, _pair_display_cb, conn_hdl, passkey_display->passkey);
-
-       if (passkey_display->match_request)
-       {
-         // Match request require to report the match
-         // sd_ble_gap_auth_key_reply();
-       }
-    }
-    break;
-
-    case BLE_GAP_EVT_AUTH_STATUS:
-    {
-      ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
-
-      if (_pair_complete_cb) ada_callback(NULL, 0, _pair_complete_cb, conn_hdl, status->auth_status);
     }
     break;
 

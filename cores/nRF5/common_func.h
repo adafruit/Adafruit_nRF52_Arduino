@@ -117,27 +117,27 @@
 const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
 #if CFG_DEBUG
-#define LOG_LV1(...)          ADALOG(__VA_ARGS__)
-#define LOG_LV1_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
+  #define LOG_LV1(...)          ADALOG(__VA_ARGS__)
+  #define LOG_LV1_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
 #else
-#define LOG_LV1(...)
-#define LOG_LV1_BUFFER(...)
+  #define LOG_LV1(...)
+  #define LOG_LV1_BUFFER(...)
 #endif
 
 #if CFG_DEBUG >= 2
-#define LOG_LV2(...)          ADALOG(__VA_ARGS__)
-#define LOG_LV2_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
+  #define LOG_LV2(...)          ADALOG(__VA_ARGS__)
+  #define LOG_LV2_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
 #else
-#define LOG_LV2(...)
-#define LOG_LV2_BUFFER(...)
+  #define LOG_LV2(...)
+  #define LOG_LV2_BUFFER(...)
 #endif
 
 #if CFG_DEBUG
 
 #if __cplusplus
-#define PRINTF    ::printf
+  #define PRINTF    ::printf
 #else
-#define PRINTF    printf
+  #define PRINTF    printf
 #endif
 
 #define PRINT_LOCATION()      PRINTF("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)
@@ -181,14 +181,14 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
 #else
 
-#define PRINT_LOCATION()
-#define PRINT_MESS(x)
-#define PRTNT_HEAP()
-#define PRINT_STR(x)
-#define PRINT_INT(x)
-#define PRINT_HEX(x)
-#define PRINT_BUFFER(buf, n)
-#define ADALOG(...)
+  #define PRINT_LOCATION()
+  #define PRINT_MESS(x)
+  #define PRTNT_HEAP()
+  #define PRINT_STR(x)
+  #define PRINT_INT(x)
+  #define PRINT_HEX(x)
+  #define PRINT_BUFFER(buf, n)
+  #define ADALOG(...)
 
 #endif
 
