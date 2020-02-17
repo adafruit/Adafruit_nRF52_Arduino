@@ -43,7 +43,7 @@
 
 using namespace Adafruit_LittleFS_Namespace;
 
-#define BOND_DEBUG        0
+#define BOND_DEBUG        1
 
 #if (CFG_DEBUG == 1 && BOND_DEBUG == 1) || (CFG_DEBUG >= 2)
 #define BOND_LOG(...)   LOG_LV1("BOND", __VA_ARGS__)
