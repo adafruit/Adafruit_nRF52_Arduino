@@ -97,7 +97,7 @@ static const uint8_t D20 = PIN_D20;
 
 #define BOARD_RGB_BRIGHTNESS 0x202020
 
-#define PIN_LED1             (22)
+#define PIN_LED1             (7)
 #define LED_BUILTIN          PIN_LED1
 #define LED_CONN             PIN_LED1
 

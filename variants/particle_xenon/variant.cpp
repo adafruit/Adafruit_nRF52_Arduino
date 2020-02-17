@@ -53,7 +53,6 @@ const uint32_t g_ADigitalPinMap[] =
   _PINNUM(0, 18),   // P0.18 (RESET)
 
   // LEDS
-  _PINNUM(1, 12),   // P1.12 (PRIMARY_LED)
   _PINNUM(0, 13),   // P0.13 (RGB_RED)
   _PINNUM(0, 14),   // P0.14 (RGB_GREEN)
   _PINNUM(0, 15),   // P0.15 (RGB_BLUE) 
