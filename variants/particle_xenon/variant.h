@@ -104,9 +104,9 @@ static const uint8_t D20 = PIN_D20;
 #define LED_RED              PIN_LED1
 #define LED_BLUE             PIN_LED1
 
-static const uint8_t LED_RGB_RED   = (23);
-static const uint8_t LED_RGB_GREEN = (24);
-static const uint8_t LED_RGB_BLUE  = (25);
+static const uint8_t LED_RGB_RED   = (22);
+static const uint8_t LED_RGB_GREEN = (23);
+static const uint8_t LED_RGB_BLUE  = (24);
 
 // Buttons
 #define BUTTONS_NUMBER 2
@@ -117,24 +117,24 @@ static const uint8_t LED_RGB_BLUE  = (25);
 static const uint8_t BUTTON_MODE =  (20);
 
 // Antenna
-#define ANTENNA_SWITCH_1            (26)
-#define ANTENNA_SWITCH_2            (27)
+#define ANTENNA_SWITCH_1            (25)
+#define ANTENNA_SWITCH_2            (26)
 
 // NFC
-#define NFC1                        (28)
-#define NFC2                        (29)
+#define NFC1                        (27)
+#define NFC2                        (28)
 
 /*
  * Analog pins
  */
-#define PIN_A0                      (30)
-#define PIN_A1                      (31)
-#define PIN_A2                      (32)
-#define PIN_A3                      (33)
-#define PIN_A4                      (34)
-#define PIN_A5                      (35)
-#define PIN_A6                      (36)
-#define PIN_A7                      (37)
+#define PIN_A0                      (29)
+#define PIN_A1                      (30)
+#define PIN_A2                      (31)
+#define PIN_A3                      (32)
+#define PIN_A4                      (33)
+#define PIN_A5                      (34)
+#define PIN_A6                      (35)
+#define PIN_A7                      (36)
 
 static const uint8_t A0 = PIN_A0;
 static const uint8_t A1 = PIN_A1;
