@@ -49,12 +49,14 @@ BLEAdafruitAddressablePixel     blePixel;
 #elif defined ARDUINO_NRF52840_CLUE
   #include <Adafruit_APDS9960.h>
   #include <Adafruit_LSM6DS33.h>
+  #include <Adafruit_BMP280.h>
 
   #define DEVICE_NAME       "CLUE"
   #define NEOPIXEL_COUNT    1
 
   Adafruit_APDS9960 apds9960;
   Adafruit_LSM6DS33 lsm6ds33;
+  Adafruit_BMP280   bmp280;
 #else
   #error "Board is not supported"
 #endif
@@ -84,10 +86,14 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 
 uint16_t measure_temperature(uint8_t* buf, uint16_t bufsize)
 {
+  float temp;
 #if defined ARDUINO_NRF52840_CIRCUITPLAY
-  float temp = CircuitPlayground.temperature();
-  memcpy(buf, &temp, 4);
+  temp = CircuitPlayground.temperature();
+#else
+  temp = bmp280.readTemperature();
 #endif
+
+  memcpy(buf, &temp, 4);
   return 4;
 }
 
@@ -156,9 +162,10 @@ void setup()
 
   // Accelerometer
   lsm6ds33.begin_I2C();
+
+  // Pressure + Temperature
+  bmp280.begin();
 #endif
-
-
 
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behaviour, but provided
