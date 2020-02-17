@@ -48,10 +48,13 @@ BLEAdafruitAddressablePixel     blePixel;
 
 #elif defined ARDUINO_NRF52840_CLUE
   #include <Adafruit_APDS9960.h>
+  #include <Adafruit_LSM6DS33.h>
+
   #define DEVICE_NAME       "CLUE"
   #define NEOPIXEL_COUNT    1
 
   Adafruit_APDS9960 apds9960;
+  Adafruit_LSM6DS33 lsm6ds33;
 #else
   #error "Board is not supported"
 #endif
@@ -107,16 +110,25 @@ uint16_t measure_light_sensor(uint8_t* buf, uint16_t bufsize)
 
 uint16_t measure_accel(uint8_t* buf, uint16_t bufsize)
 {  
-  float accel[3];
+  float* accel_buf = (float*) buf;
 
 #if defined ARDUINO_NRF52840_CIRCUITPLAY
-  accel[0] = CircuitPlayground.motionX();
-  accel[1] = CircuitPlayground.motionY();
-  accel[2] = CircuitPlayground.motionZ();
+  accel_buf[0] = CircuitPlayground.motionX();
+  accel_buf[1] = CircuitPlayground.motionY();
+  accel_buf[2] = CircuitPlayground.motionZ();
+#else
+
+  sensors_event_t accel, gyro, temp;
+  (void) gyro; (void) temp;
+
+  lsm6ds33.getEvent(&accel, &gyro, &temp);
+
+  accel_buf[0] = accel.acceleration.x;
+  accel_buf[1] = accel.acceleration.y;
+  accel_buf[2] = accel.acceleration.z;
 #endif
 
-  memcpy(buf, accel, sizeof(accel));
-  return sizeof(accel);
+  return 3*sizeof(float); // 12
 }
 
 void setup()
@@ -138,8 +150,12 @@ void setup()
   // Buzzer Speaker
   pinMode(PIN_BUZZER, OUTPUT);
 
+  // Light sensor
   apds9960.begin();
   apds9960.enableColor(true);
+
+  // Accelerometer
+  lsm6ds33.begin_I2C();
 #endif
 
 
