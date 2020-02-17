@@ -167,9 +167,9 @@ feather52840sense.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840sense.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 
 
-# ----------------------------------
+# ---------------------------------------------
 # Bluefruit ItsyBitsy nRF52840 Express
-# ----------------------------------
+# ---------------------------------------------
 itsybitsy52840.name=Adafruit ItsyBitsy nRF52840 Express
 
 # VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
@@ -379,6 +379,16 @@ metro52840.menu.debug.l2=Level 2 (Full Debug)
 metro52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 metro52840.menu.debug.l3=Level 3 (Segger SystemView)
 metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
+
+
+
+# -------------------------------------------------------
+# 
+# Boards that aren't made by Adafruit
+#
+# -------------------------------------------------------
+
 
 # ----------------------------------
 # Nordic nRF52840DK (PCA10056)
