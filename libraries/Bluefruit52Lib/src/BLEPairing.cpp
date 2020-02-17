@@ -128,12 +128,13 @@ bool BLEPairing::resolveAddress(ble_gap_addr_t const * p_addr, ble_gap_irk_t con
   swap_endian(ecb_data.cleartext, SOC_ECB_CLEARTEXT_LENGTH);
 
   // compute using HW AES peripherals
- (void) sd_ecb_block_encrypt(&ecb_data);
+  // TODO use CC310 to compute AES
+  (void) sd_ecb_block_encrypt(&ecb_data);
 
- // Swap output endian
- swap_endian(ecb_data.ciphertext, SOC_ECB_CIPHERTEXT_LENGTH);
+  // Swap output endian
+  swap_endian(ecb_data.ciphertext, SOC_ECB_CIPHERTEXT_LENGTH);
 
- return 0 == memcmp(hash, ecb_data.ciphertext, 3);
+  return 0 == memcmp(hash, ecb_data.ciphertext, 3);
 }
 
 // Use Legacy SC static Passkey
