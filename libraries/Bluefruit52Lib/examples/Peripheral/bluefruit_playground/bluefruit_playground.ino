@@ -47,11 +47,11 @@ BLEAdafruitAddressablePixel     blePixel;
 
 
 #elif defined ARDUINO_NRF52840_CLUE
-
+  #include <Adafruit_APDS9960.h>
   #define DEVICE_NAME       "CLUE"
   #define NEOPIXEL_COUNT    1
 
-
+  Adafruit_APDS9960 apds9960;
 #else
   #error "Board is not supported"
 #endif
@@ -73,7 +73,6 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
   // No slide switch
   button |= ( digitalRead(PIN_BUTTON1) ? 0x00 : 0x02 );
   button |= ( digitalRead(PIN_BUTTON2) ? 0x00 : 0x04 );
-
 #endif
 
   memcpy(buf, &button, 4);
@@ -91,10 +90,18 @@ uint16_t measure_temperature(uint8_t* buf, uint16_t bufsize)
 
 uint16_t measure_light_sensor(uint8_t* buf, uint16_t bufsize)
 { 
+  float lux;
+
 #if defined ARDUINO_NRF52840_CIRCUITPLAY
-  float lux = CircuitPlayground.lightSensor();
-  memcpy(buf, &lux, 4);
+  lux = CircuitPlayground.lightSensor();
+#else
+  uint16_t r, g, b, c;
+  apds9960.getColorData(&r, &g, &b, &c);
+
+  lux = c;
 #endif
+
+  memcpy(buf, &lux, 4);
   return 4;
 }
 
@@ -130,6 +137,9 @@ void setup()
 
   // Buzzer Speaker
   pinMode(PIN_BUZZER, OUTPUT);
+
+  apds9960.begin();
+  apds9960.enableColor(true);
 #endif
 
 
