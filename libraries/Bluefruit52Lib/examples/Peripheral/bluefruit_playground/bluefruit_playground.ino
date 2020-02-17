@@ -11,11 +11,17 @@
  All text above, and the splash screen below must be included in
  any redistribution
 *********************************************************************/
+
+/* This sketch demonstrate the BLE Adafruit Service that is used with
+ * "Adafruit Bluefruit Playground" app. Supported boards are
+ *  - Circuit Playground Bluefruit (https://www.adafruit.com/product/4333)
+ *  - CLUE nRF52840 (https://www.adafruit.com/product/4500)
+ */
+
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
 #include <bluefruit.h>
 #include <BLEAdafruitService.h>
-#include <Adafruit_CircuitPlayground.h>
 
 // BLE Service
 BLEDfu  bledfu;  // OTA DFU service
@@ -32,15 +38,43 @@ BLEAdafruitTone         bleTone;
 
 BLEAdafruitAddressablePixel     blePixel;
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(10, CPLAY_NEOPIXELPIN, NEO_GRB + NEO_KHZ800);
+// Circuit Playground Bluefruit
+#if defined ARDUINO_NRF52840_CIRCUITPLAY
+  #include <Adafruit_CircuitPlayground.h>
+
+  #define DEVICE_NAME       "CPlay"
+  #define NEOPIXEL_COUNT    10
+
+
+#elif defined ARDUINO_NRF52840_CLUE
+
+  #define DEVICE_NAME       "CLUE"
+  #define NEOPIXEL_COUNT    1
+
+
+#else
+  #error "Board is not supported"
+#endif
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NEOPIXEL_COUNT, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
 
 uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 {
   uint32_t button = 0;
 
+#if defined ARDUINO_NRF52840_CIRCUITPLAY
   button |= ( CircuitPlayground.slideSwitch() ? 0x01 : 0x00 );
   button |= ( CircuitPlayground.leftButton()  ? 0x02 : 0x00 );
   button |= ( CircuitPlayground.rightButton() ? 0x04 : 0x00 );
+
+#else
+  // Button is active LOW on most board except CPlay
+
+  // No slide switch
+  button |= ( digitalRead(PIN_BUTTON1) ? 0x00 : 0x02 );
+  button |= ( digitalRead(PIN_BUTTON2) ? 0x00 : 0x04 );
+
+#endif
 
   memcpy(buf, &button, 4);
   return 4;
@@ -48,24 +82,31 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 
 uint16_t measure_temperature(uint8_t* buf, uint16_t bufsize)
 {
+#if defined ARDUINO_NRF52840_CIRCUITPLAY
   float temp = CircuitPlayground.temperature();
   memcpy(buf, &temp, 4);
+#endif
   return 4;
 }
 
 uint16_t measure_light_sensor(uint8_t* buf, uint16_t bufsize)
 { 
+#if defined ARDUINO_NRF52840_CIRCUITPLAY
   float lux = CircuitPlayground.lightSensor();
   memcpy(buf, &lux, 4);
+#endif
   return 4;
 }
 
 uint16_t measure_accel(uint8_t* buf, uint16_t bufsize)
 {  
   float accel[3];
+
+#if defined ARDUINO_NRF52840_CIRCUITPLAY
   accel[0] = CircuitPlayground.motionX();
   accel[1] = CircuitPlayground.motionY();
   accel[2] = CircuitPlayground.motionZ();
+#endif
 
   memcpy(buf, accel, sizeof(accel));
   return sizeof(accel);
@@ -79,7 +120,19 @@ void setup()
   Serial.println("Bluefruit52 BLEUART Example");
   Serial.println("---------------------------\n");
 
+#if defined ARDUINO_NRF52840_CIRCUITPLAY
   CircuitPlayground.begin();
+#else
+
+  // Button
+  pinMode(PIN_BUTTON1, INPUT_PULLUP);
+  pinMode(PIN_BUTTON2, INPUT_PULLUP);
+
+  // Buzzer Speaker
+  pinMode(PIN_BUZZER, OUTPUT);
+#endif
+
+
 
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behaviour, but provided
@@ -92,8 +145,8 @@ void setup()
   Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
 
   Bluefruit.begin();
-  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-  Bluefruit.setName("Bluefruit52");
+  Bluefruit.setTxPower(8);    // Check bluefruit.h for supported values
+  Bluefruit.setName(DEVICE_NAME);
   //Bluefruit.setName(getMcuUniqueID()); // useful testing with multiple central connections
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
@@ -127,7 +180,7 @@ void setup()
   bleButton.setMeasureCallback(measure_button);
   bleButton.setPeriod(0); // only notify if there is changes with buttons
 
-  bleTone.begin(CPLAY_BUZZER);
+  bleTone.begin(PIN_BUZZER);
 
   strip.begin();
   blePixel.begin(&strip);
@@ -160,9 +213,8 @@ void startAdv(void)
 
   Bluefruit.Advertising.addManufacturerData(&mfr_adv, sizeof(mfr_adv));
 
-  // Secondary Scan Response packet (optional)
-  // Since there is no room for 'Name' in Advertising packet
-  Bluefruit.ScanResponse.addName();
+  // Add name to advertising, since there is enough room
+  Bluefruit.Advertising.addName();
   
   /* Start Advertising
    * - Enable auto advertising if disconnected
