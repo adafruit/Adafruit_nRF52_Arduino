@@ -58,6 +58,7 @@ BLEAdafruitAddressablePixel     blePixel;
   Adafruit_LSM6DS33 lsm6ds33;
   Adafruit_BMP280   bmp280;
 #else
+
   #error "Board is not supported"
 #endif
 
@@ -72,12 +73,13 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
   button |= ( CircuitPlayground.leftButton()  ? 0x02 : 0x00 );
   button |= ( CircuitPlayground.rightButton() ? 0x04 : 0x00 );
 
-#else
+#elif defined ARDUINO_NRF52840_CLUE
   // Button is active LOW on most board except CPlay
 
   // No slide switch
   button |= ( digitalRead(PIN_BUTTON1) ? 0x00 : 0x02 );
   button |= ( digitalRead(PIN_BUTTON2) ? 0x00 : 0x04 );
+
 #endif
 
   memcpy(buf, &button, 4);
@@ -87,10 +89,13 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 uint16_t measure_temperature(uint8_t* buf, uint16_t bufsize)
 {
   float temp;
+
 #if defined ARDUINO_NRF52840_CIRCUITPLAY
   temp = CircuitPlayground.temperature();
-#else
+
+#elif defined ARDUINO_NRF52840_CLUE
   temp = bmp280.readTemperature();
+
 #endif
 
   memcpy(buf, &temp, 4);
@@ -122,7 +127,8 @@ uint16_t measure_accel(uint8_t* buf, uint16_t bufsize)
   accel_buf[0] = CircuitPlayground.motionX();
   accel_buf[1] = CircuitPlayground.motionY();
   accel_buf[2] = CircuitPlayground.motionZ();
-#else
+
+#elif defined ARDUINO_NRF52840_CLUE
 
   sensors_event_t accel, gyro, temp;
   (void) gyro; (void) temp;
@@ -132,6 +138,7 @@ uint16_t measure_accel(uint8_t* buf, uint16_t bufsize)
   accel_buf[0] = accel.acceleration.x;
   accel_buf[1] = accel.acceleration.y;
   accel_buf[2] = accel.acceleration.z;
+
 #endif
 
   return 3*sizeof(float); // 12
@@ -147,7 +154,8 @@ void setup()
 
 #if defined ARDUINO_NRF52840_CIRCUITPLAY
   CircuitPlayground.begin();
-#else
+
+#elif defined ARDUINO_NRF52840_CLUE
 
   // Button
   pinMode(PIN_BUTTON1, INPUT_PULLUP);
