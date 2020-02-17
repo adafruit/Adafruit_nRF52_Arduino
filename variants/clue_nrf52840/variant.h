@@ -52,13 +52,16 @@ extern "C"
 #define LED_STATE_ON         1         // State when LED is litted
 
 // Buttons
-#define PIN_BUTTON1             (5)
-#define PIN_BUTTON2             (11)
+#define PIN_BUTTON1          (5)    // Button A
+#define PIN_BUTTON2          (11)   // Button B
 
 // Microphone
 #define PIN_PDM_DIN           35
 #define PIN_PDM_CLK           36
 #define PIN_PDM_PWR           -1  // not used
+
+// Buzzer
+#define PIN_BUZZER            46
 
 /*
  * Analog pins
