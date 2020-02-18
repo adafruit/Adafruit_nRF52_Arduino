@@ -14,8 +14,9 @@
 
 /* This sketch demonstrate the BLE Adafruit Service that is used with
  * "Adafruit Bluefruit Playground" app. Supported boards are
- *  - Circuit Playground Bluefruit (https://www.adafruit.com/product/4333)
- *  - CLUE nRF52840 (https://www.adafruit.com/product/4500)
+ *  - Circuit Playground Bluefruit : https://www.adafruit.com/product/4333
+ *  - CLUE nRF52840 : https://www.adafruit.com/product/4500
+ *  - Feather Sense : https://www.adafruit.com/product/4516
  */
 
 #include <Adafruit_LittleFS.h>
@@ -41,44 +42,17 @@ BLEAdafruitTone         bleTone;
 
 BLEAdafruitAddressablePixel     blePixel;
 
-// Circuit Playground Bluefruit
-#if defined( ARDUINO_NRF52840_CIRCUITPLAY )
-  #include <Adafruit_CircuitPlayground.h>
+#if defined(ARDUINO_NRF52840_CIRCUITPLAY)
+//------------- Circuit Playground Bluefruit -------------//
 
-  #define DEVICE_NAME       "CPlay"
-  #define NEOPIXEL_COUNT    10
+#include <Adafruit_CircuitPlayground.h>
 
-
-#elif defined( ARDUINO_NRF52840_CLUE ) || defined( ARDUINO_NRF52840_FEATHER_SENSE )
-  #include <Adafruit_APDS9960.h>
-  #include <Adafruit_LSM6DS33.h>
-  #include <Adafruit_BMP280.h>
-
-  #define DEVICE_NAME       "CLUE"
-  #define NEOPIXEL_COUNT    1
-
-  Adafruit_APDS9960 apds9960;
-  Adafruit_LSM6DS33 lsm6ds33;
-  Adafruit_BMP280   bmp280;
-#else
-
-  #error "Board is not supported"
-#endif
-
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(NEOPIXEL_COUNT, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
+#define DEVICE_NAME       "CPlay"
+#define NEOPIXEL_COUNT    10
 
 uint16_t measure_temperature(uint8_t* buf, uint16_t bufsize)
 {
-  float temp;
-
-#if defined ARDUINO_NRF52840_CIRCUITPLAY
-  temp = CircuitPlayground.temperature();
-
-#elif defined ARDUINO_NRF52840_CLUE
-  temp = bmp280.readTemperature();
-
-#endif
-
+  float temp = CircuitPlayground.temperature();
   memcpy(buf, &temp, 4);
   return 4;
 }
@@ -87,23 +61,9 @@ uint16_t measure_accel(uint8_t* buf, uint16_t bufsize)
 {  
   float* accel_buf = (float*) buf;
 
-#if defined ARDUINO_NRF52840_CIRCUITPLAY
   accel_buf[0] = CircuitPlayground.motionX();
   accel_buf[1] = CircuitPlayground.motionY();
   accel_buf[2] = CircuitPlayground.motionZ();
-
-#elif defined ARDUINO_NRF52840_CLUE
-
-  sensors_event_t accel, gyro, temp;
-  (void) gyro; (void) temp;
-
-  lsm6ds33.getEvent(&accel, &gyro, &temp);
-
-  accel_buf[0] = accel.acceleration.x;
-  accel_buf[1] = accel.acceleration.y;
-  accel_buf[2] = accel.acceleration.z;
-
-#endif
 
   return 3*sizeof(float); // 12
 }
@@ -111,16 +71,7 @@ uint16_t measure_accel(uint8_t* buf, uint16_t bufsize)
 uint16_t measure_light_sensor(uint8_t* buf, uint16_t bufsize)
 {
   float lux;
-
-#if defined ARDUINO_NRF52840_CIRCUITPLAY
   lux = CircuitPlayground.lightSensor();
-#else
-  uint16_t r, g, b, c;
-  apds9960.getColorData(&r, &g, &b, &c);
-
-  lux = c;
-#endif
-
   memcpy(buf, &lux, 4);
   return 4;
 }
@@ -139,28 +90,102 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 {
   uint32_t button = 0;
 
-#if defined ARDUINO_NRF52840_CIRCUITPLAY
   button |= ( CircuitPlayground.slideSwitch() ? 0x01 : 0x00 );
   button |= ( CircuitPlayground.leftButton()  ? 0x02 : 0x00 );
   button |= ( CircuitPlayground.rightButton() ? 0x04 : 0x00 );
-
-#elif defined ARDUINO_NRF52840_CLUE
-  // Button is active LOW on most board except CPlay
-
-  // No slide switch
-  button |= ( digitalRead(PIN_BUTTON1) ? 0x00 : 0x02 );
-  button |= ( digitalRead(PIN_BUTTON2) ? 0x00 : 0x04 );
-
-#endif
 
   memcpy(buf, &button, 4);
   return 4;
 }
 
+#elif defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_NRF52840_FEATHER_SENSE)
+//------------- CLUE & Feather Sense -------------//
+
+#include <Adafruit_APDS9960.h>
+#include <Adafruit_LSM6DS33.h>
+#include <Adafruit_BMP280.h>
+
+#if defined(ARDUINO_NRF52840_CLUE)
+  #define DEVICE_NAME     "CLUE"
+#else
+  #define DEVICE_NAME     "Sense"
+#endif
+
+#define NEOPIXEL_COUNT    1
+
+Adafruit_APDS9960 apds9960;
+Adafruit_LSM6DS33 lsm6ds33;
+Adafruit_BMP280   bmp280;
+
+uint16_t measure_temperature(uint8_t* buf, uint16_t bufsize)
+{
+  float temp = bmp280.readTemperature();
+  memcpy(buf, &temp, 4);
+  return 4;
+}
+
+uint16_t measure_accel(uint8_t* buf, uint16_t bufsize)
+{
+  float* accel_buf = (float*) buf;
+
+  sensors_event_t accel, gyro, temp;
+  (void) gyro; (void) temp;
+
+  lsm6ds33.getEvent(&accel, &gyro, &temp);
+
+  accel_buf[0] = accel.acceleration.x;
+  accel_buf[1] = accel.acceleration.y;
+  accel_buf[2] = accel.acceleration.z;
+
+  return 3*sizeof(float); // 12
+}
+
+uint16_t measure_light_sensor(uint8_t* buf, uint16_t bufsize)
+{
+  float lux;
+
+  uint16_t r, g, b, c;
+  apds9960.getColorData(&r, &g, &b, &c);
+
+  lux = c;
+
+  memcpy(buf, &lux, 4);
+  return 4;
+}
+
+uint16_t measure_gyro(uint8_t* buf, uint16_t bufsize)
+{
+
+}
+
+uint16_t measure_magnetic(uint8_t* buf, uint16_t bufsize)
+{
+
+}
+
+uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
+{
+  // Button is active LOW on most board except CPlay
+  // No slide switch
+
+  uint32_t button = 0;
+  button |= ( digitalRead(PIN_BUTTON1) ? 0x00 : 0x02 );
+  button |= ( digitalRead(PIN_BUTTON2) ? 0x00 : 0x04 );
+
+  memcpy(buf, &button, 4);
+  return 4;
+}
+
+#else
+  #error "Board is not supported"
+#endif
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NEOPIXEL_COUNT, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
+
+//------------- Setup -------------//
 void setup()
 {
   Serial.begin(115200);
-  //while ( !Serial ) delay(10);   // for nrf52840 with native usb
   
   Serial.println("Bluefruit52 BLEUART Example");
   Serial.println("---------------------------\n");
@@ -168,7 +193,7 @@ void setup()
 #if defined ARDUINO_NRF52840_CIRCUITPLAY
   CircuitPlayground.begin();
 
-#elif defined ARDUINO_NRF52840_CLUE
+#else
 
   // Button
   pinMode(PIN_BUTTON1, INPUT_PULLUP);
@@ -229,12 +254,6 @@ void setup()
   bleLight.begin();
   bleLight.setMeasureCallback(measure_light_sensor);
 
-//  bleGyro.begin();
-//  bleGyro.setMeasureCallback(measure_gyro);
-//
-//  bleMagnetic.begin();
-//  bleMagnetic.setMeasureCallback(measure_magnetic);
-    
   bleButton.begin();
   bleButton.setMeasureCallback(measure_button);
   bleButton.setPeriod(0); // only notify if there is changes with buttons
@@ -243,6 +262,15 @@ void setup()
 
   strip.begin();
   blePixel.begin(&strip);
+
+  // CPB doesn't support these on-board sensor
+#ifndef ARDUINO_NRF52840_CIRCUITPLAY
+//  bleGyro.begin();
+//  bleGyro.setMeasureCallback(measure_gyro);
+//
+//  bleMagnetic.begin();
+//  bleMagnetic.setMeasureCallback(measure_magnetic);
+#endif
 
   // Set up and start advertising
   startAdv();
