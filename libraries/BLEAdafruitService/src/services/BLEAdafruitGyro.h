@@ -25,13 +25,13 @@
 #ifndef BLEADAFRUITACCEL_H_
 #define BLEADAFRUITGYRO_H_
 
-class BLEAdafruitAccel : public BLEAdafruitSensor
+class BLEAdafruitGyro : public BLEAdafruitSensor
 {
   public:
     static const uint8_t UUID128_SERVICE[16];
     static const uint8_t UUID128_CHR_DATA[16];
 
-    BLEAdafruitAccel(void);
+    BLEAdafruitGyro(void);
     virtual err_t begin(void);
 };
 

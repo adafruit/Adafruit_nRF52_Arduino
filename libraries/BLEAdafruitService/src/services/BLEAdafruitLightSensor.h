@@ -31,8 +31,6 @@ class BLEAdafruitLightSensor : public BLEAdafruitSensor
     static const uint8_t UUID128_SERVICE[16];
     static const uint8_t UUID128_CHR_DATA[16];
 
-    BLECharacteristic Lux;
-
     BLEAdafruitLightSensor(void);
     virtual err_t begin(void);
 };
