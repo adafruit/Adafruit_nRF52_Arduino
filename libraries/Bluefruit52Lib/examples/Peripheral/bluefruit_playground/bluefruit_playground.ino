@@ -33,20 +33,23 @@ BLEBas  blebas;  // battery
 BLEAdafruitTemperature  bleTemp;
 BLEAdafruitAccel        bleAccel;
 BLEAdafruitLightSensor  bleLight;
+BLEAdafruitGyro         bleGyro;
+BLEAdafruitMagnetic     bleMagnetic;
+
 BLEAdafruitButton       bleButton;
 BLEAdafruitTone         bleTone;
 
 BLEAdafruitAddressablePixel     blePixel;
 
 // Circuit Playground Bluefruit
-#if defined ARDUINO_NRF52840_CIRCUITPLAY
+#if defined( ARDUINO_NRF52840_CIRCUITPLAY )
   #include <Adafruit_CircuitPlayground.h>
 
   #define DEVICE_NAME       "CPlay"
   #define NEOPIXEL_COUNT    10
 
 
-#elif defined ARDUINO_NRF52840_CLUE
+#elif defined( ARDUINO_NRF52840_CLUE ) || defined( ARDUINO_NRF52840_FEATHER_SENSE )
   #include <Adafruit_APDS9960.h>
   #include <Adafruit_LSM6DS33.h>
   #include <Adafruit_BMP280.h>
@@ -64,28 +67,6 @@ BLEAdafruitAddressablePixel     blePixel;
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NEOPIXEL_COUNT, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
 
-uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
-{
-  uint32_t button = 0;
-
-#if defined ARDUINO_NRF52840_CIRCUITPLAY
-  button |= ( CircuitPlayground.slideSwitch() ? 0x01 : 0x00 );
-  button |= ( CircuitPlayground.leftButton()  ? 0x02 : 0x00 );
-  button |= ( CircuitPlayground.rightButton() ? 0x04 : 0x00 );
-
-#elif defined ARDUINO_NRF52840_CLUE
-  // Button is active LOW on most board except CPlay
-
-  // No slide switch
-  button |= ( digitalRead(PIN_BUTTON1) ? 0x00 : 0x02 );
-  button |= ( digitalRead(PIN_BUTTON2) ? 0x00 : 0x04 );
-
-#endif
-
-  memcpy(buf, &button, 4);
-  return 4;
-}
-
 uint16_t measure_temperature(uint8_t* buf, uint16_t bufsize)
 {
   float temp;
@@ -99,23 +80,6 @@ uint16_t measure_temperature(uint8_t* buf, uint16_t bufsize)
 #endif
 
   memcpy(buf, &temp, 4);
-  return 4;
-}
-
-uint16_t measure_light_sensor(uint8_t* buf, uint16_t bufsize)
-{ 
-  float lux;
-
-#if defined ARDUINO_NRF52840_CIRCUITPLAY
-  lux = CircuitPlayground.lightSensor();
-#else
-  uint16_t r, g, b, c;
-  apds9960.getColorData(&r, &g, &b, &c);
-
-  lux = c;
-#endif
-
-  memcpy(buf, &lux, 4);
   return 4;
 }
 
@@ -142,6 +106,55 @@ uint16_t measure_accel(uint8_t* buf, uint16_t bufsize)
 #endif
 
   return 3*sizeof(float); // 12
+}
+
+uint16_t measure_light_sensor(uint8_t* buf, uint16_t bufsize)
+{
+  float lux;
+
+#if defined ARDUINO_NRF52840_CIRCUITPLAY
+  lux = CircuitPlayground.lightSensor();
+#else
+  uint16_t r, g, b, c;
+  apds9960.getColorData(&r, &g, &b, &c);
+
+  lux = c;
+#endif
+
+  memcpy(buf, &lux, 4);
+  return 4;
+}
+
+uint16_t measure_gyro(uint8_t* buf, uint16_t bufsize)
+{
+
+}
+
+uint16_t measure_magnetic(uint8_t* buf, uint16_t bufsize)
+{
+
+}
+
+uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
+{
+  uint32_t button = 0;
+
+#if defined ARDUINO_NRF52840_CIRCUITPLAY
+  button |= ( CircuitPlayground.slideSwitch() ? 0x01 : 0x00 );
+  button |= ( CircuitPlayground.leftButton()  ? 0x02 : 0x00 );
+  button |= ( CircuitPlayground.rightButton() ? 0x04 : 0x00 );
+
+#elif defined ARDUINO_NRF52840_CLUE
+  // Button is active LOW on most board except CPlay
+
+  // No slide switch
+  button |= ( digitalRead(PIN_BUTTON1) ? 0x00 : 0x02 );
+  button |= ( digitalRead(PIN_BUTTON2) ? 0x00 : 0x04 );
+
+#endif
+
+  memcpy(buf, &button, 4);
+  return 4;
 }
 
 void setup()
@@ -215,6 +228,12 @@ void setup()
   
   bleLight.begin();
   bleLight.setMeasureCallback(measure_light_sensor);
+
+//  bleGyro.begin();
+//  bleGyro.setMeasureCallback(measure_gyro);
+//
+//  bleMagnetic.begin();
+//  bleMagnetic.setMeasureCallback(measure_magnetic);
     
   bleButton.begin();
   bleButton.setMeasureCallback(measure_button);
