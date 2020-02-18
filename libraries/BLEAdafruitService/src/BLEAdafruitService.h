@@ -35,6 +35,7 @@
 #include "services/BLEAdafruitButton.h"
 #include "services/BLEAdafruitGyro.h"
 #include "services/BLEAdafruitLightSensor.h"
+#include "services/BLEAdafruitMagnetic.h"
 #include "services/BLEAdafruitTemperature.h"
 #include "services/BLEAdafruitTone.h"
 

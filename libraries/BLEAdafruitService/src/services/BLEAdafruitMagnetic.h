@@ -22,18 +22,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLEADAFRUITGYRO_H_
-#define BLEADAFRUITGYRO_H_
+#ifndef BLEADAFRUITMAGNETIC_H_
+#define BLEADAFRUITMAGNETIC_H_
 
-class BLEAdafruitGyro : public BLEAdafruitSensor
+class BLEAdafruitMagnetic : public BLEAdafruitSensor
 {
   public:
     static const uint8_t UUID128_SERVICE[16];
     static const uint8_t UUID128_CHR_DATA[16];
     static const int32_t DEFAULT_PERIOD = 1000;
 
-    BLEAdafruitGyro(void);
+    BLEAdafruitMagnetic(void);
     virtual err_t begin(void);
 };
 
-#endif /* BLEADAFRUITGYRO_H_ */
+#endif /* BLEADAFRUITMAGNETIC_H_ */

@@ -67,7 +67,7 @@ err_t BLEAdafruitButton::begin(void)
   _measurement.setFixedLen(4);
 
   // Invoke base class begin(), this will add Service, Measurement and Period characteristics
-  VERIFY_STATUS( BLEAdafruitSensor::begin(100) );
+  VERIFY_STATUS( BLEAdafruitSensor::begin(DEFAULT_PERIOD) );
 
   return ERROR_NONE;
 }

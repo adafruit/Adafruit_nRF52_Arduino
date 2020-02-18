@@ -36,31 +36,31 @@
  *  - Measurement Period  0001 | int32_t | Read + Write |
  *    ms between measurements, -1: stop reading, 0: update when changes
  *
- * Gyroscope service  0400
- *  - Gyro                0401 | float[3] | Read + Notify | x, y, z
+ * Magnetic service  0500
+ *  - Magnetic            0501 | float[3] | Read + Notify | x, y, z
  *  - Measurement Period  0001
  */
 
-const uint8_t BLEAdafruitGyro::UUID128_SERVICE[16] =
+const uint8_t BLEAdafruitMagnetic::UUID128_SERVICE[16] =
 {
   0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
-  0xA8, 0x42, 0x32, 0xC3, 0x00, 0x04, 0xAF, 0xAD
+  0xA8, 0x42, 0x32, 0xC3, 0x00, 0x05, 0xAF, 0xAD
 };
 
-const uint8_t BLEAdafruitGyro::UUID128_CHR_DATA[16] =
+const uint8_t BLEAdafruitMagnetic::UUID128_CHR_DATA[16] =
 {
   0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
-  0xA8, 0x42, 0x32, 0xC3, 0x01, 0x04, 0xAF, 0xAD
+  0xA8, 0x42, 0x32, 0xC3, 0x01, 0x05, 0xAF, 0xAD
 };
 
 // Constructor
-BLEAdafruitGyro::BLEAdafruitGyro(void)
+BLEAdafruitMagnetic::BLEAdafruitMagnetic(void)
   : BLEAdafruitSensor(UUID128_SERVICE, UUID128_CHR_DATA)
 {
 
 }
 
-err_t BLEAdafruitGyro::begin (void)
+err_t BLEAdafruitMagnetic::begin (void)
 {
   // Setup Measurement Characteristic
   _measurement.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
