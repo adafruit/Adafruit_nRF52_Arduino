@@ -93,6 +93,12 @@ static const uint8_t A7  = PIN_A7 ;
  */
 #define SPI_INTERFACES_COUNT 2
 
+// nRF52840 has only one SPIM3 runing at highspeed 32Mhz
+// This assign SPIM3 to either: SPI (0), SPI1 (1).
+// If not defined, default to 0 or SPI.
+#define SPI_32MHZ_INTERFACE  1
+
+// SPI
 #define PIN_SPI_MISO         (14)
 #define PIN_SPI_MOSI         (15)
 #define PIN_SPI_SCK          (13)
@@ -102,7 +108,7 @@ static const uint8_t MOSI = PIN_SPI_MOSI ;
 static const uint8_t MISO = PIN_SPI_MISO ;
 static const uint8_t SCK  = PIN_SPI_SCK ;
 
-
+// SPI1
 #define PIN_SPI1_MISO         (35)
 #define PIN_SPI1_MOSI         (30)
 #define PIN_SPI1_SCK          (29)
