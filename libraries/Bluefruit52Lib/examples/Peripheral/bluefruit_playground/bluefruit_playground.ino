@@ -248,7 +248,7 @@ void setup()
 #endif
 
   Serial.begin(115200);
-  while(!Serial) delay(10); // wait for native USB
+//  while(!Serial) delay(10); // wait for native USB
 
   Serial.println("Bluefruit Playground Example");
   Serial.println("---------------------------\n");
