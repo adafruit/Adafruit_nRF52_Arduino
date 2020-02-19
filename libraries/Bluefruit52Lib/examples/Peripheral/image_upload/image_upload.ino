@@ -24,7 +24,6 @@
  *  - Adafruit CLUE : https://www.adafruit.com/product/4500
  */
 
-
 #if defined(ARDUINO_NRF52840_CIRCUITPLAY)
   // Circuit Playground Bluefruit use with TFT GIZMO
   #define TFT_BACKLIGHT  A3
