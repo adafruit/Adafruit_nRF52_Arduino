@@ -1,5 +1,16 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.18.5 - 2020.02.19
+
+- Add macro `SPI_32MHZ_INTERFACE` to variant to select SPI or SPI1 to use 32mhz SPIM3
+- Add PIN_BUZZER to variants with built-in speaker
+- Enhance Particle Xenon support, PR #435 thanks to @outlandnish and @jaswope
+- Rename cplay_ble.ino to bluefruit_playground.ino
+- Use USB_PRODUCT string for default bledis model
+- Increase attr table size for 840 to from 0xC00 to 0x1000
+- Add more Adafruit sensor service: Gyro, Magento, Humid, Baro
+- Upadte `image_upload.ino` to support CLUE with built-in TFT
+
 ## 0.18.0 - 2020.02.03
 
 - Add EXTERNAL_FLASH_USE_QSPI to all variants that has on-board flash
