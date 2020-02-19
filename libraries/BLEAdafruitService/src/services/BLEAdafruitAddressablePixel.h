@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLEADAFRUITADDRESSABLEPIXEL_H_
-#define BLEADAFRUITADDRESSABLEPIXEL_H_
+#ifndef BLEADAFRUIT_ADDRESSABLEPIXEL_H_
+#define BLEADAFRUIT_ADDRESSABLEPIXEL_H_
 
 #include "Adafruit_NeoPixel.h"
 
@@ -54,4 +54,4 @@ class BLEAdafruitAddressablePixel : public BLEService
 
 
 
-#endif /* BLEADAFRUITADDRESSABLEPIXEL_H_ */
+#endif /* BLEADAFRUIT_ADDRESSABLEPIXEL_H_ */

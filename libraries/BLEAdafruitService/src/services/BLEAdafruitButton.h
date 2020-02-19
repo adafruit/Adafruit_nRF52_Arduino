@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLE_ADAFRUIT_BUTTON_H_
-#define BLE_ADAFRUIT_BUTTON_H_
+#ifndef BLEADAFRUIT_BUTTON_H_
+#define BLEADAFRUIT_BUTTON_H_
 
 class BLEAdafruitButton : public BLEAdafruitSensor
 {
@@ -36,4 +36,4 @@ class BLEAdafruitButton : public BLEAdafruitSensor
     virtual err_t begin(void);
 };
 
-#endif /* BLE_ADAFRUIT_BUTTON_H_ */
+#endif /* BLEADAFRUIT_BUTTON_H_ */

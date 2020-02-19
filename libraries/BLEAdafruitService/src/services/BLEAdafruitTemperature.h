@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLEADAFRUITTEMPERATURE_H_
-#define BLEADAFRUITTEMPERATURE_H_
+#ifndef BLEADAFRUIT_TEMPERATURE_H_
+#define BLEADAFRUIT_TEMPERATURE_H_
 
 class BLEAdafruitTemperature : public BLEAdafruitSensor
 {
@@ -36,4 +36,4 @@ class BLEAdafruitTemperature : public BLEAdafruitSensor
     virtual err_t begin(void);
 };
 
-#endif /* BLEADAFRUITTEMPERATURE_H_ */
+#endif /* BLEADAFRUIT_TEMPERATURE_H_ */

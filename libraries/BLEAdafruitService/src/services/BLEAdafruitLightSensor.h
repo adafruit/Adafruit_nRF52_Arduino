@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLE_ADAFRUIT_LIGHT_SENSOR_H_
-#define BLE_ADAFRUIT_LIGHT_SENSOR_H_
+#ifndef BLEADAFRUIT_LIGHT_SENSOR_H_
+#define BLEADAFRUIT_LIGHT_SENSOR_H_
 
 class BLEAdafruitLightSensor : public BLEAdafruitSensor
 {
@@ -36,4 +36,4 @@ class BLEAdafruitLightSensor : public BLEAdafruitSensor
     virtual err_t begin(void);
 };
 
-#endif /* BLE_ADAFRUIT_LIGHT_SENSOR_H_ */
+#endif /* BLEADAFRUIT_LIGHT_SENSOR_H_ */

@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLEADAFRUITGYRO_H_
-#define BLEADAFRUITGYRO_H_
+#ifndef BLEADAFRUIT_GYRO_H_
+#define BLEADAFRUIT_GYRO_H_
 
 class BLEAdafruitGyro : public BLEAdafruitSensor
 {
@@ -36,4 +36,4 @@ class BLEAdafruitGyro : public BLEAdafruitSensor
     virtual err_t begin(void);
 };
 
-#endif /* BLEADAFRUITGYRO_H_ */
+#endif /* BLEADAFRUIT_GYRO_H_ */

@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLEADAFRUITACCEL_H_
-#define BLEADAFRUITACCEL_H_
+#ifndef BLEADAFRUIT_ACCEL_H_
+#define BLEADAFRUIT_ACCEL_H_
 
 class BLEAdafruitAccel : public BLEAdafruitSensor
 {
@@ -36,4 +36,4 @@ class BLEAdafruitAccel : public BLEAdafruitSensor
     virtual err_t begin(void);
 };
 
-#endif /* BLEADAFRUITACCEL_H_ */
+#endif /* BLEADAFRUIT_ACCEL_H_ */

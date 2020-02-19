@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLEADAFRUITMAGNETIC_H_
-#define BLEADAFRUITMAGNETIC_H_
+#ifndef BLEADAFRUIT_MAGNETIC_H_
+#define BLEADAFRUIT_MAGNETIC_H_
 
 class BLEAdafruitMagnetic : public BLEAdafruitSensor
 {
@@ -36,4 +36,4 @@ class BLEAdafruitMagnetic : public BLEAdafruitSensor
     virtual err_t begin(void);
 };
 
-#endif /* BLEADAFRUITMAGNETIC_H_ */
+#endif /* BLEADAFRUIT_MAGNETIC_H_ */
