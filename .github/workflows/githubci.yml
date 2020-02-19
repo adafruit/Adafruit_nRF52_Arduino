@@ -52,7 +52,7 @@ jobs:
         rm -r $HOME/$BSP_PATH/*
         ln -s $GITHUB_WORKSPACE $HOME/$BSP_PATH/$BSP_VERSION
         # Install library dependency
-        arduino-cli lib install "Adafruit GFX Library" "Adafruit SSD1306" "Adafruit ILI9341" "Adafruit HX8357 Library" "Adafruit EPD" 
+        arduino-cli lib install "Adafruit GFX Library" "Adafruit SSD1306" "Adafruit ILI9341" "Adafruit HX8357 Library" "Adafruit ST7735 and ST7789 Library" "Adafruit EPD" 
         arduino-cli lib install "Adafruit Circuit Playground" "Adafruit NeoPixel" "Adafruit NeoMatrix" "MIDI Library" "Firmata"
 
     - name: Build examples
