@@ -122,10 +122,7 @@ static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
     LOG_LV1("SD Err", "assert at %s : %d", assert_info->p_file_name, assert_info->line_num);
   }
 
-  while(1)
-  {
-    yield();
-  }
+  while(1) yield();
 #endif
 }
 
@@ -189,11 +186,6 @@ AdafruitBluefruit::AdafruitBluefruit(void)
                   .kdist_own    = { .enc = 1, .id = 1},
                   .kdist_peer   = { .enc = 1, .id = 1},
                 });
-
-COMMENT_OUT(
-  _auth_type = BLE_GAP_AUTH_KEY_TYPE_NONE;
-  varclr(_pin);
-)
 }
 
 void AdafruitBluefruit::configServiceChanged(bool changed)
