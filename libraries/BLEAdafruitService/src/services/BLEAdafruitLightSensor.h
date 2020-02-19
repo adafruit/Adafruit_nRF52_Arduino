@@ -22,19 +22,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLE_ADAFRUIT_LIGHT_SENSOR_H_
-#define BLE_ADAFRUIT_LIGHT_SENSOR_H_
+#ifndef BLEADAFRUIT_LIGHT_SENSOR_H_
+#define BLEADAFRUIT_LIGHT_SENSOR_H_
 
 class BLEAdafruitLightSensor : public BLEAdafruitSensor
 {
   public:
     static const uint8_t UUID128_SERVICE[16];
     static const uint8_t UUID128_CHR_DATA[16];
-
-    BLECharacteristic Lux;
+    static const int32_t DEFAULT_PERIOD = 1000;
 
     BLEAdafruitLightSensor(void);
     virtual err_t begin(void);
 };
 
-#endif /* BLE_ADAFRUIT_LIGHT_SENSOR_H_ */
+#endif /* BLEADAFRUIT_LIGHT_SENSOR_H_ */

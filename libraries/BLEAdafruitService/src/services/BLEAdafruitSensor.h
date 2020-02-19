@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLE_ADAFRUIT_SENSOR_H_
-#define BLE_ADAFRUIT_SENSOR_H_
+#ifndef BLEADAFRUIT_SENSOR_H_
+#define BLEADAFRUIT_SENSOR_H_
 
 class BLEAdafruitSensor : public BLEService
 {
@@ -54,4 +54,4 @@ class BLEAdafruitSensor : public BLEService
     static void sensor_data_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value);
 };
 
-#endif /* BLE_ADAFRUIT_SENSOR_H_ */
+#endif /* BLEADAFRUIT_SENSOR_H_ */

@@ -144,7 +144,7 @@ feather52840sense.build.board=NRF52840_FEATHER_SENSE
 feather52840sense.build.core=nRF5
 feather52840sense.build.variant=feather_nrf52840_sense
 feather52840sense.build.usb_manufacturer="Adafruit LLC"
-feather52840sense.build.usb_product="Feather Bluefruit Sense"
+feather52840sense.build.usb_product="Feather nRF52840 Sense"
 feather52840sense.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 feather52840sense.build.ldscript=nrf52840_s140_v6.ld
 feather52840sense.build.vid=0x239A
@@ -167,9 +167,9 @@ feather52840sense.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840sense.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 
 
-# ----------------------------------
+# ---------------------------------------------
 # Bluefruit ItsyBitsy nRF52840 Express
-# ----------------------------------
+# ---------------------------------------------
 itsybitsy52840.name=Adafruit ItsyBitsy nRF52840 Express
 
 # VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
@@ -251,7 +251,7 @@ cplaynrf52840.build.board=NRF52840_CIRCUITPLAY
 cplaynrf52840.build.core=nRF5
 cplaynrf52840.build.variant=circuitplayground_nrf52840
 cplaynrf52840.build.usb_manufacturer="Adafruit LLC"
-cplaynrf52840.build.usb_product="Adafruit Circuit Playground Bluefruit"
+cplaynrf52840.build.usb_product="Circuit Playground Bluefruit"
 cplaynrf52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 cplaynrf52840.build.ldscript=nrf52840_s140_v6.ld
 cplaynrf52840.build.vid=0x239A
@@ -305,7 +305,7 @@ cluenrf52840.build.board=NRF52840_CLUE
 cluenrf52840.build.core=nRF5
 cluenrf52840.build.variant=clue_nrf52840
 cluenrf52840.build.usb_manufacturer="Adafruit LLC"
-cluenrf52840.build.usb_product="Adafruit Clue"
+cluenrf52840.build.usb_product="CLUE"
 cluenrf52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 cluenrf52840.build.ldscript=nrf52840_s140_v6.ld
 cluenrf52840.build.vid=0x239A
@@ -379,6 +379,16 @@ metro52840.menu.debug.l2=Level 2 (Full Debug)
 metro52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 metro52840.menu.debug.l3=Level 3 (Segger SystemView)
 metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
+
+
+
+# -------------------------------------------------------
+# 
+# Boards that aren't made by Adafruit
+#
+# -------------------------------------------------------
+
 
 # ----------------------------------
 # Nordic nRF52840DK (PCA10056)

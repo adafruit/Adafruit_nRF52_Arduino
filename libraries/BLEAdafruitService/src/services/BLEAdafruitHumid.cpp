@@ -36,30 +36,31 @@
  *  - Measurement Period  0001 | int32_t | Read + Write |
  *    ms between measurements, -1: stop reading, 0: update when changes
  *
- * Board Button service   0600
- *  - Button              0601 | uint32_t | Read + Notify | e.g slide (b0), button A (b1), button B (b2)
+ * Humidity service  0700
+ *  - Humid               0701 | float[3] | Read + Notify | x, y, z
  *  - Measurement Period  0001
  */
 
-const uint8_t BLEAdafruitButton::UUID128_SERVICE[16] =
+const uint8_t BLEAdafruitHumid::UUID128_SERVICE[16] =
 {
   0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
-  0xA8, 0x42, 0x32, 0xC3, 0x00, 0x06, 0xAF, 0xAD
+  0xA8, 0x42, 0x32, 0xC3, 0x00, 0x07, 0xAF, 0xAD
 };
 
-const uint8_t BLEAdafruitButton::UUID128_CHR_DATA[16] =
+const uint8_t BLEAdafruitHumid::UUID128_CHR_DATA[16] =
 {
   0xB8, 0x6c, 0x75, 0x05, 0xE9, 0x25, 0xBD, 0x93,
-  0xA8, 0x42, 0x32, 0xC3, 0x01, 0x06, 0xAF, 0xAD
+  0xA8, 0x42, 0x32, 0xC3, 0x01, 0x07, 0xAF, 0xAD
 };
 
 // Constructor
-BLEAdafruitButton::BLEAdafruitButton(void)
+BLEAdafruitHumid::BLEAdafruitHumid(void)
   : BLEAdafruitSensor(UUID128_SERVICE, UUID128_CHR_DATA)
 {
+
 }
 
-err_t BLEAdafruitButton::begin(void)
+err_t BLEAdafruitHumid::begin (void)
 {
   // Setup Measurement Characteristic
   _measurement.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);

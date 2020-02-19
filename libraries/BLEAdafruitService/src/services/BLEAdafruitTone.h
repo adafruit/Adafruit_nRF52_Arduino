@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLEADAFRUITTONE_H_
-#define BLEADAFRUITTONE_H_
+#ifndef BLEADAFRUIT_TONE_H_
+#define BLEADAFRUIT_TONE_H_
 
 class BLEAdafruitTone : public BLEService
 {
@@ -41,4 +41,4 @@ class BLEAdafruitTone : public BLEService
     static void tone_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
 };
 
-#endif /* BLEADAFRUITTONE_H_ */
+#endif /* BLEADAFRUIT_TONE_H_ */

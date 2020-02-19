@@ -11,11 +11,18 @@
  All text above, and the splash screen below must be included in
  any redistribution
 *********************************************************************/
+
+/* This sketch demonstrate the BLE Adafruit Service that is used with
+ * "Adafruit Bluefruit Playground" app. Supported boards are
+ *  - Circuit Playground Bluefruit : https://www.adafruit.com/product/4333
+ *  - CLUE nRF52840 : https://www.adafruit.com/product/4500
+ *  - Feather Sense : https://www.adafruit.com/product/4516
+ */
+
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
 #include <bluefruit.h>
 #include <BLEAdafruitService.h>
-#include <Adafruit_CircuitPlayground.h>
 
 // BLE Service
 BLEDfu  bledfu;  // OTA DFU service
@@ -32,7 +39,49 @@ BLEAdafruitTone         bleTone;
 
 BLEAdafruitAddressablePixel     blePixel;
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(10, CPLAY_NEOPIXELPIN, NEO_GRB + NEO_KHZ800);
+//------------- Circuit Playground Bluefruit -------------//
+#if defined(ARDUINO_NRF52840_CIRCUITPLAY)
+
+#include <Adafruit_CircuitPlayground.h>
+
+#define DEVICE_NAME       "CPlay"
+#define NEOPIXEL_COUNT    10
+
+uint16_t measure_temperature(uint8_t* buf, uint16_t bufsize)
+{
+  float temp = CircuitPlayground.temperature();
+  memcpy(buf, &temp, 4);
+  return 4;
+}
+
+uint16_t measure_accel(uint8_t* buf, uint16_t bufsize)
+{  
+  float* accel_buf = (float*) buf;
+
+  accel_buf[0] = CircuitPlayground.motionX();
+  accel_buf[1] = CircuitPlayground.motionY();
+  accel_buf[2] = CircuitPlayground.motionZ();
+
+  return 3*sizeof(float); // 12
+}
+
+uint16_t measure_light(uint8_t* buf, uint16_t bufsize)
+{
+  float lux;
+  lux = CircuitPlayground.lightSensor();
+  memcpy(buf, &lux, 4);
+  return 4;
+}
+
+uint16_t measure_gyro(uint8_t* buf, uint16_t bufsize)
+{
+
+}
+
+uint16_t measure_magnetic(uint8_t* buf, uint16_t bufsize)
+{
+
+}
 
 uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 {
@@ -46,40 +95,163 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
   return 4;
 }
 
+//------------- CLUE & Feather Sense -------------//
+#elif defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_NRF52840_FEATHER_SENSE)
+
+#include <Adafruit_APDS9960.h>
+#include <Adafruit_LSM6DS33.h>
+#include <Adafruit_LIS3MDL.h>
+#include <Adafruit_BMP280.h>
+#include <Adafruit_SHT31.h>
+
+#if defined(ARDUINO_NRF52840_CLUE)
+  #define DEVICE_NAME     "CLUE"
+#else
+  #define DEVICE_NAME     "Sense"
+#endif
+
+#define NEOPIXEL_COUNT    1
+
+
+BLEAdafruitGyro     bleGyro;
+BLEAdafruitMagnetic bleMagnetic;
+BLEAdafruitHumid    bleHumid;
+BLEAdafruitBaro     bleBaro;
+
+Adafruit_APDS9960 apds9960; // Proximity, Light, Gesture, Color
+Adafruit_LSM6DS33 lsm6ds33; // Gyro and Accel
+Adafruit_LIS3MDL  lis3mdl;  // Magnetometer
+Adafruit_BMP280   bmp280;   // Temperature, Barometric
+Adafruit_SHT31    sht30;    // Humid
+
 uint16_t measure_temperature(uint8_t* buf, uint16_t bufsize)
 {
-  float temp = CircuitPlayground.temperature();
+  float temp = bmp280.readTemperature();
   memcpy(buf, &temp, 4);
   return 4;
 }
 
-uint16_t measure_light_sensor(uint8_t* buf, uint16_t bufsize)
-{ 
-  float lux = CircuitPlayground.lightSensor();
+uint16_t measure_accel(uint8_t* buf, uint16_t bufsize)
+{
+  float* float_buf = (float*) buf;
+
+  sensors_event_t accel, gyro, temp;
+  (void) gyro; (void) temp;
+
+  lsm6ds33.getEvent(&accel, &gyro, &temp);
+
+  float_buf[0] = accel.acceleration.x;
+  float_buf[1] = accel.acceleration.y;
+  float_buf[2] = accel.acceleration.z;
+
+  return 12;
+}
+
+uint16_t measure_light(uint8_t* buf, uint16_t bufsize)
+{
+  float lux;
+
+  uint16_t r, g, b, c;
+  apds9960.getColorData(&r, &g, &b, &c);
+
+  lux = c;
+
   memcpy(buf, &lux, 4);
   return 4;
 }
 
-uint16_t measure_accel(uint8_t* buf, uint16_t bufsize)
-{  
-  float accel[3];
-  accel[0] = CircuitPlayground.motionX();
-  accel[1] = CircuitPlayground.motionY();
-  accel[2] = CircuitPlayground.motionZ();
+uint16_t measure_gyro(uint8_t* buf, uint16_t bufsize)
+{
+  float* float_buf = (float*) buf;
 
-  memcpy(buf, accel, sizeof(accel));
-  return sizeof(accel);
+  sensors_event_t accel, gyro, temp;
+  (void) accel; (void) temp;
+
+  lsm6ds33.getEvent(&accel, &gyro, &temp);
+
+  float_buf[0] = gyro.gyro.x;
+  float_buf[1] = gyro.gyro.y;
+  float_buf[2] = gyro.gyro.z;
+
+  return 12;
 }
 
+uint16_t measure_magnetic(uint8_t* buf, uint16_t bufsize)
+{
+  float* float_buf = (float*) buf;
+
+  sensors_event_t mag;
+  lis3mdl.getEvent(&mag);
+
+  float_buf[0] = mag.magnetic.x;
+  float_buf[1] = mag.magnetic.y;
+  float_buf[2] = mag.magnetic.z;
+
+  return 12;
+}
+
+uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
+{
+  // Button is active LOW on most board except CPlay
+  // No slide switch
+
+  uint32_t button = 0;
+  button |= ( digitalRead(PIN_BUTTON1) ? 0x00 : 0x02 );
+  button |= ( digitalRead(PIN_BUTTON2) ? 0x00 : 0x04 );
+
+  memcpy(buf, &button, 4);
+  return 4;
+}
+
+uint16_t measure_humid(uint8_t* buf, uint16_t bufsize)
+{
+  float humid = sht30.readHumidity();
+  memcpy(buf, &humid, 4);
+  return 4;
+}
+
+uint16_t measure_baro(uint8_t* buf, uint16_t bufsize)
+{
+  float baro = bmp280.readPressure()/100;
+  memcpy(buf, &baro, 4);
+  return 4;
+}
+
+#else
+  #error "Board is not supported"
+#endif
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NEOPIXEL_COUNT, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
+
+//------------- Setup -------------//
 void setup()
 {
-  Serial.begin(115200);
-  //while ( !Serial ) delay(10);   // for nrf52840 with native usb
-  
-  Serial.println("Bluefruit52 BLEUART Example");
-  Serial.println("---------------------------\n");
-
+#if defined ARDUINO_NRF52840_CIRCUITPLAY
   CircuitPlayground.begin();
+
+#else
+
+  // Button
+  pinMode(PIN_BUTTON1, INPUT_PULLUP);
+  pinMode(PIN_BUTTON2, INPUT_PULLUP);
+
+  // Buzzer Speaker
+  pinMode(PIN_BUZZER, OUTPUT);
+
+  apds9960.begin();
+  apds9960.enableColor(true);
+
+  lsm6ds33.begin_I2C();
+  bmp280.begin();
+  lis3mdl.begin_I2C();
+  sht30.begin(0x44);
+#endif
+
+  Serial.begin(115200);
+//  while(!Serial) delay(10); // wait for native USB
+
+  Serial.println("Bluefruit Playground Example");
+  Serial.println("---------------------------\n");
 
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behaviour, but provided
@@ -92,8 +264,8 @@ void setup()
   Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
 
   Bluefruit.begin();
-  Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-  Bluefruit.setName("Bluefruit52");
+  Bluefruit.setTxPower(8);    // Check bluefruit.h for supported values
+  Bluefruit.setName(DEVICE_NAME);
   //Bluefruit.setName(getMcuUniqueID()); // useful testing with multiple central connections
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
@@ -103,7 +275,6 @@ void setup()
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");
-  bledis.setModel("Bluefruit Feather52");
   bledis.begin();
 
   // Configure and Start BLE Uart Service
@@ -121,16 +292,31 @@ void setup()
   bleAccel.setMeasureCallback(measure_accel);
   
   bleLight.begin();
-  bleLight.setMeasureCallback(measure_light_sensor);
-    
+  bleLight.setMeasureCallback(measure_light);
+
   bleButton.begin();
   bleButton.setMeasureCallback(measure_button);
   bleButton.setPeriod(0); // only notify if there is changes with buttons
 
-  bleTone.begin(CPLAY_BUZZER);
+  bleTone.begin(PIN_BUZZER);
 
   strip.begin();
   blePixel.begin(&strip);
+
+  // CPB doesn't support these on-board sensor
+#ifndef ARDUINO_NRF52840_CIRCUITPLAY
+  bleGyro.begin();
+  bleGyro.setMeasureCallback(measure_gyro);
+
+  bleMagnetic.begin();
+  bleMagnetic.setMeasureCallback(measure_magnetic);
+
+  bleHumid.begin();
+  bleHumid.setMeasureCallback(measure_humid);
+
+  bleBaro.begin();
+  bleBaro.setMeasureCallback(measure_baro);
+#endif
 
   // Set up and start advertising
   startAdv();
@@ -160,9 +346,8 @@ void startAdv(void)
 
   Bluefruit.Advertising.addManufacturerData(&mfr_adv, sizeof(mfr_adv));
 
-  // Secondary Scan Response packet (optional)
-  // Since there is no room for 'Name' in Advertising packet
-  Bluefruit.ScanResponse.addName();
+  // Add name to advertising, since there is enough room
+  Bluefruit.Advertising.addName();
   
   /* Start Advertising
    * - Enable auto advertising if disconnected

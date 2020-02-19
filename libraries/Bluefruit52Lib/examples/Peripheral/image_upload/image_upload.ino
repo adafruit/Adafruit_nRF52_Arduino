@@ -18,53 +18,54 @@
 
 /* This sketch demonstrates the "Image Upload" feature of Bluefruit Mobile App.
  * Following TFT Display are supported
- *  - https://www.adafruit.com/product/3315
- *  - https://www.adafruit.com/product/3651
- *  - https://www.adafruit.com/product/4367
+ *  - TFT 3.5" : FeatherWing https://www.adafruit.com/product/3651
+ *  - TFT 2.4" : FeatherWing https://www.adafruit.com/product/3315
+ *  - TFT Gizmo : https://www.adafruit.com/product/4367
+ *  - Adafruit CLUE : https://www.adafruit.com/product/4500
  */
 
-#define TFT_35_FEATHERWING  1
-#define TFT_24_FEATHERWING  2
-#define TFT_GIZMO           3
-
-// [Configurable] Please select one of above supported Display to match your hardware setup
-#define TFT_IN_USE          TFT_35_FEATHERWING
-
-
-#if defined(ARDUINO_NRF52832_FEATHER)
-  // Feather nRF52832
-  #define TFT_DC   11
-  #define TFT_CS   31
-
-#elif defined(ARDUINO_NRF52840_CIRCUITPLAY)
-  // Circuit Playground Bluefruit for use with TFT 1.5" GIZMO
-  #define TFT_DC         1
-  #define TFT_CS         0
+#if defined(ARDUINO_NRF52840_CIRCUITPLAY)
+  // Circuit Playground Bluefruit use with TFT GIZMO
   #define TFT_BACKLIGHT  A3
 
-#else
-  // Default for others
-  #define TFT_DC   10
-  #define TFT_CS   9
-#endif
-
-
-#if   TFT_IN_USE == TFT_35_FEATHERWING
-  #include "Adafruit_HX8357.h"
-  Adafruit_HX8357 tft = Adafruit_HX8357(TFT_CS, TFT_DC);
-  
-#elif TFT_IN_USE == TFT_24_FEATHERWING
-  #include <Adafruit_ILI9341.h>
-  Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
-  
-#elif TFT_IN_USE == TFT_GIZMO
   #include "Adafruit_ST7789.h"
-  Adafruit_ST7789 tft = Adafruit_ST7789(&SPI, TFT_CS, TFT_DC, -1);
-  
-#else
-  #error "TFT display is not supported"
-#endif
+  Adafruit_ST7789 tft = Adafruit_ST7789(&SPI, 0, 1, -1); // CS = 0, DC = 1
 
+#elif defined(ARDUINO_NRF52840_CLUE)
+  // CLUE use on-board TFT
+  #include "Adafruit_ST7789.h"
+  Adafruit_ST7789 tft = Adafruit_ST7789(&SPI1, 31, 32, 33); // CS = 31, DC = 32, RST = 33
+
+#else
+  #define TFT_35_FEATHERWING  1
+  #define TFT_24_FEATHERWING  2
+
+  // [Configurable] For other boards please select which external display to match your hardware setup
+  #define TFT_IN_USE     TFT_35_FEATHERWING
+
+  #if defined(ARDUINO_NRF52832_FEATHER)
+    // Feather nRF52832 pin map is different from others
+    #define TFT_DC   11
+    #define TFT_CS   31
+  #else
+    // Default for others
+    #define TFT_DC   10
+    #define TFT_CS   9
+   #endif // 832
+
+  #if   TFT_IN_USE == TFT_35_FEATHERWING
+    #include "Adafruit_HX8357.h"
+    Adafruit_HX8357 tft = Adafruit_HX8357(TFT_CS, TFT_DC);
+  #elif TFT_IN_USE == TFT_24_FEATHERWING
+    #include <Adafruit_ILI9341.h>
+    Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
+  #else
+    #error "TFT display is not supported"
+  #endif // TFT
+
+#endif // board variants
+
+// Universal color
 #define COLOR_WHITE     0xFFFF
 #define COLOR_BLACK     0x0000
 #define COLOR_YELLOW    0xFFE0
@@ -110,11 +111,22 @@ void setup()
 {
   Serial.begin(115200);
 
-#if TFT_IN_USE == TFT_GIZMO
+#if defined(ARDUINO_NRF52840_CIRCUITPLAY)
   tft.init(240, 240);
   tft.setRotation(2);
-  pinMode(TFT_BACKLIGHT, OUTPUT);
-  digitalWrite(TFT_BACKLIGHT, HIGH); // Backlight on
+
+  // turn backlight on
+  uint8_t backlight = A3;
+  pinMode(backlight, OUTPUT);
+  digitalWrite(backlight, HIGH);
+
+#elif defined(ARDUINO_NRF52840_CLUE)
+  tft.init(240, 240);
+  tft.setRotation(1);
+
+  // Screen refresh rate control (datasheet 9.2.18, FRCTRL2)
+  uint8_t rtna = 0x01;
+  tft.sendCommand(0xC6, &rtna, 1);;
 
 #else
   tft.begin();

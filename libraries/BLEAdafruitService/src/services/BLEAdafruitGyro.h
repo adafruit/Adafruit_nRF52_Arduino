@@ -22,18 +22,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLEADAFRUIT_ACCEL_H_
-#define BLEADAFRUIT_ACCEL_H_
+#ifndef BLEADAFRUIT_GYRO_H_
+#define BLEADAFRUIT_GYRO_H_
 
-class BLEAdafruitAccel : public BLEAdafruitSensor
+class BLEAdafruitGyro : public BLEAdafruitSensor
 {
   public:
     static const uint8_t UUID128_SERVICE[16];
     static const uint8_t UUID128_CHR_DATA[16];
     static const int32_t DEFAULT_PERIOD = 1000;
 
-    BLEAdafruitAccel(void);
+    BLEAdafruitGyro(void);
     virtual err_t begin(void);
 };
 
-#endif /* BLEADAFRUIT_ACCEL_H_ */
+#endif /* BLEADAFRUIT_GYRO_H_ */

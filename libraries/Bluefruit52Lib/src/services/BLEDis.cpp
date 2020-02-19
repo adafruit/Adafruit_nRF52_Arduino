@@ -43,10 +43,10 @@ BLEDis::BLEDis(void)
   memclr(_strarr, sizeof(_strarr));
   memclr(_strarr_length, sizeof(_strarr_length));
 
-#ifdef NRF52840_XXAA
-  this->setModel("Bluefruit Feather nRF52840");
+#ifdef USB_PRODUCT
+  this->setModel(USB_PRODUCT);
 #else
-  this->setModel("Bluefruit Feather nRF52832");
+  this->setModel("Feather nRF52832");
 #endif
 
   this->setSoftwareRev(ARDUINO_BSP_VERSION);
