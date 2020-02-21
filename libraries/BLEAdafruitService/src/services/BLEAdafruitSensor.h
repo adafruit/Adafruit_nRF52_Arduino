@@ -25,6 +25,8 @@
 #ifndef BLEADAFRUIT_SENSOR_H_
 #define BLEADAFRUIT_SENSOR_H_
 
+#include <Adafruit_Sensor.h>
+
 class BLEAdafruitSensor : public BLEService
 {
   public:
@@ -33,15 +35,16 @@ class BLEAdafruitSensor : public BLEService
     BLEAdafruitSensor(BLEUuid service_uuid, BLEUuid data_uuid);
     virtual err_t begin(int32_t ms);
 
+    virtual err_t begin(Adafruit_Sensor* sensor, int32_t ms);
+
     void setMeasureCallback(measure_callback_t fp);
     void setPeriod(int32_t period_ms);
-
-    void startMeasuring(void);
-    void stopMeasuring(void);
 
   protected:
     BLECharacteristic _period;
     BLECharacteristic _measurement;
+
+    Adafruit_Sensor*  _sensor;
 
     measure_callback_t _measure_cb;
     SoftwareTimer _timer;

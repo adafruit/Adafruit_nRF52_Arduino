@@ -62,23 +62,17 @@ err_t BLEAdafruitSensor::begin(int32_t ms)
   return ERROR_NONE;
 }
 
+err_t BLEAdafruitSensor::begin(Adafruit_Sensor* sensor, int32_t ms)
+{
+  _sensor = sensor;
+  return begin(ms);
+}
+
 void BLEAdafruitSensor::setPeriod(int32_t period_ms)
 {
   _period.write32(period_ms);
   _update_timer(period_ms);
 }
-
-
-void BLEAdafruitSensor::startMeasuring(void)
-{
-  _timer.start();
-}
-
-void BLEAdafruitSensor::stopMeasuring(void)
-{
-  _timer.stop();
-}
-
 
 void BLEAdafruitSensor::_update_timer(int32_t ms)
 {
@@ -97,24 +91,39 @@ void BLEAdafruitSensor::_update_timer(int32_t ms)
 
 void BLEAdafruitSensor::_timer_callback(void)
 {
-  if (_measure_cb)
+  uint16_t len = _measurement.getMaxLen();
+  uint8_t buf[len];
+
+  // Use unified sensor API if available, only with fixed length sensor
+  if (_sensor && _measurement.isFixedLen())
   {
-    uint8_t buf[_measurement.getMaxLen()];
-    uint16_t len = _measure_cb(buf, sizeof(buf));
-    len = min(len, sizeof(buf));
+    sensors_event_t event;
+    _sensor->getEvent(&event);
 
-    // Period = 0, compare with old data, only update on changes
-    if ( 0 == _period.read32() )
-    {
-      uint8_t prev_buf[_measurement.getMaxLen()];
-      _measurement.read(prev_buf, sizeof(prev_buf));
-
-      // skip notify if there is no changes
-      if ( 0 == memcmp(prev_buf, buf, len) ) return;
-    }
-
-    _measurement.notify(buf, len);
+    memcpy(buf, event.data, len);
   }
+  // Else use callback
+  else if (_measure_cb)
+  {
+    len = _measure_cb(buf, sizeof(buf));
+    len = min(len, sizeof(buf));
+  }else
+  {
+    return; // nothing to measure
+  }
+
+  // Period = 0, compare with old data, only update on changes
+  if ( 0 == _period.read32() )
+  {
+    uint8_t prev_buf[_measurement.getMaxLen()];
+    _measurement.read(prev_buf, sizeof(prev_buf));
+
+    // skip notify if there is no changes
+    if ( 0 == memcmp(prev_buf, buf, len) ) return;
+  }
+
+  // TODO multiple connections
+  _measurement.notify(buf, len);
 }
 
 //--------------------------------------------------------------------+

@@ -33,7 +33,7 @@ class BLEAdafruitAccel : public BLEAdafruitSensor
     static const int32_t DEFAULT_PERIOD = 1000;
 
     BLEAdafruitAccel(void);
-    virtual err_t begin(void);
+    virtual err_t begin(Adafruit_Sensor* sensor, int32_t ms = DEFAULT_PERIOD);
 };
 
 #endif /* BLEADAFRUIT_ACCEL_H_ */

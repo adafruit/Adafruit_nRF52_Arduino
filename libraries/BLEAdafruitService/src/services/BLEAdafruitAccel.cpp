@@ -60,7 +60,7 @@ BLEAdafruitAccel::BLEAdafruitAccel(void)
 
 }
 
-err_t BLEAdafruitAccel::begin (void)
+err_t BLEAdafruitAccel::begin(Adafruit_Sensor* sensor, int32_t ms)
 {
   // Setup Measurement Characteristic
   _measurement.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
@@ -68,7 +68,7 @@ err_t BLEAdafruitAccel::begin (void)
   _measurement.setFixedLen(4*3);
 
   // Invoke base class begin(), this will add Service, Measurement and Period characteristics
-  VERIFY_STATUS( BLEAdafruitSensor::begin(DEFAULT_PERIOD) );
+  VERIFY_STATUS( BLEAdafruitSensor::begin(sensor, ms) );
 
   return ERROR_NONE;
 }
