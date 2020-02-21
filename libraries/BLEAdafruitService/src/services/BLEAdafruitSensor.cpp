@@ -35,12 +35,7 @@ BLEAdafruitSensor::BLEAdafruitSensor(BLEUuid service_uuid, BLEUuid data_uuid)
   _sensor = NULL;
 }
 
-void BLEAdafruitSensor::setMeasureCallback(measure_callback_t fp)
-{
-  _measure_cb = fp;
-}
-
-err_t BLEAdafruitSensor::begin(int32_t ms)
+err_t BLEAdafruitSensor::_begin(int32_t ms)
 {
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
@@ -66,13 +61,13 @@ err_t BLEAdafruitSensor::begin(int32_t ms)
 err_t BLEAdafruitSensor::begin(measure_callback_t fp, int32_t ms)
 {
   _measure_cb = fp;
-  return begin(ms);
+  return _begin(ms);
 }
 
 err_t BLEAdafruitSensor::begin(Adafruit_Sensor* sensor, int32_t ms)
 {
   _sensor = sensor;
-  return begin(ms);
+  return _begin(ms);
 }
 
 void BLEAdafruitSensor::setPeriod(int32_t period_ms)
@@ -114,9 +109,12 @@ void BLEAdafruitSensor::_timer_callback(void)
   {
     len = _measure_cb(buf, sizeof(buf));
     len = min(len, sizeof(buf));
-  }else
+  }
+  // Invoke internal measure callback
+  else
   {
-    return; // nothing to measure
+    len = _internal_measure_cb(buf, sizeof(buf));
+    if (len == 0) return; // nothing to measure
   }
 
   // Period = 0, compare with old data, only update on changes
