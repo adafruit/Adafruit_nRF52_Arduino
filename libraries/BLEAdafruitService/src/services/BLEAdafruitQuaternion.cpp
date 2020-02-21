@@ -60,6 +60,11 @@ BLEAdafruitQuaternion::BLEAdafruitQuaternion(void)
 {
   _accel = _gyro = _mag = NULL;
   _filter = NULL;
+
+  // Setup Measurement Characteristic
+  _measurement.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
+  _measurement.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  _measurement.setFixedLen(4*4);
 }
 
 err_t BLEAdafruitQuaternion::begin(Adafruit_AHRS_FusionInterface* filter, Adafruit_Sensor* accel, Adafruit_Sensor* gyro, Adafruit_Sensor* mag)
@@ -69,13 +74,36 @@ err_t BLEAdafruitQuaternion::begin(Adafruit_AHRS_FusionInterface* filter, Adafru
   _gyro  = gyro;
   _mag   = mag;
 
-  // Setup Measurement Characteristic
-  _measurement.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
-  _measurement.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  _measurement.setFixedLen(4*4);
-
   // Invoke base class begin(), this will add Service, Measurement and Period characteristics
-  VERIFY_STATUS( BLEAdafruitSensor::begin(DEFAULT_PERIOD) );
+  VERIFY_STATUS( BLEAdafruitSensor::_begin(DEFAULT_PERIOD) );
 
   return ERROR_NONE;
+}
+
+// Invoked by period timer in Base class
+// Note invoked in RTOS Timer thread
+void BLEAdafruitQuaternion::_measure_handler(void)
+{
+  // TODO multiple connections
+  _measurement.notify("test", 4);
+
+//  // get sensor
+//  sensors_event_t accel_evt, gyro_evt, mag_evt;
+//
+//  _accel->getEvent(&accel_evt);
+//  _gyro->getEvent(&gyro_evt);
+//  _mag->getEvent(&mag_evt);
+//
+//  // calibrate
+//
+//
+//  // Convert gyro from Rad/s to Degree/s
+//  gyro_evt.gyro.x *= SENSORS_RADS_TO_DPS;
+//  gyro_evt.gyro.y *= SENSORS_RADS_TO_DPS;
+//  gyro_evt.gyro.z *= SENSORS_RADS_TO_DPS;
+//
+//  // apply filter, update 10 times before notify
+//  filter->update(gyro_evt.gyro.x , gyro_evt.gyro.y, gyro_evt.gyro.z,
+//                 accel_evt.acceleration.x, accel_evt.acceleration.y, accel_evt.acceleration.z,
+//                 mag_evt.magnetic.x, mag_evt.magnetic.y, mag_evt.magnetic.z);
 }

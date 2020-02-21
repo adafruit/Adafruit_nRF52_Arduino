@@ -51,9 +51,9 @@ class BLEAdafruitSensor : public BLEService
 
     err_t _begin(int32_t ms);
     void _update_timer(int32_t ms);
-    void _timer_callback(void);
 
-    virtual uint16_t _internal_measure_cb(uint8_t* buf, uint16_t bufsize) { return 0; }
+    virtual void _measure_handler(void);
+    virtual void _notify_cb(uint16_t conn_hdl, uint16_t value);
 
     static void sensor_timer_cb(TimerHandle_t xTimer);
     static void sensor_period_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);

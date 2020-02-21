@@ -76,6 +76,27 @@ void BLEAdafruitSensor::setPeriod(int32_t period_ms)
   _update_timer(period_ms);
 }
 
+//--------------------------------------------------------------------+
+// Internal API
+//--------------------------------------------------------------------+
+void BLEAdafruitSensor::_notify_cb(uint16_t conn_hdl, uint16_t value)
+{
+  // notify enabled
+  if (value & BLE_GATT_HVX_NOTIFICATION)
+  {
+    _timer.start();
+  }else
+  {
+    _timer.stop();
+  }
+
+  // send initial notification if period = 0
+  //  if ( 0 == svc._period.read32() )
+  //  {
+  //    svc._measurement.notify();
+  //  }
+}
+
 void BLEAdafruitSensor::_update_timer(int32_t ms)
 {
   // TODO handle period = 0 which notify on changes ASAP
@@ -91,7 +112,7 @@ void BLEAdafruitSensor::_update_timer(int32_t ms)
   }
 }
 
-void BLEAdafruitSensor::_timer_callback(void)
+void BLEAdafruitSensor::_measure_handler(void)
 {
   uint16_t len = _measurement.getMaxLen();
   uint8_t buf[len];
@@ -110,11 +131,9 @@ void BLEAdafruitSensor::_timer_callback(void)
     len = _measure_cb(buf, sizeof(buf));
     len = min(len, sizeof(buf));
   }
-  // Invoke internal measure callback
   else
   {
-    len = _internal_measure_cb(buf, sizeof(buf));
-    if (len == 0) return; // nothing to measure
+    return; // nothing to measure
   }
 
   // Period = 0, compare with old data, only update on changes
@@ -138,7 +157,7 @@ void BLEAdafruitSensor::_timer_callback(void)
 void BLEAdafruitSensor::sensor_timer_cb(TimerHandle_t xTimer)
 {
   BLEAdafruitSensor* svc = (BLEAdafruitSensor*) pvTimerGetTimerID(xTimer);
-  svc->_timer_callback();
+  svc->_measure_handler();
 }
 
 // Client update period, adjust timer accordingly
@@ -156,19 +175,6 @@ void BLEAdafruitSensor::sensor_data_cccd_cb(uint16_t conn_hdl, BLECharacteristic
 {
   BLEAdafruitSensor& svc = (BLEAdafruitSensor&) chr->parentService();
 
-  // notify enabled
-  if (value & BLE_GATT_HVX_NOTIFICATION)
-  {
-    svc._timer.start();
-  }else
-  {
-    svc._timer.stop();
-  }
-
-  // send initial notification if period = 0
-//  if ( 0 == svc._period.read32() )
-//  {
-//    svc._measurement.notify();
-//  }
+  svc._notify_cb(conn_hdl, value);
 }
 

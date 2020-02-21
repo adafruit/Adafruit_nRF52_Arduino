@@ -38,12 +38,16 @@ class BLEAdafruitQuaternion : public BLEAdafruitSensor
     BLEAdafruitQuaternion(void);
     err_t begin(Adafruit_AHRS_FusionInterface* filter, Adafruit_Sensor* accel, Adafruit_Sensor* gyro, Adafruit_Sensor* mag);
 
+  protected:
+    virtual void _measure_handler(void);
+
   private:
     Adafruit_Sensor* _accel;
     Adafruit_Sensor* _gyro;
     Adafruit_Sensor* _mag;
 
     Adafruit_AHRS_FusionInterface* _filter;
+    SoftwareTimer _filter_timer;
 };
 
 #endif /* BLEADAFRUIT_QUATERNION_H_ */
