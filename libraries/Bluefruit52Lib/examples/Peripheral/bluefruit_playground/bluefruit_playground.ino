@@ -62,16 +62,6 @@ uint16_t measure_light(uint8_t* buf, uint16_t bufsize)
   return 4;
 }
 
-uint16_t measure_gyro(uint8_t* buf, uint16_t bufsize)
-{
-
-}
-
-uint16_t measure_magnetic(uint8_t* buf, uint16_t bufsize)
-{
-
-}
-
 uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 {
   uint32_t button = 0;
@@ -103,13 +93,8 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 
 #define NEOPIXEL_COUNT    1
 
-
-//BLEAdafruitGyro     bleGyro;
-//BLEAdafruitMagnetic bleMagnetic;
-
 BLEAdafruitHumid      bleHumid;
 BLEAdafruitBaro       bleBaro;
-
 BLEAdafruitQuaternion bleQuater;
 
 Adafruit_LSM6DS33 lsm6ds33; // Gyro and Accel
@@ -192,13 +177,6 @@ uint16_t measure_humid(uint8_t* buf, uint16_t bufsize)
 {
   float humid = sht30.readHumidity();
   memcpy(buf, &humid, 4);
-  return 4;
-}
-
-uint16_t measure_baro(uint8_t* buf, uint16_t bufsize)
-{
-  float baro = bmp280.readPressure()/100;
-  memcpy(buf, &baro, 4);
   return 4;
 }
 
@@ -290,16 +268,14 @@ void setup()
   blebas.write(100);
 
   // Adafruit Service
-  bleTemp.begin();
-  bleTemp.setMeasureCallback(measure_temperature);
+  bleTemp.begin(measure_temperature);
+
   
   bleAccel.begin(accel_sensor);
   
-  bleLight.begin();
-  bleLight.setMeasureCallback(measure_light);
+  bleLight.begin(measure_light);
 
-  bleButton.begin();
-  bleButton.setMeasureCallback(measure_button);
+  bleButton.begin(measure_button, 100);
   bleButton.setPeriod(0); // only notify if there is changes with buttons
 
   bleTone.begin(PIN_BUZZER);
@@ -309,21 +285,11 @@ void setup()
 
   // CPB doesn't support these on-board sensor
 #ifndef ARDUINO_NRF52840_CIRCUITPLAY
-//  bleGyro.begin();
-//  bleGyro.setMeasureCallback(measure_gyro);
-//
-//  bleMagnetic.begin();
-//  bleMagnetic.setMeasureCallback(measure_magnetic);
-
-  bleHumid.begin();
-  bleHumid.setMeasureCallback(measure_humid);
-
-  bleBaro.begin();
-  bleBaro.setMeasureCallback(measure_baro);
+  bleHumid.begin(measure_humid);
+  bleBaro.begin(bmp280.getPressureSensor());
 
   // Quaternion
   bleQuater.begin(&filter, accel_sensor, lsm6ds33.getGyroSensor(), &lis3mdl);
-
 #endif
 
   // Set up and start advertising

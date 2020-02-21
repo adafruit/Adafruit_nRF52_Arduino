@@ -34,10 +34,9 @@ class BLEAdafruitQuaternion : public BLEAdafruitSensor
   public:
     static const uint8_t UUID128_SERVICE[16];
     static const uint8_t UUID128_CHR_DATA[16];
-    static const int32_t DEFAULT_PERIOD = 100;
 
     BLEAdafruitQuaternion(void);
-    virtual err_t begin(Adafruit_AHRS_FusionInterface* filter, Adafruit_Sensor* accel, Adafruit_Sensor* gyro, Adafruit_Sensor* mag);
+    err_t begin(Adafruit_AHRS_FusionInterface* filter, Adafruit_Sensor* accel, Adafruit_Sensor* gyro, Adafruit_Sensor* mag);
 
   private:
     Adafruit_Sensor* _accel;
