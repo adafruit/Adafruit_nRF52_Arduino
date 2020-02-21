@@ -32,6 +32,7 @@ BLEAdafruitSensor::BLEAdafruitSensor(BLEUuid service_uuid, BLEUuid data_uuid)
   : BLEService(service_uuid), _measurement(data_uuid), _period(UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD)
 {
   _measure_cb = NULL;
+  _sensor = NULL;
 }
 
 void BLEAdafruitSensor::setMeasureCallback(measure_callback_t fp)
@@ -60,6 +61,12 @@ err_t BLEAdafruitSensor::begin(int32_t ms)
   _timer.begin(ms, sensor_timer_cb, this, true);
 
   return ERROR_NONE;
+}
+
+err_t BLEAdafruitSensor::begin(measure_callback_t fp, int32_t ms)
+{
+  _measure_cb = fp;
+  return begin(ms);
 }
 
 err_t BLEAdafruitSensor::begin(Adafruit_Sensor* sensor, int32_t ms)
