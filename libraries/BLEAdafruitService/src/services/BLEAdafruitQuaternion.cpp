@@ -77,33 +77,89 @@ err_t BLEAdafruitQuaternion::begin(Adafruit_AHRS_FusionInterface* filter, Adafru
   // Invoke base class begin(), this will add Service, Measurement and Period characteristics
   VERIFY_STATUS( BLEAdafruitSensor::_begin(DEFAULT_PERIOD) );
 
+  // filter timer run faster than measurement timer, but not too fast
+  int32_t const filter_ms = minof(5, DEFAULT_PERIOD / FILTER_MEASURE_RATIO);
+
+  _filter_timer.begin(filter_ms, quaternion_filter_timer_cb, this, true);
+
   return ERROR_NONE;
+}
+
+void BLEAdafruitQuaternion::_notify_cb(uint16_t conn_hdl, uint16_t value)
+{
+  // Start/Stop filter timer
+  if (value & BLE_GATT_HVX_NOTIFICATION)
+  {
+    _filter_timer.start();
+  }else
+  {
+    _filter_timer.stop();
+  }
+
+  // Call SuperClass function
+  BLEAdafruitSensor::_notify_cb(conn_hdl, value);
+}
+
+void BLEAdafruitQuaternion::_update_timer(int32_t ms)
+{
+  int32_t const filter_ms = minof(5, ms / FILTER_MEASURE_RATIO);
+
+  if ( filter_ms < 0 )
+  {
+    _filter_timer.stop();
+  }else if ( filter_ms > 0)
+  {
+    _filter_timer.setPeriod(filter_ms);
+  }else
+  {
+    // Period = 0: keeping the current interval, but report on changes only
+    // Not applicable for this service
+  }
+
+  // Call SuperClass function
+  BLEAdafruitSensor::_update_timer(ms);
 }
 
 // Invoked by period timer in Base class
 // Note invoked in RTOS Timer thread
 void BLEAdafruitQuaternion::_measure_handler(void)
 {
-  // TODO multiple connections
-  _measurement.notify("test", 4);
+  float quater[4]; // w, x, y, z
 
-//  // get sensor
-//  sensors_event_t accel_evt, gyro_evt, mag_evt;
-//
-//  _accel->getEvent(&accel_evt);
-//  _gyro->getEvent(&gyro_evt);
-//  _mag->getEvent(&mag_evt);
-//
-//  // calibrate
-//
-//
-//  // Convert gyro from Rad/s to Degree/s
-//  gyro_evt.gyro.x *= SENSORS_RADS_TO_DPS;
-//  gyro_evt.gyro.y *= SENSORS_RADS_TO_DPS;
-//  gyro_evt.gyro.z *= SENSORS_RADS_TO_DPS;
-//
-//  // apply filter, update 10 times before notify
-//  filter->update(gyro_evt.gyro.x , gyro_evt.gyro.y, gyro_evt.gyro.z,
-//                 accel_evt.acceleration.x, accel_evt.acceleration.y, accel_evt.acceleration.z,
-//                 mag_evt.magnetic.x, mag_evt.magnetic.y, mag_evt.magnetic.z);
+  _filter->getQuaternion(&quater[0], &quater[1], &quater[2], &quater[3]);
+
+  // TODO multiple connections
+  _measurement.notify(quater, sizeof(quater));
+}
+
+void BLEAdafruitQuaternion::_fitler_update(void)
+{
+  // get sensor
+  sensors_event_t accel_evt, gyro_evt, mag_evt;
+
+  _accel->getEvent(&accel_evt);
+  _gyro->getEvent(&gyro_evt);
+  _mag->getEvent(&mag_evt);
+
+  // calibrate
+
+
+  // Convert gyro from Rad/s to Degree/s
+  gyro_evt.gyro.x *= SENSORS_RADS_TO_DPS;
+  gyro_evt.gyro.y *= SENSORS_RADS_TO_DPS;
+  gyro_evt.gyro.z *= SENSORS_RADS_TO_DPS;
+
+  // apply filter, update 10 times before notify
+  _filter->update(gyro_evt.gyro.x , gyro_evt.gyro.y, gyro_evt.gyro.z,
+                  accel_evt.acceleration.x, accel_evt.acceleration.y, accel_evt.acceleration.z,
+                  mag_evt.magnetic.x, mag_evt.magnetic.y, mag_evt.magnetic.z);
+}
+
+//--------------------------------------------------------------------+
+// Static Methods
+//--------------------------------------------------------------------+
+void BLEAdafruitQuaternion::quaternion_filter_timer_cb(TimerHandle_t xTimer)
+{
+  BLEAdafruitQuaternion* svc = (BLEAdafruitQuaternion*) pvTimerGetTimerID(xTimer);
+  svc->_fitler_update();
 }

@@ -123,36 +123,6 @@ uint16_t measure_light(uint8_t* buf, uint16_t bufsize)
   return 4;
 }
 
-//uint16_t measure_gyro(uint8_t* buf, uint16_t bufsize)
-//{
-//  float* float_buf = (float*) buf;
-//
-//  sensors_event_t accel, gyro, temp;
-//  (void) accel; (void) temp;
-//
-//  lsm6ds33.getEvent(&accel, &gyro, &temp);
-//
-//  float_buf[0] = gyro.gyro.x;
-//  float_buf[1] = gyro.gyro.y;
-//  float_buf[2] = gyro.gyro.z;
-//
-//  return 12;
-//}
-//
-//uint16_t measure_magnetic(uint8_t* buf, uint16_t bufsize)
-//{
-//  float* float_buf = (float*) buf;
-//
-//  sensors_event_t mag;
-//  lis3mdl.getEvent(&mag);
-//
-//  float_buf[0] = mag.magnetic.x;
-//  float_buf[1] = mag.magnetic.y;
-//  float_buf[2] = mag.magnetic.z;
-//
-//  return 12;
-//}
-
 uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 {
   // Button is active LOW on most board except CPlay
@@ -261,12 +231,6 @@ void setup()
   blebas.write(100);
 
   //------------- Adafruit Service -------------//
-#ifdef ARDUINO_NRF52840_CIRCUITPLAY
-  bleTemp.begin(measure_temperature);
-#else
-  bleTemp.begin(bmp280.getTemperatureSensor());
-#endif
-
   bleAccel.begin(accel_sensor);
   bleLight.begin(measure_light);
 
@@ -279,7 +243,11 @@ void setup()
   blePixel.begin(&strip);
 
   // CPB doesn't support these on-board sensor
-#ifndef ARDUINO_NRF52840_CIRCUITPLAY
+#ifdef ARDUINO_NRF52840_CIRCUITPLAY
+  bleTemp.begin(measure_temperature);
+
+#else
+  bleTemp.begin(bmp280.getTemperatureSensor());
   bleHumid.begin(measure_humid);
   bleBaro.begin(bmp280.getPressureSensor());
 

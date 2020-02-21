@@ -99,7 +99,6 @@ void BLEAdafruitSensor::_notify_cb(uint16_t conn_hdl, uint16_t value)
 
 void BLEAdafruitSensor::_update_timer(int32_t ms)
 {
-  // TODO handle period = 0 which notify on changes ASAP
   if ( ms < 0 )
   {
     _timer.stop();

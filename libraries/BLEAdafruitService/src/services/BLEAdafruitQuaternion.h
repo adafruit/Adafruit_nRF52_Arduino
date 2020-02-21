@@ -34,12 +34,17 @@ class BLEAdafruitQuaternion : public BLEAdafruitSensor
   public:
     static const uint8_t UUID128_SERVICE[16];
     static const uint8_t UUID128_CHR_DATA[16];
+    static const uint8_t FILTER_MEASURE_RATIO = 10; // number of filter update for each measure report to client
 
     BLEAdafruitQuaternion(void);
     err_t begin(Adafruit_AHRS_FusionInterface* filter, Adafruit_Sensor* accel, Adafruit_Sensor* gyro, Adafruit_Sensor* mag);
 
   protected:
+    virtual void _update_timer(int32_t ms);
     virtual void _measure_handler(void);
+    virtual void _notify_cb(uint16_t conn_hdl, uint16_t value);
+
+    void _fitler_update(void);
 
   private:
     Adafruit_Sensor* _accel;
@@ -48,6 +53,8 @@ class BLEAdafruitQuaternion : public BLEAdafruitSensor
 
     Adafruit_AHRS_FusionInterface* _filter;
     SoftwareTimer _filter_timer;
+
+    static void quaternion_filter_timer_cb(TimerHandle_t xTimer);
 };
 
 #endif /* BLEADAFRUIT_QUATERNION_H_ */
