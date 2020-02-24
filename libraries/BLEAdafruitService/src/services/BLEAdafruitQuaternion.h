@@ -59,7 +59,7 @@ class BLEAdafruitQuaternion : public BLEAdafruitSensor
     // filter timer callback, 10x faster than period timer
     static void quaternion_filter_timer_cb(TimerHandle_t xTimer);
 
-    // filter update deferred to adacallback since it takes lots of computing time (6 ms)
+    // filter update deferred to ada callback since it takes lots of time to get 3 sensor data
     static void quaternion_filter_update_dfr(BLEAdafruitQuaternion* svc);
 };
 

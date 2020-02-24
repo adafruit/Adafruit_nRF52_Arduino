@@ -249,7 +249,6 @@ void setup()
   blebas.write(100);
 
   //------------- Adafruit Service -------------//
-  bleAccel.begin(accel_sensor);
   bleLight.begin(measure_light);
 
   bleButton.begin(measure_button, 100);
@@ -259,6 +258,8 @@ void setup()
 
   strip.begin();
   blePixel.begin(&strip);
+
+  bleAccel.begin(accel_sensor);
 
   // CPB doesn't support these on-board sensor
 #ifdef ARDUINO_NRF52840_CIRCUITPLAY
@@ -270,7 +271,6 @@ void setup()
   bleBaro.begin(bmp280.getPressureSensor());
 
   // Quaternion with sensor calibration
-//  PRINT_HEX(lsm6ds33.getGyroSensor());
   bleQuater.begin(&filter, accel_sensor, lsm6ds33.getGyroSensor(), &lis3mdl);
   bleQuater.setCalibration(&cal);
 #endif

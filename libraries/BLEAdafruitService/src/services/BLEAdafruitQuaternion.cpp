@@ -137,10 +137,13 @@ void BLEAdafruitQuaternion::_measure_handler(void)
 
   // TODO multiple connections
   _measurement.notify(quater, sizeof(quater));
+
+//  Serial.printf("Orientation: %.02f, %.02f, %.02f\n", _filter->getYaw(), _filter->getPitch(), _filter->getRoll());
+//  Serial.printf("Quaternion: %.04f, %.04f, %.04f, %.04f\n", quater[0], quater[1], quater[2], quater[3]);
 }
 
 // Fusion Filter update
-// This function take ~ 6ms to get all sensor data and computing
+// This function take ~ 6ms to get all sensor data (computing time is not much)
 void BLEAdafruitQuaternion::_fitler_update(void)
 {
   // get sensor events
@@ -151,8 +154,6 @@ void BLEAdafruitQuaternion::_fitler_update(void)
   _mag->getEvent(&mag_evt);
   _accel->getEvent(&accel_evt);
   _gyro->getEvent(&gyro_evt);
-
-  start_ms = millis() - start_ms;
 
   // calibrate sensor if available
   if (_calib)
@@ -172,6 +173,7 @@ void BLEAdafruitQuaternion::_fitler_update(void)
                   accel_evt.acceleration.x, accel_evt.acceleration.y, accel_evt.acceleration.z,
                   mag_evt.magnetic.x, mag_evt.magnetic.y, mag_evt.magnetic.z);
 
+//  start_ms = millis() - start_ms;
 //  PRINT_INT(start_ms);
 }
 
