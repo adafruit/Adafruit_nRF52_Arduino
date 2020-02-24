@@ -24,6 +24,7 @@
 
 #include "BLEAdafruitService.h"
 #include <Adafruit_AHRS.h>
+#include <Adafruit_Sensor_Calibration.h>
 
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
@@ -38,7 +39,7 @@
  *    ms between measurements, -1: stop reading, 0: update when changes
  *
  * Quaternion service  0D00
- *  - Quater              0D01 | float[4] | Read + Notify | qw, qx, qy, qz
+ *  - Quater            #include <Adafruit>  0D01 | float[4] | Read + Notify | qw, qx, qy, qz
  *  - Measurement Period  0001
  */
 
@@ -60,6 +61,7 @@ BLEAdafruitQuaternion::BLEAdafruitQuaternion(void)
 {
   _accel = _gyro = _mag = NULL;
   _filter = NULL;
+  _calib = NULL;
 
   // Setup Measurement Characteristic
   _measurement.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
@@ -78,11 +80,16 @@ err_t BLEAdafruitQuaternion::begin(Adafruit_AHRS_FusionInterface* filter, Adafru
   VERIFY_STATUS( BLEAdafruitSensor::_begin(DEFAULT_PERIOD) );
 
   // filter timer run faster than measurement timer, but not too fast
-  int32_t const filter_ms = minof(5, DEFAULT_PERIOD / FILTER_MEASURE_RATIO);
+  int32_t const filter_ms = maxof(10, DEFAULT_PERIOD / FILTER_MEASURE_RATIO);
 
   _filter_timer.begin(filter_ms, quaternion_filter_timer_cb, this, true);
 
   return ERROR_NONE;
+}
+
+void BLEAdafruitQuaternion::setCalibration(Adafruit_Sensor_Calibration* calib)
+{
+  _calib = calib;
 }
 
 void BLEAdafruitQuaternion::_notify_cb(uint16_t conn_hdl, uint16_t value)
@@ -102,7 +109,7 @@ void BLEAdafruitQuaternion::_notify_cb(uint16_t conn_hdl, uint16_t value)
 
 void BLEAdafruitQuaternion::_update_timer(int32_t ms)
 {
-  int32_t const filter_ms = minof(5, ms / FILTER_MEASURE_RATIO);
+  int32_t const filter_ms = maxof(10, ms / FILTER_MEASURE_RATIO);
 
   if ( filter_ms < 0 )
   {
@@ -132,34 +139,53 @@ void BLEAdafruitQuaternion::_measure_handler(void)
   _measurement.notify(quater, sizeof(quater));
 }
 
+// Fusion Filter update
+// This function take ~ 6ms to get all sensor data and computing
 void BLEAdafruitQuaternion::_fitler_update(void)
 {
-  // get sensor
+  // get sensor events
   sensors_event_t accel_evt, gyro_evt, mag_evt;
 
+//  int start_ms = millis();
+
+  _mag->getEvent(&mag_evt);
   _accel->getEvent(&accel_evt);
   _gyro->getEvent(&gyro_evt);
-  _mag->getEvent(&mag_evt);
 
-  // calibrate
+  start_ms = millis() - start_ms;
 
+  // calibrate sensor if available
+  if (_calib)
+  {
+    _calib->calibrate(mag_evt);
+    _calib->calibrate(accel_evt);
+    _calib->calibrate(gyro_evt);
+  }
 
   // Convert gyro from Rad/s to Degree/s
   gyro_evt.gyro.x *= SENSORS_RADS_TO_DPS;
   gyro_evt.gyro.y *= SENSORS_RADS_TO_DPS;
   gyro_evt.gyro.z *= SENSORS_RADS_TO_DPS;
 
-  // apply filter, update 10 times before notify
+  // apply filter
   _filter->update(gyro_evt.gyro.x , gyro_evt.gyro.y, gyro_evt.gyro.z,
                   accel_evt.acceleration.x, accel_evt.acceleration.y, accel_evt.acceleration.z,
                   mag_evt.magnetic.x, mag_evt.magnetic.y, mag_evt.magnetic.z);
+
+//  PRINT_INT(start_ms);
 }
 
 //--------------------------------------------------------------------+
 // Static Methods
 //--------------------------------------------------------------------+
+
 void BLEAdafruitQuaternion::quaternion_filter_timer_cb(TimerHandle_t xTimer)
 {
   BLEAdafruitQuaternion* svc = (BLEAdafruitQuaternion*) pvTimerGetTimerID(xTimer);
+  ada_callback(NULL, 0, quaternion_filter_update_dfr, svc);
+}
+
+void BLEAdafruitQuaternion::quaternion_filter_update_dfr(BLEAdafruitQuaternion* svc)
+{
   svc->_fitler_update();
 }

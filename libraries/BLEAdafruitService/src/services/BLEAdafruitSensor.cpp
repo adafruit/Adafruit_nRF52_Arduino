@@ -162,18 +162,19 @@ void BLEAdafruitSensor::sensor_timer_cb(TimerHandle_t xTimer)
 // Client update period, adjust timer accordingly
 void BLEAdafruitSensor::sensor_period_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  BLEAdafruitSensor& svc = (BLEAdafruitSensor&) chr->parentService();
+  (void) conn_hdl;
+  BLEAdafruitSensor* svc = (BLEAdafruitSensor*) &chr->parentService();
 
   int32_t ms = 0;
   memcpy(&ms, data, len);
 
-  svc._update_timer(ms);
+  svc->_update_timer(ms);
 }
 
 void BLEAdafruitSensor::sensor_data_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value)
 {
-  BLEAdafruitSensor& svc = (BLEAdafruitSensor&) chr->parentService();
+  BLEAdafruitSensor* svc = (BLEAdafruitSensor*) &chr->parentService();
 
-  svc._notify_cb(conn_hdl, value);
+  svc->_notify_cb(conn_hdl, value);
 }
 

@@ -25,9 +25,9 @@
 #ifndef BLEADAFRUIT_QUATERNION_H_
 #define BLEADAFRUIT_QUATERNION_H_
 
-#include <Adafruit_Sensor.h>
-
+// forward declaration
 class Adafruit_AHRS_FusionInterface;
+class Adafruit_Sensor_Calibration;
 
 class BLEAdafruitQuaternion : public BLEAdafruitSensor
 {
@@ -38,6 +38,7 @@ class BLEAdafruitQuaternion : public BLEAdafruitSensor
 
     BLEAdafruitQuaternion(void);
     err_t begin(Adafruit_AHRS_FusionInterface* filter, Adafruit_Sensor* accel, Adafruit_Sensor* gyro, Adafruit_Sensor* mag);
+    void setCalibration(Adafruit_Sensor_Calibration* calib);
 
   protected:
     virtual void _update_timer(int32_t ms);
@@ -52,9 +53,14 @@ class BLEAdafruitQuaternion : public BLEAdafruitSensor
     Adafruit_Sensor* _mag;
 
     Adafruit_AHRS_FusionInterface* _filter;
+    Adafruit_Sensor_Calibration* _calib;
     SoftwareTimer _filter_timer;
 
+    // filter timer callback, 10x faster than period timer
     static void quaternion_filter_timer_cb(TimerHandle_t xTimer);
+
+    // filter update deferred to adacallback since it takes lots of computing time (6 ms)
+    static void quaternion_filter_update_dfr(BLEAdafruitQuaternion* svc);
 };
 
 #endif /* BLEADAFRUIT_QUATERNION_H_ */

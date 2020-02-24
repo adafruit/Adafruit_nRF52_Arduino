@@ -19,6 +19,8 @@
  *  - Feather Sense : https://www.adafruit.com/product/4516
  */
 
+#include <SPI.h>
+#include <SdFat.h>
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
 #include <bluefruit.h>
@@ -83,7 +85,9 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 #include <Adafruit_BMP280.h>
 #include <Adafruit_SHT31.h>
 
+#include <Adafruit_SPIFlash.h>
 #include <Adafruit_AHRS.h>
+#include <Adafruit_Sensor_Calibration.h>
 
 #if defined(ARDUINO_NRF52840_CLUE)
   #define DEVICE_NAME     "CLUE"
@@ -109,6 +113,14 @@ Adafruit_SHT31    sht30;    // Humid
 //Adafruit_NXPSensorFusion filter; // slowest
 //Adafruit_Madgwick filter;  // faster than NXP
 Adafruit_Mahony filter;  // fastest/smalleset
+
+// Sensor calibration
+#define FILE_SENSOR_CALIB       "sensor_calib.json"
+Adafruit_Sensor_Calibration_SDFat cal;
+
+Adafruit_FlashTransport_QSPI flashTransport;
+Adafruit_SPIFlash flash(&flashTransport);
+FatFileSystem fatfs;
 
 uint16_t measure_light(uint8_t* buf, uint16_t bufsize)
 {
@@ -154,6 +166,9 @@ void setup()
 {
   Adafruit_Sensor* accel_sensor;
 
+  Serial.begin(115200);
+//  while(!Serial) delay(10); // wait for native USB
+
 #if defined ARDUINO_NRF52840_CIRCUITPLAY
   CircuitPlayground.begin();
 
@@ -191,10 +206,13 @@ void setup()
   filter.begin(100); // sample rate in hz
 
   accel_sensor = lsm6ds33.getAccelerometerSensor();
-#endif
 
-  Serial.begin(115200);
-//  while(!Serial) delay(10); // wait for native USB
+  // Init flash, filesystem and calibration & load calib json
+  flash.begin();
+  fatfs.begin(&flash);
+  cal.begin(FILE_SENSOR_CALIB, &fatfs);
+  cal.loadCalibration();
+#endif
 
   Serial.println("Bluefruit Playground Example");
   Serial.println("---------------------------\n");
@@ -251,8 +269,10 @@ void setup()
   bleHumid.begin(measure_humid);
   bleBaro.begin(bmp280.getPressureSensor());
 
-  // Quaternion
+  // Quaternion with sensor calibration
+//  PRINT_HEX(lsm6ds33.getGyroSensor());
   bleQuater.begin(&filter, accel_sensor, lsm6ds33.getGyroSensor(), &lis3mdl);
+  bleQuater.setCalibration(&cal);
 #endif
 
   // Set up and start advertising
