@@ -100,6 +100,7 @@ class BLEConnection
     void stopRssi(void);
 
     bool getHvnPacket(void);
+    bool releaseHvnPacket(void);
     bool getWriteCmdPacket(void);
     bool waitForIndicateConfirm(void);
 
