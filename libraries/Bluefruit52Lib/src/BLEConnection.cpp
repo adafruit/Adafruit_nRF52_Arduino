@@ -210,6 +210,11 @@ bool BLEConnection::getHvnPacket (void)
   return xSemaphoreTake(_hvn_sem, ms2tick(BLE_GENERIC_TIMEOUT));
 }
 
+bool BLEConnection::releaseHvnPacket(void)
+{
+  return xSemaphoreGive(_hvn_sem);
+}
+
 bool BLEConnection::getWriteCmdPacket (void)
 {
   return xSemaphoreTake(_wrcmd_sem, ms2tick(BLE_GENERIC_TIMEOUT));
