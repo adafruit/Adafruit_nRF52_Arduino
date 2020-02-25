@@ -212,13 +212,6 @@ void setup()
   fatfs.begin(&flash);
   cal.begin(FILE_SENSOR_CALIB, &fatfs);
   cal.loadCalibration();
-
-  PRINT_FLOAT(cal.mag_hardiron[0]); PRINT_FLOAT(cal.mag_hardiron[1]); PRINT_FLOAT(cal.mag_hardiron[2]);
-  PRINT_FLOAT(cal.mag_field);
-
-  PRINT_FLOAT(cal.mag_softiron[0]);PRINT_FLOAT(cal.mag_softiron[1]); PRINT_FLOAT(cal.mag_softiron[2]);
-  PRINT_FLOAT(cal.mag_softiron[3]); PRINT_FLOAT(cal.mag_softiron[4]); PRINT_FLOAT(cal.mag_softiron[5]);
-  PRINT_FLOAT(cal.mag_softiron[6]); PRINT_FLOAT(cal.mag_softiron[7]); PRINT_FLOAT(cal.mag_softiron[8]);
 #endif
 
   Serial.println("Bluefruit Playground Example");
