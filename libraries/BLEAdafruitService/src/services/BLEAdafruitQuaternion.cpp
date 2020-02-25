@@ -131,10 +131,12 @@ void BLEAdafruitQuaternion::_update_timer(int32_t ms)
   BLEAdafruitSensor::_update_timer(ms);
 }
 
+#if CFG_DEBUG
 static void print_quaternion(float quater[4])
 {
   Serial.printf("Quaternion: %.04f, %.04f, %.04f, %.04f\n", quater[0], quater[1], quater[2], quater[3]);
 }
+#endif
 
 // Invoked by period timer in Base class
 // Note invoked in RTOS Timer thread
@@ -147,7 +149,9 @@ void BLEAdafruitQuaternion::_measure_handler(void)
   // TODO multiple connections
   _measurement.notify(quater, sizeof(quater));
 
+#if CFG_DEBUG
   ada_callback(quater, sizeof(quater), print_quaternion, quater);
+#endif
 }
 
 // Fusion Filter update
