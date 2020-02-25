@@ -179,9 +179,6 @@ void setup()
   pinMode(PIN_BUTTON1, INPUT_PULLUP);
   pinMode(PIN_BUTTON2, INPUT_PULLUP);
 
-  // Buzzer Speaker
-  pinMode(PIN_BUZZER, OUTPUT);
-
   apds9960.begin();
   apds9960.enableColor(true);
 
