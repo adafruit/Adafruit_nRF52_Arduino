@@ -76,13 +76,16 @@ err_t BLEAdafruitQuaternion::begin(Adafruit_AHRS_FusionInterface* filter, Adafru
   _gyro  = gyro;
   _mag   = mag;
 
+  int32_t const period_ms = 100;
+
   // Invoke base class begin(), this will add Service, Measurement and Period characteristics
-  VERIFY_STATUS( BLEAdafruitSensor::_begin(DEFAULT_PERIOD) );
+  VERIFY_STATUS( BLEAdafruitSensor::_begin(period_ms) );
 
   // filter timer run faster than measurement timer, but not too fast
-  int32_t const filter_ms = maxof(10, DEFAULT_PERIOD / FILTER_MEASURE_RATIO);
+  int32_t const filter_ms = maxof(10, period_ms / FUSION_MEASURE_RATIO);
 
   _filter_timer.begin(filter_ms, quaternion_filter_timer_cb, this, true);
+  _filter->begin(1000.0f/filter_ms);
 
   return ERROR_NONE;
 }
@@ -109,7 +112,7 @@ void BLEAdafruitQuaternion::_notify_cb(uint16_t conn_hdl, uint16_t value)
 
 void BLEAdafruitQuaternion::_update_timer(int32_t ms)
 {
-  int32_t const filter_ms = maxof(10, ms / FILTER_MEASURE_RATIO);
+  int32_t const filter_ms = maxof(10, ms / FUSION_MEASURE_RATIO);
 
   if ( filter_ms < 0 )
   {
@@ -117,6 +120,7 @@ void BLEAdafruitQuaternion::_update_timer(int32_t ms)
   }else if ( filter_ms > 0)
   {
     _filter_timer.setPeriod(filter_ms);
+    _filter->begin(1000.0f/filter_ms); // need to also change the sample frequency
   }else
   {
     // Period = 0: keeping the current interval, but report on changes only
@@ -125,6 +129,11 @@ void BLEAdafruitQuaternion::_update_timer(int32_t ms)
 
   // Call SuperClass function
   BLEAdafruitSensor::_update_timer(ms);
+}
+
+static void print_quaternion(float quater[4])
+{
+  Serial.printf("Quaternion: %.04f, %.04f, %.04f, %.04f\n", quater[0], quater[1], quater[2], quater[3]);
 }
 
 // Invoked by period timer in Base class
@@ -138,12 +147,11 @@ void BLEAdafruitQuaternion::_measure_handler(void)
   // TODO multiple connections
   _measurement.notify(quater, sizeof(quater));
 
-//  Serial.printf("Orientation: %.02f, %.02f, %.02f\n", _filter->getYaw(), _filter->getPitch(), _filter->getRoll());
-//  Serial.printf("Quaternion: %.04f, %.04f, %.04f, %.04f\n", quater[0], quater[1], quater[2], quater[3]);
+  ada_callback(quater, sizeof(quater), print_quaternion, quater);
 }
 
 // Fusion Filter update
-// This function take ~ 6ms to get all sensor data (computing time is not much)
+// This function take ~ 1-2 ms to get all sensor data
 void BLEAdafruitQuaternion::_fitler_update(void)
 {
   // get sensor events
@@ -151,16 +159,16 @@ void BLEAdafruitQuaternion::_fitler_update(void)
 
 //  int start_ms = millis();
 
-  _mag->getEvent(&mag_evt);
   _accel->getEvent(&accel_evt);
   _gyro->getEvent(&gyro_evt);
+  _mag->getEvent(&mag_evt);
 
   // calibrate sensor if available
   if (_calib)
   {
-    _calib->calibrate(mag_evt);
     _calib->calibrate(accel_evt);
     _calib->calibrate(gyro_evt);
+    _calib->calibrate(mag_evt);
   }
 
   // Convert gyro from Rad/s to Degree/s
@@ -184,10 +192,6 @@ void BLEAdafruitQuaternion::_fitler_update(void)
 void BLEAdafruitQuaternion::quaternion_filter_timer_cb(TimerHandle_t xTimer)
 {
   BLEAdafruitQuaternion* svc = (BLEAdafruitQuaternion*) pvTimerGetTimerID(xTimer);
-  ada_callback(NULL, 0, quaternion_filter_update_dfr, svc);
-}
-
-void BLEAdafruitQuaternion::quaternion_filter_update_dfr(BLEAdafruitQuaternion* svc)
-{
   svc->_fitler_update();
 }
+

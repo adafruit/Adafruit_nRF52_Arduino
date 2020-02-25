@@ -34,7 +34,7 @@ class BLEAdafruitQuaternion : public BLEAdafruitSensor
   public:
     static const uint8_t UUID128_SERVICE[16];
     static const uint8_t UUID128_CHR_DATA[16];
-    static const uint8_t FILTER_MEASURE_RATIO = 10; // number of filter update for each measure report to client
+    static const uint8_t FUSION_MEASURE_RATIO = 10; // number of filter update for each measure report to client
 
     BLEAdafruitQuaternion(void);
     err_t begin(Adafruit_AHRS_FusionInterface* filter, Adafruit_Sensor* accel, Adafruit_Sensor* gyro, Adafruit_Sensor* mag);
@@ -58,9 +58,6 @@ class BLEAdafruitQuaternion : public BLEAdafruitSensor
 
     // filter timer callback, 10x faster than period timer
     static void quaternion_filter_timer_cb(TimerHandle_t xTimer);
-
-    // filter update deferred to ada callback since it takes lots of time to get 3 sensor data
-    static void quaternion_filter_update_dfr(BLEAdafruitQuaternion* svc);
 };
 
 #endif /* BLEADAFRUIT_QUATERNION_H_ */
