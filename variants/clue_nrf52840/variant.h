@@ -142,6 +142,12 @@ static const uint8_t SCK1  = PIN_SPI1_SCK ;
 #define EXTERNAL_FLASH_DEVICES   GD25Q16C
 #define EXTERNAL_FLASH_USE_QSPI
 
+// On-board TFT display
+#define PIN_TFT_CS           31
+#define PIN_TFT_DC           32
+#define PIN_TFT_RST          33
+#define PIN_TFT_LITE         34
+
 #ifdef __cplusplus
 }
 #endif

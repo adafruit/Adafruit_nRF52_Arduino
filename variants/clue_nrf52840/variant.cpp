@@ -89,5 +89,9 @@ void initVariant()
   // LED1
   pinMode(PIN_LED1, OUTPUT);
   ledOff(PIN_LED1);
+
+  // Disable TFT LITE powering up
+  pinMode(PIN_TFT_LITE, OUTPUT);
+  digitalWrite(PIN_TFT_LITE, LOW);
 }
 
