@@ -127,6 +127,11 @@ uint16_t BLECharacteristic::getMaxLen(void)
   return _max_len;
 }
 
+bool BLECharacteristic::isFixedLen(void)
+{
+  return _attr_meta.vlen == 0;
+}
+
 void BLECharacteristic::setFixedLen(uint16_t fixed_len)
 {
   if ( fixed_len )

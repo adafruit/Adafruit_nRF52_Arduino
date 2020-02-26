@@ -34,7 +34,7 @@
 #elif defined(ARDUINO_NRF52840_CLUE)
   // CLUE use on-board TFT
   #include "Adafruit_ST7789.h"
-  Adafruit_ST7789 tft = Adafruit_ST7789(&SPI1, 31, 32, 33); // CS = 31, DC = 32, RST = 33
+  Adafruit_ST7789 tft = Adafruit_ST7789(&SPI1, PIN_TFT_CS, PIN_TFT_DC, PIN_TFT_RST);
 
 #else
   #define TFT_35_FEATHERWING  1
@@ -115,7 +115,7 @@ void setup()
   tft.init(240, 240);
   tft.setRotation(2);
 
-  // turn backlight on
+  // turn back light on
   uint8_t backlight = A3;
   pinMode(backlight, OUTPUT);
   digitalWrite(backlight, HIGH);
@@ -127,6 +127,11 @@ void setup()
   // Screen refresh rate control (datasheet 9.2.18, FRCTRL2)
   uint8_t rtna = 0x01;
   tft.sendCommand(0xC6, &rtna, 1);;
+
+  // turn back light on
+  uint8_t backlight = PIN_TFT_LITE;
+  pinMode(backlight, OUTPUT);
+  digitalWrite(backlight, HIGH);
 
 #else
   tft.begin();

@@ -38,6 +38,7 @@
 #include "services/BLEAdafruitHumid.h"
 #include "services/BLEAdafruitLightSensor.h"
 #include "services/BLEAdafruitMagnetic.h"
+#include "services/BLEAdafruitQuaternion.h"
 #include "services/BLEAdafruitTemperature.h"
 #include "services/BLEAdafruitTone.h"
 

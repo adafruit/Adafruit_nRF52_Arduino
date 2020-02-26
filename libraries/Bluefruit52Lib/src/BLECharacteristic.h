@@ -101,6 +101,7 @@ class BLECharacteristic
     void setBuffer(void* buf, uint16_t bufsize);
 
     uint16_t getMaxLen(void);
+    bool isFixedLen(void);
 
     /*------------- Descriptors -------------*/
     void setUserDescriptor(const char* descriptor); // aka user descriptor

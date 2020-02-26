@@ -52,7 +52,7 @@ def build_examples(variant):
         sketchdir = os.path.dirname(sketch)
         if os.path.exists(sketchdir + '/.all.test.skip') or os.path.exists(sketchdir + '/.' + variant + '.test.skip'):
             success = "\033[33mskipped\033[0m  "
-        elif glob.glob(sketchdir+"/.*.test.only") and not os.path.exists(sketchdir + '/.build.' + variant):
+        elif glob.glob(sketchdir+"/.*.test.only") and not os.path.exists(sketchdir + '/.build.' + variant + '.test.only'):
             success = "\033[33mskipped\033[0m  "
         else:
             # TODO - preferably, would have STDERR show up in **both** STDOUT and STDERR.

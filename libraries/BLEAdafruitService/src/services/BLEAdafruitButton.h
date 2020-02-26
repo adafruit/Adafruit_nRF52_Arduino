@@ -30,10 +30,10 @@ class BLEAdafruitButton : public BLEAdafruitSensor
   public:
     static const uint8_t UUID128_SERVICE[16];
     static const uint8_t UUID128_CHR_DATA[16];
-    static const int32_t DEFAULT_PERIOD = 100;
 
     BLEAdafruitButton(void);
-    virtual err_t begin(void);
+
+    using BLEAdafruitSensor::begin;
 };
 
 #endif /* BLEADAFRUIT_BUTTON_H_ */

@@ -19,6 +19,8 @@
  *  - Feather Sense : https://www.adafruit.com/product/4516
  */
 
+#include <SPI.h>
+#include <SdFat.h>
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
 #include <bluefruit.h>
@@ -54,33 +56,12 @@ uint16_t measure_temperature(uint8_t* buf, uint16_t bufsize)
   return 4;
 }
 
-uint16_t measure_accel(uint8_t* buf, uint16_t bufsize)
-{  
-  float* accel_buf = (float*) buf;
-
-  accel_buf[0] = CircuitPlayground.motionX();
-  accel_buf[1] = CircuitPlayground.motionY();
-  accel_buf[2] = CircuitPlayground.motionZ();
-
-  return 3*sizeof(float); // 12
-}
-
 uint16_t measure_light(uint8_t* buf, uint16_t bufsize)
 {
   float lux;
   lux = CircuitPlayground.lightSensor();
   memcpy(buf, &lux, 4);
   return 4;
-}
-
-uint16_t measure_gyro(uint8_t* buf, uint16_t bufsize)
-{
-
-}
-
-uint16_t measure_magnetic(uint8_t* buf, uint16_t bufsize)
-{
-
 }
 
 uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
@@ -104,6 +85,10 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 #include <Adafruit_BMP280.h>
 #include <Adafruit_SHT31.h>
 
+#include <Adafruit_SPIFlash.h>
+#include <Adafruit_AHRS.h>
+#include <Adafruit_Sensor_Calibration.h>
+
 #if defined(ARDUINO_NRF52840_CLUE)
   #define DEVICE_NAME     "CLUE"
 #else
@@ -112,40 +97,30 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 
 #define NEOPIXEL_COUNT    1
 
+BLEAdafruitHumid      bleHumid;
+BLEAdafruitBaro       bleBaro;
+BLEAdafruitQuaternion bleQuater;
 
-BLEAdafruitGyro     bleGyro;
-BLEAdafruitMagnetic bleMagnetic;
-BLEAdafruitHumid    bleHumid;
-BLEAdafruitBaro     bleBaro;
-
-Adafruit_APDS9960 apds9960; // Proximity, Light, Gesture, Color
 Adafruit_LSM6DS33 lsm6ds33; // Gyro and Accel
 Adafruit_LIS3MDL  lis3mdl;  // Magnetometer
+
+Adafruit_APDS9960 apds9960; // Proximity, Light, Gesture, Color
 Adafruit_BMP280   bmp280;   // Temperature, Barometric
 Adafruit_SHT31    sht30;    // Humid
 
-uint16_t measure_temperature(uint8_t* buf, uint16_t bufsize)
-{
-  float temp = bmp280.readTemperature();
-  memcpy(buf, &temp, 4);
-  return 4;
-}
 
-uint16_t measure_accel(uint8_t* buf, uint16_t bufsize)
-{
-  float* float_buf = (float*) buf;
+// pick your filter! slower == better quality output
+//Adafruit_NXPSensorFusion filter; // slowest
+//Adafruit_Madgwick filter;  // faster than NXP
+Adafruit_Mahony filter;  // fastest/smalleset
 
-  sensors_event_t accel, gyro, temp;
-  (void) gyro; (void) temp;
+// Sensor calibration
+#define FILE_SENSOR_CALIB       "sensor_calib.json"
+Adafruit_Sensor_Calibration_SDFat cal;
 
-  lsm6ds33.getEvent(&accel, &gyro, &temp);
-
-  float_buf[0] = accel.acceleration.x;
-  float_buf[1] = accel.acceleration.y;
-  float_buf[2] = accel.acceleration.z;
-
-  return 12;
-}
+Adafruit_FlashTransport_QSPI flashTransport;
+Adafruit_SPIFlash flash(&flashTransport);
+FatFileSystem fatfs;
 
 uint16_t measure_light(uint8_t* buf, uint16_t bufsize)
 {
@@ -158,36 +133,6 @@ uint16_t measure_light(uint8_t* buf, uint16_t bufsize)
 
   memcpy(buf, &lux, 4);
   return 4;
-}
-
-uint16_t measure_gyro(uint8_t* buf, uint16_t bufsize)
-{
-  float* float_buf = (float*) buf;
-
-  sensors_event_t accel, gyro, temp;
-  (void) accel; (void) temp;
-
-  lsm6ds33.getEvent(&accel, &gyro, &temp);
-
-  float_buf[0] = gyro.gyro.x;
-  float_buf[1] = gyro.gyro.y;
-  float_buf[2] = gyro.gyro.z;
-
-  return 12;
-}
-
-uint16_t measure_magnetic(uint8_t* buf, uint16_t bufsize)
-{
-  float* float_buf = (float*) buf;
-
-  sensors_event_t mag;
-  lis3mdl.getEvent(&mag);
-
-  float_buf[0] = mag.magnetic.x;
-  float_buf[1] = mag.magnetic.y;
-  float_buf[2] = mag.magnetic.z;
-
-  return 12;
 }
 
 uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
@@ -210,13 +155,6 @@ uint16_t measure_humid(uint8_t* buf, uint16_t bufsize)
   return 4;
 }
 
-uint16_t measure_baro(uint8_t* buf, uint16_t bufsize)
-{
-  float baro = bmp280.readPressure()/100;
-  memcpy(buf, &baro, 4);
-  return 4;
-}
-
 #else
   #error "Board is not supported"
 #endif
@@ -226,29 +164,52 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(NEOPIXEL_COUNT, PIN_NEOPIXEL, NEO_GR
 //------------- Setup -------------//
 void setup()
 {
+  Adafruit_Sensor* accel_sensor;
+
+  Serial.begin(115200);
+//  while(!Serial) delay(10); // wait for native USB
+
 #if defined ARDUINO_NRF52840_CIRCUITPLAY
   CircuitPlayground.begin();
 
+  accel_sensor = &CircuitPlayground.lis;
 #else
 
   // Button
   pinMode(PIN_BUTTON1, INPUT_PULLUP);
   pinMode(PIN_BUTTON2, INPUT_PULLUP);
 
-  // Buzzer Speaker
-  pinMode(PIN_BUZZER, OUTPUT);
-
   apds9960.begin();
   apds9960.enableColor(true);
 
-  lsm6ds33.begin_I2C();
   bmp280.begin();
-  lis3mdl.begin_I2C();
   sht30.begin(0x44);
-#endif
+  lsm6ds33.begin_I2C();
+  lis3mdl.begin_I2C();
 
-  Serial.begin(115200);
-//  while(!Serial) delay(10); // wait for native USB
+  // set lowest range
+  lsm6ds33.setAccelRange(LSM6DS_ACCEL_RANGE_2_G);
+  lsm6ds33.setGyroRange(LSM6DS_GYRO_RANGE_250_DPS);
+  lis3mdl.setRange(LIS3MDL_RANGE_4_GAUSS);
+
+  // set slightly above refresh rate
+  lsm6ds33.setAccelDataRate(LSM6DS_RATE_104_HZ);
+  lsm6ds33.setGyroDataRate(LSM6DS_RATE_104_HZ);
+  lis3mdl.setDataRate(LIS3MDL_DATARATE_1000_HZ);
+  lis3mdl.setPerformanceMode(LIS3MDL_MEDIUMMODE);
+  lis3mdl.setOperationMode(LIS3MDL_CONTINUOUSMODE);
+
+  // Increase I2C speed to 400 Khz
+  Wire.setClock(400000);
+
+  accel_sensor = lsm6ds33.getAccelerometerSensor();
+
+  // Init flash, filesystem and calibration & load calib json
+  flash.begin();
+  fatfs.begin(&flash);
+  cal.begin(FILE_SENSOR_CALIB, &fatfs);
+  cal.loadCalibration();
+#endif
 
   Serial.println("Bluefruit Playground Example");
   Serial.println("---------------------------\n");
@@ -284,18 +245,10 @@ void setup()
   blebas.begin();
   blebas.write(100);
 
-  // Adafruit Service
-  bleTemp.begin();
-  bleTemp.setMeasureCallback(measure_temperature);
-  
-  bleAccel.begin();
-  bleAccel.setMeasureCallback(measure_accel);
-  
-  bleLight.begin();
-  bleLight.setMeasureCallback(measure_light);
+  //------------- Adafruit Service -------------//
+  bleLight.begin(measure_light);
 
-  bleButton.begin();
-  bleButton.setMeasureCallback(measure_button);
+  bleButton.begin(measure_button, 100);
   bleButton.setPeriod(0); // only notify if there is changes with buttons
 
   bleTone.begin(PIN_BUZZER);
@@ -303,19 +256,20 @@ void setup()
   strip.begin();
   blePixel.begin(&strip);
 
+  bleAccel.begin(accel_sensor);
+
   // CPB doesn't support these on-board sensor
-#ifndef ARDUINO_NRF52840_CIRCUITPLAY
-  bleGyro.begin();
-  bleGyro.setMeasureCallback(measure_gyro);
+#ifdef ARDUINO_NRF52840_CIRCUITPLAY
+  bleTemp.begin(measure_temperature);
 
-  bleMagnetic.begin();
-  bleMagnetic.setMeasureCallback(measure_magnetic);
+#else
+  bleTemp.begin(bmp280.getTemperatureSensor());
+  bleHumid.begin(measure_humid);
+  bleBaro.begin(bmp280.getPressureSensor());
 
-  bleHumid.begin();
-  bleHumid.setMeasureCallback(measure_humid);
-
-  bleBaro.begin();
-  bleBaro.setMeasureCallback(measure_baro);
+  // Quaternion with sensor calibration
+  bleQuater.begin(&filter, accel_sensor, lsm6ds33.getGyroSensor(), &lis3mdl);
+  bleQuater.setCalibration(&cal);
 #endif
 
   // Set up and start advertising

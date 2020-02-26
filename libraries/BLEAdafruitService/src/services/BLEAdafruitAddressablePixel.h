@@ -25,7 +25,7 @@
 #ifndef BLEADAFRUIT_ADDRESSABLEPIXEL_H_
 #define BLEADAFRUIT_ADDRESSABLEPIXEL_H_
 
-#include "Adafruit_NeoPixel.h"
+#include <Adafruit_NeoPixel.h>
 
 class BLEAdafruitAddressablePixel : public BLEService
 {

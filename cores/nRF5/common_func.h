@@ -145,6 +145,7 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
 #define PRTNT_HEAP()          if (CFG_DEBUG == 3) PRINTF("\n%s: %d: Heap free: %d\n", __FUNCTION__, __LINE__, util_heap_get_free_size())
 #define PRINT_STR(x)          PRINTF("%s: %d: " #x " = %s\n"   , __FUNCTION__, __LINE__, (char*)(x) )
 #define PRINT_INT(x)          PRINTF("%s: %d: " #x " = %ld\n"  , __FUNCTION__, __LINE__, (uint32_t) (x) )
+#define PRINT_FLOAT(x)        PRINTF("%s: %d: " #x " = %f\n"  , __FUNCTION__, __LINE__, (float) (x) )
 
 #define PRINT_HEX(x) \
   do {\
@@ -184,6 +185,7 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
 #define PRINT_STR(x)
 #define PRINT_INT(x)
 #define PRINT_HEX(x)
+#define PRINT_FLOAT(x)
 #define PRINT_BUFFER(buf, n)
 #define ADALOG(...)
 

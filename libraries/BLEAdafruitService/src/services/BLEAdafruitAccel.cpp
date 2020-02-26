@@ -57,18 +57,8 @@ const uint8_t BLEAdafruitAccel::UUID128_CHR_DATA[16] =
 BLEAdafruitAccel::BLEAdafruitAccel(void)
   : BLEAdafruitSensor(UUID128_SERVICE, UUID128_CHR_DATA)
 {
-
-}
-
-err_t BLEAdafruitAccel::begin (void)
-{
   // Setup Measurement Characteristic
   _measurement.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
   _measurement.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   _measurement.setFixedLen(4*3);
-
-  // Invoke base class begin(), this will add Service, Measurement and Period characteristics
-  VERIFY_STATUS( BLEAdafruitSensor::begin(DEFAULT_PERIOD) );
-
-  return ERROR_NONE;
 }

@@ -32,14 +32,10 @@ BLEAdafruitSensor::BLEAdafruitSensor(BLEUuid service_uuid, BLEUuid data_uuid)
   : BLEService(service_uuid), _measurement(data_uuid), _period(UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD)
 {
   _measure_cb = NULL;
+  _sensor = NULL;
 }
 
-void BLEAdafruitSensor::setMeasureCallback(measure_callback_t fp)
-{
-  _measure_cb = fp;
-}
-
-err_t BLEAdafruitSensor::begin(int32_t ms)
+err_t BLEAdafruitSensor::_begin(int32_t ms)
 {
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
@@ -62,27 +58,47 @@ err_t BLEAdafruitSensor::begin(int32_t ms)
   return ERROR_NONE;
 }
 
+err_t BLEAdafruitSensor::begin(measure_callback_t fp, int32_t ms)
+{
+  _measure_cb = fp;
+  return _begin(ms);
+}
+
+err_t BLEAdafruitSensor::begin(Adafruit_Sensor* sensor, int32_t ms)
+{
+  _sensor = sensor;
+  return _begin(ms);
+}
+
 void BLEAdafruitSensor::setPeriod(int32_t period_ms)
 {
   _period.write32(period_ms);
   _update_timer(period_ms);
 }
 
-
-void BLEAdafruitSensor::startMeasuring(void)
+//--------------------------------------------------------------------+
+// Internal API
+//--------------------------------------------------------------------+
+void BLEAdafruitSensor::_notify_cb(uint16_t conn_hdl, uint16_t value)
 {
-  _timer.start();
-}
+  // notify enabled
+  if (value & BLE_GATT_HVX_NOTIFICATION)
+  {
+    _timer.start();
+  }else
+  {
+    _timer.stop();
+  }
 
-void BLEAdafruitSensor::stopMeasuring(void)
-{
-  _timer.stop();
+  // send initial notification if period = 0
+  //  if ( 0 == svc._period.read32() )
+  //  {
+  //    svc._measurement.notify();
+  //  }
 }
-
 
 void BLEAdafruitSensor::_update_timer(int32_t ms)
 {
-  // TODO handle period = 0 which notify on changes ASAP
   if ( ms < 0 )
   {
     _timer.stop();
@@ -95,26 +111,42 @@ void BLEAdafruitSensor::_update_timer(int32_t ms)
   }
 }
 
-void BLEAdafruitSensor::_timer_callback(void)
+void BLEAdafruitSensor::_measure_handler(void)
 {
-  if (_measure_cb)
+  uint16_t len = _measurement.getMaxLen();
+  uint8_t buf[len];
+
+  // Use unified sensor API if available, only with fixed length sensor
+  if (_sensor && _measurement.isFixedLen())
   {
-    uint8_t buf[_measurement.getMaxLen()];
-    uint16_t len = _measure_cb(buf, sizeof(buf));
-    len = min(len, sizeof(buf));
+    sensors_event_t event;
+    _sensor->getEvent(&event);
 
-    // Period = 0, compare with old data, only update on changes
-    if ( 0 == _period.read32() )
-    {
-      uint8_t prev_buf[_measurement.getMaxLen()];
-      _measurement.read(prev_buf, sizeof(prev_buf));
-
-      // skip notify if there is no changes
-      if ( 0 == memcmp(prev_buf, buf, len) ) return;
-    }
-
-    _measurement.notify(buf, len);
+    memcpy(buf, event.data, len);
   }
+  // Else use callback
+  else if (_measure_cb)
+  {
+    len = _measure_cb(buf, sizeof(buf));
+    len = min(len, sizeof(buf));
+  }
+  else
+  {
+    return; // nothing to measure
+  }
+
+  // Period = 0, compare with old data, only update on changes
+  if ( 0 == _period.read32() )
+  {
+    uint8_t prev_buf[_measurement.getMaxLen()];
+    _measurement.read(prev_buf, sizeof(prev_buf));
+
+    // skip notify if there is no changes
+    if ( 0 == memcmp(prev_buf, buf, len) ) return;
+  }
+
+  // TODO multiple connections
+  _measurement.notify(buf, len);
 }
 
 //--------------------------------------------------------------------+
@@ -124,37 +156,25 @@ void BLEAdafruitSensor::_timer_callback(void)
 void BLEAdafruitSensor::sensor_timer_cb(TimerHandle_t xTimer)
 {
   BLEAdafruitSensor* svc = (BLEAdafruitSensor*) pvTimerGetTimerID(xTimer);
-  svc->_timer_callback();
+  svc->_measure_handler();
 }
 
 // Client update period, adjust timer accordingly
 void BLEAdafruitSensor::sensor_period_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  BLEAdafruitSensor& svc = (BLEAdafruitSensor&) chr->parentService();
+  (void) conn_hdl;
+  BLEAdafruitSensor* svc = (BLEAdafruitSensor*) &chr->parentService();
 
   int32_t ms = 0;
   memcpy(&ms, data, len);
 
-  svc._update_timer(ms);
+  svc->_update_timer(ms);
 }
 
 void BLEAdafruitSensor::sensor_data_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value)
 {
-  BLEAdafruitSensor& svc = (BLEAdafruitSensor&) chr->parentService();
+  BLEAdafruitSensor* svc = (BLEAdafruitSensor*) &chr->parentService();
 
-  // notify enabled
-  if (value & BLE_GATT_HVX_NOTIFICATION)
-  {
-    svc._timer.start();
-  }else
-  {
-    svc._timer.stop();
-  }
-
-  // send initial notification if period = 0
-//  if ( 0 == svc._period.read32() )
-//  {
-//    svc._measurement.notify();
-//  }
+  svc->_notify_cb(conn_hdl, value);
 }
 
