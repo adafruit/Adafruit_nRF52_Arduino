@@ -26,17 +26,21 @@
 
 #if defined(ARDUINO_NRF52840_CIRCUITPLAY)
   // Circuit Playground Bluefruit use with TFT GIZMO
-  #define TFT_BACKLIGHT  A3
+  #define DEVICE_NAME   "CPLAY"
 
   #include "Adafruit_ST7789.h"
   Adafruit_ST7789 tft = Adafruit_ST7789(&SPI, 0, 1, -1); // CS = 0, DC = 1
 
 #elif defined(ARDUINO_NRF52840_CLUE)
+  #define DEVICE_NAME   "CLUE"
+
   // CLUE use on-board TFT
   #include "Adafruit_ST7789.h"
   Adafruit_ST7789 tft = Adafruit_ST7789(&SPI1, PIN_TFT_CS, PIN_TFT_DC, PIN_TFT_RST);
 
 #else
+  #define DEVICE_NAME   "Feather"
+
   #define TFT_35_FEATHERWING  1
   #define TFT_24_FEATHERWING  2
 
