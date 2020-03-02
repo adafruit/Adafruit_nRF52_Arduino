@@ -61,9 +61,6 @@ uint32_t totalPixel = 0; // received pixel
 // pixel line buffer, should be large enough to hold an image width
 uint16_t pixel_buf[512];
 
-// Use software timer to schedule bandwidth negotiation a few seconds after connection
-SoftwareTimer negoTimer;
-
 // Statistics for speed testing
 uint32_t rxStartTime = 0;
 uint32_t rxLastTime = 0;
@@ -111,9 +108,6 @@ void setup()
 #endif
 
   bleuart.setRxOverflowCallback(bleuart_overflow_callback);
-
-  // one-shot (non-repeating) 2 seconds timer
-  negoTimer.begin(2000, negotiate_bandwidth, NULL, false);
 
   // Set up and start advertising
   startAdv();
@@ -260,43 +254,8 @@ void bleuart_rx_callback(uint16_t conn_hdl)
   }
 }
 
-void negotiate_bandwidth(TimerHandle_t xTimer)
-{
-  (void) xTimer;
-
-  uint16_t conn_hdl = (uint16_t) ((uint32_t) negoTimer.getID());
-  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
-
-  // Switching from 1 Mb to 2 Mb PHY if needed
-  if ( conn->connected() )
-  {
-    // Requesting to Switching to 2MB PHY, larger data length and bigger MTU
-    // will increase the throughput on supported central. This should already
-    // be done with latest Bluefruit app.
-    //
-    // However, some Android devices require 2Mb PHY switching must be initiated
-    // from nRF side
-    if ( conn->getPHY() == BLE_GAP_PHY_1MBPS )
-    {
-      Serial.println("Requesting PHY change from 1 Mb to 2Mb");
-      conn->requestPHY();
-
-      // Data Length and MTU should already be done by Bluefruit app
-      // conn->requestDataLengthUpdate();
-      // conn->requestMtuExchange(247);
-    }
-  }
-}
-
 void connect_callback(uint16_t conn_handle)
 {
-  // Set connection handle as timer ID
-  // Then schedule negotiation after a few seconds, we should not
-  // negotiate here since it increases chance to conflict with other
-  // on-going negotiation from central after connection
-  negoTimer.setID((void*) conn_handle);
-  negoTimer.start();
-
   Serial.println("Connected");
   Serial.println("Ready to receive new image");
 }

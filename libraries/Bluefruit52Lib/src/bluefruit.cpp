@@ -823,7 +823,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
     {
       ble_gap_evt_disconnected_t const* para = &evt->evt.gap_evt.params.disconnected;
 
-      LOG_LV2("GAP", "Disconnect Reason 0x%02X", evt->evt.gap_evt.params.disconnected.reason);
+      LOG_LV2("GAP", "Disconnect Reason: %s", dbg_hci_str(evt->evt.gap_evt.params.disconnected.reason));
 
       // Turn off Conn LED If not connected at all
       if ( !this->connected() ) _setConnLed(false);
