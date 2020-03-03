@@ -438,6 +438,53 @@ const char* dbg_err_str(int32_t err_id)
   return str;
 }
 
+//--------------------------------------------------------------------+
+// HCI STATUS
+//--------------------------------------------------------------------+
+static lookup_entry_t const _strhci_lookup[] =
+{
+  { .key = BLE_HCI_STATUS_CODE_SUCCESS                         , .data = "STATUS_CODE_SUCCESS"                         },
+  { .key = BLE_HCI_STATUS_CODE_UNKNOWN_BTLE_COMMAND            , .data = "STATUS_CODE_UNKNOWN_BTLE_COMMAND "           },
+  { .key = BLE_HCI_STATUS_CODE_UNKNOWN_CONNECTION_IDENTIFIER   , .data = "STATUS_CODE_UNKNOWN_CONNECTION_IDENTIFIER"   },
+  { .key = BLE_HCI_AUTHENTICATION_FAILURE                      , .data = "AUTHENTICATION_FAILURE "                     },
+  { .key = BLE_HCI_STATUS_CODE_PIN_OR_KEY_MISSING              , .data = "STATUS_CODE_PIN_OR_KEY_MISSING "             },
+  { .key = BLE_HCI_MEMORY_CAPACITY_EXCEEDED                    , .data = "MEMORY_CAPACITY_EXCEEDED "                   },
+  { .key = BLE_HCI_CONNECTION_TIMEOUT                          , .data = "CONNECTION_TIMEOUT "                         },
+  { .key = BLE_HCI_STATUS_CODE_COMMAND_DISALLOWED              , .data = "STATUS_CODE_COMMAND_DISALLOWED "             },
+  { .key = BLE_HCI_STATUS_CODE_INVALID_BTLE_COMMAND_PARAMETERS , .data = "STATUS_CODE_INVALID_BTLE_COMMAND_PARAMETERS" },
+  { .key = BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION           , .data = "REMOTE_USER_TERMINATED_CONNECTION"           },
+  { .key = BLE_HCI_REMOTE_DEV_TERMINATION_DUE_TO_LOW_RESOURCES , .data = "REMOTE_DEV_TERMINATION_DUE_TO_LOW_RESOURCES" },
+  { .key = BLE_HCI_REMOTE_DEV_TERMINATION_DUE_TO_POWER_OFF     , .data = "REMOTE_DEV_TERMINATION_DUE_TO_POWER_OFF"     },
+  { .key = BLE_HCI_LOCAL_HOST_TERMINATED_CONNECTION            , .data = "LOCAL_HOST_TERMINATED_CONNECTION "           },
+  { .key = BLE_HCI_UNSUPPORTED_REMOTE_FEATURE                  , .data = "UNSUPPORTED_REMOTE_FEATURE"                  },
+  { .key = BLE_HCI_STATUS_CODE_INVALID_LMP_PARAMETERS          , .data = "STATUS_CODE_INVALID_LMP_PARAMETERS "         },
+  { .key = BLE_HCI_STATUS_CODE_UNSPECIFIED_ERROR               , .data = "STATUS_CODE_UNSPECIFIED_ERROR"               },
+  { .key = BLE_HCI_STATUS_CODE_LMP_RESPONSE_TIMEOUT            , .data = "STATUS_CODE_LMP_RESPONSE_TIMEOUT "           },
+  { .key = BLE_HCI_STATUS_CODE_LMP_ERROR_TRANSACTION_COLLISION , .data = "STATUS_CODE_LMP_ERROR_TRANSACTION_COLLISION" },
+  { .key = BLE_HCI_STATUS_CODE_LMP_PDU_NOT_ALLOWED             , .data = "STATUS_CODE_LMP_PDU_NOT_ALLOWED"             },
+  { .key = BLE_HCI_INSTANT_PASSED                              , .data = "INSTANT_PASSED "                             },
+  { .key = BLE_HCI_PAIRING_WITH_UNIT_KEY_UNSUPPORTED           , .data = "PAIRING_WITH_UNIT_KEY_UNSUPPORTED"           },
+  { .key = BLE_HCI_DIFFERENT_TRANSACTION_COLLISION             , .data = "DIFFERENT_TRANSACTION_COLLISION"             },
+  { .key = BLE_HCI_PARAMETER_OUT_OF_MANDATORY_RANGE            , .data = "PARAMETER_OUT_OF_MANDATORY_RANGE "           },
+  { .key = BLE_HCI_CONTROLLER_BUSY                             , .data = "CONTROLLER_BUSY"                             },
+  { .key = BLE_HCI_CONN_INTERVAL_UNACCEPTABLE                  , .data = "CONN_INTERVAL_UNACCEPTABLE "                 },
+  { .key = BLE_HCI_DIRECTED_ADVERTISER_TIMEOUT                 , .data = "DIRECTED_ADVERTISER_TIMEOUT"                 },
+  { .key = BLE_HCI_CONN_TERMINATED_DUE_TO_MIC_FAILURE          , .data = "CONN_TERMINATED_DUE_TO_MIC_FAILURE "         },
+  { .key = BLE_HCI_CONN_FAILED_TO_BE_ESTABLISHED               , .data = "CONN_FAILED_TO_BE_ESTABLISHED"               }
+};
+
+lookup_table_t const _strhci_table =
+{
+  .count = arrcount(_strhci_lookup),
+  .items = _strhci_lookup
+};
+
+
+const char* dbg_hci_str(uint8_t id)
+{
+  return (const char *) lookup_find(&_strhci_table, id);
+}
+
 #endif
 
 }
