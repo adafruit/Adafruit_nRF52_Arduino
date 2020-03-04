@@ -142,8 +142,9 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 
   uint32_t button = 0;
   button |= ( digitalRead(PIN_BUTTON1) ? 0x00 : 0x02 );
-  button |= ( digitalRead(PIN_BUTTON2) ? 0x00 : 0x04 );
-
+  #if defined(PIN_BUTTON2)
+    button |= ( digitalRead(PIN_BUTTON2) ? 0x00 : 0x04 );
+  #endif
   memcpy(buf, &button, 4);
   return 4;
 }
@@ -177,7 +178,9 @@ void setup()
 
   // Button
   pinMode(PIN_BUTTON1, INPUT_PULLUP);
-  pinMode(PIN_BUTTON2, INPUT_PULLUP);
+  #if defined(PIN_BUTTON2)
+    pinMode(PIN_BUTTON2, INPUT_PULLUP);
+  #endif
 
   apds9960.begin();
   apds9960.enableColor(true);
@@ -251,7 +254,9 @@ void setup()
   bleButton.begin(measure_button, 100);
   bleButton.setPeriod(0); // only notify if there is changes with buttons
 
-  bleTone.begin(PIN_BUZZER);
+  #if defined(PIN_BUZZER)
+    bleTone.begin(PIN_BUZZER);
+  #endif
 
   strip.begin();
   blePixel.begin(&strip);
