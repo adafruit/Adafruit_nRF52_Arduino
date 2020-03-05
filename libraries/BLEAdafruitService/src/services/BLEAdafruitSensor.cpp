@@ -135,6 +135,9 @@ void BLEAdafruitSensor::_measure_handler(void)
     return; // nothing to measure
   }
 
+  // no data to notify
+  if (!len) return;
+
   // Period = 0, compare with old data, only update on changes
   if ( 0 == _period.read32() )
   {

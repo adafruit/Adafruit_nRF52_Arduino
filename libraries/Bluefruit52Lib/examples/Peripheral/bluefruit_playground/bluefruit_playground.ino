@@ -21,25 +21,11 @@
 
 #include <SPI.h>
 #include <SdFat.h>
+#include <PDM.h>
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
 #include <bluefruit.h>
 #include <BLEAdafruitService.h>
-
-// BLE Service
-BLEDfu  bledfu;  // OTA DFU service
-BLEDis  bledis;  // device information
-BLEUart bleuart; // uart over ble
-BLEBas  blebas;  // battery
-
-// Adafruit Service: ADAFxx-C332-42A8-93BD-25E905756CB8
-BLEAdafruitTemperature  bleTemp;
-BLEAdafruitAccel        bleAccel;
-BLEAdafruitLightSensor  bleLight;
-BLEAdafruitButton       bleButton;
-BLEAdafruitTone         bleTone;
-
-BLEAdafruitAddressablePixel     blePixel;
 
 //------------- Circuit Playground Bluefruit -------------//
 #if defined(ARDUINO_NRF52840_CIRCUITPLAY)
@@ -103,11 +89,9 @@ BLEAdafruitQuaternion bleQuater;
 
 Adafruit_LSM6DS33 lsm6ds33; // Gyro and Accel
 Adafruit_LIS3MDL  lis3mdl;  // Magnetometer
-
 Adafruit_APDS9960 apds9960; // Proximity, Light, Gesture, Color
 Adafruit_BMP280   bmp280;   // Temperature, Barometric
 Adafruit_SHT31    sht30;    // Humid
-
 
 // pick your filter! slower == better quality output
 //Adafruit_NXPSensorFusion filter; // slowest
@@ -142,9 +126,9 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 
   uint32_t button = 0;
   button |= ( digitalRead(PIN_BUTTON1) ? 0x00 : 0x02 );
-  #if defined(PIN_BUTTON2)
-    button |= ( digitalRead(PIN_BUTTON2) ? 0x00 : 0x04 );
-  #endif
+#if defined(PIN_BUTTON2)
+  button |= ( digitalRead(PIN_BUTTON2) ? 0x00 : 0x04 );
+#endif
   memcpy(buf, &button, 4);
   return 4;
 }
@@ -160,7 +144,46 @@ uint16_t measure_humid(uint8_t* buf, uint16_t bufsize)
   #error "Board is not supported"
 #endif
 
+//--------------------------------------------------------------------+
+// Common Services
+//--------------------------------------------------------------------+
+
+// BLE Service
+BLEDfu  bledfu;  // OTA DFU service
+BLEDis  bledis;  // device information
+BLEUart bleuart; // uart over ble
+BLEBas  blebas;  // battery
+
+// Adafruit Service: ADAFxx-C332-42A8-93BD-25E905756CB8
+BLEAdafruitTemperature        bleTemp;
+BLEAdafruitAccel              bleAccel;
+BLEAdafruitLightSensor        bleLight;
+BLEAdafruitButton             bleButton;
+BLEAdafruitTone               bleTone;
+BLEAdafruitAddressablePixel   blePixel;
+BLEAdafruitSound              bleSound;
+
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NEOPIXEL_COUNT, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
+int16_t pdmSample[256]; // sound samples
+uint16_t pdmByteCount = 0;
+
+//void pdm_plotter(uint16_t count)
+//{
+//  for (int i = 0; i < count/2; i++) Serial.println(pdmSample[i]);
+//}
+
+uint16_t measure_sound(uint8_t* buf, uint16_t bufsize)
+{
+  uint16_t const len = min(bufsize, pdmByteCount);
+
+  if ( len ) memcpy(buf, pdmSample, len);
+  pdmByteCount = 0; // clear count
+
+//  if (len) ada_callback(NULL, 0, pdm_plotter, len);
+
+  return len;
+}
+
 
 //------------- Setup -------------//
 void setup()
@@ -178,9 +201,9 @@ void setup()
 
   // Button
   pinMode(PIN_BUTTON1, INPUT_PULLUP);
-  #if defined(PIN_BUTTON2)
-    pinMode(PIN_BUTTON2, INPUT_PULLUP);
-  #endif
+#if defined(PIN_BUTTON2)
+  pinMode(PIN_BUTTON2, INPUT_PULLUP);
+#endif
 
   apds9960.begin();
   apds9960.enableColor(true);
@@ -213,6 +236,10 @@ void setup()
   cal.begin(FILE_SENSOR_CALIB, &fatfs);
   cal.loadCalibration();
 #endif
+
+  // 1 channel (mono mode) with 16 kHz sample rate
+  PDM.onReceive(onPDMdata);
+  PDM.begin(1, 16000);
 
   Serial.println("Bluefruit Playground Example");
   Serial.println("---------------------------\n");
@@ -254,14 +281,15 @@ void setup()
   bleButton.begin(measure_button, 100);
   bleButton.setPeriod(0); // only notify if there is changes with buttons
 
-  #if defined(PIN_BUZZER)
-    bleTone.begin(PIN_BUZZER);
-  #endif
+#if defined(PIN_BUZZER)
+  bleTone.begin(PIN_BUZZER);
+#endif
 
   strip.begin();
   blePixel.begin(&strip);
 
-  bleAccel.begin(accel_sensor);
+  bleAccel.begin(accel_sensor); // TODO dropped in favor to Quaternion service for CLUE & Sense
+  bleSound.begin(1, measure_sound, 100);
 
   // CPB doesn't support these on-board sensor
 #ifdef ARDUINO_NRF52840_CIRCUITPLAY
@@ -353,4 +381,14 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 
   Serial.println();
   Serial.print("Disconnected, reason = 0x"); Serial.println(reason, HEX);
+}
+
+
+void onPDMdata()
+{
+  // query the number of bytes available
+  pdmByteCount = PDM.available();
+
+  // read into the sample buffer
+  PDM.read(pdmSample, pdmByteCount);
 }
