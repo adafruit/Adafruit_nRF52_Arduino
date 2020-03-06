@@ -43,7 +43,7 @@ class BLEAdafruitQuaternion : public BLEAdafruitSensor
   protected:
     void _update_timer(int32_t ms);
     void _measure_handler(void);
-    void _notify_cb(uint16_t conn_hdl, uint16_t value);
+    void _notify_handler(uint16_t conn_hdl, uint16_t value);
 
     void _fitler_update(void);
 
