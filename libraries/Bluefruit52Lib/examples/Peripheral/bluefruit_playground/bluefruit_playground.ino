@@ -133,11 +133,6 @@ void color_enable_callback(uint16_t conn_hdl, bool enabled)
 
 #ifdef ARDUINO_NRF52840_CLUE
   digitalWrite(PIN_LED2, enabled);
-
-#else
-  // Feather Sense use neopixel
-
-
 #endif
 }
 
@@ -147,7 +142,6 @@ uint16_t measure_color(uint8_t* buf, uint16_t bufsize)
   uint16_t c;
   (void) c;
 
-  apds9960.enableColor(true);
   apds9960.getColorData(rgb+0, rgb+1, rgb+2, &c);
 
   memcpy(buf, rgb, sizeof(rgb));
