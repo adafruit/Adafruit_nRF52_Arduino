@@ -22,26 +22,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLEADAFRUITSERVICE_H_
-#define BLEADAFRUITSERVICE_H_
+#ifndef BLEADAFRUIT_COLOR_H_
+#define BLEADAFRUIT_COLOR_H_
 
-#include "bluefruit_common.h"
-#include "BLECharacteristic.h"
-#include "BLEService.h"
-#include "services/BLEAdafruitSensor.h"
+class BLEAdafruitColor : public BLEAdafruitSensor
+{
+  public:
+    static const uint8_t UUID128_SERVICE[16];
+    static const uint8_t UUID128_CHR_DATA[16];
 
-#include "services/BLEAdafruitAccel.h"
-#include "services/BLEAdafruitAddressablePixel.h"
-#include "services/BLEAdafruitBaro.h"
-#include "services/BLEAdafruitButton.h"
-#include "services/BLEAdafruitColor.h"
-#include "services/BLEAdafruitGyro.h"
-#include "services/BLEAdafruitHumid.h"
-#include "services/BLEAdafruitLightSensor.h"
-#include "services/BLEAdafruitMagnetic.h"
-#include "services/BLEAdafruitQuaternion.h"
-#include "services/BLEAdafruitSound.h"
-#include "services/BLEAdafruitTemperature.h"
-#include "services/BLEAdafruitTone.h"
+    BLEAdafruitColor(void);
 
-#endif /* BLEADAFRUITSERVICE_H_ */
+    using BLEAdafruitSensor::begin;
+};
+
+#endif /* BLEADAFRUIT_COLOR_H_ */

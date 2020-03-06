@@ -83,8 +83,9 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 
 #define NEOPIXEL_COUNT    1
 
-BLEAdafruitHumid      bleHumid;
 BLEAdafruitBaro       bleBaro;
+BLEAdafruitColor      bleColor;
+BLEAdafruitHumid      bleHumid;
 BLEAdafruitQuaternion bleQuater;
 
 Adafruit_LSM6DS33 lsm6ds33; // Gyro and Accel
@@ -117,6 +118,18 @@ uint16_t measure_light(uint8_t* buf, uint16_t bufsize)
 
   memcpy(buf, &lux, 4);
   return 4;
+}
+
+uint16_t measure_color(uint8_t* buf, uint16_t bufsize)
+{
+  uint16_t rgb[3];
+  uint16_t c;
+  (void) c;
+
+  apds9960.getColorData(rgb+0, rgb+1, rgb+2, &c);
+
+  memcpy(buf, rgb, sizeof(rgb));
+  return sizeof(rgb);
 }
 
 uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
@@ -297,6 +310,7 @@ void setup()
 
 #else
   bleTemp.begin(bmp280.getTemperatureSensor());
+  bleColor.begin(measure_color, 100);
   bleHumid.begin(measure_humid);
   bleBaro.begin(bmp280.getPressureSensor());
 
