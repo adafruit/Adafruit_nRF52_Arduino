@@ -107,17 +107,38 @@ Adafruit_FlashTransport_QSPI flashTransport;
 Adafruit_SPIFlash flash(&flashTransport);
 FatFileSystem fatfs;
 
+void light_enable_callback(uint16_t conn_hdl, bool enabled)
+{
+  (void) conn_hdl;
+  apds9960.enableColor(enabled);
+}
+
 uint16_t measure_light(uint8_t* buf, uint16_t bufsize)
 {
   float lux;
-
   uint16_t r, g, b, c;
+
   apds9960.getColorData(&r, &g, &b, &c);
 
   lux = c;
-
   memcpy(buf, &lux, 4);
   return 4;
+}
+
+void color_enable_callback(uint16_t conn_hdl, bool enabled)
+{
+  (void) conn_hdl;
+
+  apds9960.enableColor(enabled);
+
+#ifdef ARDUINO_NRF52840_CLUE
+  digitalWrite(PIN_LED2, enabled);
+
+#else
+  // Feather Sense use neopixel
+
+
+#endif
 }
 
 uint16_t measure_color(uint8_t* buf, uint16_t bufsize)
@@ -126,6 +147,7 @@ uint16_t measure_color(uint8_t* buf, uint16_t bufsize)
   uint16_t c;
   (void) c;
 
+  apds9960.enableColor(true);
   apds9960.getColorData(rgb+0, rgb+1, rgb+2, &c);
 
   memcpy(buf, rgb, sizeof(rgb));
@@ -155,10 +177,11 @@ uint16_t measure_humid(uint8_t* buf, uint16_t bufsize)
 
 #else
   #error "Board is not supported"
-#endif
+
+#endif // end of board
 
 //--------------------------------------------------------------------+
-// Common Services
+// Common for all Boards
 //--------------------------------------------------------------------+
 
 // BLE Service
@@ -198,7 +221,9 @@ uint16_t measure_sound(uint8_t* buf, uint16_t bufsize)
 }
 
 
-//------------- Setup -------------//
+//--------------------------------------------------------------------+
+// Codes
+//--------------------------------------------------------------------+
 void setup()
 {
   Adafruit_Sensor* accel_sensor;
@@ -218,9 +243,13 @@ void setup()
   pinMode(PIN_BUTTON2, INPUT_PULLUP);
 #endif
 
-  apds9960.begin();
-  apds9960.enableColor(true);
+#ifdef ARDUINO_NRF52840_CLUE
+  // White LEDs for color sensing
+  pinMode(PIN_LED2, OUTPUT);
+  digitalWrite(PIN_LED2, LOW);
+#endif
 
+  apds9960.begin();
   bmp280.begin();
   sht30.begin(0x44);
   lsm6ds33.begin_I2C();
@@ -289,8 +318,6 @@ void setup()
   blebas.write(100);
 
   //------------- Adafruit Service -------------//
-  bleLight.begin(measure_light);
-
   bleButton.begin(measure_button, 100);
   bleButton.setPeriod(0); // only notify if there is changes with buttons
 
@@ -306,11 +333,18 @@ void setup()
 
   // CPB doesn't support these on-board sensor
 #ifdef ARDUINO_NRF52840_CIRCUITPLAY
-  bleTemp.begin(measure_temperature);
+  bleTemp.begin(measure_temperature, 100);
+  bleLight.begin(measure_light, 100);
 
 #else
-  bleTemp.begin(bmp280.getTemperatureSensor());
+  bleTemp.begin(bmp280.getTemperatureSensor(), 100);
+
+  bleLight.begin(measure_light, 100);;
+  bleLight.setNotifyCallback(light_enable_callback);
+
   bleColor.begin(measure_color, 100);
+  bleColor.setNotifyCallback(color_enable_callback);
+
   bleHumid.begin(measure_humid);
   bleBaro.begin(bmp280.getPressureSensor());
 
