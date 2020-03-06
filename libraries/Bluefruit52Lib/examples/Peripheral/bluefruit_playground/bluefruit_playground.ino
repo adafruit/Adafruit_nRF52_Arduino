@@ -421,6 +421,16 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   (void) conn_handle;
   (void) reason;
 
+#if defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_NRF52840_FEATHER_SENSE)
+  apds9960.enableGesture(false);
+  apds9960.enableProximity(false);
+  apds9960.enableColor(false);
+#endif
+
+#ifdef ARDUINO_NRF52840_CLUE
+  digitalWrite(PIN_LED2, LOW);
+#endif
+
   Serial.println();
   Serial.print("Disconnected, reason = 0x"); Serial.println(reason, HEX);
 }
