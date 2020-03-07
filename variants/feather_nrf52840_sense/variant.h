@@ -42,7 +42,7 @@ extern "C"
 #define NUM_ANALOG_OUTPUTS   (0)
 
 // LEDs
-#define PIN_LED1             (3)
+#define PIN_LED1             (13)
 #define PIN_LED2             (4)
 #define PIN_NEOPIXEL         (8)
 
