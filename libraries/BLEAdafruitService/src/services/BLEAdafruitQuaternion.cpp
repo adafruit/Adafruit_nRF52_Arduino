@@ -134,7 +134,9 @@ void BLEAdafruitQuaternion::_update_timer(int32_t ms)
 #if CFG_DEBUG
 static void print_quaternion(float quater[4])
 {
-  Serial.printf("Quaternion: %.04f, %.04f, %.04f, %.04f\n", quater[0], quater[1], quater[2], quater[3]);
+  // prepare for ability to change output, based on compile-time flags
+  Print& logger = Serial;
+  logger.printf("Quaternion: %.04f, %.04f, %.04f, %.04f\n", quater[0], quater[1], quater[2], quater[3]);
 }
 #endif
 
