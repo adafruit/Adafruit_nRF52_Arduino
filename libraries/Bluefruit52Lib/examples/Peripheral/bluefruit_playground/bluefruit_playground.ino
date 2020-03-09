@@ -86,6 +86,7 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 BLEAdafruitBaro       bleBaro;
 BLEAdafruitColor      bleColor;
 BLEAdafruitHumid      bleHumid;
+BLEAdafruitProximity  bleProximity;
 BLEAdafruitQuaternion bleQuater;
 
 Adafruit_LSM6DS33 lsm6ds33; // Gyro and Accel
@@ -146,6 +147,22 @@ uint16_t measure_color(uint8_t* buf, uint16_t bufsize)
 
   memcpy(buf, rgb, sizeof(rgb));
   return sizeof(rgb);
+}
+
+void proximity_enable_callback(uint16_t conn_hdl, bool enabled)
+{
+  (void) conn_hdl;
+  apds9960.enableProximity(enabled);
+}
+
+uint16_t measure_proximity(uint8_t* buf, uint16_t bufsize)
+{
+  // APDS is only 8-bit, we better to map it to 16-bit value
+  uint8_t data8 = apds9960.readProximity();
+  uint16_t data16 = (uint16_t) map(data8, 0, UINT8_MAX, 0, UINT16_MAX);
+
+  memcpy(buf, &data16, 2);
+  return 2;
 }
 
 uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
@@ -312,39 +329,44 @@ void setup()
   blebas.write(100);
 
   //------------- Adafruit Service -------------//
+  bleAccel.begin(accel_sensor, 100); // TODO dropped in favor to Quaternion service for CLUE & Sense
+
   bleButton.begin(measure_button, 100);
   bleButton.setPeriod(0); // only notify if there is changes with buttons
-
-#if defined(PIN_BUZZER)
-  bleTone.begin(PIN_BUZZER);
-#endif
 
   strip.begin();
   blePixel.begin(&strip);
 
-  bleAccel.begin(accel_sensor); // TODO dropped in favor to Quaternion service for CLUE & Sense
   bleSound.begin(1, measure_sound, 100);
 
   // CPB doesn't support these on-board sensor
 #ifdef ARDUINO_NRF52840_CIRCUITPLAY
-  bleTemp.begin(measure_temperature, 100);
   bleLight.begin(measure_light, 100);
+  bleTemp.begin(measure_temperature, 100);
 
 #else
-  bleTemp.begin(bmp280.getTemperatureSensor(), 100);
-
-  bleLight.begin(measure_light, 100);;
-  bleLight.setNotifyCallback(light_enable_callback);
+  bleBaro.begin(bmp280.getPressureSensor(), 100);
 
   bleColor.begin(measure_color, 100);
   bleColor.setNotifyCallback(color_enable_callback);
 
-  bleHumid.begin(measure_humid);
-  bleBaro.begin(bmp280.getPressureSensor());
+  bleHumid.begin(measure_humid, 100);
+
+  bleLight.begin(measure_light, 100);;
+  bleLight.setNotifyCallback(light_enable_callback);
+
+  bleProximity.begin(measure_proximity, 100);
+  bleProximity.setNotifyCallback(proximity_enable_callback);
 
   // Quaternion with sensor calibration
   bleQuater.begin(&filter, accel_sensor, lsm6ds33.getGyroSensor(), &lis3mdl);
   bleQuater.setCalibration(&cal);
+
+  bleTemp.begin(bmp280.getTemperatureSensor(), 100);
+#endif
+
+#if defined(PIN_BUZZER)
+  bleTone.begin(PIN_BUZZER);
 #endif
 
   // Set up and start advertising
