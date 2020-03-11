@@ -109,9 +109,7 @@ err_t BLEAdafruitAddressablePixel::begin(uint8_t pin, uint8_t type, uint16_t buf
   // Add Characteristic
   _data.setProperties(CHR_PROPS_WRITE);
   _data.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
-  // Change to use VLOC STACK to USER due to lack of memroy
-  // Data.setMaxLen(Bluefruit.getMaxMtu(BLE_GAP_ROLE_PERIPH));
-  _data.setMaxLen(BLE_GATTS_VAR_ATTR_LEN_MAX);
+  _data.setMaxLen(3 + bufsize); // start (2 byte) + flags (1 byte)
   VERIFY_STATUS( _data.begin() );
 
   // Add Characteristic
