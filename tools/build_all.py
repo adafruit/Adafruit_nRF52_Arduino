@@ -44,7 +44,7 @@ def build_examples(variant):
     
     fqbn = "adafruit:nrf52:{}:softdevice={},debug=l0".format(variant, 's140v6' if variant != 'feather52832' else 's132v6')
 
-    for sketch in glob.iglob('libraries/**/bluefruit_playground.ino', recursive=True):
+    for sketch in glob.iglob('libraries/**/*.ino', recursive=True):
         start_time = time.monotonic()
 
         # Skip if contains: ".board.test.skip" or ".all.test.skip"
