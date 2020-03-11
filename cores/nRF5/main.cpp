@@ -46,7 +46,7 @@ static void loop_task(void* arg)
 
 #if CFG_DEBUG
   // If Serial is not begin(), call it to avoid hard fault
-  if ( !Serial ) Serial.begin(115200);
+  Serial.begin(115200);
 
   // Wait for Serial connection in debug mode
   while ( !Serial ) yield();

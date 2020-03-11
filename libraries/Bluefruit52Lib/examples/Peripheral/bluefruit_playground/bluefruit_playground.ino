@@ -85,6 +85,7 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 
 BLEAdafruitBaro       bleBaro;
 BLEAdafruitColor      bleColor;
+BLEAdafruitGesture    bleGesture;
 BLEAdafruitHumid      bleHumid;
 BLEAdafruitProximity  bleProximity;
 BLEAdafruitQuaternion bleQuater;
@@ -147,6 +148,28 @@ uint16_t measure_color(uint8_t* buf, uint16_t bufsize)
 
   memcpy(buf, rgb, sizeof(rgb));
   return sizeof(rgb);
+}
+
+
+
+void gesture_enable_callback(uint16_t conn_hdl, bool enabled)
+{
+  (void) conn_hdl;
+  apds9960.enableProximity(enabled);
+  apds9960.enableGesture(enabled);
+}
+
+uint16_t measure_gesture(uint8_t* buf, uint16_t bufsize)
+{
+  uint8_t gesture = apds9960.readGesture();
+  if (gesture == 0) return 0; // skip no gesture value
+
+  // APDS9960 sensor position is rotated 90 degree left on CLUE
+  // We will need to correct that by rotating right for user convenience
+  uint8_t const clue_rotation[] = { 0, APDS9960_LEFT, APDS9960_RIGHT, APDS9960_DOWN, APDS9960_UP };
+  buf[0] = clue_rotation[gesture];
+
+  return 1;
 }
 
 void proximity_enable_callback(uint16_t conn_hdl, bool enabled)
@@ -349,6 +372,10 @@ void setup()
 
   bleColor.begin(measure_color, 100);
   bleColor.setNotifyCallback(color_enable_callback);
+
+  bleGesture.begin(measure_gesture, 10); // sampling is 10 ms
+  bleGesture.setPeriod(0); // notify on changes only
+  bleGesture.setNotifyCallback(gesture_enable_callback);
 
   bleHumid.begin(measure_humid, 100);
 

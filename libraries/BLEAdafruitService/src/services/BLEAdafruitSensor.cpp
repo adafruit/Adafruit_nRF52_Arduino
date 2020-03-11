@@ -42,8 +42,8 @@ err_t BLEAdafruitSensor::_begin(int32_t ms)
   VERIFY_STATUS( BLEService::begin() );
 
   _measurement.setCccdWriteCallback(sensor_data_cccd_cb, true);
-
   VERIFY_STATUS( _measurement.begin() );
+  _measurement.write32(0); // zero 4 bytes could help to init some services
 
   _period.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
   _period.setPermission(SECMODE_OPEN, SECMODE_OPEN);
