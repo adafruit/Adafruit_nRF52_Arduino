@@ -39,6 +39,7 @@
 #include <malloc.h>
 #include <Arduino.h>
 #include <ctype.h>
+#include <common_func.h>
 
 // defined in linker script
 extern uint32_t __data_start__[];
