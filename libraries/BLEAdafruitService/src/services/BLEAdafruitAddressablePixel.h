@@ -49,6 +49,8 @@ class BLEAdafruitAddressablePixel : public BLEService
 
     err_t begin(uint8_t pin, uint8_t type, uint16_t bufsize);
 
+    void _pixel_write_handler(uint16_t conn_hdl, uint8_t* data, uint16_t len);
+
     static void pixel_data_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
 };
 
