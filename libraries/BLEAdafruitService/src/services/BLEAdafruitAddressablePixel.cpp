@@ -143,8 +143,6 @@ void BLEAdafruitAddressablePixel::_pixel_write_handler(uint16_t conn_hdl, uint8_
   uint16_t copied_count = max16(_bufsize.read16(), index) - index;
   copied_count = min16(len-3, copied_count);
 
-  PRINT_INT(copied_count);
-
   if (copied_count) memcpy(pixbuf, data+3, copied_count);
 
   // show flag
