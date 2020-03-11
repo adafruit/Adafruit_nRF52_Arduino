@@ -51,6 +51,8 @@ compiler.size.cmd=arm-none-eabi-size
 # this can be overriden in boards.txt
 build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16 -u _printf_float
 build.debug_flags=-DCFG_DEBUG=0
+build.logger_flags=-DCFG_LOGGER=1
+build.sysview_flags=-DCFG_SYSVIEW=0
 
 # common compiler for nrf
 rtos.path={build.core.path}/freertos
@@ -148,3 +150,4 @@ tools.bootburn.bootloader.pattern={program.burn_pattern}
 tools.bootburn.erase.params.verbose=
 tools.bootburn.erase.params.quiet=
 tools.bootburn.erase.pattern=
+
