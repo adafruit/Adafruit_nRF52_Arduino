@@ -66,9 +66,9 @@ uint16_t measure_button(uint8_t* buf, uint16_t bufsize)
 #elif defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_NRF52840_FEATHER_SENSE)
 
 #include <Adafruit_APDS9960.h>
-#include <Adafruit_LSM6DS33.h>
-#include <Adafruit_LIS3MDL.h>
 #include <Adafruit_BMP280.h>
+#include <Adafruit_LIS3MDL.h>
+#include <Adafruit_LSM6DS33.h>
 #include <Adafruit_SHT31.h>
 
 #include <Adafruit_SPIFlash.h>
