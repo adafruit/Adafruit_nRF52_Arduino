@@ -31,8 +31,9 @@
 BLEAdafruitSensor::BLEAdafruitSensor(BLEUuid service_uuid, BLEUuid data_uuid)
   : BLEService(service_uuid), _measurement(data_uuid), _period(UUID128_CHR_ADAFRUIT_MEASUREMENT_PERIOD)
 {
-  _measure_cb = NULL;
   _sensor = NULL;
+  _measure_cb = NULL;
+  _notify_cb = NULL;
 }
 
 err_t BLEAdafruitSensor::_begin(int32_t ms)
@@ -41,8 +42,8 @@ err_t BLEAdafruitSensor::_begin(int32_t ms)
   VERIFY_STATUS( BLEService::begin() );
 
   _measurement.setCccdWriteCallback(sensor_data_cccd_cb, true);
-
   VERIFY_STATUS( _measurement.begin() );
+  _measurement.write32(0); // zero 4 bytes could help to init some services
 
   _period.setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE);
   _period.setPermission(SECMODE_OPEN, SECMODE_OPEN);
@@ -76,10 +77,15 @@ void BLEAdafruitSensor::setPeriod(int32_t period_ms)
   _update_timer(period_ms);
 }
 
+void BLEAdafruitSensor::setNotifyCallback(notify_callback_t fp)
+{
+  _notify_cb = fp;
+}
+
 //--------------------------------------------------------------------+
 // Internal API
 //--------------------------------------------------------------------+
-void BLEAdafruitSensor::_notify_cb(uint16_t conn_hdl, uint16_t value)
+void BLEAdafruitSensor::_notify_handler(uint16_t conn_hdl, uint16_t value)
 {
   // notify enabled
   if (value & BLE_GATT_HVX_NOTIFICATION)
@@ -89,6 +95,9 @@ void BLEAdafruitSensor::_notify_cb(uint16_t conn_hdl, uint16_t value)
   {
     _timer.stop();
   }
+
+  // invoke callback if any
+  if (_notify_cb) _notify_cb(conn_hdl, value);
 
   // send initial notification if period = 0
   //  if ( 0 == svc._period.read32() )
@@ -135,6 +144,9 @@ void BLEAdafruitSensor::_measure_handler(void)
     return; // nothing to measure
   }
 
+  // no data to notify
+  if (!len) return;
+
   // Period = 0, compare with old data, only update on changes
   if ( 0 == _period.read32() )
   {
@@ -175,6 +187,6 @@ void BLEAdafruitSensor::sensor_data_cccd_cb(uint16_t conn_hdl, BLECharacteristic
 {
   BLEAdafruitSensor* svc = (BLEAdafruitSensor*) &chr->parentService();
 
-  svc->_notify_cb(conn_hdl, value);
+  svc->_notify_handler(conn_hdl, value);
 }
 

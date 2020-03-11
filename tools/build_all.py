@@ -13,7 +13,7 @@ skip_count = 0
 build_format = '| {:20} | {:35} | {:9} '
 build_separator = '-' * 83
 
-default_boards = [ 'feather52832', 'feather52840', 'cplaynrf52840', 'itsybitsy52840', 'cluenrf52840' ]
+default_boards = [ 'cluenrf52840', 'cplaynrf52840', 'feather52832', 'feather52840', 'feather52840sense', 'itsybitsy52840' ]
 
 build_boards = []
 
@@ -52,7 +52,7 @@ def build_examples(variant):
         sketchdir = os.path.dirname(sketch)
         if os.path.exists(sketchdir + '/.all.test.skip') or os.path.exists(sketchdir + '/.' + variant + '.test.skip'):
             success = "\033[33mskipped\033[0m  "
-        elif glob.glob(sketchdir+"/.*.test.only") and not os.path.exists(sketchdir + '/.build.' + variant + '.test.only'):
+        elif glob.glob(sketchdir+"/.*.test.only") and not os.path.exists(sketchdir + '/.' + variant + '.test.only'):
             success = "\033[33mskipped\033[0m  "
         else:
             # TODO - preferably, would have STDERR show up in **both** STDOUT and STDERR.

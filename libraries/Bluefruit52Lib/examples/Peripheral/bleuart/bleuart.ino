@@ -24,7 +24,7 @@ BLEBas  blebas;  // battery
 void setup()
 {
   Serial.begin(115200);
-  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+//  while ( !Serial ) delay(10);   // for nrf52840 with native usb
   
   Serial.println("Bluefruit52 BLEUART Example");
   Serial.println("---------------------------\n");

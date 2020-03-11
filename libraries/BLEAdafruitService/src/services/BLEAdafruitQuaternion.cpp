@@ -95,7 +95,7 @@ void BLEAdafruitQuaternion::setCalibration(Adafruit_Sensor_Calibration* calib)
   _calib = calib;
 }
 
-void BLEAdafruitQuaternion::_notify_cb(uint16_t conn_hdl, uint16_t value)
+void BLEAdafruitQuaternion::_notify_handler(uint16_t conn_hdl, uint16_t value)
 {
   // Start/Stop filter timer
   if (value & BLE_GATT_HVX_NOTIFICATION)
@@ -107,7 +107,7 @@ void BLEAdafruitQuaternion::_notify_cb(uint16_t conn_hdl, uint16_t value)
   }
 
   // Call SuperClass function
-  BLEAdafruitSensor::_notify_cb(conn_hdl, value);
+  BLEAdafruitSensor::_notify_handler(conn_hdl, value);
 }
 
 void BLEAdafruitQuaternion::_update_timer(int32_t ms)

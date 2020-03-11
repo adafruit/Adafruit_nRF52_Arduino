@@ -7,7 +7,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ['feather52832', 'feather52840', 'feather52840sense', 'cplaynrf52840', 'itsybitsy52840', 'cluenrf52840' ]
+        arduino-platform: ['cluenrf52840', 'cplaynrf52840', 'feather52832', 'feather52840', 'feather52840sense', 'itsybitsy52840']
 
     runs-on: ubuntu-latest
     
@@ -52,8 +52,7 @@ jobs:
         rm -r $HOME/$BSP_PATH/*
         ln -s $GITHUB_WORKSPACE $HOME/$BSP_PATH/$BSP_VERSION
         # Install library dependency
-        arduino-cli lib install "Adafruit GFX Library" "Adafruit SSD1306" "Adafruit ILI9341" "Adafruit HX8357 Library" "Adafruit ST7735 and ST7789 Library" "Adafruit EPD" 
-        arduino-cli lib install "Adafruit Circuit Playground" "Adafruit NeoPixel" "Adafruit NeoMatrix" "MIDI Library" "Firmata"
+        arduino-cli lib install "Adafruit AHRS" "Adafruit APDS9960 Library" "Adafruit BMP280 Library" "Adafruit Circuit Playground" "Adafruit EPD" "Adafruit GFX Library" "Adafruit HX8357 Library" "Adafruit ILI9341" "Adafruit LIS3MDL" "Adafruit LSM6DS" "Adafruit NeoPixel" "Adafruit NeoMatrix" "Adafruit Sensor Calibration" "Adafruit SHT31 Library" "Adafruit SSD1306" "Adafruit ST7735 and ST7789 Library" "Firmata" "MIDI Library"  "SdFat - Adafruit Fork"
 
     - name: Build examples
       run: python3 tools/build_all.py ${{ matrix.arduino-platform }}

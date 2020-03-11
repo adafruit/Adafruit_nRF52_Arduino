@@ -22,42 +22,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLEADAFRUIT_QUATERNION_H_
-#define BLEADAFRUIT_QUATERNION_H_
+#ifndef BLEADAFRUIT_SOUND_H_
+#define BLEADAFRUIT_SOUND_H_
 
-// forward declaration
-class Adafruit_AHRS_FusionInterface;
-class Adafruit_Sensor_Calibration;
-
-class BLEAdafruitQuaternion : public BLEAdafruitSensor
+class BLEAdafruitSound : public BLEAdafruitSensor
 {
   public:
     static const uint8_t UUID128_SERVICE[16];
     static const uint8_t UUID128_CHR_DATA[16];
-    static const uint8_t FUSION_MEASURE_RATIO = 10; // number of filter update for each measure report to client
+    static const uint8_t UUID128_CHR_CHANNEL_COUNT[16];
 
-    BLEAdafruitQuaternion(void);
-    err_t begin(Adafruit_AHRS_FusionInterface* filter, Adafruit_Sensor* accel, Adafruit_Sensor* gyro, Adafruit_Sensor* mag);
-    void setCalibration(Adafruit_Sensor_Calibration* calib);
+    BLEAdafruitSound(void);
 
-  protected:
-    void _update_timer(int32_t ms);
-    void _measure_handler(void);
-    void _notify_handler(uint16_t conn_hdl, uint16_t value);
-
-    void _fitler_update(void);
+    err_t begin(uint8_t channel_count, measure_callback_t fp, int32_t ms = DEFAULT_PERIOD);
 
   private:
-    Adafruit_Sensor* _accel;
-    Adafruit_Sensor* _gyro;
-    Adafruit_Sensor* _mag;
-
-    Adafruit_AHRS_FusionInterface* _filter;
-    Adafruit_Sensor_Calibration* _calib;
-    SoftwareTimer _filter_timer;
-
-    // filter timer callback, 10x faster than period timer
-    static void quaternion_filter_timer_cb(TimerHandle_t xTimer);
+    BLECharacteristic _channel_count;
 };
 
-#endif /* BLEADAFRUIT_QUATERNION_H_ */
+#endif /* BLEADAFRUIT_SOUND_H_ */
