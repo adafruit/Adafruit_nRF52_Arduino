@@ -1071,7 +1071,7 @@ void AdafruitBluefruit::printInfo(void)
   logger.printf("%d dBm", _tx_power);
   logger.println();
 
-  logger.printInfo();
+  Periph.printInfo();
 
   /*------------- List the paried device -------------*/
   if ( _prph_count )
