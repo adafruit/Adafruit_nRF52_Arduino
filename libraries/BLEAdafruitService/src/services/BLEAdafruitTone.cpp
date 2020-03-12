@@ -60,6 +60,9 @@ err_t BLEAdafruitTone::begin(int pin)
   _tone.setWriteCallback(tone_write_cb, true);
   VERIFY_STATUS( _tone.begin() );
 
+  pinMode(_pin, OUTPUT);
+  digitalWrite(_pin, LOW);
+
   return ERROR_NONE;
 }
 
@@ -79,11 +82,14 @@ void BLEAdafruitTone::tone_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, u
   memcpy(&tone_data, data, len);
 
   // frequency = 0 means no tone
+  int pin = svc._pin;
+
   if (tone_data.freq == 0)
   {
-    noTone(svc._pin);
+    noTone(pin);
+    digitalWrite(pin, LOW);
   }else
   {
-    tone(svc._pin, tone_data.freq, tone_data.duration);
+    tone(pin, tone_data.freq, tone_data.duration);
   }
 }

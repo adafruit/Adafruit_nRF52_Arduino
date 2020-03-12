@@ -22,10 +22,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLEADAFRUITADDRESSABLEPIXEL_H_
-#define BLEADAFRUITADDRESSABLEPIXEL_H_
+#ifndef BLEADAFRUIT_ADDRESSABLEPIXEL_H_
+#define BLEADAFRUIT_ADDRESSABLEPIXEL_H_
 
-#include "Adafruit_NeoPixel.h"
+#include <Adafruit_NeoPixel.h>
 
 class BLEAdafruitAddressablePixel : public BLEService
 {
@@ -49,9 +49,11 @@ class BLEAdafruitAddressablePixel : public BLEService
 
     err_t begin(uint8_t pin, uint8_t type, uint16_t bufsize);
 
+    void _pixel_write_handler(uint16_t conn_hdl, uint8_t* data, uint16_t len);
+
     static void pixel_data_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
 };
 
 
 
-#endif /* BLEADAFRUITADDRESSABLEPIXEL_H_ */
+#endif /* BLEADAFRUIT_ADDRESSABLEPIXEL_H_ */

@@ -29,7 +29,15 @@
 #include <bluefruit.h>
 
 #define NEOPIXEL_VERSION_STRING "Neopixel v2.0"
-#define PIN                     30   /* Pin used to drive the NeoPixels */
+
+/* Pin used to drive the NeoPixels */
+#if defined ARDUINO_NRF52840_CIRCUITPLAY
+  #define PIN     PIN_NEOPIXEL
+#elif defined ARDUINO_NRF52832_FEATHER
+  #define PIN     30
+#else
+  #define PIN     6
+#endif
 
 #define MAXCOMPONENTS  4
 uint8_t *pixelBuffer = NULL;

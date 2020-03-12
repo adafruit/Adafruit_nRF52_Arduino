@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLEADAFRUITACCEL_H_
-#define BLEADAFRUITACCEL_H_
+#ifndef BLEADAFRUIT_ACCEL_H_
+#define BLEADAFRUIT_ACCEL_H_
 
 class BLEAdafruitAccel : public BLEAdafruitSensor
 {
@@ -31,10 +31,9 @@ class BLEAdafruitAccel : public BLEAdafruitSensor
     static const uint8_t UUID128_SERVICE[16];
     static const uint8_t UUID128_CHR_DATA[16];
 
-    BLECharacteristic Accel;
-
     BLEAdafruitAccel(void);
-    virtual err_t begin(void);
+
+    using BLEAdafruitSensor::begin;
 };
 
-#endif /* BLEADAFRUITACCEL_H_ */
+#endif /* BLEADAFRUIT_ACCEL_H_ */

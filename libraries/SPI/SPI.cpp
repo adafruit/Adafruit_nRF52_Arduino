@@ -254,13 +254,30 @@ void SPIClass::detachInterrupt() {
   // Should be disableInterrupt()
 }
 
-#if SPI_INTERFACES_COUNT > 0
-// use SPIM3 for highspeed 32Mhz
-SPIClass SPI(NRF_SPIM3,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
+// default to 0
+#ifndef SPI_32MHZ_INTERFACE
+#define SPI_32MHZ_INTERFACE 0
 #endif
 
-#if SPI_INTERFACES_COUNT > 1
-SPIClass SPI1(NRF_SPIM2, PIN_SPI1_MISO, PIN_SPI1_SCK, PIN_SPI1_MOSI);
+#if SPI_32MHZ_INTERFACE == 0
+  #define _SPI_DEV    NRF_SPIM3 // 32 Mhz
+  #define _SPI1_DEV   NRF_SPIM2
+
+#elif SPI_32MHZ_INTERFACE == 1
+  #define _SPI_DEV    NRF_SPIM2
+  #define _SPI1_DEV   NRF_SPIM3 // 32 Mhz
+
+#else
+  #error "not supported yet"
+#endif
+
+#if SPI_INTERFACES_COUNT >= 1
+// use SPIM3 for highspeed 32Mhz
+SPIClass SPI(_SPI_DEV,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
+#endif
+
+#if SPI_INTERFACES_COUNT >= 2
+SPIClass SPI1(_SPI1_DEV, PIN_SPI1_MISO, PIN_SPI1_SCK, PIN_SPI1_MOSI);
 #endif
 
 #endif // NRF52840_XXAA

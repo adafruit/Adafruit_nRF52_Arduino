@@ -225,7 +225,7 @@ size_t Uart::write(const uint8_t *buffer, size_t size)
   do
   {
     size_t remaining = size - sent;
-    size_t txSize = min(remaining, SERIAL_BUFFER_SIZE);
+    size_t txSize = min(remaining, (size_t)SERIAL_BUFFER_SIZE);
 
     xSemaphoreTake(_mutex, portMAX_DELAY);
 

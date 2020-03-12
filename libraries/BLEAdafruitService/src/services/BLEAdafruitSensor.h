@@ -22,36 +22,47 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLE_ADAFRUIT_SENSOR_H_
-#define BLE_ADAFRUIT_SENSOR_H_
+#ifndef BLEADAFRUIT_SENSOR_H_
+#define BLEADAFRUIT_SENSOR_H_
+
+#include <Adafruit_Sensor.h>
 
 class BLEAdafruitSensor : public BLEService
 {
   public:
+    static const int32_t DEFAULT_PERIOD = 1000;
+
+    typedef void (*notify_callback_t)(uint16_t conn_hdl, bool enabled);
     typedef uint16_t (*measure_callback_t )(uint8_t* buf, uint16_t bufsize);
 
     BLEAdafruitSensor(BLEUuid service_uuid, BLEUuid data_uuid);
-    virtual err_t begin(int32_t ms);
 
-    void setMeasureCallback(measure_callback_t fp);
+    virtual err_t begin(measure_callback_t fp, int32_t ms = DEFAULT_PERIOD);
+    virtual err_t begin(Adafruit_Sensor* sensor, int32_t ms = DEFAULT_PERIOD);
+
     void setPeriod(int32_t period_ms);
-
-    void startMeasuring(void);
-    void stopMeasuring(void);
+    void setNotifyCallback(notify_callback_t fp);
 
   protected:
     BLECharacteristic _period;
     BLECharacteristic _measurement;
 
+    Adafruit_Sensor*  _sensor;
+
     measure_callback_t _measure_cb;
+    notify_callback_t  _notify_cb;
+
     SoftwareTimer _timer;
 
-    void _update_timer(int32_t ms);
-    void _timer_callback(void);
+    err_t _begin(int32_t ms);
+
+    virtual void _update_timer(int32_t ms);
+    virtual void _measure_handler(void);
+    virtual void _notify_handler(uint16_t conn_hdl, uint16_t value);
 
     static void sensor_timer_cb(TimerHandle_t xTimer);
     static void sensor_period_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);
     static void sensor_data_cccd_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value);
 };
 
-#endif /* BLE_ADAFRUIT_SENSOR_H_ */
+#endif /* BLEADAFRUIT_SENSOR_H_ */

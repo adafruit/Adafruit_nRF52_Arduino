@@ -128,6 +128,11 @@ uint16_t BLECharacteristic::getMaxLen(void)
   return _max_len;
 }
 
+bool BLECharacteristic::isFixedLen(void)
+{
+  return _attr_meta.vlen == 0;
+}
+
 void BLECharacteristic::setFixedLen(uint16_t fixed_len)
 {
   if ( fixed_len )
@@ -703,7 +708,12 @@ bool BLECharacteristic::notify(uint16_t conn_hdl, const void* data, uint16_t len
       };
 
       LOG_LV2("CHR", "Notify %d bytes", packet_len);
-      VERIFY_STATUS( sd_ble_gatts_hvx(conn_hdl, &hvx_params), false );
+      uint32_t status = sd_ble_gatts_hvx(conn_hdl, &hvx_params);
+      if(NRF_SUCCESS != status)
+      {
+        conn->releaseHvnPacket();
+      }
+      VERIFY_STATUS(status, false );
 
       remaining -= packet_len;
       u8data    += packet_len;

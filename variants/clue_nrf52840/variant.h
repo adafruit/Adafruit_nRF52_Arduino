@@ -42,6 +42,7 @@ extern "C"
 
 // LEDs
 #define PIN_LED1             (17)
+#define PIN_LED2             (43)      // dual white LEDs
 #define PIN_NEOPIXEL         (18)
 
 #define LED_BUILTIN          PIN_LED1
@@ -52,13 +53,16 @@ extern "C"
 #define LED_STATE_ON         1         // State when LED is litted
 
 // Buttons
-#define PIN_BUTTON1             (5)
-#define PIN_BUTTON2             (11)
+#define PIN_BUTTON1          (5)    // Button A
+#define PIN_BUTTON2          (11)   // Button B
 
 // Microphone
 #define PIN_PDM_DIN           35
 #define PIN_PDM_CLK           36
 #define PIN_PDM_PWR           -1  // not used
+
+// Buzzer
+#define PIN_BUZZER            46
 
 /*
  * Analog pins
@@ -93,6 +97,12 @@ static const uint8_t A7  = PIN_A7 ;
  */
 #define SPI_INTERFACES_COUNT 2
 
+// nRF52840 has only one SPIM3 runing at highspeed 32Mhz
+// This assign SPIM3 to either: SPI (0), SPI1 (1).
+// If not defined, default to 0 or SPI.
+#define SPI_32MHZ_INTERFACE  1
+
+// SPI
 #define PIN_SPI_MISO         (14)
 #define PIN_SPI_MOSI         (15)
 #define PIN_SPI_SCK          (13)
@@ -102,7 +112,7 @@ static const uint8_t MOSI = PIN_SPI_MOSI ;
 static const uint8_t MISO = PIN_SPI_MISO ;
 static const uint8_t SCK  = PIN_SPI_SCK ;
 
-
+// SPI1
 #define PIN_SPI1_MISO         (35)
 #define PIN_SPI1_MOSI         (30)
 #define PIN_SPI1_SCK          (29)
@@ -132,6 +142,12 @@ static const uint8_t SCK1  = PIN_SPI1_SCK ;
 // On-board QSPI Flash
 #define EXTERNAL_FLASH_DEVICES   GD25Q16C
 #define EXTERNAL_FLASH_USE_QSPI
+
+// On-board TFT display
+#define PIN_TFT_CS           31
+#define PIN_TFT_DC           32
+#define PIN_TFT_RST          33
+#define PIN_TFT_LITE         34
 
 #ifdef __cplusplus
 }

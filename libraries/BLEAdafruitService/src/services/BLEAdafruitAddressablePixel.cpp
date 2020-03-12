@@ -109,9 +109,9 @@ err_t BLEAdafruitAddressablePixel::begin(uint8_t pin, uint8_t type, uint16_t buf
   // Add Characteristic
   _data.setProperties(CHR_PROPS_WRITE);
   _data.setPermission(SECMODE_NO_ACCESS, SECMODE_OPEN);
-  // Change to use VLOC STACK to USER due to lack of memroy
-  // Data.setMaxLen(Bluefruit.getMaxMtu(BLE_GAP_ROLE_PERIPH));
-  _data.setMaxLen(BLE_GATTS_VAR_ATTR_LEN_MAX);
+  // start (2 byte) + flags (1 byte)
+  // TODO: for backward compatible with current CPB app, force to at least 10 pixels
+  _data.setMaxLen(3 + 30 /* bufsize */);
   VERIFY_STATUS( _data.begin() );
 
   // Add Characteristic
@@ -126,28 +126,34 @@ err_t BLEAdafruitAddressablePixel::begin(uint8_t pin, uint8_t type, uint16_t buf
   return ERROR_NONE;
 }
 
-//--------------------------------------------------------------------+
-// Static callbacks
-//--------------------------------------------------------------------+
-void BLEAdafruitAddressablePixel::pixel_data_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
+void BLEAdafruitAddressablePixel::_pixel_write_handler(uint16_t conn_hdl, uint8_t* data, uint16_t len)
 {
   (void) conn_hdl;
 
   if (len < 3) return;
 
-  BLEAdafruitAddressablePixel& svc = (BLEAdafruitAddressablePixel&) chr->parentService();
-
   uint16_t index;
   memcpy(&index, data, 2);
   uint8_t flag = data[2];
 
-  uint8_t* buffer = svc._neo->getPixels() + index;
+  // pixel staring buffer
+  uint8_t* pixbuf = _neo->getPixels() + index;
 
-  memcpy(buffer, data+3, len-3);
+  // limit copied bytes up to strip's boundary
+  uint16_t copied_count = max16(_bufsize.read16(), index) - index;
+  copied_count = min16(len-3, copied_count);
+
+  if (copied_count) memcpy(pixbuf, data+3, copied_count);
 
   // show flag
-  if ( flag & 0x01 )
-  {
-    svc._neo->show();
-  }
+  if ( flag & 0x01 ) _neo->show();
+}
+
+//--------------------------------------------------------------------+
+// Static callbacks
+//--------------------------------------------------------------------+
+void BLEAdafruitAddressablePixel::pixel_data_write_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
+{
+  BLEAdafruitAddressablePixel& svc = (BLEAdafruitAddressablePixel&) chr->parentService();
+  svc._pixel_write_handler(conn_hdl, data, len);
 }

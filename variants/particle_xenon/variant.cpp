@@ -27,44 +27,55 @@
 const uint32_t g_ADigitalPinMap[] =
 {
   // D0 .. D8
-  26,   // P0.26 (SDA)
-  27,   // P0.27 (SCL)
-  33,   // P1.01 (SDA1) (UART1_RTS) (SPI1_SCK) (PWM3)
-  34,   // P1.02 (SCL1) (UART1_CTS) (SPI1_MOSI) (PWM3)
-  40,   // P1.08 (UART2_TX) (SPI1_MISO) (PWM1)
-  42,   // P1.10 (UART2_RX) (PWM1)
-  43,   // P1.11 (UART2_CTS) (PWM1)
-  44,   // P1.12 (PWM0)
-  35,   // P1.03 (UART2_RTS)
+  _PINNUM(0, 26),   // P0.26 (SDA)
+  _PINNUM(0, 27),   // P0.27 (SCL)
+  _PINNUM(1, 1),    // P1.01 (SDA1) (UART1_RTS) (SPI1_SCK) (PWM3)
+  _PINNUM(1, 2),    // P1.02 (SCL1) (UART1_CTS) (SPI1_MOSI) (PWM3)
+  _PINNUM(1, 8),    // P1.08 (UART2_TX) (SPI1_MISO) (PWM1)
+  _PINNUM(1, 10),   // P1.10 (UART2_RX) (PWM1)
+  _PINNUM(1, 11),   // P1.11 (UART2_CTS) (PWM1)
+  _PINNUM(1, 12),   // P1.12 (PWM0)
+  _PINNUM(1, 03),   // P1.03 (UART2_RTS)
 
-  // D9 .. D20
-  6,    // P0.06 (UART1_TX)
-  8,    // P0.27 (UART1_RX)
-  46,   // P1.14 (SPI_MISO)
-  45,   // P1.13 (SPI_MOSI)
-  47,   // P1.15 (SPI_SCK)
-  31,   // P0.31 (PWM3) (SPI_SS) (ADC5)
-  30,   // P0.30 (PWM3) (ADC4)
-  29,   // P0.29 (PWM2) (ADC3)
-  28,   // P0.28 (PWM2) (ADC2)
-  4,    // P0.04 (PWM2) (ADC1)
-  3,    // P0.03 (PWM2) (ADC0)
-  11,   // P0.11 (MODE)
-  18,   // P0.18 (RESET)
+  // D9 .. D21
+  _PINNUM(0, 6),    // P0.06 (UART1_TX)
+  _PINNUM(0, 8),    // P0.08 (UART1_RX)
+  _PINNUM(1, 14),   // P1.14 (SPI_MISO)
+  _PINNUM(1, 13),   // P1.13 (SPI_MOSI)
+  _PINNUM(1, 15),   // P1.15 (SPI_SCK)
+  _PINNUM(0, 31),   // P0.31 (PWM3) (SPI_SS) (ADC5)
+  _PINNUM(0, 30),   // P0.30 (PWM3) (ADC4)
+  _PINNUM(0, 29),   // P0.29 (PWM2) (ADC3)
+  _PINNUM(0, 28),   // P0.28 (PWM2) (ADC2)
+  _PINNUM(0, 4),    // P0.04 (PWM2) (ADC1)
+  _PINNUM(0, 3),    // P0.03 (PWM2) (ADC0)
+  _PINNUM(0, 11),   // P0.11 (MODE)
+  _PINNUM(0, 18),   // P0.18 (RESET)
+
+  // LEDS
+  _PINNUM(0, 13),   // P0.13 (RGB_RED)
+  _PINNUM(0, 14),   // P0.14 (RGB_GREEN)
+  _PINNUM(0, 15),   // P0.15 (RGB_BLUE) 
+
+  // Antenna
+  _PINNUM(0, 24),   // P0.24 (ANTENNA_SWITCH_1 - PCB ANTENNA)
+  _PINNUM(0, 25),   // P0.25 (ANTENNA_SWITCH_2 - EXTERNAL u.FL)
+
+  // NFC
+  _PINNUM(0, 9),    // P0.09 (u.FL FOR NFC ANTENNA)
+  _PINNUM(0, 10),   // P0.10 (u.FL FOR NFC ANTENNA)
+
+  // Analog Pins A0 .. A7
+  _PINNUM(0, 3),    // P0.03 (A0)
+  _PINNUM(0, 4),    // P0.04 (A1)
+  _PINNUM(0, 28),   // P0.04 (A2)
+  _PINNUM(0, 29),   // P0.04 (A3)
+  _PINNUM(0, 30),   // P0.04 (A4)
+  _PINNUM(0, 31),   // P0.04 (A5)
+  _PINNUM(0, 5),   // P0.04 (BAT_DET/VBAT)
+  _PINNUM(0, 2),   // P0.02 (AREF)
 };
-
-static void switch_antenna(bool useExternal) {
-  if (useExternal) {
-    digitalWrite(ANTENNA_SWITCH_1, LOW);
-    digitalWrite(ANTENNA_SWITCH_2, HIGH);
-  }
-  else {
-    digitalWrite(ANTENNA_SWITCH_1, HIGH);
-    digitalWrite(ANTENNA_SWITCH_2, LOW);
-  }
-}
 
 void initVariant()
 {
-  switch_antenna(false);
 }

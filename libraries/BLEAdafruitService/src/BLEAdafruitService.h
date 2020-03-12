@@ -28,13 +28,22 @@
 #include "bluefruit_common.h"
 #include "BLECharacteristic.h"
 #include "BLEService.h"
-
 #include "services/BLEAdafruitSensor.h"
-#include "services/BLEAdafruitTemperature.h"
+
 #include "services/BLEAdafruitAccel.h"
-#include "services/BLEAdafruitLightSensor.h"
-#include "services/BLEAdafruitButton.h"
-#include "services/BLEAdafruitTone.h"
 #include "services/BLEAdafruitAddressablePixel.h"
+#include "services/BLEAdafruitBaro.h"
+#include "services/BLEAdafruitButton.h"
+#include "services/BLEAdafruitColor.h"
+#include "services/BLEAdafruitGesture.h"
+#include "services/BLEAdafruitGyro.h"
+#include "services/BLEAdafruitHumid.h"
+#include "services/BLEAdafruitLightSensor.h"
+#include "services/BLEAdafruitMagnetic.h"
+#include "services/BLEAdafruitProximity.h"
+#include "services/BLEAdafruitQuaternion.h"
+#include "services/BLEAdafruitSound.h"
+#include "services/BLEAdafruitTemperature.h"
+#include "services/BLEAdafruitTone.h"
 
 #endif /* BLEADAFRUITSERVICE_H_ */

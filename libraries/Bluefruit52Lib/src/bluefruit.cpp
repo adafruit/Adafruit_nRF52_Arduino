@@ -113,8 +113,6 @@ static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
   {
     typedef struct
     {
-        // convert from Big to Little Endian to use with BLE
-        // Public Key = 32-byte N1 + 32-byte N2
         uint16_t        line_num;    /**< The line number where the error occurred. */
         uint8_t const * p_file_name; /**< The file in which the error occurred. */
     } assert_info_t;
@@ -124,10 +122,7 @@ static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)
     LOG_LV1("SD Err", "assert at %s : %d", assert_info->p_file_name, assert_info->line_num);
   }
 
-  while(1)
-  {
-    yield();
-  }
+  while(1) yield();
 #endif
 }
 
@@ -802,7 +797,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
     {
       ble_gap_evt_disconnected_t const* para = &evt->evt.gap_evt.params.disconnected;
 
-      LOG_LV2("GAP", "Disconnect Reason 0x%02X", evt->evt.gap_evt.params.disconnected.reason);
+      LOG_LV2("GAP", "Disconnect Reason: %s", dbg_hci_str(evt->evt.gap_evt.params.disconnected.reason));
 
       // Turn off Conn LED If not connected at all
       if ( !this->connected() ) _setConnLed(false);

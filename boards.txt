@@ -40,11 +40,13 @@ feather52832.build.f_cpu=64000000
 feather52832.build.board=NRF52832_FEATHER
 feather52832.build.core=nRF5
 feather52832.build.variant=feather_nrf52832
+feather52840.build.usb_manufacturer="Adafruit LLC"
+feather52840.build.usb_product="Feather nRF52832"
 feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
 feather52832.build.ldscript=nrf52832_s132_v6.ld
 
 # SofDevice Menu
-feather52832.menu.softdevice.s132v6=0.3.0 SoftDevice s132 6.1.1
+feather52832.menu.softdevice.s132v6=0.3.2 SoftDevice s132 6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_fwid=0x00B7
@@ -97,7 +99,7 @@ feather52840.build.vid=0x239A
 feather52840.build.pid=0x8029
 
 # SofDevice Menu
-feather52840.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
+feather52840.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -144,14 +146,14 @@ feather52840sense.build.board=NRF52840_FEATHER_SENSE
 feather52840sense.build.core=nRF5
 feather52840sense.build.variant=feather_nrf52840_sense
 feather52840sense.build.usb_manufacturer="Adafruit LLC"
-feather52840sense.build.usb_product="Feather Bluefruit Sense"
+feather52840sense.build.usb_product="Feather nRF52840 Sense"
 feather52840sense.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 feather52840sense.build.ldscript=nrf52840_s140_v6.ld
 feather52840sense.build.vid=0x239A
 feather52840sense.build.pid=0x8087
 
 # SofDevice Menu
-feather52840sense.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
+feather52840sense.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
 feather52840sense.menu.softdevice.s140v6.build.sd_name=s140
 feather52840sense.menu.softdevice.s140v6.build.sd_version=6.1.1
 feather52840sense.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -167,9 +169,9 @@ feather52840sense.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840sense.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 
 
-# ----------------------------------
+# ---------------------------------------------
 # Bluefruit ItsyBitsy nRF52840 Express
-# ----------------------------------
+# ---------------------------------------------
 itsybitsy52840.name=Adafruit ItsyBitsy nRF52840 Express
 
 # VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
@@ -251,14 +253,14 @@ cplaynrf52840.build.board=NRF52840_CIRCUITPLAY
 cplaynrf52840.build.core=nRF5
 cplaynrf52840.build.variant=circuitplayground_nrf52840
 cplaynrf52840.build.usb_manufacturer="Adafruit LLC"
-cplaynrf52840.build.usb_product="Adafruit Circuit Playground Bluefruit"
+cplaynrf52840.build.usb_product="Circuit Playground Bluefruit"
 cplaynrf52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 cplaynrf52840.build.ldscript=nrf52840_s140_v6.ld
 cplaynrf52840.build.vid=0x239A
 cplaynrf52840.build.pid=0x8045
 
 # SofDevice Menu
-cplaynrf52840.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
+cplaynrf52840.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
 cplaynrf52840.menu.softdevice.s140v6.build.sd_name=s140
 cplaynrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 cplaynrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -305,14 +307,14 @@ cluenrf52840.build.board=NRF52840_CLUE
 cluenrf52840.build.core=nRF5
 cluenrf52840.build.variant=clue_nrf52840
 cluenrf52840.build.usb_manufacturer="Adafruit LLC"
-cluenrf52840.build.usb_product="Adafruit Clue"
+cluenrf52840.build.usb_product="CLUE"
 cluenrf52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 cluenrf52840.build.ldscript=nrf52840_s140_v6.ld
 cluenrf52840.build.vid=0x239A
 cluenrf52840.build.pid=0x8071
 
 # SofDevice Menu
-cluenrf52840.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
+cluenrf52840.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
 cluenrf52840.menu.softdevice.s140v6.build.sd_name=s140
 cluenrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 cluenrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -365,7 +367,7 @@ metro52840.build.vid=0x239A
 metro52840.build.pid=0x803F
 
 # SofDevice Menu
-metro52840.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
+metro52840.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_name=s140
 metro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -379,6 +381,16 @@ metro52840.menu.debug.l2=Level 2 (Full Debug)
 metro52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 metro52840.menu.debug.l3=Level 3 (Segger SystemView)
 metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
+
+
+
+# -------------------------------------------------------
+# 
+# Boards that aren't made by Adafruit
+#
+# -------------------------------------------------------
+
 
 # ----------------------------------
 # Nordic nRF52840DK (PCA10056)
@@ -408,7 +420,7 @@ pca10056.build.vid=0x239A
 pca10056.build.pid=0x8029
 
 # SofDevice Menu
-pca10056.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
+pca10056.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -424,7 +436,60 @@ pca10056.menu.debug.l3=Level 3 (Segger SystemView)
 pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 
 # ----------------------------------
-# Raytac MDBT50Q – RX
+# Particle Xenon
+# ----------------------------------
+particle_xenon.name=Particle Xenon
+
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+particle_xenon.vid.0=0x239A
+particle_xenon.pid.0=0x8029
+particle_xenon.vid.1=0x239A
+particle_xenon.pid.1=0x0029
+particle_xenon.vid.2=0x239A
+particle_xenon.pid.2=0x002A
+particle_xenon.vid.3=0x239A
+particle_xenon.pid.3=0x802A
+
+# Upload
+particle_xenon.bootloader.tool=bootburn
+particle_xenon.upload.tool=nrfutil
+particle_xenon.upload.protocol=nrfutil
+particle_xenon.upload.use_1200bps_touch=true
+particle_xenon.upload.wait_for_upload_port=true
+particle_xenon.upload.maximum_size=815104
+particle_xenon.upload.maximum_data_size=248832
+
+# Build
+particle_xenon.build.mcu=cortex-m4
+particle_xenon.build.f_cpu=64000000
+particle_xenon.build.board=PARTICLE_XENON
+particle_xenon.build.core=nRF5
+particle_xenon.build.variant=particle_xenon
+particle_xenon.build.usb_manufacturer="Particle Industries"
+particle_xenon.build.usb_product="Particle Xenon"
+particle_xenon.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+particle_xenon.build.ldscript=nrf52840_s140_v6.ld
+particle_xenon.build.vid=0x239A
+particle_xenon.build.pid=0x8029
+
+# SofDevice Menu
+particle_xenon.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+particle_xenon.menu.softdevice.s140v6.build.sd_name=s140
+particle_xenon.menu.softdevice.s140v6.build.sd_version=6.1.1
+particle_xenon.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+particle_xenon.menu.debug.l0=Level 0 (Release)
+particle_xenon.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+particle_xenon.menu.debug.l1=Level 1 (Error Message)
+particle_xenon.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+particle_xenon.menu.debug.l2=Level 2 (Full Debug)
+particle_xenon.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+particle_xenon.menu.debug.l3=Level 3 (Segger SystemView)
+particle_xenon.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
+# ----------------------------------
+# Raytac MDBT50Q - RX
 # ----------------------------------
 mdbt50qrx.name=Raytac MDBT50Q-RX Dongle
 
@@ -461,7 +526,7 @@ mdbt50qrx.build.vid=0x239A
 mdbt50qrx.build.pid=0x8029
 
 # SofDevice Menu
-mdbt50qrx.menu.softdevice.s140v6=0.3.0 SoftDevice s140 6.1.1
+mdbt50qrx.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
 mdbt50qrx.menu.softdevice.s140v6.build.sd_name=s140
 mdbt50qrx.menu.softdevice.s140v6.build.sd_version=6.1.1
 mdbt50qrx.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -475,4 +540,3 @@ mdbt50qrx.menu.debug.l2=Level 2 (Full Debug)
 mdbt50qrx.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 mdbt50qrx.menu.debug.l3=Level 3 (Segger SystemView)
 mdbt50qrx.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
-
