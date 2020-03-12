@@ -15,6 +15,7 @@
 - Upgrade SystemView to v3.10, thanks to @henrygab PR #437
 - Fix D13 LED_BUILTIN for Feather Sense
 - Skip waiting for Serial in some examples, force wait for Serial when Debug is enabled
+- Update bootloader binary from 0.3.0 to 0.3.2
 
 ## 0.18.5 - 2020.02.19
 
