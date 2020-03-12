@@ -1,5 +1,22 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.19.0 - 2020.03.12
+
+- Add BLECharacteristic::isFixedLen()
+- Enhance and add new Playground sensor services
+  - Quaternion
+  - Sound
+  - Color
+  - Proximity
+  - Gesture
+- Fix sporadic hangup when stopping notifies, thanks to @FariSoftware PR #444
+- Rename image_upload sketch to image_transfer
+- Update bluefruit_playground sketch to work with CPB, CLUE and Sense
+- Upgrade SystemView to v3.10, thanks to @henrygab PR #437
+- Fix D13 LED_BUILTIN for Feather Sense
+- Skip waiting for Serial in some examples, force wait for Serial when Debug is enabled
+- Update bootloader binary from 0.3.0 to 0.3.2
+
 ## 0.18.5 - 2020.02.19
 
 - Add macro `SPI_32MHZ_INTERFACE` to variant to select SPI or SPI1 to use 32mhz SPIM3

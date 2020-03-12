@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 name=Adafruit nRF52 Boards
-version=0.18.5
+version=0.19.0
 
 # Compile variables
 # -----------------
@@ -137,7 +137,7 @@ tools.nrfutil.upload.pattern="{cmd}" {upload.verbose} dfu serial -pkg "{build.pa
 #***************************************************
 
 # Bootloader version
-tools.bootburn.bootloader.file={runtime.platform.path}/bootloader/{build.variant}/{build.variant}_bootloader-0.3.0_{build.sd_name}_{build.sd_version}
+tools.bootburn.bootloader.file={runtime.platform.path}/bootloader/{build.variant}/{build.variant}_bootloader-0.3.2_{build.sd_name}_{build.sd_version}
 
 tools.bootburn.bootloader.params.verbose=
 tools.bootburn.bootloader.params.quiet=
