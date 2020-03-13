@@ -35,7 +35,12 @@ jobs:
         mkdir $HOME/.arduino15/packages
         mkdir $HOME/Arduino
         mkdir $HOME/Arduino/libraries
-        curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+        # FIXME use arduino-cli 0.8.0 due to 0.9.0/IDE 1.8.2 precompiled hanlding broke nRFCypto
+        # https://github.com/arduino/arduino-builder/issues/353
+        #curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+        wget https://github.com/arduino/arduino-cli/releases/download/0.8.0/arduino-cli_0.8.0_Linux_64bit.tar.gzw
+        mkdir bin
+        tar -xf arduino-cli_0.8.0_Linux_64bit.tar.gz -C bin
         echo "::add-path::$GITHUB_WORKSPACE/bin"
         
     - name: Install BSP and Libraries
