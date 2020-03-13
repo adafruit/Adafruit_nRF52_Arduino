@@ -10,7 +10,7 @@ success_count = 0
 fail_count = 0
 skip_count = 0
 
-build_format = '| {:20} | {:35} | {:9} '
+build_format = '| {:20} | {:35} | {:9} | {:6} |'
 build_separator = '-' * 83
 
 default_boards = [ 'cluenrf52840', 'cplaynrf52840', 'feather52832', 'feather52840', 'feather52840sense', 'itsybitsy52840' ]
@@ -39,7 +39,7 @@ def build_examples(variant):
     print(build_separator)
     print('| {:^79} |'.format('Board ' + variant))
     print(build_separator)
-    print((build_format + '| {:6} |').format('Library', 'Example', 'Result', 'Time'))
+    print((build_format).format('Library', 'Example', 'Result', 'Time'))
     print(build_separator)
     
     fqbn = "adafruit:nrf52:{}:softdevice={},debug=l0".format(variant, 's140v6' if variant != 'feather52832' else 's132v6')
@@ -86,7 +86,7 @@ def build_examples(variant):
 
         build_duration = time.monotonic() - start_time
 
-        print((build_format + '| {:5.2f}s |').format(sketch.split(os.path.sep)[1], os.path.basename(sketch), success, build_duration))
+        print((build_format).format(sketch.split(os.path.sep)[1], os.path.basename(sketch), success, "{:.2f}".format(build_duration)))
 
         if success != "\033[33mskipped\033[0m  ":
             if build_result.returncode != 0:
