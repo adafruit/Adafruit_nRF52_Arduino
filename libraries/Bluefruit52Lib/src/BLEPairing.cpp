@@ -31,14 +31,14 @@
 
 //------------- IMPLEMENTATION -------------//
 
-// convert 32-byte Number from Big <-> Little Endian to use with BLE
+// convert N-byte Number from Big <-> Little Endian to use with BLE
 // Public Key = 32-byte N1 + 32-byte N2
-static void swap_endian(uint8_t data[], uint32_t bytes)
+static void swap_endian(uint8_t data[], uint32_t nbytes)
 {
-  for(uint8_t i=0; i<bytes/2; i++)
+  for(uint8_t i=0; i<nbytes/2; i++)
   {
     uint8_t const p1 = i;
-    uint8_t const p2 = (31-i);
+    uint8_t const p2 = (nbytes-1-i);
 
     uint8_t temp = data[p1];
     data[p1] = data[p2];
@@ -232,8 +232,10 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       memclr(_bond_keys, sizeof(bond_keys_t));
 
       // storing peer public key in connection
-      if (conn->_peer_pubkey) rtos_free(conn->_peer_pubkey);
-      conn->_peer_pubkey = (uint8_t*) rtos_malloc(1+BLE_GAP_LESC_P256_PK_LEN);
+      if (!conn->_peer_pubkey)
+      {
+        conn->_peer_pubkey = (uint8_t*) rtos_malloc(1+BLE_GAP_LESC_P256_PK_LEN);
+      }
       VERIFY(conn->_peer_pubkey, );
 
       _ediv = EDIV_INVALID;
@@ -312,7 +314,6 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       // Create nRFCrypto pubkey from raw format
       nRFCrypto_ECC_PublicKey peerPublickKey;
       peerPublickKey.begin(CRYS_ECPKI_DomainID_secp256r1);
-
       peerPublickKey.fromRaw(peer_pubkey, 1+BLE_GAP_LESC_P256_PK_LEN);
 
       // Create shared secret derivation primitive using ECC Diffie-Hellman
@@ -350,6 +351,10 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
         LOG_LV2("PAIR", "Ediv = 0x%02X", _ediv);
         LOG_LV2_BUFFER("Rand", _bond_keys->own_enc.master_id.rand, 8);
 
+        //PRINT_INT(_bond_keys->peer_id.id_addr_info.addr_type);
+        //Serial.printBufferReverse(_bond_keys->peer_id.id_addr_info.addr, 6, ':');
+        //Serial.println();
+
         bond_save_keys(conn->getRole(), conn_hdl, _bond_keys);
 
 //        _paired = true;
@@ -378,8 +383,15 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       bond_keys_t bkeys;
       varclr(&bkeys);
 
+      // TODO Random Static
+
+      // Resolvable
+
+
       if ( bond_load_keys(conn->getRole(), sec_info->master_id.ediv, &bkeys) )
       {
+//        PRINT_INT(resolveAddress(&sec_info->peer_addr, &bkeys.peer_id.id_info));
+
         sd_ble_gap_sec_info_reply(conn_hdl, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
 
         _ediv = bkeys.own_enc.master_id.ediv;
