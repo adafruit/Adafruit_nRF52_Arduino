@@ -40,7 +40,7 @@ jobs:
         #curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
         wget https://github.com/arduino/arduino-cli/releases/download/0.7.2/arduino-cli_0.7.2_Linux_64bit.tar.gz
         mkdir bin
-        tar -xf arduino-cli_0.8.0_Linux_64bit.tar.gz -C bin
+        tar -xf arduino-cli_0.7.2_Linux_64bit.tar.gz -C bin
         echo "::add-path::$GITHUB_WORKSPACE/bin"
         
     - name: Install BSP and Libraries
