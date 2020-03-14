@@ -155,10 +155,13 @@ bool bond_load_keys(uint8_t role, ble_gap_addr_t* addr, bond_keys_t* bkeys)
       if( file.open(filename, FILE_O_READ) )
       {
         int keylen = file.read();
-        file.read((uint8_t*) bkeys, keylen);
+        if ( keylen > 0 )
+        {
+          file.read((uint8_t*) bkeys, keylen);
 
-        ret = true;
-        BOND_LOG("Loaded keys from file %s", filename);
+          ret = true;
+          BOND_LOG("Loaded keys from file %s", filename);
+        }
       }
 
       file.close();
@@ -222,9 +225,26 @@ static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, ble_gap_addr_t 
   bdata_skip_field(&file); // skip key
   bdata_skip_field(&file); // skip name
 
-  bdata_write(&file, sys_attr, len);
+  // only write if there is any data changes
+  bool do_write = true;
 
-  BOND_LOG("Saved CCCD setting to file %s ( offset = %ld, len = %d bytes )", filename, file.size() - (len + 1), len);
+  if ( len == ((uint16_t) file.read()) )
+  {
+    uint8_t old_data[len];
+    file.read(old_data, len);
+
+    if ( 0 == memcmp(sys_attr, old_data, len) )
+    {
+      do_write = false;
+      BOND_LOG("CCCD matches file %s contents, no need to write", filename);
+    }
+  }
+
+  if (do_write)
+  {
+    bdata_write(&file, sys_attr, len);
+    BOND_LOG("Saved CCCD to file %s ( offset = %ld, len = %d bytes )", filename, file.size() - (len + 1), len);
+  }
 
   file.close();
 }
