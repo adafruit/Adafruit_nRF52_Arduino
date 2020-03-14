@@ -103,20 +103,17 @@ class BLEConnection
     bool getWriteCmdPacket(void);
     bool waitForIndicateConfirm(void);
 
+    bool saveLongTermKey(bond_keys_t const* ltkey);
+    bool loadLongTermKey(bond_keys_t* ltkey);
+
     bool saveCccd(void);
     bool loadCccd(void);
-
-    bool loadKeys(bond_keys_t* bkeys);
-
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal code.
      *------------------------------------------------------------------*/
     void _eventHandler(ble_evt_t* evt);
-
-    bool _saveLongTermKey(bond_keys_t const* ltkey);
-    bool _loadLongTermKey(bond_keys_t* ltkey);
 };
 
 

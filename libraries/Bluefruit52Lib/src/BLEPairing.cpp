@@ -329,7 +329,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
         LOG_LV2("PAIR", "Ediv = 0x%02X", _bond_keys.own_enc.master_id.ediv);
         LOG_LV2_BUFFER("Rand", _bond_keys.own_enc.master_id.rand, 8);
 
-        conn->_saveLongTermKey(&_bond_keys);
+        conn->saveLongTermKey(&_bond_keys);
       }
 
       // Invoke callback
@@ -349,7 +349,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
 
       bond_keys_t bkeys;
 
-      if ( conn->_loadLongTermKey(&bkeys) )
+      if ( conn->loadLongTermKey(&bkeys) )
       {
         sd_ble_gap_sec_info_reply(conn_hdl, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
       } else
