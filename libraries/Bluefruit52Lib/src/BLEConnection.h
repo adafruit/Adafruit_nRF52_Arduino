@@ -117,8 +117,6 @@ class BLEConnection
 
     bool _saveLongTermKey(bond_keys_t const* bkeys);
     bool _loadLongTermKey(bond_keys_t* bkeys);
-
-    friend class BLEPairing;
 };
 
 
