@@ -389,10 +389,10 @@ void bond_clear_all(void)
   InternalFS.mkdir(BOND_DIR_CNTR);
 }
 
-void bond_remove_key(uint8_t role, uint16_t ediv)
+void bond_remove_key(uint8_t role, ble_gap_addr_t const* id_addr)
 {
-//  char filename[BOND_FNAME_LEN];
-//  get_fname(filename, role, ediv);
-//
-//  InternalFS.remove(filename);
+  char filename[BOND_FNAME_LEN];
+  get_fname(filename, role, id_addr->addr);
+
+  InternalFS.remove(filename);
 }

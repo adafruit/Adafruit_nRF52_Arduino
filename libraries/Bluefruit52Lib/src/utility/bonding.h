@@ -57,7 +57,7 @@ void bond_clear_prph(void);
 void bond_clear_cntr(void);
 void bond_clear_all(void);
 
-void bond_remove_key(uint8_t role, uint16_t ediv) TU_ATTR_DEPRECATED("FIXME remove key");
+void bond_remove_key(uint8_t role, ble_gap_addr_t const* id_addr);
 
 bool bond_save_keys (uint8_t role, uint16_t conn_hdl, bond_keys_t const* bkeys);
 bool bond_load_keys(uint8_t role, ble_gap_addr_t*, bond_keys_t* bkeys);
