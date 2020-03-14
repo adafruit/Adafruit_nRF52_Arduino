@@ -95,7 +95,7 @@ void bond_init(void)
 /*------------------------------------------------------------------*/
 /* Keys
  *------------------------------------------------------------------*/
-static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_keys_t* bkeys)
+static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_keys_t const * bkeys)
 {
   uint16_t const ediv = (role == BLE_GAP_ROLE_PERIPH) ? bkeys->own_enc.master_id.ediv : bkeys->peer_enc.master_id.ediv;
   uint8_t const * mac = bkeys->peer_id.id_addr_info.addr;
@@ -133,7 +133,7 @@ static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_keys_t* bk
 bool bond_save_keys (uint8_t role, uint16_t conn_hdl, bond_keys_t const* bkeys)
 {
   // queue to execute in Ada Callback thread
-  return ada_callback(bkeys, sizeof(bond_keys_t), bond_save_keys_dfr, role, conn_hdl, bkeys);
+  return ada_callback(NULL, 0, bond_save_keys_dfr, role, conn_hdl, bkeys);
 }
 
 bool bond_load_keys(uint8_t role, ble_gap_addr_t* addr, bond_keys_t* bkeys)
