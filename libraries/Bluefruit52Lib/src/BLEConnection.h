@@ -57,7 +57,8 @@ class BLEConnection
     bool _paired;
     bool _hvc_received;
 
-    ble_gap_addr_t _peer_addr;
+    ble_gap_addr_t _peer_addr; // resolvable connect address
+    ble_gap_addr_t _bond_id_addr; // address stored as bonded
 
     SemaphoreHandle_t _hvn_sem;
     SemaphoreHandle_t _wrcmd_sem;
@@ -105,14 +106,20 @@ class BLEConnection
     bool getWriteCmdPacket(void);
     bool waitForIndicateConfirm(void);
 
-    bool storeCccd(void);
+    bool saveCccd(void);
+    bool loadCccd(void);
+
     bool loadKeys(bond_keys_t* bkeys);
+
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal code.
      *------------------------------------------------------------------*/
     void _eventHandler(ble_evt_t* evt);
+
+    bool _saveLongTermKey(bond_keys_t const* bkeys);
+    bool _loadLongTermKey(bond_keys_t* bkeys);
 
     friend class BLEPairing;
 };

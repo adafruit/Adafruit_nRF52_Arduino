@@ -128,7 +128,6 @@ bool BLEPairing::resolveAddress(ble_gap_addr_t const * p_addr, ble_gap_irk_t con
   swap_endian(ecb_data.cleartext, SOC_ECB_CLEARTEXT_LENGTH);
 
   // compute using HW AES peripherals
-  // TODO use CC310 to compute AES
   (void) sd_ecb_block_encrypt(&ecb_data);
 
   // Swap output endian
@@ -351,13 +350,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
         LOG_LV2("PAIR", "Ediv = 0x%02X", _ediv);
         LOG_LV2_BUFFER("Rand", _bond_keys->own_enc.master_id.rand, 8);
 
-        //PRINT_INT(_bond_keys->peer_id.id_addr_info.addr_type);
-        //Serial.printBufferReverse(_bond_keys->peer_id.id_addr_info.addr, 6, ':');
-        //Serial.println();
-
-        bond_save_keys(conn->getRole(), conn_hdl, _bond_keys);
-
-//        _paired = true;
+        conn->_saveLongTermKey(_bond_keys);
       }
 
       rtos_free(_bond_keys);
@@ -375,23 +368,13 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       // - Else return NULL --> Initiate key exchange
       ble_gap_evt_sec_info_request_t* sec_info = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
 
-      LOG_LV2("PAIR", "Addr ID = %d, Addr Type = 0x%02X, ediv = 0x%02X",
-              sec_info->peer_addr.addr_id_peer, sec_info->peer_addr.addr_type, sec_info->master_id.ediv);
+      LOG_LV2("PAIR", "Addr ID = %d, Addr Type = 0x%02X", sec_info->peer_addr.addr_id_peer, sec_info->peer_addr.addr_type);
       LOG_LV2_BUFFER("Address", sec_info->peer_addr.addr, 6);
-      LOG_LV2_BUFFER("Rand", sec_info->master_id.rand, 8);
 
       bond_keys_t bkeys;
-      varclr(&bkeys);
 
-      // TODO Random Static
-
-      // Resolvable
-
-
-      if ( bond_load_keys(conn->getRole(), sec_info->master_id.ediv, &bkeys) )
+      if ( conn->_loadLongTermKey(&bkeys) )
       {
-//        PRINT_INT(resolveAddress(&sec_info->peer_addr, &bkeys.peer_id.id_info));
-
         sd_ble_gap_sec_info_reply(conn_hdl, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
 
         _ediv = bkeys.own_enc.master_id.ediv;
@@ -412,7 +395,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       {
         // Previously bonded --> secure by re-connection process --> Load & Set SysAttr (Apply Service Context)
         // Else Init SysAttr (first bonded)
-        if ( !bond_load_cccd(conn->getRole(), conn_hdl, _ediv) )
+        if ( !conn->loadCccd() )
         {
           sd_ble_gatts_sys_attr_set(conn_hdl, NULL, 0, 0);
         }

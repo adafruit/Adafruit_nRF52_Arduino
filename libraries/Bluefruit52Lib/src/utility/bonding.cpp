@@ -60,11 +60,12 @@ using namespace Adafruit_LittleFS_Namespace;
  * Each field has an 1-byte preceding length
  *------------------------------------------------------------------*/
 #define SVC_CONTEXT_FLAG      (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
-#define BOND_FNAME_LEN        (max(sizeof(BOND_FNAME_PRPH), sizeof(BOND_FNAME_CNTR)) + 8)// TODO refactor later
+#define BOND_FNAME_LEN        max(sizeof(BOND_FNAME_PRPH), sizeof(BOND_FNAME_CNTR))
 
-static void get_fname (char* fname, uint8_t role, uint16_t ediv)
+static void get_fname (char* fname, uint8_t role, uint8_t const mac[6])
 {
-  sprintf(fname, (role == BLE_GAP_ROLE_PERIPH) ? BOND_FNAME_PRPH : BOND_FNAME_CNTR, ediv);
+  sprintf(fname, (role == BLE_GAP_ROLE_PERIPH) ? BOND_FNAME_PRPH : BOND_FNAME_CNTR,
+      mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }
 
 static bool bdata_skip_field(File* file)
@@ -94,18 +95,14 @@ void bond_init(void)
 /*------------------------------------------------------------------*/
 /* Keys
  *------------------------------------------------------------------*/
-static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bool lesc, bond_keys_t* bkeys)
+static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_keys_t* bkeys)
 {
   uint16_t const ediv = (role == BLE_GAP_ROLE_PERIPH) ? bkeys->own_enc.master_id.ediv : bkeys->peer_enc.master_id.ediv;
+  uint8_t const * mac = bkeys->peer_id.id_addr_info.addr;
 
   // Bond store keys using peer mac address e.g 1a2b3c4d5e6f
-
   char filename[BOND_FNAME_LEN];
-//  get_fname(filename, role, ediv);
-
-  uint8_t const * mac = bkeys->peer_id.id_addr_info.addr;
-  sprintf(filename, BOND_DIR_PRPH "/%02X%02X%02X%02X%02X%02X",
-                    mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  get_fname(filename, role, mac);
 
   // delete if file already exists
   if ( InternalFS.exists(filename) ) InternalFS.remove(filename);
@@ -152,19 +149,26 @@ bool bond_load_keys(uint8_t role, ble_gap_addr_t* addr, bond_keys_t* bkeys)
       // Address is used as identity
 
       char filename[BOND_FNAME_LEN];
-      //  get_fname(filename, role, ediv);
-      sprintf(filename, BOND_DIR_PRPH "/%02X%02X%02X%02X%02X%02X",
-                        addr->addr[0], addr->addr[1], addr->addr[2], addr->addr[3], addr->addr[4], addr->addr[5]);
+      get_fname(filename, role, addr->addr);
 
       File file(InternalFS);
-      VERIFY( file.open(filename, FILE_O_READ) );
-      BOND_LOG("Loaded keys from file %s", filename);
+      if( file.open(filename, FILE_O_READ) )
+      {
+        int keylen = file.read();
+        file.read((uint8_t*) bkeys, keylen);
+
+        ret = true;
+        BOND_LOG("Loaded keys from file %s", filename);
+      }
+
+      file.close();
     }
     break;
 
     case BLE_GAP_ADDR_TYPE_RANDOM_PRIVATE_RESOLVABLE:
     {
       // Resolvable address, we have to go through the whole list to perform IRK Address matching
+
       char const * dpath = (role == BLE_GAP_ROLE_PERIPH ? BOND_DIR_PRPH : BOND_DIR_CNTR);
       File dir(dpath, FILE_O_READ, InternalFS);
       File file(InternalFS);
@@ -177,8 +181,8 @@ bool bond_load_keys(uint8_t role, ble_gap_addr_t* addr, bond_keys_t* bkeys)
           file.read((uint8_t*) bkeys, keylen);
           if ( Bluefruit.Pairing.resolveAddress(addr, &bkeys->peer_id.id_info) )
           {
-            BOND_LOG("Loaded keys from file %s/%s", dpath, file.name());
             ret = true;
+            BOND_LOG("Loaded keys from file %s/%s", dpath, file.name());
           }
         }
 
@@ -199,7 +203,7 @@ bool bond_load_keys(uint8_t role, ble_gap_addr_t* addr, bond_keys_t* bkeys)
 /*------------------------------------------------------------------*/
 /* CCCD
  *------------------------------------------------------------------*/
-static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
+static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, ble_gap_addr_t const* id_addr)
 {
   uint16_t len=0;
   sd_ble_gatts_sys_attr_get(conn_hdl, NULL, &len, SVC_CONTEXT_FLAG);
@@ -209,7 +213,7 @@ static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
   VERIFY_STATUS(sd_ble_gatts_sys_attr_get(conn_hdl, sys_attr, &len, SVC_CONTEXT_FLAG),);
 
   char filename[BOND_FNAME_LEN];
-  get_fname(filename, role, ediv);
+  get_fname(filename, role, id_addr->addr);
 
   File file(filename, FILE_O_WRITE, InternalFS);
   VERIFY(file,);
@@ -225,53 +229,42 @@ static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
   file.close();
 }
 
-bool bond_save_cccd (uint8_t role, uint16_t conn_hdl, uint16_t ediv)
+bool bond_save_cccd (uint8_t role, uint16_t conn_hdl, ble_gap_addr_t const* id_addr)
 {
-  VERIFY(ediv != 0xFFFF);
-
   // queue to execute in Ada Callback thread
-  return ada_callback(NULL, 0, bond_save_cccd_dfr, role, conn_hdl, ediv);
+  return ada_callback(id_addr, sizeof(ble_gap_addr_t), bond_save_cccd_dfr, role, conn_hdl, id_addr);
 }
 
-bool bond_load_cccd(uint8_t role, uint16_t conn_hdl, uint16_t ediv)
+bool bond_load_cccd(uint8_t role, uint16_t conn_hdl, ble_gap_addr_t const* id_addr)
 {
   bool loaded = false;
 
-  if ( ediv != 0xFFFF )
+  char filename[BOND_FNAME_LEN];
+  get_fname(filename, role, id_addr->addr);
+
+  File file(filename, FILE_O_READ, InternalFS);
+  if ( file )
   {
-    char filename[BOND_FNAME_LEN];
-    get_fname(filename, role, ediv);
+    bdata_skip_field(&file); // skip key
+    bdata_skip_field(&file); // skip name
 
-    File file(filename, FILE_O_READ, InternalFS);
-
-    if ( file )
+    int len = file.read();
+    if ( len > 0 )
     {
-      bdata_skip_field(&file); // skip key
-      bdata_skip_field(&file); // skip name
+      uint8_t sys_attr[len];
+      file.read(sys_attr, len);
 
-      int len = file.read();
-      if ( len > 0 )
+      if ( ERROR_NONE == sd_ble_gatts_sys_attr_set(conn_hdl, sys_attr, len, SVC_CONTEXT_FLAG) )
       {
-        uint8_t sys_attr[len];
-
-        file.read(sys_attr, len);
-
-        if ( ERROR_NONE == sd_ble_gatts_sys_attr_set(conn_hdl, sys_attr, len, SVC_CONTEXT_FLAG) )
-        {
-          loaded = true;
-          BOND_LOG("Loaded CCCD from file %s ( offset = %ld, len = %d bytes )", filename, file.size() - (len + 1), len);
-        }
+        loaded = true;
+        BOND_LOG("Loaded CCCD from file %s ( offset = %ld, len = %d bytes )", filename, file.size() - (len + 1), len);
       }
     }
-
-    file.close();
   }
 
-  if ( !loaded )
-  {
-    LOG_LV1("BOND", "CCCD setting not found");
-  }
+  file.close();
 
+  if ( !loaded ) LOG_LV1("BOND", "CCCD setting not found");
   return loaded;
 }
 
@@ -378,8 +371,8 @@ void bond_clear_all(void)
 
 void bond_remove_key(uint8_t role, uint16_t ediv)
 {
-  char filename[BOND_FNAME_LEN];
-  get_fname(filename, role, ediv);
-
-  InternalFS.remove(filename);
+//  char filename[BOND_FNAME_LEN];
+//  get_fname(filename, role, ediv);
+//
+//  InternalFS.remove(filename);
 }

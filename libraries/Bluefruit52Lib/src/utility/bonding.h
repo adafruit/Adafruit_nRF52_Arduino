@@ -41,8 +41,8 @@
 #define BOND_DIR_PRPH     "/adafruit/bond_prph"
 #define BOND_DIR_CNTR     "/adafruit/bond_cntr"
 
-#define BOND_FNAME_PRPH   BOND_DIR_PRPH "/%04x"
-#define BOND_FNAME_CNTR   BOND_DIR_CNTR "/%04x"
+#define BOND_FNAME_PRPH   BOND_DIR_PRPH "/%02X%02X%02X%02X%02X%02X"
+#define BOND_FNAME_CNTR   BOND_DIR_CNTR "/%02X%02X%02X%02X%02X%02X"
 
 // Shared keys with bonded device, size = 80 bytes
 typedef struct
@@ -57,13 +57,13 @@ void bond_clear_prph(void);
 void bond_clear_cntr(void);
 void bond_clear_all(void);
 
-void bond_remove_key(uint8_t role, uint16_t ediv);
+void bond_remove_key(uint8_t role, uint16_t ediv) TU_ATTR_DEPRECATED("FIXME remove key");
 
 bool bond_save_keys (uint8_t role, uint16_t conn_hdl, bond_keys_t const* bkeys);
 bool bond_load_keys(uint8_t role, ble_gap_addr_t*, bond_keys_t* bkeys);
 
-bool bond_save_cccd (uint8_t role, uint16_t conn_hdl, uint16_t ediv);
-bool bond_load_cccd (uint8_t role, uint16_t conn_hdl, uint16_t ediv);
+bool bond_save_cccd (uint8_t role, uint16_t conn_hdl, ble_gap_addr_t const* id_addr);
+bool bond_load_cccd (uint8_t role, uint16_t conn_hdl, ble_gap_addr_t const* id_addr);
 
 void bond_print_list(uint8_t role);
 

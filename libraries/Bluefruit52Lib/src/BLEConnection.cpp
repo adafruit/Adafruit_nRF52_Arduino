@@ -227,14 +227,36 @@ bool BLEConnection::getWriteCmdPacket (void)
   return xSemaphoreTake(_wrcmd_sem, ms2tick(BLE_GENERIC_TIMEOUT));
 }
 
-bool BLEConnection::storeCccd(void)
+bool BLEConnection::saveCccd(void)
 {
-  return bond_save_cccd( _role, _conn_hdl, _ediv);
+  return bond_save_cccd(_role, _conn_hdl, &_bond_id_addr);
+}
+
+bool BLEConnection::loadCccd(void)
+{
+  return bond_load_cccd(_role, _conn_hdl, &_bond_id_addr);
+}
+
+bool BLEConnection::_saveLongTermKey(bond_keys_t const* ltkey)
+{
+  bond_save_keys(_role, _conn_hdl, ltkey);
+  _bond_id_addr = ltkey->peer_id.id_addr_info;
+  _paired = true; // paired with new device
+  return true;
+}
+
+bool BLEConnection::_loadLongTermKey(bond_keys_t* ltkey)
+{
+  VERIFY( bond_load_keys(_role, &_peer_addr, ltkey) );
+  _bond_id_addr = ltkey->peer_id.id_addr_info;
+  return true;
 }
 
 bool BLEConnection::loadKeys(bond_keys_t* bkeys)
 {
-  return bond_load_keys(_role, _ediv, bkeys);
+  return false;
+  // FIXME dfu key sharing later
+  //return bond_load_keys(_role, _ediv, bkeys);
 }
 
 bool BLEConnection::requestPairing(void)
@@ -276,6 +298,7 @@ bool BLEConnection::requestPairing(void)
     // Prph delete bonds while we did not --> let's remove the obsolete keyfile and retry
     if ( !_paired && (cntr_ediv != 0xffff) )
     {
+      // FIXME central remove key
       bond_remove_key(BLE_GAP_ROLE_CENTRAL, cntr_ediv);
 
       // Re-try with a fresh session
@@ -312,34 +335,6 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_DISCONNECTED:
       // mark as disconnected
       _connected = false;
-    break;
-
-    //--------------------------------------------------------------------+
-    /* First-time Pairing
-     *
-     * Connect -> SEC_PARAMS_REQUEST -> PASSKEY_DISPLAY -> BLE_GAP_EVT_LESC_DHKEY_REQUEST ->
-     *            CONN_SEC_UPDATE -> AUTH_STATUS
-     * 1. Either we or peer initiate the process
-     * 2. Peer ask for Secure Parameter ( I/O Caps ) BLE_GAP_EVT_SEC_PARAMS_REQUEST
-     * 3. Pair PassKey exchange
-     * 4. Connection is secured BLE_GAP_EVT_CONN_SEC_UPDATE
-     * 5. Long term Keys exchanged BLE_GAP_EVT_AUTH_STATUS
-     *
-     * Reconnect using bonded key
-     * Connect -> SEC_INFO_REQUEST -> CONN_SEC_UPDATE
-     * 1. Either we or peer initiate the process
-     * 2. Peer ask for Secure Info ( bond keys ) BLE_GAP_EVT_SEC_INFO_REQUEST
-     * 3. Connection is secured BLE_GAP_EVT_CONN_SEC_UPDATE
-     */
-    //--------------------------------------------------------------------+
-
-    case BLE_GAP_EVT_AUTH_STATUS:
-    {
-      ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
-
-      // Pairing succeeded
-      if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status) _paired = true;
-    }
     break;
 
     case BLE_GAP_EVT_CONN_SEC_UPDATE:

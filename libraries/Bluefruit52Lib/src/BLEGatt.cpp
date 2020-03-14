@@ -142,7 +142,7 @@ void BLEGatt::_eventHandler(ble_evt_t* evt)
       // Save CCCD if paired
       if ( conn->paired() && (evt_id == BLE_GATTS_EVT_WRITE) && (req_handle == chr->handles().cccd_handle) )
       {
-        conn->storeCccd();
+        conn->saveCccd();
       }
     }
   }
