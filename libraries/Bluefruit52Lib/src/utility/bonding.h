@@ -60,15 +60,11 @@ void bond_clear_all(void);
 void bond_remove_key(uint8_t role, ble_gap_addr_t const* id_addr);
 
 bool bond_save_keys (uint8_t role, uint16_t conn_hdl, bond_keys_t const* bkeys);
-bool bond_load_keys(uint8_t role, ble_gap_addr_t*, bond_keys_t* bkeys);
+bool bond_load_keys(uint8_t role, ble_gap_addr_t* peer_addr, bond_keys_t* bkeys);
 
 bool bond_save_cccd (uint8_t role, uint16_t conn_hdl, ble_gap_addr_t const* id_addr);
 bool bond_load_cccd (uint8_t role, uint16_t conn_hdl, ble_gap_addr_t const* id_addr);
 
 void bond_print_list(uint8_t role);
-
-bool bond_find_cntr(ble_gap_addr_t const * addr, bond_keys_t* bkeys);
-
-
 
 #endif /* BONDING_H_ */

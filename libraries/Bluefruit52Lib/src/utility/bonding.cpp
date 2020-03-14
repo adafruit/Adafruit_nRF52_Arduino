@@ -318,44 +318,6 @@ void bond_print_list(uint8_t role)
   dir.close();
 }
 
-
-bool bond_find_cntr(ble_gap_addr_t const * addr, bond_keys_t* bkeys)
-{
-  bool found = false;
-
-  File dir(BOND_DIR_CNTR, FILE_O_READ, InternalFS);
-  File file(InternalFS);
-
-  while ( (file = dir.openNextFile(FILE_O_READ)) )
-  {
-    // Read bond data of each stored file
-    int keylen = file.read();
-    if ( keylen == sizeof(bond_keys_t) )
-    {
-      file.read((uint8_t*) bkeys, keylen);
-
-      // Compare static address
-      if ( !memcmp(addr->addr, bkeys->peer_id.id_addr_info.addr, 6) )
-      {
-        found = true;
-      }
-      else if ( addr->addr_type == BLE_GAP_ADDR_TYPE_RANDOM_PRIVATE_RESOLVABLE )
-      {
-        // Resolving private address
-      }
-    }
-
-    file.close();
-
-    if ( found ) break;
-  }
-
-  file.close();
-  dir.close();
-
-  return found;
-}
-
 /*------------------------------------------------------------------*/
 /* DELETE
  *------------------------------------------------------------------*/
