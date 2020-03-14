@@ -66,8 +66,6 @@ BLEPairing::BLEPairing(void)
 //  _sec_param.lesc = 1; // enable LESC if CryptoCell is present
 #endif
 
-  _ediv = EDIV_INVALID;
-
   _display_cb = NULL;
   _complete_cb = NULL;
 }
@@ -224,10 +222,8 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
   {
     case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
     {
-      // Pairing is started, Peer is asking for our info
-      _ediv = EDIV_INVALID;
-
-      /* Step 1: Pairing/Bonding
+      /* Pairing is started, Peer is asking for our info
+       * Step 1: Pairing/Bonding
        * - Central supplies its parameters
        * - We replies with our security parameters
        */
@@ -330,8 +326,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       // Pairing succeeded --> save encryption keys ( Bonding )
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
-        _ediv   = _bond_keys.own_enc.master_id.ediv;
-        LOG_LV2("PAIR", "Ediv = 0x%02X", _ediv);
+        LOG_LV2("PAIR", "Ediv = 0x%02X", _bond_keys.own_enc.master_id.ediv);
         LOG_LV2_BUFFER("Rand", _bond_keys.own_enc.master_id.rand, 8);
 
         conn->_saveLongTermKey(&_bond_keys);
@@ -357,8 +352,6 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       if ( conn->_loadLongTermKey(&bkeys) )
       {
         sd_ble_gap_sec_info_reply(conn_hdl, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
-
-        _ediv = bkeys.own_enc.master_id.ediv;
       } else
       {
         sd_ble_gap_sec_info_reply(conn_hdl, NULL, NULL, NULL);

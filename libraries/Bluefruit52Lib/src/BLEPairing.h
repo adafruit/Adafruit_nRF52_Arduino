@@ -69,7 +69,6 @@ class BLEPairing
     uint8_t _peer_pubkey[1+BLE_GAP_LESC_P256_PK_LEN]; // peer public key when using LESC
 
     bond_keys_t  _bond_keys; // Shared keys with bonded device during securing connection, size ~ 80 bytes
-    uint16_t     _ediv;
 
     pair_display_cb_t  _display_cb;
     pair_complete_cb_t _complete_cb;
