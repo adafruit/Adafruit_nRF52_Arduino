@@ -78,6 +78,11 @@ uint8_t BLEPeriph::connected (void)
   return count;
 }
 
+void BLEPeriph::clearBonds(void)
+{
+  bond_clear_prph();
+}
+
 bool BLEPeriph::setConnInterval (uint16_t min, uint16_t max)
 {
   _ppcp.min_conn_interval = min;

@@ -157,8 +157,6 @@ class AdafruitBluefruit
     void     autoConnLed        (bool enabled);
     void     setConnLedInterval (uint32_t ms);
 
-    void     clearBonds        (void);
-
     /*------------------------------------------------------------------*/
     /* GAP, Connections and Bonding
      *------------------------------------------------------------------*/

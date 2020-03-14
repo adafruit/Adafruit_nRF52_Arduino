@@ -60,7 +60,7 @@ using namespace Adafruit_LittleFS_Namespace;
  * Each field has an 1-byte preceding length
  *------------------------------------------------------------------*/
 #define SVC_CONTEXT_FLAG      (BLE_GATTS_SYS_ATTR_FLAG_SYS_SRVCS | BLE_GATTS_SYS_ATTR_FLAG_USR_SRVCS)
-#define BOND_FNAME_LEN        max(sizeof(BOND_FNAME_PRPH), sizeof(BOND_FNAME_CNTR))
+#define BOND_FNAME_LEN        (max(sizeof(BOND_FNAME_PRPH), sizeof(BOND_FNAME_CNTR)) + 8)// TODO refactor later
 
 static void get_fname (char* fname, uint8_t role, uint16_t ediv)
 {
@@ -94,12 +94,18 @@ void bond_init(void)
 /*------------------------------------------------------------------*/
 /* Keys
  *------------------------------------------------------------------*/
-static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_keys_t* bkeys)
+static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bool lesc, bond_keys_t* bkeys)
 {
   uint16_t const ediv = (role == BLE_GAP_ROLE_PERIPH) ? bkeys->own_enc.master_id.ediv : bkeys->peer_enc.master_id.ediv;
 
+  // Bond store keys using peer mac address e.g 1a2b3c4d5e6f
+
   char filename[BOND_FNAME_LEN];
-  get_fname(filename, role, ediv);
+//  get_fname(filename, role, ediv);
+
+  uint8_t const * mac = bkeys->peer_id.id_addr_info.addr;
+  sprintf(filename, BOND_DIR_PRPH "/%02X%02X%02X%02X%02X%02X",
+                    mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
   // delete if file already exists
   if ( InternalFS.exists(filename) ) InternalFS.remove(filename);
@@ -117,7 +123,6 @@ static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_keys_t* bk
   // If couldn't get devname then use peer mac address
   if ( !devname[0] )
   {
-    uint8_t* mac = bkeys->peer_id.id_addr_info.addr;
     sprintf(devname, "%02X:%02X:%02X:%02X:%02X:%02X", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
   }
 
@@ -128,29 +133,66 @@ static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_keys_t* bk
   file.close();
 }
 
-bool bond_save_keys (uint8_t role, uint16_t conn_hdl, bond_keys_t* bkeys)
+bool bond_save_keys (uint8_t role, uint16_t conn_hdl, bond_keys_t const* bkeys)
 {
   // queue to execute in Ada Callback thread
   return ada_callback(bkeys, sizeof(bond_keys_t), bond_save_keys_dfr, role, conn_hdl, bkeys);
 }
 
-bool bond_load_keys(uint8_t role, uint16_t ediv, bond_keys_t* bkeys)
+bool bond_load_keys(uint8_t role, ble_gap_addr_t* addr, bond_keys_t* bkeys)
 {
-  char filename[BOND_FNAME_LEN];
-  get_fname(filename, role, ediv);
+  bool ret = false;
 
-  File file(filename, FILE_O_READ, InternalFS);
-  VERIFY(file);
+  switch(addr->addr_type)
+  {
+    case BLE_GAP_ADDR_TYPE_PUBLIC:
+    case BLE_GAP_ADDR_TYPE_RANDOM_STATIC:
+    {
+      // Peer probably uses RANDOM_STATIC or in rarer case PUBLIC
+      // Address is used as identity
 
-  int keylen = file.read();
-  VERIFY(keylen == sizeof(bond_keys_t));
+      char filename[BOND_FNAME_LEN];
+      //  get_fname(filename, role, ediv);
+      sprintf(filename, BOND_DIR_PRPH "/%02X%02X%02X%02X%02X%02X",
+                        addr->addr[0], addr->addr[1], addr->addr[2], addr->addr[3], addr->addr[4], addr->addr[5]);
 
-  file.read(bkeys, keylen);
-  file.close();
+      File file(InternalFS);
+      VERIFY( file.open(filename, FILE_O_READ) );
+      BOND_LOG("Loaded keys from file %s", filename);
+    }
+    break;
 
-  BOND_LOG("Loaded keys from file %s", filename);
+    case BLE_GAP_ADDR_TYPE_RANDOM_PRIVATE_RESOLVABLE:
+    {
+      // Resolvable address, we have to go through the whole list to perform IRK Address matching
+      char const * dpath = (role == BLE_GAP_ROLE_PERIPH ? BOND_DIR_PRPH : BOND_DIR_CNTR);
+      File dir(dpath, FILE_O_READ, InternalFS);
+      File file(InternalFS);
 
-  return true;
+      while ( !ret && (file = dir.openNextFile(FILE_O_READ)) )
+      {
+        int keylen = file.read();
+        if ( keylen == sizeof(bond_keys_t) )
+        {
+          file.read((uint8_t*) bkeys, keylen);
+          if ( Bluefruit.Pairing.resolveAddress(addr, &bkeys->peer_id.id_info) )
+          {
+            BOND_LOG("Loaded keys from file %s/%s", dpath, file.name());
+            ret = true;
+          }
+        }
+
+        file.close();
+      }
+
+      dir.close();
+    }
+    break;
+
+    default: return false; // Non Resolvable & Anonymous are not supported
+  }
+
+  return ret;
 }
 
 

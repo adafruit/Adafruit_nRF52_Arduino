@@ -59,7 +59,7 @@ class BLECentral
     bool    connected(uint16_t conn_hdl); // Connected as central to this connection
     uint8_t connected(void);              // Number of connected as central
 
-    void clearBonds (void);
+    void clearBonds(void);
 
     /*------------- Callbacks -------------*/
     void setConnectCallback   ( ble_connect_callback_t    fp);

@@ -927,11 +927,6 @@ bool AdafruitBluefruit::requestPairing(uint16_t conn_hdl)
   return conn->requestPairing();
 }
 
-void AdafruitBluefruit::clearBonds(void)
-{
-  bond_clear_prph();
-}
-
 //--------------------------------------------------------------------+
 //
 //--------------------------------------------------------------------+
