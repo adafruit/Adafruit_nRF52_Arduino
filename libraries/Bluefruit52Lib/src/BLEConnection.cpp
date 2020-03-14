@@ -263,44 +263,42 @@ bool BLEConnection::requestPairing(void)
 
   // on-the-fly semaphore
   _pair_sem = xSemaphoreCreateBinary();
+  VERIFY(_pair_sem);
 
-  if ( _role == BLE_GAP_ROLE_PERIPH )
+  bond_keys_t ltkeys;
+  uint32_t err;
+
+  if ( _loadLongTermKey(&ltkeys) )
   {
-    VERIFY_STATUS( sd_ble_gap_authenticate(_conn_hdl, &sec_param ), false);
-    xSemaphoreTake(_pair_sem, portMAX_DELAY);
-  }
-  else
-  {
-    uint16_t cntr_ediv = 0xFFFF;
-    bond_keys_t bkeys;
+    // We already bonded with this peer previously
+    // Encrypt the connection using stored Longterm Key
+    err = sd_ble_gap_encrypt(_conn_hdl, &ltkeys.peer_enc.master_id, &ltkeys.peer_enc.enc_info);
+    PRINT_STATUS(err);
 
-    // Check to see if we did bonded with current prph previously
-    // TODO currently only matches key using fixed address
-    if ( bond_find_cntr(&_peer_addr, &bkeys) )
+    if ( err == NRF_SUCCESS )
     {
-      cntr_ediv = bkeys.peer_enc.master_id.ediv;
-      LOG_LV2("BOND", "Load Keys from file " BOND_FNAME_CNTR, cntr_ediv);
-      VERIFY_STATUS( sd_ble_gap_encrypt(_conn_hdl, &bkeys.peer_enc.master_id, &bkeys.peer_enc.enc_info), false);
-
-    }else
-    {
-      VERIFY_STATUS( sd_ble_gap_authenticate(_conn_hdl, &sec_param ), false);
-    }
-
-    xSemaphoreTake(_pair_sem, portMAX_DELAY);
-
-    // Failed to pair using central stored keys, this happens when
-    // Prph delete bonds while we did not --> let's remove the obsolete keyfile and retry
-    if ( !_paired && (cntr_ediv != 0xffff) )
-    {
-      // FIXME central remove key
-      bond_remove_key(BLE_GAP_ROLE_CENTRAL, cntr_ediv);
-
-      // Re-try with a fresh session
-      VERIFY_STATUS( sd_ble_gap_authenticate(_conn_hdl, &sec_param ), false);
-
       xSemaphoreTake(_pair_sem, portMAX_DELAY);
+
+      // Failed to pair using stored key, this happens when peer
+      // delete bonds while we did not --> let's remove the obsolete keyfile and retry
+      if ( !_paired )
+      {
+        bond_remove_key(_role, &ltkeys.peer_id.id_addr_info);
+
+        // Re-try with a fresh session
+        err = sd_ble_gap_authenticate(_conn_hdl, &sec_param );
+        PRINT_STATUS(err);
+
+        xSemaphoreTake(_pair_sem, portMAX_DELAY);
+      }
     }
+  }else
+  {
+    // start a fresh new authentication process
+    err = sd_ble_gap_authenticate(_conn_hdl, &sec_param );
+    PRINT_STATUS(err);
+
+    xSemaphoreTake(_pair_sem, portMAX_DELAY);
   }
 
   vSemaphoreDelete(_pair_sem);
@@ -340,6 +338,9 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
       if ( !( conn_sec->sec_mode.sm == 1 && conn_sec->sec_mode.lv == 1) )
       {
         _paired = true;
+
+        // Try to restore CCCD with bonded peer, if it doesn't exist (newly bonded), initialize it
+        if ( !loadCccd() )  sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
       }
 
       if (_pair_sem) xSemaphoreGive(_pair_sem);

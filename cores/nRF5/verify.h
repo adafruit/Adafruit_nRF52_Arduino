@@ -107,9 +107,15 @@ extern "C"
  * - status value if called with 1 parameter e.g VERIFY_STATUS(status)
  * - 2 parameter if called with 2 parameters e.g VERIFY_STATUS(status, errorcode)
  */
-#define VERIFY_STATUS(...)  _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, dbg_err_str)
+#define VERIFY_STATUS(...)      _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, dbg_err_str)
 
-#define VERIFY_ERROR(...)   _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, NULL)
+#define PRINT_STATUS(_exp) do                            \
+{                                                        \
+  int32_t _status = (int32_t) _exp;                      \
+  if ( 0 != _status ) VERIFY_MESS(_status, dbg_err_str); \
+} while(0)                                               \
+
+#define VERIFY_ERROR(...)       _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, NULL)
 
 /*------------------------------------------------------------------*/
 /* VERIFY

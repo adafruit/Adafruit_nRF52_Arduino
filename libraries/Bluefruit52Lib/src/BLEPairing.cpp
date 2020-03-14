@@ -362,22 +362,8 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_CONN_SEC_UPDATE:
     {
       const ble_gap_conn_sec_t* conn_sec = &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
+      (void) conn_sec;
       LOG_LV2("PAIR", "Security Mode = %d, Level = %d", conn_sec->sec_mode.sm, conn_sec->sec_mode.lv);
-
-      // Connection is secured (paired) if encryption level > 1
-      if ( !( conn_sec->sec_mode.sm == 1 && conn_sec->sec_mode.lv == 1) )
-      {
-        // Previously bonded --> secure by re-connection process --> Load & Set SysAttr (Apply Service Context)
-        // Else Init SysAttr (first bonded)
-        if ( !conn->loadCccd() )
-        {
-          sd_ble_gatts_sys_attr_set(conn_hdl, NULL, 0, 0);
-        }
-
-//        _paired = true;
-      }
-
-//      if (_pair_sem) xSemaphoreGive(_pair_sem);
     }
     break;
 

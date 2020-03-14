@@ -115,8 +115,8 @@ class BLEConnection
      *------------------------------------------------------------------*/
     void _eventHandler(ble_evt_t* evt);
 
-    bool _saveLongTermKey(bond_keys_t const* bkeys);
-    bool _loadLongTermKey(bond_keys_t* bkeys);
+    bool _saveLongTermKey(bond_keys_t const* ltkey);
+    bool _loadLongTermKey(bond_keys_t* ltkey);
 };
 
 
