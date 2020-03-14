@@ -67,7 +67,6 @@ BLEPairing::BLEPairing(void)
 #endif
 
   _ediv = EDIV_INVALID;
-  _bond_keys = NULL;
 
   _display_cb = NULL;
   _complete_cb = NULL;
@@ -84,20 +83,20 @@ bool BLEPairing::begin(void)
   _private_key.begin(CRYS_ECPKI_DomainID_secp256r1);
 
   // init public key
-  nRFCrypto_ECC_PublicKey pubkey;
-  pubkey.begin(CRYS_ECPKI_DomainID_secp256r1);
+  nRFCrypto_ECC_PublicKey pubKey;
+  pubKey.begin(CRYS_ECPKI_DomainID_secp256r1);
 
   // Generate ECC Key pair
-  nRFCrypto_ECC::genKeyPair(_private_key, pubkey);
+  nRFCrypto_ECC::genKeyPair(_private_key, pubKey);
 
   // Convert to Raw bytes to response to LESC event
-  pubkey.toRaw(_pubkey_raw, sizeof(_pubkey_raw));
-  pubkey.end();
+  pubKey.toRaw(_pubkey, sizeof(_pubkey));
+  pubKey.end();
 
   // BLE use Little Endian, swap public key endian
   // Public Key = 32-byte N1 + 32-byte N2
-  swap_endian(_pubkey_raw+1,    32);
-  swap_endian(_pubkey_raw+1+32, 32);
+  swap_endian(_pubkey+1,    32);
+  swap_endian(_pubkey+1+32, 32);
 #endif
 
   return true;
@@ -225,18 +224,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
   {
     case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
     {
-      // Pairing in progress, Peer asking for our info
-      _bond_keys = rtos_malloc_type(bond_keys_t);
-      VERIFY(_bond_keys, );
-      memclr(_bond_keys, sizeof(bond_keys_t));
-
-      // storing peer public key in connection
-      if (!conn->_peer_pubkey)
-      {
-        conn->_peer_pubkey = (uint8_t*) rtos_malloc(1+BLE_GAP_LESC_P256_PK_LEN);
-      }
-      VERIFY(conn->_peer_pubkey, );
-
+      // Pairing is started, Peer is asking for our info
       _ediv = EDIV_INVALID;
 
       /* Step 1: Pairing/Bonding
@@ -251,17 +239,17 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       ble_gap_sec_keyset_t keyset =
       {
           .keys_own = {
-              .p_enc_key  = &_bond_keys->own_enc,
+              .p_enc_key  = &_bond_keys.own_enc,
               .p_id_key   = NULL,
               .p_sign_key = NULL,
-              .p_pk       = (ble_gap_lesc_p256_pk_t*) (_pubkey_raw+1)
+              .p_pk       = (ble_gap_lesc_p256_pk_t*) (_pubkey+1)
           },
 
           .keys_peer = {
-              .p_enc_key  = &_bond_keys->peer_enc,
-              .p_id_key   = &_bond_keys->peer_id,
+              .p_enc_key  = &_bond_keys.peer_enc,
+              .p_id_key   = &_bond_keys.peer_id,
               .p_sign_key = NULL,
-              .p_pk       = (ble_gap_lesc_p256_pk_t*) (conn->_peer_pubkey+1)
+              .p_pk       = (ble_gap_lesc_p256_pk_t*) (_peer_pubkey+1)
           }
       };
 
@@ -303,17 +291,16 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
 
       // Raw public key from peer device is uncompressed
       // _peer_pubkey + 1 == dhkey_req->p_pk_peer->pk
-      uint8_t* peer_pubkey = conn->_peer_pubkey;
-      peer_pubkey[0] = CRYS_EC_PointUncompressed;
+      _peer_pubkey[0] = CRYS_EC_PointUncompressed;
 
       // Swap Endian data from air
-      swap_endian(peer_pubkey+1   , 32);
-      swap_endian(peer_pubkey+1+32, 32);
+      swap_endian(_peer_pubkey+1   , 32);
+      swap_endian(_peer_pubkey+1+32, 32);
 
       // Create nRFCrypto pubkey from raw format
       nRFCrypto_ECC_PublicKey peerPublickKey;
       peerPublickKey.begin(CRYS_ECPKI_DomainID_secp256r1);
-      peerPublickKey.fromRaw(peer_pubkey, 1+BLE_GAP_LESC_P256_PK_LEN);
+      peerPublickKey.fromRaw(_peer_pubkey, 1+BLE_GAP_LESC_P256_PK_LEN);
 
       // Create shared secret derivation primitive using ECC Diffie-Hellman
       ble_gap_lesc_dhkey_t dhkey;
@@ -325,8 +312,8 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       swap_endian(dhkey.key, 32);
 
       // Swap back the peer pubkey since SoftDevice still need this until Authentication is complete
-      swap_endian(peer_pubkey+1   , 32);
-      swap_endian(peer_pubkey+1+32, 32);
+      swap_endian(_peer_pubkey+1   , 32);
+      swap_endian(_peer_pubkey+1+32, 32);
 
       sd_ble_gap_lesc_dhkey_reply(conn_hdl, &dhkey);
     }
@@ -340,21 +327,15 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       LOG_LV2("PAIR", "Auth Status = 0x%02X, Bonded = %d, LESC = %d, Our Kdist = 0x%02X, Peer Kdist = 0x%02X ",
               status->auth_status, status->bonded, status->lesc, *((uint8_t*) &status->kdist_own), *((uint8_t*) &status->kdist_peer));
 
-      rtos_free(conn->_peer_pubkey);
-      conn->_peer_pubkey = NULL;
-
       // Pairing succeeded --> save encryption keys ( Bonding )
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
-        _ediv   = _bond_keys->own_enc.master_id.ediv;
+        _ediv   = _bond_keys.own_enc.master_id.ediv;
         LOG_LV2("PAIR", "Ediv = 0x%02X", _ediv);
-        LOG_LV2_BUFFER("Rand", _bond_keys->own_enc.master_id.rand, 8);
+        LOG_LV2_BUFFER("Rand", _bond_keys.own_enc.master_id.rand, 8);
 
-        conn->_saveLongTermKey(_bond_keys);
+        conn->_saveLongTermKey(&_bond_keys);
       }
-
-      rtos_free(_bond_keys);
-      _bond_keys = NULL;
 
       // Invoke callback
       if (_complete_cb) ada_callback(NULL, 0, _complete_cb, conn_hdl, status->auth_status);

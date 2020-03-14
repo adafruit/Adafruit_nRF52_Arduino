@@ -61,8 +61,6 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
   _pair_sem = NULL;
 
   _ediv = 0xFFFF;
-  _bond_keys = NULL;
-  _peer_pubkey = NULL;
 }
 
 BLEConnection::~BLEConnection()
@@ -73,9 +71,6 @@ BLEConnection::~BLEConnection()
   //------------- on-the-fly data must be freed -------------//
   if (_hvc_sem  ) vSemaphoreDelete(_hvc_sem );
   if (_pair_sem ) vSemaphoreDelete(_pair_sem);
-
-  if (_bond_keys   ) rtos_free(_bond_keys);
-  if (_peer_pubkey ) rtos_free(_peer_pubkey);
 }
 
 uint16_t BLEConnection::handle (void)
