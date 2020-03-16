@@ -195,6 +195,18 @@ void BLEPairing::setCompleteCallback(pair_complete_cb_t fp)
   _complete_cb = fp;
 }
 
+bool BLEPairing::_authenticate(uint16_t conn_hdl)
+{
+  VERIFY_STATUS(sd_ble_gap_authenticate(conn_hdl, &_sec_param ), false);
+  return true;
+}
+
+bool BLEPairing::_encrypt(uint16_t conn_hdl, bond_keys_t const* ltkey)
+{
+  VERIFY_STATUS(sd_ble_gap_encrypt(conn_hdl, &ltkey->peer_enc.master_id, &ltkey->peer_enc.enc_info), false);
+  return true;
+}
+
 //--------------------------------------------------------------------+
 /* First-time Pairing
  *

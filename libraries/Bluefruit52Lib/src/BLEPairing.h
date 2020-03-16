@@ -42,7 +42,7 @@ class BLEPairing
 
     bool begin(void);
 
-    // Static Passkey
+    // Use static Passkey (Legacy SC)
     bool setPIN(const char* pin);
 
     // resolve address with IRK to see if it matches
@@ -59,6 +59,9 @@ class BLEPairing
      *------------------------------------------------------------------*/
     ble_gap_sec_params_t getSecureParam(void) { return _sec_param; }
     void _eventHandler(ble_evt_t* evt);
+
+    bool _authenticate(uint16_t conn_hdl);
+    bool _encrypt(uint16_t conn_hdl, bond_keys_t const* ltkey);
 
   private:
     ble_gap_sec_params_t _sec_param;

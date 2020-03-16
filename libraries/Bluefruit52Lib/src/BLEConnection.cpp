@@ -252,23 +252,19 @@ bool BLEConnection::requestPairing(void)
   // skip if already paired
   if ( _paired ) return true;
 
-  ble_gap_sec_params_t sec_param = Bluefruit.Pairing.getSecureParam();
+  BLEPairing* secure = &Bluefruit.Pairing;
 
   // on-the-fly semaphore
   _pair_sem = xSemaphoreCreateBinary();
   VERIFY(_pair_sem);
 
-  bond_keys_t ltkeys;
-  uint32_t err;
+  bond_keys_t ltkey;
 
-  if ( loadLongTermKey(&ltkeys) )
+  if ( loadLongTermKey(&ltkey) )
   {
     // We already bonded with this peer previously
     // Encrypt the connection using stored Longterm Key
-    err = sd_ble_gap_encrypt(_conn_hdl, &ltkeys.peer_enc.master_id, &ltkeys.peer_enc.enc_info);
-    PRINT_STATUS(err);
-
-    if ( err == NRF_SUCCESS )
+    if ( secure->_encrypt(_conn_hdl, &ltkey) )
     {
       xSemaphoreTake(_pair_sem, portMAX_DELAY);
 
@@ -276,21 +272,17 @@ bool BLEConnection::requestPairing(void)
       // delete bonds while we did not --> let's remove the obsolete keyfile and retry
       if ( !_paired )
       {
-        bond_remove_key(_role, &ltkeys.peer_id.id_addr_info);
+        bond_remove_key(_role, &ltkey.peer_id.id_addr_info);
 
         // Re-try with a fresh session
-        err = sd_ble_gap_authenticate(_conn_hdl, &sec_param );
-        PRINT_STATUS(err);
-
+        secure->_authenticate(_conn_hdl);
         xSemaphoreTake(_pair_sem, portMAX_DELAY);
       }
     }
   }else
   {
     // start a fresh new authentication process
-    err = sd_ble_gap_authenticate(_conn_hdl, &sec_param );
-    PRINT_STATUS(err);
-
+    secure->_authenticate(_conn_hdl);
     xSemaphoreTake(_pair_sem, portMAX_DELAY);
   }
 
