@@ -337,7 +337,6 @@ void bond_clear_cntr(void)
 
   // Create an empty one
   InternalFS.mkdir(BOND_DIR_CNTR);
-
 }
 
 void bond_clear_all(void)

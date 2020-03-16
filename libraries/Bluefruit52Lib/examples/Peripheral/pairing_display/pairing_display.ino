@@ -116,7 +116,7 @@ void setup()
   Bluefruit.setName("Bluefruit52");
 
 //  Serial.println("Setting pairing PIN to: " PAIRING_PIN);
-  Bluefruit.Pairing.setDisplayCallback(pairing_display_callback);
+  Bluefruit.Pairing.setPasskeyCallback(pairing_display_callback);
   Bluefruit.Pairing.setCompleteCallback(pairing_complete_callback);
 
   Bluefruit.Periph.setConnectCallback(connect_callback);

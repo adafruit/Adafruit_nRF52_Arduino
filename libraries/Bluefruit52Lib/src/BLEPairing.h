@@ -35,7 +35,7 @@
 class BLEPairing
 {
   public:
-    typedef void (*pair_display_cb_t ) (uint16_t conn_hdl, uint8_t const passkey[6]);
+    typedef void (*pair_passkey_cb_t ) (uint16_t conn_hdl, uint8_t const passkey[6]);
     typedef void (*pair_complete_cb_t) (uint16_t conn_hdl, uint8_t auth_status);
 
     BLEPairing(void);
@@ -49,7 +49,7 @@ class BLEPairing
     bool resolveAddress(ble_gap_addr_t const * p_addr, ble_gap_irk_t const * irk);
 
     //------------- Callbacks -------------//
-    bool setDisplayCallback(pair_display_cb_t fp);
+    bool setPasskeyCallback(pair_passkey_cb_t fp);
     void setCompleteCallback(pair_complete_cb_t fp);
 
     /*------------------------------------------------------------------*/
@@ -70,7 +70,7 @@ class BLEPairing
 
     bond_keys_t  _bond_keys; // Shared keys with bonded device during securing connection, size ~ 80 bytes
 
-    pair_display_cb_t  _display_cb;
+    pair_passkey_cb_t  _passkey_cb;
     pair_complete_cb_t _complete_cb;
 };
 

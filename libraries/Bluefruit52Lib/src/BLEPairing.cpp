@@ -66,7 +66,7 @@ BLEPairing::BLEPairing(void)
 //  _sec_param.lesc = 1; // enable LESC if CryptoCell is present
 #endif
 
-  _display_cb = NULL;
+  _passkey_cb = NULL;
   _complete_cb = NULL;
 }
 
@@ -165,9 +165,9 @@ bool BLEPairing::setPIN(const char* pin)
 }
 
 // Pairing using LESC with peripheral display
-bool BLEPairing::setDisplayCallback(pair_display_cb_t fp)
+bool BLEPairing::setPasskeyCallback(pair_passkey_cb_t fp)
 {
-  _display_cb = fp;
+  _passkey_cb = fp;
 
   if ( fp == NULL )
   {
@@ -266,7 +266,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
        LOG_LV2("PAIR", "Passkey = %.6s, match request = %d", passkey_display->passkey, passkey_display->match_request);
 
        // Invoke display callback
-       if ( _display_cb ) ada_callback(passkey_display->passkey, 6, _display_cb, conn_hdl, passkey_display->passkey);
+       if ( _passkey_cb ) ada_callback(passkey_display->passkey, 6, _passkey_cb, conn_hdl, passkey_display->passkey);
 
        if (passkey_display->match_request)
        {
@@ -358,15 +358,6 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       }
     }
     break;
-
-    case BLE_GAP_EVT_CONN_SEC_UPDATE:
-    {
-      const ble_gap_conn_sec_t* conn_sec = &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
-      (void) conn_sec;
-      LOG_LV2("PAIR", "Security Mode = %d, Level = %d", conn_sec->sec_mode.sm, conn_sec->sec_mode.lv);
-    }
-    break;
-
 
     default: break;
   }

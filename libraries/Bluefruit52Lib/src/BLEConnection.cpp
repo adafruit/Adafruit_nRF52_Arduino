@@ -325,7 +325,9 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
 
     case BLE_GAP_EVT_CONN_SEC_UPDATE:
     {
+      // Connection is secured, we have paired/bonded
       const ble_gap_conn_sec_t* conn_sec = &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
+      LOG_LV2("PAIR", "Security Mode = %d, Level = %d", conn_sec->sec_mode.sm, conn_sec->sec_mode.lv);
 
       // Connection is secured (paired) if encryption level > 1
       if ( !( conn_sec->sec_mode.sm == 1 && conn_sec->sec_mode.lv == 1) )
