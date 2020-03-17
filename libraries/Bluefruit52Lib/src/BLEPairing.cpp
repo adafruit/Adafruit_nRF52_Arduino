@@ -102,7 +102,7 @@ bool BLEPairing::begin(void)
   return true;
 }
 
-void BLEPairing::setIOCaps(bool display, bool keyboard, bool yes_no)
+void BLEPairing::setIOCaps(bool display, bool yes_no, bool keyboard)
 {
   uint8_t io_caps = BLE_GAP_IO_CAPS_NONE;
 
@@ -125,9 +125,6 @@ void BLEPairing::setIOCaps(bool display, bool keyboard, bool yes_no)
   }
 
   _sec_param.io_caps = io_caps;
-
-  // also set Man in the middle protection if we have some IO caps
-  if (io_caps != BLE_GAP_IO_CAPS_NONE) _sec_param.mitm = 1;
 }
 
 void BLEPairing::setMITM(bool enabled)
@@ -171,27 +168,19 @@ bool BLEPairing::resolveAddress(ble_gap_addr_t const * p_addr, ble_gap_irk_t con
 // Use Legacy SC static Passkey
 bool BLEPairing::setPIN(const char* pin)
 {
-  if (pin == NULL)
-  {
-    // back to default mode
-    _sec_param = _sec_param_default;
-  }else
-  {
-    VERIFY(strlen(pin) == BLE_GAP_PASSKEY_LEN);
+  VERIFY(pin && strlen(pin) == BLE_GAP_PASSKEY_LEN);
 
-    // Static Passkey requires using
-    // - Legacy SC
-    // - IO cap: Display
-    // - MITM is on
-    _sec_param.bond = 1;
-    _sec_param.mitm = 1;
-    _sec_param.lesc = 0;
-    _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
+  // Static Passkey requires using
+  // - Legacy SC
+  // - IO cap: Display
+  // - MITM is on
+  _sec_param.mitm = 1;
+  _sec_param.lesc = 0;
+  _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
 
-    ble_opt_t opt;
-    opt.gap_opt.passkey.p_passkey = (const uint8_t*) pin;
-    VERIFY_STATUS(sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &opt), false);
-  }
+  ble_opt_t opt;
+  opt.gap_opt.passkey.p_passkey = (const uint8_t*) pin;
+  VERIFY_STATUS(sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &opt), false);
 
   return true;
 }
@@ -201,17 +190,8 @@ bool BLEPairing::setPasskeyCallback(pair_passkey_cb_t fp)
 {
   _passkey_cb = fp;
 
-  if ( fp == NULL )
-  {
-    // back to default mode
-    _sec_param = _sec_param_default;
-  }else
-  {
-    _sec_param.bond = 1;
-    _sec_param.mitm = 1;
-    _sec_param.lesc = LESC_SUPPORTED;
-    _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
-  }
+  // mitm is required to trigger passkey generation
+  _sec_param.mitm = 1;
 
   return true;
 }
@@ -304,12 +284,15 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
        LOG_LV2("PAIR", "Passkey = %.6s, match request = %d", passkey_display->passkey, passkey_display->match_request);
 
        // Invoke display callback
-       if ( _passkey_cb ) ada_callback(passkey_display->passkey, 6, _passkey_cb, conn_hdl, passkey_display->passkey);
-
-       if (passkey_display->match_request)
+       if ( _passkey_cb )
        {
-         // Match request require to report the match
-         // sd_ble_gap_auth_key_reply();
+         bool matched = _passkey_cb(conn_hdl, passkey_display->passkey, passkey_display->match_request);
+
+         if (passkey_display->match_request)
+         {
+           // Match request require to report the match (numberic comparison)
+           sd_ble_gap_auth_key_reply(conn_hdl, matched ? BLE_GAP_AUTH_KEY_TYPE_PASSKEY : BLE_GAP_AUTH_KEY_TYPE_NONE, NULL);
+         }
        }
     }
     break;

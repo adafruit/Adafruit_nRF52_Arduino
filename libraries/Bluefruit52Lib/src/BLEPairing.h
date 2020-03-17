@@ -35,7 +35,7 @@
 class BLEPairing
 {
   public:
-    typedef void (*pair_passkey_cb_t ) (uint16_t conn_hdl, uint8_t const passkey[6]);
+    typedef bool (*pair_passkey_cb_t ) (uint16_t conn_hdl, uint8_t const passkey[6], bool match_request);
     typedef void (*pair_complete_cb_t) (uint16_t conn_hdl, uint8_t auth_status);
 
     BLEPairing(void);
@@ -46,7 +46,7 @@ class BLEPairing
     bool setPIN(const char* pin);
 
     // Set IO capacities
-    void setIOCaps(bool display, bool keyboard, bool yes_no);
+    void setIOCaps(bool display, bool yes_no, bool keyboard);
 
     // Enable/Disable Man in the middle protection
     void setMITM(bool enabled);
@@ -57,8 +57,6 @@ class BLEPairing
     //------------- Callbacks -------------//
     bool setPasskeyCallback(pair_passkey_cb_t fp);
     void setCompleteCallback(pair_complete_cb_t fp);
-
-
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY

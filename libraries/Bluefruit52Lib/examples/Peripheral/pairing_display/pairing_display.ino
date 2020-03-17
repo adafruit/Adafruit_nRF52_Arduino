@@ -22,6 +22,13 @@
 /* This sketch demonstrates Pairing process using dynamic Passkey.
  * This sketch is essentially the same as bleuart.ino except the BLE Uart
  * service requires Security Mode with Man-In-The-Middle protection i.e
+ *
+ * BLE Pairing procedure is complicated, it is advisable for users to go through
+ * these articles to get familiar with the procedure and terminology
+ * - https://www.bluetooth.com/blog/bluetooth-pairing-part-1-pairing-feature-exchange/
+ * - https://www.bluetooth.com/blog/bluetooth-pairing-part-2-key-generation-methods/
+ * - https://www.bluetooth.com/blog/bluetooth-pairing-passkey-entry/
+ * - https://www.bluetooth.com/blog/bluetooth-pairing-part-4/
  */
 
 /* This sketch demonstrates the "Image Upload" feature of Bluefruit Mobile App.
@@ -125,6 +132,9 @@ void setup()
 
 #endif // TFT
 
+  pinMode(PIN_BUTTON1, INPUT_PULLUP);
+  pinMode(PIN_BUTTON2, INPUT_PULLUP);
+
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behavior, but provided
   // here in case you want to control this LED manually via PIN 19
@@ -142,7 +152,9 @@ void setup()
   // To use dynamic PassKey for pairing, we need to have
   // - IO capacities at least DISPPLAY
   // - Register callback to display/print dynamic passkey for central
-  Bluefruit.Pairing.setIOCaps(true, false, false);
+  // For complete mapping of the IO Capabilities to Key Generation Method, check out this article
+  // https://www.bluetooth.com/blog/bluetooth-pairing-part-2-key-generation-methods/
+  Bluefruit.Pairing.setIOCaps(true, true, false); // display = true, yes/no = true, keyboard = false
   Bluefruit.Pairing.setPasskeyCallback(pairing_passkey_callback);
 
   // Set complete callback to print the pairing result
@@ -223,20 +235,67 @@ void loop()
   }
 }
 
-void pairing_passkey_callback(uint16_t conn_handle, uint8_t const passkey[6])
+// callback invoked when pairing passkey is generated
+// - passkey: 6 keys (without null terminator) for displaying
+// - match_request: true when authentication method is Numberic Comparison.
+//                  Then this callback's return value is used to accept (true) or
+//                  reject (false) the pairing process. Otherwise, return value has no effect
+bool pairing_passkey_callback(uint16_t conn_handle, uint8_t const passkey[6], bool match_request)
 {
-  Serial.println("Enter this code on your phone to pair with Bluefruit:");
+  Serial.println("Pairing Passkey");
   Serial.printf("    %.3s %.3s\n", passkey, passkey+3);
 
 #if TFT_IN_USE != TFT_NO_DISPLAY
-  tft.printf("Enter this code on your phone to pair with Bluefruit:\n\n");
+  tft.fillScreen(COLOR_BLACK);
+  tft.println("Pairing Passkey\n");
   tft.setTextColor(COLOR_YELLOW);
   tft.setTextSize(4);
-  tft.printf(" %.3s %.3s\n", passkey, passkey+3);
+  tft.printf("  %.3s %.3s\n", passkey, passkey+3);
 
   tft.setTextColor(COLOR_WHITE);
   tft.setTextSize(2);
 #endif
+
+
+  if (match_request)
+  {
+    Serial.println("Do you want to pair");
+    Serial.println("Press Button A to accept, Button B to reject");
+
+    #if TFT_IN_USE != TFT_NO_DISPLAY
+    tft.println("\nDo you accept ?\n\n");
+
+    tft.setTextSize(3);
+    tft.setTextColor(COLOR_GREEN);
+    tft.print("<< Yes");
+    tft.setTextColor(COLOR_RED);
+    tft.println("  No >>");
+
+    tft.setTextColor(COLOR_WHITE);
+    tft.setTextSize(2);
+    #endif
+
+    // wait until either button is pressed
+    while( digitalRead(PIN_BUTTON1) && digitalRead(PIN_BUTTON2) ) { }
+
+    // wait until either button is pressed
+    uint32_t start_time = millis();
+    while( digitalRead(PIN_BUTTON1) && digitalRead(PIN_BUTTON2) )
+    {
+      // 30 seconds timeout
+      if ( millis() > start_time + 30000 ) break;
+    }
+
+    // A = accept
+    if ( 0 == digitalRead(PIN_BUTTON1) ) return true;
+
+    // B = reject
+    if ( 0 == digitalRead(PIN_BUTTON2) ) return false;
+
+    return false;
+  }
+
+  return true;
 }
 
 void pairing_complete_callback(uint16_t conn_handle, uint8_t auth_status)
