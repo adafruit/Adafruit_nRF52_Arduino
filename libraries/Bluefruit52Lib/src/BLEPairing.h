@@ -45,12 +45,20 @@ class BLEPairing
     // Use static Passkey (Legacy SC)
     bool setPIN(const char* pin);
 
+    // Set IO capacities
+    void setIOCaps(bool display, bool keyboard, bool yes_no);
+
+    // Enable/Disable Man in the middle protection
+    void setMITM(bool enabled);
+
     // resolve address with IRK to see if it matches
     bool resolveAddress(ble_gap_addr_t const * p_addr, ble_gap_irk_t const * irk);
 
     //------------- Callbacks -------------//
     bool setPasskeyCallback(pair_passkey_cb_t fp);
     void setCompleteCallback(pair_complete_cb_t fp);
+
+
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY

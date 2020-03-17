@@ -27,7 +27,11 @@
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
-#define EDIV_INVALID      0xFFFF
+#ifdef NRF_CRYPTOCELL
+  #define LESC_SUPPORTED    1
+#else
+  #define LESC_SUPPORTED    0
+#endif
 
 //------------- IMPLEMENTATION -------------//
 
@@ -46,26 +50,24 @@ static void swap_endian(uint8_t data[], uint32_t nbytes)
   }
 }
 
+// default is Just Work
+static const ble_gap_sec_params_t _sec_param_default =
+{
+  .bond         = 1,
+  .mitm         = 0,
+  .lesc         = LESC_SUPPORTED,
+  .keypress     = 0,
+  .io_caps      = BLE_GAP_IO_CAPS_NONE,
+  .oob          = 0,
+  .min_key_size = 7,
+  .max_key_size = 16,
+  .kdist_own    = { .enc = 1, .id = 1},
+  .kdist_peer   = { .enc = 1, .id = 1}
+};
+
 BLEPairing::BLEPairing(void)
 {
-  _sec_param = ((ble_gap_sec_params_t)
-                {
-                  .bond         = 1,
-                  .mitm         = 0,
-                  .lesc         = 0,
-                  .keypress     = 0,
-                  .io_caps      = BLE_GAP_IO_CAPS_NONE,
-                  .oob          = 0,
-                  .min_key_size = 7,
-                  .max_key_size = 16,
-                  .kdist_own    = { .enc = 1, .id = 1},
-                  .kdist_peer   = { .enc = 1, .id = 1},
-                });
-
-#ifdef NRF_CRYPTOCELL
-//  _sec_param.lesc = 1; // enable LESC if CryptoCell is present
-#endif
-
+  _sec_param = _sec_param_default;
   _passkey_cb = NULL;
   _complete_cb = NULL;
 }
@@ -98,6 +100,39 @@ bool BLEPairing::begin(void)
 #endif
 
   return true;
+}
+
+void BLEPairing::setIOCaps(bool display, bool keyboard, bool yes_no)
+{
+  uint8_t io_caps = BLE_GAP_IO_CAPS_NONE;
+
+  if (display)
+  {
+    if (keyboard)
+    {
+      io_caps = BLE_GAP_IO_CAPS_KEYBOARD_DISPLAY;
+    }
+    else if (yes_no)
+    {
+      io_caps = BLE_GAP_IO_CAPS_DISPLAY_YESNO;
+    }else
+    {
+      io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
+    }
+  }else
+  {
+    if (keyboard) io_caps = BLE_GAP_IO_CAPS_KEYBOARD_ONLY;
+  }
+
+  _sec_param.io_caps = io_caps;
+
+  // also set Man in the middle protection if we have some IO caps
+  if (io_caps != BLE_GAP_IO_CAPS_NONE) _sec_param.mitm = 1;
+}
+
+void BLEPairing::setMITM(bool enabled)
+{
+  _sec_param.mitm = (enabled ? 1 : 0);
 }
 
 /* Resolvable Address = Hash (24 bit) | Random (24 bit)
@@ -136,16 +171,13 @@ bool BLEPairing::resolveAddress(ble_gap_addr_t const * p_addr, ble_gap_irk_t con
 // Use Legacy SC static Passkey
 bool BLEPairing::setPIN(const char* pin)
 {
-  // back to open mode
   if (pin == NULL)
   {
-    _sec_param.bond = 1;
-    _sec_param.mitm = 0;
-    _sec_param.lesc = 0; // TODO NRF_CRYPTOCELL
-    _sec_param.io_caps = BLE_GAP_IO_CAPS_NONE;
+    // back to default mode
+    _sec_param = _sec_param_default;
   }else
   {
-    VERIFY ( strlen(pin) == BLE_GAP_PASSKEY_LEN );
+    VERIFY(strlen(pin) == BLE_GAP_PASSKEY_LEN);
 
     // Static Passkey requires using
     // - Legacy SC
@@ -158,7 +190,7 @@ bool BLEPairing::setPIN(const char* pin)
 
     ble_opt_t opt;
     opt.gap_opt.passkey.p_passkey = (const uint8_t*) pin;
-    VERIFY_STATUS( sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &opt), false);
+    VERIFY_STATUS(sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &opt), false);
   }
 
   return true;
@@ -171,20 +203,14 @@ bool BLEPairing::setPasskeyCallback(pair_passkey_cb_t fp)
 
   if ( fp == NULL )
   {
-    // TODO callback clear
+    // back to default mode
+    _sec_param = _sec_param_default;
   }else
   {
     _sec_param.bond = 1;
     _sec_param.mitm = 1;
-
-    // TODO NRF_CRYPTOCELL
-//    _sec_param.lesc = 0;
-    _sec_param.lesc = 1;
+    _sec_param.lesc = LESC_SUPPORTED;
     _sec_param.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
-
-    ble_opt_t opt;
-    opt.gap_opt.passkey.p_passkey = NULL; // generate Passkey randomly
-    VERIFY_STATUS( sd_ble_opt_set(BLE_GAP_OPT_PASSKEY, &opt), false);
   }
 
   return true;
