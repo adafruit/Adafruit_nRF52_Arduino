@@ -209,7 +209,9 @@ bool BLEPairing::_authenticate(uint16_t conn_hdl)
 
 bool BLEPairing::_encrypt(uint16_t conn_hdl, bond_keys_t const* ltkey)
 {
-  VERIFY_STATUS(sd_ble_gap_encrypt(conn_hdl, &ltkey->peer_enc.master_id, &ltkey->peer_enc.enc_info), false);
+  // LESC use own key, Legacy use peer key
+  ble_gap_enc_key_t const* enc_key = ltkey->own_enc.enc_info.lesc ? &ltkey->own_enc : &ltkey->peer_enc;
+  VERIFY_STATUS(sd_ble_gap_encrypt(conn_hdl, &enc_key->master_id, &enc_key->enc_info), false);
   return true;
 }
 
@@ -347,9 +349,6 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       // Pairing succeeded --> save encryption keys ( Bonding )
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
-        LOG_LV2("PAIR", "Ediv = 0x%02X", _bond_keys.own_enc.master_id.ediv);
-        LOG_LV2_BUFFER("Rand", _bond_keys.own_enc.master_id.rand, 8);
-
         conn->saveLongTermKey(&_bond_keys);
       }
 
