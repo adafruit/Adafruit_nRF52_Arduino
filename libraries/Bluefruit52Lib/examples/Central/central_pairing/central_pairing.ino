@@ -165,7 +165,7 @@ void setup()
   tft.setTextColor(COLOR_WHITE);
   tft.setTextSize(2);
   tft.setCursor(0, 0);
-  tft.print("Scanning...");
+  tft.println("Scanning ...");
 #endif
 
   /* Start Central Scanning
@@ -213,7 +213,10 @@ void connect_callback(uint16_t conn_handle)
   Serial.println("Connected");
 
 #if TFT_IN_USE != TFT_NO_DISPLAY
-  tft.println("connected");
+  tft.fillScreen(COLOR_BLACK);
+  tft.setTextSize(2);
+  tft.setCursor(0, 0);
+  tft.println("Connected");
 #endif
 
   // If we are not bonded with peer previously -> send pairing request
@@ -235,6 +238,10 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   (void) reason;
   
   Serial.print("Disconnected, reason = 0x"); Serial.println(reason, HEX);
+
+#if TFT_IN_USE != TFT_NO_DISPLAY
+  tft.println("Scanning ...");
+#endif
 }
 
 /**
@@ -244,14 +251,10 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
  */
 void bleuart_rx_callback(BLEClientUart& uart_svc)
 {
-  Serial.print("[RX]: ");
-  
   while ( uart_svc.available() )
   {
     Serial.print( (char) uart_svc.read() );
   }
-
-  Serial.println();
 }
 
 bool pairing_passkey_callback(uint16_t conn_handle, uint8_t const passkey[6], bool match_request)
@@ -342,14 +345,14 @@ void connection_secured_callback(uint16_t conn_handle)
   if ( !conn->secured() )
   {
     // It is possible that connection is still not secured by this time.
-    // This happens when we try to encrypt connection using stored bond keys
+    // This happens (central only) when we try to encrypt connection using stored bond keys
     // but peer reject it (probably it remove its stored key).
     // Therefore we will request an pairing again --> callback again when encrypted
     conn->requestPairing();
   }
   else
   {
-    Serial.println(" Secured");
+    Serial.println("Secured");
 
     #if TFT_IN_USE != TFT_NO_DISPLAY
     tft.setTextColor(COLOR_YELLOW);

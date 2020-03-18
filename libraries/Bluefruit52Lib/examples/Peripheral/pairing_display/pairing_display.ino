@@ -149,6 +149,15 @@ void setup()
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   Bluefruit.setName(DEVICE_NAME);
 
+  // clear bonds if BUTTON A is pressed
+  Serial.println("Hold button A to clear bonds ..... ");
+  delay(2000);
+  if (0 == digitalRead(PIN_BUTTON1))
+  {
+    Serial.println("Clear all central bonds");
+    Bluefruit.Periph.clearBonds();
+  }
+
   // To use dynamic PassKey for pairing, we need to have
   // - IO capacities at least DISPPLAY
   // - Register callback to display/print dynamic passkey for central
@@ -160,6 +169,9 @@ void setup()
   // Set complete callback to print the pairing result
   Bluefruit.Pairing.setCompleteCallback(pairing_complete_callback);
 
+  // Set connection secured callback, invoked when connection is encrypted
+  Bluefruit.Pairing.setSecuredCallback(connection_secured_callback);
+
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
 
@@ -170,19 +182,20 @@ void setup()
   bleuart.setPermission(SECMODE_ENC_WITH_MITM);
   bleuart.begin();
 
-  // Set up and start advertising
-  startAdv();
+#if TFT_IN_USE != TFT_NO_DISPLAY
+  tft.fillScreen(COLOR_BLACK);
+  tft.setTextColor(COLOR_WHITE);
+  tft.setTextSize(2);
+  tft.setCursor(0, 0);
+  tft.print("Advertising...");
+#endif
 
   Serial.println("Please use Adafruit's Bluefruit LE app to connect in UART mode");
   Serial.println("Your phone should pop-up PIN input");
   Serial.println("Once connected, enter character(s) that you wish to send");
 
-#if TFT_IN_USE != TFT_NO_DISPLAY
-  tft.fillScreen(COLOR_BLACK);
-  tft.setTextColor(COLOR_WHITE);
-  tft.setTextSize(2);
-  tft.println("Advertising ... ");
-#endif
+  // Set up and start advertising
+  startAdv();
 }
 
 void startAdv(void)
@@ -235,6 +248,27 @@ void loop()
   }
 }
 
+
+// callback invoked when central connects
+void connect_callback(uint16_t conn_handle)
+{
+  // Get the reference to current connection
+  BLEConnection* connection = Bluefruit.Connection(conn_handle);
+
+  char central_name[32] = { 0 };
+  connection->getPeerName(central_name, sizeof(central_name));
+
+  Serial.print("Connected to ");
+  Serial.println(central_name);
+
+#if TFT_IN_USE != TFT_NO_DISPLAY
+  tft.fillScreen(COLOR_BLACK);
+  tft.setTextSize(2);
+  tft.setCursor(0, 0);
+  tft.println("Connected");
+#endif
+}
+
 // callback invoked when pairing passkey is generated
 // - passkey: 6 keys (without null terminator) for displaying
 // - match_request: true when authentication method is Numberic Comparison.
@@ -273,6 +307,7 @@ bool pairing_passkey_callback(uint16_t conn_handle, uint8_t const passkey[6], bo
 
     tft.setTextColor(COLOR_WHITE);
     tft.setTextSize(2);
+    tft.println();
     #endif
 
     // wait until either button is pressed
@@ -308,7 +343,7 @@ void pairing_complete_callback(uint16_t conn_handle, uint8_t auth_status)
     Serial.println("Failed");
   }
 
-#if TFT_IN_USE != TFT_NO_DISPLAY
+  #if TFT_IN_USE != TFT_NO_DISPLAY
   if (auth_status == BLE_GAP_SEC_STATUS_SUCCESS)
   {
     tft.setTextColor(COLOR_GREEN);
@@ -321,27 +356,18 @@ void pairing_complete_callback(uint16_t conn_handle, uint8_t auth_status)
 
   tft.setTextColor(COLOR_WHITE);
   tft.setTextSize(2);
-#endif
+  #endif
 }
 
-// callback invoked when central connects
-void connect_callback(uint16_t conn_handle)
+void connection_secured_callback(uint16_t conn_handle)
 {
-  // Get the reference to current connection
-  BLEConnection* connection = Bluefruit.Connection(conn_handle);
+  Serial.println("Secured");
 
-  char central_name[32] = { 0 };
-  connection->getPeerName(central_name, sizeof(central_name));
-
-  Serial.print("Connected to ");
-  Serial.println(central_name);
-
-#if TFT_IN_USE != TFT_NO_DISPLAY
-  tft.fillScreen(COLOR_BLACK);
-  tft.setTextSize(2);
-  tft.setCursor(0, 0);
-  tft.println("Connected");
-#endif
+  #if TFT_IN_USE != TFT_NO_DISPLAY
+  tft.setTextColor(COLOR_YELLOW);
+  tft.println("secured");
+  tft.setTextColor(COLOR_WHITE);
+  #endif
 }
 
 /**
