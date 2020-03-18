@@ -54,9 +54,10 @@ class BLEConnection
     uint16_t _ediv;
 
     bool _connected;
-    bool _secured;
     bool _bonded; // have LTK stored in InternalFS
     bool _hvc_received;
+
+    ble_gap_conn_sec_mode_t _sec_mode;
 
     ble_gap_addr_t _peer_addr; // resolvable connect address
     ble_gap_addr_t _bond_id_addr; // address stored as bonded
@@ -66,7 +67,6 @@ class BLEConnection
 
     // On-demand semaphore/data that are created on the fly
     SemaphoreHandle_t _hvc_sem;
-    SemaphoreHandle_t _pair_sem;
 
   public:
     BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const * evt_connected, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
@@ -86,6 +86,8 @@ class BLEConnection
 
     ble_gap_addr_t getPeerAddr(void);
     uint16_t getPeerName(char* buf, uint16_t bufsize);
+
+    ble_gap_conn_sec_mode_t getSecureMode(void);
 
     bool disconnect(void);
 

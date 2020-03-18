@@ -33,6 +33,21 @@
   #define LESC_SUPPORTED    0
 #endif
 
+// default is Just Work
+static const ble_gap_sec_params_t _sec_param_default =
+{
+  .bond         = 1,
+  .mitm         = 0,
+  .lesc         = LESC_SUPPORTED,
+  .keypress     = 0,
+  .io_caps      = BLE_GAP_IO_CAPS_NONE,
+  .oob          = 0,
+  .min_key_size = 7,
+  .max_key_size = 16,
+  .kdist_own    = { .enc = 1, .id = 1},
+  .kdist_peer   = { .enc = 1, .id = 1}
+};
+
 //------------- IMPLEMENTATION -------------//
 
 // convert N-byte Number from Big <-> Little Endian to use with BLE
@@ -50,20 +65,16 @@ static void swap_endian(uint8_t data[], uint32_t nbytes)
   }
 }
 
-// default is Just Work
-static const ble_gap_sec_params_t _sec_param_default =
+static void _passkey_display_cabllack_dfr(BLEPairing::pair_passkey_cb_t func, uint16_t conn_hdl, uint8_t const passkey[6], bool match_request)
 {
-  .bond         = 1,
-  .mitm         = 0,
-  .lesc         = LESC_SUPPORTED,
-  .keypress     = 0,
-  .io_caps      = BLE_GAP_IO_CAPS_NONE,
-  .oob          = 0,
-  .min_key_size = 7,
-  .max_key_size = 16,
-  .kdist_own    = { .enc = 1, .id = 1},
-  .kdist_peer   = { .enc = 1, .id = 1}
-};
+  bool matched = func(conn_hdl, passkey, match_request);
+
+  if (match_request)
+  {
+    // Match request require to report the match (numberic comparison)
+    sd_ble_gap_auth_key_reply(conn_hdl, matched ? BLE_GAP_AUTH_KEY_TYPE_PASSKEY : BLE_GAP_AUTH_KEY_TYPE_NONE, NULL);
+  }
+}
 
 BLEPairing::BLEPairing(void)
 {
@@ -294,13 +305,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
        // Invoke display callback
        if ( _passkey_cb )
        {
-         bool matched = _passkey_cb(conn_hdl, passkey_display->passkey, passkey_display->match_request);
-
-         if (passkey_display->match_request)
-         {
-           // Match request require to report the match (numberic comparison)
-           sd_ble_gap_auth_key_reply(conn_hdl, matched ? BLE_GAP_AUTH_KEY_TYPE_PASSKEY : BLE_GAP_AUTH_KEY_TYPE_NONE, NULL);
-         }
+         ada_callback(passkey_display->passkey, 6, _passkey_display_cabllack_dfr, _passkey_cb, conn_hdl, passkey_display->passkey, passkey_display->match_request);
        }
     }
     break;
@@ -392,9 +397,9 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       const ble_gap_conn_sec_t* conn_sec = &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
       LOG_LV2("PAIR", "Security Mode = %d, Level = %d", conn_sec->sec_mode.sm, conn_sec->sec_mode.lv);
 
-      if ( conn->secured() && _secured_cb )
+      if ( _secured_cb )
       {
-        ada_callback(NULL, 0, _secured_cb, conn_hdl, conn_sec->sec_mode.sm, conn_sec->sec_mode.lv);
+        ada_callback(NULL, 0, _secured_cb, conn_hdl);
       }
     }
     break;

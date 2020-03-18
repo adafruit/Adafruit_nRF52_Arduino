@@ -37,7 +37,7 @@ class BLEPairing
   public:
     typedef bool (*pair_passkey_cb_t ) (uint16_t conn_hdl, uint8_t const passkey[6], bool match_request);
     typedef void (*pair_complete_cb_t) (uint16_t conn_hdl, uint8_t auth_status);
-    typedef void (*pair_secured_cb_t) (uint16_t conn_hdl, uint8_t sec_mode, uint8_t level);
+    typedef void (*pair_secured_cb_t) (uint16_t conn_hdl);
 
     BLEPairing(void);
 

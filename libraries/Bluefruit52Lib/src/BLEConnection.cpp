@@ -55,7 +55,8 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
   _hvn_sem   = xSemaphoreCreateCounting(hvn_qsize, hvn_qsize);
   _wrcmd_sem = xSemaphoreCreateCounting(wrcmd_qsize, wrcmd_qsize);
 
-  _secured = false;
+  _sec_mode.sm = _sec_mode.lv = 1; // default to open
+
   _bonded = false;
   _hvc_sem = NULL;
   _hvc_received = false;
@@ -84,7 +85,7 @@ bool BLEConnection::connected(void)
 
 bool BLEConnection::paired (void)
 {
-  return _secured;
+  return secured();
 }
 
 bool BLEConnection::bonded(void)
@@ -94,7 +95,7 @@ bool BLEConnection::bonded(void)
 
 bool BLEConnection::secured(void)
 {
-  return _secured;
+  return !(_sec_mode.sm == 1 && _sec_mode.lv == 1);
 }
 
 uint8_t BLEConnection::getRole (void)
@@ -130,6 +131,11 @@ ble_gap_addr_t BLEConnection::getPeerAddr (void)
 uint16_t BLEConnection::getPeerName(char* buf, uint16_t bufsize)
 {
   return Bluefruit.Gatt.readCharByUuid(_conn_hdl, BLEUuid(BLE_UUID_GAP_CHARACTERISTIC_DEVICE_NAME), buf, bufsize);
+}
+
+ble_gap_conn_sec_mode_t BLEConnection::getSecureMode(void)
+{
+  return _sec_mode;
 }
 
 static inline bool is_tx_power_valid(int8_t power)
@@ -267,7 +273,7 @@ bool BLEConnection::removeBondKey(void)
 bool BLEConnection::requestPairing(void)
 {
   // skip if already paired
-  if ( _secured ) return true;
+  if ( secured() ) return true;
 
   return Bluefruit.Pairing._authenticate(_conn_hdl);
 }
@@ -299,11 +305,11 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
     {
       const ble_gap_conn_sec_t* conn_sec = &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
 
-      // Connection is secured (paired) if encryption level > 1
-      if ( !( conn_sec->sec_mode.sm == 1 && conn_sec->sec_mode.lv == 1) )
-      {
-        _secured = true;
+      _sec_mode  = conn_sec->sec_mode;
 
+      // Connection is secured (paired) if encryption level > 1
+      if ( this->secured() )
+      {
         // Try to restore CCCD with bonded peer, if it doesn't exist (newly bonded), initialize it
         if ( !loadCccd() )  sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
       }
