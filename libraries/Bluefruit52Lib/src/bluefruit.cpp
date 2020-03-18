@@ -41,8 +41,10 @@
 #define CFG_BLE_TX_POWER_LEVEL    0
 #endif
 
-#ifndef CFG_DEFAULT_NAME
-#define CFG_DEFAULT_NAME          "Bluefruit52"
+#ifdef USB_PRODUCT
+  #define CFG_DEFAULT_NAME    USB_PRODUCT
+#else
+  #define CFG_DEFAULT_NAME    "Feather nRF52832"
 #endif
 
 #ifndef CFG_BLE_TASK_STACKSIZE
@@ -914,17 +916,6 @@ void AdafruitBluefruit::_setConnLed (bool on_off)
   {
     digitalWrite(LED_BLUE, on_off ? LED_STATE_ON : (1-LED_STATE_ON) );
   }
-}
-
-/*------------------------------------------------------------------*/
-/* Bonds
- *------------------------------------------------------------------*/
-bool AdafruitBluefruit::requestPairing(uint16_t conn_hdl)
-{
-  BLEConnection* conn = this->Connection(conn_hdl);
-  VERIFY(conn);
-
-  return conn->requestPairing();
 }
 
 //--------------------------------------------------------------------+
