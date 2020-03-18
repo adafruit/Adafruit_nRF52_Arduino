@@ -33,12 +33,6 @@
   #define BUTTON_B    30
   #define BUTTON_C    27
 
-#elif defined ARDUINO_NRF52840_CIRCUITPLAY
-  // Circuit Playground nRF52840 - FYI doesnt work probably because of button polarity!
-  #define BUTTON_A    4 // left button
-  #define BUTTON_B    7 // center switch
-  #define BUTTON_C    5 // right button
-
 #else
   // Default for others
   #define BUTTON_A    9
@@ -67,7 +61,7 @@ MyNotif_t myNotifs[MAX_COUNT] = { 0 };
 int notifCount = 0;
 
 /*------------- Display Management -------------*/
-#define ONSCREEN_TIME 5000  // On-screen time for each notification
+#define ONSCREEN_TIME 10000  // On-screen time for each notification
 
 int  activeIndex  = 0;      // Index of currently displayed notification
 int  displayIndex = -1;     // Index of notification about to display
@@ -94,13 +88,16 @@ void setup()
   // Config the peripheral connection with maximum bandwidth
   // more SRAM required by SoftDevice
   // Note: All config***() function must be called before begin()
-  //Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
+  Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   Bluefruit.setName("Bluefruit52");
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
+
+  // Set connection secured callback, invoked when connection is encrypted
+  Bluefruit.Pairing.setSecuredCallback(connection_secured_callback);
 
   // Configure and Start Service
   bleancs.begin();
@@ -148,6 +145,13 @@ void startAdv(void)
 
 void loop()
 {
+  // This example only support 1 connection
+  uint16_t const conn_handle = 0;
+  BLEConnection* conn = Bluefruit.Connection(conn_handle);
+
+  // connection exist, connected, and secured
+  if ( !(conn && conn->connected() && conn->secured()) ) return;
+
   // If service is not yet discovered
   if ( !bleancs.discovered() ) return;
 
@@ -261,6 +265,8 @@ void displayNotification(int index)
  */
 void connect_callback(uint16_t conn_handle)
 {
+  BLEConnection* conn = Bluefruit.Connection(conn_handle);
+
   oled.clearDisplay();
   oled.setCursor(0, 0);
   oled.println("Connected.");
@@ -272,26 +278,40 @@ void connect_callback(uint16_t conn_handle)
     oled.println("OK");
 
     // ANCS requires pairing to work
-    oled.print("Paring      ... ");
-
-    oled.display();
-
-    if ( Bluefruit.requestPairing(conn_handle) )
-    {
-      oled.println("OK");
-
-      bleancs.enableNotification();
-      oled.println("Receiving   ...");
-    }else
-    {
-      oled.println("Failed");
-    }
+    // request Pairing if not bonded
+    oled.println("Paring      ... ");
+    conn->requestPairing();
   }else
   {
     oled.println("Failed");
   }
 
   oled.display();
+}
+
+void connection_secured_callback(uint16_t conn_handle)
+{
+  BLEConnection* conn = Bluefruit.Connection(conn_handle);
+
+  if ( !conn->secured() )
+  {
+    // It is possible that connection is still not secured by this time.
+    // This happens (central only) when we try to encrypt connection using stored bond keys
+    // but peer reject it (probably it remove its stored key).
+    // Therefore we will request an pairing again --> callback again when encrypted
+    conn->requestPairing();
+  }
+  else
+  {
+    Serial.println("Secured");
+
+    if ( bleancs.discovered() )
+    {
+      bleancs.enableNotification();
+      oled.println("Ready to receive");
+      oled.display();
+    }
+  }
 }
 
 /**

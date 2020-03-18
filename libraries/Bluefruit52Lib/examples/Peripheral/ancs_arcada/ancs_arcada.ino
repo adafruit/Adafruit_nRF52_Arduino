@@ -13,13 +13,18 @@
 *********************************************************************/
 
 /*
- * This sketch is similar to 'ancs', but it also uses a Feather OLED
- * Wing to display incoming ANCS alerts:
- * https://www.adafruit.com/product/2900
+ * This sketch is similar to 'ancs', but it uses TFT to display
+ * incoming ANCS alerts. Supported boards are:
+ * - CLUE https://www.adafruit.com/product/4500
+ * - Circuit Playground Bluefruit + TFT Gizmo
+ *   - https://www.adafruit.com/product/4333
+ *   - https://www.adafruit.com/product/4367
  *
- * BUTTON A: Up or accept call
- * BUTTON B: Not used since it is hard to press
- * BUTTON C: Down or decline call
+ * Button Left: Next or Answer call
+ * Button Right: Previous or Reject call
+ *
+ * Note on CPB button A is RIGHT and button B is LEFT, this is due to
+ * the TFT is on the back of the board.
  */
 #include <Adafruit_Arcada.h>
 #include <bluefruit.h>
