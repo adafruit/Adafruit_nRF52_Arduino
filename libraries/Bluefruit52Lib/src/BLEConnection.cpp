@@ -93,6 +93,11 @@ bool BLEConnection::bonded(void)
   return _bonded;
 }
 
+bool BLEConnection::secured(void)
+{
+  return _secured;
+}
+
 uint8_t BLEConnection::getRole (void)
 {
   return _role;
@@ -237,16 +242,15 @@ bool BLEConnection::loadCccd(void)
   return bond_load_cccd(_role, _conn_hdl, &_bond_id_addr);
 }
 
-bool BLEConnection::saveLongTermKey(bond_keys_t const* ltkey)
+bool BLEConnection::saveBondKey(bond_keys_t const* ltkey)
 {
   bond_save_keys(_role, _conn_hdl, ltkey);
   _bond_id_addr = ltkey->peer_id.id_addr_info;
-  _secured = true; // paired with new device
   _bonded = true;
   return true;
 }
 
-bool BLEConnection::loadLongTermKey(bond_keys_t* ltkey)
+bool BLEConnection::loadBondKey(bond_keys_t* ltkey)
 {
   _bonded = bond_load_keys(_role, &_peer_addr, ltkey);
   VERIFY(_bonded);
@@ -267,7 +271,7 @@ bool BLEConnection::requestPairing(void)
 
 //  bond_keys_t ltkey;
 //
-//  if ( loadLongTermKey(&ltkey) ) // central only
+//  if ( loadBondKey(&ltkey) ) // central only
 //  {
 //    // We already bonded with this peer previously
 //    // Encrypt the connection using stored Longterm Key

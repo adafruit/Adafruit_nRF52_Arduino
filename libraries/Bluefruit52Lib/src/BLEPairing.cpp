@@ -349,7 +349,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       // Pairing succeeded --> save encryption keys ( Bonding )
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
-        conn->saveLongTermKey(&_bond_keys);
+        conn->saveBondKey(&_bond_keys);
       }
 
       // Invoke callback
@@ -364,17 +364,19 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       // - Else return NULL --> Initiate key exchange
       ble_gap_evt_sec_info_request_t* sec_info = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
 
-      LOG_LV2("PAIR", "Addr ID = %d, Addr Type = 0x%02X", sec_info->peer_addr.addr_id_peer, sec_info->peer_addr.addr_type);
-      LOG_LV2_BUFFER("Address", sec_info->peer_addr.addr, 6);
+      LOG_LV2("PAIR", "Address: ID = %d, Type = 0x%02X, %02X:%02X:%02X:%02X:%02X:%02X",
+              sec_info->peer_addr.addr_id_peer, sec_info->peer_addr.addr_type,
+              sec_info->peer_addr.addr[0], sec_info->peer_addr.addr[1], sec_info->peer_addr.addr[2],
+              sec_info->peer_addr.addr[3], sec_info->peer_addr.addr[4], sec_info->peer_addr.addr[5]);
 
       bond_keys_t bkeys;
 
-      if ( conn->loadLongTermKey(&bkeys) )
+      if ( conn->loadBondKey(&bkeys) )
       {
-        sd_ble_gap_sec_info_reply(conn_hdl, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
+        VERIFY_STATUS(sd_ble_gap_sec_info_reply(conn_hdl, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL), );
       } else
       {
-        sd_ble_gap_sec_info_reply(conn_hdl, NULL, NULL, NULL);
+        VERIFY_STATUS(sd_ble_gap_sec_info_reply(conn_hdl, NULL, NULL, NULL), );
       }
     }
     break;

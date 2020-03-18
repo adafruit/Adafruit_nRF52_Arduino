@@ -74,8 +74,9 @@ class BLEConnection
 
     uint16_t handle(void);
     bool     connected(void);
-    bool     paired(void);
+    bool     paired(void); // todo removed
     bool     bonded(void);
+    bool     secured(void);
 
     uint8_t  getRole(void);
     uint16_t getMtu (void);
@@ -105,8 +106,9 @@ class BLEConnection
     bool getWriteCmdPacket(void);
     bool waitForIndicateConfirm(void);
 
-    bool saveLongTermKey(bond_keys_t const* ltkey);
-    bool loadLongTermKey(bond_keys_t* ltkey);
+    bool saveBondKey(bond_keys_t const* ltkey);
+    bool loadBondKey(bond_keys_t* ltkey);
+    bool removeBondKey(void);
 
     bool saveCccd(void);
     bool loadCccd(void);

@@ -140,7 +140,7 @@ static void bledfu_control_wr_authorize_cb(uint16_t conn_hdl, BLECharacteristic*
       if ( conn->paired() )
       {
         bond_keys_t bkeys;
-        if ( conn->loadLongTermKey(&bkeys) )
+        if ( conn->loadBondKey(&bkeys) )
         {
           peer_data->addr    = bkeys.peer_id.id_addr_info;
           peer_data->irk     = bkeys.peer_id.id_info;
