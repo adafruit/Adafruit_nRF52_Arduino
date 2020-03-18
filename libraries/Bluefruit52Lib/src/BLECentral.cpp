@@ -142,8 +142,8 @@ void BLECentral::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_CONNECTED:
     {
       // Try to secure connection if we bonded previously
-      static bond_keys_t ltkey;
-      if ( conn->loadLongTermKey(&ltkey) )
+      bond_keys_t ltkey;
+      if ( conn->loadBondKey(&ltkey) )
       {
         BLEPairing* secure = &Bluefruit.Pairing;
         secure->_encrypt(conn_hdl, &ltkey);
@@ -152,6 +152,15 @@ void BLECentral::_eventHandler(ble_evt_t* evt)
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
+    break;
+
+    case BLE_GAP_EVT_CONN_SEC_UPDATE:
+      if ( conn->bonded() && !conn->secured() )
+      {
+        // Bonded but failed to secure connection
+        // Peer must have removed LTKey, we should remove ours as well
+        conn->removeBondKey();
+      }
     break;
 
     case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:

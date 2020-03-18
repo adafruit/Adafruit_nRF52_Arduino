@@ -258,6 +258,13 @@ bool BLEConnection::loadBondKey(bond_keys_t* ltkey)
   return true;
 }
 
+bool BLEConnection::removeBondKey(void)
+{
+  VERIFY(_bonded);
+  bond_remove_key(_role, &_bond_id_addr);
+  return true;
+}
+
 bool BLEConnection::requestPairing(void)
 {
   // skip if already paired

@@ -356,4 +356,6 @@ void bond_remove_key(uint8_t role, ble_gap_addr_t const* id_addr)
   get_fname(filename, role, id_addr->addr);
 
   InternalFS.remove(filename);
+
+  BOND_LOG("Removed keys from file %s", filename);
 }
