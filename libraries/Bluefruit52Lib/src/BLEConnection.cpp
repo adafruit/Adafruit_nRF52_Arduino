@@ -55,7 +55,7 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
   _hvn_sem   = xSemaphoreCreateCounting(hvn_qsize, hvn_qsize);
   _wrcmd_sem = xSemaphoreCreateCounting(wrcmd_qsize, wrcmd_qsize);
 
-  _paired = false;
+  _secured = false;
   _hvc_sem = NULL;
   _hvc_received = false;
   _pair_sem = NULL;
@@ -85,7 +85,12 @@ bool BLEConnection::connected(void)
 
 bool BLEConnection::paired (void)
 {
-  return _paired;
+  return _secured;
+}
+
+bool BLEConnection::bonded(void)
+{
+  return _bonded;
 }
 
 uint8_t BLEConnection::getRole (void)
@@ -236,13 +241,15 @@ bool BLEConnection::saveLongTermKey(bond_keys_t const* ltkey)
 {
   bond_save_keys(_role, _conn_hdl, ltkey);
   _bond_id_addr = ltkey->peer_id.id_addr_info;
-  _paired = true; // paired with new device
+  _secured = true; // paired with new device
+  _bonded = true;
   return true;
 }
 
 bool BLEConnection::loadLongTermKey(bond_keys_t* ltkey)
 {
-  VERIFY( bond_load_keys(_role, &_peer_addr, ltkey) );
+  _bonded = bond_load_keys(_role, &_peer_addr, ltkey);
+  VERIFY(_bonded);
   _bond_id_addr = ltkey->peer_id.id_addr_info;
   return true;
 }
@@ -250,7 +257,7 @@ bool BLEConnection::loadLongTermKey(bond_keys_t* ltkey)
 bool BLEConnection::requestPairing(void)
 {
   // skip if already paired
-  if ( _paired ) return true;
+  if ( _secured ) return true;
 
   BLEPairing* secure = &Bluefruit.Pairing;
 
@@ -258,28 +265,28 @@ bool BLEConnection::requestPairing(void)
   _pair_sem = xSemaphoreCreateBinary();
   VERIFY(_pair_sem);
 
-  bond_keys_t ltkey;
-
-  if ( loadLongTermKey(&ltkey) )
-  {
-    // We already bonded with this peer previously
-    // Encrypt the connection using stored Longterm Key
-    if ( secure->_encrypt(_conn_hdl, &ltkey) )
-    {
-      xSemaphoreTake(_pair_sem, portMAX_DELAY);
-
-      // Failed to pair using stored key, this happens when peer
-      // delete bonds while we did not --> let's remove the obsolete keyfile and retry
-      if ( !_paired )
-      {
-        bond_remove_key(_role, &ltkey.peer_id.id_addr_info);
-
-        // Re-try with a fresh session
-        secure->_authenticate(_conn_hdl);
-        xSemaphoreTake(_pair_sem, portMAX_DELAY);
-      }
-    }
-  }else
+//  bond_keys_t ltkey;
+//
+//  if ( loadLongTermKey(&ltkey) ) // central only
+//  {
+//    // We already bonded with this peer previously
+//    // Encrypt the connection using stored Longterm Key
+//    if ( secure->_encrypt(_conn_hdl, &ltkey) )
+//    {
+//      xSemaphoreTake(_pair_sem, portMAX_DELAY);
+//
+//      // Failed to pair using stored key, this happens when peer
+//      // delete bonds while we did not --> let's remove the obsolete keyfile and retry
+//      if ( !_paired )
+//      {
+//        bond_remove_key(_role, &ltkey.peer_id.id_addr_info);
+//
+//        // Re-try with a fresh session
+//        secure->_authenticate(_conn_hdl);
+//        xSemaphoreTake(_pair_sem, portMAX_DELAY);
+//      }
+//    }
+//  }else
   {
     // start a fresh new authentication process
     secure->_authenticate(_conn_hdl);
@@ -289,7 +296,7 @@ bool BLEConnection::requestPairing(void)
   vSemaphoreDelete(_pair_sem);
   _pair_sem = NULL;
 
-  return _paired;
+  return _secured;
 }
 
 bool BLEConnection::waitForIndicateConfirm(void)
@@ -324,7 +331,7 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
       // Connection is secured (paired) if encryption level > 1
       if ( !( conn_sec->sec_mode.sm == 1 && conn_sec->sec_mode.lv == 1) )
       {
-        _paired = true;
+        _secured = true;
 
         // Try to restore CCCD with bonded peer, if it doesn't exist (newly bonded), initialize it
         if ( !loadCccd() )  sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);

@@ -54,7 +54,8 @@ class BLEConnection
     uint16_t _ediv;
 
     bool _connected;
-    bool _paired;
+    bool _secured;
+    bool _bonded; // have LTK stored in InternalFS
     bool _hvc_received;
 
     ble_gap_addr_t _peer_addr; // resolvable connect address
@@ -74,6 +75,7 @@ class BLEConnection
     uint16_t handle(void);
     bool     connected(void);
     bool     paired(void);
+    bool     bonded(void);
 
     uint8_t  getRole(void);
     uint16_t getMtu (void);
