@@ -320,7 +320,7 @@ void ancs_notification_callback(AncsNotification_t* notif)
 
     // iDevice often include Unicode "Bidirection Text Control" in the Title.
     // Mostly are U+202D as beginning and U+202C as ending. Let's remove them
-    if ( bleancs.getTitle  (uid, myNtf->title   , BUFSIZE) )
+    if ( bleancs.getTitle(uid, myNtf->title, BUFSIZE) )
     {
       char u202D[3] = { 0xE2, 0x80, 0xAD }; // U+202D in UTF-8
       char u202C[3] = { 0xE2, 0x80, 0xAC }; // U+202C in UTF-8
