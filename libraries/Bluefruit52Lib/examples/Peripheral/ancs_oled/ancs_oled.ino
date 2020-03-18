@@ -30,13 +30,11 @@
 #if defined ARDUINO_NRF52832_FEATHER
   // Feather nRF52832
   #define BUTTON_A    31
-  #define BUTTON_B    30
   #define BUTTON_C    27
 
 #else
   // Default for others
   #define BUTTON_A    9
-  #define BUTTON_B    6
   #define BUTTON_C    5
 
 #endif
@@ -75,7 +73,6 @@ void setup()
 {
   // Button configured
   pinMode(BUTTON_A, INPUT_PULLUP);
-  pinMode(BUTTON_B, INPUT_PULLUP);
   pinMode(BUTTON_C, INPUT_PULLUP);
 
   // init with the I2C addr 0x3C (for the 128x32) and show splashscreen
@@ -92,7 +89,7 @@ void setup()
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-  Bluefruit.setName("Bluefruit52");
+
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
 
@@ -453,8 +450,7 @@ uint32_t readPressedButtons(void)
 
   // Take current read and masked with BUTTONs
   // Note: Bitwise inverted since buttons are active (pressed) LOW
-  uint32_t debounced = ~(*portInputRegister( digitalPinToPort(0) ));
-  debounced &= (bit(BUTTON_A) | bit(BUTTON_B) | bit(BUTTON_C));
+  uint32_t debounced = ~( (digitalRead(BUTTON_A) << BUTTON_A) | (digitalRead(BUTTON_C) << BUTTON_C) );
 
   // Copy current state into array
   states[ (index & (MAX_CHECKS-1)) ] = debounced;
