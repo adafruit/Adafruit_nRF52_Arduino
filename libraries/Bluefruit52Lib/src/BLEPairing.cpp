@@ -70,6 +70,7 @@ BLEPairing::BLEPairing(void)
   _sec_param = _sec_param_default;
   _passkey_cb = NULL;
   _complete_cb = NULL;
+  _secured_cb = NULL;
 }
 
 bool BLEPairing::begin(void)
@@ -199,6 +200,11 @@ bool BLEPairing::setPasskeyCallback(pair_passkey_cb_t fp)
 void BLEPairing::setCompleteCallback(pair_complete_cb_t fp)
 {
   _complete_cb = fp;
+}
+
+void BLEPairing::setSecuredCallback(pair_secured_cb_t fp)
+{
+ _secured_cb = fp;
 }
 
 bool BLEPairing::_authenticate(uint16_t conn_hdl)
@@ -377,6 +383,18 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       } else
       {
         VERIFY_STATUS(sd_ble_gap_sec_info_reply(conn_hdl, NULL, NULL, NULL), );
+      }
+    }
+    break;
+
+    case BLE_GAP_EVT_CONN_SEC_UPDATE:
+    {
+      const ble_gap_conn_sec_t* conn_sec = &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
+      LOG_LV2("PAIR", "Security Mode = %d, Level = %d", conn_sec->sec_mode.sm, conn_sec->sec_mode.lv);
+
+      if ( conn->secured() && _secured_cb )
+      {
+        ada_callback(NULL, 0, _secured_cb, conn_hdl, conn_sec->sec_mode.sm, conn_sec->sec_mode.lv);
       }
     }
     break;

@@ -56,9 +56,9 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
   _wrcmd_sem = xSemaphoreCreateCounting(wrcmd_qsize, wrcmd_qsize);
 
   _secured = false;
+  _bonded = false;
   _hvc_sem = NULL;
   _hvc_received = false;
-  _pair_sem = NULL;
 
   _ediv = 0xFFFF;
 }
@@ -70,7 +70,6 @@ BLEConnection::~BLEConnection()
 
   //------------- on-the-fly data must be freed -------------//
   if (_hvc_sem  ) vSemaphoreDelete(_hvc_sem );
-  if (_pair_sem ) vSemaphoreDelete(_pair_sem);
 }
 
 uint16_t BLEConnection::handle (void)
@@ -270,44 +269,7 @@ bool BLEConnection::requestPairing(void)
   // skip if already paired
   if ( _secured ) return true;
 
-  BLEPairing* secure = &Bluefruit.Pairing;
-
-  // on-the-fly semaphore
-  _pair_sem = xSemaphoreCreateBinary();
-  VERIFY(_pair_sem);
-
-//  bond_keys_t ltkey;
-//
-//  if ( loadBondKey(&ltkey) ) // central only
-//  {
-//    // We already bonded with this peer previously
-//    // Encrypt the connection using stored Longterm Key
-//    if ( secure->_encrypt(_conn_hdl, &ltkey) )
-//    {
-//      xSemaphoreTake(_pair_sem, portMAX_DELAY);
-//
-//      // Failed to pair using stored key, this happens when peer
-//      // delete bonds while we did not --> let's remove the obsolete keyfile and retry
-//      if ( !_paired )
-//      {
-//        bond_remove_key(_role, &ltkey.peer_id.id_addr_info);
-//
-//        // Re-try with a fresh session
-//        secure->_authenticate(_conn_hdl);
-//        xSemaphoreTake(_pair_sem, portMAX_DELAY);
-//      }
-//    }
-//  }else
-  {
-    // start a fresh new authentication process
-    secure->_authenticate(_conn_hdl);
-    xSemaphoreTake(_pair_sem, portMAX_DELAY);
-  }
-
-  vSemaphoreDelete(_pair_sem);
-  _pair_sem = NULL;
-
-  return _secured;
+  return Bluefruit.Pairing._authenticate(_conn_hdl);
 }
 
 bool BLEConnection::waitForIndicateConfirm(void)
@@ -335,9 +297,7 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
 
     case BLE_GAP_EVT_CONN_SEC_UPDATE:
     {
-      // Connection is secured, we have paired/bonded
       const ble_gap_conn_sec_t* conn_sec = &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
-      LOG_LV2("PAIR", "Security Mode = %d, Level = %d", conn_sec->sec_mode.sm, conn_sec->sec_mode.lv);
 
       // Connection is secured (paired) if encryption level > 1
       if ( !( conn_sec->sec_mode.sm == 1 && conn_sec->sec_mode.lv == 1) )
@@ -347,8 +307,6 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
         // Try to restore CCCD with bonded peer, if it doesn't exist (newly bonded), initialize it
         if ( !loadCccd() )  sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
       }
-
-      if (_pair_sem) xSemaphoreGive(_pair_sem);
     }
     break;
 

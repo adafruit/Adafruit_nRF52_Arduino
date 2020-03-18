@@ -37,6 +37,7 @@ class BLEPairing
   public:
     typedef bool (*pair_passkey_cb_t ) (uint16_t conn_hdl, uint8_t const passkey[6], bool match_request);
     typedef void (*pair_complete_cb_t) (uint16_t conn_hdl, uint8_t auth_status);
+    typedef void (*pair_secured_cb_t) (uint16_t conn_hdl, uint8_t sec_mode, uint8_t level);
 
     BLEPairing(void);
 
@@ -57,13 +58,13 @@ class BLEPairing
     //------------- Callbacks -------------//
     bool setPasskeyCallback(pair_passkey_cb_t fp);
     void setCompleteCallback(pair_complete_cb_t fp);
+    void setSecuredCallback(pair_secured_cb_t fp);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal
      * code. User should not call these directly
      *------------------------------------------------------------------*/
-    ble_gap_sec_params_t getSecureParam(void) { return _sec_param; }
     void _eventHandler(ble_evt_t* evt);
 
     bool _authenticate(uint16_t conn_hdl);
@@ -81,6 +82,7 @@ class BLEPairing
 
     pair_passkey_cb_t  _passkey_cb;
     pair_complete_cb_t _complete_cb;
+    pair_secured_cb_t  _secured_cb;
 };
 
 #endif /* BLEPAIRING_H_ */
