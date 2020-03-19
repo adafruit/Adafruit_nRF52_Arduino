@@ -618,12 +618,6 @@ uint16_t AdafruitBluefruit::connHandle(void)
   return _conn_hdl;
 }
 
-bool AdafruitBluefruit::connPaired(uint16_t conn_hdl)
-{
-  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
-  return conn && conn->paired();
-}
-
 uint16_t AdafruitBluefruit::getMaxMtu(uint8_t role)
 {
   return (role == BLE_GAP_ROLE_PERIPH) ? _sd_cfg.prph.mtu_max : _sd_cfg.central.mtu_max;

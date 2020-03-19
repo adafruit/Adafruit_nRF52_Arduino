@@ -83,11 +83,6 @@ bool BLEConnection::connected(void)
   return _connected;
 }
 
-bool BLEConnection::paired (void)
-{
-  return secured();
-}
-
 bool BLEConnection::bonded(void)
 {
   return _bonded;

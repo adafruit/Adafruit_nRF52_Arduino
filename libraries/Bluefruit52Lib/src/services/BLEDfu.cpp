@@ -137,7 +137,7 @@ static void bledfu_control_wr_authorize_cb(uint16_t conn_hdl, BLECharacteristic*
       // Get Bond Data or using Address if not bonded
       peer_data->addr = conn->getPeerAddr();
 
-      if ( conn->paired() )
+      if ( conn->secured() )
       {
         bond_keys_t bkeys;
         if ( conn->loadBondKey(&bkeys) )

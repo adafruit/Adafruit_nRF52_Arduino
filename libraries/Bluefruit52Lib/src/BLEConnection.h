@@ -74,7 +74,6 @@ class BLEConnection
 
     uint16_t handle(void);
     bool     connected(void);
-    bool     paired(void); // todo removed
     bool     bonded(void);
     bool     secured(void);
 

@@ -114,7 +114,7 @@ void loop()
   {
     BLEConnection* connection = Bluefruit.Connection(conn_hdl);
 
-    if ( connection && connection->connected() && connection->paired() )
+    if ( connection && connection->connected() && connection->secured() )
     {
       // Turn on red LED when we start sending data
       digitalWrite(LED_RED, 1);

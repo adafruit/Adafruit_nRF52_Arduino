@@ -166,7 +166,6 @@ class AdafruitBluefruit
     uint16_t connHandle        (void);
 
     // Alias to BLEConnection API()
-    bool     connPaired        (uint16_t conn_hdl);
     bool     disconnect        (uint16_t conn_hdl);
 
     uint16_t getMaxMtu(uint8_t role);
