@@ -16,19 +16,32 @@
   #define USE_ARCADA
 #endif
 
-#ifdef USE_ARCADA
-#include <Adafruit_Arcada.h>
-
-Adafruit_Arcada arcada;
-Adafruit_SPITFT* tft;
-#endif
-
-#include <SPI.h>
-#include <Adafruit_GFX.h>
 #include <bluefruit.h>
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
 #include <Adafruit_nRFCrypto.h>
+
+#ifdef USE_ARCADA
+  #include <Adafruit_Arcada.h>
+
+  Adafruit_Arcada arcada;
+  Adafruit_SPITFT* tft;
+
+#else
+  // Use built-in buttons if available, else use A0, A1
+  #ifdef PIN_BUTTON1
+    #define BUTTON_YES    PIN_BUTTON1
+  #else
+    #define BUTTON_YES    A0
+  #endif
+
+  #ifdef PIN_BUTTON2
+    #define BUTTON_NO   PIN_BUTTON2
+  #else
+    #define BUTTON_NO   A1
+  #endif
+#endif
+
 
 /* This sketch demonstrates Pairing process using dynamic Passkey.
  * This sketch is essentially the same as bleuart.ino except the BLE Uart
@@ -59,6 +72,7 @@ void setup()
   Serial.println("Bluefruit52 Pairing Display Example");
   Serial.println("-----------------------------------\n");
 
+#ifdef USE_ARCADA
   arcada.arcadaBegin();
   arcada.displayBegin();
   arcada.setBacklight(255);
@@ -67,6 +81,10 @@ void setup()
   tft->setCursor(0, 0);
   tft->setTextWrap(true);
   tft->setTextSize(2);
+#else
+  pinMode(BUTTON_YES, INPUT_PULLUP);
+  pinMode(BUTTON_NO, INPUT_PULLUP);
+#endif
 
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behavior, but provided
@@ -82,19 +100,23 @@ void setup()
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
 
   // clear bonds if BUTTON A is pressed
-  Serial.println("Hold button A to clear bonds ..... ");
-  delay(2000);
-  if (0 == digitalRead(PIN_BUTTON1))
-  {
-    Serial.println("Clear all central bonds");
-    Bluefruit.Periph.clearBonds();
-  }
+//  Serial.println("Hold button A to clear bonds ..... ");
+//  delay(2000);
+//  if (0 == digitalRead(PIN_BUTTON1))
+//  {
+//    Serial.println("Clear all central bonds");
+//    Bluefruit.Periph.clearBonds();
+//  }
 
-  // To use dynamic PassKey for pairing, we need to have
-  // - IO capacities at least DISPPLAY
-  // - Register callback to display/print dynamic passkey for central
-  // For complete mapping of the IO Capabilities to Key Generation Method, check out this article
-  // https://www.bluetooth.com/blog/bluetooth-pairing-part-2-key-generation-methods/
+  /* To use dynamic PassKey for pairing, we need to have
+   * - IO capacities at least DISPPLAY
+   *    - Display only: user have to enter 6-digit passkey on their phone
+   *    - DIsplay + Yes/No: user ony need to press Accept on both central and device
+   * - Register callback to display/print dynamic passkey for central
+   *
+   * For complete mapping of the IO Capabilities to Key Generation Method, check out this article
+   * https://www.bluetooth.com/blog/bluetooth-pairing-part-2-key-generation-methods/
+   */
   Bluefruit.Pairing.setIOCaps(true, true, false); // display = true, yes/no = true, keyboard = false
   Bluefruit.Pairing.setPasskeyCallback(pairing_passkey_callback);
 
@@ -222,42 +244,63 @@ bool pairing_passkey_callback(uint16_t conn_handle, uint8_t const passkey[6], bo
   tft->setTextSize(2);
 #endif
 
-
+  // match_request means peer wait for our approval (return true)
   if (match_request)
   {
     Serial.println("Do you want to pair");
-    Serial.println("Press Button A to accept, Button B to reject");
+    Serial.println("Press Button Left to decline, Button Right to Accept");
 
-    #ifdef USE_ARCADA
+    // timeout for pressing button
+    uint32_t start_time = millis();
+
+#ifdef USE_ARCADA
     tft->println("\nDo you accept ?\n\n");
-
     tft->setTextSize(3);
-    tft->setTextColor(ARCADA_GREEN);
-    tft->print("<< Yes");
-    tft->setTextColor(ARCADA_RED);
-    tft->println("  No >>");
+
+    // Yes <-> No on CPB is reversed since GIZMO TFT is on the back of CPB
+    #if ARDUINO_NRF52840_CIRCUITPLAY
+      tft->setTextColor(ARCADA_GREEN);
+      tft->print("< Yes");
+      tft->setTextColor(ARCADA_RED);
+      tft->println("    No >");
+    #else
+      tft->setTextColor(ARCADA_RED);
+      tft->print("< No");
+      tft->setTextColor(ARCADA_GREEN);
+      tft->println("    Yes >");
+    #endif
 
     tft->setTextColor(ARCADA_WHITE);
     tft->setTextSize(2);
     tft->println();
-    #endif
 
-    // wait until either button is pressed
-    while( digitalRead(PIN_BUTTON1) && digitalRead(PIN_BUTTON2) ) { }
-
-    // wait until either button is pressed
-    uint32_t start_time = millis();
-    while( digitalRead(PIN_BUTTON1) && digitalRead(PIN_BUTTON2) )
+    // wait until either button is pressed (30 seconds timeout)
+    uint32_t justReleased;
+    do
     {
-      // 30 seconds timeout
+      if ( millis() > start_time + 30000 ) break;
+
+      arcada.readButtons();
+      justReleased = arcada.justReleasedButtons();
+    } while ( !(justReleased & (ARCADA_BUTTONMASK_LEFT | ARCADA_BUTTONMASK_RIGHT) ) );
+
+    // Right = accept
+    if (justReleased & ARCADA_BUTTONMASK_RIGHT) return true;
+
+    // Left = decline
+    if (justReleased & ARCADA_BUTTONMASK_LEFT) return false;
+
+#else
+    // wait until either button is pressed (30 seconds timeout)
+    while( digitalRead(BUTTON_YES) && digitalRead(BUTTON_NO) )
+    {
       if ( millis() > start_time + 30000 ) break;
     }
 
-    // A = accept
-    if ( 0 == digitalRead(PIN_BUTTON1) ) return true;
+    if ( 0 == digitalRead(BUTTON_YES) ) return true;
 
-    // B = reject
-    if ( 0 == digitalRead(PIN_BUTTON2) ) return false;
+    if ( 0 == digitalRead(BUTTON_NO) ) return false;
+#endif
 
     return false;
   }
@@ -275,7 +318,7 @@ void pairing_complete_callback(uint16_t conn_handle, uint8_t auth_status)
     Serial.println("Failed");
   }
 
-  #ifdef USE_ARCADA
+#ifdef USE_ARCADA
   if (auth_status == BLE_GAP_SEC_STATUS_SUCCESS)
   {
     tft->setTextColor(ARCADA_GREEN);
@@ -288,18 +331,18 @@ void pairing_complete_callback(uint16_t conn_handle, uint8_t auth_status)
 
   tft->setTextColor(ARCADA_WHITE);
   tft->setTextSize(2);
-  #endif
+#endif
 }
 
 void connection_secured_callback(uint16_t conn_handle)
 {
   Serial.println("Secured");
 
-  #ifdef USE_ARCADA
+#ifdef USE_ARCADA
   tft->setTextColor(ARCADA_YELLOW);
   tft->println("secured");
   tft->setTextColor(ARCADA_WHITE);
-  #endif
+#endif
 }
 
 /**
