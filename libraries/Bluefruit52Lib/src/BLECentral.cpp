@@ -145,7 +145,7 @@ void BLECentral::_eventHandler(ble_evt_t* evt)
       bond_keys_t ltkey;
       if ( conn->loadBondKey(&ltkey) )
       {
-        Bluefruit.Pairing._encrypt(conn_hdl, &ltkey);
+        Bluefruit.Security._encrypt(conn_hdl, &ltkey);
       }
     }
     break;

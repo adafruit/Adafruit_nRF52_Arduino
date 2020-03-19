@@ -105,14 +105,14 @@ void setup()
    * For complete mapping of the IO Capabilities to Key Generation Method, check out this article
    * https://www.bluetooth.com/blog/bluetooth-pairing-part-2-key-generation-methods/
    */
-  Bluefruit.Pairing.setIOCaps(true, true, false); // display = true, yes/no = true, keyboard = false
-  Bluefruit.Pairing.setPasskeyCallback(pairing_passkey_callback);
+  Bluefruit.Security.setIOCaps(true, true, false); // display = true, yes/no = true, keyboard = false
+  Bluefruit.Security.setPasskeyCallback(pairing_passkey_callback);
 
   // Set complete callback to print the pairing result
-  Bluefruit.Pairing.setCompleteCallback(pairing_complete_callback);
+  Bluefruit.Security.setCompleteCallback(pairing_complete_callback);
 
   // Set connection secured callback, invoked when connection is encrypted
-  Bluefruit.Pairing.setSecuredCallback(connection_secured_callback);
+  Bluefruit.Security.setSecuredCallback(connection_secured_callback);
 
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);

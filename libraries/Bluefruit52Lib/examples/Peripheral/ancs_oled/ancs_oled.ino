@@ -94,7 +94,7 @@ void setup()
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
 
   // Set connection secured callback, invoked when connection is encrypted
-  Bluefruit.Pairing.setSecuredCallback(connection_secured_callback);
+  Bluefruit.Security.setSecuredCallback(connection_secured_callback);
 
   // Configure and Start Service
   bleancs.begin();

@@ -437,7 +437,7 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   // Init Peripheral role
   VERIFY( Periph.begin() );
 
-  Pairing.begin();
+  Security.begin();
 
   // Default device name
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
@@ -748,7 +748,7 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   if ( conn )
   {
     conn->_eventHandler(evt);
-    Pairing._eventHandler(evt);
+    Security._eventHandler(evt);
   }
 
   switch(evt->header.evt_id)

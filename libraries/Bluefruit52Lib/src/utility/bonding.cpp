@@ -182,7 +182,7 @@ bool bond_load_keys(uint8_t role, ble_gap_addr_t* addr, bond_keys_t* bkeys)
         if ( keylen == sizeof(bond_keys_t) )
         {
           file.read((uint8_t*) bkeys, keylen);
-          if ( Bluefruit.Pairing.resolveAddress(addr, &bkeys->peer_id.id_info) )
+          if ( Bluefruit.Security.resolveAddress(addr, &bkeys->peer_id.id_info) )
           {
             ret = true;
             BOND_LOG("Loaded keys from file %s/%s", dpath, file.name());

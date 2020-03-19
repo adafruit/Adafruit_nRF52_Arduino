@@ -120,7 +120,7 @@ uint8_t BLEConnection::getPHY(void)
 
 ble_gap_addr_t BLEConnection::getPeerAddr (void)
 {
-  return _peer_addr;
+  return _bonded ? _bond_id_addr : _peer_addr;
 }
 
 uint16_t BLEConnection::getPeerName(char* buf, uint16_t bufsize)
@@ -270,7 +270,7 @@ bool BLEConnection::requestPairing(void)
   // skip if already paired
   if ( secured() ) return true;
 
-  return Bluefruit.Pairing._authenticate(_conn_hdl);
+  return Bluefruit.Security._authenticate(_conn_hdl);
 }
 
 bool BLEConnection::waitForIndicateConfirm(void)

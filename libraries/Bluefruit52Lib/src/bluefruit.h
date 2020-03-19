@@ -111,7 +111,7 @@ class AdafruitBluefruit
      *------------------------------------------------------------------*/
     BLEPeriph          Periph;
     BLECentral         Central;
-    BLESecurity         Pairing;
+    BLESecurity        Security;
     BLEGatt            Gatt;
 
     BLEAdvertising     Advertising;
