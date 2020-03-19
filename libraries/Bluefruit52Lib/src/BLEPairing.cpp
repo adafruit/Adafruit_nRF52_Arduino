@@ -86,7 +86,6 @@ BLEPairing::BLEPairing(void)
 
 bool BLEPairing::begin(void)
 {
-
 #ifdef NRF_CRYPTOCELL
   // Initalize Crypto lib for LESC (safe to call multiple times)
   nRFCrypto.begin();
@@ -275,22 +274,21 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
               .p_enc_key  = &_bond_keys.own_enc,
               .p_id_key   = NULL,
               .p_sign_key = NULL,
-              .p_pk       = (ble_gap_lesc_p256_pk_t*) (_pubkey+1)
+              .p_pk       = NULL
           },
 
           .keys_peer = {
               .p_enc_key  = &_bond_keys.peer_enc,
               .p_id_key   = &_bond_keys.peer_id,
               .p_sign_key = NULL,
-              .p_pk       = (ble_gap_lesc_p256_pk_t*) (_peer_pubkey+1)
+              .p_pk       = NULL
           }
       };
 
-      // use LESC when both support it
-      if ( peer->lesc && _sec_param.lesc )
-      {
-//        keyset.
-      }
+      #ifdef NRF_CRYPTOCELL
+      keyset.keys_own.p_pk  = (ble_gap_lesc_p256_pk_t*) (_pubkey+1);
+      keyset.keys_peer.p_pk = (ble_gap_lesc_p256_pk_t*) (_peer_pubkey+1);
+      #endif
 
       VERIFY_STATUS(sd_ble_gap_sec_params_reply(conn_hdl, BLE_GAP_SEC_STATUS_SUCCESS,
                                                 conn->getRole() == BLE_GAP_ROLE_PERIPH ? &_sec_param : NULL, &keyset), );
@@ -310,6 +308,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
     }
     break;
 
+#ifdef NRF_CRYPTOCELL
     case BLE_GAP_EVT_LESC_DHKEY_REQUEST:
     {
       ble_gap_evt_lesc_dhkey_request_t* dhkey_req = &evt->evt.gap_evt.params.lesc_dhkey_request;
@@ -348,6 +347,7 @@ void BLEPairing::_eventHandler(ble_evt_t* evt)
       sd_ble_gap_lesc_dhkey_reply(conn_hdl, &dhkey);
     }
     break;
+#endif
 
     // Pairing process completed
     case BLE_GAP_EVT_AUTH_STATUS:

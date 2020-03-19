@@ -73,10 +73,11 @@ class BLEPairing
   private:
     ble_gap_sec_params_t _sec_param;
 
+#ifdef NRF_CRYPTOCELL
     nRFCrypto_ECC_PrivateKey _private_key;
-
     uint8_t _pubkey[1+BLE_GAP_LESC_P256_PK_LEN];      // our public key: 1 header + 64 data
     uint8_t _peer_pubkey[1+BLE_GAP_LESC_P256_PK_LEN]; // peer public key when using LESC
+#endif
 
     bond_keys_t  _bond_keys; // Shared keys with bonded device during securing connection, size ~ 80 bytes
 

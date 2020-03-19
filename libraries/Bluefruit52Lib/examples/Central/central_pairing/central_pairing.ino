@@ -39,7 +39,6 @@
 #include <bluefruit.h>
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
-#include <Adafruit_nRFCrypto.h>
 
 #ifdef USE_ARCADA
   #include <Adafruit_Arcada.h>
