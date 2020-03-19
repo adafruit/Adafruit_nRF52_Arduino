@@ -89,14 +89,14 @@ void setup()
   Bluefruit.begin(0, 1);
 
   // clear bonds if BUTTON A is pressed
-  Serial.println("Hold button A to clear bonds ..... ");
-  Serial.flush();
-  delay(2000);
-  if (0 == digitalRead(PIN_BUTTON1))
-  {
-    Serial.println("Clear all central bonds");
-    Bluefruit.Central.clearBonds();
-  }
+//  Serial.println("Hold button A to clear bonds ..... ");
+//  Serial.flush();
+//  delay(2000);
+//  if (0 == digitalRead(PIN_BUTTON1))
+//  {
+//    Serial.println("Clear all central bonds");
+//    Bluefruit.Central.clearBonds();
+//  }
 
   // To use dynamic PassKey for pairing, we need to have
   // - IO capacities at least DISPPLAY
