@@ -65,7 +65,7 @@ static void swap_endian(uint8_t data[], uint32_t nbytes)
   }
 }
 
-static void _passkey_display_cabllack_dfr(BLEPairing::pair_passkey_cb_t func, uint16_t conn_hdl, uint8_t const passkey[6], bool match_request)
+static void _passkey_display_cabllack_dfr(BLESecurity::pair_passkey_cb_t func, uint16_t conn_hdl, uint8_t const passkey[6], bool match_request)
 {
   bool matched = func(conn_hdl, passkey, match_request);
 
@@ -76,7 +76,7 @@ static void _passkey_display_cabllack_dfr(BLEPairing::pair_passkey_cb_t func, ui
   }
 }
 
-BLEPairing::BLEPairing(void)
+BLESecurity::BLESecurity(void)
 {
   _sec_param = _sec_param_default;
   _passkey_cb = NULL;
@@ -84,7 +84,7 @@ BLEPairing::BLEPairing(void)
   _secured_cb = NULL;
 }
 
-bool BLEPairing::begin(void)
+bool BLESecurity::begin(void)
 {
 #ifdef NRF_CRYPTOCELL
   // Initalize Crypto lib for LESC (safe to call multiple times)
@@ -113,7 +113,7 @@ bool BLEPairing::begin(void)
   return true;
 }
 
-void BLEPairing::setIOCaps(bool display, bool yes_no, bool keyboard)
+void BLESecurity::setIOCaps(bool display, bool yes_no, bool keyboard)
 {
   uint8_t io_caps = BLE_GAP_IO_CAPS_NONE;
 
@@ -138,7 +138,7 @@ void BLEPairing::setIOCaps(bool display, bool yes_no, bool keyboard)
   _sec_param.io_caps = io_caps;
 }
 
-void BLEPairing::setMITM(bool enabled)
+void BLESecurity::setMITM(bool enabled)
 {
   _sec_param.mitm = (enabled ? 1 : 0);
 }
@@ -149,7 +149,7 @@ void BLEPairing::setMITM(bool enabled)
  *
  * To check if it matches we recreate local AES Hash with IRK to compare with
 */
-bool BLEPairing::resolveAddress(ble_gap_addr_t const * p_addr, ble_gap_irk_t const * irk)
+bool BLESecurity::resolveAddress(ble_gap_addr_t const * p_addr, ble_gap_irk_t const * irk)
 {
   VERIFY(p_addr->addr_type == BLE_GAP_ADDR_TYPE_RANDOM_PRIVATE_RESOLVABLE);
 
@@ -177,7 +177,7 @@ bool BLEPairing::resolveAddress(ble_gap_addr_t const * p_addr, ble_gap_irk_t con
 }
 
 // Use Legacy SC static Passkey
-bool BLEPairing::setPIN(const char* pin)
+bool BLESecurity::setPIN(const char* pin)
 {
   VERIFY(pin && strlen(pin) == BLE_GAP_PASSKEY_LEN);
 
@@ -197,7 +197,7 @@ bool BLEPairing::setPIN(const char* pin)
 }
 
 // Pairing using LESC with peripheral display
-bool BLEPairing::setPasskeyCallback(pair_passkey_cb_t fp)
+bool BLESecurity::setPasskeyCallback(pair_passkey_cb_t fp)
 {
   _passkey_cb = fp;
 
@@ -207,23 +207,23 @@ bool BLEPairing::setPasskeyCallback(pair_passkey_cb_t fp)
   return true;
 }
 
-void BLEPairing::setCompleteCallback(pair_complete_cb_t fp)
+void BLESecurity::setCompleteCallback(pair_complete_cb_t fp)
 {
   _complete_cb = fp;
 }
 
-void BLEPairing::setSecuredCallback(pair_secured_cb_t fp)
+void BLESecurity::setSecuredCallback(pair_secured_cb_t fp)
 {
  _secured_cb = fp;
 }
 
-bool BLEPairing::_authenticate(uint16_t conn_hdl)
+bool BLESecurity::_authenticate(uint16_t conn_hdl)
 {
   VERIFY_STATUS(sd_ble_gap_authenticate(conn_hdl, &_sec_param ), false);
   return true;
 }
 
-bool BLEPairing::_encrypt(uint16_t conn_hdl, bond_keys_t const* ltkey)
+bool BLESecurity::_encrypt(uint16_t conn_hdl, bond_keys_t const* ltkey)
 {
   // LESC use own key, Legacy use peer key
   ble_gap_enc_key_t const* enc_key = ltkey->own_enc.enc_info.lesc ? &ltkey->own_enc : &ltkey->peer_enc;
@@ -249,7 +249,7 @@ bool BLEPairing::_encrypt(uint16_t conn_hdl, bond_keys_t const* ltkey)
  * 3. Connection is secured BLE_GAP_EVT_CONN_SEC_UPDATE
  */
 //--------------------------------------------------------------------+
-void BLEPairing::_eventHandler(ble_evt_t* evt)
+void BLESecurity::_eventHandler(ble_evt_t* evt)
 {
   uint16_t const conn_hdl = evt->evt.common_evt.conn_handle;
   BLEConnection* conn = Bluefruit.Connection(conn_hdl);

@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef BLEPAIRING_H_
-#define BLEPAIRING_H_
+#ifndef BLESECURITY_H_
+#define BLESECURITY_H_
 
 #include "bluefruit_common.h"
 #include "utility/bonding.h"
@@ -32,14 +32,14 @@
 #include "Adafruit_nRFCrypto.h"
 #endif
 
-class BLEPairing
+class BLESecurity
 {
   public:
     typedef bool (*pair_passkey_cb_t ) (uint16_t conn_hdl, uint8_t const passkey[6], bool match_request);
     typedef void (*pair_complete_cb_t) (uint16_t conn_hdl, uint8_t auth_status);
     typedef void (*pair_secured_cb_t) (uint16_t conn_hdl);
 
-    BLEPairing(void);
+    BLESecurity(void);
 
     bool begin(void);
 
@@ -86,4 +86,4 @@ class BLEPairing
     pair_secured_cb_t  _secured_cb;
 };
 
-#endif /* BLEPAIRING_H_ */
+#endif /* BLESECURITY_H_ */

@@ -55,7 +55,7 @@
 #include "BLEDiscovery.h"
 #include "BLEConnection.h"
 #include "BLEGatt.h"
-#include "BLEPairing.h"
+#include "BLESecurity.h"
 
 // Services
 #include "services/BLEDis.h"
@@ -111,7 +111,7 @@ class AdafruitBluefruit
      *------------------------------------------------------------------*/
     BLEPeriph          Periph;
     BLECentral         Central;
-    BLEPairing         Pairing;
+    BLESecurity         Pairing;
     BLEGatt            Gatt;
 
     BLEAdvertising     Advertising;
