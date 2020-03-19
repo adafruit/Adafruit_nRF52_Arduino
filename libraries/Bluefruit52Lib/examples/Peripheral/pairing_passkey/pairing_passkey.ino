@@ -121,7 +121,7 @@ void setup()
   // Set Permission to access BLE Uart is to require man-in-the-middle protection
   // This will cause central to perform pairing with static PIN we set above
   Serial.println("Configure BLE Uart to require man-in-the-middle protection for PIN pairing");
-  bleuart.setPermission(SECMODE_ENC_WITH_MITM);
+  bleuart.setPermission(SECMODE_ENC_WITH_MITM, SECMODE_ENC_WITH_MITM);
   bleuart.begin();
 
 #ifdef USE_ARCADA

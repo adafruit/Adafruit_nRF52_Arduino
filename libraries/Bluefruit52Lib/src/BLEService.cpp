@@ -41,7 +41,8 @@ BLEService* BLEService::lastService = NULL;
 void BLEService::_init(void)
 {
   _handle = BLE_GATT_HANDLE_INVALID;
-  _permission = SECMODE_OPEN;
+  _read_perm = SECMODE_OPEN;
+  _write_perm = SECMODE_OPEN;
 }
 
 BLEService::BLEService(void)
@@ -61,14 +62,16 @@ void BLEService::setUuid(BLEUuid bleuuid)
   uuid = bleuuid;
 }
 
-void BLEService::setPermission(SecureMode_t permission)
+void BLEService::setPermission(SecureMode_t read_perm, SecureMode_t write_perm)
 {
-  _permission = permission;
+  _read_perm = read_perm;
+  _write_perm = write_perm;
 }
 
-SecureMode_t BLEService::getPermission(void)
+void BLEService::getPermission(SecureMode_t* read_perm, SecureMode_t* write_perm)
 {
-  return _permission;
+  *read_perm = _read_perm;
+  *write_perm = _write_perm;
 }
 
 err_t BLEService::begin(void)

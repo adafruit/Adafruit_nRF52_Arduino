@@ -43,7 +43,8 @@ class BLEService
 {
   protected:
     uint16_t _handle; // service gatt handle
-    SecureMode_t _permission;
+    SecureMode_t _read_perm;
+    SecureMode_t _write_perm;
 
     void  _init(void);
 
@@ -60,8 +61,8 @@ class BLEService
 
     void setUuid(BLEUuid bleuuid);
 
-    void setPermission(SecureMode_t permission);
-    SecureMode_t getPermission(void);
+    void setPermission(SecureMode_t read_perm, SecureMode_t write_perm);
+    void getPermission(SecureMode_t* read_perm, SecureMode_t* write_perm);
 
     virtual err_t begin(void);
 

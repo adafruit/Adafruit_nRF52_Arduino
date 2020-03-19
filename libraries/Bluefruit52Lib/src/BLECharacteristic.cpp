@@ -245,18 +245,21 @@ err_t BLECharacteristic::begin(void)
 
   // Correct Read/Write permission according to parent service
   // Use service permission if it has higher secure mode
-  SecureMode_t svc_secmode = _service->getPermission();
-  ble_gap_conn_sec_mode_t svc_perm;
-  memcpy(&svc_perm, &svc_secmode, 1);
+  SecureMode_t svc_rd_secmode, svc_wr_secmod;
+  _service->getPermission(&svc_rd_secmode, &svc_wr_secmod);
+
+  ble_gap_conn_sec_mode_t svc_rd_perm, svc_wr_perm;
+  memcpy(&svc_rd_perm, &svc_rd_secmode, 1);
+  memcpy(&svc_wr_perm, &svc_wr_secmod , 1);
 
   if ( _attr_meta.read_perm.sm != 0 ) // skip no access
   {
-    _attr_meta.read_perm = max_secmode(_attr_meta.read_perm, svc_perm);
+    _attr_meta.read_perm = max_secmode(_attr_meta.read_perm, svc_rd_perm);
   }
 
   if ( _attr_meta.write_perm.sm != 0 ) // skip no access
   {
-    _attr_meta.write_perm = max_secmode(_attr_meta.write_perm, svc_perm);
+    _attr_meta.write_perm = max_secmode(_attr_meta.write_perm, svc_wr_perm);
   }
 
   /* CCCD attribute metadata */
