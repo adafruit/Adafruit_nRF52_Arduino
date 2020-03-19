@@ -112,8 +112,8 @@ recipe.output.save_file_hexu={build.project_name}.save.hex
 
 ## Compute size
 recipe.size.pattern="{compiler.path}{compiler.size.cmd}" -A "{build.path}/{build.project_name}.elf"
-recipe.size.regex=\.text\s+([0-9]+).*
-recipe.size.regex.data=(\.data|\.bss|\.stack)\s+([0-9]+).*
+recipe.size.regex=(?:\.text)\s+([0-9]+).*
+recipe.size.regex.data=(?:\.data|\.bss|\.stack)\s+([0-9]+).*
 
 ## Export Compiled Binary
 recipe.output.tmp_file={build.project_name}.hex
