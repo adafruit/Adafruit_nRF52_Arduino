@@ -48,8 +48,10 @@ BLEDis::BLEDis(void)
 #else
   this->setModel("Feather nRF52832");
 #endif
-
-  this->setSoftwareRev(ARDUINO_BSP_VERSION);
+    
+#define XSTR(x) STR(x)
+#define STR(x) #x
+  this->setSoftwareRev(XSTR(ARDUINO_BSP_VERSION));
   this->setManufacturer("Adafruit Industries");
 }
 
