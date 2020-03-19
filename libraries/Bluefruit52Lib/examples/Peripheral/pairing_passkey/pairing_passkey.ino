@@ -12,6 +12,24 @@
  any redistribution
 *********************************************************************/
 
+/* This sketch demonstrates Pairing process using dynamic Passkey.
+ * This sketch is essentially the same as bleuart.ino except the BLE Uart
+ * service requires Security Mode with Man-In-The-Middle protection i.e
+ *
+ * BLE Pairing procedure is complicated, it is advisable for users to go through
+ * these articles to get familiar with the procedure and terminology
+ * - https://www.bluetooth.com/blog/bluetooth-pairing-part-1-pairing-feature-exchange/
+ * - https://www.bluetooth.com/blog/bluetooth-pairing-part-2-key-generation-methods/
+ * - https://www.bluetooth.com/blog/bluetooth-pairing-passkey-entry/
+ * - https://www.bluetooth.com/blog/bluetooth-pairing-part-4/
+ *
+ * IF TFT enabled board such as CLUE is used, the passkey will also display on the
+ * TFT. Following boards with TFT are supported
+ *  - Adafruit CLUE : https://www.adafruit.com/product/4500
+ *  - Circuit Playground Bluefruit: https://www.adafruit.com/product/4333
+ *  - TFT Gizmo : https://www.adafruit.com/product/4367
+ */
+
 #if defined(ARDUINO_NRF52840_CIRCUITPLAY) || defined(ARDUINO_NRF52840_CLUE)
   #define USE_ARCADA
 #endif
@@ -41,26 +59,6 @@
     #define BUTTON_NO   A1
   #endif
 #endif
-
-
-/* This sketch demonstrates Pairing process using dynamic Passkey.
- * This sketch is essentially the same as bleuart.ino except the BLE Uart
- * service requires Security Mode with Man-In-The-Middle protection i.e
- *
- * BLE Pairing procedure is complicated, it is advisable for users to go through
- * these articles to get familiar with the procedure and terminology
- * - https://www.bluetooth.com/blog/bluetooth-pairing-part-1-pairing-feature-exchange/
- * - https://www.bluetooth.com/blog/bluetooth-pairing-part-2-key-generation-methods/
- * - https://www.bluetooth.com/blog/bluetooth-pairing-passkey-entry/
- * - https://www.bluetooth.com/blog/bluetooth-pairing-part-4/
- */
-
-/* This sketch demonstrates the "Image Upload" feature of Bluefruit Mobile App.
- * Following TFT Display are supported
- *  - Circuit Playground Bluefruit: https://www.adafruit.com/product/4333
- *  - TFT Gizmo : https://www.adafruit.com/product/4367
- *  - Adafruit CLUE : https://www.adafruit.com/product/4500
- */
 
 // BLE Service
 BLEUart bleuart; // uart over ble
@@ -98,15 +96,6 @@ void setup()
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-
-  // clear bonds if BUTTON A is pressed
-//  Serial.println("Hold button A to clear bonds ..... ");
-//  delay(2000);
-//  if (0 == digitalRead(PIN_BUTTON1))
-//  {
-//    Serial.println("Clear all central bonds");
-//    Bluefruit.Periph.clearBonds();
-//  }
 
   /* To use dynamic PassKey for pairing, we need to have
    * - IO capacities at least DISPPLAY
@@ -278,6 +267,10 @@ bool pairing_passkey_callback(uint16_t conn_handle, uint8_t const passkey[6], bo
     uint32_t justReleased;
     do
     {
+      // Disconnected while waiting for input
+      if ( !Bluefruit.connected(conn_handle) ) break;
+
+      // time out
       if ( millis() > start_time + 30000 ) break;
 
       arcada.readButtons();
@@ -294,6 +287,10 @@ bool pairing_passkey_callback(uint16_t conn_handle, uint8_t const passkey[6], bo
     // wait until either button is pressed (30 seconds timeout)
     while( digitalRead(BUTTON_YES) && digitalRead(BUTTON_NO) )
     {
+      // Disconnected while waiting for input
+      if ( !Bluefruit.connected(conn_handle) ) break;
+
+      // time out
       if ( millis() > start_time + 30000 ) break;
     }
 
