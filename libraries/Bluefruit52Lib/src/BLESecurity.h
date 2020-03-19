@@ -37,7 +37,7 @@ class BLESecurity
   public:
     typedef bool (*pair_passkey_cb_t ) (uint16_t conn_hdl, uint8_t const passkey[6], bool match_request);
     typedef void (*pair_complete_cb_t) (uint16_t conn_hdl, uint8_t auth_status);
-    typedef void (*pair_secured_cb_t) (uint16_t conn_hdl);
+    typedef void (*secured_conn_cb_t) (uint16_t conn_hdl);
 
     BLESecurity(void);
 
@@ -56,9 +56,9 @@ class BLESecurity
     bool resolveAddress(ble_gap_addr_t const * p_addr, ble_gap_irk_t const * irk);
 
     //------------- Callbacks -------------//
-    bool setPasskeyCallback(pair_passkey_cb_t fp);
-    void setCompleteCallback(pair_complete_cb_t fp);
-    void setSecuredCallback(pair_secured_cb_t fp);
+    bool setPairPasskeyCallback(pair_passkey_cb_t fp);
+    void setPairCompleteCallback(pair_complete_cb_t fp);
+    void setSecuredCallback(secured_conn_cb_t fp);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
@@ -83,7 +83,7 @@ class BLESecurity
 
     pair_passkey_cb_t  _passkey_cb;
     pair_complete_cb_t _complete_cb;
-    pair_secured_cb_t  _secured_cb;
+    secured_conn_cb_t  _secured_cb;
 };
 
 #endif /* BLESECURITY_H_ */

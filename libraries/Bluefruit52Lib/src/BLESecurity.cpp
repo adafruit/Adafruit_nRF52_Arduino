@@ -197,7 +197,7 @@ bool BLESecurity::setPIN(const char* pin)
 }
 
 // Pairing using LESC with peripheral display
-bool BLESecurity::setPasskeyCallback(pair_passkey_cb_t fp)
+bool BLESecurity::setPairPasskeyCallback(pair_passkey_cb_t fp)
 {
   _passkey_cb = fp;
 
@@ -207,12 +207,12 @@ bool BLESecurity::setPasskeyCallback(pair_passkey_cb_t fp)
   return true;
 }
 
-void BLESecurity::setCompleteCallback(pair_complete_cb_t fp)
+void BLESecurity::setPairCompleteCallback(pair_complete_cb_t fp)
 {
   _complete_cb = fp;
 }
 
-void BLESecurity::setSecuredCallback(pair_secured_cb_t fp)
+void BLESecurity::setSecuredCallback(secured_conn_cb_t fp)
 {
  _secured_cb = fp;
 }

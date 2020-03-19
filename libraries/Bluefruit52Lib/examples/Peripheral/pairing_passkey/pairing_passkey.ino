@@ -106,10 +106,10 @@ void setup()
    * https://www.bluetooth.com/blog/bluetooth-pairing-part-2-key-generation-methods/
    */
   Bluefruit.Security.setIOCaps(true, true, false); // display = true, yes/no = true, keyboard = false
-  Bluefruit.Security.setPasskeyCallback(pairing_passkey_callback);
+  Bluefruit.Security.setPairPasskeyCallback(pairing_passkey_callback);
 
   // Set complete callback to print the pairing result
-  Bluefruit.Security.setCompleteCallback(pairing_complete_callback);
+  Bluefruit.Security.setPairCompleteCallback(pairing_complete_callback);
 
   // Set connection secured callback, invoked when connection is encrypted
   Bluefruit.Security.setSecuredCallback(connection_secured_callback);
