@@ -40,7 +40,7 @@
 #include <stdbool.h>
 
 #include "compiler_macro.h"
-#include "verify.h"
 #include "common_func.h"
+#include "verify.h"
 
 #endif /* COMMON_INC_H_ */

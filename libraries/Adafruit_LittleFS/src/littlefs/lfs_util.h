@@ -24,8 +24,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "FreeRTOS.h"
-
 #ifndef LFS_NO_MALLOC
 #include <stdlib.h>
 #endif
@@ -56,21 +54,21 @@ extern "C"
 // Logging functions
 #ifndef LFS_NO_DEBUG
 #define LFS_DEBUG(fmt, ...) \
-    PRINTF("lfs debug:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+    printf("lfs debug:%d: " fmt "\n", __LINE__, __VA_ARGS__)
 #else
 #define LFS_DEBUG(fmt, ...)
 #endif
 
 #ifndef LFS_NO_WARN
 #define LFS_WARN(fmt, ...) \
-    PRINTF("lfs warn:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+    printf("lfs warn:%d: " fmt "\n", __LINE__, __VA_ARGS__)
 #else
 #define LFS_WARN(fmt, ...)
 #endif
 
 #ifndef LFS_NO_ERROR
 #define LFS_ERROR(fmt, ...) \
-    PRINTF("lfs error:%d: " fmt "\n", __LINE__, __VA_ARGS__)
+    printf("lfs error:%d: " fmt "\n", __LINE__, __VA_ARGS__)
 #else
 #define LFS_ERROR(fmt, ...)
 #endif
