@@ -39,6 +39,7 @@
 #include <malloc.h>
 #include <Arduino.h>
 #include <ctype.h>
+#include <common_func.h>
 
 // defined in linker script
 extern uint32_t __data_start__[];
@@ -106,14 +107,14 @@ static void printMemRegion(const char* name, uint32_t top, uint32_t bottom, uint
     sprintf(buffer, "%lu", top-bottom);
   }
 
-  printf("| %-5s| 0x%04X - 0x%04X | %-19s |\n", name, (uint16_t) bottom, (uint16_t) (top-1), buffer);
+  PRINTF("| %-5s| 0x%04X - 0x%04X | %-19s |\n", name, (uint16_t) bottom, (uint16_t) (top-1), buffer);
 }
 
 void dbgMemInfo(void)
 {
-  printf(" ______________________________________________\n");
-  printf("| Name | Addr 0x2000xxxx | Usage               |\n");
-  printf("| ---------------------------------------------|\n");
+  PRINTF(" ______________________________________________\n");
+  PRINTF("| Name | Addr 0x2000xxxx | Usage               |\n");
+  PRINTF("| ---------------------------------------------|\n");
 
   // Pritn SRAM used for Stack executed by Softdevice and ISR
   printMemRegion("Stack", ((uint32_t) __StackTop), ((uint32_t) __StackLimit), dbgStackUsed() );
@@ -127,8 +128,8 @@ void dbgMemInfo(void)
   // Print SRAM Used by SoftDevice
   printMemRegion("SD", (uint32_t) __data_start__, 0x20000000, 0);
 
-  printf("|______________________________________________|\n");
-  printf("\n");
+  PRINTF("|______________________________________________|\n");
+  PRINTF("\n");
 
   // Print Task list
   uint32_t tasknum = uxTaskGetNumberOfTasks();
@@ -136,20 +137,20 @@ void dbgMemInfo(void)
 
   vTaskList(buf);
 
-  printf("Task    State   Prio  StackLeft Num\n");
-  printf("-----------------------------------\n");
-  printf(buf);
-  printf("\n");
+  PRINTF("Task    State   Prio  StackLeft Num\n");
+  PRINTF("-----------------------------------\n");
+  PRINTF(buf);
+  PRINTF("\n");
   rtos_free(buf);
 }
 
 void dbgPrintVersion(void)
 {
-  printf("\n");
-  printf("BSP Library : " ARDUINO_BSP_VERSION "\n");
-  printf("Bootloader  : %s\n", getBootloaderVersion());
-  printf("Serial No   : %s\n", getMcuUniqueID());
-  printf("\n");
+  PRINTF("\n");
+  PRINTF("BSP Library : " ARDUINO_BSP_VERSION "\n");
+  PRINTF("Bootloader  : %s\n", getBootloaderVersion());
+  PRINTF("Serial No   : %s\n", getMcuUniqueID());
+  PRINTF("\n");
 }
 
 /******************************************************************************/
@@ -163,7 +164,7 @@ static void dump_str_line(uint8_t const* buf, uint16_t count)
   for(int i=0; i<count; i++)
   {
     const char ch = buf[i];
-    printf("%c", isprint(ch) ? ch : '.');
+    PRINTF("%c", isprint(ch) ? ch : '.');
   }
 }
 
@@ -171,7 +172,7 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
 {
   if ( !buf || !count )
   {
-    printf("NULL\n");
+    PRINTF("NULL\n");
     return;
   }
 
@@ -191,26 +192,26 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
       // Print Ascii
       if ( i != 0 )
       {
-        printf(" | ");
+        PRINTF(" | ");
         dump_str_line(buf8-16, 16);
-        printf("\n");
+        PRINTF("\n");
       }
 
       // print offset or absolute address
       if (printOffset)
       {
-        printf("%03lX: ", 16*i/item_per_line);
+        PRINTF("%03lX: ", 16*i/item_per_line);
       }else
       {
-        printf("%08lX:", (uint32_t) buf8);
+        PRINTF("%08lX:", (uint32_t) buf8);
       }
     }
 
     memcpy(&value, buf8, size);
     buf8 += size;
 
-    printf(" ");
-    printf(format, value);
+    PRINTF(" ");
+    PRINTF(format, value);
   }
 
   // fill up last row to 16 for printing ascii
@@ -221,16 +222,16 @@ void dbgDumpMemory(void const *buf, uint8_t size, uint16_t count, bool printOffs
   {
     for(int i=0; i< 16-remain; i++)
     {
-      printf(" ");
-      for(int j=0; j<2*size; j++) printf(" ");
+      PRINTF(" ");
+      for(int j=0; j<2*size; j++) PRINTF(" ");
     }
   }
 
-  printf(" | ");
+  PRINTF(" | ");
   dump_str_line(buf8-nback, nback);
-  printf("\n");
+  PRINTF("\n");
 
-  printf("\n");
+  PRINTF("\n");
 }
 
 
@@ -238,11 +239,11 @@ void dbgDumpMemoryCFormat(const char* str, void const *buf, uint16_t count)
 {
   if ( !buf )
   {
-    printf("NULL\n");
+    PRINTF("NULL\n");
     return;
   }
 
-  printf("%s = \n{\n  ", str);
+  PRINTF("%s = \n{\n  ", str);
 
   uint8_t const *buf8 = (uint8_t const *) buf;
 
@@ -250,17 +251,17 @@ void dbgDumpMemoryCFormat(const char* str, void const *buf, uint16_t count)
   {
     if ( i%16 == 0 )
     {
-      if ( i != 0 ) printf(",\n  ");
+      if ( i != 0 ) PRINTF(",\n  ");
     }else
     {
-      if ( i != 0 ) printf(", ");
+      if ( i != 0 ) PRINTF(", ");
     }
 
-    printf("0x%02X", *buf8);
+    PRINTF("0x%02X", *buf8);
     buf8++;
   }
 
-  printf("\n};\n");
+  PRINTF("\n};\n");
 }
 
 
