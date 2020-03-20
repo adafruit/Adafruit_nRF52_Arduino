@@ -116,6 +116,13 @@
 //--------------------------------------------------------------------+
 const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
+#if __cplusplus
+#define PRINTF    ::printf
+#else
+#define PRINTF    printf
+#endif
+
+
 #if CFG_DEBUG
 #define LOG_LV1(...)          ADALOG(__VA_ARGS__)
 #define LOG_LV1_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
@@ -134,15 +141,9 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
 #if CFG_DEBUG
 
-#if __cplusplus
-#define PRINTF    ::printf
-#else
-#define PRINTF    printf
-#endif
-
 #define PRINT_LOCATION()      PRINTF("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)
 #define PRINT_MESS(x)         PRINTF("%s: %d: %s \n"   , __FUNCTION__, __LINE__, (char*)(x))
-#define PRTNT_HEAP()          if (CFG_DEBUG == 3) PRINTF("\n%s: %d: Heap free: %d\n", __FUNCTION__, __LINE__, util_heap_get_free_size())
+#define PRTNT_HEAP()          if (CFG_DEBUG >= 3) PRINTF("\n%s: %d: Heap free: %d\n", __FUNCTION__, __LINE__, util_heap_get_free_size())
 #define PRINT_STR(x)          PRINTF("%s: %d: " #x " = %s\n"   , __FUNCTION__, __LINE__, (char*)(x) )
 #define PRINT_INT(x)          PRINTF("%s: %d: " #x " = %ld\n"  , __FUNCTION__, __LINE__, (uint32_t) (x) )
 #define PRINT_FLOAT(x)        PRINTF("%s: %d: " #x " = %f\n"  , __FUNCTION__, __LINE__, (float) (x) )

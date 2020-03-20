@@ -60,16 +60,16 @@ extern "C"
   #define VERIFY_MESS(_status, _functstr) VERIFY_MESS_impl(_status, _functstr, __PRETTY_FUNCTION__, __LINE__)
   static inline void VERIFY_MESS_impl(int32_t _status, const char* (*_fstr)(int32_t), const char* func_name, int line_number)
   {
-      printf("%s: %d: verify failed, error = ", func_name, line_number);
+      PRINTF("%s: %d: verify failed, error = ", func_name, line_number);
       if (_fstr)
       {
-        printf(_fstr(_status));
+        PRINTF(_fstr(_status));
       }
       else
       {
-        printf("%ld", _status);
+        PRINTF("%ld", _status);
       }
-      printf("\n");
+      PRINTF("\n");
   }
 #else
   #define VERIFY_MESS(_status, _funcstr)

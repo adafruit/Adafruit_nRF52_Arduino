@@ -971,120 +971,122 @@ void AdafruitBluefruit::printInfo(void)
 {
   // Skip if Serial is not initialised
   if ( !Serial ) return;
+  // prepare for ability to change output, based on compile-time flags
+  Print& logger = Serial;
 
   // Skip if Bluefruit.begin() is not called
   if ( _ble_event_sem == NULL ) return;
 
-  Serial.println("--------- SoftDevice Config ---------");
+  logger.println("--------- SoftDevice Config ---------");
 
   char const * title_fmt = "%-16s: ";
 
   /*------------- SoftDevice Config -------------*/
   // Max uuid128
-  Serial.printf(title_fmt, "Max UUID128");
-  Serial.println(_sd_cfg.uuid128_max);
+  logger.printf(title_fmt, "Max UUID128");
+  logger.println(_sd_cfg.uuid128_max);
 
   // ATTR Table Size
-  Serial.printf(title_fmt, "ATTR Table Size");
-  Serial.println(_sd_cfg.attr_table_size);
+  logger.printf(title_fmt, "ATTR Table Size");
+  logger.println(_sd_cfg.attr_table_size);
 
   // Service Changed
-  Serial.printf(title_fmt, "Service Changed");
-  Serial.println(_sd_cfg.service_changed);
+  logger.printf(title_fmt, "Service Changed");
+  logger.println(_sd_cfg.service_changed);
 
   if ( _prph_count )
   {
-    Serial.println("Peripheral Connect Setting");
+    logger.println("Peripheral Connect Setting");
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Max MTU");
-    Serial.println(_sd_cfg.prph.mtu_max);
+    logger.print("  - ");
+    logger.printf(title_fmt, "Max MTU");
+    logger.println(_sd_cfg.prph.mtu_max);
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Event Length");
-    Serial.println(_sd_cfg.prph.event_len);
+    logger.print("  - ");
+    logger.printf(title_fmt, "Event Length");
+    logger.println(_sd_cfg.prph.event_len);
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "HVN Queue Size");
-    Serial.println(_sd_cfg.prph.hvn_qsize);
+    logger.print("  - ");
+    logger.printf(title_fmt, "HVN Queue Size");
+    logger.println(_sd_cfg.prph.hvn_qsize);
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "WrCmd Queue Size");
-    Serial.println(_sd_cfg.prph.wrcmd_qsize);
+    logger.print("  - ");
+    logger.printf(title_fmt, "WrCmd Queue Size");
+    logger.println(_sd_cfg.prph.wrcmd_qsize);
   }
 
   if ( _central_count )
   {
-    Serial.println("Central Connect Setting");
+    logger.println("Central Connect Setting");
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Max MTU");
-    Serial.println(_sd_cfg.central.mtu_max);
+    logger.print("  - ");
+    logger.printf(title_fmt, "Max MTU");
+    logger.println(_sd_cfg.central.mtu_max);
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "Event Length");
-    Serial.println(_sd_cfg.central.event_len);
+    logger.print("  - ");
+    logger.printf(title_fmt, "Event Length");
+    logger.println(_sd_cfg.central.event_len);
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "HVN Queue Size");
-    Serial.println(_sd_cfg.central.hvn_qsize);
+    logger.print("  - ");
+    logger.printf(title_fmt, "HVN Queue Size");
+    logger.println(_sd_cfg.central.hvn_qsize);
 
-    Serial.print("  - ");
-    Serial.printf(title_fmt, "WrCmd Queue Size");
-    Serial.println(_sd_cfg.central.wrcmd_qsize);
+    logger.print("  - ");
+    logger.printf(title_fmt, "WrCmd Queue Size");
+    logger.println(_sd_cfg.central.wrcmd_qsize);
   }
 
   /*------------- Settings -------------*/
-  Serial.println("\n--------- BLE Settings ---------");
+  logger.println("\n--------- BLE Settings ---------");
   // Name
-  Serial.printf(title_fmt, "Name");
+  logger.printf(title_fmt, "Name");
   {
     char name[32];
     memclr(name, sizeof(name));
     getName(name, sizeof(name));
-    Serial.printf(name);
+    logger.printf(name);
   }
-  Serial.println();
+  logger.println();
 
   // Max Connections
-  Serial.printf(title_fmt, "Max Connections");
-  Serial.printf("Peripheral = %d, ", _prph_count);
-  Serial.printf("Central = %d ", _central_count);
-  Serial.println();
+  logger.printf(title_fmt, "Max Connections");
+  logger.printf("Peripheral = %d, ", _prph_count);
+  logger.printf("Central = %d ", _central_count);
+  logger.println();
 
   // Address
-  Serial.printf(title_fmt, "Address");
+  logger.printf(title_fmt, "Address");
   {
     char const * type_str[] = { "Public", "Static", "Private Resolvable", "Private Non Resolvable" };
     ble_gap_addr_t gap_addr = this->getAddr();
 
     // MAC is in little endian --> print reverse
-    Serial.printBufferReverse(gap_addr.addr, 6, ':');
-    Serial.printf(" (%s)", type_str[gap_addr.addr_type]);
+    logger.printBufferReverse(gap_addr.addr, 6, ':');
+    logger.printf(" (%s)", type_str[gap_addr.addr_type]);
   }
-  Serial.println();
+  logger.println();
 
   // Tx Power
-  Serial.printf(title_fmt, "TX Power");
-  Serial.printf("%d dBm", _tx_power);
-  Serial.println();
+  logger.printf(title_fmt, "TX Power");
+  logger.printf("%d dBm", _tx_power);
+  logger.println();
 
   Periph.printInfo();
 
   /*------------- List the paried device -------------*/
   if ( _prph_count )
   {
-    Serial.printf(title_fmt, "Peripheral Paired Devices");
-    Serial.println();
+    logger.printf(title_fmt, "Peripheral Paired Devices");
+    logger.println();
     bond_print_list(BLE_GAP_ROLE_PERIPH);
   }
 
   if ( _central_count )
   {
-    Serial.printf(title_fmt, "Central Paired Devices");
-    Serial.println();
+    logger.printf(title_fmt, "Central Paired Devices");
+    logger.println();
     bond_print_list(BLE_GAP_ROLE_CENTRAL);
   }
 
-  Serial.println();
+  logger.println();
 }
