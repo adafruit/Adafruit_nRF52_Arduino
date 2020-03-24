@@ -298,7 +298,7 @@ cluenrf52840.upload.protocol=nrfutil
 cluenrf52840.upload.use_1200bps_touch=true
 cluenrf52840.upload.wait_for_upload_port=true
 cluenrf52840.upload.maximum_size=815104
-cluenrf52840.upload.maximum_data_size=248832
+cluenrf52840.upload.maximum_data_size=237568
 
 # Build
 cluenrf52840.build.mcu=cortex-m4
@@ -457,7 +457,7 @@ particle_xenon.upload.protocol=nrfutil
 particle_xenon.upload.use_1200bps_touch=true
 particle_xenon.upload.wait_for_upload_port=true
 particle_xenon.upload.maximum_size=815104
-particle_xenon.upload.maximum_data_size=248832
+particle_xenon.upload.maximum_data_size=237568
 
 # Build
 particle_xenon.build.mcu=cortex-m4
@@ -510,7 +510,7 @@ mdbt50qrx.upload.protocol=nrfutil
 mdbt50qrx.upload.use_1200bps_touch=true
 mdbt50qrx.upload.wait_for_upload_port=true
 mdbt50qrx.upload.maximum_size=815104
-mdbt50qrx.upload.maximum_data_size=248832
+mdbt50qrx.upload.maximum_data_size=237568
 
 # Build
 mdbt50qrx.build.mcu=cortex-m4
