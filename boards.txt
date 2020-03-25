@@ -59,7 +59,8 @@ feather52832.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 feather52832.menu.debug.l2=Level 2 (Full Debug)
 feather52832.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 feather52832.menu.debug.l3=Level 3 (Segger SystemView)
-feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=1
+feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+feather52832.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 # ----------------------------------
 # Bluefruit Feather nRF52840 Express
@@ -112,7 +113,8 @@ feather52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 feather52840.menu.debug.l2=Level 2 (Full Debug)
 feather52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 feather52840.menu.debug.l3=Level 3 (Segger SystemView)
-feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=1
+feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+feather52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 
 # ----------------------------------
@@ -166,7 +168,8 @@ feather52840sense.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 feather52840sense.menu.debug.l2=Level 2 (Full Debug)
 feather52840sense.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 feather52840sense.menu.debug.l3=Level 3 (Segger SystemView)
-feather52840sense.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=1
+feather52840sense.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+feather52840sense.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 
 # ---------------------------------------------
@@ -220,7 +223,8 @@ itsybitsy52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 itsybitsy52840.menu.debug.l2=Level 2 (Full Debug)
 itsybitsy52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 itsybitsy52840.menu.debug.l3=Level 3 (Segger SystemView)
-itsybitsy52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=1
+itsybitsy52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+itsybitsy52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 # ---------------------------------------------
 # Bluefruit Circuit Playground nRF52840 Express
@@ -273,7 +277,8 @@ cplaynrf52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 cplaynrf52840.menu.debug.l2=Level 2 (Full Debug)
 cplaynrf52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 cplaynrf52840.menu.debug.l3=Level 3 (Segger SystemView)
-cplaynrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=1
+cplaynrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+cplaynrf52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 
 # ---------------------------------------------
@@ -327,7 +332,8 @@ cluenrf52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 cluenrf52840.menu.debug.l2=Level 2 (Full Debug)
 cluenrf52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 cluenrf52840.menu.debug.l3=Level 3 (Segger SystemView)
-cluenrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=1
+cluenrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+cluenrf52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 # ----------------------------------
 # Bluefruit Metro nRF52840 Express
@@ -380,7 +386,8 @@ metro52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 metro52840.menu.debug.l2=Level 2 (Full Debug)
 metro52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 metro52840.menu.debug.l3=Level 3 (Segger SystemView)
-metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=1
+metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+metro52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 
 
@@ -433,7 +440,8 @@ pca10056.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 pca10056.menu.debug.l2=Level 2 (Full Debug)
 pca10056.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 pca10056.menu.debug.l3=Level 3 (Segger SystemView)
-pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=1
+pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+pca10056.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 # ----------------------------------
 # Particle Xenon
@@ -486,7 +494,8 @@ particle_xenon.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 particle_xenon.menu.debug.l2=Level 2 (Full Debug)
 particle_xenon.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 particle_xenon.menu.debug.l3=Level 3 (Segger SystemView)
-particle_xenon.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=1
+particle_xenon.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+particle_xenon.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 # ----------------------------------
 # Raytac MDBT50Q - RX
@@ -539,4 +548,5 @@ mdbt50qrx.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
 mdbt50qrx.menu.debug.l2=Level 2 (Full Debug)
 mdbt50qrx.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 mdbt50qrx.menu.debug.l3=Level 3 (Segger SystemView)
-mdbt50qrx.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3 -DCFG_SYSVIEW=1
+mdbt50qrx.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+mdbt50qrx.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
