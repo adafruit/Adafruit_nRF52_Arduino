@@ -24,8 +24,8 @@ void Bluefruit_printInfo() __attribute__((weak));
 void Bluefruit_printInfo() {}
 #endif
 
-// DEBUG Level 3
-#if CFG_DEBUG >= 3
+// From the UI, setting debug level to 3 will enable SysView
+#if CFG_SYSVIEW
 #include "SEGGER_SYSVIEW.h"
 #endif
 
@@ -80,7 +80,7 @@ int main( void )
   Adafruit_TinyUSB_Core_init();
 #endif
 
-#if CFG_DEBUG >= 3
+#if CFG_SYSVIEW
   SEGGER_SYSVIEW_Conf();
 #endif
 
