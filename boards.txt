@@ -60,6 +60,7 @@ feather52832.menu.debug.l2=Level 2 (Full Debug)
 feather52832.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 feather52832.menu.debug.l3=Level 3 (Segger SystemView)
 feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+feather52832.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 # ----------------------------------
 # Bluefruit Feather nRF52840 Express
@@ -113,6 +114,7 @@ feather52840.menu.debug.l2=Level 2 (Full Debug)
 feather52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 feather52840.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+feather52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 
 # ----------------------------------
@@ -167,6 +169,7 @@ feather52840sense.menu.debug.l2=Level 2 (Full Debug)
 feather52840sense.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 feather52840sense.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840sense.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+feather52840sense.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 
 # ---------------------------------------------
@@ -221,6 +224,7 @@ itsybitsy52840.menu.debug.l2=Level 2 (Full Debug)
 itsybitsy52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 itsybitsy52840.menu.debug.l3=Level 3 (Segger SystemView)
 itsybitsy52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+itsybitsy52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 # ---------------------------------------------
 # Bluefruit Circuit Playground nRF52840 Express
@@ -274,6 +278,7 @@ cplaynrf52840.menu.debug.l2=Level 2 (Full Debug)
 cplaynrf52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 cplaynrf52840.menu.debug.l3=Level 3 (Segger SystemView)
 cplaynrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+cplaynrf52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 
 # ---------------------------------------------
@@ -298,7 +303,7 @@ cluenrf52840.upload.protocol=nrfutil
 cluenrf52840.upload.use_1200bps_touch=true
 cluenrf52840.upload.wait_for_upload_port=true
 cluenrf52840.upload.maximum_size=815104
-cluenrf52840.upload.maximum_data_size=248832
+cluenrf52840.upload.maximum_data_size=237568
 
 # Build
 cluenrf52840.build.mcu=cortex-m4
@@ -328,6 +333,7 @@ cluenrf52840.menu.debug.l2=Level 2 (Full Debug)
 cluenrf52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 cluenrf52840.menu.debug.l3=Level 3 (Segger SystemView)
 cluenrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+cluenrf52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 # ----------------------------------
 # Bluefruit Metro nRF52840 Express
@@ -381,6 +387,7 @@ metro52840.menu.debug.l2=Level 2 (Full Debug)
 metro52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 metro52840.menu.debug.l3=Level 3 (Segger SystemView)
 metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+metro52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 
 
@@ -434,6 +441,7 @@ pca10056.menu.debug.l2=Level 2 (Full Debug)
 pca10056.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 pca10056.menu.debug.l3=Level 3 (Segger SystemView)
 pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+pca10056.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 # ----------------------------------
 # Particle Xenon
@@ -457,7 +465,7 @@ particle_xenon.upload.protocol=nrfutil
 particle_xenon.upload.use_1200bps_touch=true
 particle_xenon.upload.wait_for_upload_port=true
 particle_xenon.upload.maximum_size=815104
-particle_xenon.upload.maximum_data_size=248832
+particle_xenon.upload.maximum_data_size=237568
 
 # Build
 particle_xenon.build.mcu=cortex-m4
@@ -487,6 +495,7 @@ particle_xenon.menu.debug.l2=Level 2 (Full Debug)
 particle_xenon.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 particle_xenon.menu.debug.l3=Level 3 (Segger SystemView)
 particle_xenon.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+particle_xenon.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 # ----------------------------------
 # Raytac MDBT50Q - RX
@@ -510,7 +519,7 @@ mdbt50qrx.upload.protocol=nrfutil
 mdbt50qrx.upload.use_1200bps_touch=true
 mdbt50qrx.upload.wait_for_upload_port=true
 mdbt50qrx.upload.maximum_size=815104
-mdbt50qrx.upload.maximum_data_size=248832
+mdbt50qrx.upload.maximum_data_size=237568
 
 # Build
 mdbt50qrx.build.mcu=cortex-m4
@@ -540,3 +549,4 @@ mdbt50qrx.menu.debug.l2=Level 2 (Full Debug)
 mdbt50qrx.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 mdbt50qrx.menu.debug.l3=Level 3 (Segger SystemView)
 mdbt50qrx.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+mdbt50qrx.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1

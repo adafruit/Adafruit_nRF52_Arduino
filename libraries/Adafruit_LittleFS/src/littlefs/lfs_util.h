@@ -24,8 +24,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "FreeRTOS.h"
-
 #ifndef LFS_NO_MALLOC
 #include <stdlib.h>
 #endif

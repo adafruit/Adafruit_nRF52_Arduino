@@ -196,8 +196,8 @@ standard names - or at least those used in the unmodified vector table. */
      */
 #define configUSE_DISABLE_TICK_AUTO_CORRECTION_DEBUG     0
 
-// Sysview require at least debug level 3
-#if CFG_DEBUG >= 3
+// Sysview is enabled by default at debug level 3
+#if CFG_SYSVIEW
 #include "sysview/SEGGER_SYSVIEW_FreeRTOS.h"
 #endif
 
