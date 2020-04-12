@@ -21,6 +21,7 @@
 
 #include "Arduino.h"
 #include "wiring_private.h"
+#include "nrf_gpiote.h"
 
 #include <string.h>
 
@@ -95,24 +96,54 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
       return 0;
   }
 
+  // All information for the configuration is known, except the prior values
+  // of the config register.  Pre-compute the mask and new bits for later use.
+  //     CONFIG[n] = (CONFIG[n] & oldRegMask) | newRegBits;
+  //
+  // Three fields are configured here: PORT/PIN, POLARITY, MODE
+  const uint32_t oldRegMask = ~(GPIOTE_CONFIG_PORT_PIN_Msk | GPIOTE_CONFIG_POLARITY_Msk | GPIOTE_CONFIG_MODE_Msk);
+  const uint32_t newRegBits =
+    ((pin                      << GPIOTE_CONFIG_PSEL_Pos    ) & GPIOTE_CONFIG_PORT_PIN_Msk) |
+    ((polarity                 << GPIOTE_CONFIG_POLARITY_Pos) & GPIOTE_CONFIG_POLARITY_Msk) |
+    ((GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos    ) & GPIOTE_CONFIG_MODE_Msk    ) ;
+
+  // To avoid unexpected consequences, first loop through the channelMap
+  // to preferably re-use any channel that was already in use (even if
+  // earlier channel is no longer in use).
   for (int ch = 0; ch < NUMBER_OF_GPIO_TE; ch++) {
-    if (channelMap[ch] == -1 || (uint32_t)channelMap[ch] == pin) {
-      channelMap[ch] = pin;
+    if ((uint32_t)channelMap[ch] == pin || channelMap[ch] == -1) {
+      // The pin is already allocated in the channelMap
+      // update the polarity (when events fire) and callbacks
+      uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
+      tmp &= oldRegMask;
+      tmp |= newRegBits;
+      NRF_GPIOTE->CONFIG[ch] = tmp;
+      NRF_GPIOTE->INTENSET = (1 << ch); // old code did this ... no harm in ensuring this is set
       callbacksInt[ch] = callback;
       callbackDeferred[ch] = deferred;
-
-      NRF_GPIOTE->CONFIG[ch] &= ~(GPIOTE_CONFIG_PORT_PIN_Msk | GPIOTE_CONFIG_POLARITY_Msk);
-      NRF_GPIOTE->CONFIG[ch] |= ((pin << GPIOTE_CONFIG_PSEL_Pos) & GPIOTE_CONFIG_PORT_PIN_Msk) |
-                              ((polarity << GPIOTE_CONFIG_POLARITY_Pos) & GPIOTE_CONFIG_POLARITY_Msk);
-
-      NRF_GPIOTE->CONFIG[ch] |= GPIOTE_CONFIG_MODE_Event;
-
-      NRF_GPIOTE->INTENSET = (1 << ch);
-
       return (1 << ch);
     }
   }
 
+  // When the pin isn't already configured for interrupts, then attempt to
+  // find an unused GPIOTE channel.  This code is identical to the above,
+  // except for also validating that the MODE bits show the channel is disabled.
+  for (int ch=0; ch < NUMBER_OF_GPIO_TE; ch++) {
+    // skip if already used in AttachInterrupt for another pin
+    if (channelMap[ch] != -1) continue;
+    // skip if channel is not disabled (e.g., in use by some other component or library)
+    if (nrf_gpiote_te_is_enabled(ch)) continue;
+    uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
+    tmp &= oldRegMask;
+    tmp |= newRegBits;
+    // TODO: make check/set for new channel an atomic operation
+    NRF_GPIOTE->CONFIG[ch] = tmp;
+    NRF_GPIOTE->INTENSET = (1 << ch);
+    callbacksInt[ch] = callback;
+    callbackDeferred[ch] = deferred;
+    return (1 << ch);
+  }
+  // Else, pin was neither already setup, nor could a GPIOTE be allocated
   return 0;
 }
 
