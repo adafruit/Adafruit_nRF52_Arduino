@@ -179,30 +179,58 @@ void GPIOTE_IRQHandler()
   SEGGER_SYSVIEW_RecordEnterISR();
 #endif
 
-  uint32_t event = offsetof(NRF_GPIOTE_Type, EVENTS_IN[0]);
-
+  // Read this once (not 8x), as it's a volatile read
+  // across the AHB, which adds up to 3 cycles.
+  uint32_t const enabledInterruptMask = NRF_GPIOTE->INTENSET;
   for (int ch = 0; ch < NUMBER_OF_GPIO_TE; ch++) {
-    if ((*(uint32_t *)((uint32_t)NRF_GPIOTE + event) == 0x1UL) && (NRF_GPIOTE->INTENSET & (1 << ch))) {
-      if (channelMap[ch] != -1 && callbacksInt[ch]) {
-        if ( callbackDeferred[ch] )  {
-          // Adafruit defer callback to non-isr if configured so
-          ada_callback(NULL, 0, callbacksInt[ch]);
-        }else{
-         callbacksInt[ch]();
-        }
-      }
+    // only process where the interrupt is enabled and the event register is set
+    // check interrupt enabled mask first, as already read that IOM value, to
+    // reduce delays from AHB (16MHz) reads.
+    if ( 0 == (enabledInterruptMask & (1 << ch))) continue;
+    if ( 0 == NRF_GPIOTE->EVENTS_IN[ch]) continue;
 
-    *(uint32_t *)((uint32_t)NRF_GPIOTE + event) = 0;
-#if __CORTEX_M == 0x04
-    volatile uint32_t dummy = *((volatile uint32_t *)((uint32_t)NRF_GPIOTE + event));
-    (void)dummy;
-#endif
+    // If the event was set and interrupts are enabled,
+    // call the callback function only if it exists,
+    // but ALWAYS clear the event to prevent an interrupt storm.
+    if (channelMap[ch] != -1 && callbacksInt[ch]) {
+      if ( callbackDeferred[ch] ) {
+        // Adafruit defer callback to non-isr if configured so
+        ada_callback(NULL, 0, callbacksInt[ch]);
+      } else {
+        callbacksInt[ch]();
+      }
     }
 
-    event = (uint32_t)((uint32_t)event + 4);
+    // clear the event
+    NRF_GPIOTE->EVENTS_IN[ch] = 0;
   }
+#if __CORTEX_M == 0x04
+  // To quote from nRF52840 product specification:
+  // --------------------------------------------------------------------------
+  //   Note: To avoid an interrupt reoccurring before a new event has come,
+  //         the program should perform a read from one of the peripheral
+  //         registers. For example, the event register that has been cleared,
+  //         or the INTENCLR register that has been used to disable the
+  //         interrupt. This will cause a one to three cycle delay and ensure
+  //         the interrupt is cleared before exiting the interrupt handler.
+  //   Care should be taken to ensure the compiler does not remove the read
+  //   operation as an optimization. If the program can guarantee a four-cycle
+  //   delay after event being cleared or interrupt disabled in any other way,
+  //   then a read of a register is not required.
+  // --------------------------------------------------------------------------
+  //
+  // Unfortunately, simply marking a variable as volatile is not enough to
+  // prevent GCC from reordering or combining memory accesses, without also
+  // having an explicit sequence point.
+  //   See https://gcc.gnu.org/onlinedocs/gcc/Volatiles.html
+  //
+  // Here, ensure a sequence point by adding a memory barrier
+  // followed with four nops before exiting the ISR
+  asm volatile ("" : : : "memory");
+  __asm__ __volatile__ ("nop\n\tnop\n\tnop\n\tnop\n");
+#endif
 
 #if CFG_SYSVIEW
-    SEGGER_SYSVIEW_RecordExitISR();
+  SEGGER_SYSVIEW_RecordExitISR();
 #endif
 }
