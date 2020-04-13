@@ -218,3 +218,21 @@ uint16_t HardwarePWM::readChannel(uint8_t ch)
   return (_seq0[ch] & 0x7FFF);
 }
 
+uint8_t HardwarePWM::usedChannelCount(void)
+{
+  uint8_t usedChannels = 0;
+  for(int i=0; i<MAX_CHANNELS; i++)
+  {
+    if ( _pwm->PSEL.OUT[i] & PWM_PSEL_OUT_CONNECT_Msk )
+    {
+      usedChannels++;
+    }
+  }
+  return usedChannels;
+}
+
+uint8_t HardwarePWM::freeChannelCount(void)
+{
+  return MAX_CHANNELS - usedChannelCount();
+}
+
