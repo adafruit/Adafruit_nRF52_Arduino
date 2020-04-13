@@ -96,6 +96,10 @@ class HardwarePWM
     // Read current set value
     uint16_t readPin     (uint8_t pin);
     uint16_t readChannel (uint8_t ch);
+
+    // Get count of used / free channels
+    uint8_t usedChannelCount();
+    uint8_t freeChannelCount();
 };
 
 extern HardwarePWM HwPWM0;
