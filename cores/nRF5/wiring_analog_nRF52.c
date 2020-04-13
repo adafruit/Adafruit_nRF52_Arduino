@@ -33,37 +33,13 @@ static uint32_t saadcGain      = SAADC_CH_CONFIG_GAIN_Gain1_6;
 
 static bool saadcBurst = SAADC_CH_CONFIG_BURST_Disabled;
 
-#if 0 // Note: Adafruit use seperated HardwarePWM class
-#define PWM_COUNT 3
-
-static NRF_PWM_Type* pwms[PWM_COUNT] = {
-  NRF_PWM0,
-  NRF_PWM1,
-  NRF_PWM2
-};
-
-static uint32_t pwmChannelPins[PWM_COUNT] = {
-  0xFFFFFFFF,
-  0xFFFFFFFF,
-  0xFFFFFFFF
-};
-static uint16_t pwmChannelSequence[PWM_COUNT];
-#endif
+// Note: Adafruit use seperated HardwarePWM class
 
 static int readResolution = 10;
-//static int writeResolution = 8;
-
 void analogReadResolution( int res )
 {
   readResolution = res;
 }
-
-#if 0
-void analogWriteResolution( int res )
-{
-  writeResolution = res;
-}
-#endif
 
 static inline uint32_t mapResolution( uint32_t value, uint32_t from, uint32_t to )
 {
