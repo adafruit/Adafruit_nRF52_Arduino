@@ -46,17 +46,13 @@ static void loop_task(void* arg)
 
 #if CFG_DEBUG
   // If Serial is not begin(), call it to avoid hard fault
-  Serial.begin(115200);
-
-  // Wait for Serial connection in debug mode
-  while ( !Serial ) yield();
-
-  dbgPrintVersion();
+  if(!Serial) Serial.begin(115200);
 #endif
 
   setup();
 
 #if CFG_DEBUG
+  dbgPrintVersion();
   Bluefruit_printInfo();
 #endif
 
