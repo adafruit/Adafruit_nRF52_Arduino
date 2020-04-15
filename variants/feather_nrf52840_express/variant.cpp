@@ -52,8 +52,8 @@ const uint32_t g_ADigitalPinMap[] =
   31,  // D21 is P0.31 (A7, ARef)
 
   // D22 .. D23 (aka I2C pins)
-  12,  // D22 is P0.12 (SDA)
-  11,  // D23 is P0.11 (SCL)
+  11,  // D22 is P0.12 (SDA)
+  12,  // D23 is P0.11 (SCL)
 
   // D24 .. D26 (aka SPI pins)
   15,  // D24 is P0.15 (SPI MISO)
