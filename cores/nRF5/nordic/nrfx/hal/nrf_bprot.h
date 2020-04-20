@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Nordic Semiconductor ASA
+ * Copyright (c) 2019 - 2020, Nordic Semiconductor ASA
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,9 +57,9 @@ extern "C" {
  * @param[in] block_mask Non-volatile memory blocks to protect. Each bit in bitmask represents
  *                       one memory block in the specified group.
  */
-__STATIC_INLINE void nrf_bprot_nvm_blocks_protection_enable(NRF_BPROT_Type * p_reg,
-                                                            uint8_t          group_idx,
-                                                            uint32_t         block_mask);
+NRF_STATIC_INLINE void nrf_bprot_nvm_blocks_protection_enable(NRF_BPROT_Type * p_reg,
+                                                              uint8_t          group_idx,
+                                                              uint32_t         block_mask);
 
 /**
  * @brief Function for setting the non-volatile memory (NVM) protection during debug.
@@ -67,17 +67,16 @@ __STATIC_INLINE void nrf_bprot_nvm_blocks_protection_enable(NRF_BPROT_Type * p_r
  * NVM protection is disabled by default while debugging.
  *
  * @param[in] p_reg  Pointer to the structure of registers of the peripheral.
- * @param[in] enable True if NVM protection during debug is to be enabled.
- *                   False if otherwise.
+ * @param[in] enable True if NVM protection during debug is to be enabled, false otherwise.
  */
-__STATIC_INLINE void nrf_bprot_nvm_protection_in_debug_set(NRF_BPROT_Type * p_reg,
-                                                           bool             enable);
+NRF_STATIC_INLINE void nrf_bprot_nvm_protection_in_debug_set(NRF_BPROT_Type * p_reg,
+                                                             bool             enable);
 
-#ifndef SUPPRESS_INLINE_IMPLEMENTATION
+#ifndef NRF_DECLARE_ONLY
 
-__STATIC_INLINE void nrf_bprot_nvm_blocks_protection_enable(NRF_BPROT_Type * p_reg,
-                                                            uint8_t          group_idx,
-                                                            uint32_t         block_mask)
+NRF_STATIC_INLINE void nrf_bprot_nvm_blocks_protection_enable(NRF_BPROT_Type * p_reg,
+                                                              uint8_t          group_idx,
+                                                              uint32_t         block_mask)
 {
     switch (group_idx)
     {
@@ -107,14 +106,14 @@ __STATIC_INLINE void nrf_bprot_nvm_blocks_protection_enable(NRF_BPROT_Type * p_r
     }
 }
 
-__STATIC_INLINE void nrf_bprot_nvm_protection_in_debug_set(NRF_BPROT_Type * p_reg,
-                                                           bool             enable)
+NRF_STATIC_INLINE void nrf_bprot_nvm_protection_in_debug_set(NRF_BPROT_Type * p_reg,
+                                                             bool             enable)
 {
     p_reg->DISABLEINDEBUG =
         (enable ? 0 : BPROT_DISABLEINDEBUG_DISABLEINDEBUG_Msk);
 }
 
-#endif // SUPPRESS_INLINE_IMPLEMENTATION
+#endif // NRF_DECLARE_ONLY
 
 /** @} */
 
