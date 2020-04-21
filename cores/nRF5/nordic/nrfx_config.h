@@ -2,9 +2,9 @@
 #define NRFX_CONFIG_H__
 
 #define NRFX_POWER_ENABLED              1
-#define NRFX_POWER_CONFIG_IRQ_PRIORITY  7
+#define NRFX_POWER_DEFAULT_CONFIG_IRQ_PRIORITY  7
 
-//#define NRFX_CLOCK_ENABLED 0
+#define NRFX_CLOCK_ENABLED 0
 
 #define NRFX_SPIM_ENABLED            1
 #define NRFX_SPIM_MISO_PULL_CFG      1 // pulldown

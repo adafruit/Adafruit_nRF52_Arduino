@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 - 2019, Nordic Semiconductor ASA
+ * Copyright (c) 2015 - 2020, Nordic Semiconductor ASA
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
 #define NRFX_TWIM_H__
 
 #include <nrfx.h>
+#include <nrfx_twi_twim.h>
 #include <hal/nrf_twim.h>
 
 #ifdef __cplusplus
@@ -88,35 +89,48 @@ typedef struct
     bool                 hold_bus_uninit;    ///< Hold pull up state on GPIO pins after uninit.
 } nrfx_twim_config_t;
 
-/** @brief TWI master driver instance default configuration. */
-#define NRFX_TWIM_DEFAULT_CONFIG                                                    \
-{                                                                                   \
-    .scl                = 31,                                                       \
-    .sda                = 31,                                                       \
-    .frequency          = (nrf_twim_frequency_t)NRFX_TWIM_DEFAULT_CONFIG_FREQUENCY, \
-    .interrupt_priority = NRFX_TWIM_DEFAULT_CONFIG_IRQ_PRIORITY,                    \
-    .hold_bus_uninit    = NRFX_TWIM_DEFAULT_CONFIG_HOLD_BUS_UNINIT,                 \
+/**
+ * @brief TWIM driver default configuration.
+ *
+ * This configuration sets up TWIM with the following options:
+ * - clock frequency: 100 kHz
+ * - disable bus holding after uninit
+ *
+ * @param[in] _pin_scl SCL pin.
+ * @param[in] _pin_sda SDA pin.
+ */
+#define NRFX_TWIM_DEFAULT_CONFIG(_pin_scl, _pin_sda)              \
+{                                                                 \
+    .scl                = _pin_scl,                               \
+    .sda                = _pin_sda,                               \
+    .frequency          = NRF_TWIM_FREQ_100K,                     \
+    .interrupt_priority = NRFX_TWIM_DEFAULT_CONFIG_IRQ_PRIORITY,  \
+    .hold_bus_uninit    = false,                                  \
 }
 
 /** @brief Flag indicating that TX buffer address will be incremented after the transfer. */
-#define NRFX_TWIM_FLAG_TX_POSTINC          (1UL << 0)
+#define NRFX_TWIM_FLAG_TX_POSTINC             (1UL << 0)
 /** @brief Flag indicating that RX buffer address will be incremented after the transfer. */
-#define NRFX_TWIM_FLAG_RX_POSTINC          (1UL << 1)
+#define NRFX_TWIM_FLAG_RX_POSTINC             (1UL << 1)
 /** @brief Flag indicating that the interrupt after each transfer will be suppressed, and the event handler will not be called. */
-#define NRFX_TWIM_FLAG_NO_XFER_EVT_HANDLER (1UL << 2)
+#define NRFX_TWIM_FLAG_NO_XFER_EVT_HANDLER    (1UL << 2)
 /** @brief Flag indicating that the transfer will be set up, but not started. */
-#define NRFX_TWIM_FLAG_HOLD_XFER           (1UL << 3)
+#define NRFX_TWIM_FLAG_HOLD_XFER              (1UL << 3)
 /** @brief Flag indicating that the transfer will be executed multiple times. */
-#define NRFX_TWIM_FLAG_REPEATED_XFER       (1UL << 4)
+#define NRFX_TWIM_FLAG_REPEATED_XFER          (1UL << 4)
 /** @brief Flag indicating that the TX transfer will not end with a stop condition. */
-#define NRFX_TWIM_FLAG_TX_NO_STOP          (1UL << 5)
+#define NRFX_TWIM_FLAG_TX_NO_STOP             (1UL << 5)
+/** @brief Flag indicating that checks for spurious STOP condition will not be performed. */
+#define NRFX_TWIM_FLAG_NO_SPURIOUS_STOP_CHECK (1UL << 6)
 
 /** @brief TWI master driver event types. */
 typedef enum
 {
     NRFX_TWIM_EVT_DONE,         ///< Transfer completed event.
     NRFX_TWIM_EVT_ADDRESS_NACK, ///< Error event: NACK received after sending the address.
-    NRFX_TWIM_EVT_DATA_NACK     ///< Error event: NACK received after sending a data byte.
+    NRFX_TWIM_EVT_DATA_NACK,    ///< Error event: NACK received after sending a data byte.
+    NRFX_TWIM_EVT_OVERRUN,      ///< Error event: The unread data is replaced by new data.
+    NRFX_TWIM_EVT_BUS_ERROR     ///< Error event: An unexpected transition occurred on the bus.
 } nrfx_twim_evt_type_t;
 
 /** @brief TWI master driver transfer types. */
@@ -237,72 +251,9 @@ void nrfx_twim_enable(nrfx_twim_t const * p_instance);
 void nrfx_twim_disable(nrfx_twim_t const * p_instance);
 
 /**
- * @brief Function for sending data to a TWI slave.
- *
- * The transmission will be stopped when an error occurs. If a transfer is ongoing,
- * the function returns the error code @ref NRFX_ERROR_BUSY.
- *
- * @note This function is deprecated. Use @ref nrfx_twim_xfer instead.
- *
- * @note Peripherals using EasyDMA (including TWIM) require the transfer buffers
- *       to be placed in the Data RAM region. If this condition is not met,
- *       this function fails with the error code NRFX_ERROR_INVALID_ADDR.
- *
- * @param[in] p_instance Pointer to the driver instance structure.
- * @param[in] address    Address of a specific slave device (only 7 LSB).
- * @param[in] p_data     Pointer to a transmit buffer.
- * @param[in] length     Number of bytes to send. Maximum possible length is
- *                       dependent on the used SoC (see the MAXCNT register
- *                       description in the Product Specification). The driver
- *                       checks it with assertion.
- * @param[in] no_stop    If set, the stop condition is not generated on the bus
- *                       after the transfer has completed successfully (allowing
- *                       for a repeated start in the next transfer).
- *
- * @retval NRFX_SUCCESS                 The procedure is successful.
- * @retval NRFX_ERROR_BUSY              The driver is not ready for a new transfer.
- * @retval NRFX_ERROR_INTERNAL          Error is detected by hardware.
- * @retval NRFX_ERROR_INVALID_ADDR      The provided buffer is not placed in the Data RAM region.
- * @retval NRFX_ERROR_DRV_TWI_ERR_ANACK NACK is received after sending the address in polling mode.
- * @retval NRFX_ERROR_DRV_TWI_ERR_DNACK NACK is received after sending a data byte in polling mode.
- */
-nrfx_err_t nrfx_twim_tx(nrfx_twim_t const * p_instance,
-                        uint8_t             address,
-                        uint8_t const *     p_data,
-                        size_t              length,
-                        bool                no_stop);
-
-/**
- * @brief Function for reading data from a TWI slave.
- *
- * The transmission will be stopped when an error occurs. If a transfer is ongoing,
- * the function returns the error code @ref NRFX_ERROR_BUSY.
- *
- * @note This function is deprecated. Use @ref nrfx_twim_xfer instead.
- *
- * @param[in] p_instance Pointer to the driver instance structure.
- * @param[in] address    Address of a specific slave device (only 7 LSB).
- * @param[in] p_data     Pointer to a receive buffer.
- * @param[in] length     Number of bytes to be received. Maximum possible length
- *                       is dependent on the used SoC (see the MAXCNT register
- *                       description in the Product Specification). The driver
- *                       checks it with assertion.
- *
- * @retval NRFX_SUCCESS                 The procedure is successful.
- * @retval NRFX_ERROR_BUSY              The driver is not ready for a new transfer.
- * @retval NRFX_ERROR_INTERNAL          Error is detected by hardware.
- * @retval NRFX_ERROR_DRV_TWI_ERR_ANACK NACK is received after sending the address in polling mode.
- * @retval NRFX_ERROR_DRV_TWI_ERR_DNACK NACK is received after sending a data byte in polling mode.
- */
-nrfx_err_t nrfx_twim_rx(nrfx_twim_t const * p_instance,
-                        uint8_t             address,
-                        uint8_t *           p_data,
-                        size_t              length);
-
-/**
  * @brief Function for performing a TWI transfer.
  *
- * The following transfer types can be configured (@ref nrfx_twim_xfer_desc_t::type):
+ * The following transfer types can be configured (@ref nrfx_twim_xfer_desc_t.type):
  * - @ref NRFX_TWIM_XFER_TXRX - Write operation followed by a read operation (without STOP condition in between).
  * - @ref NRFX_TWIM_XFER_TXTX - Write operation followed by a write operation (without STOP condition in between).
  * - @ref NRFX_TWIM_XFER_TX - Write operation (with or without STOP condition).
@@ -323,13 +274,17 @@ nrfx_err_t nrfx_twim_rx(nrfx_twim_t const * p_instance,
  *   the driver does not set the driver instance into busy state, so you must ensure that the next transfers are set up
  *   when TWIM is not active.
  * - @ref NRFX_TWIM_FLAG_TX_NO_STOP - No stop condition after the TX transfer.
+ * - @ref NRFX_TWIM_FLAG_NO_SPURIOUS_STOP_CHECK - Checks for spurious STOP conditions are disabled.
+ *        Used together with @ref NRFX_TWIM_FLAG_NO_XFER_EVT_HANDLER can result in lower power consumption
+ *        when transfers are triggered externally and CPU is sleeping.
+ *        Use only with I2C standard-compliant slave devices.
  *
  * @note
  * Some flag combinations are invalid:
- * - @ref NRFX_TWIM_FLAG_TX_NO_STOP with @ref nrfx_twim_xfer_desc_t::type different than @ref NRFX_TWIM_XFER_TX
- * - @ref NRFX_TWIM_FLAG_REPEATED_XFER with @ref nrfx_twim_xfer_desc_t::type set to @ref NRFX_TWIM_XFER_TXTX
+ * - @ref NRFX_TWIM_FLAG_TX_NO_STOP with @ref nrfx_twim_xfer_desc_t.type different than @ref NRFX_TWIM_XFER_TX
+ * - @ref NRFX_TWIM_FLAG_REPEATED_XFER with @ref nrfx_twim_xfer_desc_t.type set to @ref NRFX_TWIM_XFER_TXTX
  *
- * If @ref nrfx_twim_xfer_desc_t::type is set to @ref NRFX_TWIM_XFER_TX and the @ref NRFX_TWIM_FLAG_TX_NO_STOP and @ref NRFX_TWIM_FLAG_REPEATED_XFER
+ * If @ref nrfx_twim_xfer_desc_t.type is set to @ref NRFX_TWIM_XFER_TX and the @ref NRFX_TWIM_FLAG_TX_NO_STOP and @ref NRFX_TWIM_FLAG_REPEATED_XFER
  * flags are set, two tasks must be used to trigger a transfer: TASKS_RESUME followed by TASKS_STARTTX. If no stop condition is generated,
  * TWIM is in SUSPENDED state. Therefore, it must be resumed before the transfer can be started.
  *
@@ -341,13 +296,14 @@ nrfx_err_t nrfx_twim_rx(nrfx_twim_t const * p_instance,
  * @param[in] p_xfer_desc Pointer to the transfer descriptor.
  * @param[in] flags       Transfer options (0 for default settings).
  *
- * @retval NRFX_SUCCESS                 The procedure is successful.
- * @retval NRFX_ERROR_BUSY              The driver is not ready for a new transfer.
- * @retval NRFX_ERROR_NOT_SUPPORTED     The provided parameters are not supported.
- * @retval NRFX_ERROR_INTERNAL          Error is detected by hardware.
- * @retval NRFX_ERROR_INVALID_ADDR      The provided buffers are not placed in the Data RAM region.
- * @retval NRFX_ERROR_DRV_TWI_ERR_ANACK NACK is received after sending the address.
- * @retval NRFX_ERROR_DRV_TWI_ERR_DNACK NACK is received after sending a data byte.
+ * @retval NRFX_SUCCESS                   The procedure is successful.
+ * @retval NRFX_ERROR_BUSY                The driver is not ready for a new transfer.
+ * @retval NRFX_ERROR_NOT_SUPPORTED       The provided parameters are not supported.
+ * @retval NRFX_ERROR_INTERNAL            An unexpected transition occurred on the bus.
+ * @retval NRFX_ERROR_INVALID_ADDR        The provided buffers are not placed in the Data RAM region.
+ * @retval NRFX_ERROR_DRV_TWI_ERR_OVERRUN The unread data is replaced by new data.
+ * @retval NRFX_ERROR_DRV_TWI_ERR_ANACK   NACK is received after sending the address.
+ * @retval NRFX_ERROR_DRV_TWI_ERR_DNACK   NACK is received after sending a data byte.
  */
 nrfx_err_t nrfx_twim_xfer(nrfx_twim_t           const * p_instance,
                           nrfx_twim_xfer_desc_t const * p_xfer_desc,
@@ -388,6 +344,30 @@ uint32_t nrfx_twim_start_task_get(nrfx_twim_t const * p_instance, nrfx_twim_xfer
  * @return STOPPED event address.
  */
 uint32_t nrfx_twim_stopped_event_get(nrfx_twim_t const * p_instance);
+
+/**
+ * @brief Function for recovering the bus.
+ *
+ * This function checks if the bus is not stuck because of a slave holding the SDA line in the low state,
+ * and if needed it performs required number of pulses on the SCL line to make the slave release the SDA line.
+ * Finally, the function generates a STOP condition on the bus to put it into a known state.
+ *
+ * @note This function can be used only if the TWIM driver is uninitialized.
+ *
+ * @param[in] scl_pin SCL pin number.
+ * @param[in] sda_pin SDA pin number.
+ *
+ * @retval NRFX_SUCCESS        Bus recovery was successful.
+ * @retval NRFX_ERROR_INTERNAL Bus recovery failed.
+ */
+NRFX_STATIC_INLINE nrfx_err_t nrfx_twim_bus_recover(uint32_t scl_pin, uint32_t sda_pin);
+
+#ifndef NRFX_DECLARE_ONLY
+NRFX_STATIC_INLINE nrfx_err_t nrfx_twim_bus_recover(uint32_t scl_pin, uint32_t sda_pin)
+{
+    return nrfx_twi_twim_bus_recover(scl_pin, sda_pin);
+}
+#endif
 
 /** @} */
 

@@ -36,6 +36,9 @@
 
 #include "bluefruit.h"
 
+// For using USB HID descriptor template
+#include "class/hid/hid_device.h"
+
 enum
 {
   REPORT_ID_KEYBOARD = 1,
@@ -46,151 +49,9 @@ enum
 
 uint8_t const hid_report_descriptor[] =
 {
-  //------------- Keyboard Report  -------------//
-  HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     ),
-  HID_USAGE      ( HID_USAGE_DESKTOP_KEYBOARD ),
-  HID_COLLECTION ( HID_COLLECTION_APPLICATION ),
-    HID_REPORT_ID ( REPORT_ID_KEYBOARD        ),
-    HID_USAGE_PAGE( HID_USAGE_PAGE_KEYBOARD ),
-      // 8 bits Modifier Keys (Shfit, Control, Alt)
-      HID_USAGE_MIN    ( 224                                    ),
-      HID_USAGE_MAX    ( 231                                    ),
-      HID_LOGICAL_MIN  ( 0                                      ),
-      HID_LOGICAL_MAX  ( 1                                      ),
-
-      HID_REPORT_COUNT ( 8                                      ),
-      HID_REPORT_SIZE  ( 1                                      ),
-      HID_INPUT        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ),
-
-      // 8 bit reserved
-      HID_REPORT_COUNT ( 1                                      ),
-      HID_REPORT_SIZE  ( 8                                      ),
-      HID_INPUT        ( HID_CONSTANT                           ),
-
-    // 6-byte Keycodes
-    HID_USAGE_PAGE (HID_USAGE_PAGE_KEYBOARD),
-      HID_USAGE_MIN    ( 0                                   ),
-      HID_USAGE_MAX    ( 255                                 ),
-      HID_LOGICAL_MIN  ( 0                                   ),
-      HID_LOGICAL_MAX  ( 255                                 ),
-
-      HID_REPORT_COUNT ( 6                                   ),
-      HID_REPORT_SIZE  ( 8                                   ),
-      HID_INPUT        ( HID_DATA | HID_ARRAY | HID_ABSOLUTE ),
-
-    // LED Indicator Kana | Compose | Scroll Lock | CapsLock | NumLock
-    HID_USAGE_PAGE  ( HID_USAGE_PAGE_LED                   ),
-      /* 5-bit Led report */
-      HID_USAGE_MIN    ( 1                                       ),
-      HID_USAGE_MAX    ( 5                                       ),
-      HID_REPORT_COUNT ( 5                                       ),
-      HID_REPORT_SIZE  ( 1                                       ),
-      HID_OUTPUT       ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE  ),
-      /* led padding */
-      HID_REPORT_COUNT ( 1                                       ),
-      HID_REPORT_SIZE  ( 3                                       ),
-      HID_OUTPUT       ( HID_CONSTANT                            ),
-  HID_COLLECTION_END,
-
-  //------------- Consumer Control Report -------------//
-  HID_USAGE_PAGE ( HID_USAGE_PAGE_CONSUMER    ),
-  HID_USAGE      ( HID_USAGE_CONSUMER_CONTROL ),
-  HID_COLLECTION ( HID_COLLECTION_APPLICATION ),
-    HID_REPORT_ID( REPORT_ID_CONSUMER_CONTROL ),
-    HID_LOGICAL_MIN  ( 0x00                                ),
-    HID_LOGICAL_MAX_N( 0x03FF, 2                           ),
-    HID_USAGE_MIN    ( 0x00                                ),
-    HID_USAGE_MAX_N  ( 0x03FF, 2                           ),
-    HID_REPORT_COUNT ( 1                                   ),
-    HID_REPORT_SIZE  ( 16                                  ),
-    HID_INPUT        ( HID_DATA | HID_ARRAY | HID_ABSOLUTE ),
-  HID_COLLECTION_END,
-
-  //------------- Mouse Report: buttons + dx + dy + scroll + pan -------------//
-  HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     ),
-  HID_USAGE      ( HID_USAGE_DESKTOP_MOUSE    ),
-  HID_COLLECTION ( HID_COLLECTION_APPLICATION ),
-    HID_REPORT_ID( REPORT_ID_MOUSE        ),
-    HID_USAGE      (HID_USAGE_DESKTOP_POINTER ),
-    HID_COLLECTION ( HID_COLLECTION_PHYSICAL  ),
-      HID_USAGE_PAGE  ( HID_USAGE_PAGE_BUTTON ),
-        HID_USAGE_MIN    ( 1                                      ),
-        HID_USAGE_MAX    ( 5                                      ),
-        HID_LOGICAL_MIN  ( 0                                      ),
-        HID_LOGICAL_MAX  ( 1                                      ),
-
-        HID_REPORT_COUNT ( 5                                      ), /* Forward, Backward, Middle, Right, Left */
-        HID_REPORT_SIZE  ( 1                                      ),
-        HID_INPUT        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ),
-
-        HID_REPORT_COUNT ( 1                                      ),
-        HID_REPORT_SIZE  ( 3                                      ),
-        HID_INPUT        ( HID_CONSTANT                           ), /* 5 bit padding followed 3 bit buttons */
-
-      HID_USAGE_PAGE  ( HID_USAGE_PAGE_DESKTOP ),
-        HID_USAGE        ( HID_USAGE_DESKTOP_X                    ),
-        HID_USAGE        ( HID_USAGE_DESKTOP_Y                    ),
-        HID_LOGICAL_MIN  ( 0x81                                   ), /* -127 */
-        HID_LOGICAL_MAX  ( 0x7f                                   ), /* 127  */
-
-        HID_REPORT_COUNT ( 2                                      ), /* X, Y position */
-        HID_REPORT_SIZE  ( 8                                      ),
-        HID_INPUT        ( HID_DATA | HID_VARIABLE | HID_RELATIVE ), /* relative values */
-
-        HID_USAGE       ( HID_USAGE_DESKTOP_WHEEL                ), /* mouse scroll */
-        HID_LOGICAL_MIN ( 0x81                                   ), /* -127 */
-        HID_LOGICAL_MAX ( 0x7f                                   ), /* 127  */
-        HID_REPORT_COUNT( 1                                      ),
-        HID_REPORT_SIZE ( 8                                      ), /* 8-bit value */
-        HID_INPUT       ( HID_DATA | HID_VARIABLE | HID_RELATIVE ), /* relative values */
-
-      HID_USAGE_PAGE  ( HID_USAGE_PAGE_CONSUMER ),
-        HID_USAGE_N     ( HID_USAGE_CONSUMER_AC_PAN, 2           ), /* Horizontal wheel scroll */
-        HID_LOGICAL_MIN ( 0x81                                   ), /* -127 */
-        HID_LOGICAL_MAX ( 0x7f                                   ), /* 127  */
-        HID_REPORT_COUNT( 1                                      ),
-        HID_REPORT_SIZE ( 8                                      ), /* 8-bit value */
-        HID_INPUT       ( HID_DATA | HID_VARIABLE | HID_RELATIVE ), /* relative values */
-    HID_COLLECTION_END,
-  HID_COLLECTION_END,
-
-#if 0
-  //------------- Gamepad Report -------------//
-  /* Byte 0: 4 pad | 2 Y-axis | 2 X-axis
-   * Byte 1: Button7-Button0
-   */
-  HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     ),
-  HID_USAGE      ( HID_USAGE_DESKTOP_GAMEPAD  ),
-  HID_COLLECTION ( HID_COLLECTION_APPLICATION ),
-    HID_REPORT_ID ( REPORT_ID_GAMEPAD      ),
-    HID_USAGE      (HID_USAGE_DESKTOP_POINTER ),
-    HID_COLLECTION ( HID_COLLECTION_PHYSICAL  ),
-      // X,Y joystick
-      HID_USAGE    ( HID_USAGE_DESKTOP_X                    ),
-      HID_USAGE    ( HID_USAGE_DESKTOP_Y                    ),
-      HID_LOGICAL_MIN ( 0xFF                                   ), /* -1 */
-      HID_LOGICAL_MAX ( 0x01                                   ), /* 1  */
-      HID_REPORT_COUNT( 2                                      ), /* X, Y position */
-      HID_REPORT_SIZE ( 2                                      ), /* 2-bit value */
-      HID_INPUT       ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ), /* input values */
-    HID_COLLECTION_END,
-
-    /* X,Y padding */
-    HID_REPORT_COUNT ( 4                                       ),
-    HID_REPORT_SIZE  ( 1                                       ),
-    HID_INPUT        ( HID_CONSTANT | HID_VARIABLE | HID_ABSOLUTE),
-
-    // Buttons
-    HID_USAGE_PAGE  ( HID_USAGE_PAGE_BUTTON ),
-      HID_USAGE_MIN    ( 1                                      ),
-      HID_USAGE_MAX    ( 8                                      ),
-      HID_LOGICAL_MIN  ( 0                                      ),
-      HID_LOGICAL_MAX  ( 1                                      ),
-      HID_REPORT_COUNT ( 8                                      ),    // Keyboard
-      HID_REPORT_SIZE  ( 1                                      ),
-      HID_INPUT        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE),
-  HID_COLLECTION_END
-#endif
+  TUD_HID_REPORT_DESC_KEYBOARD( HID_REPORT_ID(REPORT_ID_KEYBOARD) ),
+  TUD_HID_REPORT_DESC_CONSUMER( HID_REPORT_ID(REPORT_ID_CONSUMER_CONTROL) ),
+  TUD_HID_REPORT_DESC_MOUSE   ( HID_REPORT_ID(REPORT_ID_MOUSE) )
 };
 
 BLEHidAdafruit::BLEHidAdafruit(void)

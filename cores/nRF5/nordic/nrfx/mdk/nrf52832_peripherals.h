@@ -45,6 +45,12 @@ POSSIBILITY OF SUCH DAMAGE.
 #define POWER_FEATURE_RAM_REGISTERS_PRESENT
 #define POWER_FEATURE_RAM_REGISTERS_COUNT       8
 
+/* Non-Volatile Memory Controller */
+#define NVMC_PRESENT
+#define NVMC_COUNT 1
+
+#define NVMC_FEATURE_CACHE_PRESENT
+
 /* Floating Point Unit */
 #define FPU_PRESENT
 #define FPU_COUNT 1
@@ -66,6 +72,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #define GPIO_COUNT 1
 
 #define P0_PIN_NUM 32
+
+#define P0_FEATURE_PINS_PRESENT 0xFFFFFFFFUL
 
 /* MPU and BPROT */
 #define BPROT_PRESENT
