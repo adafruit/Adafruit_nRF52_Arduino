@@ -52,7 +52,10 @@ jobs:
         rm -r $HOME/$BSP_PATH/*
         ln -s $GITHUB_WORKSPACE $HOME/$BSP_PATH/$BSP_VERSION
         # Install library dependency
-        arduino-cli lib install "Adafruit AHRS" "Adafruit APDS9960 Library" "Adafruit BMP280 Library" "Adafruit Circuit Playground" "Adafruit EPD" "Adafruit GFX Library" "Adafruit HX8357 Library" "Adafruit ILI9341" "Adafruit LIS3MDL" "Adafruit LSM6DS" "Adafruit NeoPixel" "Adafruit NeoMatrix" "Adafruit Sensor Calibration" "Adafruit SHT31 Library" "Adafruit SSD1306" "Adafruit ST7735 and ST7789 Library" "Firmata" "MIDI Library"  "SdFat - Adafruit Fork"
+        arduino-cli lib install "Adafruit AHRS" "Adafruit APDS9960 Library" "Adafruit BMP280 Library" "Adafruit Circuit Playground" "Adafruit EPD" "Adafruit GFX Library" "Adafruit HX8357 Library" "Adafruit ILI9341" "Adafruit LIS3MDL" "Adafruit LSM6DS" "Adafruit NeoPixel" "Adafruit NeoMatrix" "Adafruit Sensor Calibration" "Adafruit SHT31 Library" "Adafruit SSD1306" "Adafruit ST7735 and ST7789 Library" "Firmata" "SdFat - Adafruit Fork"
+        
+        # TODO update to support MIDI version 5 later on
+        arduino-cli lib install "MIDI Library"@4.3.1
 
     - name: Build examples
       run: python3 tools/build_all.py ${{ matrix.arduino-platform }}
