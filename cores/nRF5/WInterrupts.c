@@ -132,7 +132,7 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
     // skip if already used in AttachInterrupt for another pin
     if (channelMap[ch] != -1) continue;
     // skip if channel is not disabled (e.g., in use by some other component or library)
-    if (nrf_gpiote_te_is_enabled(ch)) continue;
+    if (nrf_gpiote_te_is_enabled(NRF_GPIOTE, ch)) continue;
     uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
     tmp &= oldRegMask;
     tmp |= newRegBits;
