@@ -35,7 +35,15 @@
 //--------------------------------------------------------------------+
 extern "C" void USBD_IRQHandler(void)
 {
+#if CFG_SYSVIEW
+  SEGGER_SYSVIEW_RecordEnterISR();
+#endif
+
   tud_int_handler(0);
+
+#if CFG_SYSVIEW
+    SEGGER_SYSVIEW_RecordExitISR();
+#endif
 }
 
 //--------------------------------------------------------------------+

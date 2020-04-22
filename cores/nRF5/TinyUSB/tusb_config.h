@@ -68,8 +68,8 @@
 #define CFG_TUD_HID_BUFSIZE         64
 
 // MIDI FIFO size of TX and RX
-#define CFG_TUD_MIDI_RX_BUFSIZE     64
-#define CFG_TUD_MIDI_TX_BUFSIZE     64
+#define CFG_TUD_MIDI_RX_BUFSIZE     128
+#define CFG_TUD_MIDI_TX_BUFSIZE     128
 
 // Vendor FIFO size of TX and RX
 #define CFG_TUD_VENDOR_RX_BUFSIZE   64
