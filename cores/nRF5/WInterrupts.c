@@ -111,16 +111,18 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
   // to preferably re-use any channel that was already in use (even if
   // earlier channel is no longer in use).
   for (int ch = 0; ch < NUMBER_OF_GPIO_TE; ch++) {
-    if ((uint32_t)channelMap[ch] == pin || channelMap[ch] == -1) {
+    if ((uint32_t)channelMap[ch] == pin) {
       // The pin is already allocated in the channelMap
       // update the polarity (when events fire) and callbacks
+      // However, do NOT clear any GPIOTE events
       uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
+      channelMap[ch] = pin;
+      callbacksInt[ch] = callback;
+      callbackDeferred[ch] = deferred;
       tmp &= oldRegMask;
       tmp |= newRegBits;
       NRF_GPIOTE->CONFIG[ch] = tmp;
       NRF_GPIOTE->INTENSET = (1 << ch); // old code did this ... no harm in ensuring this is set
-      callbacksInt[ch] = callback;
-      callbackDeferred[ch] = deferred;
       return (1 << ch);
     }
   }
@@ -133,14 +135,17 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
     if (channelMap[ch] != -1) continue;
     // skip if channel is not disabled (e.g., in use by some other component or library)
     if (nrf_gpiote_te_is_enabled(NRF_GPIOTE, ch)) continue;
+    // clear any old events on this GPIOTE channel
+    NRF_GPIOTE->EVENTS_IN[ch] = 0;
     uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
+    channelMap[ch] = pin;
+    callbacksInt[ch] = callback;
+    callbackDeferred[ch] = deferred;
     tmp &= oldRegMask;
     tmp |= newRegBits;
     // TODO: make check/set for new channel an atomic operation
     NRF_GPIOTE->CONFIG[ch] = tmp;
     NRF_GPIOTE->INTENSET = (1 << ch);
-    callbacksInt[ch] = callback;
-    callbackDeferred[ch] = deferred;
     return (1 << ch);
   }
   // Else, pin was neither already setup, nor could a GPIOTE be allocated
