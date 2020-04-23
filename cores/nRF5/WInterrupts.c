@@ -165,14 +165,28 @@ void detachInterrupt(uint32_t pin)
 
   for (int ch = 0; ch < NUMBER_OF_GPIO_TE; ch++) {
     if ((uint32_t)channelMap[ch] == pin) {
+      // Unfortunately, simply marking a variable as volatile is not enough to
+      // prevent GCC from reordering or combining memory accesses, without also
+      // having an explicit sequence point.
+      //   See https://gcc.gnu.org/onlinedocs/gcc/Volatiles.html
+      //
+      // Here, ensure a sequence point by adding a memory barrier
+      // followed with four nops after having disabled the interrupt,
+      // to ensure the peripheral registers have been updated.
+      NRF_GPIOTE->INTENCLR = (1 << ch);
+      asm volatile ("" : : : "memory");
+      __asm__ __volatile__ ("nop\n\tnop\n\tnop\n\tnop\n");
+
+      // now cleanup the rest of the use of the channel
       channelMap[ch] = -1;
       callbacksInt[ch] = NULL;
       callbackDeferred[ch] = false;
-
-      NRF_GPIOTE->CONFIG[ch] &= ~GPIOTE_CONFIG_MODE_Event;
-
-      NRF_GPIOTE->INTENCLR = (1 << ch);
-
+      NRF_GPIOTE->EVENTS_IN[ch] = 0; // clear the event
+      // Finally, clear the CONFIG register only after ensure
+      // all the other state has been written to the peripheral registers
+      asm volatile ("" : : : "memory");
+      __asm__ __volatile__ ("nop\n\tnop\n\tnop\n\tnop\n");
+      NRF_GPIOTE->CONFIG[ch] = 0;
       break;
     }
   }
