@@ -1,5 +1,9 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.20.1 - 2020.04.23
+
+- Update TinyUSB to commit c59fa77 due to a bug in the stack
+
 ## 0.20.0 - 2020.04.21
 
 - Fixed Wire write ambigou
