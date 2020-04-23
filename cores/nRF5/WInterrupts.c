@@ -111,20 +111,23 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
   // to preferably re-use any channel that was already in use (even if
   // earlier channel is no longer in use).
   for (int ch = 0; ch < NUMBER_OF_GPIO_TE; ch++) {
-    if ((uint32_t)channelMap[ch] == pin) {
-      // The pin is already allocated in the channelMap
-      // update the polarity (when events fire) and callbacks
-      // However, do NOT clear any GPIOTE events
-      uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
-      channelMap[ch] = pin;
-      callbacksInt[ch] = callback;
-      callbackDeferred[ch] = deferred;
-      tmp &= oldRegMask;
-      tmp |= newRegBits;
-      NRF_GPIOTE->CONFIG[ch] = tmp;
-      NRF_GPIOTE->INTENSET = (1 << ch); // old code did this ... no harm in ensuring this is set
-      return (1 << ch);
-    }
+    // skip if the channel was not already assigned to this pin
+    if ((uint32_t)channelMap[ch] != pin) continue;
+
+    // The pin is already allocated in the channelMap
+    // update the polarity (when events fire) and callbacks
+    // However, do NOT clear any GPIOTE events
+    uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
+    channelMap[ch] = pin;
+    callbacksInt[ch] = callback;
+    callbackDeferred[ch] = deferred;
+    tmp &= oldRegMask;
+    tmp |= newRegBits;
+    NRF_GPIOTE->CONFIG[ch] = tmp;
+    asm volatile ("" : : : "memory");
+    __asm__ __volatile__ ("nop\n\tnop\n\tnop\n\tnop\n");
+    NRF_GPIOTE->INTENSET = (1 << ch); // old code did this ... no harm in ensuring this is set
+    return (1 << ch);
   }
 
   // When the pin isn't already configured for interrupts, then attempt to
@@ -135,6 +138,7 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
     if (channelMap[ch] != -1) continue;
     // skip if channel is not disabled (e.g., in use by some other component or library)
     if (nrf_gpiote_te_is_enabled(NRF_GPIOTE, ch)) continue;
+
     // clear any old events on this GPIOTE channel
     NRF_GPIOTE->EVENTS_IN[ch] = 0;
     uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
@@ -145,6 +149,8 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
     tmp |= newRegBits;
     // TODO: make check/set for new channel an atomic operation
     NRF_GPIOTE->CONFIG[ch] = tmp;
+    asm volatile ("" : : : "memory");
+    __asm__ __volatile__ ("nop\n\tnop\n\tnop\n\tnop\n");
     NRF_GPIOTE->INTENSET = (1 << ch);
     return (1 << ch);
   }
