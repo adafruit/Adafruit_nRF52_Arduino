@@ -140,7 +140,6 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
     if (nrf_gpiote_te_is_enabled(NRF_GPIOTE, ch)) continue;
 
     // clear any old events on this GPIOTE channel
-    NRF_GPIOTE->EVENTS_IN[ch] = 0;
     uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
     channelMap[ch] = pin;
     callbacksInt[ch] = callback;
@@ -149,6 +148,9 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
     tmp |= newRegBits;
     // TODO: make check/set for new channel an atomic operation
     NRF_GPIOTE->CONFIG[ch] = tmp;
+    asm volatile ("" : : : "memory");
+    __asm__ __volatile__ ("nop\n\tnop\n\tnop\n\tnop\n");
+    NRF_GPIOTE->EVENTS_IN[ch] = 0;
     asm volatile ("" : : : "memory");
     __asm__ __volatile__ ("nop\n\tnop\n\tnop\n\tnop\n");
     NRF_GPIOTE->INTENSET = (1 << ch);
