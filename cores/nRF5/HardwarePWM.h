@@ -50,6 +50,7 @@ class HardwarePWM
   private:
     enum { MAX_CHANNELS = 4 }; // Max channel per group
     NRF_PWM_Type* _pwm;
+    uintptr_t _owner_token = 0;
 
     uint16_t _seq0[MAX_CHANNELS];
 
@@ -66,6 +67,18 @@ class HardwarePWM
     void setMaxValue(uint16_t value);   // set max value
 
     void setClockDiv(uint8_t div);      // value is PWM_PRESCALER_PRESCALER_DIV_x, DIV1 is 16Mhz
+
+    // Cooperative ownership sharing
+
+    // returns true ONLY when (1) no PWM channel has a pin, and (2) the owner token is nullptr
+    bool takeOwnership(uintptr_t token);
+    // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
+    bool releaseOwnership(uintptr_t token);
+    // allows caller to verify that they own the peripheral
+    __INLINE bool isOwner(uintptr_t token) __attribute__((__always_inline__))
+    {
+      return this->_owner_token == token;
+    }
 
     bool addPin     (uint8_t pin);
     bool removePin  (uint8_t pin);
