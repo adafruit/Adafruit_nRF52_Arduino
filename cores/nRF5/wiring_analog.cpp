@@ -36,6 +36,7 @@
 
 #include "Arduino.h"
 
+
 /* Implement analogWrite() and analogWriteResolution() using
  * HardwarePWM.
  *
@@ -45,18 +46,8 @@
 extern "C"
 {
 
-class INTERNAL_ANALOG_STATE {
-  public:
-    uint8_t _lastAnalogWriteResolution = 8; // default value is 8-bit resolution (0..255)
-    uint8_t _moduleUsedByAnalogWrites[HWPWM_MODULE_NUM];
-    INTERNAL_ANALOG_STATE() : _lastAnalogWriteResolution(8) {
-      for (int i = 0; i < HWPWM_MODULE_NUM; i++) {
-        _moduleUsedByAnalogWrites[i] = 0;
-      }
-    }
-};
-
-static INTERNAL_ANALOG_STATE _AnalogState;
+static uint8_t _lastAnalogWriteResolution;
+static const uintptr_t _token = (uintptr_t)(&_lastAnalogWriteResolution);
 
 /**
  * This will apply to all PWM Hardware currently used by analogWrite(),
@@ -65,10 +56,10 @@ static INTERNAL_ANALOG_STATE _AnalogState;
 void analogWriteResolution( uint8_t res )
 {
   // save the resolution for when adding a new instance
-  _AnalogState._lastAnalogWriteResolution = res;
+  _lastAnalogWriteResolution = res;
   for (int i = 0; i<HWPWM_MODULE_NUM; i++)
   {
-    if (!_AnalogState._moduleUsedByAnalogWrites[i]) continue;
+    if (!HwPWMx[i]->isOwner(_token)) continue;
     HwPWMx[i]->setResolution(res);
   }
 }
@@ -82,26 +73,42 @@ void analogWriteResolution( uint8_t res )
  */
 void analogWrite( uint32_t pin, uint32_t value )
 {
-  // If the pin is already in use for analogWrite, this should be fast
-  // If the pin is not already in use, then it's OK to take slightly more time to setup
+  /* If the pin is already in use for analogWrite, this should be fast
+     If the pin is not already in use, then it's OK to take slightly more time to setup
+     */
 
-  // first attempt to find the pin in any of the HWPWM modules used for analog writes
+  // first, handle the case where the pin is already in use by analogWrite()
   for(int i=0; i<HWPWM_MODULE_NUM; i++)
   {
-    if (!_AnalogState._moduleUsedByAnalogWrites[i]) continue;
+    if (!HwPWMx[i]->isOwner(_token)) {
+      LOG_LV3("ANA", "not currently owner of PWM %d", i);
+      continue; // skip if not owner of this PWM instance
+    }
+
     int const ch = HwPWMx[i]->pin2channel(pin);
-    if (ch < 0) continue; // pin not in use by the PWM instance
-    // already in use by this PWM instance as channel ch ...
+    if (ch < 0) {
+      LOG_LV3("ANA", "pin %d is not used by PWM %d", pin, i);
+      continue; // pin not in use by this PWM instance
+    }
+    LOG_LV2("ANA", "updating pin %" PRIu32 " used by PWM %d", pin, i);
     HwPWMx[i]->writeChannel(ch, value);
     return;
   }
 
-  // Next try adding only to those modules that are already in use
+  // Next, handle the case where can add the pin to a PWM instance already owned by analogWrite()
   for(int i=0; i<HWPWM_MODULE_NUM; i++)
   {
-    if (!_AnalogState._moduleUsedByAnalogWrites[i]) continue;
-    if (!HwPWMx[i]->addPin(pin)) continue;
-    // added to an already-used PWM instance, so write the value
+    if (!HwPWMx[i]->isOwner(_token)) {
+      LOG_LV3("ANA", "not currently owner of PWM %d", i);
+      continue;
+    }
+    if (!HwPWMx[i]->addPin(pin)) {
+      LOG_LV3("ANA", "could not add pin %" PRIu32 " to PWM %d", pin, i);
+      continue;
+    }
+
+    // successfully added the pin, so write the value also
+    LOG_LV2("ANA", "Added pin %" PRIu32 " to already-owned PWM %d", pin, i);
     HwPWMx[i]->writePin(pin, value);
     return;
   }
@@ -111,11 +118,16 @@ void analogWrite( uint32_t pin, uint32_t value )
   // 2. it currently has no pins in use.
   for(int i=0; i<HWPWM_MODULE_NUM; i++)
   {
-    if (_AnalogState._moduleUsedByAnalogWrites[i]) continue;
-    if (HwPWMx[i]->usedChannelCount() != 0) continue;
-    // added to an already-used PWM instance, so write the value
-    HwPWMx[i]->setResolution(_AnalogState._lastAnalogWriteResolution);
+    if (!HwPWMx[i]->takeOwnership(_token)) {
+      LOG_LV3("ANA", "Could not take ownership of PWM %d", i);
+      continue;
+    }
+
+    // apply the cached analog resolution to newly owned instances
+    HwPWMx[i]->setResolution(_lastAnalogWriteResolution);
+    HwPWMx[i]->addPin(pin);
     HwPWMx[i]->writePin(pin, value);
+    LOG_LV2("ANA", "took ownership of, and added pin %" PRIu32 " to, PWM %d", pin, i);
     return;
   }
 
