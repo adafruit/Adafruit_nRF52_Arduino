@@ -132,22 +132,18 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
     return 0; // no channel available
   }
 
-  uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
-  tmp &= oldRegMask;
-  tmp |= newRegBits;                 // for existing channel, effectively updates only the polarity
   channelMap[ch]         = pin;      // harmless for existing channel
   callbacksInt[ch]       = callback; // caller might be updating this for existing channel
   callbackDeferred[ch]   = deferred; // caller might be updating this for existing channel
+
+  uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
+  tmp &= oldRegMask;
+  tmp |= newRegBits;                 // for existing channel, effectively updates only the polarity
   NRF_GPIOTE->CONFIG[ch] = tmp;
 
   // For a new channel, additionally ensure no old events existed, and enable the interrupt
   if (newChannel) {
-    // Why the memory barrier and NOPs? 
-    // See page 4 at https://web.archive.org/web/20190823222657/http://infocenter.arm.com/help/topic/com.arm.doc.dai0321a/DAI0321A_programming_guide_memory_barriers_for_m_profile.pdf
-    // and recall the AHB runs at 16MHz, so may take 4 cycles before peripheral register is actually updated.
-    __DSB(); __NOP();__NOP();__NOP();__NOP();
     NRF_GPIOTE->EVENTS_IN[ch] = 0;
-    __DSB(); __NOP();__NOP();__NOP();__NOP();
     NRF_GPIOTE->INTENSET = (1 << ch);
   }
 
@@ -168,13 +164,8 @@ void detachInterrupt(uint32_t pin)
 
   for (int ch = 0; ch < NUMBER_OF_GPIO_TE; ch++) {
     if ((uint32_t)channelMap[ch] == pin) {
-      // Why the memory barrier and NOPs? 
-      // See page 4 at https://web.archive.org/web/20190823222657/http://infocenter.arm.com/help/topic/com.arm.doc.dai0321a/DAI0321A_programming_guide_memory_barriers_for_m_profile.pdf
-      // and recall the AHB runs at 16MHz, so may take 4 cycles before peripheral register is actually updated.
       NRF_GPIOTE->INTENCLR = (1 << ch);
-      __DSB(); __NOP();__NOP();__NOP();__NOP();
       NRF_GPIOTE->CONFIG[ch] = 0;
-      __DSB(); __NOP();__NOP();__NOP();__NOP();
       NRF_GPIOTE->EVENTS_IN[ch] = 0; // clear any final events
 
       // now cleanup the rest of the use of the channel
