@@ -21,6 +21,7 @@
 
 #include "Arduino.h"
 #include "wiring_private.h"
+#include "nrf_gpiote.h"
 
 #include <string.h>
 
@@ -95,25 +96,59 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
       return 0;
   }
 
-  for (int ch = 0; ch < NUMBER_OF_GPIO_TE; ch++) {
-    if (channelMap[ch] == -1 || (uint32_t)channelMap[ch] == pin) {
-      channelMap[ch] = pin;
-      callbacksInt[ch] = callback;
-      callbackDeferred[ch] = deferred;
+  // All information for the configuration is known, except the prior values
+  // of the config register.  Pre-compute the mask and new bits for later use.
+  //     CONFIG[n] = (CONFIG[n] & oldRegMask) | newRegBits;
+  //
+  // Three fields are configured here: PORT/PIN, POLARITY, MODE
+  const uint32_t oldRegMask = ~(GPIOTE_CONFIG_PORT_PIN_Msk | GPIOTE_CONFIG_POLARITY_Msk | GPIOTE_CONFIG_MODE_Msk);
+  const uint32_t newRegBits =
+    ((pin                      << GPIOTE_CONFIG_PSEL_Pos    ) & GPIOTE_CONFIG_PORT_PIN_Msk) |
+    ((polarity                 << GPIOTE_CONFIG_POLARITY_Pos) & GPIOTE_CONFIG_POLARITY_Msk) |
+    ((GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos    ) & GPIOTE_CONFIG_MODE_Msk    ) ;
 
-      NRF_GPIOTE->CONFIG[ch] &= ~(GPIOTE_CONFIG_PORT_PIN_Msk | GPIOTE_CONFIG_POLARITY_Msk);
-      NRF_GPIOTE->CONFIG[ch] |= ((pin << GPIOTE_CONFIG_PSEL_Pos) & GPIOTE_CONFIG_PORT_PIN_Msk) |
-                              ((polarity << GPIOTE_CONFIG_POLARITY_Pos) & GPIOTE_CONFIG_POLARITY_Msk);
+  int ch = -1;
+  int newChannel = 0;
 
-      NRF_GPIOTE->CONFIG[ch] |= GPIOTE_CONFIG_MODE_Event;
-
-      NRF_GPIOTE->INTENSET = (1 << ch);
-
-      return (1 << ch);
+  // Find channel where pin is already assigned, if any
+  for (int i = 0; i < NUMBER_OF_GPIO_TE; i++) {
+    if ((uint32_t)channelMap[i] != pin) continue;
+    ch = i;
+    break;
+  }
+  // else, find one not already mapped and also not in use by others
+  if (ch == -1) {
+    for (int i = 0; i < NUMBER_OF_GPIO_TE; i++) {
+      if (channelMap[i] != -1) continue;
+      if (nrf_gpiote_te_is_enabled(NRF_GPIOTE, i)) continue;
+      
+      ch = i;
+      newChannel = 1;
+      break;
     }
   }
+  // if no channel found, exit
+  if (ch == -1) {
+    return 0; // no channel available
+  }
 
-  return 0;
+  channelMap[ch]         = pin;      // harmless for existing channel
+  callbacksInt[ch]       = callback; // caller might be updating this for existing channel
+  callbackDeferred[ch]   = deferred; // caller might be updating this for existing channel
+
+  uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
+  tmp &= oldRegMask;
+  tmp |= newRegBits;                 // for existing channel, effectively updates only the polarity
+  NRF_GPIOTE->CONFIG[ch] = tmp;
+
+  // For a new channel, additionally ensure no old events existed, and enable the interrupt
+  if (newChannel) {
+    NRF_GPIOTE->EVENTS_IN[ch] = 0;
+    NRF_GPIOTE->INTENSET = (1 << ch);
+  }
+
+  // Finally, indicate to caller the allocated / updated channel
+  return (1 << ch);
 }
 
 /*
@@ -129,14 +164,14 @@ void detachInterrupt(uint32_t pin)
 
   for (int ch = 0; ch < NUMBER_OF_GPIO_TE; ch++) {
     if ((uint32_t)channelMap[ch] == pin) {
+      NRF_GPIOTE->INTENCLR = (1 << ch);
+      NRF_GPIOTE->CONFIG[ch] = 0;
+      NRF_GPIOTE->EVENTS_IN[ch] = 0; // clear any final events
+
+      // now cleanup the rest of the use of the channel
       channelMap[ch] = -1;
       callbacksInt[ch] = NULL;
       callbackDeferred[ch] = false;
-
-      NRF_GPIOTE->CONFIG[ch] &= ~GPIOTE_CONFIG_MODE_Event;
-
-      NRF_GPIOTE->INTENCLR = (1 << ch);
-
       break;
     }
   }
@@ -148,30 +183,39 @@ void GPIOTE_IRQHandler()
   SEGGER_SYSVIEW_RecordEnterISR();
 #endif
 
-  uint32_t event = offsetof(NRF_GPIOTE_Type, EVENTS_IN[0]);
-
+  // Read this once (not 8x), as it's a volatile read
+  // across the AHB, which adds up to 3 cycles.
+  uint32_t const enabledInterruptMask = NRF_GPIOTE->INTENSET;
   for (int ch = 0; ch < NUMBER_OF_GPIO_TE; ch++) {
-    if ((*(uint32_t *)((uint32_t)NRF_GPIOTE + event) == 0x1UL) && (NRF_GPIOTE->INTENSET & (1 << ch))) {
-      if (channelMap[ch] != -1 && callbacksInt[ch]) {
-        if ( callbackDeferred[ch] )  {
-          // Adafruit defer callback to non-isr if configured so
-          ada_callback(NULL, 0, callbacksInt[ch]);
-        }else{
-         callbacksInt[ch]();
-        }
-      }
+    // only process where the interrupt is enabled and the event register is set
+    // check interrupt enabled mask first, as already read that IOM value, to
+    // reduce delays from AHB (16MHz) reads.
+    if ( 0 == (enabledInterruptMask & (1 << ch))) continue;
+    if ( 0 == NRF_GPIOTE->EVENTS_IN[ch]) continue;
 
-    *(uint32_t *)((uint32_t)NRF_GPIOTE + event) = 0;
-#if __CORTEX_M == 0x04
-    volatile uint32_t dummy = *((volatile uint32_t *)((uint32_t)NRF_GPIOTE + event));
-    (void)dummy;
-#endif
+    // If the event was set and interrupts are enabled,
+    // call the callback function only if it exists,
+    // but ALWAYS clear the event to prevent an interrupt storm.
+    if (channelMap[ch] != -1 && callbacksInt[ch]) {
+      if ( callbackDeferred[ch] ) {
+        // Adafruit defer callback to non-isr if configured so
+        ada_callback(NULL, 0, callbacksInt[ch]);
+      } else {
+        callbacksInt[ch]();
+      }
     }
 
-    event = (uint32_t)((uint32_t)event + 4);
+    // clear the event
+    NRF_GPIOTE->EVENTS_IN[ch] = 0;
   }
+#if __CORTEX_M == 0x04
+  // See note at nRF52840_PS_v1.1.pdf section 6.1.8 ("interrupt clearing")
+  // See also https://gcc.gnu.org/onlinedocs/gcc/Volatiles.html for why
+  // using memory barrier instead of read of an unrelated volatile
+  __DSB(); __NOP();__NOP();__NOP();__NOP();
+#endif
 
 #if CFG_SYSVIEW
-    SEGGER_SYSVIEW_RecordExitISR();
+  SEGGER_SYSVIEW_RecordExitISR();
 #endif
 }
