@@ -1,5 +1,18 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.20.1 - 2020.04.23
+
+- Update TinyUSB to commit c59fa77 due to a bug in the stack
+
+## 0.20.0 - 2020.04.21
+
+- Fixed Wire write ambigou
+- Improved debugging with log and sysview, thanks to @henrygab
+- Fixed recipe to compute SRAM and ROM of sketch
+- Removed the force waiting Serial when debug is enabled
+- Updated nrfx to v2.1.0
+- Updated TinyUSB to commit 718db7e
+
 ## 0.19.0 - 2020.03.12
 
 - Add BLECharacteristic::isFixedLen()

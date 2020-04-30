@@ -45,6 +45,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #define POWER_FEATURE_RAM_REGISTERS_PRESENT
 #define POWER_FEATURE_RAM_REGISTERS_COUNT       3
 
+/* Non-Volatile Memory Controller */
+#define NVMC_PRESENT
+#define NVMC_COUNT 1
+
 /* Systick timer */
 #define SYSTICK_PRESENT
 #define SYSTICK_COUNT 1
@@ -59,6 +63,8 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #define P0_PIN_NUM 32
 
+#define P0_FEATURE_PINS_PRESENT 0xFFFFFFFFUL
+
 /* MPU and BPROT */
 #define BPROT_PRESENT
 
@@ -70,6 +76,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define RADIO_COUNT 1
 
 #define RADIO_EASYDMA_MAXCNT_SIZE 8
+#define RADIO_FEATURE_IEEE_802_15_4_PRESENT
 
 /* Accelerated Address Resolver */
 #define AAR_PRESENT

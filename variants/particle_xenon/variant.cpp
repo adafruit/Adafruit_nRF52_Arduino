@@ -52,30 +52,42 @@ const uint32_t g_ADigitalPinMap[] =
   _PINNUM(0, 11),   // P0.11 (MODE)
   _PINNUM(0, 18),   // P0.18 (RESET)
 
+  // D22 .. D24
   // LEDS
   _PINNUM(0, 13),   // P0.13 (RGB_RED)
   _PINNUM(0, 14),   // P0.14 (RGB_GREEN)
   _PINNUM(0, 15),   // P0.15 (RGB_BLUE) 
 
+  // D25 .. D26
   // Antenna
   _PINNUM(0, 24),   // P0.24 (ANTENNA_SWITCH_1 - PCB ANTENNA)
   _PINNUM(0, 25),   // P0.25 (ANTENNA_SWITCH_2 - EXTERNAL u.FL)
 
+  // D27 .. D28
   // NFC
   _PINNUM(0, 9),    // P0.09 (u.FL FOR NFC ANTENNA)
   _PINNUM(0, 10),   // P0.10 (u.FL FOR NFC ANTENNA)
 
+  // D29 .. 36
   // Analog Pins A0 .. A7
   _PINNUM(0, 3),    // P0.03 (A0)
   _PINNUM(0, 4),    // P0.04 (A1)
-  _PINNUM(0, 28),   // P0.04 (A2)
-  _PINNUM(0, 29),   // P0.04 (A3)
-  _PINNUM(0, 30),   // P0.04 (A4)
-  _PINNUM(0, 31),   // P0.04 (A5)
-  _PINNUM(0, 5),   // P0.04 (BAT_DET/VBAT)
+  _PINNUM(0, 28),   // P0.28 (A2)
+  _PINNUM(0, 29),   // P0.29 (A3)
+  _PINNUM(0, 30),   // P0.30 (A4)
+  _PINNUM(0, 31),   // P0.31 (A5)
+  _PINNUM(0, 5),   // P0.05 (BAT_DET/VBAT)
   _PINNUM(0, 2),   // P0.02 (AREF)
+
+  // D37 .. D38
+  // Power status
+  _PINNUM(0, 12),  // P0.12 (PWR)
+  _PINNUM(1, 9),   // P1.09 (CHG)
 };
 
 void initVariant()
 {
+  // LED1
+  pinMode(PIN_LED1, OUTPUT);
+  ledOff(PIN_LED1);
 }

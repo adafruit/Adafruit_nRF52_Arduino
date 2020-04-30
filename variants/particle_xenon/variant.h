@@ -39,8 +39,8 @@ extern "C"
 #endif // __cplusplus
 
 // Number of pins defined in PinDescription array
-#define PINS_COUNT           (34)
-#define NUM_DIGITAL_PINS     (20)
+#define PINS_COUNT           (39)
+#define NUM_DIGITAL_PINS     (39)
 #define NUM_ANALOG_INPUTS    (6) // A6 is used for battery, A7 is analog reference
 #define NUM_ANALOG_OUTPUTS   (0)
 
@@ -111,10 +111,10 @@ static const uint8_t LED_RGB_BLUE  = (24);
 // Buttons
 #define BUTTONS_NUMBER 2
 #define BUTTON_DFU                  (20)
-#define BUTTON_FRESET               (21) // A0
+#define BUTTON_FRESET               (19) // A0
 #define BUTTON_PULL    NRF_GPIO_PIN_PULLUP
 
-static const uint8_t BUTTON_MODE =  (20);
+static const uint8_t BUTTON_MODE =  BUTTON_DFU;
 
 // Antenna
 #define ANTENNA_SWITCH_1            (25)
@@ -150,6 +150,8 @@ static const uint8_t A7 = PIN_A7;
 // Other pins
 #define PIN_AREF           PIN_A7
 #define PIN_VBAT           PIN_A6
+#define PIN_PWR            (37)
+#define PIN_CHG            (38)
 
 static const uint8_t AREF = PIN_AREF;
 

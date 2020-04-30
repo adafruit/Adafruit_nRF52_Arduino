@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Nordic Semiconductor ASA
+ * Copyright (c) 2019 - 2020, Nordic Semiconductor ASA
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -94,7 +94,7 @@ void nrfx_temp_uninit(void);
  * @return Temperature measurement result in a 2's complement signed value
  *         representation.
  */
-__STATIC_INLINE int32_t nrfx_temp_result_get(void);
+NRFX_STATIC_INLINE int32_t nrfx_temp_result_get(void);
 
 /**
  * @brief Function for calculating the temperature value in Celsius scale from raw data.
@@ -133,14 +133,12 @@ int32_t nrfx_temp_calculate(int32_t raw_measurement);
  */
 nrfx_err_t nrfx_temp_measure(void);
 
-#ifndef SUPPRESS_INLINE_IMPLEMENTATION
-
-__STATIC_INLINE int32_t nrfx_temp_result_get(void)
+#ifndef NRFX_DECLARE_ONLY
+NRFX_STATIC_INLINE int32_t nrfx_temp_result_get(void)
 {
     return nrf_temp_result_get(NRF_TEMP);
 }
-
-#endif // SUPPRESS_INLINE_IMPLEMENTATION
+#endif // NRFX_DECLARE_ONLY
 
 /** @} */
 

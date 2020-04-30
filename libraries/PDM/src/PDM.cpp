@@ -67,10 +67,10 @@ int PDMClass::begin(int channels, long sampleRate)
       #ifndef NRF52832_XXAA
       NRF_PDM->RATIO = ((PDM_RATIO_RATIO_Ratio80 << PDM_RATIO_RATIO_Pos) & PDM_RATIO_RATIO_Msk);
       #endif
-      nrf_pdm_clock_set(NRF_PDM_FREQ_1280K);
+      nrf_pdm_clock_set(NRF_PDM, NRF_PDM_FREQ_1280K);
       break;
     case 41667:
-      nrf_pdm_clock_set(NRF_PDM_FREQ_2667K);
+      nrf_pdm_clock_set(NRF_PDM, NRF_PDM_FREQ_2667K);
       break;
     default:
       return 0; // unsupported
@@ -78,11 +78,11 @@ int PDMClass::begin(int channels, long sampleRate)
 
   switch (channels) {
     case 2:
-      nrf_pdm_mode_set(NRF_PDM_MODE_STEREO, NRF_PDM_EDGE_LEFTFALLING);
+      nrf_pdm_mode_set(NRF_PDM, NRF_PDM_MODE_STEREO, NRF_PDM_EDGE_LEFTFALLING);
       break;
 
     case 1:
-      nrf_pdm_mode_set(NRF_PDM_MODE_MONO, NRF_PDM_EDGE_LEFTFALLING);
+      nrf_pdm_mode_set(NRF_PDM, NRF_PDM_MODE_MONO, NRF_PDM_EDGE_LEFTFALLING);
       break;
 
     default:
@@ -97,13 +97,13 @@ int PDMClass::begin(int channels, long sampleRate)
 
   pinMode(_dinPin, INPUT);
 
-  nrf_pdm_psel_connect(digitalPinToPinName(_clkPin), digitalPinToPinName(_dinPin));
+  nrf_pdm_psel_connect(NRF_PDM, digitalPinToPinName(_clkPin), digitalPinToPinName(_dinPin));
 
   // clear events and enable PDM interrupts
-  nrf_pdm_event_clear(NRF_PDM_EVENT_STARTED);
-  nrf_pdm_event_clear(NRF_PDM_EVENT_END);
-  nrf_pdm_event_clear(NRF_PDM_EVENT_STOPPED);
-  nrf_pdm_int_enable(NRF_PDM_INT_STARTED | NRF_PDM_INT_STOPPED);
+  nrf_pdm_event_clear(NRF_PDM, NRF_PDM_EVENT_STARTED);
+  nrf_pdm_event_clear(NRF_PDM, NRF_PDM_EVENT_END);
+  nrf_pdm_event_clear(NRF_PDM, NRF_PDM_EVENT_STOPPED);
+  nrf_pdm_int_enable(NRF_PDM, NRF_PDM_INT_STARTED | NRF_PDM_INT_STOPPED);
 
   if (_pwrPin > -1) {
     // power the mic on
@@ -124,9 +124,9 @@ int PDMClass::begin(int channels, long sampleRate)
   // _doubleBuffer.swap();
   
   // enable and trigger start task
-  nrf_pdm_enable();
-  nrf_pdm_event_clear(NRF_PDM_EVENT_STARTED);
-  nrf_pdm_task_trigger(NRF_PDM_TASK_START);
+  nrf_pdm_enable(NRF_PDM);
+  nrf_pdm_event_clear(NRF_PDM, NRF_PDM_EVENT_STARTED);
+  nrf_pdm_task_trigger(NRF_PDM, NRF_PDM_TASK_START);
 
   return 1;
 }
@@ -134,7 +134,7 @@ int PDMClass::begin(int channels, long sampleRate)
 void PDMClass::end()
 {
   // disable PDM and IRQ
-  nrf_pdm_disable();
+  nrf_pdm_disable(NRF_PDM);
 
   NVIC_DisableIRQ(PDM_IRQn);
 
@@ -147,7 +147,7 @@ void PDMClass::end()
   // Don't disable high frequency oscillator since it could be in use by RADIO
 
   // unconfigure the I/O and un-mux
-  nrf_pdm_psel_disconnect();
+  nrf_pdm_psel_disconnect(NRF_PDM);
 
   pinMode(_clkPin, INPUT);
 }
@@ -181,7 +181,7 @@ void PDMClass::onReceive(void(*function)(void))
 
 void PDMClass::setGain(int gain)
 {
-  nrf_pdm_gain_set(gain, gain);
+  nrf_pdm_gain_set(NRF_PDM, gain, gain);
 }
 
 void PDMClass::setBufferSize(int bufferSize)
@@ -191,12 +191,12 @@ void PDMClass::setBufferSize(int bufferSize)
 
 void PDMClass::IrqHandler()
 {
-  if (nrf_pdm_event_check(NRF_PDM_EVENT_STARTED)) {
-    nrf_pdm_event_clear(NRF_PDM_EVENT_STARTED);
+  if (nrf_pdm_event_check(NRF_PDM, NRF_PDM_EVENT_STARTED)) {
+    nrf_pdm_event_clear(NRF_PDM, NRF_PDM_EVENT_STARTED);
 
     if (_doubleBuffer.available() == 0) {
       // switch to the next buffer
-      nrf_pdm_buffer_set((uint32_t*)_doubleBuffer.data(), _doubleBuffer.availableForWrite() / (sizeof(int16_t) * _channels));
+      nrf_pdm_buffer_set(NRF_PDM, (uint32_t*)_doubleBuffer.data(), _doubleBuffer.availableForWrite() / (sizeof(int16_t) * _channels));
 
       // make the current one available for reading
       _doubleBuffer.swap(_doubleBuffer.availableForWrite());
@@ -207,12 +207,12 @@ void PDMClass::IrqHandler()
       }
     } else {
       // buffer overflow, stop
-      nrf_pdm_disable();
+      nrf_pdm_disable(NRF_PDM);
     }
-  } else if (nrf_pdm_event_check(NRF_PDM_EVENT_STOPPED)) {
-    nrf_pdm_event_clear(NRF_PDM_EVENT_STOPPED);
-  } else if (nrf_pdm_event_check(NRF_PDM_EVENT_END)) {
-    nrf_pdm_event_clear(NRF_PDM_EVENT_END);
+  } else if (nrf_pdm_event_check(NRF_PDM, NRF_PDM_EVENT_STOPPED)) {
+    nrf_pdm_event_clear(NRF_PDM, NRF_PDM_EVENT_STOPPED);
+  } else if (nrf_pdm_event_check(NRF_PDM, NRF_PDM_EVENT_END)) {
+    nrf_pdm_event_clear(NRF_PDM, NRF_PDM_EVENT_END);
   }
 }
 
