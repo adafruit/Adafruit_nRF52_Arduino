@@ -34,35 +34,54 @@ Version Modified By Date     Comments
 0010	Arduino.org 16/07/27 Added Arduino Primo support
 *************************************************/
 
-
+#include "Arduino.h"
 #include "Tone.h"
 #include "WVariant.h"
 
 unsigned long int count_duration=0;
 volatile bool no_stop = false;
 uint8_t pin_sound=0;
+static uintptr_t _toneToken = (uintptr_t)(&_toneToken);
 
 
 void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 {
+	static_assert(sizeof(unsigned long) == sizeof(uint32_t));
+
 	unsigned int time_per=0;
-	
-	if((frequency < 20) | (frequency > 25000)) return;
-	
+
+	// limit frequency to reasonable audible range	
+	if((frequency < 20) | (frequency > 25000)) {
+		LOG_LV1("TON", "frequency outside range [20..25000] -- ignoring");
+		return;
+	}
+
+	// Use fixed PWM2 (due to need to connect interrupt)
+	if (!HwPWMx[2]->isOwner(_toneToken) &&
+	    !HwPWMx[2]->takeOwnership(_toneToken)) {
+		LOG_LV1("TON", "unable to allocate PWM2 to Tone");
+		return;
+	}
 
 	float per=float(1)/frequency;
 	time_per=per/0.000008;
 	unsigned int duty=time_per/2;
-	if(duration > 0){
+	if(duration > 0) {
 		no_stop = false;
 		float mil=float(duration)/1000;
-		if(per>mil)
+ 		if(per>mil) {
 			count_duration=1;
-		else
+		} else {
 			count_duration= mil/per;
-	}
-	else
+		}
+	} else {
 		no_stop = true;
+	}
+
+	// PWM configuration depends on the following:
+	// [ ] time_per
+	// [ ] duty ( via seq     )
+	// [ ] pin  ( via pins[0] )
 
 	// Configure PWM
 	static uint16_t seq_values[]={0};
@@ -97,6 +116,7 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 			break;
 	}
 #else
+
 	// Use fixed PWM2, TODO could conflict with other usage
 	uint32_t pins[NRF_PWM_CHANNEL_COUNT]={NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED};
 	pins[0] = g_ADigitalPinMap[pin];
@@ -110,7 +130,7 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 	nrf_pwm_configure(PWMInstance, NRF_PWM_CLK_125kHz, NRF_PWM_MODE_UP, time_per);
 	nrf_pwm_decoder_set(PWMInstance, NRF_PWM_LOAD_COMMON, NRF_PWM_STEP_AUTO);
 	nrf_pwm_sequence_set(PWMInstance, 0, &seq);
-	nrf_pwm_shorts_enable(PWMInstance, NRF_PWM_SHORT_SEQEND0_STOP_MASK);
+	nrf_pwm_shorts_enable(PWMInstance, NRF_PWM_SHORT_SEQEND0_STOP_MASK); // shortcut for when SEQ0 ends, PWM output will automatically stop
 	
 	// enable interrupt
 	nrf_pwm_event_clear(PWMInstance, NRF_PWM_EVENT_PWMPERIODEND);
@@ -125,6 +145,11 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 
 void noTone(uint8_t pin)
 {
+	if (!HwPWMx[2]->isOwner(_toneToken)) {
+		LOG_LV1("TON", "Attempt to set noTone when not the owner of the PWM peripheral.  Ignoring call....");
+		return;
+	}
+
 #if 0
 	uint8_t pwm_type=g_APinDescription[pin].ulPWMChannel;
 	NRF_PWM_Type * PWMInstance = NRF_PWM0;
@@ -180,13 +205,15 @@ void PWM2_IRQHandler(void){
 	nrf_pwm_event_clear(NRF_PWM2, NRF_PWM_EVENT_PWMPERIODEND);
 	if(!no_stop){
 		count_duration--;
-		if(count_duration == 0)
-			noTone(pin_sound);
-		else
-			nrf_pwm_task_trigger(NRF_PWM2, NRF_PWM_TASK_SEQSTART0);	
-	}
-	else
+		if(count_duration == 0) {
+			nrf_pwm_task_trigger(NRF_PWM2, NRF_PWM_TASK_STOP);
+			nrf_pwm_disable(NRF_PWM2);
+		} else {
+			nrf_pwm_task_trigger(NRF_PWM2, NRF_PWM_TASK_SEQSTART0);
+		}
+	} else {
 		nrf_pwm_task_trigger(NRF_PWM2, NRF_PWM_TASK_SEQSTART0);
+	}
 }
 
 #ifdef __cplusplus
