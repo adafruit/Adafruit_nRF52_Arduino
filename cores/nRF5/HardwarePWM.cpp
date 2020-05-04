@@ -244,7 +244,7 @@ uint8_t HardwarePWM::usedChannelCount(void)
   uint8_t usedChannels = 0;
   for(int i=0; i<MAX_CHANNELS; i++)
   {
-    if ( _pwm->PSEL.OUT[i] & PWM_PSEL_OUT_CONNECT_Msk )
+    if ( (_pwm->PSEL.OUT[i] & PWM_PSEL_OUT_CONNECT_Msk) != (PWM_PSEL_OUT_CONNECT_Disconnected << PWM_PSEL_OUT_CONNECT_Pos) )
     {
       usedChannels++;
     }
