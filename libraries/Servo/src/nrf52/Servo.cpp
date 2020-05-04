@@ -21,7 +21,7 @@
 #include <Arduino.h>
 #include <Servo.h>
 
-static uintptr_t _servoToken = (uintptr_t)(&_servoToken);
+static char const * _servoToken = "Servo";
 
 static servo_t servos[MAX_SERVOS];              // static array of servo structures
 uint8_t ServoCount = 0;                         // the total number of attached servos

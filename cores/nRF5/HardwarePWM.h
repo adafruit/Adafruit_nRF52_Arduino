@@ -50,7 +50,7 @@ class HardwarePWM
   private:
     enum { MAX_CHANNELS = 4 }; // Max channel per group
     NRF_PWM_Type* _pwm;
-    uintptr_t _owner_token = 0;
+    void const *  _owner_token = nullptr;
 
     uint16_t _seq0[MAX_CHANNELS];
 
@@ -71,11 +71,12 @@ class HardwarePWM
     // Cooperative ownership sharing
 
     // returns true ONLY when (1) no PWM channel has a pin, and (2) the owner token is nullptr
-    bool takeOwnership(uintptr_t token);
+    bool takeOwnership   (void const * token);
     // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
-    bool releaseOwnership(uintptr_t token);
+    bool releaseOwnership(void const * token);
+
     // allows caller to verify that they own the peripheral
-    __INLINE bool isOwner(uintptr_t token) __attribute__((__always_inline__))
+    __INLINE bool isOwner(void const * token) __attribute__((__always_inline__))
     {
       return this->_owner_token == token;
     }

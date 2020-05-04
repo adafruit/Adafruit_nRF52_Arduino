@@ -47,7 +47,7 @@ extern "C"
 {
 
 static uint8_t _lastAnalogWriteResolution;
-static const uintptr_t _token = (uintptr_t)(&_lastAnalogWriteResolution);
+static char const * _analogToken = "analog";
 
 /**
  * This will apply to all PWM Hardware currently used by analogWrite(),
@@ -59,7 +59,7 @@ void analogWriteResolution( uint8_t res )
   _lastAnalogWriteResolution = res;
   for (int i = 0; i<HWPWM_MODULE_NUM; i++)
   {
-    if (!HwPWMx[i]->isOwner(_token)) continue;
+    if (!HwPWMx[i]->isOwner(_analogToken)) continue;
     HwPWMx[i]->setResolution(res);
   }
 }
@@ -80,7 +80,7 @@ void analogWrite( uint32_t pin, uint32_t value )
   // first, handle the case where the pin is already in use by analogWrite()
   for(int i=0; i<HWPWM_MODULE_NUM; i++)
   {
-    if (!HwPWMx[i]->isOwner(_token)) {
+    if (!HwPWMx[i]->isOwner(_analogToken)) {
       LOG_LV3("ANA", "not currently owner of PWM %d", i);
       continue; // skip if not owner of this PWM instance
     }
@@ -98,7 +98,7 @@ void analogWrite( uint32_t pin, uint32_t value )
   // Next, handle the case where can add the pin to a PWM instance already owned by analogWrite()
   for(int i=0; i<HWPWM_MODULE_NUM; i++)
   {
-    if (!HwPWMx[i]->isOwner(_token)) {
+    if (!HwPWMx[i]->isOwner(_analogToken)) {
       LOG_LV3("ANA", "not currently owner of PWM %d", i);
       continue;
     }
@@ -118,7 +118,7 @@ void analogWrite( uint32_t pin, uint32_t value )
   // 2. it currently has no pins in use.
   for(int i=0; i<HWPWM_MODULE_NUM; i++)
   {
-    if (!HwPWMx[i]->takeOwnership(_token)) {
+    if (!HwPWMx[i]->takeOwnership(_analogToken)) {
       LOG_LV3("ANA", "Could not take ownership of PWM %d", i);
       continue;
     }

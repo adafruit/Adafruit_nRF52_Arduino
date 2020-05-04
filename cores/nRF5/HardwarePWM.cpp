@@ -54,21 +54,21 @@ HardwarePWM* HwPWMx[] =
 };
 
 // returns true ONLY when (1) no PWM channel has a pin, and (2) the owner token is nullptr
-bool HardwarePWM::takeOwnership(uintptr_t token)
+bool HardwarePWM::takeOwnership(void const * token)
 {
   if (this->_owner_token       != 0) return false; // doesn't matter if it's actually a match ... it's not legal to take ownership twice
   if (this->usedChannelCount() != 0) return false; // at least one channel is already in use
-  if (this->enabled                ) return false; // if it's enabled, do not allow new ownership, even with no pins in use
+  if (this->enabled()              ) return false; // if it's enabled, do not allow new ownership, even with no pins in use
   // use gcc built-in intrinsic to ensure atomicity
   // See https://gcc.gnu.org/onlinedocs/gcc/_005f_005fsync-Builtins.html
   return __sync_bool_compare_and_swap(&(this->_owner_token), 0, token);
 }
 // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
-bool HardwarePWM::releaseOwnership(uintptr_t token)
+bool HardwarePWM::releaseOwnership(void const * token)
 {
   if (!this->isOwner(token)         ) return false; // don't even look at peripheral
   if ( this->usedChannelCount() != 0) return false; // fail if any channels still have pins
-  if ( this->enabled                ) return false; // if it's enabled, do not allow ownership to be released, even with no pins in use
+  if ( this->enabled()              ) return false; // if it's enabled, do not allow ownership to be released, even with no pins in use
   // use gcc built-in intrinsic to ensure atomicity
   // See https://gcc.gnu.org/onlinedocs/gcc/_005f_005fsync-Builtins.html
   return __sync_bool_compare_and_swap(&(this->_owner_token), token, 0);
