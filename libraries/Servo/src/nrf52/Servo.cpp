@@ -108,7 +108,10 @@ void Servo::detach()
   HardwarePWM * pwm = this->pwm;
   this->pwm = nullptr;
   pwm->removePin(pin);
-  pwm->releaseOwnership(_servoToken); // ignore failure ... which happens if a pin is still in use, for example
+  if (pwm->usedChannelCount() == 0) {
+    pwm->stop(); // disables peripheral so can release ownership
+    pwm->releaseOwnership(_servoToken);
+  }
 }
 
 void Servo::write(int value)
