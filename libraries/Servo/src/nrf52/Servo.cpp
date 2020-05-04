@@ -21,6 +21,7 @@
 #include <Arduino.h>
 #include <Servo.h>
 
+static uintptr_t _servoToken = (uintptr_t)(&_servoToken);
 
 static servo_t servos[MAX_SERVOS];              // static array of servo structures
 uint8_t ServoCount = 0;                         // the total number of attached servos
@@ -32,7 +33,6 @@ Servo::Servo()
   } else {
     this->servoIndex = INVALID_SERVO;  					// too many servos
   }
-
   this->pwm = NULL;
 }
 
@@ -43,55 +43,81 @@ uint8_t Servo::attach(int pin)
 
 uint8_t Servo::attach(int pin, int min, int max)
 {
-  if (this->servoIndex < MAX_SERVOS) {
-    pinMode(pin, OUTPUT);                                   // set servo pin to output
-    servos[this->servoIndex].Pin.nbr = pin;
+  if (this->servoIndex == INVALID_SERVO) {
+    return INVALID_SERVO;
+  }
+  bool succeeded = false;
+  pinMode(pin, OUTPUT);                                   // set servo pin to output
+  servos[this->servoIndex].Pin.nbr = pin;
 
-    if (min < MIN_PULSE_WIDTH) min = MIN_PULSE_WIDTH;
-    if (max > MAX_PULSE_WIDTH) max = MAX_PULSE_WIDTH;
+  if (min < MIN_PULSE_WIDTH) {
+    min = MIN_PULSE_WIDTH;
+  }
+  if (max > MAX_PULSE_WIDTH) {
+    max = MAX_PULSE_WIDTH;
+  }
 
-    //fix min if conversion to pulse cycle value is too low
-    if((min/DUTY_CYCLE_RESOLUTION)*DUTY_CYCLE_RESOLUTION<min) min+=DUTY_CYCLE_RESOLUTION;
-	  
-    this->min  = min;
-    this->max  = max;
+  //fix min if conversion to pulse cycle value is too low
+  if ( (min/DUTY_CYCLE_RESOLUTION) * DUTY_CYCLE_RESOLUTION < min) {
+    min += DUTY_CYCLE_RESOLUTION;
+  }
+  
+  this->min  = min;
+  this->max  = max;
 
-    servos[this->servoIndex].Pin.isActive = true;
+  servos[this->servoIndex].Pin.isActive = true;
 
-    // Adafruit, add pin to 1 of available Hw PWM
-    for(int i=0; i<HWPWM_MODULE_NUM; i++)
-    {
-      if ( HwPWMx[i]->addPin(pin) )
-      {
+  // Adafruit, add pin to 1 of available Hw PWM
+  // first, use existing HWPWM modules (already owned by Servo)
+  for(int i=0; i<HWPWM_MODULE_NUM; i++) {
+    if (HwPWMx[i]->isOwner(_servoToken) &&
+        HwPWMx[i]->addPin(pin)) {
+      this->pwm = HwPWMx[i];
+      succeeded = true;
+      break;
+    }
+  }
+  // if could not add to existing owned PWM modules, try to add to a new PWM module
+  if (!succeeded) {
+    for(int i=0; i<HWPWM_MODULE_NUM; i++) {
+      if (HwPWMx[i]->takeOwnership(_servoToken) &&
+          HwPWMx[i]->addPin(pin)) {
         this->pwm = HwPWMx[i];
+        succeeded = true;
         break;
       }
     }
+  }
 
+  if (succeeded) { // do not use this->pwm unless success above!
     this->pwm->setMaxValue(MAXVALUE);
     this->pwm->setClockDiv(CLOCKDIV);
-
   }
-  return this->servoIndex;
+  return succeeded ? this->servoIndex : INVALID_SERVO; // return INVALID_SERVO on failure (zero is a valid servo index)
 }
 
 void Servo::detach()
 {
+  if (this->servoIndex == INVALID_SERVO) {
+    return;
+  }
+
   uint8_t const pin = servos[this->servoIndex].Pin.nbr;
-
-	servos[this->servoIndex].Pin.isActive = false;
-
-	// remove pin from HW PWM
-	this->pwm->removePin(pin);
+  servos[this->servoIndex].Pin.isActive = false;
+  // remove pin from HW PWM
+  HardwarePWM * pwm = this->pwm;
+  this->pwm = nullptr;
+  pwm->removePin(pin);
+  pwm->releaseOwnership(_servoToken); // ignore failure ... which happens if a pin is still in use, for example
 }
 
-
 void Servo::write(int value)
-{  
-	if (value < 0)
+{
+	if (value < 0) {
 		value = 0;
-	else if (value > 180)
+  } else if (value > 180) {
 		value = 180;
+  }
 	value = map(value, 0, 180, this->min, this->max);
 	
 	writeMicroseconds(value);
@@ -100,9 +126,10 @@ void Servo::write(int value)
 
 void Servo::writeMicroseconds(int value)
 {
-	uint8_t pin = servos[this->servoIndex].Pin.nbr;
-	
-	if ( this->pwm ) this->pwm->writePin(pin, value/DUTY_CYCLE_RESOLUTION);
+  if (this->pwm) { // pwm is only set when this->servoIndex != INVALID_SERVO
+	  uint8_t pin = servos[this->servoIndex].Pin.nbr;
+  	this->pwm->writePin(pin, value/DUTY_CYCLE_RESOLUTION);
+  }
 }
 
 int Servo::read() // return the value as degrees
@@ -112,15 +139,18 @@ int Servo::read() // return the value as degrees
 
 int Servo::readMicroseconds()
 {	
-	uint8_t pin = servos[this->servoIndex].Pin.nbr;
-
-	if ( this->pwm ) return this->pwm->readPin(pin)*DUTY_CYCLE_RESOLUTION;
-
+  if (this->pwm) { // pwm is only set when this->servoIndex != INVALID_SERVO
+    uint8_t pin = servos[this->servoIndex].Pin.nbr;
+    return this->pwm->readPin(pin)*DUTY_CYCLE_RESOLUTION;
+  }
 	return 0;
 }
 
 bool Servo::attached()
 {
+  if (this->servoIndex == INVALID_SERVO) {
+    return false;
+  }
   return servos[this->servoIndex].Pin.isActive;
 }
 
