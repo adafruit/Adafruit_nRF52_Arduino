@@ -312,8 +312,8 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 #endif
 
   /*------------------------------------------------------------------*/
-  /* BLE only Softdevices have 2-args sd_softdevice_enable()
-  /* BLE & ANT+ Softdevices have 3-args sd_softdevice_enable()
+  // BLE only Softdevices have 2-args sd_softdevice_enable()
+  // BLE & ANT+ Softdevices have 3-args sd_softdevice_enable()
   /*------------------------------------------------------------------*/
 #ifdef ANT_LICENSE_KEY
   VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, nrf_error_cb, ANT_LICENSE_KEY), false );
