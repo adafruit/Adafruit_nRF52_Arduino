@@ -78,11 +78,6 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 		no_stop = true;
 	}
 
-	// PWM configuration depends on the following:
-	// [ ] time_per
-	// [ ] duty ( via seq     )
-	// [ ] pin  ( via pins[0] )
-
 	// Configure PWM
 	static uint16_t seq_values[]={0};
 	//In each value, the most significant bit (15) determines the polarity of the output
@@ -95,35 +90,12 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 								0
     };
 	
-#if 0
-	//assign pin to pwm channel - look at WVariant.h for details about ulPWMChannel attribute
-	uint8_t pwm_type=g_APinDescription[pin].ulPWMChannel;
-	if(pwm_type == NOT_ON_PWM)
-		return;
-	
-	uint32_t pins[NRF_PWM_CHANNEL_COUNT]={NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED};
-	pins[pwm_type & 0x0F]=g_APinDescription[pin].ulPin;
-	IRQn_Type IntNo = PWM0_IRQn;
-	NRF_PWM_Type * PWMInstance = NRF_PWM0;
-	switch(pwm_type &0xF0){
-		case 16://0x10
-			PWMInstance = NRF_PWM1;
-			IntNo = PWM1_IRQn;
-			break;
-		case 32://0x20
-			PWMInstance = NRF_PWM2;
-			IntNo = PWM2_IRQn;
-			break;
-	}
-#else
-
 	// Use fixed PWM2, TODO could conflict with other usage
 	uint32_t pins[NRF_PWM_CHANNEL_COUNT]={NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED};
 	pins[0] = g_ADigitalPinMap[pin];
 
 	IRQn_Type IntNo = PWM2_IRQn;
 	NRF_PWM_Type * PWMInstance = NRF_PWM2;
-#endif
 
 	nrf_pwm_pins_set(PWMInstance, pins);
 	nrf_pwm_enable(PWMInstance);
@@ -150,21 +122,7 @@ void noTone(uint8_t pin)
 		return;
 	}
 
-#if 0
-	uint8_t pwm_type=g_APinDescription[pin].ulPWMChannel;
-	NRF_PWM_Type * PWMInstance = NRF_PWM0;
-	switch(pwm_type &0xF0){
-		case 16://0x10
-			PWMInstance = NRF_PWM1;
-			break;
-		case 32://0x20
-			PWMInstance = NRF_PWM2;
-			break;
-	}
-#else
 	NRF_PWM_Type * PWMInstance = NRF_PWM2;
-#endif
-
 	nrf_pwm_task_trigger(PWMInstance, NRF_PWM_TASK_STOP);
 	nrf_pwm_disable(PWMInstance);
 }
@@ -172,34 +130,6 @@ void noTone(uint8_t pin)
 #ifdef __cplusplus
 extern "C"{
 #endif	
-
-#if 0
-void PWM0_IRQHandler(void){
-	nrf_pwm_event_clear(NRF_PWM0, NRF_PWM_EVENT_PWMPERIODEND);
-	if(!no_stop){
-		count_duration--;
-		if(count_duration == 0)
-			noTone(pin_sound);
-		else
-			nrf_pwm_task_trigger(NRF_PWM0, NRF_PWM_TASK_SEQSTART0);
-	}
-	else
-		nrf_pwm_task_trigger(NRF_PWM0, NRF_PWM_TASK_SEQSTART0);
-}
-
-void PWM1_IRQHandler(void){
-	nrf_pwm_event_clear(NRF_PWM1, NRF_PWM_EVENT_PWMPERIODEND);
-	if(!no_stop){
-		count_duration--;
-		if(count_duration == 0)
-			noTone(pin_sound);
-		else
-			nrf_pwm_task_trigger(NRF_PWM1, NRF_PWM_TASK_SEQSTART0);	
-	}
-	else
-		nrf_pwm_task_trigger(NRF_PWM1, NRF_PWM_TASK_SEQSTART0);
-}
-#endif
 
 void PWM2_IRQHandler(void){
 	nrf_pwm_event_clear(NRF_PWM2, NRF_PWM_EVENT_PWMPERIODEND);
