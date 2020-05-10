@@ -39,6 +39,7 @@
 
 
 #ifdef __cplusplus
+  // namespace and templates must be outside the `extern "C"` declaration...
   namespace ADAFRUIT_DETAIL
   {
       template <typename T, size_t N>
@@ -53,8 +54,8 @@
 #elif __STDC_VERSION__ >= 201112L
   // Even C can have type-safety for equivalent of ARRAY_SIZE() macro, when using GCC (which this BSP does)
   #define __ADA_COMPATIBLE_TYPES(a,b)   __builtin_types_compatible_p(typeof(a), typeof(b)) // GCC extensions
-  #define __ADA_BUILD_ERROR_ON_ZERO(x)  (sizeof(struct { int:-!!(x)*0x1ee7;})) // if x is zero, reports "error: negative width in bit-field '<anonymous>'"
-  #define __ADA_MUST_BE_ARRAY(x)        __ADA_BUILD_ERROR_ON_ZERO(__ADA_COMPATIBLE_TYPES((x), &(*x)))
+  #define __ADA_BUILD_ERROR_IF_NONZERO(x)  (sizeof(struct { int:-!!(x)*0x1ee7;})) // if x is zero, reports "error: negative width in bit-field '<anonymous>'"
+  #define __ADA_MUST_BE_ARRAY(x)        __ADA_BUILD_ERROR_IF_NONZERO(__ADA_COMPATIBLE_TYPES((x), &(*x)))
   #define ADA_STATIC_ASSERT(const_expr, message)   _Static_assert(const_expr, message)
   #define arrcount(_arr)       ( (sizeof(_arr) / sizeof((_arr)[0])) + __ADA_MUST_BE_ARRAY(_arr) ) // compile-time error if not an array
 #else
