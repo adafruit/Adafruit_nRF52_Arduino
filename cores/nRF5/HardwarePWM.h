@@ -49,8 +49,8 @@ class HardwarePWM
 {
   private:
     enum { MAX_CHANNELS = 4 }; // Max channel per group
-    NRF_PWM_Type* _pwm;
-    void const *  _owner_token = nullptr;
+    NRF_PWM_Type * const _pwm;
+    uintptr_t _owner_token = 0;
 
     uint16_t _seq0[MAX_CHANNELS];
 
@@ -71,20 +71,27 @@ class HardwarePWM
     // Cooperative ownership sharing
 
     // returns true ONLY when (1) no PWM channel has a pin, and (2) the owner token is nullptr
-    bool takeOwnership   (void const * token);
+    bool takeOwnership   (uintptr_t    token);
     // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
-    bool releaseOwnership(void const * token);
+    bool releaseOwnership(uintptr_t    token);
 
     // allows caller to verify that they own the peripheral
-    __INLINE bool isOwner(void const * token) __attribute__((__always_inline__))
+    __INLINE bool isOwner(uintptr_t token) const __attribute__((__always_inline__))
     {
       return this->_owner_token == token;
     }
+    __INLINE bool takeOwnership   (void const * token)
+    { return takeOwnership((uintptr_t)token); }
+    __INLINE bool releaseOwnership(void const * token)
+    { return releaseOwnership((uintptr_t)token); }
+    __INLINE bool isOwner         (void const * token) const
+    __attribute__ ((__always_inline__))
+    { return isOwner((uintptr_t)token); }
 
     bool addPin     (uint8_t pin);
     bool removePin  (uint8_t pin);
 
-    int  pin2channel(uint8_t pin)
+    int  pin2channel(uint8_t pin) const
     {
       pin = g_ADigitalPinMap[pin];
       for(int i=0; i<MAX_CHANNELS; i++)
@@ -94,7 +101,7 @@ class HardwarePWM
       return (-1);
     }
 
-    bool checkPin(uint8_t pin)
+    bool checkPin(uint8_t pin) const
     {
       return pin2channel(pin) >= 0;
     }
@@ -108,12 +115,15 @@ class HardwarePWM
     bool writeChannel(uint8_t ch , uint16_t value, bool inverted = false);
 
     // Read current set value
-    uint16_t readPin     (uint8_t pin);
-    uint16_t readChannel (uint8_t ch);
+    uint16_t readPin     (uint8_t pin) const;
+    uint16_t readChannel (uint8_t ch) const;
 
     // Get count of used / free channels
-    uint8_t usedChannelCount();
-    uint8_t freeChannelCount();
+    uint8_t usedChannelCount() const;
+    uint8_t freeChannelCount() const;
+
+    // for debug/validation
+    static void DebugOutput(Stream& logger);
 };
 
 extern HardwarePWM HwPWM0;
