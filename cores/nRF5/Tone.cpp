@@ -41,8 +41,7 @@ Version Modified By Date     Comments
 unsigned long int count_duration=0;
 volatile bool no_stop = false;
 uint8_t pin_sound=0;
-static char const * _toneToken = "Tone";
-
+static uintptr_t _toneToken = 0x656e6f54; // 'T' 'o' 'n' 'e'
 
 void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 {

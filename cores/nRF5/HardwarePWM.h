@@ -76,17 +76,11 @@ class HardwarePWM
     bool releaseOwnership(uintptr_t    token);
 
     // allows caller to verify that they own the peripheral
-    __INLINE bool isOwner(uintptr_t token) const __attribute__((__always_inline__))
+    __INLINE bool isOwner(uintptr_t token) const
+    __attribute__ ((__always_inline__))
     {
       return this->_owner_token == token;
     }
-    __INLINE bool takeOwnership   (void const * token)
-    { return takeOwnership((uintptr_t)token); }
-    __INLINE bool releaseOwnership(void const * token)
-    { return releaseOwnership((uintptr_t)token); }
-    __INLINE bool isOwner         (void const * token) const
-    __attribute__ ((__always_inline__))
-    { return isOwner((uintptr_t)token); }
 
     bool addPin     (uint8_t pin);
     bool removePin  (uint8_t pin);
@@ -122,8 +116,9 @@ class HardwarePWM
     uint8_t usedChannelCount() const;
     uint8_t freeChannelCount() const;
 
-    // for debug/validation
+#if CFG_DEBUG
     static void DebugOutput(Stream& logger);
+#endif // CFG_DEBUG
 };
 
 extern HardwarePWM HwPWM0;

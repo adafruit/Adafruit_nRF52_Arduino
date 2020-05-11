@@ -47,7 +47,7 @@ extern "C"
 {
 
 static uint8_t _lastAnalogWriteResolution;
-static char const * _analogToken = "analog";
+static uintptr_t _analogToken = 0x676f6c41; // 'A' 'l' 'o' 'g'
 
 /**
  * This will apply to all PWM Hardware currently used by analogWrite(),

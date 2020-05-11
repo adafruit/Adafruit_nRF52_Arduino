@@ -53,6 +53,7 @@ HardwarePWM* HwPWMx[] =
 #endif
 };
 
+#if CFG_DEBUG
 bool can_stringify_token(uintptr_t token)
 {
   uint8_t * t = (uint8_t *)&token;
@@ -91,8 +92,7 @@ void HardwarePWM::DebugOutput(Stream& logger)
   }
   logger.printf("\n");
 }
-
-
+#endif // CFG_DEBUG
 
 // returns true ONLY when (1) no PWM channel has a pin, and (2) the owner token is nullptr
 bool HardwarePWM::takeOwnership(uintptr_t token)
