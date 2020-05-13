@@ -38,15 +38,23 @@ Version Modified By Date     Comments
 #include "Tone.h"
 #include "WVariant.h"
 
-unsigned long int count_duration=0;
+volatile unsigned long int count_duration=0;
 volatile bool no_stop = false;
 uint8_t pin_sound=0;
 static uintptr_t _toneToken = 0x656e6f54; // 'T' 'o' 'n' 'e'
 
+// NOTE: Currently hard-coded to only use PWM2 ...
+//       These are the relvant hard-coded variables
+//       (plus the ISR PWM2_IRQHandler)
+static IRQn_Type      const _IntNo       = PWM2_IRQn;
+static NRF_PWM_Type * const _PWMInstance = NRF_PWM2;
+static HardwarePWM  * const _HwPWM       = HwPWMx[2];
+
 void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 {
 	static_assert(sizeof(unsigned long) == sizeof(uint32_t));
-
+	bool new_no_stop;
+	unsigned long int new_count_duration = (unsigned long int)-1L;
 	unsigned int time_per=0;
 
 	// limit frequency to reasonable audible range	
@@ -55,9 +63,15 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 		return;
 	}
 
+	// set nostop to true to avoid race condition.
+	// Specifically, race between a tone finishing
+	// after checking for ownership (which releases ownership)
+	// No effect if a tone is not playing....
+	no_stop = true;
+
 	// Use fixed PWM2 (due to need to connect interrupt)
-	if (!HwPWMx[2]->isOwner(_toneToken) &&
-	    !HwPWMx[2]->takeOwnership(_toneToken)) {
+	if (!_HwPWM->isOwner(_toneToken) &&
+	    !_HwPWM->takeOwnership(_toneToken)) {
 		LOG_LV1("TON", "unable to allocate PWM2 to Tone");
 		return;
 	}
@@ -66,15 +80,15 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 	time_per=per/0.000008;
 	unsigned int duty=time_per/2;
 	if(duration > 0) {
-		no_stop = false;
+		new_no_stop = false;
 		float mil=float(duration)/1000;
  		if(per>mil) {
-			count_duration=1;
+			new_count_duration = 1;
 		} else {
-			count_duration= mil/per;
+			new_count_duration = mil/per;
 		}
 	} else {
-		no_stop = true;
+		new_no_stop = true;
 	}
 
 	// Configure PWM
@@ -88,42 +102,45 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 								0,
 								0
     };
-	
-	// Use fixed PWM2, TODO could conflict with other usage
+
 	uint32_t pins[NRF_PWM_CHANNEL_COUNT]={NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED, NRF_PWM_PIN_NOT_CONNECTED};
 	pins[0] = g_ADigitalPinMap[pin];
 
-	IRQn_Type IntNo = PWM2_IRQn;
-	NRF_PWM_Type * PWMInstance = NRF_PWM2;
-
-	nrf_pwm_pins_set(PWMInstance, pins);
-	nrf_pwm_enable(PWMInstance);
-	nrf_pwm_configure(PWMInstance, NRF_PWM_CLK_125kHz, NRF_PWM_MODE_UP, time_per);
-	nrf_pwm_decoder_set(PWMInstance, NRF_PWM_LOAD_COMMON, NRF_PWM_STEP_AUTO);
-	nrf_pwm_sequence_set(PWMInstance, 0, &seq);
-	nrf_pwm_shorts_enable(PWMInstance, NRF_PWM_SHORT_SEQEND0_STOP_MASK); // shortcut for when SEQ0 ends, PWM output will automatically stop
-	
 	// enable interrupt
-	nrf_pwm_event_clear(PWMInstance, NRF_PWM_EVENT_PWMPERIODEND);
-	nrf_pwm_int_enable(PWMInstance, NRF_PWM_INT_PWMPERIODEND_MASK);
-	NVIC_SetPriority(IntNo, 6); //low priority
-	NVIC_ClearPendingIRQ(IntNo);
-	NVIC_EnableIRQ(IntNo);
+	count_duration = 0x6FFF; // large enough to avoid hitting zero in next few lines
+	no_stop = new_no_stop;
 
-	nrf_pwm_task_trigger(PWMInstance, NRF_PWM_TASK_SEQSTART0);
+	nrf_pwm_pins_set(_PWMInstance, pins);
+	nrf_pwm_enable(_PWMInstance);
+	nrf_pwm_configure(_PWMInstance, NRF_PWM_CLK_125kHz, NRF_PWM_MODE_UP, time_per);
+	nrf_pwm_decoder_set(_PWMInstance, NRF_PWM_LOAD_COMMON, NRF_PWM_STEP_AUTO);
+	nrf_pwm_sequence_set(_PWMInstance, 0, &seq);
+	nrf_pwm_shorts_enable(_PWMInstance, NRF_PWM_SHORT_SEQEND0_STOP_MASK); // shortcut for when SEQ0 ends, PWM output will automatically stop
+	nrf_pwm_event_clear(_PWMInstance, NRF_PWM_EVENT_PWMPERIODEND);
+	nrf_pwm_int_enable(_PWMInstance, NRF_PWM_INT_PWMPERIODEND_MASK);
+	NVIC_SetPriority(_IntNo, 6); //low priority
+	NVIC_ClearPendingIRQ(_IntNo);
+	NVIC_EnableIRQ(_IntNo);
+	count_duration = new_count_duration;
+	nrf_pwm_task_trigger(_PWMInstance, NRF_PWM_TASK_SEQSTART0);
 }
 
 
 void noTone(uint8_t pin)
 {
-	if (!HwPWMx[2]->isOwner(_toneToken)) {
+	if (!_HwPWM->isOwner(_toneToken)) {
 		LOG_LV1("TON", "Attempt to set noTone when not the owner of the PWM peripheral.  Ignoring call....");
 		return;
 	}
-
-	NRF_PWM_Type * PWMInstance = NRF_PWM2;
-	nrf_pwm_task_trigger(PWMInstance, NRF_PWM_TASK_STOP);
-	nrf_pwm_disable(PWMInstance);
+	nrf_pwm_task_trigger(_PWMInstance, NRF_PWM_TASK_STOP);
+	nrf_pwm_disable(_PWMInstance);
+	_PWMInstance->PSEL.OUT[0] = NRF_PWM_PIN_NOT_CONNECTED;
+	NVIC_DisableIRQ(_IntNo);
+	_HwPWM->releaseOwnership(_toneToken);
+	if (_HwPWM->isOwner(_toneToken)) {
+		LOG_LV1("TON", "stopped tone, but failed to release ownership of PWM peripheral?");
+		return;
+	}
 }
 
 #ifdef __cplusplus
@@ -137,6 +154,9 @@ void PWM2_IRQHandler(void){
 		if(count_duration == 0) {
 			nrf_pwm_task_trigger(NRF_PWM2, NRF_PWM_TASK_STOP);
 			nrf_pwm_disable(NRF_PWM2);
+			_PWMInstance->PSEL.OUT[0] = NRF_PWM_PIN_NOT_CONNECTED;
+			NVIC_DisableIRQ(PWM2_IRQn);
+			_HwPWM->releaseOwnershipFromISR(_toneToken);
 		} else {
 			nrf_pwm_task_trigger(NRF_PWM2, NRF_PWM_TASK_SEQSTART0);
 		}

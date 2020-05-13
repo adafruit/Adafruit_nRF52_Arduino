@@ -65,6 +65,7 @@ bool can_stringify_token(uintptr_t token)
   return true;
 }
 
+
 void HardwarePWM::DebugOutput(Stream& logger)
 {
   const size_t count = arrcount(HwPWMx);
@@ -79,7 +80,7 @@ void HardwarePWM::DebugOutput(Stream& logger)
       logger.printf("   \"%c%c%c%c\"", t[0], t[1], t[2], t[3] );
     } else {
       static_assert(sizeof(uintptr_t) == 4);
-      logger.printf(" %08x ", token);
+      logger.printf(" %08x", token);
     }
     for (size_t j = 0; j < MAX_CHANNELS; j++) {
       uint32_t r = pwm->_pwm->PSEL.OUT[i]; // only read it once
@@ -108,6 +109,14 @@ bool HardwarePWM::takeOwnership(uintptr_t token)
 // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
 bool HardwarePWM::releaseOwnership(uintptr_t token)
 {
+  if (!releaseOwnershipFromISR(token)) {
+    LOG_LV1("HwPWM", "Failed to release ownership of PWM %p using token %x", _pwm, token);
+    return false;
+  }
+  return true;
+}
+bool HardwarePWM::releaseOwnershipFromISR(uintptr_t token) {
+  // Do not do any logging if called from ISR ...
   if (token                     == 0) return false; // cannot release ownership with nullptr
   if (!this->isOwner(token)         ) return false; // don't even look at peripheral
   if ( this->usedChannelCount() != 0) return false; // fail if any channels still have pins
