@@ -65,7 +65,6 @@ bool can_stringify_token(uintptr_t token)
   return true;
 }
 
-
 void HardwarePWM::DebugOutput(Stream& logger)
 {
   const size_t count = arrcount(HwPWMx);
@@ -98,10 +97,28 @@ void HardwarePWM::DebugOutput(Stream& logger)
 // returns true ONLY when (1) no PWM channel has a pin, and (2) the owner token is nullptr
 bool HardwarePWM::takeOwnership(uintptr_t token)
 {
-  if (token                    == 0) return false; // cannot take ownership with nullptr
-  if (this->_owner_token       != 0) return false; // doesn't matter if it's actually a match ... it's not legal to take ownership twice
-  if (this->usedChannelCount() != 0) return false; // at least one channel is already in use
-  if (this->enabled()              ) return false; // if it's enabled, do not allow new ownership, even with no pins in use
+  if (token == 0) {
+    LOG_LV1("HwPWM", "zero / nullptr is not a valid ownership token (attempted use in takeOwnership)");
+    return false; // cannot take ownership with nullptr
+  }
+  if (token == this->_owner_token) {
+    LOG_LV1("HwPWM", "failing to acquire ownership because already owned by requesting token (cannot take ownership twice)");
+  }
+  if (this->_owner_token != 0) {
+    LOG_LV3("HwPWM", "failing to acquire ownership because already owned by other token");
+    return false;
+  }
+  if (this->usedChannelCount() != 0) {
+    LOG_LV3("HwPWM", "failing to acquire ownership because at least one channel connected");
+    return false;
+  }
+  if (this->enabled()) {
+    LOG_LV3("HwPWM", "failing to acquire ownership because peripheral is already enabled");
+    return false;
+  }
+  // TODO: warn, but do not fail, if taking ownership with IRQs already enabled
+  // NVIC_GetActive
+
   // use gcc built-in intrinsic to ensure atomicity
   // See https://gcc.gnu.org/onlinedocs/gcc/_005f_005fsync-Builtins.html
   return __sync_bool_compare_and_swap(&(this->_owner_token), 0, token);
@@ -109,11 +126,32 @@ bool HardwarePWM::takeOwnership(uintptr_t token)
 // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
 bool HardwarePWM::releaseOwnership(uintptr_t token)
 {
-  if (!releaseOwnershipFromISR(token)) {
-    LOG_LV1("HwPWM", "Failed to release ownership of PWM %p using token %x", _pwm, token);
+  if (token == 0) {
+    LOG_LV1("HwPWM", "zero / nullptr is not a valid ownership token (attempted use in releaseOwnership)");
     return false;
   }
-  return true;
+  if (!this->isOwner(token)) {
+    LOG_LV1("HwPWM", "attempt to release ownership when not the current owner");
+    return false;
+  }
+  if (this->usedChannelCount() != 0) {
+    LOG_LV1("HwPWM", "attempt to release ownership when at least on channel is still connected");
+    return false;
+  }
+  if (this->enabled()) {
+    LOG_LV1("HwPWM", "attempt to release ownership when PWM peripheral is still enabled");
+    return false; // if it's enabled, do not allow ownership to be released, even with no pins in use
+  }
+  // TODO: warn, but do not fail, if releasing ownership with IRQs enabled
+  // NVIC_GetActive
+
+  // use gcc built-in intrinsic to ensure atomicity
+  // See https://gcc.gnu.org/onlinedocs/gcc/_005f_005fsync-Builtins.html
+  bool result = __sync_bool_compare_and_swap(&(this->_owner_token), token, 0);
+  if (!result) {
+    LOG_LV1("HwPWM", "race condition resulted in failure to acquire ownership");
+  }
+  return result;
 }
 bool HardwarePWM::releaseOwnershipFromISR(uintptr_t token) {
   // Do not do any logging if called from ISR ...
