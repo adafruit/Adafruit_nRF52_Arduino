@@ -46,7 +46,7 @@
 extern "C"
 {
 
-static uint8_t _lastAnalogWriteResolution;
+static uint8_t _lastAnalogWriteResolution = 8; // default is 256 levels
 static uintptr_t _analogToken = 0x676f6c41; // 'A' 'l' 'o' 'g'
 
 /**
