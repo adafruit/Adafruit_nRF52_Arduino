@@ -82,7 +82,7 @@ void HardwarePWM::DebugOutput(Stream& logger)
       logger.printf(" %08x", token);
     }
     for (size_t j = 0; j < MAX_CHANNELS; j++) {
-      uint32_t r = pwm->_pwm->PSEL.OUT[i]; // only read it once
+      uint32_t r = pwm->_pwm->PSEL.OUT[j]; // only read it once
       if ( (r & PWM_PSEL_OUT_CONNECT_Msk) != (PWM_PSEL_OUT_CONNECT_Disconnected << PWM_PSEL_OUT_CONNECT_Pos) ) {
         logger.printf(" %02x", r & 0x1F);
       } else {
