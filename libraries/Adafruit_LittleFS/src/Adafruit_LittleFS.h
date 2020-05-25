@@ -58,6 +58,9 @@ class Adafruit_LittleFS
     // Delete the file.
     bool remove (char const *filepath);
 
+    // Rename the file.
+    bool rename (char const *oldfilepath, char const *newfilepath);
+
     // Delete a folder (must be empty)
     bool rmdir (char const *filepath);
 
