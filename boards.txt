@@ -40,8 +40,8 @@ feather52832.build.f_cpu=64000000
 feather52832.build.board=NRF52832_FEATHER
 feather52832.build.core=nRF5
 feather52832.build.variant=feather_nrf52832
-feather52840.build.usb_manufacturer="Adafruit LLC"
-feather52840.build.usb_product="Feather nRF52832"
+feather52832.build.usb_manufacturer="Adafruit LLC"
+feather52832.build.usb_product="Feather nRF52832"
 feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
 feather52832.build.ldscript=nrf52832_s132_v6.ld
 
