@@ -20,6 +20,3 @@
 # Ignore local overrides of platform.txt and boards.txt,
 /boards.local.txt
 /platform.local.txt
-bootloader/feather_nrf52840_express/feather_nrf52840_express_bootloader-0.3.0_s340_6.1.1.hex
-bootloader/feather_nrf52840_express/feather_nrf52840_express_bootloader-0.3.0_s340_6.1.1.zip
-cores/nRF5/nordic/softdevice/s340_nrf52_6.1.1_API/*
