@@ -272,6 +272,32 @@ uint32_t File::size (void)
   return ret;
 }
 
+bool File::truncate (uint32_t pos)
+{
+  uint32_t ret=0;
+  _fs->_lockFS();
+  if (!this->_is_dir)
+  {
+    ret = lfs_file_truncate(_fs->_getFS(), _file, pos);
+  }
+  _fs->_unlockFS();
+  return ( ret == 0 );
+}
+
+bool File::truncate (void)
+{
+  uint32_t ret=0;
+  uint32_t pos;
+  _fs->_lockFS();
+  if (!this->_is_dir)
+  {
+    pos = lfs_file_tell(_fs->_getFS(), _file);
+    ret = lfs_file_truncate(_fs->_getFS(), _file, pos);
+  }
+  _fs->_unlockFS();
+  return ( ret == 0 );
+}
+
 void File::flush (void)
 {
   _fs->_lockFS();
