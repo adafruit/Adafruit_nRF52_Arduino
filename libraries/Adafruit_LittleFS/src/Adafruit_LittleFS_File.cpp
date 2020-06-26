@@ -274,7 +274,7 @@ uint32_t File::size (void)
 
 bool File::truncate (uint32_t pos)
 {
-  uint32_t ret=1;
+  int32_t ret=LFS_ERR_ISDIR;
   _fs->_lockFS();
   if (!this->_is_dir)
   {
@@ -286,7 +286,7 @@ bool File::truncate (uint32_t pos)
 
 bool File::truncate (void)
 {
-  uint32_t ret=1;
+  int32_t ret=LFS_ERR_ISDIR;
   uint32_t pos;
   _fs->_lockFS();
   if (!this->_is_dir)
