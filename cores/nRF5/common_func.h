@@ -37,17 +37,48 @@
 #ifndef _COMMON_FUNC_H_
 #define _COMMON_FUNC_H_
 
+
 #ifdef __cplusplus
- extern "C" {
+  // namespace and templates must be outside the `extern "C"` declaration...
+  namespace ADAFRUIT_DETAIL
+  {
+      template <typename T, size_t N>
+      constexpr size_t arrcount_fails_if_not_array(T const (&)[N]) noexcept
+      {
+          return N;
+      }
+  }
+  extern "C" {
+  #define arrcount(arr) ADAFRUIT_DETAIL::arrcount_fails_if_not_array(arr)
+  #define ADA_STATIC_ASSERT(const_expr, message)   static_assert(const_expr, message)
+#elif __STDC_VERSION__ >= 201112L
+  // Even C can have type-safety for equivalent of ARRAY_SIZE() macro, when using GCC (which this BSP does)
+  #define __ADA_COMPATIBLE_TYPES(a,b)   __builtin_types_compatible_p(typeof(a), typeof(b)) // GCC extensions
+  #define __ADA_BUILD_ERROR_IF_NONZERO(x)  (sizeof(struct { int:-!!(x)*0x1ee7;})) // if x is zero, reports "error: negative width in bit-field '<anonymous>'"
+  #define __ADA_MUST_BE_ARRAY(x)        __ADA_BUILD_ERROR_IF_NONZERO(__ADA_COMPATIBLE_TYPES((x), &(*x)))
+  #define ADA_STATIC_ASSERT(const_expr, message)   _Static_assert(const_expr, message)
+  #define arrcount(_arr)       ( (sizeof(_arr) / sizeof((_arr)[0])) + __ADA_MUST_BE_ARRAY(_arr) ) // compile-time error if not an array
+#else
+  #error "C Compiler must support at least C11"
+#endif
+
+#define ADA_STRING(x)      #x               ///< stringify without expand
+#define ADA_XSTRING(x)     ADA_STRING(x)    ///< expand then stringify
+#define ADA_STRCAT(a, b)   a##b             ///< concat without expand
+#define ADA_XSTRCAT(a, b)  ADA_STRCAT(a, b) ///< expand then concat
+
+#if defined __COUNTER__ && __COUNTER__ != __COUNTER__
+  #define ADA_COUNTER __COUNTER__
+#else
+  #define ADA_COUNTER __LINE__
 #endif
 
 #define COMMENT_OUT(x)
 
 #define memclr(buffer, size)  memset(buffer, 0, size)
 #define varclr(_var)          memclr(_var, sizeof(*(_var)))
-#define arrclr(_arr)          memclr(_arr, sizeof(_arr))
+#define arrclr(_arr)          memclr(_arr, sizeof(_arr[0]) * arrcount(_arr)) // adds type-safety
 
-#define arrcount(_arr)       ( sizeof(_arr) / sizeof(_arr[0]) )
 
 #define __swap32(x)    __REV(x)                   ///< built-in function to swap Endian of 32-bit number
 #define __swap16(u16)  ((uint16_t) __REV16(u16))  ///< built-in function to swap Endian of 16-bit number
@@ -117,9 +148,9 @@
 const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
 #if __cplusplus
-#define PRINTF    ::printf
+  #define PRINTF    ::printf
 #else
-#define PRINTF    printf
+  #define PRINTF    printf
 #endif
 
 
@@ -143,7 +174,7 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
 #define PRINT_LOCATION()      PRINTF("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)
 #define PRINT_MESS(x)         PRINTF("%s: %d: %s \n"   , __FUNCTION__, __LINE__, (char*)(x))
-#define PRTNT_HEAP()          if (CFG_DEBUG >= 3) PRINTF("\n%s: %d: Heap free: %d\n", __FUNCTION__, __LINE__, util_heap_get_free_size())
+#define PRINT_HEAP()          if (CFG_DEBUG >= 3) PRINTF("\n%s: %d: Heap free: %d\n", __FUNCTION__, __LINE__, util_heap_get_free_size())
 #define PRINT_STR(x)          PRINTF("%s: %d: " #x " = %s\n"   , __FUNCTION__, __LINE__, (char*)(x) )
 #define PRINT_INT(x)          PRINTF("%s: %d: " #x " = %ld\n"  , __FUNCTION__, __LINE__, (uint32_t) (x) )
 #define PRINT_FLOAT(x)        PRINTF("%s: %d: " #x " = %f\n"  , __FUNCTION__, __LINE__, (float) (x) )
@@ -182,7 +213,7 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
 #define PRINT_LOCATION()
 #define PRINT_MESS(x)
-#define PRTNT_HEAP()
+#define PRINT_HEAP()
 #define PRINT_STR(x)
 #define PRINT_INT(x)
 #define PRINT_HEX(x)
