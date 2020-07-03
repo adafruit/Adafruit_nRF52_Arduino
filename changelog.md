@@ -1,5 +1,14 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.20.5 - 2020.07.03
+
+- Updated toolchain from gcc 7-2017q4 to 9-2019q4
+- Fixed GPIOTE channel conflict between libraries
+- Added type-safe for arrcount() macros
+- Added truncate() and rename() to Internal Filesystem (LittleFS).
+
+Special thanks to @henrygab, @pyro9, @geeksville for contributing and helping with this release.
+
 ## 0.20.1 - 2020.04.23
 
 - Update TinyUSB to commit c59fa77 due to a bug in the stack
