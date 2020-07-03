@@ -195,6 +195,18 @@ bool Adafruit_LittleFS::remove (char const *filepath)
   return LFS_ERR_OK == err;
 }
 
+// Rename a file
+bool Adafruit_LittleFS::rename (char const *oldfilepath, char const *newfilepath)
+{
+  _lockFS();
+
+  int err = lfs_rename(&_lfs, oldfilepath, newfilepath);
+  PRINT_LFS_ERR(err);
+
+  _unlockFS();
+  return LFS_ERR_OK == err;
+}
+
 // Remove a folder
 bool Adafruit_LittleFS::rmdir (char const *filepath)
 {
