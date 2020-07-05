@@ -1,11 +1,12 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-## 0.20.5 - 2020.07.03
+## 0.20.5 - 2020.07.05
 
 - Updated toolchain from gcc 7-2017q4 to 9-2019q4
 - Fixed GPIOTE channel conflict between libraries
 - Added type-safe for arrcount() macros
 - Added truncate() and rename() to Internal Filesystem (LittleFS).
+- Update CMSIS from v4 to v5 to build with TensorFlow
 
 Special thanks to @henrygab, @pyro9, @geeksville for contributing and helping with this release.
 
