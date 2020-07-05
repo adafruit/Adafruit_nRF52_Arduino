@@ -7,6 +7,7 @@
 - Added type-safe for arrcount() macros
 - Added truncate() and rename() to Internal Filesystem (LittleFS).
 - Update CMSIS from v4 to v5 to build with TensorFlow
+- Update TinyUSB core to commit 0749077
 
 Special thanks to @henrygab, @pyro9, @geeksville for contributing and helping with this release.
 
