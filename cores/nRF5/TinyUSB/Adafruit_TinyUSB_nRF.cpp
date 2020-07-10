@@ -31,6 +31,22 @@
 #include "Adafruit_TinyUSB_Core.h"
 
 //--------------------------------------------------------------------+
+// Forward USB interrupt events to TinyUSB IRQ Handler
+//--------------------------------------------------------------------+
+extern "C" void USBD_IRQHandler(void)
+{
+#if CFG_SYSVIEW
+  SEGGER_SYSVIEW_RecordEnterISR();
+#endif
+
+  tud_int_handler(0);
+
+#if CFG_SYSVIEW
+    SEGGER_SYSVIEW_RecordExitISR();
+#endif
+}
+
+//--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM DECLARATION
 //--------------------------------------------------------------------+
 
@@ -106,15 +122,6 @@ void Adafruit_TinyUSB_Core_touch1200(void)
 //--------------------------------------------------------------------+
 // Adafruit_USBD_Device platform dependent
 //--------------------------------------------------------------------+
-void Adafruit_USBD_Device::detach(void)
-{
-  NRF_USBD->USBPULLUP = 0;
-}
-
-void Adafruit_USBD_Device::attach(void)
-{
-  NRF_USBD->USBPULLUP = 1;
-}
 
 uint8_t Adafruit_USBD_Device::getSerialDescriptor(uint16_t* serial_str)
 {

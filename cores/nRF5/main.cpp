@@ -24,8 +24,8 @@ void Bluefruit_printInfo() __attribute__((weak));
 void Bluefruit_printInfo() {}
 #endif
 
-// DEBUG Level 3
-#if CFG_DEBUG >= 3
+// From the UI, setting debug level to 3 will enable SysView
+#if CFG_SYSVIEW
 #include "SEGGER_SYSVIEW.h"
 #endif
 
@@ -46,17 +46,13 @@ static void loop_task(void* arg)
 
 #if CFG_DEBUG
   // If Serial is not begin(), call it to avoid hard fault
-  Serial.begin(115200);
-
-  // Wait for Serial connection in debug mode
-  while ( !Serial ) yield();
-
-  dbgPrintVersion();
+  if(!Serial) Serial.begin(115200);
 #endif
 
   setup();
 
 #if CFG_DEBUG
+  dbgPrintVersion();
   Bluefruit_printInfo();
 #endif
 
@@ -80,7 +76,7 @@ int main( void )
   Adafruit_TinyUSB_Core_init();
 #endif
 
-#if CFG_DEBUG >= 3
+#if CFG_SYSVIEW
   SEGGER_SYSVIEW_Conf();
 #endif
 

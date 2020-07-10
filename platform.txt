@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 name=Adafruit nRF52 Boards
-version=0.19.0
+version=0.20.5
 
 # Compile variables
 # -----------------
@@ -66,7 +66,7 @@ nordic.path={build.core.path}/nordic
 
 # build.logger_flags and build.sysview_flags are intentionally empty,
 # to allow modification via a user's own boards.local.txt or platform.local.txt files.
-build.flags.nrf= -DSOFTDEVICE_PRESENT -DARDUINO_NRF52_ADAFRUIT -DNRF52_SERIES -DDX_CC_TEE -DLFS_NAME_MAX=64 {build.debug_flags} {build.logger_flags} {build.sysview_flags} "-I{build.core.path}/cmsis/include" "-I{nordic.path}" "-I{nordic.path}/nrfx" "-I{nordic.path}/nrfx/hal" "-I{nordic.path}/nrfx/mdk" "-I{nordic.path}/nrfx/soc" "-I{nordic.path}/nrfx/drivers/include" "-I{nordic.path}/nrfx/drivers/src" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include" "-I{rtos.path}/Source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" "-I{build.core.path}/TinyUSB" "-I{build.core.path}/TinyUSB/Adafruit_TinyUSB_ArduinoCore" "-I{build.core.path}/TinyUSB/Adafruit_TinyUSB_ArduinoCore/tinyusb/src"
+build.flags.nrf= -DSOFTDEVICE_PRESENT -DARDUINO_NRF52_ADAFRUIT -DNRF52_SERIES -DDX_CC_TEE -DLFS_NAME_MAX=64 {build.debug_flags} {build.logger_flags} {build.sysview_flags} "-I{build.core.path}/cmsis/Core/Include" "-I{nordic.path}" "-I{nordic.path}/nrfx" "-I{nordic.path}/nrfx/hal" "-I{nordic.path}/nrfx/mdk" "-I{nordic.path}/nrfx/soc" "-I{nordic.path}/nrfx/drivers/include" "-I{nordic.path}/nrfx/drivers/src" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include" "-I{rtos.path}/Source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" "-I{build.core.path}/TinyUSB" "-I{build.core.path}/TinyUSB/Adafruit_TinyUSB_ArduinoCore" "-I{build.core.path}/TinyUSB/Adafruit_TinyUSB_ArduinoCore/tinyusb/src"
 
 # usb flags
 build.flags.usb= -DUSBCON -DUSE_TINYUSB -DUSB_VID={build.vid} -DUSB_PID={build.pid} '-DUSB_MANUFACTURER={build.usb_manufacturer}' '-DUSB_PRODUCT={build.usb_product}'
@@ -86,10 +86,10 @@ compiler.libraries.ldflags=
 # ----------------
 
 ## Compile c files
-recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} -DARDUINO_BSP_VERSION="{version}" {compiler.c.extra_flags} {build.extra_flags} {build.flags.nrf} {includes} "{source_file}" -o "{object_file}"
+recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} '-DARDUINO_BSP_VERSION="{version}"' {compiler.c.extra_flags} {build.extra_flags} {build.flags.nrf} {includes} "{source_file}" -o "{object_file}"
 
 ## Compile c++ files
-recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} -DARDUINO_BSP_VERSION="{version}" {compiler.cpp.extra_flags} {build.extra_flags} {build.flags.nrf} {includes} "{source_file}" -o "{object_file}"
+recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} '-DARDUINO_BSP_VERSION="{version}"' {compiler.cpp.extra_flags} {build.extra_flags} {build.flags.nrf} {includes} "{source_file}" -o "{object_file}"
 
 ## Compile S files
 recipe.S.o.pattern="{compiler.path}{compiler.S.cmd}" {compiler.S.flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_{build.arch} {compiler.S.extra_flags} {build.extra_flags} {build.flags.nrf} {includes} "{source_file}" -o "{object_file}"
@@ -122,8 +122,8 @@ recipe.output.save_file_hexu={build.project_name}.save.hex
 
 ## Compute size
 recipe.size.pattern="{compiler.path}{compiler.size.cmd}" -A "{build.path}/{build.project_name}.elf"
-recipe.size.regex=\.text\s+([0-9]+).*
-recipe.size.regex.data=(\.data|\.bss|\.stack)\s+([0-9]+).*
+recipe.size.regex=^(?:\.text|\.data|)\s+([0-9]+).*
+recipe.size.regex.data=^(?:\.data|\.bss)\s+([0-9]+).*
 
 ## Export Compiled Binary
 recipe.output.tmp_file={build.project_name}.hex

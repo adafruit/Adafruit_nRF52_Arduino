@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2019, Nordic Semiconductor ASA
+ * Copyright (c) 2016 - 2020, Nordic Semiconductor ASA
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,8 @@
 #define NRFX_USBD_ERRATA_H__
 
 #include <stdbool.h>
+#include <nrfx.h>
+#include <nrf_erratas.h>
 
 #ifndef NRFX_USBD_ERRATA_ENABLE
 /**
@@ -43,71 +45,46 @@
 #define NRFX_USBD_ERRATA_ENABLE 1
 #endif
 
-static inline bool nrfx_usbd_errata_type_52840(void)
-{
-    return (*(uint32_t *)0x10000130UL == 0x8UL);
-}
-
-static inline bool nrfx_usbd_errata_type_52840_eng_a(void)
-{
-    return nrfx_usbd_errata_type_52840();
-}
-
-static inline bool nrfx_usbd_errata_type_52840_eng_b(void)
-{
-    return (nrfx_usbd_errata_type_52840() && (*(uint32_t *)0x10000134UL >= 0x1UL));
-}
-
-static inline bool nrfx_usbd_errata_type_52840_eng_c(void)
-{
-    return (nrfx_usbd_errata_type_52840() && (*(uint32_t *)0x10000134UL >= 0x2UL));
-}
-
-static inline bool nrfx_usbd_errata_type_52840_eng_d(void)
-{
-    return (nrfx_usbd_errata_type_52840() && (*(uint32_t *)0x10000134UL >= 0x3UL));
-}
-
-/* Errata: USBD: EPDATA event is not always generated. */
+/* Errata: USBD: EPDATA event is not always generated. **/
 static inline bool nrfx_usbd_errata_104(void)
 {
-    return (NRFX_USBD_ERRATA_ENABLE && (!nrfx_usbd_errata_type_52840_eng_b()));
+    return NRFX_USBD_ERRATA_ENABLE && nrf52_errata_104();
 }
 
-/* Errata: During setup read/write transfer USBD acknowledges setup stage without SETUP task. */
+/* Errata: During setup read/write transfer USBD acknowledges setup stage without SETUP task. **/
 static inline bool nrfx_usbd_errata_154(void)
 {
-    return (NRFX_USBD_ERRATA_ENABLE && (!nrfx_usbd_errata_type_52840_eng_b()));
+    return NRFX_USBD_ERRATA_ENABLE && nrf52_errata_154();
 }
 
-/* Errata: ISO double buffering not functional. */
+/* Errata: ISO double buffering not functional. **/
 static inline bool nrfx_usbd_errata_166(void)
 {
-    return (NRFX_USBD_ERRATA_ENABLE && true);
+    return NRFX_USBD_ERRATA_ENABLE && nrf52_errata_166();
 }
 
-/* Errata: USBD might not reach its active state. */
+/* Errata: USBD might not reach its active state. **/
 static inline bool nrfx_usbd_errata_171(void)
 {
-    return (NRFX_USBD_ERRATA_ENABLE && true);
+    return NRFX_USBD_ERRATA_ENABLE && nrf52_errata_171();
 }
 
-/* Errata: USB cannot be enabled. */
+/* Errata: USB cannot be enabled. **/
 static inline bool nrfx_usbd_errata_187(void)
 {
-    return (NRFX_USBD_ERRATA_ENABLE && nrfx_usbd_errata_type_52840_eng_b());
+    return NRFX_USBD_ERRATA_ENABLE && nrf52_errata_187();
 }
 
-/* Errata: USBD cannot receive tasks during DMA. */
+/* Errata: USBD cannot receive tasks during DMA. **/
 static inline bool nrfx_usbd_errata_199(void)
 {
-    return (NRFX_USBD_ERRATA_ENABLE && true);
+    return NRFX_USBD_ERRATA_ENABLE && nrf52_errata_199();
 }
 
-/* Errata: SIZE.EPOUT not writable. */
+/* Errata: SIZE.EPOUT not writable. **/
 static inline bool nrfx_usbd_errata_200(void)
 {
-    return (NRFX_USBD_ERRATA_ENABLE && (!nrfx_usbd_errata_type_52840_eng_b()));
+    return NRFX_USBD_ERRATA_ENABLE && nrf52_errata_200();
 }
 
 #endif // NRFX_USBD_ERRATA_H__

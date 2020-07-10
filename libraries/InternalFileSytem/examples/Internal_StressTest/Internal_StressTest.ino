@@ -129,12 +129,12 @@ uint16_t get_rand(void)
 
   for(int i=0; i<2; i++)
   {
-    nrf_rng_event_clear(NRF_RNG_EVENT_VALRDY);
-    nrf_rng_task_trigger(NRF_RNG_TASK_START);
+    nrf_rng_event_clear(NRF_RNG, NRF_RNG_EVENT_VALRDY);
+    nrf_rng_task_trigger(NRF_RNG, NRF_RNG_TASK_START);
 
-    while ( !nrf_rng_event_get(NRF_RNG_EVENT_VALRDY) ) yield();
+    while ( !nrf_rng_event_check(NRF_RNG, NRF_RNG_EVENT_VALRDY) ) yield();
 
-    bytes[i] = nrf_rng_random_value_get();
+    bytes[i] = nrf_rng_random_value_get(NRF_RNG);
   }
 
   return (bytes[0] << 8) + bytes[1];

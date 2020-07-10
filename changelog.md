@@ -1,6 +1,6 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-## 0.20.0
+## 0.21.0
 
 This version implement comprehensive LESC and Legacy pairing using dynamic & staic Passkey.
 
@@ -49,6 +49,30 @@ A new class BLESecurity (access with Bluefruit.Security) is added to handle secu
 - **pairing_passkey** to use dyanmic Passkey for pairing. On Arcada compatible device such as `CLUE` or `Circuit Playground Bluefruit`, TFT display will also be used to display passkey.
 - **cental_pairing** similar to pairing_passkey but for nRF running central role
 - **ancs_arcada** for displaying ancs on arcada such CLUE and/or CPB.
+
+## 0.20.5 - 2020.07.05
+
+- Updated toolchain from gcc 7-2017q4 to 9-2019q4
+- Fixed GPIOTE channel conflict between libraries
+- Added type-safe for arrcount() macros
+- Added truncate() and rename() to Internal Filesystem (LittleFS).
+- Update CMSIS from v4 to v5 to build with TensorFlow
+- Update TinyUSB core to commit 0749077
+
+Special thanks to @henrygab, @pyro9, @geeksville for contributing and helping with this release.
+
+## 0.20.1 - 2020.04.23
+
+- Update TinyUSB to commit c59fa77 due to a bug in the stack
+
+## 0.20.0 - 2020.04.21
+
+- Fixed Wire write ambiguous
+- Improved debugging with log and sysview, thanks to @henrygab
+- Fixed recipe to compute SRAM and ROM of sketch
+- Removed the force waiting Serial when debug is enabled
+- Updated nrfx to v2.1.0
+- Updated TinyUSB to commit 718db7e
 
 ## 0.19.0 - 2020.03.12
 
