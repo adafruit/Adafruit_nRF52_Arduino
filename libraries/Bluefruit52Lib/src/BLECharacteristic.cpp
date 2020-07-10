@@ -564,11 +564,6 @@ uint16_t BLECharacteristic::write32(int num)
   return write32( (uint32_t) num );
 }
 
-uint16_t BLECharacteristic::write32(int32_t num)
-{
-  return write32( (uint32_t) num );
-}
-
 /*------------------------------------------------------------------*/
 /* READ
  *------------------------------------------------------------------*/
