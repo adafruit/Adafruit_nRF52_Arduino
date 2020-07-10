@@ -162,6 +162,9 @@ AdafruitBluefruit::AdafruitBluefruit(void)
 
   _ble_event_sem = NULL;
   _soc_event_sem = NULL;
+#ifdef ANT_LICENSE_KEY
+  _mprot_event_sem = NULL; //additiona semaphore for multiprotocol 
+#endif
 
   _led_blink_th  = NULL;
   _led_conn      = true;
@@ -310,7 +313,15 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   #error Clock Source is not configured, define USE_LFXO or USE_LFRC according to your board in variant.h
 #endif
 
+  /*------------------------------------------------------------------
+  ** BLE only Softdevices have 2-args sd_softdevice_enable()
+  ** BLE & ANT+ Softdevices have 3-args sd_softdevice_enable()
+  */
+  #ifdef ANT_LICENSE_KEY
+  VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, nrf_error_cb, ANT_LICENSE_KEY), false );
+#else //#ifdef ANT_LICENSE_KEY
   VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, nrf_error_cb), false );
+#endif //#ifdef ANT_LICENSE_KEY
 
 #ifdef USE_TINYUSB
   usb_softdevice_post_enable();
@@ -676,6 +687,10 @@ void SD_EVT_IRQHandler(void)
   // Notify both BLE & SOC Task
   xSemaphoreGiveFromISR(Bluefruit._soc_event_sem, NULL);
   xSemaphoreGiveFromISR(Bluefruit._ble_event_sem, NULL);
+#ifdef ANT_LICENSE_KEY
+  // Notify parallel multiprotocol Task, if any
+  if (Bluefruit._mprot_event_sem)  xSemaphoreGiveFromISR(Bluefruit._mprot_event_sem, NULL);
+#endif
 }
 
 /**
