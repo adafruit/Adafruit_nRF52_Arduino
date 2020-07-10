@@ -61,7 +61,7 @@ jobs:
 
         # TODO use firmata master to prevent build error with gcc v9 (should be remove after 2.5.9 is released)
         # https://github.com/firmata/arduino/pull/438
-        git clone -depth 1 https://github.com/firmata/arduino.git $HOME/Arduino/libraries/firmata
+        git clone --depth 1 https://github.com/firmata/arduino.git $HOME/Arduino/libraries/firmata
 
         # Library summary
         arduino-cli lib list
