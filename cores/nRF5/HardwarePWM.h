@@ -77,7 +77,6 @@ class HardwarePWM
 
     // allows caller to verify that they own the peripheral
     __INLINE bool isOwner(uintptr_t token) const
-    __attribute__ ((__always_inline__))
     {
       return this->_owner_token == token;
     }
