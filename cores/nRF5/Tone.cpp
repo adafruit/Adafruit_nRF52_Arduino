@@ -156,7 +156,7 @@ void PWM2_IRQHandler(void){
 			nrf_pwm_disable(NRF_PWM2);
 			_PWMInstance->PSEL.OUT[0] = NRF_PWM_PIN_NOT_CONNECTED;
 			NVIC_DisableIRQ(PWM2_IRQn);
-			_HwPWM->releaseOwnershipFromISR(_toneToken);
+			_HwPWM->releaseOwnership(_toneToken);
 		} else {
 			nrf_pwm_task_trigger(NRF_PWM2, NRF_PWM_TASK_SEQSTART0);
 		}

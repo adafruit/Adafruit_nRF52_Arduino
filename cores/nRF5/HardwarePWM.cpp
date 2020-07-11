@@ -97,23 +97,34 @@ void HardwarePWM::DebugOutput(Stream& logger)
 // returns true ONLY when (1) no PWM channel has a pin, and (2) the owner token is nullptr
 bool HardwarePWM::takeOwnership(uintptr_t token)
 {
+  bool notInIsr = !isInISR();
   if (token == 0) {
-    LOG_LV1("HwPWM", "zero / nullptr is not a valid ownership token (attempted use in takeOwnership)");
+    if (notInIsr) {
+      LOG_LV1("HwPWM", "zero / nullptr is not a valid ownership token (attempted use in takeOwnership)");
+    }
     return false; // cannot take ownership with nullptr
   }
   if (token == this->_owner_token) {
-    LOG_LV1("HwPWM", "failing to acquire ownership because already owned by requesting token (cannot take ownership twice)");
+    if (notInIsr) {
+      LOG_LV1("HwPWM", "failing to acquire ownership because already owned by requesting token (cannot take ownership twice)");
+    }
   }
   if (this->_owner_token != 0) {
-    LOG_LV3("HwPWM", "failing to acquire ownership because already owned by other token");
+    if (notInIsr) {
+      LOG_LV3("HwPWM", "failing to acquire ownership because already owned by other token");
+    }
     return false;
   }
   if (this->usedChannelCount() != 0) {
-    LOG_LV3("HwPWM", "failing to acquire ownership because at least one channel connected");
+    if (notInIsr) {
+      LOG_LV3("HwPWM", "failing to acquire ownership because at least one channel connected");
+    }
     return false;
   }
   if (this->enabled()) {
-    LOG_LV3("HwPWM", "failing to acquire ownership because peripheral is already enabled");
+    if (notInIsr) {
+      LOG_LV3("HwPWM", "failing to acquire ownership because peripheral is already enabled");
+    }
     return false;
   }
   // TODO: warn, but do not fail, if taking ownership with IRQs already enabled
@@ -126,20 +137,29 @@ bool HardwarePWM::takeOwnership(uintptr_t token)
 // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
 bool HardwarePWM::releaseOwnership(uintptr_t token)
 {
+  bool notInIsr = !isInISR();
   if (token == 0) {
-    LOG_LV1("HwPWM", "zero / nullptr is not a valid ownership token (attempted use in releaseOwnership)");
+    if (notInIsr) {
+      LOG_LV1("HwPWM", "zero / nullptr is not a valid ownership token (attempted use in releaseOwnership)");
+    }
     return false;
   }
   if (!this->isOwner(token)) {
-    LOG_LV1("HwPWM", "attempt to release ownership when not the current owner");
+    if (notInIsr) {
+      LOG_LV1("HwPWM", "attempt to release ownership when not the current owner");
+    }
     return false;
   }
   if (this->usedChannelCount() != 0) {
-    LOG_LV1("HwPWM", "attempt to release ownership when at least on channel is still connected");
+    if (notInIsr) {
+      LOG_LV1("HwPWM", "attempt to release ownership when at least on channel is still connected");
+    }
     return false;
   }
   if (this->enabled()) {
-    LOG_LV1("HwPWM", "attempt to release ownership when PWM peripheral is still enabled");
+    if (notInIsr) {
+      LOG_LV1("HwPWM", "attempt to release ownership when PWM peripheral is still enabled");
+    }
     return false; // if it's enabled, do not allow ownership to be released, even with no pins in use
   }
   // TODO: warn, but do not fail, if releasing ownership with IRQs enabled
@@ -152,16 +172,6 @@ bool HardwarePWM::releaseOwnership(uintptr_t token)
     LOG_LV1("HwPWM", "race condition resulted in failure to acquire ownership");
   }
   return result;
-}
-bool HardwarePWM::releaseOwnershipFromISR(uintptr_t token) {
-  // Do not do any logging if called from ISR ...
-  if (token                     == 0) return false; // cannot release ownership with nullptr
-  if (!this->isOwner(token)         ) return false; // don't even look at peripheral
-  if ( this->usedChannelCount() != 0) return false; // fail if any channels still have pins
-  if ( this->enabled()              ) return false; // if it's enabled, do not allow ownership to be released, even with no pins in use
-  // use gcc built-in intrinsic to ensure atomicity
-  // See https://gcc.gnu.org/onlinedocs/gcc/_005f_005fsync-Builtins.html
-  return __sync_bool_compare_and_swap(&(this->_owner_token), token, 0);
 }
 
 HardwarePWM::HardwarePWM(NRF_PWM_Type* pwm) :

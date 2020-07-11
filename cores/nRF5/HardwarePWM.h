@@ -74,8 +74,6 @@ class HardwarePWM
     bool takeOwnership   (uintptr_t    token);
     // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
     bool releaseOwnership(uintptr_t    token);
-    // As above, but ensured safe to call from ISR
-    bool releaseOwnershipFromISR(uintptr_t    token);
 
     // allows caller to verify that they own the peripheral
     __INLINE bool isOwner(uintptr_t token) const
