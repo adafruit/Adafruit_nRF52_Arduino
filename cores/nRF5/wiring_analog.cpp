@@ -81,16 +81,13 @@ void analogWrite( uint32_t pin, uint32_t value )
   for(int i=0; i<HWPWM_MODULE_NUM; i++)
   {
     if (!HwPWMx[i]->isOwner(_analogToken)) {
-      LOG_LV3("ANA", "not currently owner of PWM %d", i);
       continue; // skip if not owner of this PWM instance
     }
 
     int const ch = HwPWMx[i]->pin2channel(pin);
     if (ch < 0) {
-      LOG_LV3("ANA", "pin %d is not used by PWM %d", pin, i);
       continue; // pin not in use by this PWM instance
     }
-    LOG_LV2("ANA", "updating pin %" PRIu32 " used by PWM %d", pin, i);
     HwPWMx[i]->writeChannel(ch, value);
     return;
   }
