@@ -127,8 +127,12 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 
 void noTone(uint8_t pin)
 {
+	bool notInIsr = !isInISR();
+
 	if (!_HwPWM->isOwner(_toneToken)) {
-		LOG_LV1("TON", "Attempt to set noTone when not the owner of the PWM peripheral.  Ignoring call....");
+		if (notInIsr) {
+			LOG_LV1("TON", "Attempt to set noTone when not the owner of the PWM peripheral.  Ignoring call....");
+		}
 		return;
 	}
 	nrf_pwm_task_trigger(_PWMInstance, NRF_PWM_TASK_STOP);
@@ -137,7 +141,9 @@ void noTone(uint8_t pin)
 	NVIC_DisableIRQ(_IntNo);
 	_HwPWM->releaseOwnership(_toneToken);
 	if (_HwPWM->isOwner(_toneToken)) {
-		LOG_LV1("TON", "stopped tone, but failed to release ownership of PWM peripheral?");
+		if (notInIsr) {
+			LOG_LV1("TON", "stopped tone, but failed to release ownership of PWM peripheral?");
+		}
 		return;
 	}
 }
@@ -151,11 +157,8 @@ void PWM2_IRQHandler(void){
 	if(!no_stop){
 		count_duration--;
 		if(count_duration == 0) {
-			nrf_pwm_task_trigger(NRF_PWM2, NRF_PWM_TASK_STOP);
-			nrf_pwm_disable(NRF_PWM2);
-			_PWMInstance->PSEL.OUT[0] = NRF_PWM_PIN_NOT_CONNECTED;
-			NVIC_DisableIRQ(PWM2_IRQn);
-			_HwPWM->releaseOwnership(_toneToken);
+			uint8_t pin = _PWMInstance->PSEL.OUT[0];
+			noTone(pin);
 		} else {
 			nrf_pwm_task_trigger(NRF_PWM2, NRF_PWM_TASK_SEQSTART0);
 		}
