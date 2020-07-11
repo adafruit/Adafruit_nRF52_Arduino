@@ -46,7 +46,7 @@
 extern "C"
 {
 
-static uint8_t _lastAnalogWriteResolution = 8; // default is 256 levels
+static uint8_t _analogResolution = 8; // default is 256 levels
 static uintptr_t _analogToken = 0x676f6c41; // 'A' 'l' 'o' 'g'
 
 /**
@@ -56,7 +56,7 @@ static uintptr_t _analogToken = 0x676f6c41; // 'A' 'l' 'o' 'g'
 void analogWriteResolution( uint8_t res )
 {
   // save the resolution for when adding a new instance
-  _lastAnalogWriteResolution = res;
+  _analogResolution = res;
   for (int i = 0; i<HWPWM_MODULE_NUM; i++)
   {
     if (!HwPWMx[i]->isOwner(_analogToken)) continue;
@@ -121,7 +121,7 @@ void analogWrite( uint32_t pin, uint32_t value )
     }
 
     // apply the cached analog resolution to newly owned instances
-    HwPWMx[i]->setResolution(_lastAnalogWriteResolution);
+    HwPWMx[i]->setResolution(_analogResolution);
     HwPWMx[i]->addPin(pin);
     HwPWMx[i]->writePin(pin, value);
     LOG_LV2("ANA", "took ownership of, and added pin %" PRIu32 " to, PWM %d", pin, i);
