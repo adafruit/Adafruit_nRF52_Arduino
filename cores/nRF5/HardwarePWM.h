@@ -112,8 +112,8 @@ class HardwarePWM
     uint16_t readChannel (uint8_t ch) const;
 
     // Get count of used / free channels
-    uint8_t usedChannelCount() const;
-    uint8_t freeChannelCount() const;
+    uint8_t usedChannelCount(void) const;
+    uint8_t freeChannelCount(void) const;
 
 #if CFG_DEBUG
     static void DebugOutput(Stream& logger);
