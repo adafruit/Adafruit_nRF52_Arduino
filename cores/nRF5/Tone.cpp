@@ -52,7 +52,6 @@ static HardwarePWM  * const _HwPWM       = HwPWMx[2];
 
 void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 {
-	static_assert(sizeof(unsigned long) == sizeof(uint32_t));
 	bool new_no_stop;
 	unsigned long int new_count_duration = (unsigned long int)-1L;
 	unsigned int time_per=0;
