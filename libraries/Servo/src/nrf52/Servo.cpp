@@ -129,7 +129,7 @@ void Servo::write(int value)
 
 void Servo::writeMicroseconds(int value)
 {
-  if (this->pwm) { // pwm is only set when this->servoIndex != INVALID_SERVO
+  if (this->pwm) {
 	  uint8_t pin = servos[this->servoIndex].Pin.nbr;
   	this->pwm->writePin(pin, value/DUTY_CYCLE_RESOLUTION);
   }
@@ -142,7 +142,7 @@ int Servo::read() // return the value as degrees
 
 int Servo::readMicroseconds()
 {	
-  if (this->pwm) { // pwm is only set when this->servoIndex != INVALID_SERVO
+  if (this->pwm) {
     uint8_t pin = servos[this->servoIndex].Pin.nbr;
     return this->pwm->readPin(pin)*DUTY_CYCLE_RESOLUTION;
   }
