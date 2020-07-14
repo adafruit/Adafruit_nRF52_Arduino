@@ -127,6 +127,12 @@ void TwoWire::setClock(uint32_t baudrate) {
   }
 }
 
+void TwoWire::setPins(uint8_t pin_SDA, uint8_t pin_SCL)
+{
+	this->_uc_pinSDA = g_ADigitalPinMap[pin_SDA];
+	this->_uc_pinSCL = g_ADigitalPinMap[pin_SCL];
+}
+
 void TwoWire::end() {
   if (master)
   {
