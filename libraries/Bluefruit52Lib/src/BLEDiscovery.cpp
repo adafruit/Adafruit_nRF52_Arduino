@@ -130,8 +130,8 @@ uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientChar
     // timeout or has no data (due to GATT Error)
     if ( bytecount <= 0 ) break;
 
-    if ( disc_chr->count > MAX_DISC_CHARS ) // if we truncated the response, adjust the count to match
-      disc_chr->count = MAX_DISC_CHARS;
+    // if we truncated the response, adjust the count to match
+    if ( disc_chr->count > MAX_DISC_CHARS ) disc_chr->count = MAX_DISC_CHARS;
 
     // Look for matched uuid in the discovered list
     for(uint8_t d=0 ; d<disc_chr->count; d++)
