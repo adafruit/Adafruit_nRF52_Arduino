@@ -57,7 +57,7 @@ extern uint32_t __StackLimit[];
 extern "C"
 {
 
-void HardFault_Handler(void)
+void __attribute__((weak)) HardFault_Handler(void)
 {
   // reset on hardfault
   NVIC_SystemReset();
