@@ -107,7 +107,7 @@ bool BLEDiscovery::_discoverService(uint16_t conn_handle, BLEClientService& svc,
 uint8_t BLEDiscovery::discoverCharacteristic(uint16_t conn_handle, BLEClientCharacteristic* chr[], uint8_t count)
 {
   // We could found more characteristic than we looking for. Buffer must be large enough
-  enum { MAX_DISC_CHARS = 4 };
+  enum { MAX_DISC_CHARS = 8 };
 
   // -1 because the first ble_gattc_char_t is built in to ble_gattc_evt_char_disc_rsp_t
   uint16_t bufsize = sizeof(ble_gattc_evt_char_disc_rsp_t) + (MAX_DISC_CHARS-1)*sizeof(ble_gattc_char_t); 
