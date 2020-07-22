@@ -72,10 +72,6 @@ int main( void )
   init();
   initVariant();
 
-#ifdef USE_TINYUSB
-  Adafruit_TinyUSB_Core_init();
-#endif
-
 #if CFG_SYSVIEW
   SEGGER_SYSVIEW_Conf();
 #endif
@@ -85,6 +81,10 @@ int main( void )
 
   // Initialize callback task
   ada_callback_init(CALLBACK_STACK_SZ);
+
+#ifdef USE_TINYUSB
+  Adafruit_TinyUSB_Core_init();
+#endif
 
   // Start FreeRTOS scheduler.
   vTaskStartScheduler();
