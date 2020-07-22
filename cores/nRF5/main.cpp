@@ -44,6 +44,10 @@ static void loop_task(void* arg)
 {
   (void) arg;
 
+#ifdef USE_TINYUSB
+  Adafruit_TinyUSB_Core_init();
+#endif
+
 #if CFG_DEBUG
   // If Serial is not begin(), call it to avoid hard fault
   if(!Serial) Serial.begin(115200);
@@ -81,10 +85,6 @@ int main( void )
 
   // Initialize callback task
   ada_callback_init(CALLBACK_STACK_SZ);
-
-#ifdef USE_TINYUSB
-  Adafruit_TinyUSB_Core_init();
-#endif
 
   // Start FreeRTOS scheduler.
   vTaskStartScheduler();
