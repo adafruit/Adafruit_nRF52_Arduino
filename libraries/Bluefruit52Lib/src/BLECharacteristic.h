@@ -129,7 +129,6 @@ class BLECharacteristic
     uint16_t write16 (uint16_t num);
     uint16_t write32 (uint32_t num);
     uint16_t write32 (int      num);
-    uint16_t write32 (int32_t  num);
 
     /*------------- Read -------------*/
     uint16_t read  (void* buffer, uint16_t bufsize, uint16_t offset = 0);
