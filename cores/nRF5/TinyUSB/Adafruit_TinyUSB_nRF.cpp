@@ -42,7 +42,7 @@ extern "C" void USBD_IRQHandler(void)
   tud_int_handler(0);
 
 #if CFG_SYSVIEW
-    SEGGER_SYSVIEW_RecordExitISR();
+  SEGGER_SYSVIEW_RecordExitISR();
 #endif
 }
 
