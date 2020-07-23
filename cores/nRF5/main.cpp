@@ -44,10 +44,6 @@ static void loop_task(void* arg)
 {
   (void) arg;
 
-#ifdef USE_TINYUSB
-  Adafruit_TinyUSB_Core_init();
-#endif
-
 #if CFG_DEBUG
   // If Serial is not begin(), call it to avoid hard fault
   if(!Serial) Serial.begin(115200);
@@ -78,6 +74,10 @@ int main( void )
 
 #if CFG_SYSVIEW
   SEGGER_SYSVIEW_Conf();
+#endif
+
+#ifdef USE_TINYUSB
+  Adafruit_TinyUSB_Core_init();
 #endif
 
   // Create a task for loop()
