@@ -72,12 +72,12 @@ int main( void )
   init();
   initVariant();
 
-#ifdef USE_TINYUSB
-  Adafruit_TinyUSB_Core_init();
-#endif
-
 #if CFG_SYSVIEW
   SEGGER_SYSVIEW_Conf();
+#endif
+
+#ifdef USE_TINYUSB
+  Adafruit_TinyUSB_Core_init();
 #endif
 
   // Create a task for loop()

@@ -31,6 +31,16 @@
 #include "Adafruit_TinyUSB_Core.h"
 
 //--------------------------------------------------------------------+
+// MACRO TYPEDEF CONSTANT ENUM DECLARATION
+//--------------------------------------------------------------------+
+
+#define USBD_STACK_SZ   (200)
+
+// tinyusb function that handles power event (detected, ready, removed)
+// We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled.
+extern "C" void tusb_hal_nrf_power_event(uint32_t event);
+
+//--------------------------------------------------------------------+
 // Forward USB interrupt events to TinyUSB IRQ Handler
 //--------------------------------------------------------------------+
 extern "C" void USBD_IRQHandler(void)
@@ -42,32 +52,8 @@ extern "C" void USBD_IRQHandler(void)
   tud_int_handler(0);
 
 #if CFG_SYSVIEW
-    SEGGER_SYSVIEW_RecordExitISR();
+  SEGGER_SYSVIEW_RecordExitISR();
 #endif
-}
-
-//--------------------------------------------------------------------+
-// MACRO TYPEDEF CONSTANT ENUM DECLARATION
-//--------------------------------------------------------------------+
-
-#define USBD_STACK_SZ   (200)
-
-// tinyusb function that handles power event (detected, ready, removed)
-// We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled.
-extern "C" void tusb_hal_nrf_power_event(uint32_t event);
-
-// USB Device Driver task
-// This top level thread process all usb events and invoke callbacks
-static void usb_device_task(void* param)
-{
-  (void) param;
-
-  // RTOS forever loop
-  while (1)
-  {
-    // tinyusb device task
-    tud_task();
-  }
 }
 
 //--------------------------------------------------------------------+
@@ -99,8 +85,12 @@ static void usb_hardware_init(void)
   if ( usb_reg & POWER_USBREGSTATUS_OUTPUTRDY_Msk  ) tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_READY);
 }
 
-void Adafruit_TinyUSB_Core_init(void)
+// USB Device Driver task
+// This top level thread process all usb events and invoke callbacks
+static void usb_device_task(void* param)
 {
+  (void) param;
+
   USBDevice.addInterface( (Adafruit_USBD_Interface&) Serial);
   USBDevice.setID(USB_VID, USB_PID);
   USBDevice.begin();
@@ -110,6 +100,16 @@ void Adafruit_TinyUSB_Core_init(void)
   // Init tinyusb stack
   tusb_init();
 
+  // RTOS forever loop
+  while (1)
+  {
+    // tinyusb device task
+    tud_task();
+  }
+}
+
+void Adafruit_TinyUSB_Core_init(void)
+{
   // Create a task for tinyusb device stack
   xTaskCreate( usb_device_task, "usbd", USBD_STACK_SZ, NULL, TASK_PRIO_HIGH, NULL);
 }

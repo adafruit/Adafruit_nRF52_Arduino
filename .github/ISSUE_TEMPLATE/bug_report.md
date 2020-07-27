@@ -10,23 +10,20 @@ assignees: ''
 **Describe the bug**
 A clear and concise description of what the bug is.
 
-**Set up (please complete the following information)**
-  - Your Board and BSP version
-  - Your OS (mac/windows/linux) and its version
-  - Serial debug log (enable IDE's Debug Mode Level to 1 or 2)  
+**Set up (mandatory)**
+ - **PC & IDE** : Arduino 1.8.13 on Ubuntu 18.04 / Windows 10/ macOS 10.15
+ - **BSP**   : 0.20.0
+ - **Board** : Feather nRF52840 Express
+ - **Sketch**: Bluefruit52Lib/examples/Peripheral/bleuart. If it is a custom sketch, please provide a minimal sketch within codeblock
 
 **To Reproduce**
 Steps to reproduce the behavior:
 1. Go to '...'
 2. Click on '....'
-3. Scroll down to '....'
-4. See error
-
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+3. See error
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Additional context**
-Add any other context about the problem here.
+**Serial Log**
+Serial output when IDE's Debug Mode Level to 1 or 2

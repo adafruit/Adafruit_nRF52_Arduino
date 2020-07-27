@@ -36,7 +36,7 @@ BLEAdafruitSensor::BLEAdafruitSensor(BLEUuid service_uuid, BLEUuid data_uuid)
   _notify_cb = NULL;
 }
 
-err_t BLEAdafruitSensor::_begin(int32_t ms)
+err_t BLEAdafruitSensor::_begin(int ms)
 {
   // Invoke base class begin()
   VERIFY_STATUS( BLEService::begin() );
@@ -59,19 +59,19 @@ err_t BLEAdafruitSensor::_begin(int32_t ms)
   return ERROR_NONE;
 }
 
-err_t BLEAdafruitSensor::begin(measure_callback_t fp, int32_t ms)
+err_t BLEAdafruitSensor::begin(measure_callback_t fp, int ms)
 {
   _measure_cb = fp;
   return _begin(ms);
 }
 
-err_t BLEAdafruitSensor::begin(Adafruit_Sensor* sensor, int32_t ms)
+err_t BLEAdafruitSensor::begin(Adafruit_Sensor* sensor, int ms)
 {
   _sensor = sensor;
   return _begin(ms);
 }
 
-void BLEAdafruitSensor::setPeriod(int32_t period_ms)
+void BLEAdafruitSensor::setPeriod(int period_ms)
 {
   _period.write32(period_ms);
   _update_timer(period_ms);

@@ -153,7 +153,7 @@ bool BLEClientCharacteristic::_discoverDescriptor(uint16_t conn_handle, ble_gatt
     if ( disc_rsp.descs[i].uuid.type == BLE_UUID_TYPE_BLE &&
          disc_rsp.descs[i].uuid.uuid == BLE_UUID_DESCRIPTOR_CLIENT_CHAR_CONFIG )
     {
-      LOG_LV2("DISC", "Found CCDD: handle = %d", disc_rsp.descs[i].handle);
+      LOG_LV2("DISC", "Found CCCD: handle = %d", disc_rsp.descs[i].handle);
       _cccd_handle = disc_rsp.descs[i].handle;
 
       break;
