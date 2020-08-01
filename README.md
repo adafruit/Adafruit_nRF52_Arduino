@@ -34,7 +34,7 @@ There are two methods that you can use to install this BSP. We highly recommend 
 ### Optional (Core Development): Adafruit nRF52 BSP via git
 
  1. Install BSP via Board Manager as above to install compiler & tools.
- 2. Delete the core folder `nrf52` installed by Board Manager in Adruino15, depending on your OS. It could be
+ 2. Delete the core folder `nrf52` installed by Board Manager in Arduino15, depending on your OS. It could be
   * macOS  : `~/Library/Arduino15/packages/adafruit/hardware/nrf52`
   * Linux  : `~/.arduino15/packages/adafruit/hardware/nrf52`
   * Windows: `%APPDATA%\Local\Arduino15\packages\adafruit\hardware\nrf52`
@@ -109,6 +109,13 @@ $ nrfjprog -e -f nrf52
 $ nrfjprog --program feather_nrf52832_bootloader.hex -f nrf52
 $ nrfjprog --reset -f nrf52
 ```
+
+#### Burning Particle Xenon Bootloader with [Particle Debugger](https://www.adafruit.com/product/4001)
+*Tested with Windows 10*
+Connect the Particle Debugger to your Particle Xenon, and plug the debugger into your computer. It should show up as a drive named DAPLINK. 
+Copy the bootloader hex file found in your board files in `adafruit\hardware\nrf52\<version>\bootloader\particle_xenon`, onto the DAPLINK drive. It will automatically flash the bootloader, and reset. 
+When it's done, the RGB led on the Xenon wil be red, and the blue LED next to it's USB port will flash. 
+Disconnect the Xenon from the debugger, and connect it directly to your PC. It should show up as drive named XENONBOOT.
 
 ## Credits
 
