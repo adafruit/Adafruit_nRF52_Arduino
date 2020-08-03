@@ -116,6 +116,7 @@ void Adafruit_TinyUSB_Core_init(void)
 
 void Adafruit_TinyUSB_Core_touch1200(void)
 {
+  delay(5); // a few millisecond for USB control status completion
   enterSerialDfu();
 }
 
