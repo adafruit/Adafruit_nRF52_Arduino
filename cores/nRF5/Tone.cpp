@@ -277,8 +277,6 @@ bool TONE_PWM_CONFIG::InitializeFromPulseCountAndTimePeriod(uint64_t pulse_count
     this->duty_with_polarity = 0x8000U | (time_period / 2U);
 
     if (this->pulse_count == 0) {
-        LOG_LV3("TON", "Infinite duration requested\n");
-
         this->seq0_refresh  = 0xFFFFFFU; // 24-bit maximum value
         this->seq1_refresh  = 0xFFFFFFU; // 24-bit maximum value
         this->loop_count    = 0xFFFFU;   // 16-bit maximum value
@@ -286,8 +284,7 @@ bool TONE_PWM_CONFIG::InitializeFromPulseCountAndTimePeriod(uint64_t pulse_count
         this->shorts        = NRF_PWM_SHORT_LOOPSDONE_SEQSTART0_MASK;
     }
     else if (this->pulse_count == 1) {
-        LOG_LV3("TON", "Edge case: exactly one pulse\n");
-        // yes, this is an edge case
+        // yes, this is an edge case; e.g., frequency == 100, duration == 100 causes this
         this->seq0_refresh  = 0;
         this->seq1_refresh  = 0;
         this->loop_count    = 1;
@@ -295,8 +292,6 @@ bool TONE_PWM_CONFIG::InitializeFromPulseCountAndTimePeriod(uint64_t pulse_count
         this->shorts        = NRF_PWM_SHORT_LOOPSDONE_STOP_MASK;
     }
     else {
-        LOG_LV3("TON", "Non-infinite duration of at least two pulses requested\n");
-
         // This is the interesting section.
         //
         // To ensure refresh value stays within 24 bits, the maximum number of bits
@@ -318,14 +313,10 @@ bool TONE_PWM_CONFIG::InitializeFromPulseCountAndTimePeriod(uint64_t pulse_count
 
         // NOTE: Due to final SEQ1 outputting exactly one pulse, may need one additional bit for loop count
         //       ... but that will still be within the 16 bits available, because top of range is 13 bits.
-        LOG_LV3("TON", "Using %d bits for refresh, and %d bits for loop_count\n", bits_for_refresh, bits_for_loop_count);
 
         // now determine how many PWM pulses should occur per loop (when both SEQ0 and SEQ1 are played)
         uint32_t total_refresh_count = 1 << bits_for_refresh; // range is [2 .. 2^24]
         uint32_t full_loops          = (this->pulse_count - 1) / total_refresh_count; // == loopCount - 1
-
-        LOG_LV3("TON", "total_refresh_count is 0x%" PRIx32 " (%" PRIu32 ")\n", total_refresh_count, total_refresh_count);
-        LOG_LV3("TON", "full_loops          is 0x%" PRIx32 " (%" PRIu32 ")\n", full_loops,          full_loops);
 
         // if (pulses - 1) % total_refresh_count == 0, then start at SEQ1 and split refresh evenly
         // else, start at SEQ0, and set SEQ0 to extra pulses needed...
@@ -333,22 +324,16 @@ bool TONE_PWM_CONFIG::InitializeFromPulseCountAndTimePeriod(uint64_t pulse_count
         uint32_t seq0_count;
 
         if (extraPulsesNeededIfStartingAtSequence1 == 0) {
-            LOG_LV3("TON", "Pulse count (minus one) is exact multiple of total_refresh_count -- starting at SEQ1\n");
             seq0_count = total_refresh_count / 2; // range is [1 .. 2^23]
             this->task_to_start = NRF_PWM_TASK_SEQSTART1;
         }
         else {
-            LOG_LV3("TON", "Pulse count (minus one) requires extra %" PRIu32 " pulses ... setting SEQ0 to that value\n", extraPulsesNeededIfStartingAtSequence1);
             seq0_count = extraPulsesNeededIfStartingAtSequence1;
             this->task_to_start = NRF_PWM_TASK_SEQSTART0;
         }
         this->loop_count   = full_loops + 1;
         this->seq0_refresh = seq0_count - 1;
         this->seq1_refresh = (total_refresh_count - seq0_count) - 1;
-
-        LOG_LV3("TON", "seq0_count is %" PRIu32 ", so refresh will be set to %" PRIu32 "\n", seq0_count, this->seq0_refresh);
-        LOG_LV3("TON", "seq1_count is %" PRIu32 ", so refresh will be set to %" PRIu32 "\n", (total_refresh_count - seq0_count), this->seq1_refresh);
-
         this->shorts        = NRF_PWM_SHORT_LOOPSDONE_STOP_MASK;
     }
     this->is_initialized = true;

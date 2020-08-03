@@ -172,14 +172,6 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
 #define LOG_LV2_BUFFER(...)
 #endif
 
-#if CFG_DEBUG >= 3
-#define LOG_LV3(...)          ADALOG(__VA_ARGS__)
-#define LOG_LV3_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
-#else
-#define LOG_LV3(...)
-#define LOG_LV3_BUFFER(...)
-#endif
-
 #if CFG_DEBUG
 
 #define PRINT_LOCATION()      PRINTF("%s: %d:\n", __PRETTY_FUNCTION__, __LINE__)

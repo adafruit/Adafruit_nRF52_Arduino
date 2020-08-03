@@ -110,21 +110,12 @@ bool HardwarePWM::takeOwnership(uintptr_t token)
     }
   }
   if (this->_owner_token != 0) {
-    if (notInIsr) {
-      LOG_LV3("HwPWM", "failing to acquire ownership because already owned by other token");
-    }
     return false;
   }
   if (this->usedChannelCount() != 0) {
-    if (notInIsr) {
-      LOG_LV3("HwPWM", "failing to acquire ownership because at least one channel connected");
-    }
     return false;
   }
   if (this->enabled()) {
-    if (notInIsr) {
-      LOG_LV3("HwPWM", "failing to acquire ownership because peripheral is already enabled");
-    }
     return false;
   }
   // TODO: warn, but do not fail, if taking ownership with IRQs already enabled

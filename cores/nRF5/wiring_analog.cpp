@@ -96,11 +96,9 @@ void analogWrite( uint32_t pin, uint32_t value )
   for(int i=0; i<HWPWM_MODULE_NUM; i++)
   {
     if (!HwPWMx[i]->isOwner(_analogToken)) {
-      LOG_LV3("ANA", "not currently owner of PWM %d", i);
       continue;
     }
     if (!HwPWMx[i]->addPin(pin)) {
-      LOG_LV3("ANA", "could not add pin %" PRIu32 " to PWM %d", pin, i);
       continue;
     }
 
@@ -116,7 +114,6 @@ void analogWrite( uint32_t pin, uint32_t value )
   for(int i=0; i<HWPWM_MODULE_NUM; i++)
   {
     if (!HwPWMx[i]->takeOwnership(_analogToken)) {
-      LOG_LV3("ANA", "Could not take ownership of PWM %d", i);
       continue;
     }
 
