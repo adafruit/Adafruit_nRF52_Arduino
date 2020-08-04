@@ -26,6 +26,7 @@ void Bluefruit_printInfo() {}
 
 // From the UI, setting debug level to 3 will enable SysView
 #if CFG_SYSVIEW
+#include "SEGGER_RTT.h"
 #include "SEGGER_SYSVIEW.h"
 #endif
 
@@ -107,10 +108,16 @@ int _write (int fd, const void *buf, size_t count)
 {
   (void) fd;
 
+#if 0 // CFG_SYSVIEW
+  SEGGER_RTT_Write(0, (char*) buf, (int) count);
+  return count;
+#else
   if ( Serial )
   {
     return Serial.write( (const uint8_t *) buf, count);
   }
+#endif
+
   return 0;
 }
 

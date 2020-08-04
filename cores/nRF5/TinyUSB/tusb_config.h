@@ -44,6 +44,10 @@
 #define CFG_TUSB_MEM_SECTION
 #define CFG_TUSB_MEM_ALIGN          __attribute__ ((aligned(4)))
 
+#ifndef CFG_TUSB_DEBUG
+#define CFG_TUSB_DEBUG              0
+#endif
+
 //--------------------------------------------------------------------
 // DEVICE CONFIGURATION
 //--------------------------------------------------------------------
