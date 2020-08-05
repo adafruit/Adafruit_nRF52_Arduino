@@ -26,6 +26,13 @@ extern "C" {
 #include <stdint.h>
 #include "nrfx.h"
 #include "variant.h"
+#include "rtos.h"
+
+static inline bool dwt_enabled(void) __attribute__((always_inline));
+static inline bool dwt_enabled(void)
+{
+  return (CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk) && (DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk);
+}
 
 /**
  * \brief Returns the number of milliseconds since the Arduino board began running the current program.
@@ -46,7 +53,12 @@ extern uint32_t millis( void ) ;
  *
  * \note There are 1,000 microseconds in a millisecond and 1,000,000 microseconds in a second.
  */
-extern uint32_t micros( void ) ;
+static inline uint32_t micros( void ) __attribute__((always_inline));
+static inline uint32_t micros( void )
+{
+  // Use DWT cycle count if it is enabled, otherwise use rtos tick
+  return dwt_enabled() ? (DWT->CYCCNT / 64) : tick2us(xTaskGetTickCount());
+}
 
 /**
  * \brief Pauses the program for the amount of time (in miliseconds) specified as parameter.

@@ -230,6 +230,12 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
             if (diff > 0)
             {
                 vTaskStepTick(diff);
+
+                // If dwt cycle count is enable, adjust it as welll
+                if ( (CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk) && (DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk) )
+                {
+                  DWT->CYCCNT += ((diff * 1000000) / configTICK_RATE_HZ) * 64;
+                }
             }
         }
     }
