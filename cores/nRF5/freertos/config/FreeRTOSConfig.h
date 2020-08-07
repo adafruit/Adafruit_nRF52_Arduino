@@ -139,8 +139,7 @@
     #endif
 #endif /* !assembler */
 
-/* The lowest interrupt priority that can be used in a call to a "set priority"
-function. */
+/* The lowest interrupt priority that can be used in a call to a "set priority" function. */
 #define configLIBRARY_LOWEST_INTERRUPT_PRIORITY                   ((1<<configPRIO_BITS) - 1)
 
 /* The highest interrupt priority that can be used by any interrupt service
