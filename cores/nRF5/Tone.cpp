@@ -309,7 +309,7 @@ bool TONE_PWM_CONFIG::InitializeFromPulseCountAndTimePeriod(uint64_t pulse_count
         // split the number of bits between refresh and loop_count in 2:1 ratio
         // so that, no matter what inputs are given, guaranteed to have interrupt-free solution
         unsigned int bits_for_refresh    = bits_needed * 2 / 3;             // range is [1 .. 24]
-        unsigned int bits_for_loop_count = bits_needed - bits_for_refresh;  // range is [1 .. 13]
+        //unsigned int bits_for_loop_count = bits_needed - bits_for_refresh;  // range is [1 .. 13]
 
         // NOTE: Due to final SEQ1 outputting exactly one pulse, may need one additional bit for loop count
         //       ... but that will still be within the 16 bits available, because top of range is 13 bits.
@@ -371,10 +371,11 @@ bool TONE_PWM_CONFIG::ApplyConfiguration(uint32_t pin) noexcept {
     // static sequence value ... This is the value actually used
     // during playback ... do NOT modify without semaphore *and*
     // having ensured playback has stopped!
-    static uint16_t seq_values[1] = { this->duty_with_polarity };
+    static uint16_t seq_values; // static value 
+    seq_values = this->duty_with_polarity;
 
-    nrf_pwm_seq_ptr_set(_PWMInstance, 0, &seq_values[0]);
-    nrf_pwm_seq_ptr_set(_PWMInstance, 1, &seq_values[0]);
+    nrf_pwm_seq_ptr_set(_PWMInstance, 0, &seq_values);
+    nrf_pwm_seq_ptr_set(_PWMInstance, 1, &seq_values);
     nrf_pwm_seq_cnt_set(_PWMInstance, 0, 1);
     nrf_pwm_seq_cnt_set(_PWMInstance, 1, 1);
 
