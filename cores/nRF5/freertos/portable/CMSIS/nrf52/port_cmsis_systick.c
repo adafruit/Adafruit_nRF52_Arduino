@@ -182,6 +182,13 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
         configPRE_SLEEP_PROCESSING( xModifiableIdleTime );
         if ( xModifiableIdleTime > 0 )
         {
+#if (__FPU_USED == 1)
+            // nRF52832 errata 87: prevent FPU from keeping CPU on
+            // https://infocenter.nordicsemi.com/topic/errata_nRF52832_Rev2/ERR/nRF52832/Rev2/latest/anomaly_832_87.html?cp=4_2_1_0_1_24
+            __set_FPSCR(__get_FPSCR() & ~(0x0000009F));
+            (void) __get_FPSCR();
+            NVIC_ClearPendingIRQ(FPU_IRQn);
+#endif
 #ifdef SOFTDEVICE_PRESENT // TODO
             uint8_t sd_en = 0;
             (void) sd_softdevice_is_enabled(&sd_en);
