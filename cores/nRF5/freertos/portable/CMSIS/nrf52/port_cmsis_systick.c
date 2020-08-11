@@ -227,9 +227,27 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
                 diff = xExpectedIdleTime;
             }
 
-            if (diff > 0)
+            // nRF-provided fix for delay() wakeup 1ms spin-loop power waste
+            // See https://devzone.nordicsemi.com/f/nordic-q-a/63828/vtaskdelay-on-nrf52-freertos-port-wastes-cpu-power
+            BaseType_t switch_req = pdFALSE;
+
+            if (diff > 1)
             {
-                vTaskStepTick(diff);
+                vTaskStepTick(diff - 1);
+                switch_req = xTaskIncrementTick();
+            }
+            else if (diff == 1)
+            {
+                switch_req = xTaskIncrementTick();
+            }
+
+            /* Increment the RTOS tick as usual which checks if there is a need for rescheduling */
+            if ( switch_req != pdFALSE )
+            {
+                /* A context switch is required.  Context switching is performed in
+                   the PendSV interrupt.  Pend the PendSV interrupt. */
+                SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+                __SEV();
             }
         }
     }
