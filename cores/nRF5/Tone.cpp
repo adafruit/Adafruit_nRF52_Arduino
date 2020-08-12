@@ -93,13 +93,13 @@ inline static bool _is_pwm_enabled(NRF_PWM_Type const * pwm_instance) {
     See https://gist.github.com/henrygab/6b570ebd51354bf247633c72b8dc383b
     for code that compares the new lambdas to the old calculations.
 */
-constexpr inline static uint16_t _calculate_time_period(uint32_t frequency) throw() {
+constexpr inline static uint16_t _calculate_time_period(uint32_t frequency) {
     // range for frequency == [20..25000],
     // so range of result  == [ 5..62500]
     // which fits in 16 bits.
     return 125000 / frequency;
 };
-constexpr inline static uint64_t _calculate_pulse_count(uint32_t frequency, uint32_t duration) throw() {
+constexpr inline static uint64_t _calculate_pulse_count(uint32_t frequency, uint32_t duration) {
     // range for frequency == [20..25000],
     // range for duration  == [ 1..0xFFFF_FFFF]
     // so range of result  == [ 1..0x18_FFFF_FFE7] (requires 37 bits)
@@ -176,7 +176,7 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
     // Using a function-local static to avoid accidental reference from ISR or elsewhere,
     // and to simplify ensuring the semaphore gets initialized.
     static StaticSemaphore_t _tone_semaphore_allocation;
-    static auto init_semaphore = [] () throw() { //< use a lambda to both initialize AND give the mutex
+    static auto init_semaphore = [] () { //< use a lambda to both initialize AND give the mutex
         SemaphoreHandle_t handle = xSemaphoreCreateMutexStatic(&_tone_semaphore_allocation);
         auto mustSucceed = xSemaphoreGive(handle);
         (void)mustSucceed;
