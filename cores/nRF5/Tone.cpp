@@ -104,7 +104,6 @@ constexpr inline static uint64_t _calculate_pulse_count(uint32_t frequency, uint
     // range for frequency == [20..25000],
     // range for duration  == [ 1..0xFFFF_FFFF]
     // so range of result  == [ 1..0x18_FFFF_FFE7] (requires 37 bits)
-    static_assert(sizeof(unsigned long long) >= sizeof(uint64_t));
     return
         (duration == 0) ?
             0 :
@@ -174,9 +173,6 @@ inline static int _bits_used(unsigned long long x) {
 */
 void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 {
-    static_assert(sizeof(unsigned long int) <= sizeof(uint32_t));
-    static_assert(sizeof(unsigned      int) <= sizeof(uint32_t));
-
     // Used only to protect calls against simultaneous multiple calls to tone().
     // Using a function-local static to avoid accidental reference from ISR or elsewhere,
     // and to simplify ensuring the semaphore gets initialized.
