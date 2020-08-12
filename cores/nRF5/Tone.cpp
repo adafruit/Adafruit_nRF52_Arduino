@@ -67,13 +67,11 @@ class TonePwmConfig {
         boolean is_initialized;       //< defaults to uninitialized
 
     public:
-        bool EnsurePwmPeripheralOwnership(void);
-        bool InitializeFromPulseCountAndTimePeriod(uint64_t pulse_count, uint16_t time_period);
-        bool ApplyConfiguration(uint32_t pin);
-        bool StartPlayback(void);
-        bool StopPlayback(bool releaseOwnership = false);
-        bool ApplyConfigurationAndStartPlayback(uint32_t pin);
-        uint64_t CalculateExpectedPulseCount(void);
+        bool ensurePwmPeripheralOwnership(void);
+        bool initializeFromPulseCountAndTimePeriod(uint64_t pulse_count, uint16_t time_period);
+        bool applyConfiguration(uint32_t pin);
+        bool startPlayback(void);
+        bool stopPlayback(bool releaseOwnership = false);
 };
 TonePwmConfig _pwm_config;
 
@@ -205,15 +203,15 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
     uint64_t pulse_count = _calculate_pulse_count(frequency, duration);
     uint16_t time_period = _calculate_time_period(frequency);
 
-    if (!_pwm_config.EnsurePwmPeripheralOwnership()) {
+    if (!_pwm_config.ensurePwmPeripheralOwnership()) {
         LOG_LV1("TON", "Unable to acquire PWM peripheral");
-    } else if (!_pwm_config.StopPlayback()) {
+    } else if (!_pwm_config.stopPlayback()) {
         LOG_LV1("TON", "Unable to stop playback");
-    } else if (!_pwm_config.InitializeFromPulseCountAndTimePeriod(pulse_count, time_period)) {
+    } else if (!_pwm_config.initializeFromPulseCountAndTimePeriod(pulse_count, time_period)) {
         LOG_LV1("TON", "Failed calculating configuration");
-    } else if (!_pwm_config.ApplyConfiguration(pin)) {
+    } else if (!_pwm_config.applyConfiguration(pin)) {
         LOG_LV1("TON", "Failed applying configuration");
-    } else if (!_pwm_config.StartPlayback()) {
+    } else if (!_pwm_config.startPlayback()) {
         LOG_LV1("TON", "Failed attempting to start PWM peripheral");
     } else {
         //LOG_LV2("TON", "Started playback of tone at frequency %d duration %ld", frequency, duration);
@@ -224,10 +222,10 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 void noTone(uint8_t pin)
 {
     ( void )pin; // avoid unreferenced parameter compiler warning
-    _pwm_config.StopPlayback(true); // release ownership of PWM peripheral
+    _pwm_config.stopPlayback(true); // release ownership of PWM peripheral
 }
 
-bool TonePwmConfig::EnsurePwmPeripheralOwnership(void) {
+bool TonePwmConfig::ensurePwmPeripheralOwnership(void) {
     if (!_HwPWM->isOwner(TonePwmConfig::toneToken) && !_HwPWM->takeOwnership(TonePwmConfig::toneToken)) {
         LOG_LV1("TON", "unable to allocate PWM2 to Tone");
         return false;
@@ -265,7 +263,7 @@ bool TonePwmConfig::EnsurePwmPeripheralOwnership(void) {
 // COUNT += (start at SEQ0) ? (SEQ0.CNT * (SEQ0.REFRESH+1) : 0;
 // COUNT += 1; // final SEQ1 emits single pulse
 //
-bool TonePwmConfig::InitializeFromPulseCountAndTimePeriod(uint64_t pulse_count_x, uint16_t time_period) {
+bool TonePwmConfig::initializeFromPulseCountAndTimePeriod(uint64_t pulse_count_x, uint16_t time_period) {
 
     if (_bits_used(pulse_count_x) > 37) {
         LOG_LV1("TON", "pulse count is limited to 37 bit long value");
@@ -339,17 +337,17 @@ bool TonePwmConfig::InitializeFromPulseCountAndTimePeriod(uint64_t pulse_count_x
     this->is_initialized = true;
     return true;
 }
-bool TonePwmConfig::ApplyConfiguration(uint32_t pin) {
+bool TonePwmConfig::applyConfiguration(uint32_t pin) {
     if (!this->is_initialized) {
         return false;
     }
     if (pin >= PINS_COUNT) {
         return false;
     }
-    if (!this->EnsurePwmPeripheralOwnership()) {
+    if (!this->ensurePwmPeripheralOwnership()) {
         return false;
     }
-    this->StopPlayback(false);
+    this->stopPlayback(false);
 
     this->arduino_pin = pin;
     this->nrf_pin = g_ADigitalPinMap[pin];
@@ -394,19 +392,19 @@ bool TonePwmConfig::ApplyConfiguration(uint32_t pin) {
     nrf_pwm_event_clear(_PWMInstance, NRF_PWM_EVENT_LOOPSDONE);
     return true;
 }
-bool TonePwmConfig::StartPlayback(void) {
+bool TonePwmConfig::startPlayback(void) {
     if (!this->is_initialized) {
         LOG_LV1("TON", "Cannot start playback without first initializing");
         return false;
     }
-    if (!this->EnsurePwmPeripheralOwnership()) {
+    if (!this->ensurePwmPeripheralOwnership()) {
         LOG_LV1("TON", "PWM peripheral not available for playback");
         return false;
     }
     nrf_pwm_task_trigger(_PWMInstance, this->task_to_start);
     return true;
 }
-bool TonePwmConfig::StopPlayback(bool releaseOwnership) {
+bool TonePwmConfig::stopPlayback(bool releaseOwnership) {
 
     bool notInIsr = !isInISR();
 
