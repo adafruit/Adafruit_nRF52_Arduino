@@ -67,13 +67,13 @@ class TONE_PWM_CONFIG {
         boolean is_initialized;       //< defaults to uninitialized
 
     public:
-        bool EnsurePwmPeripheralOwnership(void) noexcept;
-        bool InitializeFromPulseCountAndTimePeriod(uint64_t pulse_count, uint16_t time_period) noexcept;
-        bool ApplyConfiguration(uint32_t pin) noexcept;
-        bool StartPlayback(void) noexcept;
-        bool StopPlayback(bool releaseOwnership = false) noexcept;
-        bool ApplyConfigurationAndStartPlayback(uint32_t pin) noexcept;
-        uint64_t CalculateExpectedPulseCount(void) noexcept;
+        bool EnsurePwmPeripheralOwnership(void);
+        bool InitializeFromPulseCountAndTimePeriod(uint64_t pulse_count, uint16_t time_period);
+        bool ApplyConfiguration(uint32_t pin);
+        bool StartPlayback(void);
+        bool StopPlayback(bool releaseOwnership = false);
+        bool ApplyConfigurationAndStartPlayback(uint32_t pin);
+        uint64_t CalculateExpectedPulseCount(void);
 };
 TONE_PWM_CONFIG _pwm_config;
 
@@ -116,7 +116,7 @@ constexpr inline static uint64_t _calculate_pulse_count(uint32_t frequency, uint
             (duration / 1000ULL) * frequency :
         (((uint64_t)duration) * frequency / 1000ULL);
 };
-inline static int _bits_used(unsigned long      x) noexcept {
+inline static int _bits_used(unsigned long      x) {
     if (0 == x) return 0;
     unsigned int result = 0;
     do {
@@ -124,7 +124,7 @@ inline static int _bits_used(unsigned long      x) noexcept {
     } while (x >>= 1);
     return result;
 }
-inline static int _bits_used(unsigned long long x) noexcept {
+inline static int _bits_used(unsigned long long x) {
     if (0 == x) return 0;
     unsigned int result = 0;
     do {
@@ -265,7 +265,7 @@ bool TONE_PWM_CONFIG::EnsurePwmPeripheralOwnership(void) {
 // COUNT += (start at SEQ0) ? (SEQ0.CNT * (SEQ0.REFRESH+1) : 0;
 // COUNT += 1; // final SEQ1 emits single pulse
 //
-bool TONE_PWM_CONFIG::InitializeFromPulseCountAndTimePeriod(uint64_t pulse_count_x, uint16_t time_period) noexcept {
+bool TONE_PWM_CONFIG::InitializeFromPulseCountAndTimePeriod(uint64_t pulse_count_x, uint16_t time_period) {
 
     if (_bits_used(pulse_count_x) > 37) {
         LOG_LV1("TON", "pulse count is limited to 37 bit long value");
@@ -339,7 +339,7 @@ bool TONE_PWM_CONFIG::InitializeFromPulseCountAndTimePeriod(uint64_t pulse_count
     this->is_initialized = true;
     return true;
 }
-bool TONE_PWM_CONFIG::ApplyConfiguration(uint32_t pin) noexcept {
+bool TONE_PWM_CONFIG::ApplyConfiguration(uint32_t pin) {
     if (!this->is_initialized) {
         return false;
     }
@@ -394,7 +394,7 @@ bool TONE_PWM_CONFIG::ApplyConfiguration(uint32_t pin) noexcept {
     nrf_pwm_event_clear(_PWMInstance, NRF_PWM_EVENT_LOOPSDONE);
     return true;
 }
-bool TONE_PWM_CONFIG::StartPlayback(void) noexcept {
+bool TONE_PWM_CONFIG::StartPlayback(void) {
     if (!this->is_initialized) {
         LOG_LV1("TON", "Cannot start playback without first initializing");
         return false;
