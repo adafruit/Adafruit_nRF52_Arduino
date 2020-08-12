@@ -121,9 +121,9 @@ bool HardwarePWM::takeOwnership(uintptr_t token)
   // TODO: warn, but do not fail, if taking ownership with IRQs already enabled
   // NVIC_GetActive
 
-  // use gcc built-in intrinsic to ensure atomicity
-  // See https://gcc.gnu.org/onlinedocs/gcc/_005f_005fsync-Builtins.html
-  return __sync_bool_compare_and_swap(&(this->_owner_token), 0, token);
+  // Use C++11 atomic CAS operation
+  uintptr_t newValue = 0U;
+  return this->_owner_token.compare_exchange_strong(newValue, token);
 }
 // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
 bool HardwarePWM::releaseOwnership(uintptr_t token)
@@ -156,9 +156,8 @@ bool HardwarePWM::releaseOwnership(uintptr_t token)
   // TODO: warn, but do not fail, if releasing ownership with IRQs enabled
   // NVIC_GetActive
 
-  // use gcc built-in intrinsic to ensure atomicity
-  // See https://gcc.gnu.org/onlinedocs/gcc/_005f_005fsync-Builtins.html
-  bool result = __sync_bool_compare_and_swap(&(this->_owner_token), token, 0);
+  // Use C++11 atomic CAS operation
+  bool result = this->_owner_token.compare_exchange_strong(token, 0U);
   if (!result) {
     LOG_LV1("HwPWM", "race condition resulted in failure to acquire ownership");
   }
@@ -168,6 +167,7 @@ bool HardwarePWM::releaseOwnership(uintptr_t token)
 HardwarePWM::HardwarePWM(NRF_PWM_Type* pwm) :
   _pwm(pwm)
 {
+  _owner_token = 0U;
   arrclr(_seq0);
 
   _max_value = 255;
