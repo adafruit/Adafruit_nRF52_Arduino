@@ -116,11 +116,7 @@ class HardwarePWM
     uint8_t usedChannelCount(void) const;
     uint8_t freeChannelCount(void) const;
 
-#if CFG_DEBUG
     static void DebugOutput(Stream& logger);
-#else
-    static void inline DebugOutput(Stream& logger) { (void)logger; };
-#endif // CFG_DEBUG
 };
 
 extern HardwarePWM HwPWM0;

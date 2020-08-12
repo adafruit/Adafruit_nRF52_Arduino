@@ -92,6 +92,8 @@ void HardwarePWM::DebugOutput(Stream& logger)
   }
   logger.printf("\n");
 }
+#else
+void HardwarePWM::DebugOutput(Stream& logger) {}
 #endif // CFG_DEBUG
 
 // returns true ONLY when (1) no PWM channel has a pin, and (2) the owner token is nullptr
