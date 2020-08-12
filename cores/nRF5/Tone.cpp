@@ -184,7 +184,7 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
     // and to simplify ensuring the semaphore gets initialized.
     static StaticSemaphore_t _tone_semaphore_allocation;
     static auto init_semaphore = [] () throw() { //< use a lambda to both initialize AND give the mutex
-        SemaphoreHandle_t handle = xSemaphoreCreateBinaryStatic(&_tone_semaphore_allocation);
+        SemaphoreHandle_t handle = xSemaphoreCreateMutexStatic(&_tone_semaphore_allocation);
         auto mustSucceed = xSemaphoreGive(handle);
         (void)mustSucceed;
         NRFX_ASSERT(mustSucceed == pdTRUE);
