@@ -64,7 +64,6 @@ class TonePwmConfig {
         uint8_t nrf_pin;              //< the nrf pin for playback
         nrf_pwm_task_t task_to_start; //< Whether to start playback at SEQ0 or SEQ1
         nrf_pwm_short_mask_t shorts;  //< shortcuts to enable
-        boolean is_initialized;       //< defaults to uninitialized
 
     public:
         bool ensurePwmPeripheralOwnership(void);
@@ -330,13 +329,9 @@ bool TonePwmConfig::initializeFromPulseCountAndTimePeriod(uint64_t pulse_count_x
         this->seq1_refresh = (total_refresh_count - seq0_count) - 1;
         this->shorts        = NRF_PWM_SHORT_LOOPSDONE_STOP_MASK;
     }
-    this->is_initialized = true;
     return true;
 }
 bool TonePwmConfig::applyConfiguration(uint32_t pin) {
-    if (!this->is_initialized) {
-        return false;
-    }
     if (pin >= PINS_COUNT) {
         return false;
     }
@@ -389,10 +384,6 @@ bool TonePwmConfig::applyConfiguration(uint32_t pin) {
     return true;
 }
 bool TonePwmConfig::startPlayback(void) {
-    if (!this->is_initialized) {
-        LOG_LV1("TON", "Cannot start playback without first initializing");
-        return false;
-    }
     if (!this->ensurePwmPeripheralOwnership()) {
         LOG_LV1("TON", "PWM peripheral not available for playback");
         return false;
