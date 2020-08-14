@@ -99,6 +99,15 @@ void suspendLoop(void)
   vTaskSuspend(_loopHandle);
 }
 
+void resumeLoop(void)
+{
+  vTaskResume(_loopHandle);
+}
+
+void resumeLoopFromISR(void) {
+  xTaskResumeFromISR(_loopHandle);
+}
+
 extern "C"
 {
 
