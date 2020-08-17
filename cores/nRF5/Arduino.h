@@ -37,7 +37,6 @@ void loop( void ) ;
 
 void suspendLoop(void);
 void resumeLoop(void);
-void resumeLoopFromISR(void);
 
 #include "WVariant.h"
 
