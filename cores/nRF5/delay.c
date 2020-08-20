@@ -30,11 +30,6 @@ uint32_t millis( void )
   return tick2ms(xTaskGetTickCount());
 }
 
-uint32_t micros( void )
-{
-  return tick2us(xTaskGetTickCount());
-}
-
 void delay( uint32_t ms )
 {
   uint32_t ticks = ms2tick(ms);
