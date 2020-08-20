@@ -100,6 +100,18 @@ void suspendLoop(void)
   vTaskSuspend(_loopHandle);
 }
 
+void resumeLoop(void)
+{
+  if ( isInISR() ) 
+  {
+    xTaskResumeFromISR(_loopHandle);
+  } 
+  else
+  {
+    vTaskResume(_loopHandle);
+  }
+}
+
 extern "C"
 {
 
