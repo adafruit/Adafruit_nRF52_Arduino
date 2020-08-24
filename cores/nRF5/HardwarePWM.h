@@ -38,6 +38,7 @@
 
 #include "common_inc.h"
 #include "nrf.h"
+#include <atomic>
 
 #ifdef NRF52840_XXAA
 #define HWPWM_MODULE_NUM    4
@@ -49,7 +50,8 @@ class HardwarePWM
 {
   private:
     enum { MAX_CHANNELS = 4 }; // Max channel per group
-    NRF_PWM_Type* _pwm;
+    NRF_PWM_Type * const _pwm;
+    std::atomic_uintptr_t _owner_token;
 
     uint16_t _seq0[MAX_CHANNELS];
 
@@ -67,10 +69,23 @@ class HardwarePWM
 
     void setClockDiv(uint8_t div);      // value is PWM_PRESCALER_PRESCALER_DIV_x, DIV1 is 16Mhz
 
+    // Cooperative ownership sharing
+
+    // returns true ONLY when (1) no PWM channel has a pin, and (2) the owner token is nullptr
+    bool takeOwnership   (uintptr_t    token);
+    // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
+    bool releaseOwnership(uintptr_t    token);
+
+    // allows caller to verify that they own the peripheral
+    __INLINE bool isOwner(uintptr_t token) const
+    {
+      return this->_owner_token == token;
+    }
+
     bool addPin     (uint8_t pin);
     bool removePin  (uint8_t pin);
 
-    int  pin2channel(uint8_t pin)
+    int  pin2channel(uint8_t pin) const
     {
       pin = g_ADigitalPinMap[pin];
       for(int i=0; i<MAX_CHANNELS; i++)
@@ -80,7 +95,7 @@ class HardwarePWM
       return (-1);
     }
 
-    bool checkPin(uint8_t pin)
+    bool checkPin(uint8_t pin) const
     {
       return pin2channel(pin) >= 0;
     }
@@ -94,8 +109,14 @@ class HardwarePWM
     bool writeChannel(uint8_t ch , uint16_t value, bool inverted = false);
 
     // Read current set value
-    uint16_t readPin     (uint8_t pin);
-    uint16_t readChannel (uint8_t ch);
+    uint16_t readPin     (uint8_t pin) const;
+    uint16_t readChannel (uint8_t ch) const;
+
+    // Get count of used / free channels
+    uint8_t usedChannelCount(void) const;
+    uint8_t freeChannelCount(void) const;
+
+    static void DebugOutput(Stream& logger);
 };
 
 extern HardwarePWM HwPWM0;

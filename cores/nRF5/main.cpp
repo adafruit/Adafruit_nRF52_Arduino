@@ -15,6 +15,9 @@
 
 #define ARDUINO_MAIN
 #include "Arduino.h"
+#if (CFG_LOGGER == 2)
+  #include <SEGGER_RTT.h>
+#endif
 
 // DEBUG Level 1
 #if CFG_DEBUG
@@ -119,17 +122,16 @@ extern "C"
 int _write (int fd, const void *buf, size_t count)
 {
   (void) fd;
-
-#if 0 // CFG_SYSVIEW
-  SEGGER_RTT_Write(0, (char*) buf, (int) count);
-  return count;
+#if (CFG_LOGGER == 2)
+  unsigned numBytes = count;
+  SEGGER_RTT_Write(0, buf, numBytes);
+  return (int)count;
 #else
   if ( Serial )
   {
     return Serial.write( (const uint8_t *) buf, count);
   }
 #endif
-
   return 0;
 }
 

@@ -73,6 +73,8 @@
   #define ADA_COUNTER __LINE__
 #endif
 
+#include <inttypes.h>
+
 #define COMMENT_OUT(x)
 
 #define memclr(buffer, size)  memset(buffer, 0, size)
