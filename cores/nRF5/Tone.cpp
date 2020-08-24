@@ -74,7 +74,7 @@ class TonePwmConfig {
 };
 TonePwmConfig _pwm_config;
 
-inline static bool _is_pwm_enabled(NRF_PWM_Type const * pwm_instance) {
+static bool _is_pwm_enabled(NRF_PWM_Type const * pwm_instance) {
     bool isEnabled =
         (pwm_instance->ENABLE & PWM_ENABLE_ENABLE_Msk) ==
         (PWM_ENABLE_ENABLE_Enabled << PWM_ENABLE_ENABLE_Pos);
@@ -93,13 +93,13 @@ inline static bool _is_pwm_enabled(NRF_PWM_Type const * pwm_instance) {
     See https://gist.github.com/henrygab/6b570ebd51354bf247633c72b8dc383b
     for code that compares the new lambdas to the old calculations.
 */
-constexpr inline static uint16_t _calculate_time_period(uint32_t frequency) {
+constexpr static uint16_t _calculate_time_period(uint32_t frequency) {
     // range for frequency == [20..25000],
     // so range of result  == [ 5..62500]
     // which fits in 16 bits.
     return 125000 / frequency;
 };
-constexpr inline static uint64_t _calculate_pulse_count(uint32_t frequency, uint32_t duration) {
+constexpr static uint64_t _calculate_pulse_count(uint32_t frequency, uint32_t duration) {
     // range for frequency == [20..25000],
     // range for duration  == [ 1..0xFFFF_FFFF]
     // so range of result  == [ 1..0x18_FFFF_FFE7] (requires 37 bits)
@@ -112,7 +112,7 @@ constexpr inline static uint64_t _calculate_pulse_count(uint32_t frequency, uint
             (duration / 1000ULL) * frequency :
         (((uint64_t)duration) * frequency / 1000ULL);
 };
-inline static int _bits_used(unsigned long      x) {
+static int _bits_used(unsigned long      x) {
     if (0 == x) return 0;
     unsigned int result = 0;
     do {
@@ -120,7 +120,7 @@ inline static int _bits_used(unsigned long      x) {
     } while (x >>= 1);
     return result;
 }
-inline static int _bits_used(unsigned long long x) {
+static int _bits_used(unsigned long long x) {
     if (0 == x) return 0;
     unsigned int result = 0;
     do {
