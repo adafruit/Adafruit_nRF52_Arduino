@@ -111,7 +111,7 @@ constexpr static uint64_t _calculate_pulse_count(uint32_t frequency, uint32_t du
             (duration / 1000ULL) * frequency :
         (((uint64_t)duration) * frequency / 1000ULL);
 };
-constexpr static int _bits_used(unsigned long      x) {
+static int _bits_used(unsigned long      x) {
     if (0 == x) return 0;
     unsigned int result = 0;
     do {
@@ -119,7 +119,7 @@ constexpr static int _bits_used(unsigned long      x) {
     } while (x >>= 1);
     return result;
 }
-constexpr static int _bits_used(unsigned long long x) {
+static int _bits_used(unsigned long long x) {
     if (0 == x) return 0;
     unsigned int result = 0;
     do {
