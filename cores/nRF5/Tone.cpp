@@ -64,7 +64,6 @@ class TonePwmConfig {
         uint8_t nrf_pin;              //< the nrf pin for playback
         nrf_pwm_task_t task_to_start; //< Whether to start playback at SEQ0 or SEQ1
         nrf_pwm_short_mask_t shorts;  //< shortcuts to enable
-
     public:
         bool ensurePwmPeripheralOwnership(void);
         bool initializeFromPulseCountAndTimePeriod(uint64_t pulse_count, uint16_t time_period);
@@ -112,7 +111,7 @@ constexpr static uint64_t _calculate_pulse_count(uint32_t frequency, uint32_t du
             (duration / 1000ULL) * frequency :
         (((uint64_t)duration) * frequency / 1000ULL);
 };
-static int _bits_used(unsigned long      x) {
+constexpr static int _bits_used(unsigned long      x) {
     if (0 == x) return 0;
     unsigned int result = 0;
     do {
@@ -120,7 +119,7 @@ static int _bits_used(unsigned long      x) {
     } while (x >>= 1);
     return result;
 }
-static int _bits_used(unsigned long long x) {
+constexpr static int _bits_used(unsigned long long x) {
     if (0 == x) return 0;
     unsigned int result = 0;
     do {
