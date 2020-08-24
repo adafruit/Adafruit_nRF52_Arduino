@@ -172,32 +172,13 @@ inline static int _bits_used(unsigned long long x) {
 */
 void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 {
-    // Used only to protect calls against simultaneous multiple calls to tone().
-    // Using a function-local static to avoid accidental reference from ISR or elsewhere,
-    // and to simplify ensuring the semaphore gets initialized.
-    static StaticSemaphore_t _tone_semaphore_allocation;
-    static auto init_semaphore = [] () { //< use a lambda to both initialize AND give the mutex
-        SemaphoreHandle_t handle = xSemaphoreCreateMutexStatic(&_tone_semaphore_allocation);
-        auto mustSucceed = xSemaphoreGive(handle);
-        (void)mustSucceed;
-        NRFX_ASSERT(mustSucceed == pdTRUE);
-        return handle;
-    };
-    static SemaphoreHandle_t _tone_semaphore = init_semaphore();
-
     // limit frequency to reasonable audible range	
     if((frequency < 20) | (frequency > 25000)) {
         LOG_LV1("TON", "frequency outside range [20..25000] -- ignoring");
         return;
     }
-
-    if(xSemaphoreTake(_tone_semaphore, portMAX_DELAY) != pdTRUE) {
-        LOG_LV1("TON", "error acquiring semaphore (should never occur?)");
-        return;
-    }
     uint64_t pulse_count = _calculate_pulse_count(frequency, duration);
     uint16_t time_period = _calculate_time_period(frequency);
-
     if (!_pwm_config.ensurePwmPeripheralOwnership()) {
         LOG_LV1("TON", "Unable to acquire PWM peripheral");
     } else if (!_pwm_config.stopPlayback()) {
@@ -211,7 +192,6 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
     } else {
         //LOG_LV2("TON", "Started playback of tone at frequency %d duration %ld", frequency, duration);
     }
-    xSemaphoreGive(_tone_semaphore);
     return;
 }
 void noTone(uint8_t pin)
