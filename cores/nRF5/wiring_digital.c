@@ -25,15 +25,17 @@
 extern "C" {
 #endif
 
+static bool removePinFromAllHwPWMInstances(uint8_t pin); // definition in HardwarePWM.cpp
+uint8_t LastUsedNrfPinAsAnalog[NUMBER_OF_PINS];          // extern access from HardwarePWM.cpp
+
 void pinMode( uint32_t ulPin, uint32_t ulMode )
 {
   if (ulPin >= PINS_COUNT) {
     return;
   }
 
-  ulPin = g_ADigitalPinMap[ulPin];
-
-  NRF_GPIO_Type * port = nrf_gpio_pin_port_decode(&ulPin);
+  uint32_t nrfPin = g_ADigitalPinMap[ulPin];
+  NRF_GPIO_Type * port = nrf_gpio_pin_port_decode(&nrfPin);
 
   // Set pin mode according to chapter '22.6.3 I/O Pin Configuration'
   switch ( ulMode )
@@ -98,13 +100,26 @@ void pinMode( uint32_t ulPin, uint32_t ulMode )
   }
 }
 
+
 void digitalWrite( uint32_t ulPin, uint32_t ulVal )
 {
   if (ulPin >= PINS_COUNT) {
     return;
   }
 
-  ulPin = g_ADigitalPinMap[ulPin];
+  uint32_t nrfPin = g_ADigitalPinMap[ulPin];
+
+  // Caller is mixing analogWrite() and digitalWrite()
+  // Arduino API supports this arbitrary mixing.
+  // Use __builtin_expect() to request compiler
+  // to optimize for when this is false
+  if (__builtin_expect(!!(LastUsedNrfPinAsAnalog[nrfPin]), 0)) {
+    LOG_LV2("DWRI", "Auto-switching from analog to digital for pin %d (%d)", ulPin, nrfPin);
+    bool result = removePinFromAllHwPWMInstances(ulPin);
+    if (!result) {
+      LOG_LV1("DWRI", "Attempt to remove pin %d (%d) from HwPWM instances failed?", ulPin, nrfPin);
+    }
+  }
 
   NRF_GPIO_Type * port = nrf_gpio_pin_port_decode(&ulPin);
 

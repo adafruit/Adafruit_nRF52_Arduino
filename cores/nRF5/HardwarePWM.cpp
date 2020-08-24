@@ -37,6 +37,8 @@
 #include "Arduino.h"
 #include "HardwarePWM.h"
 
+extern uint8_t LastUsedNrfPinAsAnalog[NUMBER_OF_PINS]; // defined in wiring_digital.c
+
 HardwarePWM HwPWM0(NRF_PWM0);
 HardwarePWM HwPWM1(NRF_PWM1);
 HardwarePWM HwPWM2(NRF_PWM2);
@@ -222,6 +224,10 @@ bool HardwarePWM::addPin(uint8_t pin)
   pinMode(pin, OUTPUT);
   digitalWrite(pin, LOW);
 
+  // for automatic removal if later call digitalWrite()...
+  uint32_t nrfPin = g_ADigitalPinMap[pin];
+  LastUsedNrfPinAsAnalog[nrfPin] = 1;
+
   // Must disable before changing PSEL
   if ( enabled() )
   {
@@ -242,6 +248,10 @@ bool HardwarePWM::removePin(uint8_t pin)
   int ch = pin2channel(pin);
   VERIFY( ch >= 0 );
 
+  // for automatic removal if later call digitalWrite()...
+  uint32_t nrfPin = g_ADigitalPinMap[pin];
+  LastUsedNrfPinAsAnalog[nrfPin] = 0;
+
   bool const en = enabled();
 
   // Must disable before changing PSEL
@@ -253,6 +263,19 @@ bool HardwarePWM::removePin(uint8_t pin)
   if ( en ) _pwm->ENABLE = 1;
 
   return true;
+}
+
+extern "C" {
+  bool removePinFromAllHwPWMInstances(uint8_t pin) // directly declared in wiring_digital also
+  {
+    bool result = false;
+    for (int i = 0; i < HWPWM_MODULE_NUM; i++) {
+      if (HwPWMx[i]->removePin(pin)) {
+        result = true;
+      }
+    }
+    return result;
+  }
 }
 
 bool HardwarePWM::enabled (void)
