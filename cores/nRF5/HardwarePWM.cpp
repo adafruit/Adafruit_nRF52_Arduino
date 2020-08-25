@@ -224,7 +224,7 @@ void HardwarePWM::stop(void)
   _pwm->ENABLE = 0;
 }
 
-bool HardwarePWM::writeChannel(uint8_t ch, uint16_t value, bool inverted )
+bool HardwarePWM::writeChannel(uint8_t ch, uint16_t value, bool inverted)
 {
   VERIFY( ch < MAX_CHANNELS );
 

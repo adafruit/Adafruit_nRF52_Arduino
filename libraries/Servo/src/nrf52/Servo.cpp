@@ -47,41 +47,37 @@ uint8_t Servo::attach(int pin, int min, int max)
     return INVALID_SERVO;
   }
   bool succeeded = false;
-  pinMode(pin, OUTPUT);                                   // set servo pin to output
-  servos[this->servoIndex].Pin.nbr = pin;
 
-  if (min < MIN_PULSE_WIDTH) {
-    min = MIN_PULSE_WIDTH;
-  }
-  if (max > MAX_PULSE_WIDTH) {
-    max = MAX_PULSE_WIDTH;
-  }
+  if (min < MIN_PULSE_WIDTH) min = MIN_PULSE_WIDTH;
+  if (max > MAX_PULSE_WIDTH) max = MAX_PULSE_WIDTH;
 
   //fix min if conversion to pulse cycle value is too low
   if ( (min/DUTY_CYCLE_RESOLUTION) * DUTY_CYCLE_RESOLUTION < min) {
     min += DUTY_CYCLE_RESOLUTION;
   }
   
-  this->min  = min;
-  this->max  = max;
-
-  servos[this->servoIndex].Pin.isActive = true;
+  this->min = min;
+  this->max = max;
 
   // Adafruit, add pin to 1 of available Hw PWM
   // first, use existing HWPWM modules (already owned by Servo)
-  for(int i=0; i<HWPWM_MODULE_NUM; i++) {
-    if (HwPWMx[i]->isOwner(_servoToken) &&
-        HwPWMx[i]->addPin(pin)) {
+  for ( int i = 0; i < HWPWM_MODULE_NUM; i++ )
+  {
+    if ( HwPWMx[i]->isOwner(_servoToken) && HwPWMx[i]->addPin(pin) )
+    {
       this->pwm = HwPWMx[i];
       succeeded = true;
       break;
     }
   }
+
   // if could not add to existing owned PWM modules, try to add to a new PWM module
-  if (!succeeded) {
-    for(int i=0; i<HWPWM_MODULE_NUM; i++) {
-      if (HwPWMx[i]->takeOwnership(_servoToken) &&
-          HwPWMx[i]->addPin(pin)) {
+  if ( !succeeded )
+  {
+    for ( int i = 0; i < HWPWM_MODULE_NUM; i++ )
+    {
+      if ( HwPWMx[i]->takeOwnership(_servoToken) && HwPWMx[i]->addPin(pin) )
+      {
         this->pwm = HwPWMx[i];
         succeeded = true;
         break;
@@ -89,11 +85,20 @@ uint8_t Servo::attach(int pin, int min, int max)
     }
   }
 
-  if (succeeded) { // do not use this->pwm unless success above!
+  if ( succeeded )
+  {
+    pinMode(pin, OUTPUT);
+    servos[this->servoIndex].Pin.nbr = pin;
+    servos[this->servoIndex].Pin.isActive = true;
+
     this->pwm->setMaxValue(MAXVALUE);
     this->pwm->setClockDiv(CLOCKDIV);
+
+    return this->servoIndex;
+  }else
+  {
+    return INVALID_SERVO;
   }
-  return succeeded ? this->servoIndex : INVALID_SERVO; // return INVALID_SERVO on failure (zero is a valid servo index)
 }
 
 void Servo::detach()
@@ -104,6 +109,7 @@ void Servo::detach()
 
   uint8_t const pin = servos[this->servoIndex].Pin.nbr;
   servos[this->servoIndex].Pin.isActive = false;
+
   // remove pin from HW PWM
   HardwarePWM * pwm = this->pwm;
   this->pwm = nullptr;
