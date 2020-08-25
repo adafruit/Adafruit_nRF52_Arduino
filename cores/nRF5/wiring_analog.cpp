@@ -95,8 +95,8 @@ void analogWrite( uint32_t pin, uint32_t value )
     if ( HwPWMx[i]->isOwner(_analogToken) && HwPWMx[i]->addPin(pin) )
     {
       // successfully added the pin, so write the value also
-      LOG_LV2("Analog", "Added pin %" PRIu32 " to already-owned PWM %d", pin, i);
       HwPWMx[i]->writePin(pin, value);
+      LOG_LV2("Analog", "Added pin %" PRIu32 " to already-owned PWM %d", pin, i);
       return;
     }
   }

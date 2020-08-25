@@ -57,8 +57,6 @@ class HardwarePWM
     uint16_t  _max_value;
     uint8_t  _clock_div;
 
-    void _start(void);
-
   public:
     HardwarePWM(NRF_PWM_Type* pwm);
 
@@ -82,9 +80,13 @@ class HardwarePWM
       return this->_owner_token == token;
     }
 
+    // Add a pin to PWM module
     bool addPin     (uint8_t pin);
+
+    // Remove a pin from PWM module
     bool removePin  (uint8_t pin);
 
+    // Get the mapped channel of a pin
     int  pin2channel(uint8_t pin) const
     {
       pin = g_ADigitalPinMap[pin];
@@ -95,6 +97,7 @@ class HardwarePWM
       return (-1);
     }
 
+    // Check if pin is controlled by PWM
     bool checkPin(uint8_t pin) const
     {
       return pin2channel(pin) >= 0;
@@ -117,6 +120,9 @@ class HardwarePWM
     uint8_t freeChannelCount(void) const;
 
     static void DebugOutput(Stream& logger);
+
+  private:
+    void _set_psel(int ch, uint32_t value);
 };
 
 extern HardwarePWM HwPWM0;

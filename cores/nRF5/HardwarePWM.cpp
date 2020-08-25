@@ -107,6 +107,38 @@ HardwarePWM::HardwarePWM(NRF_PWM_Type* pwm) :
   _pwm->PSEL.OUT[1] = 0xFFFFFFFFUL;
 }
 
+void HardwarePWM::begin(void)
+{
+  // Initialize Registers
+  _pwm->MODE            = PWM_MODE_UPDOWN_Up;
+  _pwm->COUNTERTOP      = _max_value; // default is 255 (8 bit), can be configured before begin()
+  _pwm->PRESCALER       = _clock_div;
+  _pwm->DECODER         = PWM_DECODER_LOAD_Individual;
+  _pwm->LOOP            = 0;
+
+  _pwm->SEQ[0].PTR      = (uint32_t) _seq0;
+  _pwm->SEQ[0].CNT      = MAX_CHANNELS; // default mode is Individual --> count must be 4
+  _pwm->SEQ[0].REFRESH  = 0;
+  _pwm->SEQ[0].ENDDELAY = 0;
+
+  _pwm->SEQ[1].PTR      = 0;
+  _pwm->SEQ[1].CNT      = 0;
+  _pwm->SEQ[1].REFRESH  = 0;
+  _pwm->SEQ[1].ENDDELAY = 0;
+
+  _pwm->ENABLE = 1;
+}
+
+void HardwarePWM::stop(void)
+{
+  _pwm->ENABLE = 0;
+}
+
+bool HardwarePWM::enabled (void)
+{
+  return _pwm->ENABLE;
+}
+
 void HardwarePWM::setResolution(uint8_t bitnum)
 {
   setMaxValue( bit(min8(bitnum, 15)) -1 );
@@ -122,6 +154,25 @@ void HardwarePWM::setClockDiv(uint8_t div)
 {
   _clock_div = min8(div, PWM_PRESCALER_PRESCALER_DIV_128);
   _pwm->PRESCALER = _clock_div;
+}
+
+void HardwarePWM::_set_psel(int ch, uint32_t value)
+{
+  // Must disable before changing PSEL
+  if ( enabled() )
+  {
+    _pwm->ENABLE = 0;
+    _pwm->PSEL.OUT[ch] = value;
+    _seq0[ch] = 0;
+    _pwm->ENABLE = 1;
+
+    // re-start sequence
+    if ( usedChannelCount() ) _pwm->TASKS_SEQSTART[0] = 1;
+  }else
+  {
+    _pwm->PSEL.OUT[ch] = value;
+    _seq0[ch] = 0;
+  }
 }
 
 /**
@@ -150,17 +201,7 @@ bool HardwarePWM::addPin(uint8_t pin)
   pinMode(pin, OUTPUT);
   digitalWrite(pin, LOW);
 
-  // Must disable before changing PSEL
-  if ( enabled() )
-  {
-    _pwm->ENABLE = 0;
-    _pwm->PSEL.OUT[ch] = g_ADigitalPinMap[pin];
-    _pwm->ENABLE = 1;
-    _start();
-  }else
-  {
-    _pwm->PSEL.OUT[ch] = g_ADigitalPinMap[pin];
-  }
+  _set_psel(ch, g_ADigitalPinMap[pin]);
 
   return true;
 }
@@ -170,58 +211,8 @@ bool HardwarePWM::removePin(uint8_t pin)
   int ch = pin2channel(pin);
   VERIFY( ch >= 0 );
 
-  bool const en = enabled();
-
-  // Must disable before changing PSEL
-  if ( en ) _pwm->ENABLE = 0;
-
-  _pwm->PSEL.OUT[ch] = 0xFFFFFFFFUL;
-  _seq0[ch] = 0;
-
-  if ( en ) _pwm->ENABLE = 1;
-
+  _set_psel(ch, 0xFFFFFFFFUL);
   return true;
-}
-
-bool HardwarePWM::enabled (void)
-{
-  return _pwm->ENABLE;
-}
-
-void HardwarePWM::begin(void)
-{
-  // Initialize Registers
-  _pwm->MODE            = PWM_MODE_UPDOWN_Up;
-  _pwm->COUNTERTOP      = _max_value; // default is 255 (8 bit), can be configured before begin()
-  _pwm->PRESCALER       = _clock_div;
-  _pwm->DECODER         = PWM_DECODER_LOAD_Individual;
-  _pwm->LOOP            = 0;
-
-  _pwm->SEQ[0].PTR      = (uint32_t) _seq0;
-  _pwm->SEQ[0].CNT      = MAX_CHANNELS; // default mode is Individual --> count must be 4
-  _pwm->SEQ[0].REFRESH  = 0;
-  _pwm->SEQ[0].ENDDELAY = 0;
-
-  _pwm->SEQ[1].PTR      = 0;
-  _pwm->SEQ[1].CNT      = 0;
-  _pwm->SEQ[1].REFRESH  = 0;
-  _pwm->SEQ[1].ENDDELAY = 0;
-
-  _pwm->ENABLE = 1;
-}
-
-void HardwarePWM::_start(void)
-{
-  // update sequence count (depending on mode)
-  //  _pwm->SEQ[0].CNT = MAX_CHANNELS;
-
-  // start sequence
-  _pwm->TASKS_SEQSTART[0] = 1;
-}
-
-void HardwarePWM::stop(void)
-{
-  _pwm->ENABLE = 0;
 }
 
 bool HardwarePWM::writeChannel(uint8_t ch, uint16_t value, bool inverted)
@@ -230,10 +221,11 @@ bool HardwarePWM::writeChannel(uint8_t ch, uint16_t value, bool inverted)
 
   _seq0[ch] = value | (inverted ? 0 : bit(15));
 
-  // Start PWM if not already
+  // Initialize PWM if not already
   if ( !enabled() ) begin();
 
-  _start();
+  // start sequence
+  _pwm->TASKS_SEQSTART[0] = 1;
 
   return true;
 }
