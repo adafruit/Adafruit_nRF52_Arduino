@@ -170,23 +170,23 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 {
     // limit frequency to reasonable audible range	
     if((frequency < 20) | (frequency > 25000)) {
-        LOG_LV1("TON", "frequency outside range [20..25000] -- ignoring");
+        LOG_LV1("Tone", "frequency outside range [20..25000] -- ignoring");
         return;
     }
     uint64_t pulse_count = _calculate_pulse_count(frequency, duration);
     uint16_t time_period = _calculate_time_period(frequency);
     if (!_pwm_config.ensurePwmPeripheralOwnership()) {
-        LOG_LV1("TON", "Unable to acquire PWM peripheral");
+        LOG_LV1("Tone", "Unable to acquire PWM peripheral");
     } else if (!_pwm_config.stopPlayback()) {
-        LOG_LV1("TON", "Unable to stop playback");
+        LOG_LV1("Tone", "Unable to stop playback");
     } else if (!_pwm_config.initializeFromPulseCountAndTimePeriod(pulse_count, time_period)) {
-        LOG_LV1("TON", "Failed calculating configuration");
+        LOG_LV1("Tone", "Failed calculating configuration");
     } else if (!_pwm_config.applyConfiguration(pin)) {
-        LOG_LV1("TON", "Failed applying configuration");
+        LOG_LV1("Tone", "Failed applying configuration");
     } else if (!_pwm_config.startPlayback()) {
-        LOG_LV1("TON", "Failed attempting to start PWM peripheral");
+        LOG_LV1("Tone", "Failed attempting to start PWM peripheral");
     } else {
-        //LOG_LV2("TON", "Started playback of tone at frequency %d duration %ld", frequency, duration);
+        //LOG_LV2("Tone", "Started playback of tone at frequency %d duration %ld", frequency, duration);
     }
     return;
 }
@@ -199,7 +199,7 @@ void noTone(uint8_t pin)
 
 bool TonePwmConfig::ensurePwmPeripheralOwnership(void) {
     if (!_HwPWM->isOwner(TonePwmConfig::toneToken) && !_HwPWM->takeOwnership(TonePwmConfig::toneToken)) {
-        LOG_LV1("TON", "unable to allocate PWM2 to Tone");
+        LOG_LV1("Tone", "unable to allocate PWM2 to Tone");
         return false;
     }
     return true;
@@ -238,7 +238,7 @@ bool TonePwmConfig::ensurePwmPeripheralOwnership(void) {
 bool TonePwmConfig::initializeFromPulseCountAndTimePeriod(uint64_t pulse_count_x, uint16_t time_period) {
 
     if (_bits_used(pulse_count_x) > 37) {
-        LOG_LV1("TON", "pulse count is limited to 37 bit long value");
+        LOG_LV1("Tone", "pulse count is limited to 37 bit long value");
         return false;
     }
 
@@ -332,14 +332,8 @@ bool TonePwmConfig::applyConfiguration(uint32_t pin) {
     nrf_pwm_shorts_set(_PWMInstance, this->shorts);
     nrf_pwm_int_set(_PWMInstance, 0);
 
-    // static sequence value ... This is the value actually used
-    // during playback ... do NOT modify without semaphore *and*
-    // having ensured playback has stopped!
-    static uint16_t seq_values; // static value 
-    seq_values = this->duty_with_polarity;
-
-    nrf_pwm_seq_ptr_set(_PWMInstance, 0, &seq_values);
-    nrf_pwm_seq_ptr_set(_PWMInstance, 1, &seq_values);
+    nrf_pwm_seq_ptr_set(_PWMInstance, 0, &this->duty_with_polarity);
+    nrf_pwm_seq_ptr_set(_PWMInstance, 1, &this->duty_with_polarity);
     nrf_pwm_seq_cnt_set(_PWMInstance, 0, 1);
     nrf_pwm_seq_cnt_set(_PWMInstance, 1, 1);
 
@@ -361,7 +355,7 @@ bool TonePwmConfig::applyConfiguration(uint32_t pin) {
 
 bool TonePwmConfig::startPlayback(void) {
     if (!this->ensurePwmPeripheralOwnership()) {
-        LOG_LV1("TON", "PWM peripheral not available for playback");
+        LOG_LV1("Tone", "PWM peripheral not available for playback");
         return false;
     }
     nrf_pwm_task_trigger(_PWMInstance, this->task_to_start);
@@ -371,7 +365,7 @@ bool TonePwmConfig::startPlayback(void) {
 bool TonePwmConfig::stopPlayback(bool releaseOwnership) {
 
     if (!_HwPWM->isOwner(TonePwmConfig::toneToken)) {
-      LOG_LV2("TON", "Attempt to set noTone when not the owner of the PWM peripheral.  Ignoring call....");
+      LOG_LV2("Tone", "Attempt to set noTone when not the owner of the PWM peripheral.  Ignoring call....");
       return false;
     }
     // ensure stopped and then disable
