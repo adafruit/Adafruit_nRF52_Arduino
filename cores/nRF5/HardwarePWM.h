@@ -38,7 +38,6 @@
 
 #include "common_inc.h"
 #include "nrf.h"
-#include <atomic>
 
 #ifdef NRF52840_XXAA
 #define HWPWM_MODULE_NUM    4
@@ -51,7 +50,7 @@ class HardwarePWM
   private:
     enum { MAX_CHANNELS = 4 }; // Max channel per group
     NRF_PWM_Type * const _pwm;
-    std::atomic_uintptr_t _owner_token;
+    uintptr_t _owner_token;
 
     uint16_t _seq0[MAX_CHANNELS];
 
@@ -73,11 +72,12 @@ class HardwarePWM
 
     // returns true ONLY when (1) no PWM channel has a pin, and (2) the owner token is nullptr
     bool takeOwnership   (uintptr_t    token);
+
     // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
     bool releaseOwnership(uintptr_t    token);
 
     // allows caller to verify that they own the peripheral
-    __INLINE bool isOwner(uintptr_t token) const
+    bool isOwner(uintptr_t token) const
     {
       return this->_owner_token == token;
     }
