@@ -370,13 +370,9 @@ bool TonePwmConfig::startPlayback(void) {
 
 bool TonePwmConfig::stopPlayback(bool releaseOwnership) {
 
-    bool notInIsr = !isInISR();
-
     if (!_HwPWM->isOwner(TonePwmConfig::toneToken)) {
-        if (notInIsr) {
-            LOG_LV2("TON", "Attempt to set noTone when not the owner of the PWM peripheral.  Ignoring call....");
-        }
-        return false;
+      LOG_LV2("TON", "Attempt to set noTone when not the owner of the PWM peripheral.  Ignoring call....");
+      return false;
     }
     // ensure stopped and then disable
     if (_is_pwm_enabled(_PWMInstance)) {
@@ -388,5 +384,6 @@ bool TonePwmConfig::stopPlayback(bool releaseOwnership) {
     if (releaseOwnership) {
         _HwPWM->releaseOwnership(TonePwmConfig::toneToken);
     }
+
     return true;
 }
