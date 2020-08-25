@@ -287,18 +287,10 @@ bool HardwarePWM::takeOwnership(uintptr_t token)
   if ( this->usedChannelCount() != 0 ) return false;
   if ( this->enabled() ) return false;
 
-  if ( isInISR() )
-  {
-    UBaseType_t intr_status = taskENTER_CRITICAL_FROM_ISR();
-    _owner_token = token;
-    taskEXIT_CRITICAL_FROM_ISR(intr_status);
-  }
-  else
-  {
-    taskENTER_CRITICAL();
-    _owner_token = token;
-    taskEXIT_CRITICAL();
-  }
+  // This function must not be called within ISR
+  taskENTER_CRITICAL();
+  _owner_token = token;
+  taskEXIT_CRITICAL();
 
   return true;
 }
@@ -326,18 +318,10 @@ bool HardwarePWM::releaseOwnership(uintptr_t token)
     return false; // if it's enabled, do not allow ownership to be released, even with no pins in use
   }
 
-  if ( isInISR() )
-  {
-    UBaseType_t intr_status = taskENTER_CRITICAL_FROM_ISR();
-    _owner_token = 0;
-    taskEXIT_CRITICAL_FROM_ISR(intr_status);
-  }
-  else
-  {
-    taskENTER_CRITICAL();
-    _owner_token = 0;
-    taskEXIT_CRITICAL();
-  }
+  // This function must not be called within ISR
+  taskENTER_CRITICAL();
+  _owner_token = 0;
+  taskEXIT_CRITICAL();
 
   return true;
 }
