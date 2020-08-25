@@ -64,7 +64,6 @@ class TonePwmConfig {
         uint8_t nrf_pin;              //< the nrf pin for playback
         nrf_pwm_task_t task_to_start; //< Whether to start playback at SEQ0 or SEQ1
         nrf_pwm_short_mask_t shorts;  //< shortcuts to enable
-
     public:
         bool ensurePwmPeripheralOwnership(void);
         bool initializeFromPulseCountAndTimePeriod(uint64_t pulse_count, uint16_t time_period);
@@ -74,7 +73,7 @@ class TonePwmConfig {
 };
 TonePwmConfig _pwm_config;
 
-inline static bool _is_pwm_enabled(NRF_PWM_Type const * pwm_instance) {
+static bool _is_pwm_enabled(NRF_PWM_Type const * pwm_instance) {
     bool isEnabled =
         (pwm_instance->ENABLE & PWM_ENABLE_ENABLE_Msk) ==
         (PWM_ENABLE_ENABLE_Enabled << PWM_ENABLE_ENABLE_Pos);
@@ -93,13 +92,13 @@ inline static bool _is_pwm_enabled(NRF_PWM_Type const * pwm_instance) {
     See https://gist.github.com/henrygab/6b570ebd51354bf247633c72b8dc383b
     for code that compares the new lambdas to the old calculations.
 */
-constexpr inline static uint16_t _calculate_time_period(uint32_t frequency) {
+constexpr static uint16_t _calculate_time_period(uint32_t frequency) {
     // range for frequency == [20..25000],
     // so range of result  == [ 5..62500]
     // which fits in 16 bits.
     return 125000 / frequency;
 };
-constexpr inline static uint64_t _calculate_pulse_count(uint32_t frequency, uint32_t duration) {
+constexpr static uint64_t _calculate_pulse_count(uint32_t frequency, uint32_t duration) {
     // range for frequency == [20..25000],
     // range for duration  == [ 1..0xFFFF_FFFF]
     // so range of result  == [ 1..0x18_FFFF_FFE7] (requires 37 bits)
@@ -112,7 +111,7 @@ constexpr inline static uint64_t _calculate_pulse_count(uint32_t frequency, uint
             (duration / 1000ULL) * frequency :
         (((uint64_t)duration) * frequency / 1000ULL);
 };
-inline static int _bits_used(unsigned long      x) {
+static int _bits_used(unsigned long      x) {
     if (0 == x) return 0;
     unsigned int result = 0;
     do {
@@ -120,7 +119,7 @@ inline static int _bits_used(unsigned long      x) {
     } while (x >>= 1);
     return result;
 }
-inline static int _bits_used(unsigned long long x) {
+static int _bits_used(unsigned long long x) {
     if (0 == x) return 0;
     unsigned int result = 0;
     do {
@@ -172,32 +171,13 @@ inline static int _bits_used(unsigned long long x) {
 */
 void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
 {
-    // Used only to protect calls against simultaneous multiple calls to tone().
-    // Using a function-local static to avoid accidental reference from ISR or elsewhere,
-    // and to simplify ensuring the semaphore gets initialized.
-    static StaticSemaphore_t _tone_semaphore_allocation;
-    static auto init_semaphore = [] () { //< use a lambda to both initialize AND give the mutex
-        SemaphoreHandle_t handle = xSemaphoreCreateMutexStatic(&_tone_semaphore_allocation);
-        auto mustSucceed = xSemaphoreGive(handle);
-        (void)mustSucceed;
-        NRFX_ASSERT(mustSucceed == pdTRUE);
-        return handle;
-    };
-    static SemaphoreHandle_t _tone_semaphore = init_semaphore();
-
     // limit frequency to reasonable audible range	
     if((frequency < 20) | (frequency > 25000)) {
         LOG_LV1("TON", "frequency outside range [20..25000] -- ignoring");
         return;
     }
-
-    if(xSemaphoreTake(_tone_semaphore, portMAX_DELAY) != pdTRUE) {
-        LOG_LV1("TON", "error acquiring semaphore (should never occur?)");
-        return;
-    }
     uint64_t pulse_count = _calculate_pulse_count(frequency, duration);
     uint16_t time_period = _calculate_time_period(frequency);
-
     if (!_pwm_config.ensurePwmPeripheralOwnership()) {
         LOG_LV1("TON", "Unable to acquire PWM peripheral");
     } else if (!_pwm_config.stopPlayback()) {
@@ -211,7 +191,6 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
     } else {
         //LOG_LV2("TON", "Started playback of tone at frequency %d duration %ld", frequency, duration);
     }
-    xSemaphoreGive(_tone_semaphore);
     return;
 }
 void noTone(uint8_t pin)
