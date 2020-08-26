@@ -48,11 +48,19 @@ uint8_t Servo::attach(int pin, int min, int max)
   }
   bool succeeded = false;
 
-  if (min < MIN_PULSE_WIDTH) min = MIN_PULSE_WIDTH;
-  if (max > MAX_PULSE_WIDTH) max = MAX_PULSE_WIDTH;
+  if (min < MIN_PULSE_WIDTH)
+  {
+    min = MIN_PULSE_WIDTH;
+  }
+
+  if (max > MAX_PULSE_WIDTH)
+  {
+    max = MAX_PULSE_WIDTH;
+  }
 
   //fix min if conversion to pulse cycle value is too low
-  if ( (min/DUTY_CYCLE_RESOLUTION) * DUTY_CYCLE_RESOLUTION < min) {
+  if ( (min / DUTY_CYCLE_RESOLUTION) * DUTY_CYCLE_RESOLUTION < min )
+  {
     min += DUTY_CYCLE_RESOLUTION;
   }
   

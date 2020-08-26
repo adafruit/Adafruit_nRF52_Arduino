@@ -289,10 +289,13 @@ bool HardwarePWM::takeOwnership(uintptr_t token)
 
   // This function must not be called within ISR
   taskENTER_CRITICAL();
-  _owner_token = token;
+  if ( this->_owner_token == 0 )
+  {
+    _owner_token = token;
+  }
   taskEXIT_CRITICAL();
 
-  return true;
+  return _owner_token == token;
 }
 
 // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
@@ -320,8 +323,11 @@ bool HardwarePWM::releaseOwnership(uintptr_t token)
 
   // This function must not be called within ISR
   taskENTER_CRITICAL();
-  _owner_token = 0;
+  if ( this->_owner_token == token )
+  {
+    _owner_token = 0;
+  }
   taskEXIT_CRITICAL();
 
-  return true;
+  return _owner_token == 0;
 }
