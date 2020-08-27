@@ -48,7 +48,7 @@ static HardwarePWM  * const _HwPWM       = HwPWMx[2];
 // Defined a struct, to simplify validation testing ... also provides context when debugging
 class TonePwmConfig {
     private:
-        const uint32_t toneToken = 0x656e6f54; //< 'T' 'o' 'n' 'e'
+        enum { TONE_TOKEN = 0x656e6f54 }; //< 'T' 'o' 'n' 'e'
         uint64_t pulse_count;         //< total number of PWM pulses
         uint32_t seq0_refresh;        //< count of pulses for each SEQ0 iteration
         uint32_t seq1_refresh;        //< count of pulses for each SEQ1 iteration
@@ -198,7 +198,7 @@ void noTone(uint8_t pin)
 }
 
 bool TonePwmConfig::ensurePwmPeripheralOwnership(void) {
-    if (!_HwPWM->isOwner(TonePwmConfig::toneToken) && !_HwPWM->takeOwnership(TonePwmConfig::toneToken)) {
+    if (!_HwPWM->isOwner(TonePwmConfig::TONE_TOKEN) && !_HwPWM->takeOwnership(TonePwmConfig::TONE_TOKEN)) {
         LOG_LV1("Tone", "unable to allocate PWM2 to Tone");
         return false;
     }
@@ -364,7 +364,7 @@ bool TonePwmConfig::startPlayback(void) {
 
 bool TonePwmConfig::stopPlayback(bool releaseOwnership) {
 
-    if (!_HwPWM->isOwner(TonePwmConfig::toneToken)) {
+    if (!_HwPWM->isOwner(TonePwmConfig::TONE_TOKEN)) {
       LOG_LV2("Tone", "Attempt to set noTone when not the owner of the PWM peripheral.  Ignoring call....");
       return false;
     }
@@ -376,7 +376,7 @@ bool TonePwmConfig::stopPlayback(bool releaseOwnership) {
     }
 
     if (releaseOwnership) {
-        _HwPWM->releaseOwnership(TonePwmConfig::toneToken);
+        _HwPWM->releaseOwnership(TonePwmConfig::TONE_TOKEN);
     }
 
     return true;

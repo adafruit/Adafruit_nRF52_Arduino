@@ -21,7 +21,10 @@
 #include <Arduino.h>
 #include <Servo.h>
 
-static uint32_t _servoToken = 0x76726553; // 'S' 'e' 'r' 'v'
+enum
+{
+  SERVO_TOKEN = 0x76726553 // 'S' 'e' 'r' 'v'
+};
 
 static servo_t servos[MAX_SERVOS];              // static array of servo structures
 uint8_t ServoCount = 0;                         // the total number of attached servos
@@ -71,7 +74,7 @@ uint8_t Servo::attach(int pin, int min, int max)
   // first, use existing HWPWM modules (already owned by Servo)
   for ( int i = 0; i < HWPWM_MODULE_NUM; i++ )
   {
-    if ( HwPWMx[i]->isOwner(_servoToken) && HwPWMx[i]->addPin(pin) )
+    if ( HwPWMx[i]->isOwner(SERVO_TOKEN) && HwPWMx[i]->addPin(pin) )
     {
       this->pwm = HwPWMx[i];
       succeeded = true;
@@ -84,7 +87,7 @@ uint8_t Servo::attach(int pin, int min, int max)
   {
     for ( int i = 0; i < HWPWM_MODULE_NUM; i++ )
     {
-      if ( HwPWMx[i]->takeOwnership(_servoToken) && HwPWMx[i]->addPin(pin) )
+      if ( HwPWMx[i]->takeOwnership(SERVO_TOKEN) && HwPWMx[i]->addPin(pin) )
       {
         this->pwm = HwPWMx[i];
         succeeded = true;
@@ -124,7 +127,7 @@ void Servo::detach()
   pwm->removePin(pin);
   if (pwm->usedChannelCount() == 0) {
     pwm->stop(); // disables peripheral so can release ownership
-    pwm->releaseOwnership(_servoToken);
+    pwm->releaseOwnership(SERVO_TOKEN);
   }
 }
 

@@ -46,8 +46,12 @@
 extern "C"
 {
 
+enum
+{
+  ANALOG_TOKEN = 0x676f6c41 // 'A' 'l' 'o' 'g'
+};
+
 static uint8_t _analogResolution = 8; // default is 256 levels
-static uint32_t _analogToken = 0x676f6c41; // 'A' 'l' 'o' 'g'
 
 /**
  * This will apply to all PWM Hardware currently used by analogWrite(),
@@ -59,7 +63,7 @@ void analogWriteResolution( uint8_t res )
   _analogResolution = res;
   for (int i = 0; i<HWPWM_MODULE_NUM; i++)
   {
-    if (HwPWMx[i]->isOwner(_analogToken))
+    if (HwPWMx[i]->isOwner(ANALOG_TOKEN))
     {
       HwPWMx[i]->setResolution(res);
     }
@@ -78,7 +82,7 @@ void analogWrite( uint32_t pin, uint32_t value )
   // first, handle the case where the pin is already in use by analogWrite()
   for(int i=0; i<HWPWM_MODULE_NUM; i++)
   {
-    if (HwPWMx[i]->isOwner(_analogToken))
+    if (HwPWMx[i]->isOwner(ANALOG_TOKEN))
     {
       int const ch = HwPWMx[i]->pin2channel(pin);
       if (ch >= 0)
@@ -92,7 +96,7 @@ void analogWrite( uint32_t pin, uint32_t value )
   // Next, handle the case where can add the pin to a PWM instance already owned by analogWrite()
   for(int i=0; i<HWPWM_MODULE_NUM; i++)
   {
-    if ( HwPWMx[i]->isOwner(_analogToken) && HwPWMx[i]->addPin(pin) )
+    if ( HwPWMx[i]->isOwner(ANALOG_TOKEN) && HwPWMx[i]->addPin(pin) )
     {
       // successfully added the pin, so write the value also
       HwPWMx[i]->writePin(pin, value);
@@ -106,7 +110,7 @@ void analogWrite( uint32_t pin, uint32_t value )
   // 2. it currently has no pins in use.
   for(int i=0; i<HWPWM_MODULE_NUM; i++)
   {
-    if (HwPWMx[i]->takeOwnership(_analogToken))
+    if (HwPWMx[i]->takeOwnership(ANALOG_TOKEN))
     {
       // apply the cached analog resolution to newly owned instances
       HwPWMx[i]->setResolution(_analogResolution);
