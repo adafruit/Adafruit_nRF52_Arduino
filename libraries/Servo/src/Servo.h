@@ -111,8 +111,8 @@ public:
   bool attached();                   // return true if this servo is attached, otherwise false 
 private:
    uint8_t servoIndex;               // index into the channel data for this servo
-   int16_t min;                       // minimum pulse in µs    
-   int16_t max;                       // maximum pulse in µs
+   int16_t min;                      // minimum pulse in µs
+   int16_t max;                      // maximum pulse in µs
 
    HardwarePWM* pwm;
 };

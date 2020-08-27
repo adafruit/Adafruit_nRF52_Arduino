@@ -51,14 +51,12 @@ class HardwarePWM
   private:
     enum { MAX_CHANNELS = 4 }; // Max channel per group
     NRF_PWM_Type * const _pwm;
-    std::atomic_uintptr_t _owner_token;
+    std::atomic_uint32_t _owner_token;
 
     uint16_t _seq0[MAX_CHANNELS];
 
     uint16_t  _max_value;
     uint8_t  _clock_div;
-
-    void _start(void);
 
   public:
     HardwarePWM(NRF_PWM_Type* pwm);
@@ -72,19 +70,24 @@ class HardwarePWM
     // Cooperative ownership sharing
 
     // returns true ONLY when (1) no PWM channel has a pin, and (2) the owner token is nullptr
-    bool takeOwnership   (uintptr_t    token);
+    bool takeOwnership   (uint32_t token);
+
     // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
-    bool releaseOwnership(uintptr_t    token);
+    bool releaseOwnership(uint32_t token);
 
     // allows caller to verify that they own the peripheral
-    __INLINE bool isOwner(uintptr_t token) const
+    bool isOwner(uint32_t token) const
     {
       return this->_owner_token == token;
     }
 
+    // Add a pin to PWM module
     bool addPin     (uint8_t pin);
+
+    // Remove a pin from PWM module
     bool removePin  (uint8_t pin);
 
+    // Get the mapped channel of a pin
     int  pin2channel(uint8_t pin) const
     {
       pin = g_ADigitalPinMap[pin];
@@ -95,6 +98,7 @@ class HardwarePWM
       return (-1);
     }
 
+    // Check if pin is controlled by PWM
     bool checkPin(uint8_t pin) const
     {
       return pin2channel(pin) >= 0;
@@ -117,6 +121,9 @@ class HardwarePWM
     uint8_t freeChannelCount(void) const;
 
     static void DebugOutput(Stream& logger);
+
+  private:
+    void _set_psel(int ch, uint32_t value);
 };
 
 extern HardwarePWM HwPWM0;
