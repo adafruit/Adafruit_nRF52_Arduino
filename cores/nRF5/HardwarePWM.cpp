@@ -54,10 +54,10 @@ HardwarePWM* HwPWMx[] =
 };
 
 #if CFG_DEBUG
-bool can_stringify_token(uintptr_t token)
+bool can_stringify_token(uint32_t token)
 {
   uint8_t * t = (uint8_t *)&token;
-  for (size_t i = 0; i < sizeof(uintptr_t); ++i, ++t)
+  for (size_t i = 0; i < sizeof(uint32_t); ++i, ++t)
   {
     uint8_t x = *t;
     if ((x < 0x20) || (x > 0x7E)) return false;
@@ -71,7 +71,7 @@ void HardwarePWM::DebugOutput(Stream& logger)
   logger.printf("HwPWM Debug:");
   for (size_t i = 0; i < count; i++) {
     HardwarePWM const * pwm = HwPWMx[i];
-    uintptr_t token = pwm->_owner_token;
+    uint32_t token = pwm->_owner_token;
     logger.printf(" || %d:", i);
     if (can_stringify_token(token)) {
       uint8_t * t = (uint8_t*)(&token);
@@ -271,7 +271,7 @@ uint8_t HardwarePWM::freeChannelCount(void) const
 }
 
 // returns true ONLY when (1) no PWM channel has a pin, and (2) the owner token is nullptr
-bool HardwarePWM::takeOwnership(uintptr_t token)
+bool HardwarePWM::takeOwnership(uint32_t token)
 {
   if (token == 0) {
     LOG_LV1("HwPWM", "zero / nullptr is not a valid ownership token (attempted use in takeOwnership)");
@@ -288,12 +288,12 @@ bool HardwarePWM::takeOwnership(uintptr_t token)
   if ( this->enabled() ) return false;
 
   // Use C++11 atomic CAS operation
-  uintptr_t expectedValue = 0U;
+  uint32_t expectedValue = 0U;
   return this->_owner_token.compare_exchange_strong(expectedValue, token);
 }
 
 // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
-bool HardwarePWM::releaseOwnership(uintptr_t token)
+bool HardwarePWM::releaseOwnership(uint32_t token)
 {
   if (token == 0) {
     LOG_LV1("HwPWM", "zero / nullptr is not a valid ownership token (attempted use in releaseOwnership)");

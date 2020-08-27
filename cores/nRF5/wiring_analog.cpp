@@ -47,7 +47,7 @@ extern "C"
 {
 
 static uint8_t _analogResolution = 8; // default is 256 levels
-static uintptr_t _analogToken = 0x676f6c41; // 'A' 'l' 'o' 'g'
+static uint32_t _analogToken = 0x676f6c41; // 'A' 'l' 'o' 'g'
 
 /**
  * This will apply to all PWM Hardware currently used by analogWrite(),

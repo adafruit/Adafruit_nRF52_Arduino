@@ -48,7 +48,7 @@ static HardwarePWM  * const _HwPWM       = HwPWMx[2];
 // Defined a struct, to simplify validation testing ... also provides context when debugging
 class TonePwmConfig {
     private:
-        const uintptr_t          toneToken       = 0x656e6f54; //< 'T' 'o' 'n' 'e'
+        const uint32_t toneToken = 0x656e6f54; //< 'T' 'o' 'n' 'e'
         uint64_t pulse_count;         //< total number of PWM pulses
         uint32_t seq0_refresh;        //< count of pulses for each SEQ0 iteration
         uint32_t seq1_refresh;        //< count of pulses for each SEQ1 iteration
