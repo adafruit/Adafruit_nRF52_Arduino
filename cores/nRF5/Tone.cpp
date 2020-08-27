@@ -177,7 +177,7 @@ void tone(uint8_t pin, unsigned int frequency, unsigned long duration)
     uint16_t time_period = _calculate_time_period(frequency);
     if (!_pwm_config.ensurePwmPeripheralOwnership()) {
         LOG_LV1("Tone", "Unable to acquire PWM peripheral");
-    } else if (!_pwm_config.stopPlayback()) {
+    } else if (!_pwm_config.stopPlayback(false)) {
         LOG_LV1("Tone", "Unable to stop playback");
     } else if (!_pwm_config.initializeFromPulseCountAndTimePeriod(pulse_count, time_period)) {
         LOG_LV1("Tone", "Failed calculating configuration");

@@ -273,13 +273,14 @@ uint8_t HardwarePWM::freeChannelCount(void) const
 // returns true ONLY when (1) no PWM channel has a pin, and (2) the owner token is nullptr
 bool HardwarePWM::takeOwnership(uint32_t token)
 {
+
   if (token == 0) {
-    LOG_LV1("HwPWM", "zero / nullptr is not a valid ownership token (attempted use in takeOwnership)");
+    if (!isInISR()) LOG_LV1("HwPWM", "zero is not a valid ownership token (attempted use in takeOwnership)");
     return false;
   }
 
   if (token == this->_owner_token) {
-    LOG_LV1("HwPWM", "failing to acquire ownership because already owned by requesting token (cannot take ownership twice)");
+    if (!isInISR()) LOG_LV1("HwPWM", "failing to acquire ownership because already owned by requesting token (cannot take ownership twice)");
     return false;
   }
 
@@ -296,22 +297,22 @@ bool HardwarePWM::takeOwnership(uint32_t token)
 bool HardwarePWM::releaseOwnership(uint32_t token)
 {
   if (token == 0) {
-    LOG_LV1("HwPWM", "zero / nullptr is not a valid ownership token (attempted use in releaseOwnership)");
+    if (!isInISR()) LOG_LV1("HwPWM", "zero is not a valid ownership token (attempted use in releaseOwnership)");
     return false;
   }
 
   if (!this->isOwner(token)) {
-    LOG_LV1("HwPWM", "attempt to release ownership when not the current owner");
+    if (!isInISR()) LOG_LV1("HwPWM", "attempt to release ownership when not the current owner");
     return false;
   }
 
   if (this->usedChannelCount() != 0) {
-    LOG_LV1("HwPWM", "attempt to release ownership when at least on channel is still connected");
+    if (!isInISR()) LOG_LV1("HwPWM", "attempt to release ownership when at least on channel is still connected");
     return false;
   }
 
   if (this->enabled()) {
-    LOG_LV1("HwPWM", "attempt to release ownership when PWM peripheral is still enabled");
+    if (!isInISR()) LOG_LV1("HwPWM", "attempt to release ownership when PWM peripheral is still enabled");
     return false; // if it's enabled, do not allow ownership to be released, even with no pins in use
   }
 
