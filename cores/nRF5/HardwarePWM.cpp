@@ -273,14 +273,15 @@ uint8_t HardwarePWM::freeChannelCount(void) const
 // returns true ONLY when (1) no PWM channel has a pin, and (2) the owner token is nullptr
 bool HardwarePWM::takeOwnership(uint32_t token)
 {
+  bool const thread_mode = !isInISR();
 
   if (token == 0) {
-    if (!isInISR()) LOG_LV1("HwPWM", "zero is not a valid ownership token (attempted use in takeOwnership)");
+    if (thread_mode) LOG_LV1("HwPWM", "zero is not a valid ownership token (attempted use in takeOwnership)");
     return false;
   }
 
   if (token == this->_owner_token) {
-    if (!isInISR()) LOG_LV1("HwPWM", "failing to acquire ownership because already owned by requesting token (cannot take ownership twice)");
+    if (thread_mode) LOG_LV1("HwPWM", "failing to acquire ownership because already owned by requesting token (cannot take ownership twice)");
     return false;
   }
 
@@ -296,23 +297,25 @@ bool HardwarePWM::takeOwnership(uint32_t token)
 // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
 bool HardwarePWM::releaseOwnership(uint32_t token)
 {
+  bool const thread_mode = !isInISR();
+
   if (token == 0) {
-    if (!isInISR()) LOG_LV1("HwPWM", "zero is not a valid ownership token (attempted use in releaseOwnership)");
+    if (thread_mode) LOG_LV1("HwPWM", "zero is not a valid ownership token (attempted use in releaseOwnership)");
     return false;
   }
 
   if (!this->isOwner(token)) {
-    if (!isInISR()) LOG_LV1("HwPWM", "attempt to release ownership when not the current owner");
+    if (thread_mode) LOG_LV1("HwPWM", "attempt to release ownership when not the current owner");
     return false;
   }
 
   if (this->usedChannelCount() != 0) {
-    if (!isInISR()) LOG_LV1("HwPWM", "attempt to release ownership when at least on channel is still connected");
+    if (thread_mode) LOG_LV1("HwPWM", "attempt to release ownership when at least on channel is still connected");
     return false;
   }
 
   if (this->enabled()) {
-    if (!isInISR()) LOG_LV1("HwPWM", "attempt to release ownership when PWM peripheral is still enabled");
+    if (thread_mode) LOG_LV1("HwPWM", "attempt to release ownership when PWM peripheral is still enabled");
     return false; // if it's enabled, do not allow ownership to be released, even with no pins in use
   }
 
