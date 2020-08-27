@@ -38,6 +38,7 @@
 
 #include "common_inc.h"
 #include "nrf.h"
+#include <atomic>
 
 #ifdef NRF52840_XXAA
 #define HWPWM_MODULE_NUM    4
@@ -50,7 +51,7 @@ class HardwarePWM
   private:
     enum { MAX_CHANNELS = 4 }; // Max channel per group
     NRF_PWM_Type * const _pwm;
-    uintptr_t _owner_token;
+    std::atomic_uintptr_t _owner_token;
 
     uint16_t _seq0[MAX_CHANNELS];
 

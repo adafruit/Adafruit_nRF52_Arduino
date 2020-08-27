@@ -287,15 +287,9 @@ bool HardwarePWM::takeOwnership(uintptr_t token)
   if ( this->usedChannelCount() != 0 ) return false;
   if ( this->enabled() ) return false;
 
-  // This function must not be called within ISR
-  taskENTER_CRITICAL();
-  if ( this->_owner_token == 0 )
-  {
-    _owner_token = token;
-  }
-  taskEXIT_CRITICAL();
-
-  return _owner_token == token;
+  // Use C++11 atomic CAS operation
+  uintptr_t expectedValue = 0U;
+  return this->_owner_token.compare_exchange_strong(expectedValue, token);
 }
 
 // returns true ONLY when (1) no PWM channel has a pin attached, and (2) the owner token matches
@@ -321,13 +315,6 @@ bool HardwarePWM::releaseOwnership(uintptr_t token)
     return false; // if it's enabled, do not allow ownership to be released, even with no pins in use
   }
 
-  // This function must not be called within ISR
-  taskENTER_CRITICAL();
-  if ( this->_owner_token == token )
-  {
-    _owner_token = 0;
-  }
-  taskEXIT_CRITICAL();
-
-  return _owner_token == 0;
+  // Use C++11 atomic CAS operation
+  return this->_owner_token.compare_exchange_strong(token, 0U);
 }
