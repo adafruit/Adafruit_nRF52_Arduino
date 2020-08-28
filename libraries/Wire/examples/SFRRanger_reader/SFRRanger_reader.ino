@@ -14,7 +14,7 @@
 
 void setup()
 {
-  Wire.begin();                // join i2c bus (address optional for master)
+  Wire.begin();                // join i2c bus (address optional for main)
   Serial.begin(9600);          // start serial communication at 9600bps
   while ( !Serial ) delay(10);   // for nrf52840 with native usb
 }
@@ -42,7 +42,7 @@ void loop()
   Wire.endTransmission();      // stop transmitting
 
   // step 4: request reading from sensor
-  Wire.requestFrom(112, 2);    // request 2 bytes from slave device #112
+  Wire.requestFrom(112, 2);    // request 2 bytes from secondary device #112
 
   // step 5: receive reading from sensor
   if(2 <= Wire.available())    // if two bytes were received
