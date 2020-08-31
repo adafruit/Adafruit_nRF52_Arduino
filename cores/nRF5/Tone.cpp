@@ -32,6 +32,8 @@ Version Modified By Date     Comments
 0008    S Kanemoto  12/06/22 Fixed for Leonardo by @maris_HY
 0009    Arduino.org 15/06/30 Add M0/M0 Pro support
 0010	Arduino.org 16/07/27 Added Arduino Primo support
+0011 Henry Gabryjelski 20/08/25 Rework/Rewrite the library to use no interrupt handler and
+                                support HwPWM ownership
 *************************************************/
 
 #include "Arduino.h"

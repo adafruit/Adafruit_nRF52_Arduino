@@ -19,7 +19,7 @@
 // PIN_BUZZER should be defined by the supported variant e.g CPlay Bluefruit or CLUE.
 // Otherwise please define the pin you would like to use for tone output
 #ifndef PIN_BUZZER
-#define PIN_BUZZER    5
+#define PIN_BUZZER    A0
 #endif
 
 
