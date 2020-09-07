@@ -39,11 +39,17 @@ const uint32_t g_ADigitalPinMap[] =
 
 void initVariant()
 {
-  // LED1 & LED2
+  // init all 4 onboard LEDs
   pinMode(PIN_LED1, OUTPUT);
   ledOff(PIN_LED1);
 
   pinMode(PIN_LED2, OUTPUT);
-  ledOff(PIN_LED2);;
+  ledOff(PIN_LED2);
+
+  pinMode(PIN_LED3, OUTPUT);
+  ledOff(PIN_LED3);
+
+  pinMode(PIN_LED4, OUTPUT);
+  ledOff(PIN_LED4);
 }
 

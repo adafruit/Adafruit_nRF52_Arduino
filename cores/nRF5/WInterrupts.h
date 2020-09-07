@@ -33,7 +33,7 @@ extern "C" {
 
 #define ISR_DEFERRED  0x0100
 
-#define DEFAULT 1
+//#define DEFAULT 1
 #define EXTERNAL 0
 
 typedef void (*voidFuncPtr)(void);

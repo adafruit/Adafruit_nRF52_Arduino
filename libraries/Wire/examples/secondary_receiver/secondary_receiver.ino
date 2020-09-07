@@ -1,9 +1,9 @@
-// Wire Slave Receiver
+// Wire Secondary Receiver
 // by Nicholas Zambetti <http://www.zambetti.com>
 
 // Demonstrates use of the Wire library
-// Receives data as an I2C/TWI slave device
-// Refer to the "Wire Master Writer" example for use with this
+// Receives data as an I2C/TWI secondary device
+// Refer to the "Wire Main Writer" example for use with this
 
 // Created 29 March 2006
 
@@ -25,7 +25,7 @@ void loop()
   delay(100);
 }
 
-// function that executes whenever data is received from master
+// function that executes whenever data is received from main
 // this function is registered as an event, see setup()
 void receiveEvent(int howMany)
 {

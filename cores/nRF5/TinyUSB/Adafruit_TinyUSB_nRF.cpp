@@ -31,6 +31,16 @@
 #include "Adafruit_TinyUSB_Core.h"
 
 //--------------------------------------------------------------------+
+// MACRO TYPEDEF CONSTANT ENUM DECLARATION
+//--------------------------------------------------------------------+
+
+#define USBD_STACK_SZ   (200)
+
+// tinyusb function that handles power event (detected, ready, removed)
+// We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled.
+extern "C" void tusb_hal_nrf_power_event(uint32_t event);
+
+//--------------------------------------------------------------------+
 // Forward USB interrupt events to TinyUSB IRQ Handler
 //--------------------------------------------------------------------+
 extern "C" void USBD_IRQHandler(void)
@@ -42,32 +52,8 @@ extern "C" void USBD_IRQHandler(void)
   tud_int_handler(0);
 
 #if CFG_SYSVIEW
-    SEGGER_SYSVIEW_RecordExitISR();
+  SEGGER_SYSVIEW_RecordExitISR();
 #endif
-}
-
-//--------------------------------------------------------------------+
-// MACRO TYPEDEF CONSTANT ENUM DECLARATION
-//--------------------------------------------------------------------+
-
-#define USBD_STACK_SZ   (200)
-
-// tinyusb function that handles power event (detected, ready, removed)
-// We must call it within SD's SOC event handler, or set it as power event handler if SD is not enabled.
-extern "C" void tusb_hal_nrf_power_event(uint32_t event);
-
-// USB Device Driver task
-// This top level thread process all usb events and invoke callbacks
-static void usb_device_task(void* param)
-{
-  (void) param;
-
-  // RTOS forever loop
-  while (1)
-  {
-    // tinyusb device task
-    tud_task();
-  }
 }
 
 //--------------------------------------------------------------------+
@@ -77,6 +63,14 @@ static void usb_device_task(void* param)
 // Init usb hardware when starting up. Softdevice is not enabled yet
 static void usb_hardware_init(void)
 {
+  // Priorities 0, 1, 4 (nRF52) are reserved for SoftDevice
+  // 2 is highest for application
+  NVIC_SetPriority(USBD_IRQn, 2);
+
+  // USB power may already be ready at this time -> no event generated
+  // We need to invoke the handler based on the status initially
+  uint32_t usb_reg = NRF_POWER->USBREGSTATUS;
+
   // Power module init
   const nrfx_power_config_t pwr_cfg = { 0 };
   nrfx_power_init(&pwr_cfg);
@@ -87,21 +81,16 @@ static void usb_hardware_init(void)
 
   nrfx_power_usbevt_enable();
 
-  // Priorities 0, 1, 4 (nRF52) are reserved for SoftDevice
-  // 2 is highest for application
-  NVIC_SetPriority(USBD_IRQn, 2);
-
-  // USB power may already be ready at this time -> no event generated
-  // We need to invoke the handler based on the status initially
-  uint32_t usb_reg = NRF_POWER->USBREGSTATUS;
-
   if ( usb_reg & POWER_USBREGSTATUS_VBUSDETECT_Msk ) tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_DETECTED);
-  if ( usb_reg & POWER_USBREGSTATUS_OUTPUTRDY_Msk  ) tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_READY);
 }
 
-void Adafruit_TinyUSB_Core_init(void)
+// USB Device Driver task
+// This top level thread process all usb events and invoke callbacks
+static void usb_device_task(void* param)
 {
-  USBDevice.addInterface( (Adafruit_USBD_Interface&) Serial);
+  (void) param;
+
+  USBDevice.addInterface((Adafruit_USBD_Interface&) Serial);
   USBDevice.setID(USB_VID, USB_PID);
   USBDevice.begin();
 
@@ -110,12 +99,23 @@ void Adafruit_TinyUSB_Core_init(void)
   // Init tinyusb stack
   tusb_init();
 
+  // RTOS forever loop
+  while (1)
+  {
+    // tinyusb device task
+    tud_task();
+  }
+}
+
+void Adafruit_TinyUSB_Core_init(void)
+{
   // Create a task for tinyusb device stack
-  xTaskCreate( usb_device_task, "usbd", USBD_STACK_SZ, NULL, TASK_PRIO_HIGH, NULL);
+  xTaskCreate(usb_device_task, "usbd", USBD_STACK_SZ, NULL, TASK_PRIO_HIGH, NULL);
 }
 
 void Adafruit_TinyUSB_Core_touch1200(void)
 {
+  delay(5); // a few millisecond for USB control status completion
   enterSerialDfu();
 }
 

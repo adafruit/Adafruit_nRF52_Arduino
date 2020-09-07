@@ -101,7 +101,7 @@ class Servo
 {
 public:
   Servo();
-  uint8_t attach(int pin);           // attach the given pin to the next free channel, sets pinMode, returns channel number or 0 if failure
+  uint8_t attach(int pin);           // attach the given pin to the next free channel, sets pinMode, returns channel number or INVALID_SERVO if failure (zero is a valid channel number)
   uint8_t attach(int pin, int min, int max); // as above but also sets min and max values for writes. 
   void detach();
   void write(int value);             // if value is < 200 its treated as an angle, otherwise as pulse width in microseconds 
@@ -111,8 +111,8 @@ public:
   bool attached();                   // return true if this servo is attached, otherwise false 
 private:
    uint8_t servoIndex;               // index into the channel data for this servo
-   int16_t min;                       // minimum pulse in µs    
-   int16_t max;                       // maximum pulse in µs
+   int16_t min;                      // minimum pulse in µs
+   int16_t max;                      // maximum pulse in µs
 
    HardwarePWM* pwm;
 };

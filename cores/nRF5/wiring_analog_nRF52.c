@@ -33,37 +33,13 @@ static uint32_t saadcGain      = SAADC_CH_CONFIG_GAIN_Gain1_6;
 
 static bool saadcBurst = SAADC_CH_CONFIG_BURST_Disabled;
 
-#if 0 // Note: Adafruit use seperated HardwarePWM class
-#define PWM_COUNT 3
-
-static NRF_PWM_Type* pwms[PWM_COUNT] = {
-  NRF_PWM0,
-  NRF_PWM1,
-  NRF_PWM2
-};
-
-static uint32_t pwmChannelPins[PWM_COUNT] = {
-  0xFFFFFFFF,
-  0xFFFFFFFF,
-  0xFFFFFFFF
-};
-static uint16_t pwmChannelSequence[PWM_COUNT];
-#endif
+// Note: Adafruit use seperated HardwarePWM class
 
 static int readResolution = 10;
-//static int writeResolution = 8;
-
 void analogReadResolution( int res )
 {
   readResolution = res;
 }
-
-#if 0
-void analogWriteResolution( int res )
-{
-  writeResolution = res;
-}
-#endif
 
 static inline uint32_t mapResolution( uint32_t value, uint32_t from, uint32_t to )
 {
@@ -272,48 +248,6 @@ uint32_t analogRead( uint32_t ulPin )
 
   return mapResolution(value, resolution, readResolution);
 }
-
-#if 0
-// Right now, PWM output only works on the pins with
-// hardware support.  These are defined in the appropriate
-// pins_*.c file.  For the rest of the pins, we default
-// to digital output.
-void analogWrite( uint32_t ulPin, uint32_t ulValue )
-{
-  if (ulPin >= PINS_COUNT) {
-    return;
-  }
-
-  ulPin = g_ADigitalPinMap[ulPin];
-
-  for (int i = 0; i < PWM_COUNT; i++) {
-    if (pwmChannelPins[i] == 0xFFFFFFFF || pwmChannelPins[i] == ulPin) {
-      pwmChannelPins[i] = ulPin;
-      pwmChannelSequence[i] = bit(15) | ulValue;
-
-      NRF_PWM_Type* pwm = pwms[i];
-
-      pwm->PSEL.OUT[0] = ulPin;
-      pwm->PSEL.OUT[1] = ulPin;
-      pwm->PSEL.OUT[2] = ulPin;
-      pwm->PSEL.OUT[3] = ulPin;
-      pwm->ENABLE = (PWM_ENABLE_ENABLE_Enabled << PWM_ENABLE_ENABLE_Pos);
-      pwm->PRESCALER = PWM_PRESCALER_PRESCALER_DIV_1;
-      pwm->MODE = PWM_MODE_UPDOWN_Up;
-      pwm->COUNTERTOP = (1 << writeResolution) - 1;
-      pwm->LOOP = 0;
-      pwm->DECODER = ((uint32_t)PWM_DECODER_LOAD_Common << PWM_DECODER_LOAD_Pos) | ((uint32_t)PWM_DECODER_MODE_RefreshCount << PWM_DECODER_MODE_Pos);
-      pwm->SEQ[0].PTR = (uint32_t)&pwmChannelSequence[i];
-      pwm->SEQ[0].CNT = 1;
-      pwm->SEQ[0].REFRESH  = 1;
-      pwm->SEQ[0].ENDDELAY = 0;
-      pwm->TASKS_SEQSTART[0] = 0x1UL;
-
-      break;
-    }
-  }
-}
-#endif
 
 #ifdef __cplusplus
 }

@@ -164,18 +164,12 @@ static void bledfu_control_wr_authorize_cb(uint16_t conn_hdl, BLECharacteristic*
       VERIFY_STATUS( sd_softdevice_disable(),  );
 
       // Disable all interrupts
-      #if defined(NRF52832_XXAA)
-      #define MAX_NUMBER_INTERRUPTS  39
-      #elif defined(NRF52840_XXAA)
-      #define MAX_NUMBER_INTERRUPTS  48
-      #endif
-
-      NVIC_ClearPendingIRQ(SD_EVT_IRQn);
-      for(int i=0; i < MAX_NUMBER_INTERRUPTS; i++)
-      {
-        NVIC_DisableIRQ( (IRQn_Type) i );
-      }
-
+      NVIC->ICER[0]=0xFFFFFFFF;
+      NVIC->ICPR[0]=0xFFFFFFFF;
+#if defined(__NRF_NVIC_ISER_COUNT) && __NRF_NVIC_ISER_COUNT == 2
+      NVIC->ICER[1]=0xFFFFFFFF;
+      NVIC->ICPR[1]=0xFFFFFFFF;
+#endif
       // Clear RTC1 timer to prevent Interrupt happens after changing vector table
 //      NRF_RTC1->EVTENCLR    = RTC_EVTEN_COMPARE0_Msk;
 //      NRF_RTC1->INTENCLR    = RTC_INTENSET_COMPARE0_Msk;

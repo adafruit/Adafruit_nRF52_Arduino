@@ -564,11 +564,6 @@ uint16_t BLECharacteristic::write32(int num)
   return write32( (uint32_t) num );
 }
 
-uint16_t BLECharacteristic::write32(int32_t num)
-{
-  return write32( (uint32_t) num );
-}
-
 /*------------------------------------------------------------------*/
 /* READ
  *------------------------------------------------------------------*/
@@ -729,7 +724,7 @@ bool BLECharacteristic::notify32(uint16_t conn_hdl, uint32_t num)
 
 bool BLECharacteristic::notify32(uint16_t conn_hdl, int num)
 {
-  return notify32((uint32_t) num, conn_hdl);
+  return notify(conn_hdl, (uint8_t*) &num, sizeof(num));
 }
 
 //--------------------------------------------------------------------+

@@ -70,6 +70,9 @@ class File : public Stream
     uint32_t position (void);
     uint32_t size (void);
 
+    bool truncate (uint32_t pos);
+    bool truncate (void);
+
     void close (void);
 
     operator bool (void);

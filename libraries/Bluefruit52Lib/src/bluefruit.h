@@ -178,6 +178,17 @@ class AdafruitBluefruit
 
     BLEConnection* Connection(uint16_t conn_hdl);
 
+#ifdef ANT_LICENSE_KEY
+    /*------------------------------------------------------------------*
+     * Optional semaphore for additional event handlers for SD event.
+     * It can be used for handling non-BLE  SD events 
+     *------------------------------------------------------------------*/
+    void setMultiprotocolSemaphore(SemaphoreHandle_t* p_mprot_event_semaphore) 
+    { 
+        _mprot_event_sem= p_mprot_event_semaphore;
+    } 
+#endif
+
     /*------------------------------------------------------------------*/
     /* Callbacks
      *------------------------------------------------------------------*/
@@ -222,6 +233,12 @@ class AdafruitBluefruit
 
     SemaphoreHandle_t _ble_event_sem;
     SemaphoreHandle_t _soc_event_sem;
+#ifdef ANT_LICENSE_KEY
+    /* Optional semaphore for additional event handlers for SD event.
+     * It can be used for handling non-BLE  SD events 
+     */
+    SemaphoreHandle_t* _mprot_event_sem;
+#endif
 
     TimerHandle_t _led_blink_th;
     bool _led_conn;

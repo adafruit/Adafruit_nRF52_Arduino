@@ -182,7 +182,13 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
         configPRE_SLEEP_PROCESSING( xModifiableIdleTime );
         if ( xModifiableIdleTime > 0 )
         {
-#if 0  // With FreeRTOS sd_app_evt_wait increases power consumption with FreeRTOS compared to _WFE (NRFFOSDK-11174)
+#if (__FPU_USED == 1)
+            // nRF52832 errata 87: prevent FPU from keeping CPU on
+            // https://infocenter.nordicsemi.com/topic/errata_nRF52832_Rev2/ERR/nRF52832/Rev2/latest/anomaly_832_87.html?cp=4_2_1_0_1_24
+            __set_FPSCR(__get_FPSCR() & ~(0x0000009F));
+            (void) __get_FPSCR();
+            NVIC_ClearPendingIRQ(FPU_IRQn);
+#endif
 #ifdef SOFTDEVICE_PRESENT // TODO
             uint8_t sd_en = 0;
             (void) sd_softdevice_is_enabled(&sd_en);
@@ -193,7 +199,6 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
             }
             else
 #endif
-#endif // (NRFFOSDK-11174)
             {
                 /* No SD -  we would just block interrupts globally.
                 * BASEPRI cannot be used for that because it would prevent WFE from wake up.
@@ -227,9 +232,34 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
                 diff = xExpectedIdleTime;
             }
 
-            if (diff > 0)
+            // nRF-provided fix for delay() wakeup 1ms spin-loop power waste
+            // See https://devzone.nordicsemi.com/f/nordic-q-a/63828/vtaskdelay-on-nrf52-freertos-port-wastes-cpu-power
+            BaseType_t switch_req = pdFALSE;
+
+            if (diff > 1)
             {
-                vTaskStepTick(diff);
+                vTaskStepTick(diff - 1);
+               
+                // If dwt cycle count is enable, adjust it as welll
+                if ( (CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk) && (DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk) )
+                {
+                  DWT->CYCCNT += (((diff-1) * 1000000) / configTICK_RATE_HZ) * 64;
+                }
+              
+                switch_req = xTaskIncrementTick();
+            }
+            else if (diff == 1)
+            {
+                switch_req = xTaskIncrementTick();
+            }
+
+            /* Increment the RTOS tick as usual which checks if there is a need for rescheduling */
+            if ( switch_req != pdFALSE )
+            {
+                /* A context switch is required.  Context switching is performed in
+                   the PendSV interrupt.  Pend the PendSV interrupt. */
+                SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+                __SEV();
             }
         }
     }
