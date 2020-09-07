@@ -724,7 +724,7 @@ bool BLECharacteristic::notify32(uint16_t conn_hdl, uint32_t num)
 
 bool BLECharacteristic::notify32(uint16_t conn_hdl, int num)
 {
-  return notify32((uint32_t) num, conn_hdl);
+  return notify(conn_hdl, (uint8_t*) &num, sizeof(num));
 }
 
 //--------------------------------------------------------------------+
