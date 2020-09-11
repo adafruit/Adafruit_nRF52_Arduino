@@ -133,15 +133,33 @@ void BLECentral::_eventHandler(ble_evt_t* evt)
 {
   // conn handle has fixed offset regardless of event type
   const uint16_t conn_hdl = evt->evt.common_evt.conn_handle;
+  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
 
   /* PrPh handle connection is already filtered. Only handle Central events or
    * connection handle is BLE_CONN_HANDLE_INVALID (e.g BLE_GAP_EVT_ADV_REPORT) */
   switch ( evt->header.evt_id  )
   {
     case BLE_GAP_EVT_CONNECTED:
+    {
+      // Try to secure connection if we bonded previously
+      bond_keys_t ltkey;
+      if ( conn->loadBondKey(&ltkey) )
+      {
+        Bluefruit.Security._encrypt(conn_hdl, &ltkey);
+      }
+    }
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
+    break;
+
+    case BLE_GAP_EVT_CONN_SEC_UPDATE:
+      if ( conn->bonded() && !conn->secured() )
+      {
+        // Bonded but failed to secure connection
+        // Peer must have removed LTKey, we should remove ours as well
+        conn->removeBondKey();
+      }
     break;
 
     case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:

@@ -33,7 +33,7 @@ BLEClientCts  bleCTime;
 void setup()
 {
   Serial.begin(115200);
-  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+//  while ( !Serial ) delay(10);   // for nrf52840 with native usb
 
   Serial.println("Bluefruit52 BLE Client Current Time Example");
   Serial.println("-------------------------------------------\n");
@@ -48,9 +48,12 @@ void setup()
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-  Bluefruit.setName("Bluefruit52");
+
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
+
+  // Set connection secured callback, invoked when connection is encrypted
+  Bluefruit.Security.setSecuredCallback(connection_secured_callback);
 
   // Configure CTS client
   bleCTime.begin();
@@ -94,11 +97,15 @@ void startAdv(void)
 
 void loop()
 {
+  // This example only support 1 connection
+  uint16_t const conn_handle = 0;
+  BLEConnection* conn = Bluefruit.Connection(conn_handle);
+
+  // connection exist, connected, and secured
+  if ( !(conn && conn->connected() && conn->secured()) ) return;
+
   // Skip if service is not yet discovered
   if ( !bleCTime.discovered() ) return;
-
-  // Skip if service connection is not paired/secured
-  if ( !Bluefruit.connPaired( bleCTime.connHandle() ) ) return;
 
   // Get Time from iOS once per second
   // Note it is not advised to update this quickly
@@ -113,6 +120,8 @@ void loop()
 
 void connect_callback(uint16_t conn_handle)
 {
+  BLEConnection* conn = Bluefruit.Connection(conn_handle);
+
   Serial.println("Connected");
   
   Serial.print("Discovering CTS ... ");
@@ -120,11 +129,31 @@ void connect_callback(uint16_t conn_handle)
   {
     Serial.println("Discovered");
     
-    // iOS requires pairing to work, it makes sense to request security here as well
-    Serial.print("Attempting to PAIR with the iOS device, please press PAIR on your phone ... ");
-    if ( Bluefruit.requestPairing(conn_handle) )
+    // Current Time Service requires pairing to work
+    // request Pairing if not bonded
+    Serial.println("Attempting to PAIR with the iOS device, please press PAIR on your phone ... ");
+    conn->requestPairing();
+  }
+}
+
+void connection_secured_callback(uint16_t conn_handle)
+{
+  BLEConnection* conn = Bluefruit.Connection(conn_handle);
+
+  if ( !conn->secured() )
+  {
+    // It is possible that connection is still not secured by this time.
+    // This happens (central only) when we try to encrypt connection using stored bond keys
+    // but peer reject it (probably it remove its stored key).
+    // Therefore we will request an pairing again --> callback again when encrypted
+    conn->requestPairing();
+  }
+  else
+  {
+    Serial.println("Secured");
+
+    if ( bleCTime.discovered() )
     {
-      Serial.println("Done");
       Serial.println("Enabling Time Adjust Notify");
       bleCTime.enableAdjust();
 
@@ -136,8 +165,6 @@ void connect_callback(uint16_t conn_handle)
 
       Serial.println();
     }
-
-    Serial.println();
   }
 }
 

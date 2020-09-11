@@ -68,4 +68,23 @@
 typedef void (*ble_connect_callback_t    ) (uint16_t conn_hdl);
 typedef void (*ble_disconnect_callback_t ) (uint16_t conn_hdl, uint8_t reason);
 
+enum SecureMode_t
+{
+  SECMODE_NO_ACCESS          = 0x00,
+  SECMODE_OPEN               = 0x11,
+  SECMODE_ENC_NO_MITM        = 0x21,
+  SECMODE_ENC_WITH_MITM      = 0x31,
+  SECMODE_ENC_WITH_LESC_MITM = 0x41, // LESC MITM with 128-bit key
+  SECMODE_SIGNED_NO_MITM     = 0x12,
+  SECMODE_SIGNED_WITH_MITM   = 0x22
+};
+
+#define BLE_SECMODE_NO_ACCESS        ((ble_gap_conn_sec_mode_t) { .sm = 0, .lv = 0 })
+#define BLE_SECMODE_OPEN             ((ble_gap_conn_sec_mode_t) { .sm = 1, .lv = 1 })
+#define BLE_SECMODE_ENC_NO_MITM      ((ble_gap_conn_sec_mode_t) { .sm = 1, .lv = 2 })
+#define BLE_SECMODE_ENC_WITH_MITM    ((ble_gap_conn_sec_mode_t) { .sm = 1, .lv = 3 })
+#define BLE_SECMODE_SIGNED_NO_MITM   ((ble_gap_conn_sec_mode_t) { .sm = 2, .lv = 1 })
+#define BLE_SECMODE_SIGNED_WITH_MITM ((ble_gap_conn_sec_mode_t) { .sm = 2, .lv = 2 })
+
+
 #endif /* BLUEFRUIT_COMMON_H_ */

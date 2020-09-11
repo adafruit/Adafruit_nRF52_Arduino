@@ -157,19 +157,19 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
 
 #if CFG_DEBUG
-#define LOG_LV1(...)          ADALOG(__VA_ARGS__)
-#define LOG_LV1_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
+  #define LOG_LV1(...)          ADALOG(__VA_ARGS__)
+  #define LOG_LV1_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
 #else
-#define LOG_LV1(...)
-#define LOG_LV1_BUFFER(...)
+  #define LOG_LV1(...)
+  #define LOG_LV1_BUFFER(...)
 #endif
 
 #if CFG_DEBUG >= 2
-#define LOG_LV2(...)          ADALOG(__VA_ARGS__)
-#define LOG_LV2_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
+  #define LOG_LV2(...)          ADALOG(__VA_ARGS__)
+  #define LOG_LV2_BUFFER(...)   ADALOG_BUFFER(__VA_ARGS__)
 #else
-#define LOG_LV2(...)
-#define LOG_LV2_BUFFER(...)
+  #define LOG_LV2(...)
+  #define LOG_LV2_BUFFER(...)
 #endif
 
 #if CFG_DEBUG
@@ -193,7 +193,10 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
   do {\
     uint8_t const* p8 = (uint8_t const*) (buf);\
     PRINTF(#buf ": ");\
-    for(uint32_t i=0; i<(n); i++) PRINTF("%02x ", p8[i]);\
+    for(uint32_t i=0; i<(n); i++) {\
+      if (i%16 == 0) PRINTF("\n"); \
+      PRINTF("%02x ", p8[i]); \
+    }\
     PRINTF("\n");\
   }while(0)
 
@@ -213,15 +216,15 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
 #else
 
-#define PRINT_LOCATION()
-#define PRINT_MESS(x)
-#define PRINT_HEAP()
-#define PRINT_STR(x)
-#define PRINT_INT(x)
-#define PRINT_HEX(x)
-#define PRINT_FLOAT(x)
-#define PRINT_BUFFER(buf, n)
-#define ADALOG(...)
+  #define PRINT_LOCATION()
+  #define PRINT_MESS(x)
+  #define PRTNT_HEAP()
+  #define PRINT_STR(x)
+  #define PRINT_INT(x)
+  #define PRINT_HEX(x)
+  #define PRINT_FLOAT(x)
+  #define PRINT_BUFFER(buf, n)
+  #define ADALOG(...)
 
 #endif
 

@@ -61,13 +61,13 @@ extern "C"
   static inline void VERIFY_MESS_impl(int32_t _status, const char* (*_fstr)(int32_t), const char* func_name, int line_number)
   {
       PRINTF("%s: %d: verify failed, error = ", func_name, line_number);
-      if (_fstr)
+      if (_fstr && _fstr(_status))
       {
         PRINTF(_fstr(_status));
       }
       else
       {
-        PRINTF("%ld", _status);
+        PRINTF("0x%lX (%ld)", _status, _status);
       }
       PRINTF("\n");
   }
@@ -107,9 +107,15 @@ extern "C"
  * - status value if called with 1 parameter e.g VERIFY_STATUS(status)
  * - 2 parameter if called with 2 parameters e.g VERIFY_STATUS(status, errorcode)
  */
-#define VERIFY_STATUS(...)  _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, dbg_err_str)
+#define VERIFY_STATUS(...)      _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, dbg_err_str)
 
-#define VERIFY_ERROR(...)   _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, NULL)
+#define PRINT_STATUS(_exp) do                            \
+{                                                        \
+  int32_t _status = (int32_t) _exp;                      \
+  if ( 0 != _status ) VERIFY_MESS(_status, dbg_err_str); \
+} while(0)                                               \
+
+#define VERIFY_ERROR(...)       _GET_3RD_ARG(__VA_ARGS__, VERIFY_ERR_2ARGS, VERIFY_ERR_1ARGS)(__VA_ARGS__, NULL)
 
 /*------------------------------------------------------------------*/
 /* VERIFY

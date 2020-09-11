@@ -13,33 +13,24 @@
 *********************************************************************/
 
 /*
- * This sketch is similar to 'ancs', but it also uses a Feather OLED
- * Wing to display incoming ANCS alerts:
- * https://www.adafruit.com/product/2900
+ * This sketch is similar to 'ancs', but it uses TFT to display
+ * incoming ANCS alerts. Supported boards are:
+ * - CLUE https://www.adafruit.com/product/4500
+ * - Circuit Playground Bluefruit + TFT Gizmo
+ *   - https://www.adafruit.com/product/4333
+ *   - https://www.adafruit.com/product/4367
  *
- * BUTTON A: Up or accept call
- * BUTTON B: Not used since it is hard to press
- * BUTTON C: Down or decline call
+ * Button Left: Next or Answer call
+ * Button Right: Previous or Reject call
+ *
+ * Note on CPB button A is RIGHT and button B is LEFT, this is due to
+ * the TFT is on the back of the board.
  */
-#include <Wire.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include <Adafruit_Arcada.h>
 #include <bluefruit.h>
 
-/*------------- OLED and Buttons -------------*/
-#if defined ARDUINO_NRF52832_FEATHER
-  // Feather nRF52832
-  #define BUTTON_A    31
-  #define BUTTON_C    27
-
-#else
-  // Default for others
-  #define BUTTON_A    9
-  #define BUTTON_C    5
-
-#endif
-
-Adafruit_SSD1306 oled(-1);
+Adafruit_Arcada arcada;
+Adafruit_SPITFT* tft;
 
 /*------------- Notification List -------------*/
 #define MAX_COUNT   20
@@ -71,16 +62,16 @@ BLEAncs       bleancs;
 
 void setup()
 {
-  // Button configured
-  pinMode(BUTTON_A, INPUT_PULLUP);
-  pinMode(BUTTON_C, INPUT_PULLUP);
+  arcada.arcadaBegin();
+  arcada.displayBegin();
+  arcada.setBacklight(255);
 
-  // init with the I2C addr 0x3C (for the 128x32) and show splashscreen
-  oled.begin(SSD1306_SWITCHCAPVCC, 0x3C); 
-  oled.display();
+  tft = arcada.display;
+  tft->setCursor(0, 0);
+  tft->setTextWrap(true);
+  tft->setTextSize(2);
 
-  oled.setTextSize(1);// max is 4 line, 21 chars each
-  oled.setTextColor(WHITE);
+  tft->println("Advertising...");
 
   // Config the peripheral connection with maximum bandwidth
   // more SRAM required by SoftDevice
@@ -89,7 +80,6 @@ void setup()
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
 
@@ -102,14 +92,6 @@ void setup()
 
   // Set up and start advertising
   startAdv();
-
-  // splash screen effect
-  delay(100);
-
-  oled.clearDisplay();
-  oled.setCursor(0, 0);
-  oled.println("Not connected");
-  oled.display();
 }
 
 void startAdv(void)
@@ -155,40 +137,42 @@ void loop()
   // No notifications, do nothing
   if ( notifCount == 0 ) return;
 
-  // Check buttons
-  uint32_t presedButtons = readPressedButtons();
+  arcada.readButtons();
+  uint8_t const justReleased = arcada.justReleasedButtons();
+  uint8_t buttonLeft = (justReleased & ARCADA_BUTTONMASK_LEFT);
+  uint8_t buttonRight = (justReleased & ARCADA_BUTTONMASK_RIGHT);
+
+#ifdef ARDUINO_NRF52840_CLUE
+  // swap button left & right on CLUE since the screen is on opposite side
+  uint8_t temp = buttonLeft;
+  buttonLeft = buttonRight;
+  buttonRight = temp;
+#endif
 
   if ( myNotifs[activeIndex].ntf.categoryID == ANCS_CAT_INCOMING_CALL )
   {
     /* Incoming call event
      * - Button A to accept call
-     * - Button C to decline call
+     * - Button B to decline call
      */
-    if ( presedButtons & bit(BUTTON_A) )
-    {
-      bleancs.actPositive(myNotifs[activeIndex].ntf.uid);
-    }
-
-    if ( presedButtons & bit(BUTTON_C) )
-    {
-      bleancs.actNegative(myNotifs[activeIndex].ntf.uid);
-    }
+    if ( buttonLeft  ) bleancs.actPositive(myNotifs[activeIndex].ntf.uid);
+    if ( buttonRight ) bleancs.actNegative(myNotifs[activeIndex].ntf.uid);
   }
   else
   {
     /* Normal events navigation (wrap around)
      * - Button A to display previous notification
-     * - Button C to display next notification
+     * - Button B to display next notification
      *
      * When a notification is display ONSCREEN_TIME,
      * we will display the next one
      */
-    if ( presedButtons & bit(BUTTON_A) )
+    if ( buttonLeft )
     {
       displayIndex = (activeIndex != 0) ? (activeIndex-1) : (notifCount-1) ;
     }
 
-    if ( presedButtons & bit(BUTTON_C) )
+    if ( buttonRight )
     {
       displayIndex = (activeIndex != (notifCount-1)) ? (activeIndex + 1) : 0;
     }
@@ -223,37 +207,51 @@ void displayNotification(int index)
   if ( index < 0 || (index >= notifCount) ) return;
 
   // let's Turn on and off RED LED when we draw to get attention
-  digitalWrite(LED_RED, HIGH);
+  digitalWrite(LED_BUILTIN, HIGH);
 
   /*------------- Display to OLED -------------*/
   MyNotif_t* myNtf = &myNotifs[index];
 
-  oled.clearDisplay();
-  oled.setCursor(0, 0);
+  tft->fillScreen(ARCADA_BLACK);
+  tft->setCursor(0, 0);
+
+  tft->setTextSize(3);
+  tft->setTextColor(ARCADA_GREEN);
+  tft->println(myNtf->app_name);
+  tft->println();
 
   // Incoming call event, display a bit differently
   if ( myNtf->ntf.categoryID == ANCS_CAT_INCOMING_CALL )
   {
-    oled.println(myNtf->title);
-    oled.println("          is calling");
-    oled.println("  Btn A to ACCEPT");
-    oled.println("  Btn C to DECLINE");
+    tft->setTextColor(ARCADA_YELLOW);
+    tft->println(myNtf->title);
+    tft->println();
+
+    tft->println("calling ...");
+    tft->println();
+
+    tft->setTextSize(2);
+    tft->setTextColor(ARCADA_GREEN);
+    tft->print("< Answer");
+    tft->setTextColor(ARCADA_RED);
+    tft->println("    Reject >");
   }else
   {
-    // Text size = 1, max char is 21. Text size = 2, max char is 10
-    char tempbuf[22];
-    sprintf(tempbuf, "%-15s %02d/%02d", myNtf->app_name, index+1, notifCount);
+    tft->setTextSize(2);
+    tft->setTextColor(ARCADA_GREENYELLOW);
+    tft->printf("%02d/%02d\n", index+1, notifCount);
+    tft->println();
 
-    oled.println(tempbuf);
-    oled.println(myNtf->title);
+    tft->setTextColor(ARCADA_YELLOW);
+    tft->println(myNtf->title);
+    tft->println();
 
-    oled.print("  ");
-    oled.print(myNtf->message);
+    tft->setTextColor(ARCADA_WHITE);
+    tft->println(myNtf->message);
+    tft->println();
   }
 
-  oled.display();
-
-  digitalWrite(LED_RED, LOW);
+  digitalWrite(LED_BUILTIN, LOW);
 }
 
 /**
@@ -264,26 +262,23 @@ void connect_callback(uint16_t conn_handle)
 {
   BLEConnection* conn = Bluefruit.Connection(conn_handle);
 
-  oled.clearDisplay();
-  oled.setCursor(0, 0);
-  oled.println("Connected.");
-  oled.print("Discovering ... ");
-  oled.display();
-  
+  tft->println("Connected");
+  tft->print("Discovering ... ");
+
   if ( bleancs.discover( conn_handle ) )
   {
-    oled.println("OK");
+    tft->println("OK");
 
-    // ANCS requires pairing to work
+    // ANCS requires secured connection
     // request Pairing if not bonded
-    oled.println("Paring      ... ");
+    tft->print("Paring ... ");
     conn->requestPairing();
   }else
   {
-    oled.println("Failed");
+    // disconnect if couldn't find ancs service
+    conn->disconnect();
+    tft->println("Failed");
   }
-
-  oled.display();
 }
 
 void connection_secured_callback(uint16_t conn_handle)
@@ -302,11 +297,12 @@ void connection_secured_callback(uint16_t conn_handle)
   {
     Serial.println("Secured");
 
+    tft->println("Secured");
+
     if ( bleancs.discovered() )
     {
       bleancs.enableNotification();
-      oled.println("Ready to receive");
-      oled.display();
+      tft->println("Ready to receive");
     }
   }
 }
@@ -329,7 +325,7 @@ void ancs_notification_callback(AncsNotification_t* notif)
 
     // iDevice often include Unicode "Bidirection Text Control" in the Title.
     // Mostly are U+202D as beginning and U+202C as ending. Let's remove them
-    if ( bleancs.getTitle  (uid, myNtf->title   , BUFSIZE) )
+    if ( bleancs.getTitle(uid, myNtf->title, BUFSIZE) )
     {
       char u202D[3] = { 0xE2, 0x80, 0xAD }; // U+202D in UTF-8
       char u202C[3] = { 0xE2, 0x80, 0xAC }; // U+202C in UTF-8
@@ -410,65 +406,7 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 
   memset(myNotifs, 0, sizeof(myNotifs));
 
-  oled.clearDisplay();
-  oled.setCursor(0, 0);
-  oled.println("Not connected");
-  oled.display();
+  tft->fillScreen(ARCADA_BLACK);
+  tft->setCursor(0, 0);
+  tft->println("Not connected");
 }
-
-/**
- * Check if button A,B,C state are pressed, include some software
- * debouncing.
- *
- * Note: Only set bit when Button is state change from
- * idle -> pressed. Press and hold only report 1 time, release
- * won't report as well
- *
- * @return Bitmask of pressed buttons e.g If BUTTON_A is pressed
- * bit 31 will be set.
- */
-uint32_t readPressedButtons(void)
-{
-  // must be exponent of 2
-  enum { MAX_CHECKS = 8, SAMPLE_TIME = 10 };
-
-  /* Array that maintains bounce status/, which is sampled
-   * 10 ms each. Debounced state is regconized if all the values
-   * of a button has the same value (bit set or clear)
-   */
-  static uint32_t lastReadTime = 0;
-  static uint32_t states[MAX_CHECKS] = { 0 };
-  static uint32_t index = 0;
-
-  // Last Debounced state, used to detect changed
-  static uint32_t lastDebounced = 0;
-
-  // Too soon, nothing to do
-  if (millis() - lastReadTime < SAMPLE_TIME ) return 0;
-
-  lastReadTime = millis();
-
-  // Take current read and masked with BUTTONs
-  // Note: Bitwise inverted since buttons are active (pressed) LOW
-  uint32_t debounced = ~( (digitalRead(BUTTON_A) << BUTTON_A) | (digitalRead(BUTTON_C) << BUTTON_C) );
-
-  // Copy current state into array
-  states[ (index & (MAX_CHECKS-1)) ] = debounced;
-  index++;
-
-  // Bitwise And all the state in the array together to get the result
-  // This means pin must stay at least MAX_CHECKS time to be realized as changed
-  for(int i=0; i<MAX_CHECKS; i++)
-  {
-    debounced &= states[i];
-  }
-
-  // result is button changed and current debounced is set
-  // Mean button is pressed (idle previously)
-  uint32_t result = (debounced ^ lastDebounced) & debounced;
-
-  lastDebounced = debounced;
-
-  return result;
-}
-

@@ -54,10 +54,13 @@ class BLEConnection
     uint16_t _ediv;
 
     bool _connected;
-    bool _paired;
+    bool _bonded; // have LTK stored in InternalFS
     bool _hvc_received;
 
-    ble_gap_addr_t _peer_addr;
+    ble_gap_conn_sec_mode_t _sec_mode;
+
+    ble_gap_addr_t _peer_addr; // resolvable connect address
+    ble_gap_addr_t _bond_id_addr; // address stored as bonded
 
     SemaphoreHandle_t _hvn_sem;
     SemaphoreHandle_t _wrcmd_sem;
@@ -65,16 +68,14 @@ class BLEConnection
     // On-demand semaphore/data that are created on the fly
     SemaphoreHandle_t _hvc_sem;
 
-    SemaphoreHandle_t _pair_sem;
-    bond_keys_t*     _bond_keys; // Shared keys with bonded device, size ~ 80 bytes
-
   public:
     BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const * evt_connected, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
     virtual ~BLEConnection();
 
     uint16_t handle(void);
     bool     connected(void);
-    bool     paired(void);
+    bool     bonded(void);
+    bool     secured(void);
 
     uint8_t  getRole(void);
     uint16_t getMtu (void);
@@ -84,6 +85,8 @@ class BLEConnection
 
     ble_gap_addr_t getPeerAddr(void);
     uint16_t getPeerName(char* buf, uint16_t bufsize);
+
+    ble_gap_conn_sec_mode_t getSecureMode(void);
 
     bool disconnect(void);
 
@@ -104,8 +107,12 @@ class BLEConnection
     bool getWriteCmdPacket(void);
     bool waitForIndicateConfirm(void);
 
-    bool storeCccd(void);
-    bool loadKeys(bond_keys_t* bkeys);
+    bool saveBondKey(bond_keys_t const* ltkey);
+    bool loadBondKey(bond_keys_t* ltkey);
+    bool removeBondKey(void);
+
+    bool saveCccd(void);
+    bool loadCccd(void);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY

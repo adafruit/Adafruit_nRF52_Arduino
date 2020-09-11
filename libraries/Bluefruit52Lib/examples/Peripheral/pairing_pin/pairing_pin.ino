@@ -11,24 +11,27 @@
  All text above, and the splash screen below must be included in
  any redistribution
 *********************************************************************/
+
+/* This sketch demonstrates Pairing process using static Passkey aka PIN.
+ * This sketch is essentially the same as bleuart.ino except the BLE Uart
+ * service requires Security Mode with Man-In-The-Middle protection i.e
+ * using 6 digits PIN for pairing.
+ */
+
 #include <bluefruit.h>
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
 
+// Static PIN is 6 digits from 000000-999999
+#define PAIRING_PIN     "123456"
+
 // BLE Service
-BLEDfu  bledfu;  // OTA DFU service
-BLEDis  bledis;  // device information
 BLEUart bleuart; // uart over ble
-BLEBas  blebas;  // battery
 
 void setup()
 {
   Serial.begin(115200);
-
-#if CFG_DEBUG
-  // Blocking wait for connection when debug mode is enabled via IDE
-  while ( !Serial ) yield();
-#endif
+  while ( !Serial ) delay(10);   // for nrf52840 with native usb
   
   Serial.println("Bluefruit52 BLEUART Example");
   Serial.println("---------------------------\n");
@@ -46,29 +49,25 @@ void setup()
   Bluefruit.begin();
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   Bluefruit.setName("Bluefruit52");
-  //Bluefruit.setName(getMcuUniqueID()); // useful testing with multiple central connections
+
+  Serial.println("Setting pairing PIN to: " PAIRING_PIN);
+  Bluefruit.Security.setPIN(PAIRING_PIN);
+
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
 
-  // To be consistent OTA DFU should be added first if it exists
-  bledfu.begin();
-
-  // Configure and Start Device Information Service
-  bledis.setManufacturer("Adafruit Industries");
-  bledis.setModel("Bluefruit Feather52");
-  bledis.begin();
-
   // Configure and Start BLE Uart Service
+  // Set Permission to access BLE Uart is to require man-in-the-middle protection
+  // This will cause central to perform pairing with static PIN we set above
+  Serial.println("Configure BLE Uart to require man-in-the-middle protection for PIN pairing");
+  bleuart.setPermission(SECMODE_ENC_WITH_MITM, SECMODE_ENC_WITH_MITM);
   bleuart.begin();
-
-  // Start BLE Battery Service
-  blebas.begin();
-  blebas.write(100);
 
   // Set up and start advertising
   startAdv();
 
   Serial.println("Please use Adafruit's Bluefruit LE app to connect in UART mode");
+  Serial.println("Your phone should pop-up PIN input");
   Serial.println("Once connected, enter character(s) that you wish to send");
 }
 

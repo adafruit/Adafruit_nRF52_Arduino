@@ -55,12 +55,13 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
   _hvn_sem   = xSemaphoreCreateCounting(hvn_qsize, hvn_qsize);
   _wrcmd_sem = xSemaphoreCreateCounting(wrcmd_qsize, wrcmd_qsize);
 
-  _paired = false;
+  _sec_mode.sm = _sec_mode.lv = 1; // default to open
+
+  _bonded = false;
   _hvc_sem = NULL;
   _hvc_received = false;
-  _pair_sem = NULL;
-  _ediv = 0xFFFF; // invalid ediv value
-  _bond_keys = NULL;
+
+  _ediv = 0xFFFF;
 }
 
 BLEConnection::~BLEConnection()
@@ -68,7 +69,8 @@ BLEConnection::~BLEConnection()
   vSemaphoreDelete( _hvn_sem );
   vSemaphoreDelete( _wrcmd_sem );
 
-  if ( _hvc_sem ) vSemaphoreDelete( _hvc_sem );
+  //------------- on-the-fly data must be freed -------------//
+  if (_hvc_sem  ) vSemaphoreDelete(_hvc_sem );
 }
 
 uint16_t BLEConnection::handle (void)
@@ -81,9 +83,14 @@ bool BLEConnection::connected(void)
   return _connected;
 }
 
-bool BLEConnection::paired (void)
+bool BLEConnection::bonded(void)
 {
-  return _paired;
+  return _bonded;
+}
+
+bool BLEConnection::secured(void)
+{
+  return !(_sec_mode.sm == 1 && _sec_mode.lv == 1);
 }
 
 uint8_t BLEConnection::getRole (void)
@@ -113,12 +120,17 @@ uint8_t BLEConnection::getPHY(void)
 
 ble_gap_addr_t BLEConnection::getPeerAddr (void)
 {
-  return _peer_addr;
+  return _bonded ? _bond_id_addr : _peer_addr;
 }
 
 uint16_t BLEConnection::getPeerName(char* buf, uint16_t bufsize)
 {
   return Bluefruit.Gatt.readCharByUuid(_conn_hdl, BLEUuid(BLE_UUID_GAP_CHARACTERISTIC_DEVICE_NAME), buf, bufsize);
+}
+
+ble_gap_conn_sec_mode_t BLEConnection::getSecureMode(void)
+{
+  return _sec_mode;
 }
 
 static inline bool is_tx_power_valid(int8_t power)
@@ -220,68 +232,45 @@ bool BLEConnection::getWriteCmdPacket (void)
   return xSemaphoreTake(_wrcmd_sem, ms2tick(BLE_GENERIC_TIMEOUT));
 }
 
-bool BLEConnection::storeCccd(void)
+bool BLEConnection::saveCccd(void)
 {
-  return bond_save_cccd( _role, _conn_hdl, _ediv);
+  return bond_save_cccd(_role, _conn_hdl, &_bond_id_addr);
 }
 
-bool BLEConnection::loadKeys(bond_keys_t* bkeys)
+bool BLEConnection::loadCccd(void)
 {
-  return bond_load_keys(_role, _ediv, bkeys);
+  return bond_load_cccd(_role, _conn_hdl, &_bond_id_addr);
+}
+
+bool BLEConnection::saveBondKey(bond_keys_t const* ltkey)
+{
+  bond_save_keys(_role, _conn_hdl, ltkey);
+  _bond_id_addr = ltkey->peer_id.id_addr_info;
+  _bonded = true;
+  return true;
+}
+
+bool BLEConnection::loadBondKey(bond_keys_t* ltkey)
+{
+  _bonded = bond_load_keys(_role, &_peer_addr, ltkey);
+  VERIFY(_bonded);
+  _bond_id_addr = ltkey->peer_id.id_addr_info;
+  return true;
+}
+
+bool BLEConnection::removeBondKey(void)
+{
+  VERIFY(_bonded);
+  bond_remove_key(_role, &_bond_id_addr);
+  return true;
 }
 
 bool BLEConnection::requestPairing(void)
 {
   // skip if already paired
-  if ( _paired ) return true;
+  if ( secured() ) return true;
 
-  ble_gap_sec_params_t sec_param = Bluefruit.getSecureParam();
-
-  // on-the-fly semaphore
-  _pair_sem = xSemaphoreCreateBinary();
-
-  if ( _role == BLE_GAP_ROLE_PERIPH )
-  {
-    VERIFY_STATUS( sd_ble_gap_authenticate(_conn_hdl, &sec_param ), false);
-    xSemaphoreTake(_pair_sem, portMAX_DELAY);
-  }
-  else
-  {
-    uint16_t cntr_ediv = 0xFFFF;
-    bond_keys_t bkeys;
-
-    // Check to see if we did bonded with current prph previously
-    // TODO currently only matches key using fixed address
-    if ( bond_find_cntr(&_peer_addr, &bkeys) )
-    {
-      cntr_ediv = bkeys.peer_enc.master_id.ediv;
-      LOG_LV2("BOND", "Load Keys from file " BOND_FNAME_CNTR, cntr_ediv);
-      VERIFY_STATUS( sd_ble_gap_encrypt(_conn_hdl, &bkeys.peer_enc.master_id, &bkeys.peer_enc.enc_info), false);
-
-    }else
-    {
-      VERIFY_STATUS( sd_ble_gap_authenticate(_conn_hdl, &sec_param ), false);
-    }
-
-    xSemaphoreTake(_pair_sem, portMAX_DELAY);
-
-    // Failed to pair using central stored keys, this happens when
-    // Prph delete bonds while we did not --> let's remove the obsolete keyfile and retry
-    if ( !_paired && (cntr_ediv != 0xffff) )
-    {
-      bond_remove_key(BLE_GAP_ROLE_CENTRAL, cntr_ediv);
-
-      // Re-try with a fresh session
-      VERIFY_STATUS( sd_ble_gap_authenticate(_conn_hdl, &sec_param ), false);
-
-      xSemaphoreTake(_pair_sem, portMAX_DELAY);
-    }
-  }
-
-  vSemaphoreDelete(_pair_sem);
-  _pair_sem = NULL;
-
-  return _paired;
+  return Bluefruit.Security._authenticate(_conn_hdl);
 }
 
 bool BLEConnection::waitForIndicateConfirm(void)
@@ -307,143 +296,18 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
       _connected = false;
     break;
 
-    //--------------------------------------------------------------------+
-    /* First-time Pairing
-     * Connect -> SEC_PARAMS_REQUEST -> CONN_SEC_UPDATE -> AUTH_STATUS
-     * 1. Either we or peer initiate the process
-     * 2. Peer ask for Secure Parameter ( I/O Caps ) BLE_GAP_EVT_SEC_PARAMS_REQUEST
-     * 3. Pair Key exchange ( PIN code)
-     * 4. Connection is secured BLE_GAP_EVT_CONN_SEC_UPDATE
-     * 5. Long term Keys exchanged BLE_GAP_EVT_AUTH_STATUS
-     *
-     * Reconnect using bonded key
-     * Connect -> SEC_INFO_REQUEST -> CONN_SEC_UPDATE
-     * 1. Either we or peer initiate the process
-     * 2. Peer ask for Secure Info ( bond keys ) BLE_GAP_EVT_SEC_INFO_REQUEST
-     * 3. Connection is secured BLE_GAP_EVT_CONN_SEC_UPDATE
-     */
-    //--------------------------------------------------------------------+
-    case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
-    {
-      // Pairing in progress, Peer asking for our info
-      _bond_keys = (bond_keys_t*) rtos_malloc( sizeof(bond_keys_t));
-      VERIFY(_bond_keys, );
-      memclr(_bond_keys, sizeof(bond_keys_t));
-
-      _ediv = 0xFFFF; // invalid value for ediv
-
-      /* Step 1: Pairing/Bonding
-       * - Central supplies its parameters
-       * - We replies with our security parameters
-       */
-      // ble_gap_sec_params_t* peer = &evt->evt.gap_evt.params.sec_params_request.peer_params;
-      COMMENT_OUT(
-          // Change security parameter according to authentication type
-          if ( _auth_type == BLE_GAP_AUTH_KEY_TYPE_PASSKEY)
-          {
-            sec_para.mitm    = 1;
-            sec_para.io_caps = BLE_GAP_IO_CAPS_DISPLAY_ONLY;
-          }
-      )
-
-      ble_gap_sec_keyset_t keyset =
-      {
-          .keys_own = {
-              .p_enc_key  = &_bond_keys->own_enc,
-              .p_id_key   = NULL,
-              .p_sign_key = NULL,
-              .p_pk       = NULL
-          },
-
-          .keys_peer = {
-              .p_enc_key  = &_bond_keys->peer_enc,
-              .p_id_key   = &_bond_keys->peer_id,
-              .p_sign_key = NULL,
-              .p_pk       = NULL
-          }
-      };
-
-      ble_gap_sec_params_t sec_param = Bluefruit.getSecureParam();
-      VERIFY_STATUS(sd_ble_gap_sec_params_reply(_conn_hdl,
-                                                BLE_GAP_SEC_STATUS_SUCCESS,
-                                                _role == BLE_GAP_ROLE_PERIPH ? &sec_param : NULL,
-                                                &keyset),
-      );
-    }
-    break;
-
-    case BLE_GAP_EVT_AUTH_STATUS:
-    {
-      // Pairing process completed
-      ble_gap_evt_auth_status_t* status = &evt->evt.gap_evt.params.auth_status;
-
-      // Pairing succeeded --> save encryption keys ( Bonding )
-      if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
-      {
-        _paired = true;
-        _ediv   = _bond_keys->own_enc.master_id.ediv;
-
-        bond_save_keys(_role, _conn_hdl, _bond_keys);
-      }else
-      {
-        PRINT_HEX(status->auth_status);
-      }
-
-      rtos_free(_bond_keys);
-      _bond_keys = NULL;
-    }
-    break;
-
-    case BLE_GAP_EVT_SEC_INFO_REQUEST:
-    {
-      // Peer asks for the stored keys.
-      // - load key and return if bonded previously.
-      // - Else return NULL --> Initiate key exchange
-      ble_gap_evt_sec_info_request_t* sec_req = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
-
-      bond_keys_t bkeys;
-      varclr(&bkeys);
-
-      if ( bond_load_keys(_role, sec_req->master_id.ediv, &bkeys) )
-      {
-        sd_ble_gap_sec_info_reply(_conn_hdl, &bkeys.own_enc.enc_info, &bkeys.peer_id.id_info, NULL);
-
-        _ediv = bkeys.own_enc.master_id.ediv;
-      } else
-      {
-        sd_ble_gap_sec_info_reply(_conn_hdl, NULL, NULL, NULL);
-      }
-    }
-    break;
-
-    case BLE_GAP_EVT_PASSKEY_DISPLAY:
-    {
-      // ble_gap_evt_passkey_display_t const* passkey_display = &evt->evt.gap_evt.params.passkey_display;
-      // PRINT_INT(passkey_display->match_request);
-      // PRINT_BUFFER(passkey_display->passkey, 6);
-
-      // sd_ble_gap_auth_key_reply
-    }
-    break;
-
     case BLE_GAP_EVT_CONN_SEC_UPDATE:
     {
       const ble_gap_conn_sec_t* conn_sec = &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
 
+      _sec_mode  = conn_sec->sec_mode;
+
       // Connection is secured (paired) if encryption level > 1
-      if ( !( conn_sec->sec_mode.sm == 1 && conn_sec->sec_mode.lv == 1) )
+      if ( this->secured() )
       {
-        // Previously bonded --> secure by re-connection process --> Load & Set SysAttr (Apply Service Context)
-        // Else Init SysAttr (first bonded)
-        if ( !bond_load_cccd(_role, _conn_hdl, _ediv) )
-        {
-          sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
-        }
-
-        _paired = true;
+        // Try to restore CCCD with bonded peer, if it doesn't exist (newly bonded), initialize it
+        if ( !loadCccd() )  sd_ble_gatts_sys_attr_set(_conn_hdl, NULL, 0, 0);
       }
-
-      if (_pair_sem) xSemaphoreGive(_pair_sem);
     }
     break;
 

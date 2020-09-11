@@ -62,9 +62,9 @@ BLECharacteristic lsbLED(LBS_UUID_CHR_LED);
 
 // Use on-board button if available, else use A0 pin
 #ifdef PIN_BUTTON1
-uint8_t button = PIN_BUTTON1;
+  uint8_t button = PIN_BUTTON1;
 #else
-uint8_t button = A0;
+  uint8_t button = A0;
 #endif
 
 uint8_t buttonState;

@@ -1,5 +1,55 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.22.0 - WIP
+
+This version implement comprehensive LESC and Legacy pairing using dynamic & static Passkey.
+
+- Support static passkey (Legacy only)
+- Support LESC on nRF52840 using hardware-accelerated ARM CryptoCell CC310 provided by [Adafruit_nRFCypto](https://github.com/adafruit/Adafruit_nRFCrypto). The library is included as submodule and released together with the BSP.
+- Rework bonding mechanism to use IRK for peer finding. It is advisable to run `clearbonds` example to clean up bond files of previous version
+
+### BLESecurity
+
+A new class BLESecurity (access with Bluefruit.Security) is added to handle security and pairing.
+
+- **setPIN()** to set static passkey, this will force to use Legacy Pairing
+- **setIOCaps()** to congiure IO capacities
+- **setMITM()** to enable/disable Man in The Middle protection (passkey), it is auto-enabled when using passkey
+- **setPairPasskeyCallback()** to register callback for displaying pairing passkey to user
+- **setPairCompleteCallback()** to register callback for the result of pairing procedure (succeeded or failed)
+- **setSecuredCallback()** to register callback which invoked when connection is secured. This happens after he pairing procedure is complete, or we re-connect with preivously bonded peer device
+
+### Other Changes
+
+**BLECentral** 
+
+- will automatically use stored Long Term Key to secure connection if paired/bonded with device previously
+
+**Bluefruit**
+
+- Bluefruit::requestPairing() is removed, please use the BLEConnection::requestPairing() instead
+- Bluefruit::connPaired() is removed, please use BLEConnection::secure() instead
+- Default Device name is USB_PRODUCT if available e.g CLUE, Circuit Playground Bluefruit, Feather nRF52840 Express etc ...
+
+**BLEService**
+
+- Added setPermission()
+
+**BLEConnection**
+
+- BLEConnection::requestPairing() is now non-blocking, it will return right after sending request to peer device. Previously it is blocked until the pairing process is complete.
+- Added BLEConnection::secured() to check if the connection is secured/encrypted
+- Added BLEConnection::bonded() to check if we store Longterm Key with current peer
+- Removed BLEConnection:paried(), user should either use secured() or bonded() depending on the context
+- If bonded, getPeerAddr() will return peer public address instead of random address. 
+
+**New Example Sketches**
+
+- **pairing_pin** to use static PIN for peripheral role
+- **pairing_passkey** to use dyanmic Passkey for pairing. On Arcada compatible device such as `CLUE` or `Circuit Playground Bluefruit`, TFT display will also be used to display passkey.
+- **cental_pairing** similar to pairing_passkey but for nRF running central role
+- **ancs_arcada** for displaying ancs on arcada such CLUE and/or CPB.
+
 ## 0.21.0 - 2020.08.31
 
 Special thanks to @henrygab, @pyro9, @Nenik, @orrmany, @thaanstad, @kevinfrei for contributing and helping with this release.
@@ -21,14 +71,14 @@ Special thanks to @henrygab, @pyro9, @Nenik, @orrmany, @thaanstad, @kevinfrei fo
 
 ## 0.20.5 - 2020.07.05
 
-Special thanks to @henrygab, @pyro9, @geeksville for contributing and helping with this release.
-
 - Updated toolchain from gcc 7-2017q4 to 9-2019q4
 - Fixed GPIOTE channel conflict between libraries
 - Added type-safe for arrcount() macros
 - Added truncate() and rename() to Internal Filesystem (LittleFS).
 - Update CMSIS from v4 to v5 to build with TensorFlow
 - Update TinyUSB core to commit 0749077
+
+Special thanks to @henrygab, @pyro9, @geeksville for contributing and helping with this release.
 
 ## 0.20.1 - 2020.04.23
 
