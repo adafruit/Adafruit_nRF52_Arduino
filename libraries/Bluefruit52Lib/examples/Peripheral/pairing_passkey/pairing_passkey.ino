@@ -119,7 +119,8 @@ void setup()
 
   // Configure and Start BLE Uart Service
   // Set Permission to access BLE Uart is to require man-in-the-middle protection
-  // This will cause central to perform pairing with static PIN we set above
+  // This will cause central to perform pairing with a generated passkey, the passkey will
+  // be printed on display or Serial and wait for our input
   Serial.println("Configure BLE Uart to require man-in-the-middle protection for PIN pairing");
   bleuart.setPermission(SECMODE_ENC_WITH_MITM, SECMODE_ENC_WITH_MITM);
   bleuart.begin();
@@ -266,7 +267,7 @@ bool pairing_passkey_callback(uint16_t conn_handle, uint8_t const passkey[6], bo
     uint32_t justReleased;
     do
     {
-      // Disconnected while waiting for input
+      // Peer is disconnected while waiting for input
       if ( !Bluefruit.connected(conn_handle) ) break;
 
       // time out
@@ -286,7 +287,7 @@ bool pairing_passkey_callback(uint16_t conn_handle, uint8_t const passkey[6], bo
     // wait until either button is pressed (30 seconds timeout)
     while( digitalRead(BUTTON_YES) && digitalRead(BUTTON_NO) )
     {
-      // Disconnected while waiting for input
+      // Peer is disconnected while waiting for input
       if ( !Bluefruit.connected(conn_handle) ) break;
 
       // time out
@@ -355,6 +356,9 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
   Serial.print("Disconnected, reason = 0x"); Serial.println(reason, HEX);
 
 #ifdef USE_ARCADA
+  tft->fillScreen(ARCADA_BLACK);
+  tft->setTextSize(2);
+  tft->setCursor(0, 0);
   tft->println("Advertising ...");
 #endif
 }
