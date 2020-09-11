@@ -46,7 +46,7 @@ TwoWire::TwoWire(NRF_TWIM_Type * p_twim, NRF_TWIS_Type * p_twis, IRQn_Type IRQn,
 }
 
 void TwoWire::begin(void) {
-  //Master Mode
+  //Main Mode
   master = true;
 
   *pincfg_reg(_uc_pinSCL) = ((uint32_t)GPIO_PIN_CNF_DIR_Input        << GPIO_PIN_CNF_DIR_Pos)
@@ -72,7 +72,7 @@ void TwoWire::begin(void) {
 }
 
 void TwoWire::begin(uint8_t address) {
-  //Slave mode
+  //Secondary mode
   master = false;
 
   *pincfg_reg(_uc_pinSCL) = ((uint32_t)GPIO_PIN_CNF_DIR_Input        << GPIO_PIN_CNF_DIR_Pos)
@@ -125,6 +125,12 @@ void TwoWire::setClock(uint32_t baudrate) {
     _p_twim->FREQUENCY = frequency;
     _p_twim->ENABLE = (TWIM_ENABLE_ENABLE_Enabled << TWIM_ENABLE_ENABLE_Pos);
   }
+}
+
+void TwoWire::setPins(uint8_t pinSDA, uint8_t pinSCL)
+{
+    this->_uc_pinSDA = g_ADigitalPinMap[pinSDA];
+    this->_uc_pinSCL = g_ADigitalPinMap[pinSCL];
 }
 
 void TwoWire::end() {

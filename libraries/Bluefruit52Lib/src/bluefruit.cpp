@@ -78,6 +78,17 @@ void usb_softdevice_post_enable(void)
   sd_power_usbdetected_enable(true);
   sd_power_usbpwrrdy_enable(true);
   sd_power_usbremoved_enable(true);
+
+  uint32_t usb_reg;
+  sd_power_usbregstatus_get(&usb_reg);
+
+  // Note: Detect event is possibly handled by usb_hardware_init() however depending on how fast
+  // Bluefruit.begin() is called, Ready event may or may not be handled before we disable the nrfx_power.
+  //    USBPULLUP not enabled -> Ready event not yet handled
+  if ( (usb_reg & POWER_USBREGSTATUS_OUTPUTRDY_Msk) && (NRF_USBD->USBPULLUP == 0) )
+  {
+    tusb_hal_nrf_power_event(NRFX_POWER_USB_EVT_READY);
+  }
 }
 
 #endif
@@ -165,7 +176,7 @@ AdafruitBluefruit::AdafruitBluefruit(void)
   _ble_event_sem = NULL;
   _soc_event_sem = NULL;
 #ifdef ANT_LICENSE_KEY
-  _mprot_event_sem = NULL; //additiona semaphore for multiprotocol 
+  _mprot_event_sem = NULL;
 #endif
 
   _led_blink_th  = NULL;
@@ -282,34 +293,31 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 #if defined( USE_LFXO )
   nrf_clock_lf_cfg_t clock_cfg =
   {
-      // LFXO
-      .source        = NRF_CLOCK_LF_SRC_XTAL,
-      .rc_ctiv       = 0,
-      .rc_temp_ctiv  = 0,
-      .accuracy      = NRF_CLOCK_LF_ACCURACY_20_PPM
+    // LFXO
+    .source        = NRF_CLOCK_LF_SRC_XTAL,
+    .rc_ctiv       = 0,
+    .rc_temp_ctiv  = 0,
+    .accuracy      = NRF_CLOCK_LF_ACCURACY_20_PPM
   };
 #elif defined( USE_LFRC )
   nrf_clock_lf_cfg_t clock_cfg = 
   {
-      // LXRC
-      .source        = NRF_CLOCK_LF_SRC_RC,
-      .rc_ctiv       = 16,
-      .rc_temp_ctiv  = 2,
-      .accuracy      = NRF_CLOCK_LF_ACCURACY_250_PPM
+    // LXRC
+    .source        = NRF_CLOCK_LF_SRC_RC,
+    .rc_ctiv       = 16,
+    .rc_temp_ctiv  = 2,
+    .accuracy      = NRF_CLOCK_LF_ACCURACY_250_PPM
   };
 #else
   #error Clock Source is not configured, define USE_LFXO or USE_LFRC according to your board in variant.h
 #endif
 
-  /*------------------------------------------------------------------
-  ** BLE only Softdevices have 2-args sd_softdevice_enable()
-  ** BLE & ANT+ Softdevices have 3-args sd_softdevice_enable()
-  */
-  #ifdef ANT_LICENSE_KEY
+  // Enable SoftDevice
+#ifdef ANT_LICENSE_KEY
   VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, nrf_error_cb, ANT_LICENSE_KEY), false );
-#else //#ifdef ANT_LICENSE_KEY
+#else
   VERIFY_STATUS( sd_softdevice_enable(&clock_cfg, nrf_error_cb), false );
-#endif //#ifdef ANT_LICENSE_KEY
+#endif
 
 #ifdef USE_TINYUSB
   usb_softdevice_post_enable();
@@ -453,13 +461,6 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   // Default device name
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
   VERIFY_STATUS(sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)), false);
-
-  //------------- USB -------------//
-#ifdef USE_TINYUSB
-  sd_power_usbdetected_enable(true);
-  sd_power_usbpwrrdy_enable(true);
-  sd_power_usbremoved_enable(true);
-#endif
 
   // Init Central role
   if (_central_count)  Central.begin();
@@ -650,12 +651,20 @@ void AdafruitBluefruit::setRssiCallback(rssi_cb_t fp)
  *------------------------------------------------------------------*/
 extern "C" void SD_EVT_IRQHandler(void)
 {
-  // Notify both BLE & SOC Task
+#if CFG_SYSVIEW
+  SEGGER_SYSVIEW_RecordEnterISR();
+#endif
+
+  // Notify both BLE & SOC & MultiProtocol (if any) Task
   xSemaphoreGiveFromISR(Bluefruit._soc_event_sem, NULL);
   xSemaphoreGiveFromISR(Bluefruit._ble_event_sem, NULL);
+
 #ifdef ANT_LICENSE_KEY
-  // Notify parallel multiprotocol Task, if any
   if (Bluefruit._mprot_event_sem)  xSemaphoreGiveFromISR(Bluefruit._mprot_event_sem, NULL);
+#endif
+
+#if CFG_SYSVIEW
+  SEGGER_SYSVIEW_RecordExitISR();
 #endif
 }
 

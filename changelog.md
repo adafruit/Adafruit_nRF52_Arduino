@@ -1,6 +1,6 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-## 0.21.0
+## WIP
 
 This version implement comprehensive LESC and Legacy pairing using dynamic & staic Passkey.
 
@@ -49,6 +49,25 @@ A new class BLESecurity (access with Bluefruit.Security) is added to handle secu
 - **pairing_passkey** to use dyanmic Passkey for pairing. On Arcada compatible device such as `CLUE` or `Circuit Playground Bluefruit`, TFT display will also be used to display passkey.
 - **cental_pairing** similar to pairing_passkey but for nRF running central role
 - **ancs_arcada** for displaying ancs on arcada such CLUE and/or CPB.
+
+## 0.21.0 - 2020.08.31
+
+Special thanks to @henrygab, @pyro9, @Nenik, @orrmany, @thaanstad, @kevinfrei for contributing and helping with this release.
+
+- Reworked HardwarePWM, analogWrite, Servo, Tone to address PWM hardware conflict with ownership.
+- Reworked Tone to use no interrupt handler
+- Added multiprotocol support such as ANT with additional ANT_LICENSE_KEY (require 3rd party library)
+- Fixed pgm_read_ptr(addr) macro
+- Updated & enhanced TinyUSB performance, usb event, task switching is much faster
+- Fixed BLE Characteristic discovery when the central device returns more than 4 Characteristics in a discovery request
+- Enhanced micro() to use DWT cyclecount if enabled for higher precision
+- Fixed miscalculated tick when sleeping with delay()
+- Fixed FPU-caused power consumption issue
+- Added Wire.setPins()
+- Added resumeLoop()
+- Renamed I2C terminology
+- Support precompiled library with compiler.libraries.ldflags e.g BSEC BME680
+- Added Hardware/tone_happy_birthday example sketch
 
 ## 0.20.5 - 2020.07.05
 
