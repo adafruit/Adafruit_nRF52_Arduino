@@ -1,11 +1,11 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-## WIP
+## 0.22.0 - WIP
 
-This version implement comprehensive LESC and Legacy pairing using dynamic & staic Passkey.
+This version implement comprehensive LESC and Legacy pairing using dynamic & static Passkey.
 
 - Support static passkey (Legacy only)
-- Support LESC on nRF52840 using hardware-accelerated ARM CryptoCell CC310 provided by [Adafruit_nRFCypto](https://github.com/adafruit/Adafruit_nRFCrypto), therefore nRFCrypto library must be installed
+- Support LESC on nRF52840 using hardware-accelerated ARM CryptoCell CC310 provided by [Adafruit_nRFCypto](https://github.com/adafruit/Adafruit_nRFCrypto). The library is included as submodule and released together with the BSP.
 - Rework bonding mechanism to use IRK for peer finding. It is advisable to run `clearbonds` example to clean up bond files of previous version
 
 ### BLESecurity
