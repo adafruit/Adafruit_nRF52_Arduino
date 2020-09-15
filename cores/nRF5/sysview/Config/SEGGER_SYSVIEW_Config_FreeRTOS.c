@@ -63,7 +63,7 @@ extern const SEGGER_SYSVIEW_OS_API SYSVIEW_X_OS_TraceAPI;
 **********************************************************************
 */
 // The application name to be displayed in SystemViewer
-#define SYSVIEW_APP_NAME        "Adafruit Bluefruit"
+#define SYSVIEW_APP_NAME        "Adafruit_nRF52_Arduino"
 
 // The target device name
 #define SYSVIEW_DEVICE_NAME     "nRF52"
@@ -87,6 +87,11 @@ extern const SEGGER_SYSVIEW_OS_API SYSVIEW_X_OS_TraceAPI;
 static void _cbSendSystemDesc(void) {
   SEGGER_SYSVIEW_SendSysDesc("N="SYSVIEW_APP_NAME",D="SYSVIEW_DEVICE_NAME",O=FreeRTOS");
   SEGGER_SYSVIEW_SendSysDesc("I#15=SysTick");
+  SEGGER_SYSVIEW_SendSysDesc("I#33=RTC1_IRQn");
+  SEGGER_SYSVIEW_SendSysDesc("I#55=USBD_IRQn");
+
+//  extern uint32_t usbd_get_queue(void);
+//  SEGGER_SYSVIEW_NameResource((U32)usbd_get_queue(), "USBD queue task");
 }
 
 /*********************************************************************
