@@ -76,8 +76,12 @@
 #define CFG_TUD_MIDI_TX_BUFSIZE     128
 
 // Vendor FIFO size of TX and RX
+#ifndef CFG_TUD_VENDOR_RX_BUFSIZE
 #define CFG_TUD_VENDOR_RX_BUFSIZE   64
+#endif
+#ifndef CFG_TUD_VENDOR_TX_BUFSIZE
 #define CFG_TUD_VENDOR_TX_BUFSIZE   64
+#endif
 
 #ifdef __cplusplus
  }
