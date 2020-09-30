@@ -123,6 +123,13 @@ void SPIClass::endTransaction(void)
   _p_spi->ENABLE = (SPI_ENABLE_ENABLE_Disabled << SPI_ENABLE_ENABLE_Pos);
 }
 
+void SPIClass::setPins(uint8_t uc_pinMISO, uint8_t uc_pinSCK, uint8_t uc_pinMOSI)
+{
+  _uc_pinMiso = g_ADigitalPinMap[uc_pinMISO];
+  _uc_pinSCK = g_ADigitalPinMap[uc_pinSCK];
+  _uc_pinMosi = g_ADigitalPinMap[uc_pinMOSI];
+}
+
 void SPIClass::setBitOrder(BitOrder order)
 {
   this->_bitOrder = (order == MSBFIRST ? SPI_CONFIG_ORDER_MsbFirst : SPI_CONFIG_ORDER_LsbFirst);

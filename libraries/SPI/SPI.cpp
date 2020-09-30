@@ -143,6 +143,13 @@ void SPIClass::endTransaction(void)
   nrf_spim_disable(_spim.p_reg);
 }
 
+void SPIClass::setPins(uint8_t uc_pinMISO, uint8_t uc_pinSCK, uint8_t uc_pinMOSI)
+{
+  _uc_pinMiso = g_ADigitalPinMap[uc_pinMISO];
+  _uc_pinSCK = g_ADigitalPinMap[uc_pinSCK];
+  _uc_pinMosi = g_ADigitalPinMap[uc_pinMOSI];
+}
+
 void SPIClass::setBitOrder(BitOrder order)
 {
   this->_bitOrder = (order == MSBFIRST ? NRF_SPIM_BIT_ORDER_MSB_FIRST : NRF_SPIM_BIT_ORDER_LSB_FIRST);
