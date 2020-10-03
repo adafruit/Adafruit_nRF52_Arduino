@@ -238,6 +238,11 @@ static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, ble_gap_addr_t 
       do_write = false;
       BOND_LOG("CCCD matches file %s contents, no need to write", filename);
     }
+    else
+    {
+      // restore the position to the state before reading old_data for writing
+      file.seek(file.size() - (len + 1));
+    }
   }
 
   if (do_write)
