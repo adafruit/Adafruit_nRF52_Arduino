@@ -34,7 +34,9 @@ BLEBeacon beacon(beaconUuid, 0x0000, 0x0000, -54);
 void setup() 
 {
   Serial.begin(115200);
-  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+
+  // Uncomment to blocking wait for Serial connection
+  // while ( !Serial ) delay(10);
 
   Serial.println("Bluefruit52 Beacon Example");
   Serial.println("--------------------------\n");
