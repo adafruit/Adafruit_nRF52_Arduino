@@ -47,6 +47,8 @@ class BLEConnection
     uint16_t _conn_hdl;
     uint16_t _mtu;
     uint16_t _conn_interval;
+    uint16_t _slave_latency;
+    uint16_t _sup_timeout;
     uint16_t _data_length;
     uint8_t  _phy;
 
@@ -80,6 +82,8 @@ class BLEConnection
     uint8_t  getRole(void);
     uint16_t getMtu (void);
     uint16_t getConnectionInterval(void);
+    uint16_t getSlaveLatency(void);
+    uint16_t getConnSupervisionTimeout(void);
     uint16_t getDataLength(void);
     uint8_t  getPHY(void);
 

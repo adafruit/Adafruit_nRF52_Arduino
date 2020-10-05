@@ -98,6 +98,15 @@ bool BLEPeriph::setConnIntervalMS (uint16_t min_ms, uint16_t max_ms)
   return setConnInterval( MS100TO125(min_ms), MS100TO125(max_ms) );
 }
 
+bool BLEPeriph::setSlaveLatency (uint16_t latency)
+{
+  _ppcp.slave_latency = latency;
+
+  VERIFY_STATUS( sd_ble_gap_ppcp_set(&_ppcp), false);
+
+  return true;
+}
+
 bool BLEPeriph::setConnSupervisionTimeout(uint16_t timeout)
 {
   _ppcp.conn_sup_timeout = timeout;
