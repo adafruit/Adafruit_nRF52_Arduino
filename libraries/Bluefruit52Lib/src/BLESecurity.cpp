@@ -374,6 +374,7 @@ void BLESecurity::_eventHandler(ble_evt_t* evt)
       // - load key and return if bonded previously.
       // - Else return NULL --> Initiate key exchange
       ble_gap_evt_sec_info_request_t* sec_info = (ble_gap_evt_sec_info_request_t*) &evt->evt.gap_evt.params.sec_info_request;
+      (void) sec_info;
 
       LOG_LV2("PAIR", "Address: ID = %d, Type = 0x%02X, %02X:%02X:%02X:%02X:%02X:%02X",
               sec_info->peer_addr.addr_id_peer, sec_info->peer_addr.addr_type,
@@ -395,6 +396,7 @@ void BLESecurity::_eventHandler(ble_evt_t* evt)
     case BLE_GAP_EVT_CONN_SEC_UPDATE:
     {
       const ble_gap_conn_sec_t* conn_sec = &evt->evt.gap_evt.params.conn_sec_update.conn_sec;
+      (void) conn_sec;
       LOG_LV2("PAIR", "Security Mode = %d, Level = %d", conn_sec->sec_mode.sm, conn_sec->sec_mode.lv);
 
       if ( _secured_cb )

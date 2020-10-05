@@ -126,7 +126,7 @@ void BLEPeriph::setDisconnectCallback( ble_disconnect_callback_t fp )
 void BLEPeriph::_eventHandler(ble_evt_t* evt)
 {
   uint16_t const conn_hdl = evt->evt.common_evt.conn_handle;
-  BLEConnection* conn = Bluefruit.Connection(conn_hdl);
+  // BLEConnection* conn = Bluefruit.Connection(conn_hdl);
 
   switch ( evt->header.evt_id  )
   {

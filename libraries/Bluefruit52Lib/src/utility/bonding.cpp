@@ -97,7 +97,6 @@ void bond_init(void)
  *------------------------------------------------------------------*/
 static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_keys_t const * bkeys)
 {
-  uint16_t const ediv = (role == BLE_GAP_ROLE_PERIPH) ? bkeys->own_enc.master_id.ediv : bkeys->peer_enc.master_id.ediv;
   uint8_t const * mac = bkeys->peer_id.id_addr_info.addr;
 
   // Bond store keys using peer mac address e.g 1a2b3c4d5e6f
