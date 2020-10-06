@@ -70,7 +70,6 @@ class Uart : public HardwareSerial
     bool _begun;
 
     // Adafruit
-    SemaphoreHandle_t _mutex;
     SemaphoreHandle_t _end_tx_sem;
 };
 
