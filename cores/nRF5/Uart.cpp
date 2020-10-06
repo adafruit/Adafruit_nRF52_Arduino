@@ -43,7 +43,7 @@ Uart::Uart(NRF_UARTE_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _p
   uc_pinTX = g_ADigitalPinMap[_pinTX];
   uc_hwFlow = 0;
 
-  _mutex = NULL;
+  _end_tx_sem = NULL;
   _begun = false;
 }
 
@@ -57,7 +57,7 @@ Uart::Uart(NRF_UARTE_Type *_nrfUart, IRQn_Type _IRQn, uint8_t _pinRX, uint8_t _p
   uc_pinRTS = g_ADigitalPinMap[_pinRTS];
   uc_hwFlow = 1;
 
-  _mutex = NULL;
+  _end_tx_sem = NULL;
   _begun = false;
 }
 
@@ -141,7 +141,8 @@ void Uart::begin(unsigned long baudrate, uint16_t config)
   NVIC_SetPriority(IRQn, 3);
   NVIC_EnableIRQ(IRQn);
 
-  _mutex = xSemaphoreCreateMutex();
+  _end_tx_sem = xSemaphoreCreateBinary();
+  xSemaphoreGive(_end_tx_sem);
   _begun = true;
 }
 
@@ -164,16 +165,16 @@ void Uart::end()
 
   rxBuffer.clear();
 
-  vSemaphoreDelete(_mutex);
-  _mutex = NULL;
+  vSemaphoreDelete(_end_tx_sem);
+  _end_tx_sem = NULL;
   _begun = false;
 }
 
 void Uart::flush()
 {
   if ( _begun ) {
-    xSemaphoreTake(_mutex, portMAX_DELAY);
-    xSemaphoreGive(_mutex);
+    xSemaphoreTake(_end_tx_sem, portMAX_DELAY);
+    xSemaphoreGive(_end_tx_sem);
   }
 }
 
@@ -192,7 +193,7 @@ void Uart::IrqHandler()
   if (nrfUart->EVENTS_ENDTX)
   {
     nrfUart->EVENTS_ENDTX = 0x0UL;
-    xSemaphoreGiveFromISR(_mutex, NULL);
+    xSemaphoreGiveFromISR(_end_tx_sem, NULL);
   }
 }
 
@@ -227,7 +228,7 @@ size_t Uart::write(const uint8_t *buffer, size_t size)
     size_t remaining = size - sent;
     size_t txSize = min(remaining, (size_t)SERIAL_BUFFER_SIZE);
 
-    xSemaphoreTake(_mutex, portMAX_DELAY);
+    xSemaphoreTake(_end_tx_sem, portMAX_DELAY);
 
     memcpy(txBuffer, buffer + sent, txSize);
 
