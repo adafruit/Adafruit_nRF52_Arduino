@@ -550,3 +550,47 @@ mdbt50qrx.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 mdbt50qrx.menu.debug.l3=Level 3 (Segger SystemView)
 mdbt50qrx.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 mdbt50qrx.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# ----------------------------------
+# Makerdiary Pitaya Go
+# ----------------------------------
+pitaya_go.name=Makerdiary Pitaya Go
+pitaya_go.bootloader.tool=bootburn
+
+# Upload
+pitaya_go.upload.tool=nrfutil
+pitaya_go.upload.protocol=nrfutil
+pitaya_go.upload.use_1200bps_touch=true
+pitaya_go.upload.wait_for_upload_port=true
+pitaya_go.upload.maximum_size=815104
+pitaya_go.upload.maximum_data_size=237568
+
+# Build
+pitaya_go.build.mcu=cortex-m4
+pitaya_go.build.f_cpu=64000000
+pitaya_go.build.board=MAKERDIARY_PITAYAGO
+pitaya_go.build.core=nRF5
+pitaya_go.build.variant=pitaya_go
+pitaya_go.build.usb_manufacturer="Makerdiary"
+pitaya_go.build.usb_product="Pitaya Go"
+pitaya_go.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+pitaya_go.build.ldscript=nrf52840_s140_v6.ld
+pitaya_go.build.vid=0x239A
+pitaya_go.build.pid=0x8029
+
+# SofDevice Menu
+pitaya_go.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
+pitaya_go.menu.softdevice.s140v6.build.sd_name=s140
+pitaya_go.menu.softdevice.s140v6.build.sd_version=6.1.1
+pitaya_go.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+pitaya_go.menu.debug.l0=Level 0 (Release)
+pitaya_go.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+pitaya_go.menu.debug.l1=Level 1 (Error Message)
+pitaya_go.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+pitaya_go.menu.debug.l2=Level 2 (Full Debug)
+pitaya_go.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+pitaya_go.menu.debug.l3=Level 3 (Segger SystemView)
+pitaya_go.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+
