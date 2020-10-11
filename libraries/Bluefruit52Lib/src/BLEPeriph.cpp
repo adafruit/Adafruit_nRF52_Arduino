@@ -134,22 +134,13 @@ void BLEPeriph::setDisconnectCallback( ble_disconnect_callback_t fp )
 
 void BLEPeriph::_eventHandler(ble_evt_t* evt)
 {
-  uint16_t const conn_hdl = evt->evt.common_evt.conn_handle;
+  // uint16_t const conn_hdl = evt->evt.common_evt.conn_handle;
   // BLEConnection* conn = Bluefruit.Connection(conn_hdl);
 
   switch ( evt->header.evt_id  )
   {
     case BLE_GAP_EVT_CONNECTED:
-    {
-      ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
 
-      // Connection interval set by Central is out of preferred range
-      // Try to negotiate with Central using our preferred values
-      if ( !is_within(_ppcp.min_conn_interval, para->conn_params.min_conn_interval, _ppcp.max_conn_interval) )
-      {
-        VERIFY_STATUS( sd_ble_gap_conn_param_update(conn_hdl, &_ppcp), );
-      }
-    }
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
