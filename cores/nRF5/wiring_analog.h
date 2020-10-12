@@ -86,6 +86,14 @@ extern void analogWrite( uint32_t ulPin, uint32_t ulValue ) ;
 extern uint32_t analogRead( uint32_t ulPin ) ;
 
 /*
+ * \brief Read the value from the vdd pin.
+ *
+ * \return Read value from vdd pin, if no error.
+ */
+extern uint32_t analogReadVDD( void ) ;
+
+
+/*
  * \brief Set the resolution of analogRead return values. Default is 10 bits (range from 0 to 1023).
  *
  * \param res
