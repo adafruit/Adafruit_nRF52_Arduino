@@ -54,7 +54,7 @@ class BLEPeriph
 
     bool setConnInterval   (uint16_t min, uint16_t max);
     bool setConnIntervalMS (uint16_t min_ms, uint16_t max_ms);
-    bool setSlaveLatency   (uint16_t latency);
+    bool setConnSlaveLatency(uint16_t latency);
     bool setConnSupervisionTimeout(uint16_t timeout);
     bool setConnSupervisionTimeoutMS(uint16_t timeout_ms);
 

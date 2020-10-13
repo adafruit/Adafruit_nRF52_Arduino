@@ -115,7 +115,7 @@ uint16_t BLEConnection::getSlaveLatency(void)
   return _slave_latency;
 }
 
-uint16_t BLEConnection::getConnSupervisionTimeout(void)
+uint16_t BLEConnection::getSupervisionTimeout(void)
 {
   return _sup_timeout;
 }
