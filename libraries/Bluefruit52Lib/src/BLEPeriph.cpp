@@ -98,6 +98,15 @@ bool BLEPeriph::setConnIntervalMS (uint16_t min_ms, uint16_t max_ms)
   return setConnInterval( MS100TO125(min_ms), MS100TO125(max_ms) );
 }
 
+bool BLEPeriph::setConnSlaveLatency(uint16_t latency)
+{
+  _ppcp.slave_latency = latency;
+
+  VERIFY_STATUS( sd_ble_gap_ppcp_set(&_ppcp), false);
+
+  return true;
+}
+
 bool BLEPeriph::setConnSupervisionTimeout(uint16_t timeout)
 {
   _ppcp.conn_sup_timeout = timeout;
@@ -125,22 +134,13 @@ void BLEPeriph::setDisconnectCallback( ble_disconnect_callback_t fp )
 
 void BLEPeriph::_eventHandler(ble_evt_t* evt)
 {
-  uint16_t const conn_hdl = evt->evt.common_evt.conn_handle;
+  // uint16_t const conn_hdl = evt->evt.common_evt.conn_handle;
   // BLEConnection* conn = Bluefruit.Connection(conn_hdl);
 
   switch ( evt->header.evt_id  )
   {
     case BLE_GAP_EVT_CONNECTED:
-    {
-      ble_gap_evt_connected_t* para = &evt->evt.gap_evt.params.connected;
 
-      // Connection interval set by Central is out of preferred range
-      // Try to negotiate with Central using our preferred values
-      if ( !is_within(_ppcp.min_conn_interval, para->conn_params.min_conn_interval, _ppcp.max_conn_interval) )
-      {
-        VERIFY_STATUS( sd_ble_gap_conn_param_update(conn_hdl, &_ppcp), );
-      }
-    }
     break;
 
     case BLE_GAP_EVT_DISCONNECTED:
@@ -166,4 +166,3 @@ void BLEPeriph::printInfo(void)
   logger.printf("%d ms", _ppcp.conn_sup_timeout*10);
   logger.println();
 }
-

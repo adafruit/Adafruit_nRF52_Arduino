@@ -48,7 +48,9 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
   _mtu = BLE_GATT_ATT_MTU_DEFAULT;
   _data_length = BLE_GATT_ATT_MTU_DEFAULT + 4; // 27
   _phy = BLE_GAP_PHY_1MBPS;
-  _conn_interval = 0;
+  _conn_interval = evt_connected->conn_params.max_conn_interval;
+  _slave_latency = evt_connected->conn_params.slave_latency;
+  _sup_timeout = evt_connected->conn_params.conn_sup_timeout;
   _peer_addr = evt_connected->peer_addr;
   _role = evt_connected->role;
 
@@ -106,6 +108,16 @@ uint16_t BLEConnection::getMtu (void)
 uint16_t BLEConnection::getConnectionInterval(void)
 {
   return _conn_interval;
+}
+
+uint16_t BLEConnection::getSlaveLatency(void)
+{
+  return _slave_latency;
+}
+
+uint16_t BLEConnection::getSupervisionTimeout(void)
+{
+  return _sup_timeout;
 }
 
 uint16_t BLEConnection::getDataLength(void)
@@ -318,8 +330,10 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
     {
       ble_gap_conn_params_t* param = &evt->evt.gap_evt.params.conn_param_update.conn_params;
       _conn_interval = param->max_conn_interval;
+      _slave_latency = param->slave_latency;
+      _sup_timeout = param->conn_sup_timeout;
 
-      LOG_LV1("GAP", "Conn Interval= %.2f ms, Latency = %d, Supervisor Timeout = %d ms", _conn_interval*1.25f, param->slave_latency, 10*param->conn_sup_timeout);
+      LOG_LV1("GAP", "Conn Interval= %.2f ms, Latency = %d, Supervisor Timeout = %d ms", _conn_interval*1.25f, _slave_latency, 10*_sup_timeout);
     }
     break;
 
