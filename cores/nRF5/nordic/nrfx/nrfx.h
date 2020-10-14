@@ -36,5 +36,6 @@
 #include <drivers/nrfx_common.h>
 #include <nrfx_glue.h>
 #include <drivers/nrfx_errors.h>
+#include <nrf_common.h>
 
 #endif // NRFX_H__
