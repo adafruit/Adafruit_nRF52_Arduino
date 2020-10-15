@@ -20,7 +20,7 @@ NOTICE: This file has been modified by Nordic Semiconductor ASA.
 
 */
 
-#ifdef NRF52840_XXAA
+#if defined(NRF52840_XXAA) || defined(NRF52833_XXAA)
 
     .syntax unified
     .arch armv7e-m
