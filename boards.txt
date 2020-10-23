@@ -550,3 +550,53 @@ mdbt50qrx.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 mdbt50qrx.menu.debug.l3=Level 3 (Segger SystemView)
 mdbt50qrx.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 mdbt50qrx.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# ----------------------------------
+# BlueMicro nRF52840
+# ----------------------------------
+bluemicro52840.name=BlueMicro nRF52840
+
+# VID/PID for bootloader with/without UF2, Arduino
+bluemicro52840.vid.0=0x1D50
+bluemicro52840.pid.0=0x6160
+bluemicro52840.vid.1=0x1D50
+bluemicro52840.pid.1=0x6161 
+
+# Upload
+bluemicro52840.bootloader.tool=bootburn
+bluemicro52840.upload.tool=nrfutil
+bluemicro52840.upload.protocol=nrfutil
+bluemicro52840.upload.use_1200bps_touch=true
+bluemicro52840.upload.wait_for_upload_port=true
+bluemicro52840.upload.maximum_size=815104
+bluemicro52840.upload.maximum_data_size=237568
+
+# Build
+bluemicro52840.build.mcu=cortex-m4
+bluemicro52840.build.f_cpu=64000000
+bluemicro52840.build.board=BLUEMICRO_NRF52840
+bluemicro52840.build.core=nRF5
+bluemicro52840.build.variant=bluemicro_nrf52840
+bluemicro52840.build.usb_manufacturer="bluemicro.jpconstantineau.com"
+bluemicro52840.build.usb_product="BlueMicro"
+bluemicro52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+bluemicro52840.build.ldscript=nrf52840_s140_v6.ld
+bluemicro52840.build.vid=0x1D50
+bluemicro52840.build.pid=0x6161
+
+# SofDevice Menu
+bluemicro52840.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
+bluemicro52840.menu.softdevice.s140v6.build.sd_name=s140
+bluemicro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
+bluemicro52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+bluemicro52840.menu.debug.l0=Level 0 (Release)
+bluemicro52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+bluemicro52840.menu.debug.l1=Level 1 (Error Message)
+bluemicro52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+bluemicro52840.menu.debug.l2=Level 2 (Full Debug)
+bluemicro52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+bluemicro52840.menu.debug.l3=Level 3 (Segger SystemView)
+bluemicro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+bluemicro52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
