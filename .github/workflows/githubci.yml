@@ -15,7 +15,8 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v1
       with:
-        python-version: '3.x'
+        # 3.9 has issue with intelhex https://github.com/python-intelhex/intelhex/issues/45
+        python-version: '3.8'
         
     - name: Checkout code
       uses: actions/checkout@v2
