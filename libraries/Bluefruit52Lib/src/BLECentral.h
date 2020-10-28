@@ -39,6 +39,8 @@
 #include <Arduino.h>
 #include "bluefruit_common.h"
 
+#ifdef BLE_GAP_ROLE_CENTRAL
+
 class AdafruitBluefruit;
 
 class BLECentral
@@ -80,6 +82,6 @@ class BLECentral
     friend class AdafruitBluefruit;
 };
 
-
+#endif
 
 #endif /* BLECENTRAL_H_ */

@@ -232,6 +232,7 @@ bool BLEConnection::loadKeys(bond_keys_t* bkeys)
 
 bool BLEConnection::requestPairing(void)
 {
+#ifdef BLE_GAP_ROLE_CENTRAL
   // skip if already paired
   if ( _paired ) return true;
 
@@ -280,6 +281,7 @@ bool BLEConnection::requestPairing(void)
 
   vSemaphoreDelete(_pair_sem);
   _pair_sem = NULL;
+#endif
 
   return _paired;
 }

@@ -36,6 +36,8 @@
 
 #include "bluefruit.h"
 
+#ifdef BLE_GAP_ROLE_CENTRAL
+
 BLEScanner::BLEScanner(void)
 {
   _report_data.p_data  = _scan_data;
@@ -414,3 +416,5 @@ void BLEScanner::_eventHandler(ble_evt_t* evt)
     default: break;
   }
 }
+
+#endif

@@ -37,6 +37,8 @@
 #include "bluefruit.h"
 #include "utility/bonding.h"
 
+#ifdef BLE_GAP_ROLE_CENTRAL
+
 /**
  * Constructor
  */
@@ -164,3 +166,5 @@ void BLECentral::_eventHandler(ble_evt_t* evt)
     default: break;
   }
 }
+
+#endif

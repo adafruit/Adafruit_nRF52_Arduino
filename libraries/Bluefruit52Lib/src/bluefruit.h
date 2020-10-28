@@ -111,9 +111,11 @@ class AdafruitBluefruit
 
     BLEAdvertising     Advertising;
     BLEAdvertisingData ScanResponse;
-    BLEScanner         Scanner;
     BLEPeriph          Periph;
+#ifdef BLE_GAP_ROLE_CENTRAL
+    BLEScanner         Scanner;
     BLECentral         Central;
+#endif
     BLEDiscovery       Discovery;
 
     /*------------------------------------------------------------------*/

@@ -369,8 +369,10 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   // Roles
   varclr(&blecfg);
   blecfg.gap_cfg.role_count_cfg.periph_role_count  = _prph_count;
+#ifdef BLE_GAP_ROLE_CENTRAL
   blecfg.gap_cfg.role_count_cfg.central_role_count = _central_count;
   blecfg.gap_cfg.role_count_cfg.central_sec_count  = (_central_count ? 1 : 0); // 1 should be enough
+#endif
   VERIFY_STATUS( sd_ble_cfg_set(BLE_GAP_CFG_ROLE_COUNT, &blecfg, ram_start), false );
 
   // Device Name
@@ -418,6 +420,7 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 
   if ( _central_count)
   {
+#ifdef BLE_GAP_ROLE_CENTRAL    
     // ATT MTU
     varclr(&blecfg);
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_CENTRAL;
@@ -442,6 +445,9 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
     blecfg.conn_cfg.conn_cfg_tag = CONN_CFG_CENTRAL;
     blecfg.conn_cfg.params.gattc_conn_cfg.write_cmd_tx_queue_size = _sd_cfg.central.wrcmd_qsize;
     VERIFY_STATUS ( sd_ble_cfg_set(BLE_CONN_CFG_GATTC, &blecfg, ram_start), false );
+#else
+    return false; // Fail because this soft device can't do central role
+#endif
   }
 
   // Enable BLE stack
@@ -472,8 +478,10 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
   VERIFY_STATUS(sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)), false);
 
+#ifdef BLE_GAP_ROLE_CENTRAL
   // Init Central role
   if (_central_count)  Central.begin();
+#endif
 
   // Create RTOS Semaphore & Task for BLE Event
   _ble_event_sem = xSemaphoreCreateBinary();
@@ -838,7 +846,9 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         if ( Periph._connect_cb ) ada_callback(NULL, 0, Periph._connect_cb, conn_hdl);
       }else
       {
+#ifdef BLE_GAP_ROLE_CENTRAL        
         if ( Central._connect_cb ) ada_callback(NULL, 0, Central._connect_cb, conn_hdl);
+#endif
       }
     }
     break;
@@ -858,7 +868,9 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
         if ( Periph._disconnect_cb ) ada_callback(NULL, 0, Periph._disconnect_cb, conn_hdl, para->reason);
       }else
       {
+#ifdef BLE_GAP_ROLE_CENTRAL        
         if ( Central._disconnect_cb ) ada_callback(NULL, 0, Central._disconnect_cb, conn_hdl, para->reason);
+#endif
       }
 
       delete _connection[conn_hdl];
@@ -889,7 +901,9 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
   }
 
   Advertising._eventHandler(evt);
+#ifdef BLE_GAP_ROLE_CENTRAL  
   Scanner._eventHandler(evt);
+#endif
 
   /*------------- BLE Peripheral Events -------------*/
   /* Only handle Peripheral events with matched connection handle
@@ -927,11 +941,13 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
     Periph._eventHandler(evt);
   }
 
+#ifdef BLE_GAP_ROLE_CENTRAL
   // Central Event Handler (also handle generic non-connection event)
   if ( (conn == NULL) || (conn->getRole() == BLE_GAP_ROLE_CENTRAL) )
-  {
+  {    
     Central._eventHandler(evt);
   }
+#endif
 
   // Discovery Event Handler
   if ( Discovery.begun() ) Discovery._eventHandler(evt);
@@ -1105,12 +1121,14 @@ void AdafruitBluefruit::printInfo(void)
     bond_print_list(BLE_GAP_ROLE_PERIPH);
   }
 
+#ifdef BLE_GAP_ROLE_CENTRAL
   if ( _central_count )
   {
     logger.printf(title_fmt, "Central Paired Devices");
     logger.println();
     bond_print_list(BLE_GAP_ROLE_CENTRAL);
   }
+#endif
 
   logger.println();
 }
