@@ -41,12 +41,6 @@
 #define CFG_BLE_TX_POWER_LEVEL    0
 #endif
 
-#ifdef USB_PRODUCT
-  #define CFG_DEFAULT_NAME    USB_PRODUCT
-#else
-  #define CFG_DEFAULT_NAME    "Feather nRF52832"
-#endif
-
 #ifndef CFG_BLE_TASK_STACKSIZE
 #define CFG_BLE_TASK_STACKSIZE    (256*5)
 #endif
@@ -195,7 +189,7 @@ void AdafruitBluefruit::configServiceChanged(bool changed)
   _sd_cfg.service_changed = (changed ? 1 : 0);
 }
 
-void AdafruitBluefruit::configUuid128Count(uint8_t  uuid128_max)
+void AdafruitBluefruit::configUuid128Count(uint8_t uuid128_max)
 {
   _sd_cfg.uuid128_max = uuid128_max;
 }
@@ -460,7 +454,7 @@ bool AdafruitBluefruit::begin(uint8_t prph_count, uint8_t central_count)
 
   // Default device name
   ble_gap_conn_sec_mode_t sec_mode = BLE_SECMODE_OPEN;
-  VERIFY_STATUS(sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) CFG_DEFAULT_NAME, strlen(CFG_DEFAULT_NAME)), false);
+  VERIFY_STATUS(sd_ble_gap_device_name_set(&sec_mode, (uint8_t const *) USB_PRODUCT, strlen(USB_PRODUCT)), false);
 
   // Init Central role
   if (_central_count)  Central.begin();

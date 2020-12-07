@@ -751,6 +751,11 @@ bool BLECharacteristic::notify32(uint16_t conn_hdl, int num)
   return notify(conn_hdl, (uint8_t*) &num, sizeof(num));
 }
 
+bool BLECharacteristic::notify32(uint16_t conn_hdl, float num)
+{
+  return notify(conn_hdl, (uint8_t*) &num, sizeof(num));
+}
+
 //--------------------------------------------------------------------+
 // Notify with single connection
 //--------------------------------------------------------------------+
@@ -784,6 +789,10 @@ bool BLECharacteristic::notify32(int num)
   return notify32(BLE_CONN_HANDLE_INVALID, num);
 }
 
+bool BLECharacteristic::notify32(float num)
+{
+  return notify32(BLE_CONN_HANDLE_INVALID, num);
+}
 
 /*------------------------------------------------------------------*/
 /* INDICATE multiple connections
@@ -874,6 +883,11 @@ bool BLECharacteristic::indicate32(uint16_t conn_hdl, int num)
   return indicate32(conn_hdl, (uint32_t) num);
 }
 
+bool BLECharacteristic::indicate32(uint16_t conn_hdl, float num)
+{
+  return indicate(conn_hdl, (uint8_t*) &num, sizeof(num));
+}
+
 /*------------------------------------------------------------------*/
 /* INDICATE single connections
  *------------------------------------------------------------------*/
@@ -903,6 +917,11 @@ bool BLECharacteristic::indicate32(uint32_t num)
 }
 
 bool BLECharacteristic::indicate32(int num)
+{
+  return indicate32(BLE_CONN_HANDLE_INVALID, num);
+}
+
+bool BLECharacteristic::indicate32(float num)
 {
   return indicate32(BLE_CONN_HANDLE_INVALID, num);
 }

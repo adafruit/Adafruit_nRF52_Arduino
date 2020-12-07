@@ -134,6 +134,7 @@ class BLECharacteristic
     bool notify16 (uint16_t num);
     bool notify32 (uint32_t num);
     bool notify32 (int      num);
+    bool notify32 (float    fnum);
 
     /*------------- Notify multiple connections -------------*/
 //    bool notify   (uint16_t conn_hdl);
@@ -144,6 +145,7 @@ class BLECharacteristic
     bool notify16 (uint16_t conn_hdl, uint16_t num);
     bool notify32 (uint16_t conn_hdl, uint32_t num);
     bool notify32 (uint16_t conn_hdl, int      num);
+    bool notify32 (uint16_t conn_hdl, float    num);
 
     /*------------- Indicate -------------*/
     bool indicateEnabled(void);
@@ -156,6 +158,7 @@ class BLECharacteristic
     bool indicate16 (uint16_t num);
     bool indicate32 (uint32_t num);
     bool indicate32 (int      num);
+    bool indicate32 (float    num);
 
     /*------------- Indicate multiple connections -------------*/
     bool indicate   (uint16_t conn_hdl, const void* data, uint16_t len);
@@ -165,6 +168,7 @@ class BLECharacteristic
     bool indicate16 (uint16_t conn_hdl, uint16_t num);
     bool indicate32 (uint16_t conn_hdl, uint32_t num);
     bool indicate32 (uint16_t conn_hdl, int      num);
+    bool indicate32 (uint16_t conn_hdl, float    num);
 
     /*------------- Internal Functions -------------*/
     virtual void _eventHandler(ble_evt_t* event);
