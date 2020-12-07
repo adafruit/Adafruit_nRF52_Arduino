@@ -96,7 +96,7 @@ void setupSensors(void)
   CircuitPlayground.begin();
   accel_sensor = &CircuitPlayground.lis;
 
-#else
+#elif defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_NRF52840_FEATHER_SENSE)
 
   #ifdef ARDUINO_NRF52840_CLUE
   // White LEDs for color sensing
@@ -105,9 +105,6 @@ void setupSensors(void)
   #endif
 
   apds9960.begin();
-  apds9960.enableColor(true);
-  apds9960.enableProximity(true);
-
   bmp280.begin();
   sht30.begin(0x44);
   lsm6ds33.begin_I2C();
@@ -175,6 +172,7 @@ void setupBLEScience(void)
   proximityCharacteristic.setProperties(CHR_PROPS_NOTIFY);
   proximityCharacteristic.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   proximityCharacteristic.setFixedLen(sizeof(unsigned int));
+  proximityCharacteristic.setCccdWriteCallback(science_notify_callback);
   proximityCharacteristic.begin();
 #endif
 
@@ -186,6 +184,7 @@ void setupBLEScience(void)
   colorCharacteristic.setProperties(CHR_PROPS_NOTIFY);
   colorCharacteristic.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   colorCharacteristic.setFixedLen(4 * sizeof(int));
+  colorCharacteristic.setCccdWriteCallback(science_notify_callback);
   colorCharacteristic.begin();
 
   soundPressureCharacteristic.setProperties(CHR_PROPS_NOTIFY);
@@ -326,16 +325,12 @@ void updateSubscribedCharacteristics(void)
 
   if ( pressureCharacteristic.notifyEnabled() )
   {
-    float pressure = bmp280.readPressure();
+    float pressure = bmp280.readPressure() / 1000.0; // kilo pascal
     pressureCharacteristic.notify32(pressure);
   }
 
   if ( colorCharacteristic.notifyEnabled() )
   {
-#ifdef ARDUINO_NRF52840_CLUE
-    digitalWrite(PIN_LED2, enabled);
-#endif
-
     int color[4] = { 0 };
     apds9960.getColorData((uint16_t*) &color[0], (uint16_t*) &color[1], (uint16_t*) &color[2], (uint16_t*) &color[3]);
     colorCharacteristic.notify(color, colorCharacteristic.getMaxLen());
@@ -347,6 +342,30 @@ void updateSubscribedCharacteristics(void)
     uint16_t sound = getSoundAverage();
     soundPressureCharacteristic.notify16(sound);
   }
+}
+
+void science_notify_callback(uint16_t conn_hdl, BLECharacteristic* chr, uint16_t value)
+{
+  (void) conn_hdl;
+
+  bool enabled = (value == 0x0001);
+  (void) enabled;
+
+#if defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_NRF52840_FEATHER_SENSE)
+  if ( chr == &colorCharacteristic )
+  {
+    apds9960.enableColor(enabled);
+
+#ifdef ARDUINO_NRF52840_CLUE
+    digitalWrite(PIN_LED2, enabled);
+#endif
+  }
+
+  if ( chr == &proximityCharacteristic)
+  {
+    apds9960.enableProximity(enabled);
+  }
+#endif
 }
 
 // callback invoked when central connects
