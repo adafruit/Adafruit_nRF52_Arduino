@@ -64,6 +64,10 @@ Adafruit_APDS9960 apds9960; // Proximity, Light, Gesture, Color
 Adafruit_BMP280   bmp280;   // Temperature, Barometric
 Adafruit_SHT31    sht30;    // Humid
 
+#else
+
+#error "Board is not supported"
+
 #endif
 
 Adafruit_Sensor* accel_sensor;
@@ -94,11 +98,11 @@ void setupSensors(void)
 
 #else
 
-#ifdef ARDUINO_NRF52840_CLUE
+  #ifdef ARDUINO_NRF52840_CLUE
   // White LEDs for color sensing
   pinMode(PIN_LED2, OUTPUT);
   digitalWrite(PIN_LED2, LOW);
-#endif
+  #endif
 
   apds9960.begin();
   apds9960.enableColor(true);
@@ -134,10 +138,8 @@ void setupSensors(void)
 
 void setupBLEScience(void)
 {
-  // Service
   service.begin();
 
-  // Version
   versionCharacteristic.setProperties(CHR_PROPS_READ);
   versionCharacteristic.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   versionCharacteristic.setFixedLen(4);
@@ -149,6 +151,7 @@ void setupBLEScience(void)
   accelerationCharacteristic.setFixedLen(3 * sizeof(float));
   accelerationCharacteristic.begin();
 
+#if defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_NRF52840_FEATHER_SENSE)
   gyroscopeCharacteristic.setProperties(CHR_PROPS_NOTIFY);
   gyroscopeCharacteristic.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   gyroscopeCharacteristic.setFixedLen(3 * sizeof(float));
@@ -158,11 +161,6 @@ void setupBLEScience(void)
   magneticFieldCharacteristic.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   magneticFieldCharacteristic.setFixedLen(3 * sizeof(float));
   magneticFieldCharacteristic.begin();
-
-  temperatureCharacteristic.setProperties(CHR_PROPS_NOTIFY);
-  temperatureCharacteristic.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
-  temperatureCharacteristic.setFixedLen(sizeof(float));
-  temperatureCharacteristic.begin();
 
   pressureCharacteristic.setProperties(CHR_PROPS_NOTIFY);
   pressureCharacteristic.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
@@ -178,6 +176,12 @@ void setupBLEScience(void)
   proximityCharacteristic.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
   proximityCharacteristic.setFixedLen(sizeof(unsigned int));
   proximityCharacteristic.begin();
+#endif
+
+  temperatureCharacteristic.setProperties(CHR_PROPS_NOTIFY);
+  temperatureCharacteristic.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+  temperatureCharacteristic.setFixedLen(sizeof(float));
+  temperatureCharacteristic.begin();
 
   colorCharacteristic.setProperties(CHR_PROPS_NOTIFY);
   colorCharacteristic.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
@@ -262,6 +266,21 @@ void updateSubscribedCharacteristics(void)
     accelerationCharacteristic.notify(event.data, accelerationCharacteristic.getMaxLen());
   }
 
+#ifdef ARDUINO_NRF52840_CIRCUITPLAY
+  if ( temperatureCharacteristic.notifyEnabled() )
+  {
+    float temperature = CircuitPlayground.temperature();
+    temperatureCharacteristic.notify32(temperature);
+  }
+
+  if ( colorCharacteristic.notifyEnabled() )
+  {
+    int color[4] = { 0 };
+    color[3] = CircuitPlayground.lightSensor();
+    colorCharacteristic.notify(color, colorCharacteristic.getMaxLen());
+  }
+
+#elif defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_NRF52840_FEATHER_SENSE)
   if ( gyroscopeCharacteristic.notifyEnabled() )
   {
     lsm6ds33.getGyroSensor()->getEvent(&event);
@@ -278,12 +297,6 @@ void updateSubscribedCharacteristics(void)
   {
     lis3mdl.getEvent(&event);
     magneticFieldCharacteristic.notify(event.data, magneticFieldCharacteristic.getMaxLen());
-  }
-
-  if ( soundPressureCharacteristic.notifyEnabled() )
-  {
-    uint16_t sound = getSoundAverage();
-    soundPressureCharacteristic.notify16(sound);
   }
 
   if ( proximityCharacteristic.notifyEnabled() )
@@ -326,6 +339,13 @@ void updateSubscribedCharacteristics(void)
     int color[4] = { 0 };
     apds9960.getColorData((uint16_t*) &color[0], (uint16_t*) &color[1], (uint16_t*) &color[2], (uint16_t*) &color[3]);
     colorCharacteristic.notify(color, colorCharacteristic.getMaxLen());
+  }
+#endif
+
+  if ( soundPressureCharacteristic.notifyEnabled() )
+  {
+    uint16_t sound = getSoundAverage();
+    soundPressureCharacteristic.notify16(sound);
   }
 }
 
