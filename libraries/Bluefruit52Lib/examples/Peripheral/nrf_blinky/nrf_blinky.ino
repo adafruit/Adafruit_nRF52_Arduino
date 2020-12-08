@@ -19,41 +19,34 @@
  */
 
 #include <bluefruit.h>
+#include <Adafruit_NeoPixel.h>
 
 // max concurrent connections supported by this example
 #define MAX_PRPH_CONNECTION   2
 uint8_t connection_count = 0;
 
-/* HRM Service Definitions
- * Heart Rate Monitor Service:  0x180D
- * Heart Rate Measurement Char: 0x2A37
- * Body Sensor Location Char:   0x2A38
- */
-BLEService        hrms = BLEService(UUID16_SVC_HEART_RATE);
-BLECharacteristic hrmc = BLECharacteristic(UUID16_CHR_HEART_RATE_MEASUREMENT);
-BLECharacteristic bslc = BLECharacteristic(UUID16_CHR_BODY_SENSOR_LOCATION);
-
-/* LBS Service: 00001523-1212-EFDE-1523-785FEABCD123
+/* Nordic Led-Button Service (LBS)
+ * LBS Service: 00001523-1212-EFDE-1523-785FEABCD123
  * LBS Button : 00001524-1212-EFDE-1523-785FEABCD123
  * LBS LED    : 00001525-1212-EFDE-1523-785FEABCD123
  */
 
 const uint8_t LBS_UUID_SERVICE[] =
 {
-    0x23, 0xD1, 0xBC, 0xEA, 0x5F, 0x78, 0x23, 0x15,
-    0xDE, 0xEF, 0x12, 0x12, 0x23, 0x15, 0x00, 0x00
+  0x23, 0xD1, 0xBC, 0xEA, 0x5F, 0x78, 0x23, 0x15,
+  0xDE, 0xEF, 0x12, 0x12, 0x23, 0x15, 0x00, 0x00
 };
 
 const uint8_t LBS_UUID_CHR_BUTTON[] =
 {
-    0x23, 0xD1, 0xBC, 0xEA, 0x5F, 0x78, 0x23, 0x15,
-    0xDE, 0xEF, 0x12, 0x12, 0x24, 0x15, 0x00, 0x00
+  0x23, 0xD1, 0xBC, 0xEA, 0x5F, 0x78, 0x23, 0x15,
+  0xDE, 0xEF, 0x12, 0x12, 0x24, 0x15, 0x00, 0x00
 };
 
 const uint8_t LBS_UUID_CHR_LED[] =
 {
-    0x23, 0xD1, 0xBC, 0xEA, 0x5F, 0x78, 0x23, 0x15,
-    0xDE, 0xEF, 0x12, 0x12, 0x25, 0x15, 0x00, 0x00
+  0x23, 0xD1, 0xBC, 0xEA, 0x5F, 0x78, 0x23, 0x15,
+  0xDE, 0xEF, 0x12, 0x12, 0x25, 0x15, 0x00, 0x00
 };
 
 BLEService        lbs(LBS_UUID_SERVICE);
@@ -67,15 +60,36 @@ BLECharacteristic lsbLED(LBS_UUID_CHR_LED);
   uint8_t button = A0;
 #endif
 
+// CPB button active state is HIGH, all other is low
+#ifdef ARDUINO_NRF52840_CIRCUITPLAY
+  #define BUTTON_ACTIVE     HIGH
+#else
+  #define BUTTON_ACTIVE     LOW
+#endif
+
 uint8_t buttonState;
+
+#ifdef PIN_NEOPIXEL
+
+#ifndef NEOPIXEL_NUM
+#define NEOPIXEL_NUM  1
+#endif
+
+Adafruit_NeoPixel neopixel = Adafruit_NeoPixel(NEOPIXEL_NUM, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
+
+#endif
 
 void setup()
 {
+  pinMode(button, BUTTON_ACTIVE ? INPUT_PULLDOWN : INPUT_PULLUP);
+  buttonState = (BUTTON_ACTIVE == digitalRead(button));
+
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, 1-LED_STATE_ON); // led off
 
-  pinMode(button, INPUT_PULLUP);
-  buttonState = (uint8_t) (1-digitalRead(button)); // button is active LOW
+#ifdef PIN_NEOPIXEL
+  neopixel.begin();
+#endif
 
   Serial.begin(115200);
   //while ( !Serial ) delay(10);   // for nrf52840 with native usb
@@ -162,15 +176,21 @@ void led_write_callback(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data
   // data = 1 -> LED = On
   // data = 0 -> LED = Off
   digitalWrite(LED_BUILTIN, data[0] ? LED_STATE_ON : (1-LED_STATE_ON));
+
+#ifdef PIN_NEOPIXEL
+  uint32_t c = neopixel.Color(0x00, 0x00, data[0] ? 0x20 : 0x00);
+  neopixel.fill(c, 0, NEOPIXEL_NUM);
+  neopixel.show();
+#endif
 }
 
 void loop()
 {
   delay(10); // poll button every 10 ms
 
-  uint8_t newState = (uint8_t) (1-digitalRead(button)); // button is active LOW
+  uint8_t newState = (BUTTON_ACTIVE == digitalRead(button));
 
-  // only notify if button state chagnes
+  // only notify if button state changes
   if ( newState != buttonState)
   {
     buttonState = newState;
