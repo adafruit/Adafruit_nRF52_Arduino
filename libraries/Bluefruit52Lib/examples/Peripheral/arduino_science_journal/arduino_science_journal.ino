@@ -26,6 +26,7 @@
 const int VERSION = 0x00000001;
 const float TEMPERATURE_CALIBRATION = -5.0;
 
+// 555a0002-val-467a-9538-01f0652c74e8"
 #define SCIENCE_KIT_UUID(val) \
   (const uint8_t[]) { \
     0xe8, 0x74, 0x2c, 0x65, 0xf0, 0x01, 0x38, 0x95, \
@@ -37,7 +38,6 @@ BLECharacteristic versionCharacteristic      (SCIENCE_KIT_UUID(0x0001));
 BLECharacteristic accelerationCharacteristic (SCIENCE_KIT_UUID(0x0011));
 BLECharacteristic gyroscopeCharacteristic    (SCIENCE_KIT_UUID(0x0012));
 BLECharacteristic magneticFieldCharacteristic(SCIENCE_KIT_UUID(0x0013));
-
 BLECharacteristic temperatureCharacteristic  (SCIENCE_KIT_UUID(0x0014));
 BLECharacteristic pressureCharacteristic     (SCIENCE_KIT_UUID(0x0015));
 BLECharacteristic humidityCharacteristic     (SCIENCE_KIT_UUID(0x0016));
