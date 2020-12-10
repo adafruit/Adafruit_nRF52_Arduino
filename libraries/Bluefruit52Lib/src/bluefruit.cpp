@@ -41,18 +41,18 @@
 #define CFG_BLE_TX_POWER_LEVEL    0
 #endif
 
-#ifdef USB_PRODUCT
-  #define CFG_DEFAULT_NAME    USB_PRODUCT
-#else
-  #define CFG_DEFAULT_NAME    "Feather nRF52832"
-#endif
-
 #ifndef CFG_BLE_TASK_STACKSIZE
 #define CFG_BLE_TASK_STACKSIZE    (256*5)
 #endif
 
 #ifndef CFG_SOC_TASK_STACKSIZE
 #define CFG_SOC_TASK_STACKSIZE    (200)
+#endif
+
+#ifdef USB_PRODUCT
+  #define CFG_DEFAULT_NAME    USB_PRODUCT
+#else
+  #define CFG_DEFAULT_NAME    "Feather nRF52832"
 #endif
 
 #ifdef USE_TINYUSB
@@ -195,7 +195,7 @@ void AdafruitBluefruit::configServiceChanged(bool changed)
   _sd_cfg.service_changed = (changed ? 1 : 0);
 }
 
-void AdafruitBluefruit::configUuid128Count(uint8_t  uuid128_max)
+void AdafruitBluefruit::configUuid128Count(uint8_t uuid128_max)
 {
   _sd_cfg.uuid128_max = uuid128_max;
 }

@@ -45,6 +45,7 @@ extern "C"
 // LEDs
 #define PIN_LED1             (13)
 #define PIN_NEOPIXEL         (8)
+#define NEOPIXEL_NUM         10
 
 #define LED_BUILTIN          PIN_LED1
 

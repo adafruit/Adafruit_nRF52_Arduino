@@ -150,8 +150,6 @@ uint16_t measure_color(uint8_t* buf, uint16_t bufsize)
   return sizeof(rgb);
 }
 
-
-
 void gesture_enable_callback(uint16_t conn_hdl, bool enabled)
 {
   (void) conn_hdl;
