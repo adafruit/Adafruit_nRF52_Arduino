@@ -177,9 +177,9 @@ class AdafruitBluefruit
      * Optional semaphore for additional event handlers for SD event.
      * It can be used for handling non-BLE  SD events 
      *------------------------------------------------------------------*/
-    void setMultiprotocolSemaphore(SemaphoreHandle_t* p_mprot_event_semaphore) 
+    void setMultiprotocolSemaphore(SemaphoreHandle_t mprot_event_semaphore) 
     { 
-        _mprot_event_sem= p_mprot_event_semaphore;
+        _mprot_event_sem= mprot_event_semaphore;
     } 
 #endif
 
@@ -229,7 +229,7 @@ class AdafruitBluefruit
     /* Optional semaphore for additional event handlers for SD event.
      * It can be used for handling non-BLE  SD events 
      */
-    SemaphoreHandle_t* _mprot_event_sem;
+    SemaphoreHandle_t _mprot_event_sem;
 #endif
 
     // Auto LED Blinky
