@@ -174,5 +174,8 @@ void midiRead()
 
   // read any new MIDI messages
   MIDI.read();
+
+  // Allow the Scheduler to run other tasks
+  yield();
 }
 
