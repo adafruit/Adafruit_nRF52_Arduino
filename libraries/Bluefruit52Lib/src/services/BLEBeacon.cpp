@@ -77,8 +77,8 @@ void BLEBeacon::setUuid(uint8_t const uuid128[16])
 
 void BLEBeacon::setMajorMinor(uint16_t major, uint16_t minor)
 {
-  _major_be = major;
-  _minor_be = minor;
+  _major_be = __swap16(major);
+  _minor_be = __swap16(minor);
 }
 
 void BLEBeacon::setRssiAt1m(int8_t rssi)
