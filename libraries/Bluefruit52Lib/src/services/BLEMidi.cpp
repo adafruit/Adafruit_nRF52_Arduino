@@ -161,7 +161,7 @@ err_t BLEMidi::begin(void)
   return ERROR_NONE;
 }
   
-bool BLEMidi::beginTransmission(MIDI_NAMESPACE::MidiType type)
+bool BLEMidi::beginTransmission(uint8_t type)
 {
   return true;
 };
