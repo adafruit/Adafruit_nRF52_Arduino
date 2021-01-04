@@ -160,6 +160,15 @@ err_t BLEMidi::begin(void)
 
   return ERROR_NONE;
 }
+  
+bool BLEMidi::beginTransmission(MIDI_NAMESPACE::MidiType type)
+{
+  return true;
+};
+
+void BLEMidi::endTransmission()
+{
+}
 
 /*------------------------------------------------------------------*/
 /* Callbacks
