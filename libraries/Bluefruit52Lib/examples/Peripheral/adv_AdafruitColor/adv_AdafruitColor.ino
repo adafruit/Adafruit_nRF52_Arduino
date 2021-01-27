@@ -14,7 +14,7 @@
  * AdafruitColor class from CircuitPython:
  * https://github.com/adafruit/Adafruit_CircuitPython_BLE/blob/master/adafruit_ble/advertising/adafruit.py
  * In other words, `ble.start_scan(AdafruitColor)` in CircuitPython will hear
- * an advertisement containging the color 0x0F0033 (violet) from this device.
+ * an advertisement containing the color 0x0F0033 (violet) from this device.
  */
  
 #include <bluefruit.h>
