@@ -53,20 +53,6 @@ typedef struct ATTR_PACKED
   uint16_t usage_value; ///< Usage value of the pressed control
 } hid_consumer_control_report_t;
 
-/// Gamepad report
-typedef struct ATTR_PACKED
-{
-  struct ATTR_PACKED
-  {
-    uint8_t x : 2;
-    uint8_t y : 2;
-    uint8_t : 4;
-  };
-
-  uint8_t buttons;
-}hid_gamepad_report_t;
-
-
 class BLEHidGeneric : public BLEService
 {
   public:
@@ -74,6 +60,7 @@ class BLEHidGeneric : public BLEService
 
     void enableKeyboard(bool enable);
     void enableMouse(bool enable);
+    void enableGamepad(bool enable);
 
     void setHidInfo(uint16_t bcd, uint8_t country, uint8_t flags);
 
@@ -90,11 +77,13 @@ class BLEHidGeneric : public BLEService
     bool inputReport(uint8_t reportID, void const* data, int len);
     bool bootKeyboardReport(void const* data, int len);
     bool bootMouseReport(void const* data, int len);
+    bool bootGamepadReport(void const* data, int len);
 
     // Send report to specific connection
     bool inputReport(uint16_t conn_hdl, uint8_t reportID, void const* data, int len);
     bool bootKeyboardReport(uint16_t conn_hdl, void const* data, int len);
     bool bootMouseReport(uint16_t conn_hdl, void const* data, int len);
+    bool bootGamepadReport(uint16_t conn_hdl, void const* data, int len);
 
   protected:
     uint8_t _num_input;
@@ -103,6 +92,7 @@ class BLEHidGeneric : public BLEService
 
     bool    _has_keyboard;
     bool    _has_mouse;
+    bool    _has_gamepad;
     bool    _report_mode;
 
     uint8_t _hid_info[4];
@@ -122,6 +112,8 @@ class BLEHidGeneric : public BLEService
     BLECharacteristic* _chr_boot_keyboard_input;
     BLECharacteristic* _chr_boot_keyboard_output;
     BLECharacteristic* _chr_boot_mouse_input;
+
+    BLECharacteristic* _chr_boot_gamepad_input;
 
     BLECharacteristic _chr_control;
 

@@ -51,24 +51,27 @@ uint8_t const hid_report_descriptor[] =
 {
   TUD_HID_REPORT_DESC_KEYBOARD( HID_REPORT_ID(REPORT_ID_KEYBOARD) ),
   TUD_HID_REPORT_DESC_CONSUMER( HID_REPORT_ID(REPORT_ID_CONSUMER_CONTROL) ),
-  TUD_HID_REPORT_DESC_MOUSE   ( HID_REPORT_ID(REPORT_ID_MOUSE) )
+  TUD_HID_REPORT_DESC_MOUSE   ( HID_REPORT_ID(REPORT_ID_MOUSE) ),
+  TUD_HID_REPORT_DESC_GAMEPAD ( HID_REPORT_ID(REPORT_ID_GAMEPAD) )
 };
 
 BLEHidAdafruit::BLEHidAdafruit(void)
-  : BLEHidGeneric(3, 1, 0)
+  : BLEHidGeneric(4, 1, 0)
 {
   _mse_buttons = 0;
+  _gpd_buttons = 0;
   _kbd_led_cb = NULL;
 }
 
 err_t BLEHidAdafruit::begin(void)
 {
-  uint16_t input_len [] = { sizeof(hid_keyboard_report_t),  sizeof(hid_consumer_control_report_t), sizeof(hid_mouse_report_t) };
+  uint16_t input_len [] = { sizeof(hid_keyboard_report_t),  sizeof(hid_consumer_control_report_t), sizeof(hid_mouse_report_t), sizeof(hid_gamepad_report_t) };
   uint16_t output_len[] = { 1 };
 
   setReportLen(input_len, output_len, NULL);
   enableKeyboard(true);
   enableMouse(true);
+  enableGamepad(true);
   setReportMap(hid_report_descriptor, sizeof(hid_report_descriptor));
 
   VERIFY_STATUS( BLEHidGeneric::begin() );
@@ -241,6 +244,36 @@ bool BLEHidAdafruit::mousePan(uint16_t conn_hdl, int8_t pan)
 }
 
 /*------------------------------------------------------------------*/
+/* Gamepad
+ *------------------------------------------------------------------*/
+bool BLEHidAdafruit::gamepadReport(uint16_t conn_hdl, hid_gamepad_report_t* report)
+{
+  if ( isBootMode() )
+  {
+    return bootGamepadReport(conn_hdl, report, sizeof(hid_gamepad_report_t));
+  }else
+  {
+    return inputReport(conn_hdl, REPORT_ID_GAMEPAD, report, sizeof(hid_gamepad_report_t));
+  }
+}
+
+bool BLEHidAdafruit::gamepadReport(uint16_t conn_hdl, uint16_t buttons, int8_t x, int8_t y, int8_t z, int8_t r_z)
+{
+  hid_gamepad_report_t report =
+  {
+      .buttons = buttons,
+      .x       = x,
+      .y       = y,
+      .z       = z,
+      .r_z     = r_z,
+  };
+
+  _gpd_buttons = buttons;
+
+  return gamepadReport(conn_hdl, &report);
+}
+
+/*------------------------------------------------------------------*/
 /* Single Connections
  *------------------------------------------------------------------*/
 
@@ -322,3 +355,13 @@ bool BLEHidAdafruit::mousePan(int8_t pan)
   return mousePan(BLE_CONN_HANDLE_INVALID, pan);
 }
 
+//------------- Gamepad -------------//
+bool BLEHidAdafruit::gamepadReport(hid_gamepad_report_t* report)
+{
+  return gamepadReport(BLE_CONN_HANDLE_INVALID, report);
+}
+
+bool BLEHidAdafruit::gamepadReport(uint16_t buttons, int8_t x, int8_t y, int8_t z, int8_t r_z)
+{
+  return gamepadReport(BLE_CONN_HANDLE_INVALID, buttons, x, y, z, r_z);
+}

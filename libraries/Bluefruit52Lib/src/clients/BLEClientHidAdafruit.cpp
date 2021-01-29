@@ -41,12 +41,14 @@ BLEClientHidAdafruit::BLEClientHidAdafruit(void)
    _protcol_mode(UUID16_CHR_PROTOCOL_MODE),
    _hid_info(UUID16_CHR_HID_INFORMATION), _hid_control(UUID16_CHR_HID_CONTROL_POINT),
    _kbd_boot_input(UUID16_CHR_BOOT_KEYBOARD_INPUT_REPORT), _kbd_boot_output(UUID16_CHR_BOOT_KEYBOARD_OUTPUT_REPORT),
-   _mse_boot_input(UUID16_CHR_BOOT_MOUSE_INPUT_REPORT)
+   _mse_boot_input(UUID16_CHR_BOOT_MOUSE_INPUT_REPORT), _gpd_boot_input(UUID16_CHR_HID_INFORMATION)
 {
   _kbd_cb = NULL;
   _mse_cb = NULL;
+  _gpd_cb = NULL;
   varclr(&_last_kbd_report);
   varclr(&_last_mse_report);
+  varclr(&_last_gpd_report);
 }
 
 
@@ -62,6 +64,11 @@ void mse_client_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t 
   svc._handle_mse_input(data, len);
 }
 
+void gpd_client_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len)
+{
+  BLEClientHidAdafruit& svc = (BLEClientHidAdafruit&) chr->parentService();
+  svc._handle_gpd_input(data, len);
+}
 
 bool BLEClientHidAdafruit::begin(void)
 {
@@ -77,10 +84,12 @@ bool BLEClientHidAdafruit::begin(void)
 
   _mse_boot_input.begin(this);
 
+  _gpd_boot_input.begin(this);
 
   // set notify callback
   _kbd_boot_input.setNotifyCallback(kbd_client_notify_cb);
   _mse_boot_input.setNotifyCallback(mse_client_notify_cb);
+  _gpd_boot_input.setNotifyCallback(gpd_client_notify_cb);
 
   return true;
 }
@@ -95,6 +104,11 @@ void BLEClientHidAdafruit::setMouseReportCallback(mse_callback_t fp)
   _mse_cb = fp;
 }
 
+void BLEClientHidAdafruit::setGamepadReportCallback(gpd_callback_t fp)
+{
+  _gpd_cb = fp;
+}
+
 bool BLEClientHidAdafruit::discover(uint16_t conn_handle)
 {
   // Call Base class discover
@@ -102,10 +116,10 @@ bool BLEClientHidAdafruit::discover(uint16_t conn_handle)
   _conn_hdl = BLE_CONN_HANDLE_INVALID; // make as invalid until we found all chars
 
   // Discover all characteristics
-  Bluefruit.Discovery.discoverCharacteristic(conn_handle, _protcol_mode, _kbd_boot_input, _kbd_boot_output, _mse_boot_input, _hid_info, _hid_control);
+  Bluefruit.Discovery.discoverCharacteristic(conn_handle, _protcol_mode, _kbd_boot_input, _kbd_boot_output, _mse_boot_input, _gpd_boot_input, _hid_info, _hid_control);
 
   VERIFY( _protcol_mode.discovered() && _hid_info.discovered() && _hid_control.discovered() );
-  VERIFY ( keyboardPresent() || mousePresent() );
+  VERIFY ( keyboardPresent() || mousePresent() || gamepadPresent() );
 
   _conn_hdl = conn_handle;
   return true;
@@ -195,3 +209,33 @@ void BLEClientHidAdafruit::getMouseReport(hid_mouse_report_t* report)
   memcpy(report, &_last_mse_report, sizeof(hid_mouse_report_t));
 }
 
+/*------------------------------------------------------------------*/
+/* Gamepad
+ *------------------------------------------------------------------*/
+bool BLEClientHidAdafruit::gamepadPresent(void)
+{
+  return _gpd_boot_input.discovered();
+}
+
+bool BLEClientHidAdafruit::enableGamepad(void)
+{
+  return _gpd_boot_input.enableNotify();
+}
+
+bool BLEClientHidAdafruit::disableGamepad(void)
+{
+  return _gpd_boot_input.disableNotify();
+}
+
+void BLEClientHidAdafruit::_handle_gpd_input(uint8_t* data, uint16_t len)
+{
+  varclr(&_last_gpd_report);
+  memcpy(&_last_gpd_report, data, len);
+
+  if ( _gpd_cb ) _gpd_cb(&_last_gpd_report);
+}
+
+void BLEClientHidAdafruit::getGamepadReport(hid_gamepad_report_t* report)
+{
+  memcpy(report, &_last_gpd_report, sizeof(hid_gamepad_report_t));
+}
