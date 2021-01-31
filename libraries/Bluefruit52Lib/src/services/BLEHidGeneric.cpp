@@ -237,7 +237,7 @@ err_t BLEHidGeneric::begin(void)
   // Boot Gamepad Input Report
   if ( _has_gamepad )
   {
-    _chr_boot_gamepad_input = new BLECharacteristic(UUID16_CHR_HID_INFORMATION);
+    _chr_boot_gamepad_input = new BLECharacteristic(UUID16_CHR_BOOT_MOUSE_INPUT_REPORT);
     _chr_boot_gamepad_input->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
     _chr_boot_gamepad_input->setFixedLen(sizeof(hid_gamepad_report_t));
     _chr_boot_gamepad_input->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
