@@ -16,8 +16,9 @@
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
-hid_gamepad_report_t gp;        // defined in hid.h from Adafruit_TinyUSB_ArduinoCore
-hid_gamepad_button_bm_t bbm;    // defined in hid.h from Adafruit_TinyUSB_ArduinoCore
+hid_gamepad_report_t    gp;     // defined in hid.h from Adafruit_TinyUSB_ArduinoCore
+// For Gamepad Button Bit Mask see  hid_gamepad_button_bm_t  typedef defined in hid.h from Adafruit_TinyUSB_ArduinoCore
+// For Gamepad Hat    Bit Mask see  hid_gamepad_hat_bm_t     typedef defined in hid.h from Adafruit_TinyUSB_ArduinoCore
 
 void setup() 
 {
@@ -92,6 +93,62 @@ void loop()
   gp.y       = 0;
   gp.z       = 0;
   gp.r_z     = 0;
+  gp.hat     = 0;
+  blehid.gamepadReport(0, &gp);
+  delay(2000);
+
+  
+  // Hat/DPAD UP
+  Serial.println("Hat/DPAD UP");
+  gp.hat = 1; // GAMEPAD_HAT_UP;
+  blehid.gamepadReport(0, &gp);
+  delay(2000);
+
+  // Hat/DPAD UP RIGHT
+  Serial.println("Hat/DPAD UP RIGHT");
+  gp.hat = 2; // GAMEPAD_HAT_UP_RIGHT;
+  blehid.gamepadReport(0, &gp);
+  delay(2000);
+
+  // Hat/DPAD RIGHT
+  Serial.println("Hat/DPAD RIGHT");
+  gp.hat = 3; // GAMEPAD_HAT_RIGHT;
+  blehid.gamepadReport(0, &gp);
+  delay(2000);
+
+  // Hat/DPAD DOWN RIGHT
+  Serial.println("Hat/DPAD DOWN RIGHT");
+  gp.hat = 4; // GAMEPAD_HAT_DOWN_RIGHT;
+  blehid.gamepadReport(0, &gp);
+  delay(2000);
+
+   // Hat/DPAD DOWN
+  Serial.println("Hat/DPAD DOWN");
+  gp.hat = 5; // GAMEPAD_HAT_DOWN;
+  blehid.gamepadReport(0, &gp);
+  delay(2000);
+  
+  // Hat/DPAD DOWN LEFT
+  Serial.println("Hat/DPAD DOWN LEFT");
+  gp.hat = 6; // GAMEPAD_HAT_DOWN_LEFT;
+  blehid.gamepadReport(0, &gp);
+  delay(2000);
+
+  // Hat/DPAD LEFT
+  Serial.println("Hat/DPAD LEFT");
+  gp.hat = 7; // GAMEPAD_HAT_LEFT;
+  blehid.gamepadReport(0, &gp);
+  delay(2000);
+
+  // Hat/DPAD UP LEFT
+  Serial.println("Hat/DPAD UP LEFT");
+  gp.hat = 8; // GAMEPAD_HAT_UP_LEFT;
+  blehid.gamepadReport(0, &gp);
+  delay(2000);
+
+  // Hat/DPAD CENTER
+  Serial.println("Hat/DPAD CENTER");
+  gp.hat = 0; // GAMEPAD_HAT_CENTERED;
   blehid.gamepadReport(0, &gp);
   delay(2000);
 
@@ -185,6 +242,9 @@ void loop()
   gp.y       = random(-127, 128);
   gp.z       = random(-127, 128);
   gp.r_z     = random(-127, 128);
+  gp.hat     = random(0,      9);
   blehid.gamepadReport(0, &gp);
   delay(2000);
+
+  // */
 }
