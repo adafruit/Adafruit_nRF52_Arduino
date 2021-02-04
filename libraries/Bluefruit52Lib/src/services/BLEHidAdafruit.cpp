@@ -257,7 +257,7 @@ bool BLEHidAdafruit::gamepadReport(uint16_t conn_hdl, hid_gamepad_report_t* repo
   }
 }
 
-bool BLEHidAdafruit::gamepadReport(uint16_t conn_hdl, uint16_t buttons, int8_t x, int8_t y, int8_t z, int8_t r_z, uint8_t hat)
+bool BLEHidAdafruit::gamepadReport(uint16_t conn_hdl, uint16_t buttons, int8_t x, int8_t y, int8_t z, int8_t rx, int8_t ry, int8_t rz, uint8_t hat)
 {
   hid_gamepad_report_t report =
   {
@@ -265,7 +265,9 @@ bool BLEHidAdafruit::gamepadReport(uint16_t conn_hdl, uint16_t buttons, int8_t x
       .x       = x,
       .y       = y,
       .z       = z,
-      .r_z     = r_z,
+      .rx      = rx,
+      .ry      = ry,
+      .rz      = rz,
       .hat     = hat,
   };
 
@@ -362,7 +364,7 @@ bool BLEHidAdafruit::gamepadReport(hid_gamepad_report_t* report)
   return gamepadReport(BLE_CONN_HANDLE_INVALID, report);
 }
 
-bool BLEHidAdafruit::gamepadReport(uint16_t buttons, int8_t x, int8_t y, int8_t z, int8_t r_z, uint8_t hat)
+bool BLEHidAdafruit::gamepadReport(uint16_t buttons, int8_t x, int8_t y, int8_t z, int8_t rx, int8_t ry, int8_t rz, uint8_t hat)
 {
-  return gamepadReport(BLE_CONN_HANDLE_INVALID, buttons, x, y, z, r_z, hat);
+  return gamepadReport(BLE_CONN_HANDLE_INVALID, buttons, x, y, z, rx, ry, rz, hat);
 }

@@ -109,11 +109,11 @@ class BLEHidAdafruit : public BLEHidGeneric
     //------------- Gamepad -------------//
     // Single connection
     bool gamepadReport(hid_gamepad_report_t* report);
-    bool gamepadReport(uint16_t buttons, int8_t x=0, int8_t y=0, int8_t z=0, int8_t r_z=0, uint8_t hat=0);
+    bool gamepadReport(uint16_t buttons, int8_t x=0, int8_t y=0, int8_t z=0, int8_t rx=0, int8_t ry=0, int8_t rz=0, uint8_t hat=0);
 
     // Multiple connections
     bool gamepadReport(uint16_t conn_hdl, hid_gamepad_report_t* report);
-    bool gamepadReport(uint16_t conn_hdl, uint16_t buttons, int8_t x=0, int8_t y=0, int8_t z=0, int8_t r_z=0, uint8_t hat=0);
+    bool gamepadReport(uint16_t conn_hdl, uint16_t buttons, int8_t x=0, int8_t y=0, int8_t z=0, int8_t rx=0, int8_t ry=0, int8_t rz=0, uint8_t hat=0);
 
   protected:
     uint8_t  _mse_buttons;
