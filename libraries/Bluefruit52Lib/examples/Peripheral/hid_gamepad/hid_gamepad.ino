@@ -89,14 +89,14 @@ void loop()
 {    
   // Reset buttons
   Serial.println("No pressing buttons");
-  gp.buttons = 0;
   gp.x       = 0;
   gp.y       = 0;
   gp.z       = 0;
+  gp.rz      = 0;
   gp.rx      = 0;
   gp.ry      = 0;
-  gp.rz      = 0;
   gp.hat     = 0;
+  gp.buttons = 0;
   blehid.gamepadReport(0, &gp);
   delay(2000);
 
@@ -277,14 +277,14 @@ void loop()
 
   // Random touch
   Serial.println("Random touch");
-  gp.buttons = random(0, 0xffff);
   gp.x       = random(-127, 128);
   gp.y       = random(-127, 128);
   gp.z       = random(-127, 128);
+  gp.rz      = random(-127, 128);
   gp.rx      = random(-127, 128);
   gp.ry      = random(-127, 128);
-  gp.rz      = random(-127, 128);
   gp.hat     = random(0,      9);
+  gp.buttons = random(0, 0xffff);
   blehid.gamepadReport(0, &gp);
   delay(2000);
 
