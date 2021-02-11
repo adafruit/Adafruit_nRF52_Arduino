@@ -59,7 +59,6 @@ BLEHidAdafruit::BLEHidAdafruit(void)
   : BLEHidGeneric(4, 1, 0)
 {
   _mse_buttons = 0;
-  _gpd_buttons = 0;
   _kbd_led_cb = NULL;
 }
 
@@ -71,7 +70,6 @@ err_t BLEHidAdafruit::begin(void)
   setReportLen(input_len, output_len, NULL);
   enableKeyboard(true);
   enableMouse(true);
-  enableGamepad(true);
   setReportMap(hid_report_descriptor, sizeof(hid_report_descriptor));
 
   VERIFY_STATUS( BLEHidGeneric::begin() );
@@ -248,16 +246,10 @@ bool BLEHidAdafruit::mousePan(uint16_t conn_hdl, int8_t pan)
  *------------------------------------------------------------------*/
 bool BLEHidAdafruit::gamepadReport(uint16_t conn_hdl, hid_gamepad_report_t* report)
 {
-  if ( isBootMode() )
-  {
-    return bootGamepadReport(conn_hdl, report, sizeof(hid_gamepad_report_t));
-  }else
-  {
-    return inputReport(conn_hdl, REPORT_ID_GAMEPAD, report, sizeof(hid_gamepad_report_t));
-  }
+   return inputReport(conn_hdl, REPORT_ID_GAMEPAD, report, sizeof(hid_gamepad_report_t));
 }
 
-bool BLEHidAdafruit::gamepadReport(uint16_t conn_hdl, uint16_t buttons, int8_t x, int8_t y, int8_t z, int8_t rz, int8_t rx, int8_t ry, uint8_t hat)
+bool BLEHidAdafruit::gamepadReport(uint16_t conn_hdl, int8_t x, int8_t y, int8_t z, int8_t rz, int8_t rx, int8_t ry, uint8_t hat, uint16_t buttons)
 {
   hid_gamepad_report_t report =
   {
@@ -270,8 +262,6 @@ bool BLEHidAdafruit::gamepadReport(uint16_t conn_hdl, uint16_t buttons, int8_t x
       .hat     = hat,
       .buttons = buttons,
   };
-
-  _gpd_buttons = buttons;
 
   return gamepadReport(conn_hdl, &report);
 }
@@ -364,7 +354,7 @@ bool BLEHidAdafruit::gamepadReport(hid_gamepad_report_t* report)
   return gamepadReport(BLE_CONN_HANDLE_INVALID, report);
 }
 
-bool BLEHidAdafruit::gamepadReport(uint16_t buttons, int8_t x, int8_t y, int8_t z, int8_t rz, int8_t rx, int8_t ry, uint8_t hat)
+bool BLEHidAdafruit::gamepadReport(int8_t x, int8_t y, int8_t z, int8_t rz, int8_t rx, int8_t ry, uint8_t hat, uint16_t buttons)
 {
-  return gamepadReport(BLE_CONN_HANDLE_INVALID, buttons, x, y, z, rz, rx, ry, hat);
+  return gamepadReport(BLE_CONN_HANDLE_INVALID, x, y, z, rz, rx, ry, hat, buttons);
 }

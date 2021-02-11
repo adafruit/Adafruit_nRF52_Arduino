@@ -43,9 +43,9 @@ enum {
 };
 
 BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_feature)
-  : BLEService(UUID16_SVC_HUMAN_INTERFACE_DEVICE), _chr_control(UUID16_CHR_HID_CONTROL_POINT)
+  : BLEService(UUID16_SVC_HUMAN_INTERFACE_DEVICE), _chr_control(UUID16_CHR_HID_CONTROL_POINT), _chr_gamepad()
 {
-  _has_keyboard = _has_mouse = _has_gamepad = false;
+  _has_keyboard = _has_mouse = false;
   _report_mode = true; // default is report mode
 
   _report_map = NULL;
@@ -67,7 +67,7 @@ BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_
 
   _chr_protocol = NULL;
   _chr_inputs = _chr_outputs = _chr_features = NULL;
-  _chr_boot_keyboard_input = _chr_boot_keyboard_output = _chr_boot_mouse_input =_chr_boot_gamepad_input = NULL;
+  _chr_boot_keyboard_input = _chr_boot_keyboard_output = _chr_boot_mouse_input = NULL;
 
   if ( _num_input   )
   {
@@ -96,11 +96,6 @@ void BLEHidGeneric::enableKeyboard(bool enable)
 void BLEHidGeneric::enableMouse(bool enable)
 {
   _has_mouse    = enable;
-}
-
-void BLEHidGeneric::enableGamepad(bool enable)
-{
-  _has_gamepad    = enable;
 }
 
 void BLEHidGeneric::setHidInfo(uint16_t bcd, uint8_t country, uint8_t flags)
@@ -156,7 +151,7 @@ err_t BLEHidGeneric::begin(void)
   VERIFY_STATUS( BLEService::begin() );
 
   // Protocol Mode
-  if ( _has_keyboard || _has_mouse || _has_gamepad)
+  if ( _has_keyboard || _has_mouse )
   {
     _chr_protocol = new BLECharacteristic(UUID16_CHR_PROTOCOL_MODE);
     VERIFY(_chr_protocol, NRF_ERROR_NO_MEM);
@@ -234,16 +229,6 @@ err_t BLEHidGeneric::begin(void)
     VERIFY_STATUS(_chr_boot_mouse_input->begin());
   }
 
-  // Boot Gamepad Input Report
-  if ( _has_gamepad )
-  {
-    _chr_boot_gamepad_input = new BLECharacteristic(UUID16_CHR_BOOT_MOUSE_INPUT_REPORT);
-    _chr_boot_gamepad_input->setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
-    _chr_boot_gamepad_input->setFixedLen(sizeof(hid_gamepad_report_t));
-    _chr_boot_gamepad_input->setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
-    VERIFY_STATUS(_chr_boot_gamepad_input->begin());
-  }
-
   // HID Info
   BLECharacteristic hid_info(UUID16_CHR_HID_INFORMATION);
   hid_info.setTempMemory();
@@ -259,6 +244,13 @@ err_t BLEHidGeneric::begin(void)
   _chr_control.setFixedLen(1);
   VERIFY_STATUS( _chr_control.begin() );
   _chr_control.write8(0);
+
+  // HID Gamepad
+  _chr_gamepad.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
+  _chr_gamepad.setFixedLen(sizeof(hid_gamepad_report_t));
+  _chr_gamepad.setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+  VERIFY_STATUS(_chr_gamepad.begin());
+  _chr_gamepad.write8(0);
 
   return ERROR_NONE;
 }
@@ -283,11 +275,6 @@ bool BLEHidGeneric::bootMouseReport(uint16_t conn_hdl, void const* data, int len
   return _chr_boot_mouse_input->notify(conn_hdl, data, len);
 }
 
-bool BLEHidGeneric::bootGamepadReport(uint16_t conn_hdl, void const* data, int len)
-{
-  return _chr_boot_gamepad_input->notify(conn_hdl, data, len);
-}
-
 bool BLEHidGeneric::inputReport(uint8_t reportID, void const* data, int len)
 {
   return inputReport(BLE_CONN_HANDLE_INVALID, reportID, data, len);
@@ -301,11 +288,6 @@ bool BLEHidGeneric::bootKeyboardReport(void const* data, int len)
 bool BLEHidGeneric::bootMouseReport(void const* data, int len)
 {
   return bootMouseReport(BLE_CONN_HANDLE_INVALID, data, len);
-}
-
-bool BLEHidGeneric::bootGamepadReport(void const* data, int len)
-{
-  return bootGamepadReport(BLE_CONN_HANDLE_INVALID, data, len);
 }
 
 
