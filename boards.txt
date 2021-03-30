@@ -400,6 +400,50 @@ metro52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 
 # ----------------------------------
+# Generic NRF52833
+# ----------------------------------
+generic_nrf52833.name=Generic nRF52833
+generic_nrf52833.bootloader.tool=bootburn
+
+# Upload
+generic_nrf52833.upload.tool=nrfutil
+generic_nrf52833.upload.protocol=nrfutil
+generic_nrf52833.upload.use_1200bps_touch=true
+generic_nrf52833.upload.wait_for_upload_port=true
+generic_nrf52833.upload.maximum_size=290816
+generic_nrf52833.upload.maximum_data_size=52224
+
+# Build
+generic_nrf52833.build.mcu=cortex-m4
+generic_nrf52833.build.f_cpu=64000000
+generic_nrf52833.build.board=GENERIC_NRF52833
+generic_nrf52833.build.core=nRF5
+generic_nrf52833.build.variant=generic_nrf52833
+generic_nrf52833.build.usb_manufacturer="Generic"
+generic_nrf52833.build.usb_product="generic-nRF52833"
+generic_nrf52833.build.extra_flags=-DNRF52833_XXAA {build.flags.usb}
+generic_nrf52833.build.ldscript=nrf52833_s140_v6.ld
+generic_nrf52833.build.vid=0x1915
+generic_nrf52833.build.pid=0x521F
+
+# SofDevice Menu
+generic_nrf52833.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
+generic_nrf52833.menu.softdevice.s140v6.build.sd_name=s140
+generic_nrf52833.menu.softdevice.s140v6.build.sd_version=6.1.1
+generic_nrf52833.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+generic_nrf52833.menu.debug.l0=Level 0 (Release)
+generic_nrf52833.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+generic_nrf52833.menu.debug.l1=Level 1 (Error Message)
+generic_nrf52833.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+generic_nrf52833.menu.debug.l2=Level 2 (Full Debug)
+generic_nrf52833.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+generic_nrf52833.menu.debug.l3=Level 3 (Segger SystemView)
+generic_nrf52833.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+generic_nrf52833.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# ----------------------------------
 # Nordic nRF52840DK (PCA10056)
 # ----------------------------------
 pca10056.name=Nordic nRF52840DK (PCA10056)
