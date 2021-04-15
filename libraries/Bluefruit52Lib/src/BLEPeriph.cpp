@@ -78,6 +78,11 @@ uint8_t BLEPeriph::connected (void)
   return count;
 }
 
+bool BLEPeriph::getBonds(bonded_device_info* bondedPeers, uint32_t bondedPeersSize, uint32_t* actualBondedPeersSize)
+{
+  return bond_get_list(BLE_GAP_ROLE_PERIPH, bondedPeers, bondedPeersSize, actualBondedPeersSize);
+}
+
 void BLEPeriph::clearBonds(void)
 {
   bond_clear_prph();

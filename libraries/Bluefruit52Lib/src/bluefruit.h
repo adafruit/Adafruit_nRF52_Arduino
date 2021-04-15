@@ -163,6 +163,8 @@ class AdafruitBluefruit
     uint8_t  connected         (void); // Number of connected
     bool     connected         (uint16_t conn_hdl);
 
+    void getConnectionHandles(uint16_t* connectionHandles, uint8_t maxConnectionHandleCount, uint8_t* actualConnectionHandleCount);
+
     uint16_t connHandle        (void);
 
     // Alias to BLEConnection API()
