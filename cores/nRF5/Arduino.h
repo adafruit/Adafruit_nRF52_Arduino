@@ -69,7 +69,8 @@ void resumeLoop(void);
 #include "utility/AdaCallback.h"
 
 #ifdef USE_TINYUSB
-  #include "Adafruit_TinyUSB_Core.h"
+  #include "Adafruit_USBD_Interface.h"
+  #include "Adafruit_USBD_CDC.h"
 #endif
 
 // Include board variant

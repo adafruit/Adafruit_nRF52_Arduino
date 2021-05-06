@@ -36,11 +36,13 @@
 #ifndef COMMON_INC_H_
 #define COMMON_INC_H_
 
+#define ATTR_PACKED   __attribute__ ((packed))
+#define ATTR_WEAK     __attribute__((weak))
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "compiler_macro.h"
 #include "common_func.h"
 #include "verify.h"
 

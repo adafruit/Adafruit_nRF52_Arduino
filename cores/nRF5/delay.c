@@ -25,6 +25,8 @@
 extern "C" {
 #endif
 
+uint32_t tud_cdc_n_write_flush(uint8_t itf) ATTR_WEAK;
+
 uint32_t millis( void )
 {
   return tick2ms(xTaskGetTickCount());
@@ -37,7 +39,7 @@ void delay( uint32_t ms )
 #ifdef USE_TINYUSB
   // Take chance to flush usb cdc
   uint32_t flush_tick = xTaskGetTickCount();
-  tud_cdc_write_flush();
+  tud_cdc_n_write_flush(0);
 
   flush_tick = xTaskGetTickCount()-flush_tick;
   if (flush_tick >= ticks) return;

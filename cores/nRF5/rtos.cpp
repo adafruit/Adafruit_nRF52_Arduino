@@ -75,7 +75,7 @@ extern "C"
 void yield(void)
 {
 #ifdef USE_TINYUSB
-    tud_cdc_write_flush();
+  Serial.flush();
 #endif
 
   taskYIELD();
