@@ -4,3 +4,6 @@
 [submodule "libraries/Adafruit_nRFCrypto"]
 	path = libraries/Adafruit_nRFCrypto
 	url = https://github.com/adafruit/Adafruit_nRFCrypto.git
+[submodule "libraries/Adafruit_TinyUSB_Arduino"]
+	path = libraries/Adafruit_TinyUSB_Arduino
+	url = https://github.com/adafruit/Adafruit_TinyUSB_Arduino.git
