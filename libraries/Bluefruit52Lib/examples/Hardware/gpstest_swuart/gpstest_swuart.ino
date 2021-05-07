@@ -20,6 +20,8 @@
  * - 
  */
 
+#include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 #include <SoftwareSerial.h>
 
 #define SW_RXD    A0

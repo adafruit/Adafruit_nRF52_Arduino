@@ -24,6 +24,7 @@
  */
 
 #include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 
 /**************************************************************************/
 /*!

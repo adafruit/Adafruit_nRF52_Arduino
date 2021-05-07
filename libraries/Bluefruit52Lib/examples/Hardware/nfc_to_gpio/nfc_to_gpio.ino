@@ -15,6 +15,9 @@
 // NFC pins to GPIO mode is a ONE WAY OPERATION and you will need a debugger
 // like a Segger J-Link to set them back to NFC mode!
 
+#include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
+
 void setup() {
   Serial.begin(115200);
   while ( !Serial ) delay(10);   // for nrf52840 with native usb

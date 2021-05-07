@@ -13,6 +13,7 @@
 *********************************************************************/
 
 #include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 
 /*
  * Sketch demonstate mutli-task using Scheduler. Demo create loop2() that

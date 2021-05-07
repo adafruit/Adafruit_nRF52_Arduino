@@ -13,6 +13,7 @@
 *********************************************************************/
 
 #include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 
 /*
  * This sketch will reset the board into Serial DFU mode

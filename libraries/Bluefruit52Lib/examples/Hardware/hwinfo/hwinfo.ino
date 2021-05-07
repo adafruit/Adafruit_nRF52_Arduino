@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 
 typedef volatile uint32_t REG32;
 #define pREG32 (REG32 *)

@@ -15,7 +15,7 @@
 /* This sketch invoke API to enter OTA dfu mode */
 
 #include <Arduino.h>
-
+#include <Adafruit_TinyUSB.h> // for Serial
 
 void setup() 
 {
