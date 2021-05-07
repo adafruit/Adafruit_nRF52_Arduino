@@ -36,10 +36,10 @@ public:
 	Adafruit_USBD_CDC(void);
 
 	// fron Adafruit_USBD_Interface
-	virtual uint16_t getDescriptor(uint8_t itfnum, uint8_t* buf, uint16_t bufsize);
+	virtual uint16_t getInterfaceDescriptor(uint8_t itfnum, uint8_t* buf, uint16_t bufsize);
 
 	void setPins(uint8_t pin_rx, uint8_t pin_tx) { (void) pin_rx; (void) pin_tx; }
-	void begin(uint32_t baud_count);
+	void begin(uint32_t baud);
 	void begin(uint32_t baud, uint8_t config);
 	void end(void);
 
@@ -65,6 +65,10 @@ public:
 	virtual int availableForWrite(void);
 	using Print::write; // pull in write(str) from Print
 	operator bool();
+
+private:
+	bool    _begun;
+	uint8_t _itf;
 };
 
 extern Adafruit_USBD_CDC Serial;
