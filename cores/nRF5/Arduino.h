@@ -57,8 +57,13 @@ void resumeLoop(void);
   #include "pulse.h"
   #include "HardwarePWM.h"
   #include "utility/SoftwareTimer.h"
-
   #include "Uart.h"
+
+#ifdef USE_TINYUSB
+  #include "Adafruit_USBD_Interface.h"
+  #include "Adafruit_USBD_CDC.h"
+#endif
+
 #endif
 
 #include "delay.h"
@@ -68,10 +73,6 @@ void resumeLoop(void);
 #include "utility/utilities.h"
 #include "utility/AdaCallback.h"
 
-#ifdef USE_TINYUSB
-  #include "Adafruit_USBD_Interface.h"
-  #include "Adafruit_USBD_CDC.h"
-#endif
 
 // Include board variant
 #include "variant.h"

@@ -25,8 +25,6 @@
 #ifndef ADAFRUIT_USBD_CDC_H_
 #define ADAFRUIT_USBD_CDC_H_
 
-#ifdef __cplusplus
-
 #include "Adafruit_USBD_Interface.h"
 #include "Stream.h"
 
@@ -73,5 +71,4 @@ private:
 
 extern Adafruit_USBD_CDC Serial;
 
-#endif // __cplusplus
 #endif

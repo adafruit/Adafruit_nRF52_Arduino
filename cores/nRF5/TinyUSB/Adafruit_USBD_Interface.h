@@ -25,8 +25,6 @@
 #ifndef ADAFRUIT_USBD_INTERFACE_H_
 #define ADAFRUIT_USBD_INTERFACE_H_
 
-#ifdef __cplusplus
-
 class Adafruit_USBD_Interface
 {
   protected:
@@ -42,7 +40,5 @@ class Adafruit_USBD_Interface
     void setStringDescriptor(const char* str) { _desc_str = str; }
     const char* getStringDescriptor(void) { return _desc_str; }
 };
-
-#endif
 
 #endif
