@@ -58,12 +58,11 @@ void resumeLoop(void);
   #include "HardwarePWM.h"
   #include "utility/SoftwareTimer.h"
   #include "Uart.h"
-
-#ifdef USE_TINYUSB
-  #include "Adafruit_USBD_Interface.h"
-  #include "Adafruit_USBD_CDC.h"
 #endif
 
+#ifdef USE_TINYUSB
+// Needed for declaring Serial
+#include "Adafruit_USBD_CDC.h"
 #endif
 
 #include "delay.h"

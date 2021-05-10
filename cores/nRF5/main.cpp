@@ -39,12 +39,6 @@ void Bluefruit_printInfo() {}
 void initVariant() __attribute__((weak));
 void initVariant() { }
 
-#ifdef USE_TINYUSB
-// Called by main.cpp to initialize usb device typically with CDC device for Serial
-void TinyUSB_Device_Init(uint8_t rhport) __attribute__((weak));
-#endif
-
-
 #define LOOP_STACK_SZ       (256*4)
 #define CALLBACK_STACK_SZ   (256*3)
 
