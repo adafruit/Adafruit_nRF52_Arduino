@@ -7,7 +7,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arduino-platform: ['cluenrf52840', 'cplaynrf52840', 'feather52832', 'feather52840', 'feather52840sense', 'itsybitsy52840']
+        arduino-platform:
+        # Alphabetical order
+        - 'cluenrf52840'
+        - 'cplaynrf52840'
+        - 'feather52832'
+        - 'feather52840'
+        - 'feather52840sense'
+        - 'itsybitsy52840'
 
     runs-on: ubuntu-latest
     
@@ -19,13 +26,8 @@ jobs:
         
     - name: Checkout code
       uses: actions/checkout@v2
-
-    - name: Checkout submodules
-      shell: bash
-      run: |
-        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
-        git submodule sync --recursive
-        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive      
+      with:
+        submodules: 'true'
         
     - name: Install Arduino CLI and Tools
       run: |

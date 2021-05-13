@@ -43,8 +43,13 @@ There are two methods that you can use to install this BSP. We highly recommend 
   * macOS  : `~/Documents/Arduino`
   * Linux  : `~/Arduino`
   * Windows: `~/Documents/Arduino`
- 4. Create a folder named `hardware/Adafruit`, if it does not exist, and change directories to it
- 5. Clone this repo & its submodules: `git clone --recurse-submodules https://github.com/adafruit/Adafruit_nRF52_Arduino.git`
+ 4. Create a folder named `hardware/adafruit`, if it does not exist, and change directories to it
+ 5. Clone this repo & its submodules:
+
+   ```
+   git clone --recurse-submodules https://github.com/adafruit/Adafruit_nRF52_Arduino.git
+   ```
+   
  6. Restart the Arduino IDE
  7. Once the BSP is installed, select 'Adafruit Bluefruit nRF52 Feather' from the Tools -> Board menu, which will update your system config to use the right compiler and settings for the nRF52.
 

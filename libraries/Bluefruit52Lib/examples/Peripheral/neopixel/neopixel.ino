@@ -31,7 +31,7 @@
 #define NEOPIXEL_VERSION_STRING "Neopixel v2.0"
 
 /* Pin used to drive the NeoPixels */
-#if defined ARDUINO_NRF52840_CIRCUITPLAY
+#if defined ARDUINO_NRF52840_CIRCUITPLAY || defined ARDUINO_NRF52840_FEATHER
   #define PIN     PIN_NEOPIXEL
 #elif defined ARDUINO_NRF52832_FEATHER
   #define PIN     30
