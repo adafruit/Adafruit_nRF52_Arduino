@@ -70,12 +70,12 @@ extern "C"
  * Analog pins
  */
 #define PIN_A0               (14)  // not really analog!
-#define PIN_A1               (15)
-#define PIN_A2               (16)
-#define PIN_A3               (17)
-#define PIN_A4               (18)
-#define PIN_A5               (19)
-#define PIN_A6               (20)
+#define PIN_A1               (6)
+#define PIN_A2               (9)
+#define PIN_A3               (10)
+#define PIN_A4               (3)
+#define PIN_A5               (2)
+#define PIN_A6               (0)
 #define PIN_A7               (21) // not really analog!
 #define PIN_A8               (22)
 #define PIN_A9               (23)
