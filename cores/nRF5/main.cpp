@@ -50,9 +50,6 @@ static void loop_task(void* arg)
 
 #ifdef USE_TINYUSB
   TinyUSB_Device_Init(0);
-
-  // yield for tinyusb task to run
-  taskYIELD();
 #endif
 
 #if CFG_DEBUG
