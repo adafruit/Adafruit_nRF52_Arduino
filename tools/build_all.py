@@ -53,6 +53,10 @@ def build_examples(variant):
     fqbn = "adafruit:nrf52:{}:softdevice={},debug=l0".format(variant, 's140v6' if variant != 'feather52832' else 's132v6')
 
     for sketch in all_examples:
+        # skip TinyUSB library examples for nRF52832
+        if variant == 'feather52832' and "libraries/Adafruit_TinyUSB_Arduino" in sketch:
+            continue
+
         start_time = time.monotonic()
 
         # Skip if contains: ".board.test.skip" or ".all.test.skip"
