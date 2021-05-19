@@ -15,6 +15,7 @@
 // License: MIT (https://opensource.org/licenses/MIT)
 
 #include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 
 // PIN_BUZZER should be defined by the supported variant e.g CPlay Bluefruit or CLUE.
 // Otherwise please define the pin you would like to use for tone output

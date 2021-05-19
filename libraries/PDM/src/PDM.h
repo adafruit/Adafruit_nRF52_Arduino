@@ -19,12 +19,12 @@
 #ifndef _PDM_H_INCLUDED
 #define _PDM_H_INCLUDED
 
-#include <Arduino.h>
-
 #if !defined(ARDUINO_NRF52_ADAFRUIT)
 #error "This library targets only Adafruit NRF52840 boards"
 #endif
 
+#include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 #include "utility/PDMDoubleBuffer.h"
 
 class PDMClass

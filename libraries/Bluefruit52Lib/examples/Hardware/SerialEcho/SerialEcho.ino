@@ -13,6 +13,7 @@
 *********************************************************************/
 
 #include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 
 const int baudrate = 115200;
 

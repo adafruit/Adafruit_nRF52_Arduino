@@ -22,7 +22,7 @@
 #define _SPI_H_INCLUDED
 
 #include <Arduino.h>
-
+#include <Adafruit_TinyUSB.h> // for Serial
 #include "nrfx_spim.h"
 
 // SPI_HAS_TRANSACTION means SPI has

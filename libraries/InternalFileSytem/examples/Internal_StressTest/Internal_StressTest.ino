@@ -14,6 +14,7 @@
 
 #include <Adafruit_LittleFS.h>
 #include <InternalFileSystem.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 
 // hardware random generator
 #include "nrf_rng.h"

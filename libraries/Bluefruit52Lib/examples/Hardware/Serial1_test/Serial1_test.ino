@@ -18,7 +18,8 @@
  * Note: Bluefruit nRF52832 does not support Serial1
  */
 
-#include "Arduino.h"
+#include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 
 void setup()
 {

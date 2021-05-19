@@ -23,6 +23,8 @@
  
  */
 
+#include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 #include <SoftwareSerial.h>
 // software serial #1: TX = digital pin A1, RX = digital pin A0
 SoftwareSerial portOne(A0, A1);

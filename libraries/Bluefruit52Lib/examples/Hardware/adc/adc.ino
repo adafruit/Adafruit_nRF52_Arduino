@@ -1,3 +1,6 @@
+#include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
+
 int adcin    = A5;
 int adcvalue = 0;
 float mv_per_lsb = 3600.0F/1024.0F; // 10-bit ADC with 3.6V input range

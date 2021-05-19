@@ -40,17 +40,15 @@
 #ifndef _VERIFY_H_
 #define _VERIFY_H_
 
-#include "compiler_macro.h"
+//--------------------------------------------------------------------+
+// Compile-time Assert
+//--------------------------------------------------------------------+
+#define VERIFY_STATIC(const_expr) _Static_assert(const_expr, "Assert failed")
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
-//--------------------------------------------------------------------+
-// Compile-time Assert
-//--------------------------------------------------------------------+
-#define VERIFY_STATIC(const_expr) TU_VERIFY_STATIC(const_expr, "Assert failed")
 
 //--------------------------------------------------------------------+
 // VERIFY Helper
@@ -131,8 +129,6 @@ extern "C"
  * - 2 parameter if called with 2 parameters e.g VERIFY(condition, errorcode)
  */
 #define VERIFY(...)  _GET_3RD_ARG(__VA_ARGS__, VERIFY_2ARGS, VERIFY_1ARGS)(__VA_ARGS__)
-
-// TODO VERIFY with final statement
 
 #ifdef __cplusplus
 }

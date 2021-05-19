@@ -17,6 +17,7 @@
  * to defer callback from ISR context with attachInterrupt
  */
 #include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 
 int interruptPin = A0;
 

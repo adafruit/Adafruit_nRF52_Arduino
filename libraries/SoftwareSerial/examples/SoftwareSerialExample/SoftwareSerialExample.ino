@@ -15,6 +15,8 @@
 
  */
 
+#include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 #include <SoftwareSerial.h>
 
 SoftwareSerial mySerial(A0, A1); // RX, TX
