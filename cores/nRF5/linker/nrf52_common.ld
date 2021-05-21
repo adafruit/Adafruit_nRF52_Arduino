@@ -138,7 +138,7 @@ SECTIONS
 
     } > RAM
 
-    .bss :
+    .bss ALIGN(4):
     {
         . = ALIGN(4);
         __bss_start__ = .;
