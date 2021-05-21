@@ -1,6 +1,3 @@
-[submodule "cores/nRF5/TinyUSB/Adafruit_TinyUSB_ArduinoCore"]
-	path = cores/nRF5/TinyUSB/Adafruit_TinyUSB_ArduinoCore
-	url = https://github.com/adafruit/Adafruit_TinyUSB_ArduinoCore.git
 [submodule "libraries/Adafruit_nRFCrypto"]
 	path = libraries/Adafruit_nRFCrypto
 	url = https://github.com/adafruit/Adafruit_nRFCrypto.git
