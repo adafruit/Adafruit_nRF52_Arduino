@@ -266,12 +266,16 @@ bool HardwarePWM::takeOwnership(uint32_t token)
   bool const thread_mode = !isInISR();
 
   if (token == 0) {
-    if (thread_mode) LOG_LV1("HwPWM", "zero is not a valid ownership token (attempted use in takeOwnership)");
+    if (thread_mode) {
+      LOG_LV1("HwPWM", "zero is not a valid ownership token (attempted use in takeOwnership)");
+    }
     return false;
   }
 
   if (token == this->_owner_token) {
-    if (thread_mode) LOG_LV1("HwPWM", "failing to acquire ownership because already owned by requesting token (cannot take ownership twice)");
+    if (thread_mode) {
+      LOG_LV1("HwPWM", "failing to acquire ownership because already owned by requesting token (cannot take ownership twice)");
+    }
     return false;
   }
 
@@ -290,22 +294,30 @@ bool HardwarePWM::releaseOwnership(uint32_t token)
   bool const thread_mode = !isInISR();
 
   if (token == 0) {
-    if (thread_mode) LOG_LV1("HwPWM", "zero is not a valid ownership token (attempted use in releaseOwnership)");
+    if (thread_mode) {
+      LOG_LV1("HwPWM", "zero is not a valid ownership token (attempted use in releaseOwnership)");
+    }
     return false;
   }
 
   if (!this->isOwner(token)) {
-    if (thread_mode) LOG_LV1("HwPWM", "attempt to release ownership when not the current owner");
+    if (thread_mode) {
+      LOG_LV1("HwPWM", "attempt to release ownership when not the current owner");
+    }
     return false;
   }
 
   if (this->usedChannelCount() != 0) {
-    if (thread_mode) LOG_LV1("HwPWM", "attempt to release ownership when at least on channel is still connected");
+    if (thread_mode) {
+      LOG_LV1("HwPWM", "attempt to release ownership when at least on channel is still connected");
+    }
     return false;
   }
 
   if (this->enabled()) {
-    if (thread_mode) LOG_LV1("HwPWM", "attempt to release ownership when PWM peripheral is still enabled");
+    if (thread_mode) {
+      LOG_LV1("HwPWM", "attempt to release ownership when PWM peripheral is still enabled");
+    }
     return false; // if it's enabled, do not allow ownership to be released, even with no pins in use
   }
 
