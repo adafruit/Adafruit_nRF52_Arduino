@@ -44,8 +44,8 @@ class BLEAdafruitSensor : public BLEService
     void setNotifyCallback(notify_callback_t fp);
 
   protected:
-    BLECharacteristic _period;
     BLECharacteristic _measurement;
+    BLECharacteristic _period;
 
     Adafruit_Sensor*  _sensor;
 

@@ -241,7 +241,7 @@ void displayNotification(int index)
   }else
   {
     // Text size = 1, max char is 21. Text size = 2, max char is 10
-    char tempbuf[22];
+    char tempbuf[30];
     sprintf(tempbuf, "%-15s %02d/%02d", myNtf->app_name, index+1, notifCount);
 
     oled.println(tempbuf);
