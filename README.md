@@ -71,7 +71,7 @@ $ pip3 install adafruit-nrfutil --user
 
 Bootloader can be updated via UF2 file or DFU if already existed. Or flash on new blank chip using following guide
 
-## Update Bootloader with UF2 ( nRF52840 only and require 0.4.0+ )
+### Update Bootloader with UF2 ( nRF52840 only and require 0.4.0+ )
 
 This only works with nRF52840 and require existing bootloader version is at least 0.4.0:
 
