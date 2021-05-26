@@ -9,6 +9,7 @@
 - Update included bootloader binaries from 0.3.2 to 0.5.0
 - Use CMSIS 5.4 header from tool package
 - Fix nrfjprog file not file on windows.
+- Update included adafruit-nrfutil binaries for windows and macos to version 0.5.3post16
 
 ## 0.22.0 - 2021.05.19
 
