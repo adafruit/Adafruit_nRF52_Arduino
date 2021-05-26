@@ -16,7 +16,6 @@ Following boards are also included but are not officially supported:
 
 - [Nordic nRF52840DK PCA10056](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-DK)
 - [Particle Xenon](https://store.particle.io/products/xenon)
-- [Raytac MDBT50Q-RX Dongle](https://www.raytac.com/product/ins.php?index_id=89)
 
 ## BSP Installation
 
@@ -30,7 +29,7 @@ There are two methods that you can use to install this BSP. We highly recommend 
  4. Add https://www.adafruit.com/package_adafruit_index.json as an 'Additional Board Manager URL'
  5. Restart the Arduino IDE
  6. Open the Boards Manager from the Tools -> Board menu and install 'Adafruit nRF52 by Adafruit'
- 7. Once the BSP is installed, select 'Adafruit Bluefruit nRF52 Feather' from the Tools -> Board menu, which will update your system config to use the right compiler and settings for the nRF52.
+ 7. Once the BSP is installed, select 'Adafruit Feather nRF52840 Express' from the Tools -> Board menu, which will update your system config to use the right compiler and settings for the nRF52.
 
 ### Optional (Core Development): Adafruit nRF52 BSP via git
 
@@ -51,7 +50,7 @@ There are two methods that you can use to install this BSP. We highly recommend 
    ```
    
  6. Restart the Arduino IDE
- 7. Once the BSP is installed, select 'Adafruit Bluefruit nRF52 Feather' from the Tools -> Board menu, which will update your system config to use the right compiler and settings for the nRF52.
+ 7. Once the BSP is installed, select 'Adafruit Feather nRF52840 Express' from the Tools -> Board menu, which will update your system config to use the right compiler and settings for the nRF52.
 
 ### Adafruit's nrfutil tools
 
@@ -68,11 +67,21 @@ $ pip3 install adafruit-nrfutil --user
 
 - [SiLabs CP2104 driver](http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx) is required for USB to Serial when using with Feather nRF52832
 
-## Bootloader Support
+## Bootloader
 
-### Upgrade existing Bootloader
+Bootloader can be updated via UF2 file or DFU if already existed. Or flash on new blank chip using following guide
 
-Bluefruit's Bootloader is self-upgradable, you could upgrade to the latest Bootloader + Softdevice using the serial port within Arduino IDE.
+## Update Bootloader with UF2 ( nRF52840 only and require 0.4.0+ )
+
+This only works with nRF52840 and require existing bootloader version is at least 0.4.0:
+
+- Quickly doulbe tap reset button to put your board in to bootloader mode. A mass storage device i.e `FTHR840BOOT` will appear
+- Download latest UF2 for your board i.e `update-{BOARD}-{version}_nosd.uf2` from [Adafruit_nRF52_Bootloader release page](https://github.com/adafruit/Adafruit_nRF52_Bootloader/releases)
+- Drap and drop the UF2 file into `FTHR840BOOT` drive to perform update then wait until the board reset.x
+
+### Update Bootloader with DFU
+
+To upgrade to the latest Bootloader + Softdevice using the serial port within Arduino IDE.
 
 - Select `Tools > Board > Adafruit Bluefruit Feather52`
 - Select `Tools > Programmer > Bootloader DFU for Bluefruit nRF52`
