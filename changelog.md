@@ -1,5 +1,15 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.22.1 - 2021.05.26
+
+- Fix warnings "changing start of section .bss by 4 bytes"
+- Fix various warnings when compiling with all warnings.
+- Bump included TinyUSB to 1.0.3
+- remove `Raytac MDBT50Q - RX` variant
+- Update included bootloader binaries from 0.3.2 to 0.5.0
+- Use CMSIS 5.4 header from tool package
+- Fix nrfjprog file not file on windows.
+
 ## 0.22.0 - 2021.05.19
 
 This version implement comprehensive LESC and Legacy pairing using dynamic & static Passkey.
