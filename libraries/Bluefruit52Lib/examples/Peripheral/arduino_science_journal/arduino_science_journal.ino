@@ -84,7 +84,7 @@ void onPDMdata() {
 
 uint16_t getSoundAverage() {
   uint32_t avg = 0;
-  for (int i = 0; i < sizeof(soundSampleBuffer)/sizeof(soundSampleBuffer[0]); i++) {
+  for (uint32_t i = 0; i < sizeof(soundSampleBuffer)/sizeof(soundSampleBuffer[0]); i++) {
     avg += soundSampleBuffer[i]*soundSampleBuffer[i];
   }
   return sqrt(avg);

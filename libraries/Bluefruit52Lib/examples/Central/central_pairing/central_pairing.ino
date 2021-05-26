@@ -310,6 +310,9 @@ void pairing_complete_callback(uint16_t conn_handle, uint8_t auth_status)
   }else
   {
     Serial.println("Failed");
+
+    // disconnect
+    conn->disconnect();
   }
 
 #ifdef USE_ARCADA
@@ -321,9 +324,6 @@ void pairing_complete_callback(uint16_t conn_handle, uint8_t auth_status)
   {
     tft->setTextColor(ARCADA_RED);
     tft->print("Failed ");
-
-    // disconnect
-    conn->disconnect();
   }
 
   tft->setTextColor(ARCADA_WHITE);
