@@ -496,3 +496,57 @@ particle_xenon.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 particle_xenon.menu.debug.l3=Level 3 (Segger SystemView)
 particle_xenon.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 particle_xenon.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# ----------------------------------
+# Makerdiary Pitaya Go
+# ----------------------------------
+pitayago.name=Makerdiary Pitaya Go
+
+# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+pitayago.vid.0=0x239A
+pitayago.pid.0=0x8029
+pitayago.vid.1=0x239A
+pitayago.pid.1=0x0029
+pitayago.vid.2=0x239A
+pitayago.pid.2=0x002A
+pitayago.vid.3=0x239A
+pitayago.pid.3=0x802A
+
+# Upload
+pitayago.bootloader.tool=bootburn
+pitayago.upload.tool=nrfutil
+pitayago.upload.protocol=nrfutil
+pitayago.upload.use_1200bps_touch=true
+pitayago.upload.wait_for_upload_port=true
+pitayago.upload.maximum_size=815104
+pitayago.upload.maximum_data_size=237568
+
+# Build
+pitayago.build.mcu=cortex-m4
+pitayago.build.f_cpu=64000000
+pitayago.build.board=NRF52840_FEATHER
+pitayago.build.core=nRF5
+pitayago.build.variant=makerdiary_pitaya_go
+pitayago.build.usb_manufacturer="Makerdiary"
+pitayago.build.usb_product="Makerdiary Pitaya Go"
+pitayago.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+pitayago.build.ldscript=nrf52840_s140_v6.ld
+pitayago.build.vid=0x239A
+pitayago.build.pid=0x8029
+
+# SofDevice Menu
+pitayago.menu.softdevice.s140v6=0.5.0 SoftDevice s140 6.1.1
+pitayago.menu.softdevice.s140v6.build.sd_name=s140
+pitayago.menu.softdevice.s140v6.build.sd_version=6.1.1
+pitayago.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+pitayago.menu.debug.l0=Level 0 (Release)
+pitayago.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+pitayago.menu.debug.l1=Level 1 (Error Message)
+pitayago.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+pitayago.menu.debug.l2=Level 2 (Full Debug)
+pitayago.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+pitayago.menu.debug.l3=Level 3 (Segger SystemView)
+pitayago.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+pitayago.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
