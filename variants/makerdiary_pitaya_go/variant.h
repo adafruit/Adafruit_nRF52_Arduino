@@ -133,7 +133,6 @@ static const uint8_t WIFI_EN    = (39);
 static const uint8_t WIFI_RST   = (37);
 static const uint8_t WIFI_WAKE  = (40);
 
-
 /*
  * Wire Interfaces
  */

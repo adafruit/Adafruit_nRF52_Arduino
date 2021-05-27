@@ -75,8 +75,6 @@ const uint32_t g_ADigitalPinMap[] =
 //  _PINNUM(0, 18), // P0.18 is RESET (RESET BUTTON)
 };
 
-
-
 void initVariant()
 {
   // RGB LED
@@ -89,4 +87,3 @@ void initVariant()
   pinMode(PIN_LED3, OUTPUT);
   ledOff(PIN_LED3);
 }
-
