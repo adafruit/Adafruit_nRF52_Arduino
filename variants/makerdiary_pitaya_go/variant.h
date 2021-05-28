@@ -124,14 +124,14 @@ static const uint8_t TXD  = PIN_SERIAL1_TX;
 /*
  * Onboard ATWINC1500B WiFi Module
  */
-static const uint8_t WIFI_SS    = (36);
+static const uint8_t WIFI_SS    = 36;
 static const uint8_t WIFI_MISO  = PIN_SPI_MISO;
 static const uint8_t WIFI_MOSI  = PIN_SPI_MOSI;
 static const uint8_t WIFI_SCK   = PIN_SPI_SCK;
-static const uint8_t WIFI_IRQ   = (33);
-static const uint8_t WIFI_EN    = (39);
-static const uint8_t WIFI_RST   = (37);
-static const uint8_t WIFI_WAKE  = (40);
+static const uint8_t WIFI_IRQ   = 33;
+static const uint8_t WIFI_EN    = 39;
+static const uint8_t WIFI_RST   = 37;
+static const uint8_t WIFI_WAKE  = 40;
 
 /*
  * Wire Interfaces
@@ -142,12 +142,12 @@ static const uint8_t WIFI_WAKE  = (40);
 // #define PIN_WIRE_SCL       ()
 
 // QSPI Pins
-#define PIN_QSPI_SCK       25
-#define PIN_QSPI_CS        24
-#define PIN_QSPI_IO0       27
-#define PIN_QSPI_IO1       22
-#define PIN_QSPI_IO2       26
-#define PIN_QSPI_IO3       23
+#define PIN_QSPI_SCK       (25)
+#define PIN_QSPI_CS        (24)
+#define PIN_QSPI_IO0       (27)
+#define PIN_QSPI_IO1       (22)
+#define PIN_QSPI_IO2       (26)
+#define PIN_QSPI_IO3       (23)
 
 // On-board QSPI Flash
 // If EXTERNAL_FLASH_DEVICES is not defined, all supported devices will be used
