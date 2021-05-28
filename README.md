@@ -46,7 +46,9 @@ There are two methods that you can use to install this BSP. We highly recommend 
  5. Clone this repo & its submodules:
 
    ```
-   git clone --recurse-submodules https://github.com/adafruit/Adafruit_nRF52_Arduino.git
+   git clone https://github.com/adafruit/Adafruit_nRF52_Arduino.git
+   cd Adafruit_nRF52_Arduino
+   git submodule update --init
    ```
    
  6. Restart the Arduino IDE
