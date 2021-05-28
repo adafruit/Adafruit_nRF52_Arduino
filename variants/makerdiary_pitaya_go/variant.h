@@ -87,39 +87,39 @@ static const uint8_t P25   = 14;
 #define PIN_A6               (19)
 #define PIN_A7               (20)
 
-static const uint8_t A1  = PIN_A1;
-static const uint8_t A2  = PIN_A2;
-static const uint8_t A3  = PIN_A3;
-static const uint8_t A4  = PIN_A4;
-static const uint8_t A5  = PIN_A5;
-static const uint8_t A6  = PIN_A6;
-static const uint8_t A7  = PIN_A7;
-#define ADC_RESOLUTION    14
+static const uint8_t A1    = PIN_A1;
+static const uint8_t A2    = PIN_A2;
+static const uint8_t A3    = PIN_A3;
+static const uint8_t A4    = PIN_A4;
+static const uint8_t A5    = PIN_A5;
+static const uint8_t A6    = PIN_A6;
+static const uint8_t A7    = PIN_A7;
+#define ADC_RESOLUTION       14
 
 /*
  * Other Pins
  */
-#define PIN_VBAT          PIN_A0
-#define PIN_NFC1          (31)
-#define PIN_NFC2          (32)
+#define PIN_VBAT             PIN_A0
+#define PIN_NFC1             (31)
+#define PIN_NFC2             (32)
 
 /*
  * Serial interfaces
  */
-#define PIN_SERIAL1_RX    (15)
-#define PIN_SERIAL1_TX    (16)
+#define PIN_SERIAL1_RX       (15)
+#define PIN_SERIAL1_TX       (16)
 
-static const uint8_t RXD  = PIN_SERIAL1_RX;
-static const uint8_t TXD  = PIN_SERIAL1_TX;
+static const uint8_t RXD   = PIN_SERIAL1_RX;
+static const uint8_t TXD   = PIN_SERIAL1_TX;
 
 /*
  * SPI Interfaces
  */
 #define SPI_INTERFACES_COUNT 1
 
-#define PIN_SPI_MISO       (34)
-#define PIN_SPI_MOSI       (38)
-#define PIN_SPI_SCK        (35)
+#define PIN_SPI_MISO         (34)
+#define PIN_SPI_MOSI         (38)
+#define PIN_SPI_SCK          (35)
 
 /*
  * Onboard ATWINC1500B WiFi Module
@@ -142,12 +142,12 @@ static const uint8_t WIFI_WAKE  = 40;
 // #define PIN_WIRE_SCL       ()
 
 // QSPI Pins
-#define PIN_QSPI_SCK       (25)
-#define PIN_QSPI_CS        (24)
-#define PIN_QSPI_IO0       (27)
-#define PIN_QSPI_IO1       (22)
-#define PIN_QSPI_IO2       (26)
-#define PIN_QSPI_IO3       (23)
+#define PIN_QSPI_SCK         (25)
+#define PIN_QSPI_CS          (24)
+#define PIN_QSPI_IO0         (27)
+#define PIN_QSPI_IO1         (22)
+#define PIN_QSPI_IO2         (26)
+#define PIN_QSPI_IO3         (23)
 
 // On-board QSPI Flash
 // If EXTERNAL_FLASH_DEVICES is not defined, all supported devices will be used
