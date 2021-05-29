@@ -524,7 +524,7 @@ pitayago.upload.maximum_data_size=237568
 # Build
 pitayago.build.mcu=cortex-m4
 pitayago.build.f_cpu=64000000
-pitayago.build.board=NRF52840_FEATHER
+pitayago.build.board=PITAYA_GO
 pitayago.build.core=nRF5
 pitayago.build.variant=makerdiary_pitaya_go
 pitayago.build.usb_manufacturer="Makerdiary"
