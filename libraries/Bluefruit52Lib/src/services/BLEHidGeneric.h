@@ -109,6 +109,7 @@ class BLEHidGeneric : public BLEService
     BLECharacteristic* _chr_boot_keyboard_output;
     BLECharacteristic* _chr_boot_mouse_input;
 
+    BLECharacteristic _chr_gamepad;
     BLECharacteristic _chr_control;
 
     static void blehid_generic_protocol_mode_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);

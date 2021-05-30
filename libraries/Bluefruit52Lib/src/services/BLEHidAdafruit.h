@@ -106,8 +106,17 @@ class BLEHidAdafruit : public BLEHidGeneric
     bool mouseScroll(uint16_t conn_hdl, int8_t scroll);
     bool mousePan(uint16_t conn_hdl, int8_t pan);
 
+    //------------- Gamepad -------------//
+    // Single connection
+    bool gamepadReport(hid_gamepad_report_t* report);
+    bool gamepadReport(int8_t x=0, int8_t y=0, int8_t z=0, int8_t rz=0, int8_t rx=0, int8_t ry=0, uint8_t hat=0, uint16_t buttons=0);
+
+    // Multiple connections
+    bool gamepadReport(uint16_t conn_hdl, hid_gamepad_report_t* report);
+    bool gamepadReport(uint16_t conn_hdl, int8_t x=0, int8_t y=0, int8_t z=0, int8_t rz=0, int8_t rx=0, int8_t ry=0, uint8_t hat=0,  uint16_t buttons=0);
+
   protected:
-    uint8_t _mse_buttons;
+    uint8_t  _mse_buttons;
     kbd_led_cb_t _kbd_led_cb;
 
     static void blehid_ada_keyboard_output_cb(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len);

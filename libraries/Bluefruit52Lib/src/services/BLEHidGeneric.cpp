@@ -43,7 +43,7 @@ enum {
 };
 
 BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_feature)
-  : BLEService(UUID16_SVC_HUMAN_INTERFACE_DEVICE), _chr_control(UUID16_CHR_HID_CONTROL_POINT)
+  : BLEService(UUID16_SVC_HUMAN_INTERFACE_DEVICE), _chr_control(UUID16_CHR_HID_CONTROL_POINT), _chr_gamepad()
 {
   _has_keyboard = _has_mouse = false;
   _report_mode = true; // default is report mode
@@ -244,6 +244,13 @@ err_t BLEHidGeneric::begin(void)
   _chr_control.setFixedLen(1);
   VERIFY_STATUS( _chr_control.begin() );
   _chr_control.write8(0);
+
+  // HID Gamepad
+  _chr_gamepad.setProperties(CHR_PROPS_READ | CHR_PROPS_NOTIFY);
+  _chr_gamepad.setFixedLen(sizeof(hid_gamepad_report_t));
+  _chr_gamepad.setPermission(SECMODE_ENC_NO_MITM, SECMODE_NO_ACCESS);
+  VERIFY_STATUS(_chr_gamepad.begin());
+  _chr_gamepad.write8(0);
 
   return ERROR_NONE;
 }
