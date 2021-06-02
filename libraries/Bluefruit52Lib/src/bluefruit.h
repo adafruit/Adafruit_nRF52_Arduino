@@ -26,7 +26,6 @@
 
 #include <Arduino.h>
 #include "bluefruit_common.h"
-#include <Adafruit_TinyUSB.h> // for Serial
 
 #define CFG_ADV_BLINKY_INTERVAL   500
 

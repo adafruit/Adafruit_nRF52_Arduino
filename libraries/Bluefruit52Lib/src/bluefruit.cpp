@@ -37,6 +37,8 @@
 #include "bluefruit.h"
 #include "utility/bonding.h"
 
+#include <Adafruit_TinyUSB.h> // for Serial
+
 #ifndef CFG_BLE_TX_POWER_LEVEL
 #define CFG_BLE_TX_POWER_LEVEL    0
 #endif
@@ -1051,7 +1053,7 @@ void AdafruitBluefruit::printInfo(void)
 
   Periph.printInfo();
 
-  /*------------- List the paried device -------------*/
+  /*------------- List the paired devices -------------*/
   if ( _prph_count )
   {
     logger.printf(title_fmt, "Peripheral Paired Devices");

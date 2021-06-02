@@ -26,6 +26,8 @@
 #include <string.h>
 #include "Adafruit_LittleFS.h"
 
+#include <Adafruit_TinyUSB.h> // for Serial
+
 using namespace Adafruit_LittleFS_Namespace;
 
 

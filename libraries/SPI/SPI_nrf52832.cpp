@@ -28,6 +28,7 @@
 #include <wiring_private.h>
 #include <assert.h>
 
+#include <Adafruit_TinyUSB.h> // for Serial
 
 const SPISettings DEFAULT_SPI_SETTINGS = SPISettings();
 
