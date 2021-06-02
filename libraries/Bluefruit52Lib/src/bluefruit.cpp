@@ -37,8 +37,6 @@
 #include "bluefruit.h"
 #include "utility/bonding.h"
 
-#include <Adafruit_TinyUSB.h> // for Serial
-
 #ifndef CFG_BLE_TX_POWER_LEVEL
 #define CFG_BLE_TX_POWER_LEVEL    0
 #endif

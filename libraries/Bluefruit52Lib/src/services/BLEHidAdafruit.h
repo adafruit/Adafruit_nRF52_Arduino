@@ -42,7 +42,6 @@
 #include "BLEHidGeneric.h"
 #include "BLEService.h"
 
-
 class BLEHidAdafruit : public BLEHidGeneric
 {
   public:
