@@ -16,14 +16,14 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef _VARIANT_CIRCUITPLAY52840_
-#define _VARIANT_CIRCUITPLAY52840_
+#ifndef _VARIANT_GENERIC52833_
+#define _VARIANT_GENERIC52833_
 
 /** Master clock frequency */
 #define VARIANT_MCK       (64000000ul)
 
-//#define USE_LFXO      // Board uses 32khz crystal for LF
-#define USE_LFRC    // Board uses RC for LF
+#define USE_LFXO      // Board uses 32khz crystal for LF
+// define USE_LFRC    // Board uses RC for LF
 
 /*----------------------------------------------------------------------------
  *        Headers
@@ -37,48 +37,46 @@ extern "C"
 #endif // __cplusplus
 
 // Number of pins defined in PinDescription array
-#define PINS_COUNT           (36)
-#define NUM_DIGITAL_PINS     (36)
-#define NUM_ANALOG_INPUTS    (8)
+#define PINS_COUNT           (48)
+#define NUM_DIGITAL_PINS     (48)
+#define NUM_ANALOG_INPUTS    (6)
 #define NUM_ANALOG_OUTPUTS   (0)
 
 // LEDs
-#define PIN_LED1             (13)
-#define PIN_NEOPIXEL         (8)
-#define NEOPIXEL_NUM         10
+#define PIN_LED1             (24)
+#define PIN_LED2             (25)
+#define PIN_LED3             (21)
+
 
 #define LED_BUILTIN          PIN_LED1
+#define LED_CONN             PIN_LED2
 
 #define LED_RED              PIN_LED1
-#define LED_BLUE             PIN_LED1
+#define LED_BLUE             PIN_LED2
 
-#define LED_STATE_ON         1         // State when LED is litted
+#define LED_STATE_ON         0         // State when LED is litted
 
-// Buttons
-#define PIN_BUTTON1          (4)    // Button A (Left)
-#define PIN_BUTTON2          (5)    // Button B (Right)
-
-// Microphone
-#define PIN_PDM_DIN           24
-#define PIN_PDM_CLK           25
-#define PIN_PDM_PWR           -1  // not used
-
-// Buzzer
-#define PIN_BUZZER            12
+/*
+ * Buttons
+ */
+/*
+#define PIN_BUTTON1          11
+#define PIN_BUTTON2          12
+#define PIN_BUTTON3          24
+#define PIN_BUTTON4          25
+*/
 
 /*
  * Analog pins
  */
-#define PIN_A0               (14)  // not really analog!
-#define PIN_A1               (15)
-#define PIN_A2               (16)
-#define PIN_A3               (17)
-#define PIN_A4               (18)
-#define PIN_A5               (19)
-#define PIN_A6               (20)
-#define PIN_A7               (21) // not really analog!
-#define PIN_A8               (22)
-#define PIN_A9               (23)
+#define PIN_A0               (3)
+#define PIN_A1               (4)
+#define PIN_A2               (28)
+#define PIN_A3               (29)
+#define PIN_A4               (30)
+#define PIN_A5               (31)
+#define PIN_A6               (0xff)
+#define PIN_A7               (0xff)
 
 static const uint8_t A0  = PIN_A0 ;
 static const uint8_t A1  = PIN_A1 ;
@@ -88,26 +86,37 @@ static const uint8_t A4  = PIN_A4 ;
 static const uint8_t A5  = PIN_A5 ;
 static const uint8_t A6  = PIN_A6 ;
 static const uint8_t A7  = PIN_A7 ;
-static const uint8_t A8  = PIN_A8 ;
-static const uint8_t A9  = PIN_A9 ;
 #define ADC_RESOLUTION    14
+
+// Other pins
+#define PIN_AREF           (2)
+#define PIN_NFC1           (9)
+#define PIN_NFC2           (10)
+
+static const uint8_t AREF = PIN_AREF;
 
 /*
  * Serial interfaces
  */
-#define PIN_SERIAL1_RX       (0)
-#define PIN_SERIAL1_TX       (1)
+
+// Arduino Header D0, D1
+#define PIN_SERIAL1_RX      (33) // P1.01
+#define PIN_SERIAL1_TX      (34) // P1.02
+
+// Connected to Jlink CDC
+#define PIN_SERIAL2_RX      (8)
+#define PIN_SERIAL2_TX      (6)
 
 /*
  * SPI Interfaces
  */
 #define SPI_INTERFACES_COUNT 1
 
-#define PIN_SPI_MISO         (10)
-#define PIN_SPI_MOSI         (2)
-#define PIN_SPI_SCK          (3)
+#define PIN_SPI_MISO         (46)
+#define PIN_SPI_MOSI         (45)
+#define PIN_SPI_SCK          (47)
 
-static const uint8_t SS   = (0);
+static const uint8_t SS   = 44 ;
 static const uint8_t MOSI = PIN_SPI_MOSI ;
 static const uint8_t MISO = PIN_SPI_MISO ;
 static const uint8_t SCK  = PIN_SPI_SCK ;
@@ -115,34 +124,24 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 /*
  * Wire Interfaces
  */
-#define WIRE_INTERFACES_COUNT 2
+#define WIRE_INTERFACES_COUNT 1
 
-#define PIN_WIRE_SDA        (2)
-#define PIN_WIRE_SCL        (3)
+#define PIN_WIRE_SDA         (26)
+#define PIN_WIRE_SCL         (27)
 
-#define PIN_WIRE1_SDA       (28)
-#define PIN_WIRE1_SCL       (26)
-
+// QSPI Pins
 /*
- * QSPI Interfaces
- */
-#define PIN_QSPI_SCK         29
-#define PIN_QSPI_CS          30
-#define PIN_QSPI_IO0         31
-#define PIN_QSPI_IO1         32
-#define PIN_QSPI_IO2         33
-#define PIN_QSPI_IO3         34
+#define PIN_QSPI_SCK         19
+#define PIN_QSPI_CS          17
+#define PIN_QSPI_IO0         20
+#define PIN_QSPI_IO1         21
+#define PIN_QSPI_IO2         22
+#define PIN_QSPI_IO3         23
 
 // On-board QSPI Flash
-#define EXTERNAL_FLASH_DEVICES   GD25Q16C
+#define EXTERNAL_FLASH_DEVICES   MX25R6435F
 #define EXTERNAL_FLASH_USE_QSPI
-
-/*
- * PDM Interfaces
- */
-#define PIN_PDM_DIN         24
-#define PIN_PDM_CLK         25
-#define PIN_PDM_PWR         -1 // not used
+*/
 
 #ifdef __cplusplus
 }

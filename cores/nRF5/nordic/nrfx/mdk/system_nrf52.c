@@ -197,7 +197,7 @@ void SystemInit(void)
             NRF_UICR->PSELRESET[1] = 21;
             while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
             NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Ren << NVMC_CONFIG_WEN_Pos;
-            while (NRF_NVMC->READY == NVMC_READY_READY_Busy){ }
+            while (NRF_NVMC->READY == NVMC_READY_READY_Busy){}
             NVIC_SystemReset();
         }
     #endif
