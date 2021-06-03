@@ -23,11 +23,16 @@
  * - https://www.bluetooth.com/blog/bluetooth-pairing-passkey-entry/
  * - https://www.bluetooth.com/blog/bluetooth-pairing-part-4/
  *
- * This example will "display" (print) passkey to Serial, and get digital input for yes/no
- * therefore the IO Capacities is set to Display = true, Yes/No = true, Keypad = false.
+ * This example will display Passkey on the TFT and wait for user input to accept or decline
+ * the pairing. Therefore the IO Capacities is set to Display = true, Yes/No = true, Keypad = false.
  *
- * Note For TFT enabled board such as CLUE, Circuit Play Bluefruit with Gizmo please use the `pairing_passkey_arcada` example.
- * Where the passkey is displayed on the TFT for better experience.
+ * Following boards with TFT are supported
+ *  - Adafruit CLUE : https://www.adafruit.com/product/4500
+ *  - Circuit Playground Bluefruit: https://www.adafruit.com/product/4333
+ *  - TFT Gizmo : https://www.adafruit.com/product/4367
+ *
+ *  Note: If your board does not have TFT, please use the 'pairing_passkey' where it uses Serial
+ *  to display the passkey
  */
 
 #include <bluefruit.h>
@@ -35,26 +40,10 @@
 #include <InternalFileSystem.h>
 
 #include <Adafruit_TinyUSB.h>
+#include <Adafruit_Arcada.h>
 
-// Use built-in buttons if available, else use A0, A1
-#ifdef PIN_BUTTON1
-  #define BUTTON_YES  PIN_BUTTON1
-#else
-  #define BUTTON_YES  A0
-#endif
-
-#ifdef PIN_BUTTON2
-  #define BUTTON_NO   PIN_BUTTON2
-#else
-  #define BUTTON_NO   A1
-#endif
-
-// Circuit Play Bluefruit has button active state = high
-#ifdef ARDUINO_NRF52840_CIRCUITPLAY
-  uint32_t const button_active_state = HIGH;
-#else
-  uint32_t const button_active_state = LOW;
-#endif
+Adafruit_Arcada arcada;
+Adafruit_SPITFT* tft;
 
 // BLE Service
 BLEUart bleuart; // uart over ble
@@ -66,16 +55,14 @@ void setup()
   Serial.println("Bluefruit52 Pairing Display Example");
   Serial.println("-----------------------------------\n");
 
-  // pull high for active low, or pull low for active high
-  if (button_active_state == HIGH)
-  {
-    pinMode(BUTTON_YES, INPUT_PULLDOWN);
-    pinMode(BUTTON_NO, INPUT_PULLDOWN);
-  }else
-  {
-    pinMode(BUTTON_YES, INPUT_PULLUP);
-    pinMode(BUTTON_NO, INPUT_PULLUP);
-  }
+  arcada.arcadaBegin();
+  arcada.displayBegin();
+  arcada.setBacklight(255);
+
+  tft = arcada.display;
+  tft->setCursor(0, 0);
+  tft->setTextWrap(true);
+  tft->setTextSize(2);
 
   // Setup the BLE LED to be enabled on CONNECT
   // Note: This is actually the default behavior, but provided
@@ -118,6 +105,12 @@ void setup()
   Serial.println("Configure BLE Uart to require man-in-the-middle protection for PIN pairing");
   bleuart.setPermission(SECMODE_ENC_WITH_MITM, SECMODE_ENC_WITH_MITM);
   bleuart.begin();
+
+  tft->fillScreen(ARCADA_BLACK);
+  tft->setTextColor(ARCADA_WHITE);
+  tft->setTextSize(2);
+  tft->setCursor(0, 0);
+  tft->print("Advertising...");
 
   Serial.println("Please use Adafruit's Bluefruit LE app to connect in UART mode");
   Serial.println("Your phone should pop-up PIN input");
@@ -187,8 +180,10 @@ void connect_callback(uint16_t conn_handle)
   char central_name[32] = { 0 };
   connection->getPeerName(central_name, sizeof(central_name));
 
-  Serial.print("Connected to ");
-  Serial.println(central_name);
+  tft->fillScreen(ARCADA_BLACK);
+  tft->setTextSize(2);
+  tft->setCursor(0, 0);
+  tft->println("Connected");
 }
 
 // callback invoked when pairing passkey is generated
@@ -198,51 +193,62 @@ void connect_callback(uint16_t conn_handle)
 //                  reject (false) the pairing process. Otherwise, return value has no effect
 bool pairing_passkey_callback(uint16_t conn_handle, uint8_t const passkey[6], bool match_request)
 {
-  Serial.println("Pairing Passkey");
-  Serial.printf("    %.3s %.3s\n", passkey, passkey+3);
+  tft->fillScreen(ARCADA_BLACK);
+  tft->println("Pairing Passkey\n");
+  tft->setTextColor(ARCADA_YELLOW);
+  tft->setTextSize(4);
+  tft->printf("  %.3s %.3s\n", passkey, passkey+3);
 
-  // match_request means peer wait for our approval
-  // return true to accept, false to decline
+  tft->setTextColor(ARCADA_WHITE);
+  tft->setTextSize(2);
+
+  // match_request means peer wait for our approval (return true)
   if (match_request)
   {
-    bool accept_pairing = false;
-
-    Serial.println("Do you want to pair");
-    Serial.printf("Press button <%u> to Decline, button <%u> to Accept\n", BUTTON_YES, BUTTON_NO);
-
     // timeout for pressing button
     uint32_t start_time = millis();
 
+    tft->println("\nDo you accept ?\n\n");
+    tft->setTextSize(3);
+
+    // Yes <-> No on CPB is reversed since GIZMO TFT is on the back of CPB
+    #if ARDUINO_NRF52840_CIRCUITPLAY
+      tft->setTextColor(ARCADA_GREEN);
+      tft->print("< Yes");
+      tft->setTextColor(ARCADA_RED);
+      tft->println("    No >");
+    #else
+      tft->setTextColor(ARCADA_RED);
+      tft->print("< No");
+      tft->setTextColor(ARCADA_GREEN);
+      tft->println("    Yes >");
+    #endif
+
+    tft->setTextColor(ARCADA_WHITE);
+    tft->setTextSize(2);
+    tft->println();
+
     // wait until either button is pressed (30 seconds timeout)
+    uint32_t justReleased;
     while( millis() < start_time + 30000 )
     {
-      // user press YES
-      if (digitalRead(BUTTON_YES) == button_active_state)
-      {
-        accept_pairing = true;
-        break;
-      }
-
-      // user press NO
-      if (digitalRead(BUTTON_NO) == button_active_state)
-      {
-        accept_pairing = false;
-        break;
-      }
-
       // Peer is disconnected while waiting for input
       if ( !Bluefruit.connected(conn_handle) ) break;
+
+      arcada.readButtons();
+      justReleased = arcada.justReleasedButtons();
+
+      // user press either button
+      if (justReleased) break;
     }
 
-    if (accept_pairing)
-    {
-      Serial.println("Accepted");
-    }else
-    {
-      Serial.println("Declined");
-    }
+    // Right = accept
+    if (justReleased & ARCADA_BUTTONMASK_RIGHT) return true;
 
-    return accept_pairing;
+    // Left = decline
+    if (justReleased & ARCADA_BUTTONMASK_LEFT) return false;
+
+    return false;
   }
 
   return true;
@@ -252,16 +258,23 @@ void pairing_complete_callback(uint16_t conn_handle, uint8_t auth_status)
 {
   if (auth_status == BLE_GAP_SEC_STATUS_SUCCESS)
   {
-    Serial.println("Succeeded");
+    tft->setTextColor(ARCADA_GREEN);
+    tft->println("Succeeded");
   }else
   {
-    Serial.println("Failed");
+    tft->setTextColor(ARCADA_RED);
+    tft->println("Failed");
   }
+
+  tft->setTextColor(ARCADA_WHITE);
+  tft->setTextSize(2);
 }
 
 void connection_secured_callback(uint16_t conn_handle)
 {
-  Serial.println("Secured");
+  tft->setTextColor(ARCADA_YELLOW);
+  tft->println("secured");
+  tft->setTextColor(ARCADA_WHITE);
 }
 
 /**
@@ -272,8 +285,12 @@ void connection_secured_callback(uint16_t conn_handle)
 void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
   (void) conn_handle;
-  (void) reason;
 
   Serial.println();
   Serial.print("Disconnected, reason = 0x"); Serial.println(reason, HEX);
+
+  tft->fillScreen(ARCADA_BLACK);
+  tft->setTextSize(2);
+  tft->setCursor(0, 0);
+  tft->println("Advertising ...");
 }

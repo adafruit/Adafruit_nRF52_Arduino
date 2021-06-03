@@ -28,6 +28,8 @@
 #include <wiring_private.h>
 #include <assert.h>
 
+#include <Adafruit_TinyUSB.h> // for Serial
+
 SPIClass::SPIClass(NRF_SPIM_Type *p_spi, uint8_t uc_pinMISO, uint8_t uc_pinSCK, uint8_t uc_pinMOSI)
 {
   initialized = false;
