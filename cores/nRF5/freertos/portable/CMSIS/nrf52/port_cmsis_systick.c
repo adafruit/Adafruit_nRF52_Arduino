@@ -189,6 +189,12 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
             (void) __get_FPSCR();
             NVIC_ClearPendingIRQ(FPU_IRQn);
 #endif
+
+#ifdef NRF_CRYPTOCELL
+            // manually clear CryptoCell else it could prevent low power mode
+            NVIC_ClearPendingIRQ(CRYPTOCELL_IRQn);
+#endif
+
 #ifdef SOFTDEVICE_PRESENT // TODO
             uint8_t sd_en = 0;
             (void) sd_softdevice_is_enabled(&sd_en);

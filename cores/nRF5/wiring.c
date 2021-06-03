@@ -96,6 +96,11 @@ void waitForEvent(void)
   uint8_t sd_en = 0;
   (void) sd_softdevice_is_enabled(&sd_en);
 
+#ifdef NRF_CRYPTOCELL
+  // manually clear CryptoCell else it could prevent low power mode
+  NVIC_ClearPendingIRQ(CRYPTOCELL_IRQn);
+#endif
+
   if ( sd_en )
   {
     (void) sd_app_evt_wait();
