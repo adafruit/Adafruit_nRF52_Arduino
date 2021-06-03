@@ -38,7 +38,6 @@ void setup()
   // HID Device can have a min connection interval of 9*1.25 = 11.25 ms
   Bluefruit.Periph.setConnInterval(9, 16); // min = 9*1.25=11.25 ms, max = 16*1.25=20ms
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-  Bluefruit.setName("Bluefruit52");
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");

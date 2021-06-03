@@ -72,7 +72,7 @@ void setup()
   // Init Bluefruit
   Bluefruit.begin();
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-  Bluefruit.setName("Bluefruit52");
+
   Bluefruit.Periph.setConnectCallback(connect_callback);
 
   // To be consistent OTA DFU should be added first if it exists

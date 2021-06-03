@@ -40,8 +40,8 @@ char nibble_to_hex(uint8_t nibble) {  // convert a 4-bit nibble to a hexadecimal
 
 void setup() 
 {
-  Serial.begin(115200);
-  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+//  Serial.begin(115200);
+//  while ( !Serial ) delay(10);
 
   Serial.println("Bluefruit52 Color Advertising Example");
   Serial.println("----------------------------------------\n");

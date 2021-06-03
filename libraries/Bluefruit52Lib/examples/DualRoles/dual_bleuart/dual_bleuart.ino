@@ -42,7 +42,6 @@ void setup()
   // SRAM usage required by SoftDevice will increase with number of connections
   Bluefruit.begin(1, 1);
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-  Bluefruit.setName("Bluefruit52 duo");
 
   // Callbacks for Peripheral
   Bluefruit.Periph.setConnectCallback(prph_connect_callback);

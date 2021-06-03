@@ -186,9 +186,6 @@ void setup()
   
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
 
-  /* Set the device name */
-  Bluefruit.setName("Bluefruit52");
-
   /* Set the LED interval for blinky pattern on BLUE LED */
   Bluefruit.setConnLedInterval(250);
 

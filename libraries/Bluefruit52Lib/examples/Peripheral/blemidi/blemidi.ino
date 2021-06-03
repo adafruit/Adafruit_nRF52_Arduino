@@ -50,7 +50,6 @@ void setup()
   Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);  
 
   Bluefruit.begin();
-  Bluefruit.setName("Bluefruit52 MIDI");
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
 
   // Setup the on board blue LED to be enabled on CONNECT

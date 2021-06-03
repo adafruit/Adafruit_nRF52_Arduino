@@ -39,10 +39,6 @@ void setup()
   Serial.println("Initialise the Bluefruit nRF52 module");
   Bluefruit.begin();
 
-  // Set the advertised device name (keep it short!)
-  Serial.println("Setting Device Name to 'Feather52 HRM'");
-  Bluefruit.setName("Bluefruit52 HRM");
-
   // Set the connect/disconnect callback handlers
   Bluefruit.Periph.setConnectCallback(connect_callback);
   Bluefruit.Periph.setDisconnectCallback(disconnect_callback);
