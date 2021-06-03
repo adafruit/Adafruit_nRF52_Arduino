@@ -22,7 +22,6 @@
 #define _SPI_H_INCLUDED
 
 #include <Arduino.h>
-
 #include "nrfx_spim.h"
 
 // SPI_HAS_TRANSACTION means SPI has

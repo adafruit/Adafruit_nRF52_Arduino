@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 name=Adafruit nRF52 Boards
-version=0.21.0
+version=0.22.2
 
 # Compile variables
 # -----------------
@@ -58,14 +58,6 @@ build.debug_flags=-DCFG_DEBUG=0
 build.logger_flags=-DCFG_LOGGER=1
 build.sysview_flags=-DCFG_SYSVIEW=0
 
-# common compiler for nrf
-rtos.path={build.core.path}/freertos
-nordic.path={build.core.path}/nordic
-
-# build.logger_flags and build.sysview_flags are intentionally empty,
-# to allow modification via a user's own boards.local.txt or platform.local.txt files.
-build.flags.nrf= -DSOFTDEVICE_PRESENT -DARDUINO_NRF52_ADAFRUIT -DNRF52_SERIES -DDX_CC_TEE -DLFS_NAME_MAX=64 {compiler.optimization_flag} {build.debug_flags} {build.logger_flags} {build.sysview_flags} "-I{build.core.path}/cmsis/Core/Include" "-I{build.core.path}/cmsis/DSP/Include" "-I{nordic.path}" "-I{nordic.path}/nrfx" "-I{nordic.path}/nrfx/hal" "-I{nordic.path}/nrfx/mdk" "-I{nordic.path}/nrfx/soc" "-I{nordic.path}/nrfx/drivers/include" "-I{nordic.path}/nrfx/drivers/src" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include/nrf52" "-I{rtos.path}/Source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" "-I{build.core.path}/TinyUSB" "-I{build.core.path}/TinyUSB/Adafruit_TinyUSB_ArduinoCore" "-I{build.core.path}/TinyUSB/Adafruit_TinyUSB_ArduinoCore/tinyusb/src"
-
 # usb flags
 build.flags.usb= -DUSBCON -DUSE_TINYUSB -DUSB_VID={build.vid} -DUSB_PID={build.pid} '-DUSB_MANUFACTURER={build.usb_manufacturer}' '-DUSB_PRODUCT={build.usb_product}'
 
@@ -79,6 +71,18 @@ compiler.libraries.ldflags={build.core.path}/cmsis/DSP/Lib/GCC/libarm_cortexM4lf
 compiler.elf2bin.extra_flags=
 compiler.elf2hex.extra_flags=
 
+compiler.arm.cmsis.c.flags="-I{runtime.tools.CMSIS-5.4.0.path}/CMSIS/Core/Include/" "-I{runtime.tools.CMSIS-5.4.0.path}/CMSIS/DSP/Include/"
+
+# TODO enable linking with libmath later on
+compiler.arm.cmsis.ldflags="-L{runtime.tools.CMSIS-5.4.0.path}/CMSIS/Lib/GCC/" -larm_cortexM4lf_math
+
+# common compiler for nrf
+rtos.path={build.core.path}/freertos
+nordic.path={build.core.path}/nordic
+
+# build.logger_flags and build.sysview_flags are intentionally empty,
+# to allow modification via a user's own boards.local.txt or platform.local.txt files.
+build.flags.nrf= -DSOFTDEVICE_PRESENT -DARDUINO_NRF52_ADAFRUIT -DNRF52_SERIES -DDX_CC_TEE -DLFS_NAME_MAX=64 {compiler.optimization_flag} {build.debug_flags} {build.logger_flags} {build.sysview_flags} {compiler.arm.cmsis.c.flags} "-I{nordic.path}" "-I{nordic.path}/nrfx" "-I{nordic.path}/nrfx/hal" "-I{nordic.path}/nrfx/mdk" "-I{nordic.path}/nrfx/soc" "-I{nordic.path}/nrfx/drivers/include" "-I{nordic.path}/nrfx/drivers/src" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include" "-I{nordic.path}/softdevice/{build.sd_name}_nrf52_{build.sd_version}_API/include/nrf52" "-I{rtos.path}/Source/include" "-I{rtos.path}/config" "-I{rtos.path}/portable/GCC/nrf52" "-I{rtos.path}/portable/CMSIS/nrf52" "-I{build.core.path}/sysview/SEGGER" "-I{build.core.path}/sysview/Config" "-I{runtime.platform.path}/libraries/Adafruit_TinyUSB_Arduino/src/arduino"
 
 
 # Compile patterns
@@ -146,7 +150,7 @@ tools.nrfutil.upload.pattern="{cmd}" {upload.verbose} dfu serial -pkg "{build.pa
 #***************************************************
 
 # Bootloader version
-tools.bootburn.bootloader.file={runtime.platform.path}/bootloader/{build.variant}/{build.variant}_bootloader-0.3.2_{build.sd_name}_{build.sd_version}
+tools.bootburn.bootloader.file={runtime.platform.path}/bootloader/{build.variant}/{build.variant}_bootloader-0.5.0_{build.sd_name}_{build.sd_version}
 
 tools.bootburn.bootloader.params.verbose=
 tools.bootburn.bootloader.params.quiet=

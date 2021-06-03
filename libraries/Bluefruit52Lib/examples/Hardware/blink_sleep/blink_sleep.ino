@@ -11,6 +11,8 @@
   by Pierre Constantineau
 
 */
+#include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 #include <bluefruit.h>
 
 #define WAKE_LOW_PIN  PIN_A0

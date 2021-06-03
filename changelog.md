@@ -1,12 +1,32 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-## 0.22.0 - WIP
+## 0.22.1 - 2021.05.26
+
+- Fix warnings "changing start of section .bss by 4 bytes"
+- Fix various warnings when compiling with all warnings.
+- Bump included TinyUSB to 1.0.3
+- remove `Raytac MDBT50Q - RX` variant
+- Update included bootloader binaries from 0.3.2 to 0.5.0
+- Use CMSIS 5.4 header from tool package
+- Fix nrfjprog file not file on windows.
+- Update included adafruit-nrfutil binaries for windows and macos to version 0.5.3post16
+
+## 0.22.0 - 2021.05.19
 
 This version implement comprehensive LESC and Legacy pairing using dynamic & static Passkey.
 
 - Support static passkey (Legacy only)
 - Support LESC on nRF52840 using hardware-accelerated ARM CryptoCell CC310 provided by [Adafruit_nRFCypto](https://github.com/adafruit/Adafruit_nRFCrypto). The library is included as submodule and released together with the BSP.
 - Rework bonding mechanism to use IRK for peer finding. It is advisable to run `clearbonds` example to clean up bond files of previous version
+- Add setPins() to SPI class
+- Fix bug that with saving cccd data
+- Add more pinMode type: INPUT_SENSE_HIGH, INPUT_SENSE_LOW, OUTPUT_S0S1 etc ...
+- Optimize mutex usage in UART
+- Add analogReadVDD() function
+- Update itoa.c for compiling with c++17
+- Fix BLEBeacon endian for major and minor
+- Fix compiling with MIDI v5, adding stub for BLEMidi's beginTransmission() and endTransmission()
+- Update BSP core to work with Adafruit_TinyUSB_Arduino version 1.0.0
 
 ### BLESecurity
 
@@ -30,6 +50,7 @@ A new class BLESecurity (access with Bluefruit.Security) is added to handle secu
 - Bluefruit::requestPairing() is removed, please use the BLEConnection::requestPairing() instead
 - Bluefruit::connPaired() is removed, please use BLEConnection::secure() instead
 - Default Device name is USB_PRODUCT if available e.g CLUE, Circuit Playground Bluefruit, Feather nRF52840 Express etc ...
+- Rename function for consistency BLEPeriph's setSlaveLatency() to setConnSlaveLatency()
 
 **BLEService**
 
@@ -41,7 +62,8 @@ A new class BLESecurity (access with Bluefruit.Security) is added to handle secu
 - Added BLEConnection::secured() to check if the connection is secured/encrypted
 - Added BLEConnection::bonded() to check if we store Longterm Key with current peer
 - Removed BLEConnection:paried(), user should either use secured() or bonded() depending on the context
-- If bonded, getPeerAddr() will return peer public address instead of random address. 
+- If bonded, getPeerAddr() will return peer public address instead of random address.
+- Rename getConnSupervisionTimeout() to getSupervisionTimeout()
 
 **New Example Sketches**
 
@@ -49,6 +71,8 @@ A new class BLESecurity (access with Bluefruit.Security) is added to handle secu
 - **pairing_passkey** to use dyanmic Passkey for pairing. On Arcada compatible device such as `CLUE` or `Circuit Playground Bluefruit`, TFT display will also be used to display passkey.
 - **cental_pairing** similar to pairing_passkey but for nRF running central role
 - **ancs_arcada** for displaying ancs on arcada such CLUE and/or CPB.
+- **arduino_science_journal** add sketch to run with Arduino Science Journal
+- **adv_AdafruitColor** example to tie Arduino to CircuitPython BLE color
 
 ## 0.21.0 - 2020.08.31
 

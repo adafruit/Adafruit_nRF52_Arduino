@@ -25,7 +25,6 @@
 
 #include "Stream.h"
 #include "variant.h"
-
 #include "RingBuffer.h"
 
 // WIRE_HAS_END means Wire has end()

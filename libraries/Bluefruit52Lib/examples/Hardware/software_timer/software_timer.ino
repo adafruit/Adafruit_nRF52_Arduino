@@ -12,6 +12,7 @@
  any redistribution
 *********************************************************************/
 #include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 
 /* SoftwareTimer is a helper class that uses FreeRTOS software timer
  * to invoke callback. Its periodic timing is flexible as opposed to

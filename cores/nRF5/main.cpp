@@ -15,8 +15,15 @@
 
 #define ARDUINO_MAIN
 #include "Arduino.h"
+
 #if (CFG_LOGGER == 2)
   #include <SEGGER_RTT.h>
+#endif
+
+// From the UI, setting debug level to 3 will enable SysView
+#if CFG_SYSVIEW
+#include "SEGGER_RTT.h"
+#include "SEGGER_SYSVIEW.h"
 #endif
 
 // DEBUG Level 1
@@ -27,15 +34,6 @@ void Bluefruit_printInfo() __attribute__((weak));
 void Bluefruit_printInfo() {}
 #endif
 
-// From the UI, setting debug level to 3 will enable SysView
-#if CFG_SYSVIEW
-#include "SEGGER_RTT.h"
-#include "SEGGER_SYSVIEW.h"
-#endif
-
-static TaskHandle_t  _loopHandle;
-
-
 // Weak empty variant initialization function.
 // May be redefined by variant files.
 void initVariant() __attribute__((weak));
@@ -44,9 +42,15 @@ void initVariant() { }
 #define LOOP_STACK_SZ       (256*4)
 #define CALLBACK_STACK_SZ   (256*3)
 
+static TaskHandle_t  _loopHandle;
+
 static void loop_task(void* arg)
 {
   (void) arg;
+
+#ifdef USE_TINYUSB
+  TinyUSB_Device_Init(0);
+#endif
 
 #if CFG_DEBUG
   // If Serial is not begin(), call it to avoid hard fault
@@ -80,12 +84,8 @@ int main( void )
   SEGGER_SYSVIEW_Conf();
 #endif
 
-#ifdef USE_TINYUSB
-  Adafruit_TinyUSB_Core_init();
-#endif
-
   // Create a task for loop()
-  xTaskCreate( loop_task, "loop", LOOP_STACK_SZ, NULL, TASK_PRIO_LOW, &_loopHandle);
+  xTaskCreate(loop_task, "loop", LOOP_STACK_SZ, NULL, TASK_PRIO_LOW, &_loopHandle);
 
   // Initialize callback task
   ada_callback_init(CALLBACK_STACK_SZ);

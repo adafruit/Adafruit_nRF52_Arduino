@@ -24,6 +24,8 @@
 #include <Arduino.h>
 #include <Servo.h>
 
+#include <Adafruit_TinyUSB.h> // for Serial
+
 enum
 {
   SERVO_TOKEN = 0x76726553 // 'S' 'e' 'r' 'v'

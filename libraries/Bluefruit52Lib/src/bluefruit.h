@@ -179,7 +179,7 @@ class AdafruitBluefruit
      *------------------------------------------------------------------*/
     void setMultiprotocolSemaphore(SemaphoreHandle_t mprot_event_semaphore) 
     { 
-        _mprot_event_sem= mprot_event_semaphore;
+      _mprot_event_sem= mprot_event_semaphore;
     } 
 #endif
 

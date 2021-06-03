@@ -12,6 +12,7 @@
  any redistribution
 *********************************************************************/
 #include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 
 // Interval between systick event
 #define TICK_INTERVAL_MS    50

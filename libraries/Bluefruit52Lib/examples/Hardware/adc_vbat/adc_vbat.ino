@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 
 #if defined ARDUINO_NRF52840_CIRCUITPLAY
 #define  PIN_VBAT          A8   // this is just a mock read, we'll use the light sensor, so we can run the test

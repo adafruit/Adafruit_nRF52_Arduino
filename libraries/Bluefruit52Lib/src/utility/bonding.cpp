@@ -288,7 +288,9 @@ bool bond_load_cccd(uint8_t role, uint16_t conn_hdl, ble_gap_addr_t const* id_ad
 
   file.close();
 
-  if ( !loaded ) LOG_LV1("BOND", "CCCD setting not found");
+  if ( !loaded ) {
+    LOG_LV1("BOND", "CCCD setting not found");
+  }
   return loaded;
 }
 

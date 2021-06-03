@@ -62,6 +62,9 @@ jobs:
         # https://github.com/firmata/arduino/pull/438
         git clone --depth 1 https://github.com/firmata/arduino.git $HOME/Arduino/libraries/firmata
 
+        # TODO temporarily remove TinyUSB pre-1.0.0 version install by arduino-cli
+        rm -r $HOME/Arduino/libraries/Adafruit_TinyUSB_Library
+
         # Library summary
         arduino-cli lib list
 

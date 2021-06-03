@@ -13,6 +13,7 @@
 *********************************************************************/
 
 #include <Arduino.h>
+#include <Adafruit_TinyUSB.h> // for Serial
 #include "RotaryEncoder.h"
 
 #define PIN_A     A0

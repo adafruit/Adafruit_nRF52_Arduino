@@ -1051,7 +1051,7 @@ void AdafruitBluefruit::printInfo(void)
 
   Periph.printInfo();
 
-  /*------------- List the paried device -------------*/
+  /*------------- List the paired devices -------------*/
   if ( _prph_count )
   {
     logger.printf(title_fmt, "Peripheral Paired Devices");
