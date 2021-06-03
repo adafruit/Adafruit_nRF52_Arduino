@@ -17,19 +17,21 @@
 // packet, which means you must provide a valid Manufacturer ID. Update
 // the field below to an appropriate value. For a list of valid IDs see:
 // https://www.bluetooth.com/specifications/assigned-numbers/company-identifiers
-// 0x004C is Apple (for example)
-#define MANUFACTURER_ID   0x004C 
+// 0x004C is Apple
+// 0x0822 is Adafruit
+// 0x0059 is Nordic
+#define MANUFACTURER_ID   0x0059
 
-// AirLocate UUID: E2C56DB5-DFFB-48D2-B060-D0F5A71096E0
-uint8_t beaconUuid[16] = 
-{ 
-  0xE2, 0xC5, 0x6D, 0xB5, 0xDF, 0xFB, 0x48, 0xD2, 
-  0xB0, 0x60, 0xD0, 0xF5, 0xA7, 0x10, 0x96, 0xE0, 
+// "nRF Connect" app can be used to detect beacon
+uint8_t beaconUuid[16] =
+{
+  0x01, 0x12, 0x23, 0x34, 0x45, 0x56, 0x67, 0x78,
+  0x89, 0x9a, 0xab, 0xbc, 0xcd, 0xde, 0xef, 0xf0
 };
 
 // A valid Beacon packet consists of the following information:
 // UUID, Major, Minor, RSSI @ 1M
-BLEBeacon beacon(beaconUuid, 0x0000, 0x0000, -54);
+BLEBeacon beacon(beaconUuid, 0x0102, 0x0304, -54);
 
 void setup() 
 {
