@@ -43,15 +43,20 @@ class BLEUuid
   public:
     ble_uuid_t _uuid;
     uint8_t const* _uuid128;
+    const char*    _str;
     
     // Constructors
-    BLEUuid(void                      ) { _uuid.type = BLE_UUID_TYPE_UNKNOWN; _uuid.uuid = 0; _uuid128 = NULL; }
-    BLEUuid(uint16_t uuid16           ) { set(uuid16 );                  }
-    BLEUuid(uint8_t const uuid128[16] ) { set(uuid128);                  }
-    BLEUuid(ble_uuid_t uuid           ) { _uuid = uuid; _uuid128 = NULL; }
+    BLEUuid(void                      );
+    BLEUuid(uint16_t uuid16           );
+    BLEUuid(uint8_t const uuid128[16] );
+    BLEUuid(const char* str           );
+    BLEUuid(ble_uuid_t uuid           );
+
+    virtual ~BLEUuid();
 
     void set(uint16_t uuid16);
     void set(uint8_t const uuid128[16]);
+    void set(const char* str);
 
     bool get(uint16_t* uuid16) const;
     bool get(uint8_t uuid128[16]);
@@ -70,6 +75,7 @@ class BLEUuid
     BLEUuid& operator=(const uint16_t uuid);
     BLEUuid& operator=(uint8_t const uuid128[16]);
     BLEUuid& operator=(ble_uuid_t uuid);
+    BLEUuid& operator=(const char* str);
 };
 
 //--------------------------------------------------------------------+

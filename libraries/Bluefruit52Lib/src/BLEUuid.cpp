@@ -48,20 +48,145 @@ const uint8_t UUID128_CHR_ADAFRUIT_VERSION[16] =
   0xA8, 0x42, 0x32, 0xC3, 0x02, 0x00, 0xAF, 0xAD
 };
 
+//--------------------------------------------------------------------+
+// Constructor
+//--------------------------------------------------------------------+
+
+BLEUuid::BLEUuid(void)
+{
+  _uuid.type = BLE_UUID_TYPE_UNKNOWN;
+  _uuid.uuid = 0;
+
+  _uuid128   = NULL;
+  _str       = NULL;
+}
+
+BLEUuid::BLEUuid(uint16_t uuid16)
+{
+  set(uuid16);
+}
+
+BLEUuid::BLEUuid(const char *str)
+{
+  set(str);
+}
+
+BLEUuid::BLEUuid(uint8_t const uuid128[16])
+{
+  set(uuid128);
+}
+
+BLEUuid::BLEUuid(ble_uuid_t uuid)
+{
+  _uuid = uuid;
+
+  _uuid128 = NULL;
+  _str = NULL;
+}
+
+BLEUuid::~BLEUuid()
+{
+  if (_str && _uuid128)
+  {
+    // don't even free _uuid128, it could be pointer copyied to other
+    // check again if it is a major memory leak
+  }
+}
+
+// Get size of uuid in bit length. return 16, 32 or 128
+size_t BLEUuid::size (void) const
+{
+  // uuid 16
+  if (_uuid.type == BLE_UUID_TYPE_BLE ) return 16;
+  if (_uuid128 != NULL || _str != NULL || _uuid.type >= BLE_UUID_TYPE_VENDOR_BEGIN) return 128;
+
+  // unknown
+  return 0;
+}
+
+uint8_t* parse_str2uuid128(const char* str)
+{
+  uint8_t* u128 = (uint8_t*) rtos_malloc(16);
+  uint8_t len = 0;
+
+  // str is input as big endian
+  for(int i = strlen(str)-1; i >= 0 && len < 16; i -= 2 )
+  {
+    if (str[i] == '-' )
+    {
+      // skip dash
+      i++;
+    }else
+    {
+      char temp[3] = { 0 };
+      temp[0] = str[i-1];
+      temp[1] = str[i];
+
+      u128[len++] = (uint8_t) strtoul(temp, NULL, 16);
+    }
+  }
+
+  return u128;
+}
+
+bool BLEUuid::begin(void)
+{
+  // Add base uuid and decode to get uuid16
+  // This should cover the already added base uuid128 previously
+  if (_uuid.type == BLE_UUID_TYPE_UNKNOWN)
+  {
+    // allocate uuid128 and parse str (str for uuid16 already parsed at this point)
+    if (_str)
+    {
+      _uuid128 = parse_str2uuid128(_str);
+    }
+
+    if (_uuid128 != NULL )
+    {
+      (void) sd_ble_uuid_vs_add( (ble_uuid128_t const*) _uuid128, &_uuid.type );
+      VERIFY_STATUS( sd_ble_uuid_decode(16, _uuid128, &_uuid), false );
+    }
+  }
+
+  return true;
+}
+
+//--------------------------------------------------------------------+
+// Set & Get
+//--------------------------------------------------------------------+
 void BLEUuid::set(uint16_t uuid16)
 {
   _uuid.type = BLE_UUID_TYPE_BLE;
   _uuid.uuid = uuid16;
 
   _uuid128   = NULL;
+  _str       = NULL;
 }
 
 void BLEUuid::set(uint8_t const uuid128[16])
 {
+  _uuid128   = uuid128;
+
   _uuid.type = BLE_UUID_TYPE_UNKNOWN;
   _uuid.uuid = 0;
+  _str       = NULL;
+}
 
-  _uuid128   = uuid128;
+void BLEUuid::set(const char* str)
+{
+  // Check if str is uuid16
+  if (strlen(str) == 4)
+  {
+    uint16_t uuid16 = strtoul(str, NULL, 16);
+    set(uuid16);
+  }else
+  {
+    _str       = str;
+
+    _uuid.type = BLE_UUID_TYPE_UNKNOWN;
+    _uuid.uuid = 0;
+    _uuid128   = NULL;
+  }
 }
 
 bool BLEUuid::get(uint16_t* uuid16 ) const
@@ -88,33 +213,9 @@ bool BLEUuid::get(uint8_t uuid128[16])
   return true;
 }
 
-/**
- * Get size of uuid in BIT
- * @return 16, 32 or 128
- */
-size_t BLEUuid::size (void) const
-{
-  // uuid 16
-  if (_uuid.type == BLE_UUID_TYPE_BLE ) return 16;
-  if (_uuid128 != NULL || _uuid.type >= BLE_UUID_TYPE_VENDOR_BEGIN) return 128;
-
-  // unknown
-  return 0;
-}
-
-bool BLEUuid::begin(void)
-{
-  /* Add base uuid and decode to get uuid16
-   * This should cover the already added base uuid128 previously
-   */
-  if (_uuid.type == BLE_UUID_TYPE_UNKNOWN && _uuid128 != NULL )
-  {
-    (void) sd_ble_uuid_vs_add( (ble_uuid128_t const*) _uuid128, &_uuid.type );
-    VERIFY_STATUS( sd_ble_uuid_decode(16, _uuid128, &_uuid), false );
-  }
-
-  return true;
-}
+//--------------------------------------------------------------------+
+// Comparison
+//--------------------------------------------------------------------+
 
 bool BLEUuid::operator== (const BLEUuid& uuid) const
 {
@@ -136,6 +237,10 @@ bool BLEUuid::operator!= (const ble_uuid_t uuid) const
   return !(*this == uuid);
 }
 
+//--------------------------------------------------------------------+
+// Copy operator
+//--------------------------------------------------------------------+
+
 // Overload copy operator to allow initialization from other type
 BLEUuid& BLEUuid::operator=(const uint16_t uuid)
 {
@@ -148,6 +253,13 @@ BLEUuid& BLEUuid::operator=(uint8_t const uuid128[16])
   set(uuid128);
   return *this;
 }
+
+BLEUuid& BLEUuid::operator=(const char* str)
+{
+  set(str);
+  return *this;
+}
+
 
 BLEUuid& BLEUuid::operator=(ble_uuid_t uuid)
 {
