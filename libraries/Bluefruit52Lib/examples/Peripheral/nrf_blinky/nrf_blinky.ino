@@ -130,7 +130,7 @@ void setup()
   lsbLED.setPermission(SECMODE_OPEN, SECMODE_OPEN);
   lsbLED.setFixedLen(1);
   lsbLED.begin();
-  lsbLED.write8(0x00); // led = off
+  lsbLED.write8(0x01); // led = on when connected
 
   lsbLED.setWriteCallback(led_write_callback);
 
@@ -167,6 +167,19 @@ void startAdv(void)
   Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds  
 }
 
+void setLED(bool on)
+{
+  // data = 1 -> LED = On
+  // data = 0 -> LED = Off
+  digitalWrite(LED_BUILTIN, on ? LED_STATE_ON : (1-LED_STATE_ON));
+
+#ifdef PIN_NEOPIXEL
+  uint32_t c = neopixel.Color(0x00, 0x00, on ? 0x20 : 0x00);
+  neopixel.fill(c, 0, NEOPIXEL_NUM);
+  neopixel.show();
+#endif
+}
+
 void led_write_callback(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
   (void) conn_hdl;
@@ -175,13 +188,7 @@ void led_write_callback(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data
 
   // data = 1 -> LED = On
   // data = 0 -> LED = Off
-  digitalWrite(LED_BUILTIN, data[0] ? LED_STATE_ON : (1-LED_STATE_ON));
-
-#ifdef PIN_NEOPIXEL
-  uint32_t c = neopixel.Color(0x00, 0x00, data[0] ? 0x20 : 0x00);
-  neopixel.fill(c, 0, NEOPIXEL_NUM);
-  neopixel.show();
-#endif
+  setLED(data[0]);
 }
 
 void loop()
@@ -212,6 +219,9 @@ void connect_callback(uint16_t conn_handle)
 {
   (void) conn_handle;
 
+  setLED(true);
+  lsbLED.write8(0x01);
+
   connection_count++;
   Serial.print("Connection count: ");
   Serial.println(connection_count);
@@ -233,6 +243,9 @@ void disconnect_callback(uint16_t conn_handle, uint8_t reason)
 {
   (void) conn_handle;
   (void) reason;
+
+  setLED(false);
+  lsbLED.write8(0x00);
 
   Serial.println();
   Serial.print("Disconnected, reason = 0x"); Serial.println(reason, HEX);
