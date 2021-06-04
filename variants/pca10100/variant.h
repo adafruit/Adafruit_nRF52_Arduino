@@ -16,8 +16,8 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef _VARIANT_GENERIC52833_
-#define _VARIANT_GENERIC52833_
+#ifndef _VARIANT_PCA10100_
+#define _VARIANT_PCA10100_
 
 /** Master clock frequency */
 #define VARIANT_MCK       (64000000ul)
@@ -43,9 +43,10 @@ extern "C"
 #define NUM_ANALOG_OUTPUTS   (0)
 
 // LEDs
-#define PIN_LED1             (24)
-#define PIN_LED2             (25)
-#define PIN_LED3             (21)
+#define PIN_LED1             (13)
+#define PIN_LED2             (14)
+#define PIN_LED3             (15)
+#define PIN_LED4             (16)
 
 
 #define LED_BUILTIN          PIN_LED1
@@ -59,12 +60,12 @@ extern "C"
 /*
  * Buttons
  */
-/*
+
 #define PIN_BUTTON1          11
 #define PIN_BUTTON2          12
 #define PIN_BUTTON3          24
 #define PIN_BUTTON4          25
-*/
+
 
 /*
  * Analog pins
@@ -100,8 +101,8 @@ static const uint8_t AREF = PIN_AREF;
  */
 
 // Arduino Header D0, D1
-#define PIN_SERIAL1_RX      (33) // P1.01
-#define PIN_SERIAL1_TX      (34) // P1.02
+#define PIN_SERIAL1_RX      (0) // P0.00
+#define PIN_SERIAL1_TX      (1) // P0.01
 
 // Connected to Jlink CDC
 #define PIN_SERIAL2_RX      (8)
@@ -112,11 +113,11 @@ static const uint8_t AREF = PIN_AREF;
  */
 #define SPI_INTERFACES_COUNT 1
 
-#define PIN_SPI_MISO         (46)
-#define PIN_SPI_MOSI         (45)
-#define PIN_SPI_SCK          (47)
+#define PIN_SPI_MISO         (22)
+#define PIN_SPI_MOSI         (21)
+#define PIN_SPI_SCK          (23)
 
-static const uint8_t SS   = 44 ;
+static const uint8_t SS   = 20 ;
 static const uint8_t MOSI = PIN_SPI_MOSI ;
 static const uint8_t MISO = PIN_SPI_MISO ;
 static const uint8_t SCK  = PIN_SPI_SCK ;
@@ -126,8 +127,8 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
  */
 #define WIRE_INTERFACES_COUNT 1
 
-#define PIN_WIRE_SDA         (26)
-#define PIN_WIRE_SCL         (27)
+#define PIN_WIRE_SDA         (30)
+#define PIN_WIRE_SCL         (31)
 
 // QSPI Pins
 /*
