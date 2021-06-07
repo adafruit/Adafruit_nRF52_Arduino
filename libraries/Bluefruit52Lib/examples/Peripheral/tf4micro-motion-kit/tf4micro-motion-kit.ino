@@ -72,8 +72,8 @@ Adafruit_NeoPixel neopixels = Adafruit_NeoPixel(NEOPIXEL_NUM, PIN_NEOPIXEL, NEO_
 
 #define UUID_GEN(val) ("81c30e5c-" val "-4f7d-a886-de3e90749161")
 
-//BLEService                      service                   (UUID_GEN("0000"));
-//
+BLEService                      service                   (UUID_GEN("0000"));
+
 //BLECharacteristic               dataProviderTxChar        (UUID_GEN("1001"), BLERead | BLENotify, 9 * FLOAT_BYTE_SIZE);
 //BLECharacteristic               dataProviderLabelsTxChar  (UUID_GEN("1002"), BLERead, 128);
 //BLEUnsignedCharCharacteristic   versionTxChar             (UUID_GEN("1003"), BLERead);
@@ -107,9 +107,8 @@ int newModelFileLength = 0;
 
 void rgbLedOff()
 {
-//  digitalWrite(LEDR, HIGH);
-//  digitalWrite(LEDG, HIGH);
-//  digitalWrite(LEDB, HIGH);
+  neopixels.setPixelColor(0, 0, 0, 0);
+  neopixels.show();
 }
 
 void rgbLedYellow()
@@ -117,33 +116,33 @@ void rgbLedYellow()
 //  digitalWrite(LEDR, LOW);
 //  digitalWrite(LEDG, LOW);
 //  digitalWrite(LEDB, HIGH);
+  neopixels.setPixelColor(0, 0xff, 0xff, 0);
+  neopixels.show();
 }
 
 void rgbLedRed()
 {
-//  digitalWrite(LEDR, LOW);
-//  digitalWrite(LEDG, HIGH);
-//  digitalWrite(LEDB, HIGH);
+  neopixels.setPixelColor(0, 0xff, 0, 0);
+  neopixels.show();
 }
 
 void rgbLedGreen()
 {
-//  digitalWrite(LEDR, HIGH);
-//  digitalWrite(LEDG, LOW);
-//  digitalWrite(LEDB, HIGH);
+  neopixels.setPixelColor(0, 0, 0xff, 0);
+  neopixels.show();
 }
 
 void rgbLedBlue()
 {
-//  digitalWrite(LEDR, HIGH);
-//  digitalWrite(LEDG, HIGH);
-//  digitalWrite(LEDB, LOW);
+  neopixels.setPixelColor(0, 0, 0, 0xff);
+  neopixels.show();
 }
 
 void showErrorLed()
 {
   // blink red
   millis() % 1000 > 500 ? rgbLedOff() : rgbLedRed();
+  delay(500);
 }
 
 void updateLed()
@@ -410,16 +409,27 @@ void setup()
   while (!Serial && millis() - startTime < 2000)
     yield();
 
+  Serial.println("Bluefruit52 Example");
+  Serial.println("-------------------\n");
+
   // Prepare LED pins.
   pinMode(LED_BUILTIN, OUTPUT);
   neopixels.begin();
 
   // Start IMU / Data provider.
-  if (!data_provider::setup())
-  {
-    Serial.println("Failed to initialize IMU!");
-    while (1) showErrorLed();
-  }
+//  if (!data_provider::setup())
+//  {
+//    Serial.println("Failed to initialize IMU!");
+//    while (1) showErrorLed();
+//  }
+
+  Bluefruit.autoConnLed(true);
+  Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
+  Bluefruit.begin();
+  Bluefruit.setTxPower(4);
+
+  service.begin();
+
 #if 0
   service.addCharacteristic(versionTxChar);
   service.addCharacteristic(dataProviderTxChar);
@@ -480,12 +490,29 @@ void setup()
 
   Serial.print("localName = ");
   Serial.println(deviceName);
-
   // Set up properties for the whole service.
   BLE.setLocalName(deviceName.c_str());
   BLE.setDeviceName(deviceName.c_str());
   BLE.setAdvertisedService(service);
+#endif
 
+  // Advertising packet
+  Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
+  Bluefruit.Advertising.addTxPower();
+
+  // Include bleuart 128-bit uuid
+  Bluefruit.Advertising.addService(service);
+
+  // Secondary Scan Response packet (optional)
+  // Since there is no room for 'Name' in Advertising packet
+  Bluefruit.ScanResponse.addName();
+
+  Bluefruit.Advertising.restartOnDisconnect(true);
+  Bluefruit.Advertising.setInterval(32, 244);    // in unit of 0.625 ms
+  Bluefruit.Advertising.setFastTimeout(30);      // number of seconds in fast mode
+  Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds
+
+#if 0
   ble_file_transfer::setupBLEFileTransfer(service);
 
   // Print out full UUID and MAC address.
