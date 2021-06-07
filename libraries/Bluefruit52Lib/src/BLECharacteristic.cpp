@@ -83,6 +83,13 @@ BLECharacteristic::BLECharacteristic(BLEUuid bleuuid)
   _init();
 }
 
+BLECharacteristic::BLECharacteristic(BLEUuid bleuuid, uint8_t properties)
+  : uuid(bleuuid)
+{
+  _init();
+  setProperties(properties);
+}
+
 void BLECharacteristic::setUuid(BLEUuid bleuuid)
 {
   uuid = bleuuid;

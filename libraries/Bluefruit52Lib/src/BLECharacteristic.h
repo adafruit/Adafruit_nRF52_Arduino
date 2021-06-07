@@ -53,6 +53,17 @@ enum CharsProperties
   CHR_PROPS_INDICATE        = bit(5)
 };
 
+// same as CharsProperties, but make it easier to migrate from ArduinoBLE
+enum BLECharsProperties
+{
+  BLEBroadcast            = 0x01,
+  BLERead                 = 0x02,
+  BLEWriteWithoutResponse = 0x04,
+  BLEWrite                = 0x08,
+  BLENotify               = 0x10,
+  BLEIndicate             = 0x20
+};
+
 class BLECharacteristic
 {
   public:
@@ -67,6 +78,7 @@ class BLECharacteristic
     // Constructors
     BLECharacteristic(void);
     BLECharacteristic(BLEUuid bleuuid);
+    BLECharacteristic(BLEUuid bleuuid, uint8_t properties);
 
     // Destructor
     virtual ~BLECharacteristic();
