@@ -113,9 +113,6 @@ void rgbLedOff()
 
 void rgbLedYellow()
 {
-//  digitalWrite(LEDR, LOW);
-//  digitalWrite(LEDG, LOW);
-//  digitalWrite(LEDB, HIGH);
   neopixels.setPixelColor(0, 0xff, 0xff, 0);
   neopixels.show();
 }
@@ -417,11 +414,11 @@ void setup()
   neopixels.begin();
 
   // Start IMU / Data provider.
-//  if (!data_provider::setup())
-//  {
-//    Serial.println("Failed to initialize IMU!");
-//    while (1) showErrorLed();
-//  }
+  if (!data_provider::setup())
+  {
+    Serial.println("Failed to initialize IMU!");
+    while (1) showErrorLed();
+  }
 
   Bluefruit.autoConnLed(true);
   Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
