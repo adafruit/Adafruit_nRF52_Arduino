@@ -475,18 +475,13 @@ void setup()
   metaRxChar.setWriteCallback(handleMetaWritten);
   disableMagnetometerRx.setWriteCallback(handleDisableMagnetometerRxWritten);
 
-#if 0
-  // Start the core BLE engine.
-  if (!BLE.begin())
-  {
-    Serial.println("Failed to initialized BLE!");
-    setState(ERROR_STATE);
-    while (1) showErrorLed();
-  }
-#endif
 
-#if 0
-  String address = BLE.address();
+  uint8_t mac[6];
+  char mac_str[20];
+  Bluefruit.getAddr(mac);
+  sprintf(mac_str, "%02X:%02X:%02X:%02X:%02X:%02X", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
+
+  String address(mac_str);
 
   // Output BLE settings over Serial.
   Serial.print("address = ");
@@ -506,17 +501,13 @@ void setup()
 
   Serial.print("localName = ");
   Serial.println(deviceName);
+
   // Set up properties for the whole service.
-  BLE.setLocalName(deviceName.c_str());
-  BLE.setDeviceName(deviceName.c_str());
-  BLE.setAdvertisedService(service);
-#endif
+  Bluefruit.setName(deviceName.c_str());
 
   // Advertising packet
   Bluefruit.Advertising.addFlags(BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE);
   Bluefruit.Advertising.addTxPower();
-
-  // Include bleuart 128-bit uuid
   Bluefruit.Advertising.addService(service);
 
   // Secondary Scan Response packet (optional)
