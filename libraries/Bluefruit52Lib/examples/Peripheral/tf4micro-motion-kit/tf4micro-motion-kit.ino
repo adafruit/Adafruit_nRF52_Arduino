@@ -266,68 +266,86 @@ void setState(State state)
 * BLE Event handlers
 ************************************************************************/
 
-#if 0
-void handleNumSamplesRxWritten(BLEDevice central, BLECharacteristic characteristic)
+void handleNumSamplesRxWritten(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  model_tester::setNumSamples(numSamplesRxChar.value());
+  (void) conn_hdl; (void) chr; (void) data; (void) len;
+
+  const int value = (int) numSamplesRxChar.read32();
+  model_tester::setNumSamples(value);
   Serial.print("Received numSamples: ");
-  Serial.println(numSamplesRxChar.value());
+  Serial.println(value);
 }
 
-void handleThresholdRxWritten(BLEDevice central, BLECharacteristic characteristic)
+void handleThresholdRxWritten(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  model_tester::setThreshold(thresholdRxChar.value());
+  (void) conn_hdl; (void) chr; (void) data; (void) len;
+
+  const float value = thresholdRxChar.readFloat();
+  model_tester::setThreshold(value);
   Serial.print("Received threshold: ");
-  Serial.println(thresholdRxChar.value(), 4);
+  Serial.println(value, 4);
 }
 
-void handleCaptureDelayRxWritten(BLEDevice central, BLECharacteristic characteristic)
+void handleCaptureDelayRxWritten(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  model_tester::setCaptureDelay(captureDelayRxChar.value());
+  (void) conn_hdl; (void) chr; (void) data; (void) len;
+
+  const int value = captureDelayRxChar.read32();
+  model_tester::setCaptureDelay(value);
   Serial.print("Received delay: ");
-  Serial.println(captureDelayRxChar.value());
+  Serial.println(value);
 }
 
-void handleNumClassesRxWritten(BLEDevice central, BLECharacteristic characteristic)
+void handleNumClassesRxWritten(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  model_tester::setNumClasses(numClassesRxChar.value());
+  (void) conn_hdl; (void) chr; (void) data; (void) len;
+
+  const unsigned char value = (unsigned char) numClassesRxChar.read8();
+  model_tester::setNumClasses(value);
   Serial.print("Received numClasses: ");
-  Serial.println(numClassesRxChar.value());
+  Serial.println(value);
 }
 
-void handleDisableMagnetometerRxWritten(BLEDevice central, BLECharacteristic characteristic)
+void handleDisableMagnetometerRxWritten(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  bool val = disableMagnetometerRx.value();
+  (void) conn_hdl; (void) chr; (void) data; (void) len;
+
+  const bool val = (bool) disableMagnetometerRx.read8();
   model_tester::setDisableMagnetometer(val);
 
   useMagnetometer = !val;
   
   Serial.print("Received disableMagnetometer: ");
-  Serial.println(disableMagnetometerRx.value());
+  Serial.println(val);
 }
 
-void handleStateWritten(BLEDevice central, BLECharacteristic characteristic)
+void handleStateWritten(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  setState((State)stateRxChar.value());
+  (void) conn_hdl; (void) chr; (void) data; (void) len;
+
+  const uint8_t value = stateRxChar.read8();
+
+  setState((State) value);
   Serial.print("Received state: ");
-  Serial.println(stateRxChar.value());
+  Serial.println(value);
 }
 
-void handleMetaWritten(BLEDevice central, BLECharacteristic characteristic)
+void handleMetaWritten(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
+  (void) conn_hdl; (void) chr; (void) data; (void) len;
+
   // Meta is just a 64 byte storage for anything, just publish it
-  byte values[64];
-  metaRxChar.readValue(values, 64);
-  metaTxChar.writeValue(values, 64);
+  metaTxChar.write(data, len);
 }
 
-void handleFileTransferTypeWritten(BLEDevice central, BLECharacteristic characteristic)
+void handleFileTransferTypeWritten(uint16_t conn_hdl, BLECharacteristic* chr, uint8_t* data, uint16_t len)
 {
-  fileTransferType = (FileTransferType)fileTransferTypeRxChar.value();
+  (void) conn_hdl; (void) chr; (void) data; (void) len;
+
+  fileTransferType = (FileTransferType) fileTransferTypeRxChar.read8();
   Serial.print("Received fileTransferType: ");
   Serial.println(fileTransferType);
 }
-#endif
 
 /************************************************************************
 * Callbacks
@@ -447,17 +465,17 @@ void setup()
   metaRxChar.begin();
   metaTxChar.begin();
 
-#if 0
   // Event driven reads.
-  numClassesRxChar.setEventHandler(BLEWritten, handleNumClassesRxWritten);
-  numSamplesRxChar.setEventHandler(BLEWritten, handleNumSamplesRxWritten);
-  thresholdRxChar.setEventHandler(BLEWritten, handleThresholdRxWritten);
-  captureDelayRxChar.setEventHandler(BLEWritten, handleCaptureDelayRxWritten);
-  stateRxChar.setEventHandler(BLEWritten, handleStateWritten);
-  fileTransferTypeRxChar.setEventHandler(BLEWritten, handleFileTransferTypeWritten);
-  metaRxChar.setEventHandler(BLEWritten, handleMetaWritten);
-  disableMagnetometerRx.setEventHandler(BLEWritten, handleDisableMagnetometerRxWritten);
+  numClassesRxChar.setWriteCallback(handleNumClassesRxWritten);
+  numSamplesRxChar.setWriteCallback(handleNumSamplesRxWritten);
+  thresholdRxChar.setWriteCallback(handleThresholdRxWritten);
+  captureDelayRxChar.setWriteCallback(handleCaptureDelayRxWritten);
+  stateRxChar.setWriteCallback(handleStateWritten);
+  fileTransferTypeRxChar.setWriteCallback(handleFileTransferTypeWritten);
+  metaRxChar.setWriteCallback(handleMetaWritten);
+  disableMagnetometerRx.setWriteCallback(handleDisableMagnetometerRxWritten);
 
+#if 0
   // Start the core BLE engine.
   if (!BLE.begin())
   {
