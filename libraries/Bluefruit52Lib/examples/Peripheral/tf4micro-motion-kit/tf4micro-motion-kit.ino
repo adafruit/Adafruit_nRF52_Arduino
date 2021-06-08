@@ -72,27 +72,27 @@ Adafruit_NeoPixel neopixels = Adafruit_NeoPixel(NEOPIXEL_NUM, PIN_NEOPIXEL, NEO_
 
 #define UUID_GEN(val) ("81c30e5c-" val "-4f7d-a886-de3e90749161")
 
-BLEService                      service                   (UUID_GEN("0000"));
+BLEService          service                   (UUID_GEN("0000"));
 
-BLECharacteristic               dataProviderTxChar        (UUID_GEN("1001"), BLERead | BLENotify, 9 * FLOAT_BYTE_SIZE);
-BLECharacteristic               dataProviderLabelsTxChar  (UUID_GEN("1002"), BLERead, 128);
-BLECharacteristic               versionTxChar             (UUID_GEN("1003"), BLERead, 1, true);
-//BLECharacteristic               inferenceTxChar           (UUID_GEN("1004"), BLERead | BLENotify, 3);
-//
-//BLEUnsignedCharCharacteristic   numClassesRxChar          (UUID_GEN("2001"), BLEWrite);
-//BLEIntCharacteristic            numSamplesRxChar          (UUID_GEN("2002"), BLEWrite);
-//BLEIntCharacteristic            captureDelayRxChar        (UUID_GEN("2003"), BLEWrite);
-//BLEFloatCharacteristic          thresholdRxChar           (UUID_GEN("2004"), BLEWrite);
-//BLEBoolCharacteristic           disableMagnetometerRx     (UUID_GEN("2005"), BLEWrite);
-//
-//BLEUnsignedCharCharacteristic   stateRxChar               (UUID_GEN("3001"), BLEWrite);
-//BLEUnsignedCharCharacteristic   stateTxChar               (UUID_GEN("3002"), BLERead | BLENotify);
-//BLEUnsignedCharCharacteristic   fileTransferTypeRxChar    (UUID_GEN("3003"), BLEWrite);
-//BLEBoolCharacteristic           hasModelTxChar            (UUID_GEN("3004"), BLERead | BLENotify);
-//
-//// Meta is for future-proofing, we can use it to store and read any 64 bytes
-//BLECharacteristic               metaRxChar                (UUID_GEN("4001"), BLEWrite, 64);
-//BLECharacteristic               metaTxChar                (UUID_GEN("4002"), BLERead, 64);
+BLECharacteristic   dataProviderTxChar        (UUID_GEN("1001") , BLERead | BLENotify , 9 * FLOAT_BYTE_SIZE);
+BLECharacteristic   dataProviderLabelsTxChar  (UUID_GEN("1002") , BLERead             , 128);
+BLECharacteristic   versionTxChar             (UUID_GEN("1003") , BLERead             , 1 , true);
+BLECharacteristic   inferenceTxChar           (UUID_GEN("1004") , BLERead | BLENotify , 3 , true);
+
+BLECharacteristic   numClassesRxChar          (UUID_GEN("2001") , BLEWrite            , 1 , true);
+BLECharacteristic   numSamplesRxChar          (UUID_GEN("2002") , BLEWrite            , 4 , true);
+BLECharacteristic   captureDelayRxChar        (UUID_GEN("2003") , BLEWrite            , 4 , true);
+BLECharacteristic   thresholdRxChar           (UUID_GEN("2004") , BLEWrite            , 4 , true);
+BLECharacteristic   disableMagnetometerRx     (UUID_GEN("2005") , BLEWrite            , 1 , true);
+
+BLECharacteristic   stateRxChar               (UUID_GEN("3001") , BLEWrite            , 1 , true);
+BLECharacteristic   stateTxChar               (UUID_GEN("3002") , BLERead | BLENotify , 1 , true);
+BLECharacteristic   fileTransferTypeRxChar    (UUID_GEN("3003") , BLEWrite            , 1 , true);
+BLECharacteristic   hasModelTxChar            (UUID_GEN("3004") , BLERead | BLENotify , 1 , true);
+
+// Meta is for future-proofing, we can use it to store and read any 64 bytes
+BLECharacteristic  metaRxChar                (UUID_GEN("4001")  , BLEWrite            , 64);
+BLECharacteristic  metaTxChar                (UUID_GEN("4002")  , BLERead             , 64);
 
 /************************************************************************
 * Model file transfer
@@ -421,6 +421,7 @@ void setup()
   }
 
   Bluefruit.autoConnLed(true);
+  Bluefruit.configUuid128Count(20);
   Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
@@ -430,24 +431,23 @@ void setup()
   versionTxChar.begin();
   dataProviderTxChar.begin();
   dataProviderLabelsTxChar.begin();
+  inferenceTxChar.begin();
+
+  numClassesRxChar.begin();
+  numSamplesRxChar.begin();
+  captureDelayRxChar.begin();
+  thresholdRxChar.begin();
+  disableMagnetometerRx.begin();
+
+  stateRxChar.begin();
+  stateTxChar.begin();
+  fileTransferTypeRxChar.begin();
+  hasModelTxChar.begin();
+  
+  metaRxChar.begin();
+  metaTxChar.begin();
 
 #if 0
-  service.addCharacteristic(inferenceTxChar);
-
-  service.addCharacteristic(numClassesRxChar);
-  service.addCharacteristic(numSamplesRxChar);
-  service.addCharacteristic(captureDelayRxChar);
-  service.addCharacteristic(thresholdRxChar);
-  service.addCharacteristic(disableMagnetometerRx);
-
-  service.addCharacteristic(stateRxChar);
-  service.addCharacteristic(stateTxChar);
-  service.addCharacteristic(fileTransferTypeRxChar);
-  service.addCharacteristic(hasModelTxChar);
-  
-  service.addCharacteristic(metaRxChar);
-  service.addCharacteristic(metaTxChar);
-
   // Event driven reads.
   numClassesRxChar.setEventHandler(BLEWritten, handleNumClassesRxWritten);
   numSamplesRxChar.setEventHandler(BLEWritten, handleNumSamplesRxWritten);
