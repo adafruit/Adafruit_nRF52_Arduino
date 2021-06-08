@@ -90,6 +90,20 @@ BLECharacteristic::BLECharacteristic(BLEUuid bleuuid, uint8_t properties)
   setProperties(properties);
 }
 
+BLECharacteristic::BLECharacteristic(BLEUuid bleuuid, uint8_t properties, int max_len, bool fixed_len)
+  : uuid(bleuuid)
+{
+  _init();
+  setProperties(properties);
+  if (fixed_len)
+  {
+    setFixedLen(max_len);
+  }else
+  {
+    setMaxLen(max_len);
+  }
+}
+
 void BLECharacteristic::setUuid(BLEUuid bleuuid)
 {
   uuid = bleuuid;
@@ -135,11 +149,6 @@ uint16_t BLECharacteristic::getMaxLen(void)
   return _max_len;
 }
 
-bool BLECharacteristic::isFixedLen(void)
-{
-  return _attr_meta.vlen == 0;
-}
-
 void BLECharacteristic::setFixedLen(uint16_t fixed_len)
 {
   if ( fixed_len )
@@ -150,6 +159,11 @@ void BLECharacteristic::setFixedLen(uint16_t fixed_len)
   {
     _attr_meta.vlen = 1;
   }
+}
+
+bool BLECharacteristic::isFixedLen(void)
+{
+  return _attr_meta.vlen == 0;
 }
 
 // Use application buffer instead of SD stack buffer

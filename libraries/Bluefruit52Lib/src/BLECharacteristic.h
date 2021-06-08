@@ -79,6 +79,7 @@ class BLECharacteristic
     BLECharacteristic(void);
     BLECharacteristic(BLEUuid bleuuid);
     BLECharacteristic(BLEUuid bleuuid, uint8_t properties);
+    BLECharacteristic(BLEUuid bleuuid, uint8_t properties, int max_len, bool fixed_len = false);
 
     // Destructor
     virtual ~BLECharacteristic();
