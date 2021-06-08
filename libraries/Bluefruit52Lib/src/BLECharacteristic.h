@@ -121,17 +121,19 @@ class BLECharacteristic
     uint16_t write   (const void* data, uint16_t len);
     uint16_t write   (const char* str);
 
-    uint16_t write8  (uint8_t  num);
-    uint16_t write16 (uint16_t num);
-    uint16_t write32 (uint32_t num);
-    uint16_t write32 (int      num);
+    uint16_t write8     (uint8_t  num);
+    uint16_t write16    (uint16_t num);
+    uint16_t write32    (uint32_t num);
+    uint16_t write32    (int      num);
+    uint16_t writeFloat (float    num);
 
     /*------------- Read -------------*/
     uint16_t read  (void* buffer, uint16_t bufsize, uint16_t offset = 0);
 
-    uint8_t  read8 (void);
-    uint16_t read16(void);
-    uint32_t read32(void);
+    uint8_t  read8     (void);
+    uint16_t read16    (void);
+    uint32_t read32    (void);
+    float    readFloat (void);
 
     uint16_t getCccd(uint16_t conn_hdl);
 

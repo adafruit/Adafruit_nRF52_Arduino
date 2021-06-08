@@ -609,6 +609,11 @@ uint16_t BLECharacteristic::write32(int num)
   return write32( (uint32_t) num );
 }
 
+uint16_t BLECharacteristic::writeFloat(float num)
+{
+  return write( (uint8_t*) &num, sizeof(num) );
+}
+
 /*------------------------------------------------------------------*/
 /* READ
  *------------------------------------------------------------------*/
@@ -649,6 +654,12 @@ uint16_t BLECharacteristic::read16(void)
 uint32_t BLECharacteristic::read32(void)
 {
   uint32_t num;
+  return read(&num, sizeof(num)) ? num : 0;
+}
+
+float BLECharacteristic::readFloat(void)
+{
+  float num;
   return read(&num, sizeof(num)) ? num : 0;
 }
 
