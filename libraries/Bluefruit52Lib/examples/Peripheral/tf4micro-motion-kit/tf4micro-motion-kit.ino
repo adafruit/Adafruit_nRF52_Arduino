@@ -15,8 +15,9 @@ limitations under the License.
 
 /*
 * @author Rikard Lindstrom <rlindsrom@google.com>
-*
 */
+
+// Ported to Adafruit_nRF52_Arduino core by hathach for Adafruit
 
 #define VERSION 5
 #define FLOAT_BYTE_SIZE 4
@@ -147,11 +148,7 @@ void updateLed()
   {
 
   case FILE_TRANSFER:
-#if 0
     if (ble_file_transfer::isTransfering())
-#else
-    if (0)
-#endif
     {
       // Rapid blink while transfering is in progress
       millis() % 100 > 50 ? rgbLedOff() : rgbLedYellow();
@@ -225,9 +222,7 @@ void setState(State state)
     prevState = currentState;
   }
   currentState = state;
-#if 0
-  stateTxChar.writeValue((unsigned char)state);
-#endif
+  stateTxChar.notify8((unsigned char)state);
   switch (currentState)
   {
   case IDLE_DISCONNECTED:
@@ -350,9 +345,7 @@ void handleFileTransferTypeWritten(uint16_t conn_hdl, BLECharacteristic* chr, ui
 void model_tester_onInference(unsigned char classIndex, unsigned char score, unsigned char velocity)
 {
   const byte buffer[]{classIndex, score, velocity};
-#if 0
-  inferenceTxChar.setValue(buffer, 3);
-#endif
+  inferenceTxChar.notify(buffer, 3);
   Serial.print("Inference - class: ");
   Serial.print(classIndex);
   Serial.print(" score: ");
@@ -549,18 +542,17 @@ inline void updateIMU()
         model_tester::update(buffer);  
       }
     }
-#if 0
+
     if(currentState == IMU_DATA_PROVIDER || currentState == INFERENCE_AND_DATA_PROVIDER){
       // provide data to IMU trainer
-      dataProviderTxChar.writeValue(buffer, bufferSize * FLOAT_BYTE_SIZE);
+      dataProviderTxChar.notify(buffer, bufferSize * FLOAT_BYTE_SIZE);
     }
-#endif
+
   }
 }
 
 inline void updateFileTransfer()
 {
-#if 0
   // Update file transfer state
   ble_file_transfer::updateBLEFileTransfer();
 
@@ -572,19 +564,17 @@ inline void updateFileTransfer()
     Serial.println("done reloading model");
     newModelFileData = nullptr;
 
-    hasModelTxChar.writeValue(true);
+    hasModelTxChar.notify8(true);
     
     // We have a new model, always enter INFERENCE mode
     setState(INFERENCE);
   }
-#endif
 }
 
 void loop()
 {
-#if 0
   // Make sure we're connected and not busy file-transfering
-  if (BLE.connected())
+  if (Bluefruit.connected())
   {
     switch (currentState)
     {
@@ -607,7 +597,6 @@ void loop()
   } else if(currentState != IDLE_DISCONNECTED){
     setState(IDLE_DISCONNECTED);
   }
-#endif
 
   // Update led based on state
   updateLed();
