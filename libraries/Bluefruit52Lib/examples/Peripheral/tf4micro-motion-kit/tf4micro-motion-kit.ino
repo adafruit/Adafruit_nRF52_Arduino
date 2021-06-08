@@ -15,18 +15,17 @@ limitations under the License.
 
 /*
 * @author Rikard Lindstrom <rlindsrom@google.com>
+*
 */
 
 #define VERSION 5
 #define FLOAT_BYTE_SIZE 4
 
-//#include <ArduinoBLE.h>
-
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #include <bluefruit.h>
 
-//#include "ble_file_transfer.h"
+#include "ble_file_transfer.h"
 #include "model_tester.h"
 #include "data_provider.h"
 
@@ -186,11 +185,7 @@ void updateLed()
   case IDLE_DISCONNECTED:
   case IDLE_CONNECTED:
   default:
-#if 0
-    if (BLE.connected())
-#else
-     if (1)
-#endif
+    if (Bluefruit.connected())
     {
       rgbLedBlue();
     }
@@ -439,7 +434,7 @@ void setup()
   }
 
   Bluefruit.autoConnLed(true);
-  Bluefruit.configUuid128Count(20);
+  Bluefruit.configUuid128Count(25);
   Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
   Bluefruit.begin();
   Bluefruit.setTxPower(4);
@@ -479,7 +474,7 @@ void setup()
   uint8_t mac[6];
   char mac_str[20];
   Bluefruit.getAddr(mac);
-  sprintf(mac_str, "%02X:%02X:%02X:%02X:%02X:%02X", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
+  sprintf(mac_str, "%02x:%02x:%02x:%02x:%02x:%02x", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
 
   String address(mac_str);
 
@@ -519,7 +514,6 @@ void setup()
   Bluefruit.Advertising.setFastTimeout(30);      // number of seconds in fast mode
   Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds
 
-#if 0
   ble_file_transfer::setupBLEFileTransfer(service);
 
   // Print out full UUID and MAC address.
@@ -527,16 +521,11 @@ void setup()
   Serial.print("Name: ");
   Serial.println(LOCAL_NAME);
   Serial.print("MAC: ");
-  Serial.println(BLE.address());
+  Serial.println(mac_str);
   Serial.print("Service UUID: ");
-  Serial.println(service.uuid());
-
-  // Start up the service itself.
-  BLE.addService(service);
-  BLE.advertise();
+  Serial.println(service.uuid.toString());
 
   Serial.println("Bluetooth device active, waiting for connections...");
-#endif
 
   // Broadcast sketch version
   versionTxChar.write8(VERSION);

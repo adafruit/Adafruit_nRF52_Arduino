@@ -297,8 +297,8 @@ void setupBLEFileTransfer(BLEService service) {
 
   file_length_characteristic.begin();
 
-  file_maximum_length_characteristic.write32((int) file_maximum_byte_count);
   file_maximum_length_characteristic.begin();
+  file_maximum_length_characteristic.write32((int) file_maximum_byte_count);
 
   file_checksum_characteristic.begin();
 
