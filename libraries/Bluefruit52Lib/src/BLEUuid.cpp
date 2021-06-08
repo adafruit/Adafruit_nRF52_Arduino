@@ -151,6 +151,25 @@ bool BLEUuid::begin(void)
   return true;
 }
 
+String BLEUuid::toString(void) const
+{
+  if (_str) return _str;
+
+  char result[38];
+  if (this->size() == 16)
+  {
+    sprintf(result, "%02X:%02X", _uuid.uuid);
+  }else
+  {
+    // uuid is little endian
+    sprintf(result, "%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X",
+            _uuid128[15], _uuid128[14], _uuid128[13], _uuid128[12], _uuid128[11], _uuid128[10], _uuid128[ 9], _uuid128[ 8],
+            _uuid128[ 7], _uuid128[ 6], _uuid128[ 5], _uuid128[ 4], _uuid128[ 3], _uuid128[ 2], _uuid128[ 1], _uuid128[ 0]);
+  }
+
+  return result;
+}
+
 //--------------------------------------------------------------------+
 // Set & Get
 //--------------------------------------------------------------------+

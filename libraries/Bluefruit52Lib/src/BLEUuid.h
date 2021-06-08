@@ -66,6 +66,8 @@ class BLEUuid
     // Add UUID128 if needed, in case of UUID16, no actions is required
     bool begin(void);
 
+    String toString(void) const;
+
     bool operator==(const BLEUuid&   uuid) const;
     bool operator!=(const BLEUuid&   uuid) const;
     bool operator==(const ble_uuid_t uuid) const;
