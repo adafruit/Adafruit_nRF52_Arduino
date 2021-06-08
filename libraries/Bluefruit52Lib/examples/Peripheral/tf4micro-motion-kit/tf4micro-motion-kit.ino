@@ -74,9 +74,9 @@ Adafruit_NeoPixel neopixels = Adafruit_NeoPixel(NEOPIXEL_NUM, PIN_NEOPIXEL, NEO_
 
 BLEService                      service                   (UUID_GEN("0000"));
 
-//BLECharacteristic               dataProviderTxChar        (UUID_GEN("1001"), BLERead | BLENotify, 9 * FLOAT_BYTE_SIZE);
-//BLECharacteristic               dataProviderLabelsTxChar  (UUID_GEN("1002"), BLERead, 128);
-//BLEUnsignedCharCharacteristic   versionTxChar             (UUID_GEN("1003"), BLERead);
+BLECharacteristic               dataProviderTxChar        (UUID_GEN("1001"), BLERead | BLENotify, 9 * FLOAT_BYTE_SIZE);
+BLECharacteristic               dataProviderLabelsTxChar  (UUID_GEN("1002"), BLERead, 128);
+BLECharacteristic               versionTxChar             (UUID_GEN("1003"), BLERead, 1, true);
 //BLECharacteristic               inferenceTxChar           (UUID_GEN("1004"), BLERead | BLENotify, 3);
 //
 //BLEUnsignedCharCharacteristic   numClassesRxChar          (UUID_GEN("2001"), BLEWrite);
@@ -427,10 +427,11 @@ void setup()
 
   service.begin();
 
+  versionTxChar.begin();
+  dataProviderTxChar.begin();
+  dataProviderLabelsTxChar.begin();
+
 #if 0
-  service.addCharacteristic(versionTxChar);
-  service.addCharacteristic(dataProviderTxChar);
-  service.addCharacteristic(dataProviderLabelsTxChar);
   service.addCharacteristic(inferenceTxChar);
 
   service.addCharacteristic(numClassesRxChar);
@@ -526,13 +527,13 @@ void setup()
   BLE.advertise();
 
   Serial.println("Bluetooth device active, waiting for connections...");
+#endif
 
   // Broadcast sketch version
-  versionTxChar.writeValue(VERSION);
+  versionTxChar.write8(VERSION);
 
   // Used for Tiny Motion Trainer to label / filter values
-  dataProviderLabelsTxChar.writeValue("acc.x, acc.y, acc.z, gyro.x, gyro.y, gyro.z, mag.x, mag.y, max.zl");
-#endif
+  dataProviderLabelsTxChar.write("acc.x, acc.y, acc.z, gyro.x, gyro.y, gyro.z, mag.x, mag.y, max.zl");
 }
 
 inline void updateIMU()
