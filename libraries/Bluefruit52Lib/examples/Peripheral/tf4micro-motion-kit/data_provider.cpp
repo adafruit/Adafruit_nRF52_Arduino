@@ -18,10 +18,21 @@ limitations under the License.
  *  @author Rikard Lindstrom <rlindsrom@google.com>
 */
 #include "data_provider.h"
-//#include <Arduino_LSM9DS1.h> // change to Arduino_LSM6DS3.h for Nano 33 IoT or Uno WiFi Rev 2
-//#include <Arduino_LSM6DS3.h>
 
-#include <Arduino_LSM6DSOX.h>
+#if defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_NRF52840_FEATHER_SENSE)
+
+#include <Adafruit_LIS3MDL.h>
+#include <Adafruit_LSM6DS33.h>
+
+Adafruit_LSM6DS33 IMU;     // Gyro and Accel
+Adafruit_LIS3MDL  IMUMag;  // Magnetometer
+
+#else
+
+#error "Sensor driver library for your is not included"
+//#include <Arduino_LSM9DS1.h> // change to Arduino_LSM6DS3.h for Nano 33 IoT or Uno WiFi Rev 2
+
+#endif
 
 namespace data_provider
 {
@@ -57,7 +68,7 @@ namespace data_provider
   bool setup()
   {
 
-    if (!IMU.begin())
+    if ( !(IMU.begin_I2C() && IMUMag.begin_I2C()) )
     {
       Serial.println("Failed to initialized IMU!");
       return false;
@@ -74,10 +85,10 @@ namespace data_provider
     Serial.println(IMU.accelerationSampleRate());
     Serial.print("Gyroscope sample rate = ");
     Serial.println(IMU.gyroscopeSampleRate());
-#if 0
+
     Serial.print("Magnetometer sample rate = ");
-    Serial.println(IMU.magneticFieldSampleRate());
-#endif
+    Serial.println(IMUMag.magneticFieldSampleRate());
+
     return true;
   }
 
@@ -105,16 +116,15 @@ namespace data_provider
     buffer[4] = gy / 2000.0;
     buffer[5] = gz / 2000.0;
 
-#if 0
     if (useMagnetometer || calibrating)
     {
       float mx, my, mz;
 
       // The Magnetometer sample rate is only 20hz, so we'll use previous values
       // if no new ones are available
-      if (IMU.magneticFieldAvailable())
+      if (IMUMag.magneticFieldAvailable())
       {
-        IMU.readMagneticField(mx, my, mz);
+        IMUMag.readMagneticField(mx, my, mz);
         lastMagneticFieldReading[0] = mx;
         lastMagneticFieldReading[1] = my;
         lastMagneticFieldReading[2] = mz;
@@ -161,6 +171,5 @@ namespace data_provider
       buffer[7] = my / 50.0;
       buffer[8] = mz / 50.0;
     }
-#endif
   }
 }

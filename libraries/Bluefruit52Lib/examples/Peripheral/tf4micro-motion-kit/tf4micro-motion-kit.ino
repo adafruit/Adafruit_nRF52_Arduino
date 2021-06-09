@@ -139,7 +139,7 @@ void showErrorLed()
 {
   // blink red
   millis() % 1000 > 500 ? rgbLedOff() : rgbLedRed();
-  delay(500);
+  yield();
 }
 
 void updateLed()
@@ -412,12 +412,10 @@ void setup()
   while (!Serial && millis() - startTime < 2000)
     yield();
 
-  Serial.println("Bluefruit52 Example");
-  Serial.println("-------------------\n");
-
   // Prepare LED pins.
   pinMode(LED_BUILTIN, OUTPUT);
   neopixels.begin();
+  neopixels.setBrightness(0x20);
 
   // Start IMU / Data provider.
   if (!data_provider::setup())
