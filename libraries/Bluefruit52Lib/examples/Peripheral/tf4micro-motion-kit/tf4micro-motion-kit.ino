@@ -17,7 +17,15 @@ limitations under the License.
 * @author Rikard Lindstrom <rlindsrom@google.com>
 */
 
-// Ported to Adafruit_nRF52_Arduino core by hathach for Adafruit
+// Ported to Adafruit_nRF52_Arduino core by hathach for Adafruit from
+// https://github.com/googlecreativelab/tiny-motion-trainer
+//
+// Boards equipped with IMU sensor such as Clue and Feather nRF52840 Sense are supported
+// out of the box. If you use other board, or sensor please edit the 'data_provider.cpp' file
+// to include driver libraries for yours.
+
+// For how to run this example check out following
+// https://experiments.withgoogle.com/tiny-motion-trainer
 
 #define VERSION 5
 #define FLOAT_BYTE_SIZE 4
