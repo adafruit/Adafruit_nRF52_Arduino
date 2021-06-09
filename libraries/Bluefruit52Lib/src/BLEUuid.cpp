@@ -158,7 +158,7 @@ String BLEUuid::toString(void) const
   char result[38];
   if (this->size() == 16)
   {
-    sprintf(result, "%02X:%02X", _uuid.uuid);
+    sprintf(result, "%02X%02X", highByte(_uuid.uuid), lowByte(_uuid.uuid));
   }else
   {
     // uuid is little endian
