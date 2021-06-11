@@ -29,6 +29,8 @@ extern "C" {
 
 #include "Wire.h"
 
+#include <Adafruit_TinyUSB.h> // for Serial
+
 static volatile uint32_t* pincfg_reg(uint32_t pin)
 {
   NRF_GPIO_Type * port = nrf_gpio_pin_port_decode(&pin);

@@ -23,6 +23,8 @@
 #include "PDM.h"
 #include <hal/nrf_pdm.h>
 
+#include <Adafruit_TinyUSB.h> // for Serial
+
 #define DEFAULT_PDM_GAIN     20
 #define PDM_IRQ_PRIORITY     7
 

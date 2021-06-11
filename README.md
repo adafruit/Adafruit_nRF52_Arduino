@@ -85,7 +85,7 @@ This only works with nRF52840 and require existing bootloader version is at leas
 
 To upgrade to the latest Bootloader + Softdevice using the serial port within Arduino IDE.
 
-- Select `Tools > Board > Adafruit Bluefruit Feather52`
+- Select `Tools > Board > Adafruit Feather nRF52840 Express`
 - Select `Tools > Programmer > Bootloader DFU for Bluefruit nRF52`
 - Select `Tools > Burn Bootloader`
 - **WAIT** until the process complete ~30 seconds
@@ -111,7 +111,7 @@ $ ln -s $HOME/prog/nordic/nrfjprog/nrfjprog /usr/local/bin/nrfjprog
 
 Once the tools above have been installed and added to your system path, from the Arduino IDE:
 
-- Select `Tools > Board > Adafruit Bluefruit Feather52`
+- Select `Tools > Board > Adafruit Feather nRF52840 Express`
 - Select `Tools > Programmer > J-Link for Feather52`
 - Select `Tools > Burn Bootloader` with the board and J-Link connected
 

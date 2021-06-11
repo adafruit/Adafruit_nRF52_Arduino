@@ -16,7 +16,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-menu.softdevice=Bootloader
+menu.softdevice=SoftDevice
 menu.debug=Debug
 
 # ----------------------------------
@@ -46,7 +46,7 @@ feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
 feather52832.build.ldscript=nrf52832_s132_v6.ld
 
 # SofDevice Menu
-feather52832.menu.softdevice.s132v6=0.5.0 SoftDevice s132 6.1.1
+feather52832.menu.softdevice.s132v6=S132 6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_fwid=0x00B7
@@ -100,7 +100,7 @@ feather52840.build.vid=0x239A
 feather52840.build.pid=0x8029
 
 # SofDevice Menu
-feather52840.menu.softdevice.s140v6=0.5.0 SoftDevice s140 6.1.1
+feather52840.menu.softdevice.s140v6=S140 6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -155,7 +155,7 @@ feather52840sense.build.vid=0x239A
 feather52840sense.build.pid=0x8087
 
 # SofDevice Menu
-feather52840sense.menu.softdevice.s140v6=0.5.0 SoftDevice s140 6.1.1
+feather52840sense.menu.softdevice.s140v6=S140 6.1.1
 feather52840sense.menu.softdevice.s140v6.build.sd_name=s140
 feather52840sense.menu.softdevice.s140v6.build.sd_version=6.1.1
 feather52840sense.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -264,7 +264,7 @@ cplaynrf52840.build.vid=0x239A
 cplaynrf52840.build.pid=0x8045
 
 # SofDevice Menu
-cplaynrf52840.menu.softdevice.s140v6=0.5.0 SoftDevice s140 6.1.1
+cplaynrf52840.menu.softdevice.s140v6=S140 6.1.1
 cplaynrf52840.menu.softdevice.s140v6.build.sd_name=s140
 cplaynrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 cplaynrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -319,7 +319,7 @@ cluenrf52840.build.vid=0x239A
 cluenrf52840.build.pid=0x8071
 
 # SofDevice Menu
-cluenrf52840.menu.softdevice.s140v6=0.5.0 SoftDevice s140 6.1.1
+cluenrf52840.menu.softdevice.s140v6=S140 6.1.1
 cluenrf52840.menu.softdevice.s140v6.build.sd_name=s140
 cluenrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 cluenrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -373,7 +373,7 @@ metro52840.build.vid=0x239A
 metro52840.build.pid=0x803F
 
 # SofDevice Menu
-metro52840.menu.softdevice.s140v6=0.5.0 SoftDevice s140 6.1.1
+metro52840.menu.softdevice.s140v6=S140 6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_name=s140
 metro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -427,7 +427,7 @@ pca10056.build.vid=0x239A
 pca10056.build.pid=0x8029
 
 # SofDevice Menu
-pca10056.menu.softdevice.s140v6=0.5.0 SoftDevice s140 6.1.1
+pca10056.menu.softdevice.s140v6=S140 6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -481,7 +481,7 @@ particle_xenon.build.vid=0x239A
 particle_xenon.build.pid=0x8029
 
 # SofDevice Menu
-particle_xenon.menu.softdevice.s140v6=0.5.0 SoftDevice s140 6.1.1
+particle_xenon.menu.softdevice.s140v6=S140 6.1.1
 particle_xenon.menu.softdevice.s140v6.build.sd_name=s140
 particle_xenon.menu.softdevice.s140v6.build.sd_version=6.1.1
 particle_xenon.menu.softdevice.s140v6.build.sd_fwid=0x00B6

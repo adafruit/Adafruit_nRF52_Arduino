@@ -26,7 +26,6 @@
 
 #include <Arduino.h>
 #include "bluefruit_common.h"
-#include <Adafruit_TinyUSB.h> // for Serial
 
 #define CFG_ADV_BLINKY_INTERVAL   500
 
@@ -180,7 +179,7 @@ class AdafruitBluefruit
      *------------------------------------------------------------------*/
     void setMultiprotocolSemaphore(SemaphoreHandle_t mprot_event_semaphore) 
     { 
-        _mprot_event_sem= mprot_event_semaphore;
+      _mprot_event_sem= mprot_event_semaphore;
     } 
 #endif
 

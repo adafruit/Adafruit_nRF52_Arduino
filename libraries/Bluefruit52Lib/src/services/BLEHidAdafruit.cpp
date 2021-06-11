@@ -63,7 +63,8 @@ BLEHidAdafruit::BLEHidAdafruit(void)
 
 err_t BLEHidAdafruit::begin(void)
 {
-  uint16_t input_len [] = { sizeof(hid_keyboard_report_t),  sizeof(hid_consumer_control_report_t), sizeof(hid_mouse_report_t) };
+  // keyboard, consumer, mouse
+  uint16_t input_len [] = { sizeof(hid_keyboard_report_t), 2, sizeof(hid_mouse_report_t) };
   uint16_t output_len[] = { 1 };
 
   setReportLen(input_len, output_len, NULL);
