@@ -25,7 +25,8 @@ limitations under the License.
 // to include driver libraries for yours.
 
 // For how to run this example check out following
-// https://experiments.withgoogle.com/tiny-motion-trainer
+// - https://github.com/googlecreativelab/tf4micro-motion-kit
+// - https://experiments.withgoogle.com/collection/tfliteformicrocontrollers
 
 #define VERSION 5
 #define FLOAT_BYTE_SIZE 4

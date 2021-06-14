@@ -21,16 +21,43 @@ limitations under the License.
 
 #if defined(ARDUINO_NRF52840_CLUE) || defined(ARDUINO_NRF52840_FEATHER_SENSE)
 
-#include <Adafruit_LIS3MDL.h>
 #include <Adafruit_LSM6DS33.h>
+#include <Adafruit_LIS3MDL.h>
 
 Adafruit_LSM6DS33 IMU;     // Gyro and Accel
 Adafruit_LIS3MDL  IMUMag;  // Magnetometer
 
-#else
+#if defined ARDUINO_NRF52840_FEATHER_SENSE
+  // normalize sensor orientation to match Arduino nano
+  void normalize_orientation(float& x, float& y, float& z)
+  {
+    (void) x;
+    (void) z;
+
+    y = -y;
+  }
+
+#elif defined ARDUINO_NRF52840_CLUE
+  // normalize sensor orientation to match Arduino nano
+  void normalize_orientation(float& x, float& y, float& z)
+  {
+    float temp = x;
+
+    x = -y;
+    y = temp; // x
+    z = -z;
+  }
+#endif
+
+#else // For custom boards, please include your own sensor
 
 #error "Sensor driver library for your is not included"
-//#include <Arduino_LSM9DS1.h> // change to Arduino_LSM6DS3.h for Nano 33 IoT or Uno WiFi Rev 2
+
+// normalize sensor orientation to match Arduino nano
+void normalize_orientation(float& x, float& y, float& z)
+{
+  (void) x; (void) y; (void) z;
+}
 
 #endif
 
@@ -106,6 +133,10 @@ namespace data_provider
     IMU.readAcceleration(ax, ay, az);
     IMU.readGyroscope(gx, gy, gz);
 
+    // normalize sensor orientation to match Arduino nano
+    normalize_orientation(ax, ay, az);
+    normalize_orientation(gx, gy, gz);
+
     // Accelorameter has a range of -4 – 4
     buffer[0] = ax / 4.0;
     buffer[1] = ay / 4.0;
@@ -125,6 +156,10 @@ namespace data_provider
       if (IMUMag.magneticFieldAvailable())
       {
         IMUMag.readMagneticField(mx, my, mz);
+
+        // normalize sensor orientation to match Arduino nano
+        normalize_orientation(mx, my, mz);
+
         lastMagneticFieldReading[0] = mx;
         lastMagneticFieldReading[1] = my;
         lastMagneticFieldReading[2] = mz;
