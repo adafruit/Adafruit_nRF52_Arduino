@@ -111,6 +111,96 @@ uint8_t *newModelFileData = nullptr;
 int newModelFileLength = 0;
 
 /************************************************************************
+* Labels for local display
+************************************************************************/
+
+// Currently there is no set Labels, this used actual data matched with 2 examples
+// "Air Snare" and "Finger User Interface" to display TFT locally
+
+// from ARCADA color
+#define COLOR_BLACK 0x0000       ///<   0,   0,   0
+#define COLOR_BLUE 0x001F        ///<   0,   0, 255
+#define COLOR_GREEN 0x07E0       ///<   0, 255,   0
+#define COLOR_CYAN 0x07FF        ///<   0, 255, 255
+#define COLOR_RED 0xF800         ///< 255,   0,   0
+#define COLOR_MAGENTA 0xF81F     ///< 255,   0, 255
+#define COLOR_YELLOW 0xFFE0      ///< 255, 255,   0
+#define COLOR_WHITE 0xFFFF       ///< 255, 255, 255
+#define COLOR_ORANGE 0xFD20      ///< 255, 165,   0
+#define COLOR_PINK 0xFC18        ///< 255, 130, 198
+
+const char* labelAirSnare[] = {
+  "Side", "Down", "Up"
+};
+
+const char* labelFingerUserInterface[] = {
+  "Left", "Right", "Poke", "Twirl", "Pluck"
+};
+
+const char** modelLabel = NULL;
+
+// detect model label
+const char** detectModelLabel(int file_length) {
+  uint8_t const numClasses = numClassesRxChar.read8();
+
+  if ( (numClasses == 3) && ( (file_length / 1000) == 17 ) ) {
+    return labelAirSnare;
+  }
+
+  if ( (numClasses == 5) && ( (file_length / 1000) == 35 ) ) {
+    return labelFingerUserInterface;
+  }
+
+  return NULL;
+}
+
+uint16_t const color_pallete[] = {
+  COLOR_BLUE,
+  COLOR_GREEN, // Green
+  COLOR_YELLOW, // Yellow
+  COLOR_CYAN, // Cyan
+  COLOR_PINK, // Pink
+  COLOR_MAGENTA, // MAGENTA
+  COLOR_ORANGE, // Orange
+  COLOR_RED, // Red
+};
+
+#if defined(ARDUINO_NRF52840_CLUE)
+
+// use arcada for display
+#include <Adafruit_Arcada.h>
+
+Adafruit_Arcada arcada;
+
+void displayInit(void) {
+  arcada.displayBegin();
+  arcada.setBacklight(255);
+
+  Adafruit_SPITFT* tft = arcada.display;
+
+  tft->fillScreen(COLOR_BLACK);
+  tft->setRotation(3);
+}
+
+void displayText(const char* text, uint8_t size, uint16_t color) {
+  Adafruit_SPITFT* tft = arcada.display;
+
+  tft->fillScreen(COLOR_BLACK);
+  tft->setTextColor(color);
+  tft->setTextSize(size);
+  tft->setCursor(60, 100);
+  tft->print(text);
+}
+
+#else
+
+// stub for no-tft board
+void displayText(const char* text, uint8_t size, uint16_t color) { (void) text; (void) size; (void) color; }
+void displayInit(void) { }
+
+#endif
+
+/************************************************************************
 * LED / State status functions
 ************************************************************************/
 
@@ -242,6 +332,11 @@ void setState(State state)
     break;
   case FILE_TRANSFER:
     Serial.println("state is now FILE_TRANSFER");
+    displayText("Dwnloading", 3, COLOR_ORANGE);
+    break;
+  case INFERENCE:
+    Serial.println("state is now INFERENCE");
+    displayText("Ready", 3, COLOR_GREEN);
     break;
   case IMU_DATA_PROVIDER:
     Serial.println("state is now IMU_DATA_PROVIDER");
@@ -359,6 +454,11 @@ void model_tester_onInference(unsigned char classIndex, unsigned char score, uns
   Serial.print(classIndex);
   Serial.print(" score: ");
   Serial.println(score);
+
+  if ( modelLabel ) {
+    // display label on TFT use index as color id
+    displayText(modelLabel[classIndex], 5, color_pallete[classIndex]);
+  }
 }
 
 // called when calibration completes
@@ -369,6 +469,12 @@ void data_provider_calibrationComplete(){
 // called on file transfer complete
 void onBLEFileReceived(uint8_t *file_data, int file_length)
 {
+  Serial.print("file length ");
+  Serial.println(file_length);
+
+  // detect label of model for local display
+  modelLabel = detectModelLabel(file_length);
+
   switch (fileTransferType)
   {
     case MODEL_FILE:
@@ -425,6 +531,7 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   neopixels.begin();
   neopixels.setBrightness(0x20);
+  displayInit();
 
   // Start IMU / Data provider.
   if (!data_provider::setup())

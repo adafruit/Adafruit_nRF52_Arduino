@@ -100,7 +100,7 @@ namespace model_tester
     {
       Serial.println("Model schema mismatch!");
       while (1)
-        ;
+        delay(1);
     }
 
     // Create an interpreter to run the model
@@ -191,7 +191,7 @@ namespace model_tester
         {
           Serial.println("Invoke failed!");
           while (1)
-            ;
+            delay(1);
           return;
         }
         #ifdef DEBUG
