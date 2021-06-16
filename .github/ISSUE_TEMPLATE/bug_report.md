@@ -1,8 +1,8 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-title: ''
-labels: Bug
+title: 'Please provide all details at least for Setup/Describe/Reproduce'
+labels: 'Bug'
 assignees: ''
 
 ---
@@ -14,7 +14,7 @@ A clear and concise description of what the bug is.
  - **PC & IDE** : Arduino 1.8.13 on Ubuntu 18.04 / Windows 10/ macOS 10.15
  - **BSP**   : 0.20.0
  - **Board** : Feather nRF52840 Express
- - **Sketch**: Bluefruit52Lib/examples/Peripheral/bleuart. If it is a custom sketch, please provide a minimal sketch within codeblock
+ - **Sketch**: Bluefruit52Lib/examples/Peripheral/bleuart. If it is your custom sketch, please provide a minimal sketch as attached file
 
 **To Reproduce**
 Steps to reproduce the behavior:
@@ -26,4 +26,4 @@ Steps to reproduce the behavior:
 If applicable, add screenshots to help explain your problem.
 
 **Serial Log**
-Serial output when IDE's Debug Mode Level to 1 or 2
+Serial output when IDE's Debug Mode Level to 1 or 2 as attached txt file
