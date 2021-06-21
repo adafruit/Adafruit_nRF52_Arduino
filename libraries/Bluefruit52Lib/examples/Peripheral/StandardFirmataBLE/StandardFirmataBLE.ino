@@ -790,7 +790,6 @@ void setup()
   Bluefruit.configPrphBandwidth(BANDWIDTH_MAX);
   
   Bluefruit.begin();
-  Bluefruit.setName("Bluefruit52");
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
   
   // try to go as fast as possible, could be rejected by some central, increase it if needed

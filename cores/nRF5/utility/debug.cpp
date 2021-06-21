@@ -107,14 +107,14 @@ static void printMemRegion(const char* name, uint32_t top, uint32_t bottom, uint
     sprintf(buffer, "%lu", top-bottom);
   }
 
-  PRINTF("| %-5s| 0x%04X - 0x%04X | %-19s |\n", name, (uint16_t) bottom, (uint16_t) (top-1), buffer);
+  PRINTF("| %-5s| 0x%04X - 0x%04X | %-19s |\r\n", name, (uint16_t) bottom, (uint16_t) (top-1), buffer);
 }
 
 void dbgMemInfo(void)
 {
-  PRINTF(" ______________________________________________\n");
-  PRINTF("| Name | Addr 0x2000xxxx | Usage               |\n");
-  PRINTF("| ---------------------------------------------|\n");
+  PRINTF(" ______________________________________________\r\n");
+  PRINTF("| Name | Addr 0x2000xxxx | Usage               |\r\n");
+  PRINTF("| ---------------------------------------------|\r\n");
 
   // Pritn SRAM used for Stack executed by Softdevice and ISR
   printMemRegion("Stack", ((uint32_t) __StackTop), ((uint32_t) __StackLimit), dbgStackUsed() );
@@ -128,7 +128,7 @@ void dbgMemInfo(void)
   // Print SRAM Used by SoftDevice
   printMemRegion("SD", (uint32_t) __data_start__, 0x20000000, 0);
 
-  PRINTF("|______________________________________________|\n");
+  PRINTF("|______________________________________________|\r\n");
   PRINTF("\n");
 
   // Print Task list
@@ -137,8 +137,8 @@ void dbgMemInfo(void)
 
   vTaskList(buf);
 
-  PRINTF("Task    State   Prio  StackLeft Num\n");
-  PRINTF("-----------------------------------\n");
+  PRINTF("Task    State   Prio  StackLeft Num\r\n");
+  PRINTF("-----------------------------------\r\n");
   PRINTF(buf);
   PRINTF("\n");
   rtos_free(buf);
@@ -146,11 +146,11 @@ void dbgMemInfo(void)
 
 void dbgPrintVersion(void)
 {
-  PRINTF("\n");
-  PRINTF("BSP Library : " ARDUINO_BSP_VERSION "\n");
-  PRINTF("Bootloader  : %s\n", getBootloaderVersion());
-  PRINTF("Serial No   : %s\n", getMcuUniqueID());
-  PRINTF("\n");
+  PRINTF("\r\n");
+  PRINTF("BSP Library : " ARDUINO_BSP_VERSION "\r\n");
+  PRINTF("Bootloader  : %s\r\n", getBootloaderVersion());
+  PRINTF("Serial No   : %s\r\n", getMcuUniqueID());
+  PRINTF("\r\n");
 }
 
 /******************************************************************************/

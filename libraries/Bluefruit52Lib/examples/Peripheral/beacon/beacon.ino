@@ -48,7 +48,6 @@ void setup()
   // off Blue LED for lowest power consumption
   Bluefruit.autoConnLed(false);
   Bluefruit.setTxPower(0);    // Check bluefruit.h for supported values
-  Bluefruit.setName("Bluefruit52");
 
   // Manufacturer ID is required for Manufacturer Specific Data
   beacon.setManufacturer(MANUFACTURER_ID);

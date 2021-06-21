@@ -48,7 +48,6 @@ void setup()
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-  Bluefruit.setName("Bluefruit52");
 
   Serial.println("Setting pairing PIN to: " PAIRING_PIN);
   Bluefruit.Security.setPIN(PAIRING_PIN);

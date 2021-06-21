@@ -67,7 +67,7 @@ extern "C"
       {
         PRINTF("0x%lX (%ld)", _status, _status);
       }
-      PRINTF("\n");
+      PRINTF("\r\n");
   }
 #else
   #define VERIFY_MESS(_status, _funcstr)

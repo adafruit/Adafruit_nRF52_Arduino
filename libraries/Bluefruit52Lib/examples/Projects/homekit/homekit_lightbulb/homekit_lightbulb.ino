@@ -121,7 +121,6 @@ void setup()
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-  Bluefruit.setName("Bluefruit52");
 
   //InternalFS.remove(CRYPTO_KEYFILE);
   //File file(CRYPTO_KEYFILE, FILE_O_WRITE, InternalFS);

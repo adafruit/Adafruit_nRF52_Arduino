@@ -36,7 +36,6 @@ void setup()
 
   Bluefruit.begin();
   Bluefruit.setTxPower(4);    // Check bluefruit.h for supported values
-  Bluefruit.setName("Bluefruit52");
 
   // Configure and Start Device Information Service
   bledis.setManufacturer("Adafruit Industries");

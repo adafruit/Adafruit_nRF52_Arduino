@@ -42,7 +42,6 @@ void setup()
   // Initialise the Bluefruit module
   Serial.println("Initialise the Bluefruit nRF52 module");
   Bluefruit.begin();
-  Bluefruit.setName("Bluefruit52");
 
   // Set the connect/disconnect callback handlers
   Bluefruit.Periph.setConnectCallback(connect_callback);
