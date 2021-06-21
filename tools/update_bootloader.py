@@ -36,4 +36,5 @@ for variant in all_variant:
         zip_ref.extractall("bootloader/{}".format(variant))
 
     # Remove update.uf2
-    os.remove("bootloader/{}/update-{}_nosd.uf2".format(variant, name[:-4]))
+    if variant == 'feather_nrf52832':
+        os.remove("bootloader/{}/update-{}_nosd.uf2".format(variant, name[:-4]))
