@@ -72,8 +72,6 @@ compiler.elf2bin.extra_flags=
 compiler.elf2hex.extra_flags=
 
 compiler.arm.cmsis.c.flags="-I{runtime.tools.CMSIS-5.7.0.path}/CMSIS/Core/Include/" "-I{runtime.tools.CMSIS-5.7.0.path}/CMSIS/DSP/Include/"
-
-# TODO enable linking with libmath later on
 compiler.arm.cmsis.ldflags="-L{runtime.tools.CMSIS-5.7.0.path}/CMSIS/DSP/Lib/GCC/" -larm_cortexM4lf_math
 
 # common compiler for nrf
