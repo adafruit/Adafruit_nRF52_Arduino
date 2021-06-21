@@ -1,5 +1,26 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.23.0 - 2021.06.22
+
+- Fix CryptoCell usage issue that prevent mcu to go to sleep causing high power consumption
+- separate pairing_passkey with and without arcada
+- Add back `Raytac MDBT50Q - RX` variant
+- Remove Bluefruit.setName() from most examples for it to use default board name
+- Update CMSIS from 5.4.0 to 5.7.0
+- Fix build with TensorFlowLite v2.4.0
+- Update included Adafruit_nRFCrypto to 0.0.5
+- Update included Adafruit_TinyUSB_Arduino to 1.1.0
+- Update include bootloader binaries to 0.6.0
+- Enable usage of DSP libmath
+- Added/Ported tf4micro-motion-kit project
+- Update BLEUuid
+  - Add from string style constructor like ArduinoBLE
+  - Add toString() function
+- Update BLECharacteristic
+  - Add constructor with properties
+  - Add constructor with max_len and fixed len
+  - Add writeFloat() and readFloat()
+
 ## 0.22.1 - 2021.05.26
 
 - Fix warnings "changing start of section .bss by 4 bytes"
