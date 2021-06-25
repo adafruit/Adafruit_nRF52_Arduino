@@ -267,7 +267,7 @@ bool pairing_passkey_callback(uint16_t conn_handle, uint8_t const passkey[6], bo
     tft->println();
 
     // wait until either button is pressed (30 seconds timeout)
-    uint32_t justReleased;
+    uint32_t justReleased = 0;
     do
     {
       if ( millis() > start_time + 30000 ) break;
