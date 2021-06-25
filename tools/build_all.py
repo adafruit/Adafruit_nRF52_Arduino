@@ -15,8 +15,8 @@ success_count = 0
 fail_count = 0
 skip_count = 0
 
-build_format = '| {:20} | {:35} | {:18} | {:6} |'
-build_separator = '-' * 83
+build_format = '| {:25} | {:35} | {:18} | {:6} |'
+build_separator = '-' * 88
 
 default_boards = [ 'cluenrf52840', 'cplaynrf52840', 'feather52832', 'feather52840', 'feather52840sense', 'itsybitsy52840' ]
 build_boards = []
@@ -35,7 +35,7 @@ def build_examples(variant):
 
     print('\n')
     print(build_separator)
-    print('| {:^79} |'.format('Board ' + variant))
+    print('| {:^84} |'.format('Board ' + variant))
     print(build_separator)
     print(build_format.format('Library', 'Example', '\033[39mResult\033[0m', 'Time'))
     print(build_separator)

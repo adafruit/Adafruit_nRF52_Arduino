@@ -1,5 +1,9 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 0.24.0 - 2021.06.25
+
+- Update included TinyUSB libraries to 1.2.0
+
 ## 0.23.0 - 2021.06.22
 
 - Fix CryptoCell usage issue that prevent mcu to go to sleep causing high power consumption
