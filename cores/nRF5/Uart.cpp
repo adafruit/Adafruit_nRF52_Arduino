@@ -104,8 +104,12 @@ void Uart::begin(unsigned long baudrate, uint16_t config)
     nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud19200;
   } else if (baudrate <= 28800) {
     nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud28800;
+  } else if (baudrate <= 31250) {
+    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud31250;
   } else if (baudrate <= 38400) {
     nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud38400;
+  } else if (baudrate <= 56000) {
+    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud56000;
   } else if (baudrate <= 57600) {
     nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud57600;
   } else if (baudrate <= 76800) {
