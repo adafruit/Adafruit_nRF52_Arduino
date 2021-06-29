@@ -2,7 +2,7 @@
 
 ## 0.24.0 - 2021.06.25
 
-- Update included TinyUSB libraries to 1.2.0
+- Update included TinyUSB libraries to 1.3.0
 
 ## 0.23.0 - 2021.06.22
 
