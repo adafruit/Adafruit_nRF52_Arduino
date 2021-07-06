@@ -784,8 +784,14 @@ void AdafruitBluefruit::_ble_handler(ble_evt_t* evt)
       _setConnLed(true);
 
       ble_gap_evt_connected_t const * para = &evt->evt.gap_evt.params.connected;
+      ble_gap_addr_t const* peer_addr = &para->peer_addr;
 
-      LOG_LV1("GAP", "Conn Interval= %.2f ms, Latency = %d, Supervisor Timeout = %d ms",
+      (void) peer_addr;
+
+      LOG_LV2("GAP", "MAC = %02X:%02X:%02X:%02X:%02X:%02X, Type = %d, Resolved = %d",
+              peer_addr->addr[5], peer_addr->addr[4], peer_addr->addr[3], peer_addr->addr[2], peer_addr->addr[1], peer_addr->addr[0],
+              peer_addr->addr_type, peer_addr->addr_id_peer);
+      LOG_LV2("GAP", "Conn Interval = %.2f ms, Latency = %d, Supervisor Timeout = %d ms",
               para->conn_params.max_conn_interval*1.25f, para->conn_params.slave_latency, 10*para->conn_params.conn_sup_timeout);
 
       if ( _connection[conn_hdl] )

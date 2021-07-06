@@ -531,6 +531,7 @@ void BLECharacteristic::_eventHandler(ble_evt_t* event)
       {
         LOG_LV2("GATTS", "attr's value, uuid = 0x%04X, len = %d", request->uuid.uuid, request->len);
         LOG_LV2_BUFFER(NULL, request->data, request->len);
+        LOG_LV2(NULL, "\r\n");
 
         if (_wr_cb)
         {

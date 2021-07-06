@@ -360,6 +360,13 @@ void BLESecurity::_eventHandler(ble_evt_t* evt)
       // Pairing succeeded --> save encryption keys ( Bonding )
       if (BLE_GAP_SEC_STATUS_SUCCESS == status->auth_status)
       {
+        if (!status->kdist_peer.id)
+        {
+          // Peer does not provide IRK, it is possible that device uses Public/Static address which
+          // IRK is not needed. We will use the connect address instead
+          _bond_keys.peer_id.id_addr_info = conn->getPeerAddr();
+        }
+
         conn->saveBondKey(&_bond_keys);
       }
 
