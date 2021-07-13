@@ -39,6 +39,7 @@
 
 
 #ifdef __cplusplus
+  extern "C++" {
   // namespace and templates must be outside the `extern "C"` declaration...
   namespace ADAFRUIT_DETAIL
   {
@@ -47,6 +48,7 @@
       {
           return N;
       }
+  }
   }
   extern "C" {
   #define arrcount(arr) ADAFRUIT_DETAIL::arrcount_fails_if_not_array(arr)
