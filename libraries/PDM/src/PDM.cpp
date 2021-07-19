@@ -58,9 +58,29 @@ int PDMClass::begin(int channels, long sampleRate)
   _channels = channels;
 
   // Enable high frequency oscillator if not already enabled
-  if (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0) {
-    NRF_CLOCK->TASKS_HFCLKSTART    = 1;
-    while (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0) { }
+  uint8_t sd_en = 0;
+  sd_softdevice_is_enabled(&sd_en);
+
+  if (sd_en)
+  {
+    uint32_t is_running;
+    sd_clock_hfclk_is_running(&is_running);
+
+    if (!is_running) {
+      sd_clock_hfclk_request();
+
+      while(!is_running) {
+        yield();
+        sd_clock_hfclk_is_running(&is_running);
+      }
+    }
+  }
+  else
+  {
+    if (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0) {
+      NRF_CLOCK->TASKS_HFCLKSTART    = 1;
+      while (NRF_CLOCK->EVENTS_HFCLKSTARTED == 0) yield();
+    }
   }
 
   // configure the sample rate and channels

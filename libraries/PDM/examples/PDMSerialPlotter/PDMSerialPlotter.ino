@@ -18,7 +18,7 @@ volatile int samplesRead;
 
 void setup() {
   Serial.begin(9600);
-  while (!Serial);
+  while (!Serial) yield();
 
   // configure the data receive callback
   PDM.onReceive(onPDMdata);
@@ -31,7 +31,7 @@ void setup() {
   // - a 16 kHz sample rate
   if (!PDM.begin(1, 16000)) {
     Serial.println("Failed to start PDM!");
-    while (1);
+    while (1) yield();
   }
 }
 
