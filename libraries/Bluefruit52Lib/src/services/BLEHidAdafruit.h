@@ -89,6 +89,9 @@ class BLEHidAdafruit : public BLEHidGeneric
 
     bool mouseButtonPress(uint8_t buttons);
     bool mouseButtonRelease(void);
+    
+    bool mouseButtonPressSpecific(uint8_t buttons);
+    bool mouseButtonReleaseSpecific(uint8_t buttons);
 
     bool mouseMove(int8_t x, int8_t y);
     bool mouseScroll(int8_t scroll);
@@ -100,6 +103,9 @@ class BLEHidAdafruit : public BLEHidGeneric
 
     bool mouseButtonPress(uint16_t conn_hdl, uint8_t buttons);
     bool mouseButtonRelease(uint16_t conn_hdl);
+    
+    bool mouseButtonPressSpecific(uint16_t conn_hdl, uint8_t buttons);
+    bool mouseButtonReleaseSpecific(uint16_t conn_hdl, uint8_t buttons);
 
     bool mouseMove(uint16_t conn_hdl, int8_t x, int8_t y);
     bool mouseScroll(uint16_t conn_hdl, int8_t scroll);

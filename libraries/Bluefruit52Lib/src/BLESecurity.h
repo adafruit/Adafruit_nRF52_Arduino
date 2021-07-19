@@ -36,6 +36,7 @@ class BLESecurity
 {
   public:
     typedef bool (*pair_passkey_cb_t ) (uint16_t conn_hdl, uint8_t const passkey[6], bool match_request);
+    typedef void (*pair_passkey_req_cb_t) (uint16_t conn_hdl);
     typedef void (*pair_complete_cb_t) (uint16_t conn_hdl, uint8_t auth_status);
     typedef void (*secured_conn_cb_t) (uint16_t conn_hdl);
 
@@ -57,8 +58,11 @@ class BLESecurity
 
     //------------- Callbacks -------------//
     bool setPairPasskeyCallback(pair_passkey_cb_t fp);
+    void setPairPasskeyRequestedCallback(pair_passkey_req_cb_t fp);
     void setPairCompleteCallback(pair_complete_cb_t fp);
     void setSecuredCallback(secured_conn_cb_t fp);
+
+    bool enterRequestedPasskey(uint16_t conn_hdl, uint8_t const* passkey);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
@@ -82,6 +86,7 @@ class BLESecurity
     bond_keys_t  _bond_keys; // Shared keys with bonded device during securing connection, size ~ 80 bytes
 
     pair_passkey_cb_t  _passkey_cb;
+    pair_passkey_req_cb_t _passkey_req_cb;
     pair_complete_cb_t _complete_cb;
     secured_conn_cb_t  _secured_cb;
 };

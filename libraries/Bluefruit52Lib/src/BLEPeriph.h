@@ -39,6 +39,7 @@
 
 #include <Arduino.h>
 #include "bluefruit_common.h"
+#include "utility/bonding.h"
 
 class BLEPeriph
 {
@@ -50,6 +51,7 @@ class BLEPeriph
     bool    connected(uint16_t conn_hdl); // Connected as prph to this connection
     uint8_t connected(void);              // Number of connected as peripherals
 
+    bool getBonds(bonded_device_info* bondedPeers, uint32_t bondedPeersSize, uint32_t* actualBondedPeersSize);
     void clearBonds(void);
 
     bool setConnInterval   (uint16_t min, uint16_t max);
