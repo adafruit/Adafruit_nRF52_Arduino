@@ -21,7 +21,7 @@
 
 // Due to nRF52832 Errata with SPIM, we will only use SPIM for 840 variant
 // https://infocenter.nordicsemi.com/topic/errata_nRF52832_Rev2/ERR/nRF52832/Rev2/latest/anomaly_832_58.html
-#ifdef NRF52840_XXAA
+#if defined(NRF52840_XXAA) || defined(NRF52833_XXAA)
 
 #include "SPI.h"
 #include <Arduino.h>
