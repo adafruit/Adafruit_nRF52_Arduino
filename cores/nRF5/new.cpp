@@ -23,27 +23,27 @@
 #include <sys/stat.h>
 #include <malloc.h>
 
-void *operator new(size_t size) {
+void __attribute__((weak)) *operator new(size_t size) {
   return rtos_malloc(size);
 }
 
-void *operator new[](size_t size) {
+void __attribute__((weak)) *operator new[](size_t size) {
   return rtos_malloc(size);
 }
 
-void operator delete(void * ptr) {
+void __attribute__((weak)) operator delete(void * ptr) {
   rtos_free(ptr);
 }
 
-void operator delete[](void * ptr) {
+void __attribute__((weak)) operator delete[](void * ptr) {
   rtos_free(ptr);
 }
 
-void operator delete(void * ptr, unsigned int) {
+void __attribute__((weak)) operator delete(void * ptr, unsigned int) {
   rtos_free(ptr);
 }
 
-void operator delete[](void * ptr, unsigned int) {
+void __attribute__((weak)) operator delete[](void * ptr, unsigned int) {
   rtos_free(ptr);
 }
 
