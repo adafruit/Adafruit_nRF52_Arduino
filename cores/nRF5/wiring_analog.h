@@ -107,6 +107,15 @@ extern void analogReadResolution(int res);
  */
 extern void analogWriteResolution(uint8_t res);
 
+/*
+ * \brief Set the ADC sample time. Default is 3us (appropriate for low source resistance).
+ * See the chart of appropriate sample time vs. source resistance in the SAADC section
+ * of the Nordic nrf52 product specification.
+ *
+ * \param time Should be set to 3, 5, 10, 15, 20 or 40.
+ */
+extern void analogSampleTime(uint8_t sTime);
+
 extern void analogOutputInit( void ) ;
 
 #ifdef __cplusplus
