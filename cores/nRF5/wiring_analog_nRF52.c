@@ -284,6 +284,45 @@ uint32_t analogReadVDD( void )
   return analogRead_internal(SAADC_CH_PSELP_PSELP_VDD);
 }
 
+analogCalibrateOffset()
+{
+  const uint32_t calibrate_done = ( (SAADC_EVENTS_CALIBRATEDONE_EVENTS_CALIBRATEDONE_Generated << 
+                                      SAADC_EVENTS_CALIBRATEDONE_EVENTS_CALIBRATEDONE_Pos )
+                                    && SAADC_EVENTS_CH_LIMITH_LIMITH_Msk );
+  
+  const uint32_t calibrate_not_done = ( (SAADC_EVENTS_CALIBRATEDONE_EVENTS_CALIBRATEDONE_NotGenerated << 
+                                          SAADC_EVENTS_CALIBRATEDONE_EVENTS_CALIBRATEDONE_Pos )
+                                        && SAADC_EVENTS_CH_LIMITH_LIMITH_Msk );
+  
+  const uint32_t saadc_enable = ( (SAADC_ENABLE_ENABLE_Enabled << SAADC_ENABLE_ENABLE_Pos)
+                                  && SAADC_ENABLE_ENABLE_Msk );
+
+  const uint32_t saadc_disable = ( (SAADC_ENABLE_ENABLE_Disabled << SAADC_ENABLE_ENABLE_Pos)
+                                   && SAADC_ENABLE_ENABLE_Msk );
+
+  const uint32_t calibrate_trigger = ( (SAADC_TASKS_CALIBRATEOFFSET_TASKS_CALIBRATEOFFSET_Trigger <<
+                                         SAADC_TASKS_CALIBRATEOFFSET_TASKS_CALIBRATEOFFSET_Pos) 
+                                       && SAADC_TASKS_CALIBRATEOFFSET_TASKS_CALIBRATEOFFSET_Msk );
+
+  // Enable the SAADC
+  NRF_SAADC->ENABLE = saadc_enable;
+
+  // Be sure the done flag is cleared, then trigger offset calibration
+  NRF_SAADC->EVENTS_CALIBRATEDONE = calibrate_not_done;
+  NRF_SAADC->TASKS_CALIBRATEOFFSET = calibrate_trigger;
+
+  // Wait for completion
+  while (NRF_SAADC->EVENTS_CALIBRATEDONE != calibrate_done);
+  //bool done = false;
+  //for (int i = 0; (i < 20) && !(done = (NRF_SAADC->EVENTS_CALIBRATEDONE == calibrate_done)); i++ ) delay(1);
+
+  // Clear the done flag  (really shouldn't have to do this both times)
+  NRF_SAADC->EVENTS_CALIBRATEDONE = calibrate_not_done;
+
+  // Disable the SAADC
+  NRF_SAADC->ENABLE = saadc_disable;
+}
+
 #ifdef __cplusplus
 }
 #endif

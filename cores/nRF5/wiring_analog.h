@@ -116,6 +116,14 @@ extern void analogWriteResolution(uint8_t res);
  */
 extern void analogSampleTime(uint8_t sTime);
 
+/*
+ * \brief Calibrate the ADC offset. This is recommended occasionally, or any time the
+ * chip temperature changes by more than 10 C.  See the SAADC section of the Nordic
+ * nrf52 product pecification.
+ * 
+ */
+extern void analogCalibrateOffset();
+
 extern void analogOutputInit( void ) ;
 
 #ifdef __cplusplus
