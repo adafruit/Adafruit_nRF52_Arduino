@@ -147,22 +147,6 @@ void systemOff(uint32_t pin, uint8_t wake_logic)
 
 float readCPUTemperature()
 {
-  // These are defined simply to make the ensuing code easier to read. Ready and triggers are 0x01, and not ready is 0x00. 
-  // Many other library functions use a literal 0x00 to reset flags and a literal 0x01 for triggers, and test "done"
-  // flags for nonzero.  In this function, we used the defined constants. Using 0x00 and 0x01 would probably be fine
-  // because they're unlikely to ever change.
-  const uint32_t temp_ready = ( (TEMP_EVENTS_DATARDY_EVENTS_DATARDY_Generated << TEMP_EVENTS_DATARDY_EVENTS_DATARDY_Pos)
-                                && TEMP_EVENTS_DATARDY_EVENTS_DATARDY_Msk );
-
-  const uint32_t temp_not_ready = ( (TEMP_EVENTS_DATARDY_EVENTS_DATARDY_NotGenerated << TEMP_EVENTS_DATARDY_EVENTS_DATARDY_Pos)
-                                    && TEMP_EVENTS_DATARDY_EVENTS_DATARDY_Msk );
-
-  const uint32_t temp_trigger = ( (TEMP_TASKS_START_TASKS_START_Trigger << TEMP_TASKS_STOP_TASKS_STOP_Pos)
-                                  && TEMP_TASKS_START_TASKS_START_Msk );
-
-  const uint32_t temp_stop = ( (TEMP_TASKS_STOP_TASKS_STOP_Trigger << TEMP_TASKS_STOP_TASKS_STOP_Pos)
-                                  && TEMP_TASKS_STOP_TASKS_STOP_Msk );
-
   uint8_t en;
   int32_t temp;
   (void) sd_softdevice_is_enabled(&en);
@@ -172,15 +156,14 @@ float readCPUTemperature()
   }
   else
   {
-    NRF_TEMP->EVENTS_DATARDY = temp_not_ready; // Only needed in case another function is also looking at this event flag
-    NRF_TEMP->TASKS_START = temp_trigger; 
+    NRF_TEMP->EVENTS_DATARDY = 0x00; // Only needed in case another function is also looking at this event flag
+    NRF_TEMP->TASKS_START = 0x01; 
   
-    bool done = false;
-    while (NRF_TEMP->EVENTS_DATARDY != temp_ready);
+    while (!NRF_TEMP->EVENTS_DATARDY);
     temp = NRF_TEMP->TEMP;                      // Per anomaly 29 (unclear whether still applicable), TASKS_STOP will clear the TEMP register.
 
-    NRF_TEMP->TASKS_STOP = temp_stop;           // Per anomaly 30 (unclear whether still applicable), the temp peripheral needs to be shut down
-    NRF_TEMP->EVENTS_DATARDY = temp_not_ready;
+    NRF_TEMP->TASKS_STOP = 0x01;           // Per anomaly 30 (unclear whether still applicable), the temp peripheral needs to be shut down
+    NRF_TEMP->EVENTS_DATARDY = 0x00;
   }
   return temp / 4.0F;
 }
