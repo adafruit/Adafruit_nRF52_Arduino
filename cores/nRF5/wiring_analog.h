@@ -122,7 +122,7 @@ extern void analogSampleTime(uint8_t sTime);
  * nrf52 product pecification.
  * 
  */
-extern void analogCalibrateOffset();
+extern void analogCalibrateOffset( void );
 
 extern void analogOutputInit( void ) ;
 

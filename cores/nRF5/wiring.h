@@ -46,7 +46,7 @@ static inline bool isInISR(void)
  * \brief Reads the on-chip temperature sensor, returning the temperature in degrees C
  * with a resolution of 0.25 degrees.
 */
-float readCPUTemperature();
+float readCPUTemperature( void );
 
 #ifdef __cplusplus
 }

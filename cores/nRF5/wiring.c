@@ -145,7 +145,7 @@ void systemOff(uint32_t pin, uint8_t wake_logic)
 }
 
 
-float readCPUTemperature()
+float readCPUTemperature( void )
 {
   uint8_t en;
   int32_t temp;

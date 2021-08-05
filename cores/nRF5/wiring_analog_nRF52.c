@@ -284,7 +284,7 @@ uint32_t analogReadVDD( void )
   return analogRead_internal(SAADC_CH_PSELP_PSELP_VDD);
 }
 
-analogCalibrateOffset()
+void analogCalibrateOffset( void )
 {
   // Enable the SAADC
   NRF_SAADC->ENABLE = 0x01;
