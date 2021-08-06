@@ -42,6 +42,12 @@ static inline bool isInISR(void)
   return (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0 ;
 }
 
+/*
+ * \brief Reads the on-chip temperature sensor, returning the temperature in degrees C
+ * with a resolution of 0.25 degrees.
+*/
+float readCPUTemperature( void );
+
 #ifdef __cplusplus
 }
 #endif

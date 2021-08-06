@@ -284,6 +284,25 @@ uint32_t analogReadVDD( void )
   return analogRead_internal(SAADC_CH_PSELP_PSELP_VDD);
 }
 
+void analogCalibrateOffset( void )
+{
+  // Enable the SAADC
+  NRF_SAADC->ENABLE = 0x01;
+
+  // Be sure the done flag is cleared, then trigger offset calibration
+  NRF_SAADC->EVENTS_CALIBRATEDONE = 0x00;
+  NRF_SAADC->TASKS_CALIBRATEOFFSET = 0x01;
+
+  // Wait for completion
+  while (!NRF_SAADC->EVENTS_CALIBRATEDONE);
+
+  // Clear the done flag  (really shouldn't have to do this both times)
+  NRF_SAADC->EVENTS_CALIBRATEDONE = 0x00;
+
+  // Disable the SAADC
+  NRF_SAADC->ENABLE = 0x00;
+}
+
 #ifdef __cplusplus
 }
 #endif
