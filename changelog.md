@@ -1,5 +1,17 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 1.0.0 - 2021.08.17
+
+Core is stable enough to be released as 1.0.0. Following is chagnes since last release
+
+- Add UART missing baudrate of 31250 and 56000
+- Fix peer bonding with public/static address
+- Fix PDM driver issue when BLE is enabled
+- Update nrfutil binary to post17 for windows 7
+- Add analogSampleTime() to set ADC sample time
+- Add readCPUTemperature() to get CPU die temperature
+- Add analogCalibrateOffset() to calibrate ADC offset
+
 ## 0.24.0 - 2021.06.25
 
 - Update included TinyUSB libraries to 1.3.0
