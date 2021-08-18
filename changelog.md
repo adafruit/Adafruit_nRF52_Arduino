@@ -1,6 +1,6 @@
 # Adafruit nRF52 Arduino Core Changelog
 
-## 1.0.0 - 2021.08.17
+## 1.0.0 - 2021.08.18
 
 Core is stable enough to be released as 1.0.0. Following is chagnes since last release
 
@@ -12,6 +12,8 @@ Core is stable enough to be released as 1.0.0. Following is chagnes since last r
 - Add readCPUTemperature() to get CPU die temperature
 - Add analogCalibrateOffset() to calibrate ADC offset
 - Fix UART is not powered down correctly
+- Update included bootlaoder binaries to 0.6.1
+- Update included TinyUSB lib to 1.4.4
 
 ## 0.24.0 - 2021.06.25
 
