@@ -11,6 +11,7 @@ Core is stable enough to be released as 1.0.0. Following is chagnes since last r
 - Add analogSampleTime() to set ADC sample time
 - Add readCPUTemperature() to get CPU die temperature
 - Add analogCalibrateOffset() to calibrate ADC offset
+- Fix UART is not powered down correctly
 
 ## 0.24.0 - 2021.06.25
 
