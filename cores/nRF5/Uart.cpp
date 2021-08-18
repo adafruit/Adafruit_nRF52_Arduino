@@ -156,8 +156,14 @@ void Uart::end()
 
   nrfUart->INTENCLR = UARTE_INTENSET_ENDRX_Msk | UARTE_INTENSET_ENDTX_Msk;
 
+  nrfUart->EVENTS_RXTO = 0;
+  nrfUart->EVENTS_TXSTOPPED = 0;
+
   nrfUart->TASKS_STOPRX = 0x1UL;
   nrfUart->TASKS_STOPTX = 0x1UL;
+
+  // Wait for TXSTOPPED event and for RXTO event
+  while ( !(nrfUart->EVENTS_TXSTOPPED && nrfUart->EVENTS_RXTO) ) yield();
 
   nrfUart->ENABLE = UARTE_ENABLE_ENABLE_Disabled;
 
