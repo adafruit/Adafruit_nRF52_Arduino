@@ -55,13 +55,28 @@ task.h is included from an application file. */
 
 /*-----------------------------------------------------------*/
 
+// link to libnano's malloc
+// require "-Wl,--wrap=malloc -Wl,--wrap=free" linker option
+extern void *__real_malloc(size_t size);
+extern void __real_free(void *ptr);
+
+void* __wrap_malloc (size_t c)
+{
+  return (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING) ? pvPortMalloc(c) : __real_malloc(c);
+}
+
+void __wrap_free (void *ptr)
+{
+  return (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING) ? vPortFree(ptr) : __real_free(ptr);
+}
+
 void *pvPortMalloc( size_t xWantedSize )
 {
 void *pvReturn;
 
 	vTaskSuspendAll();
 	{
-		pvReturn = malloc( xWantedSize );
+		pvReturn = __real_malloc( xWantedSize );
 		traceMALLOC( pvReturn, xWantedSize );
 	}
 	( void ) xTaskResumeAll();
@@ -86,7 +101,7 @@ void vPortFree( void *pv )
 	{
 		vTaskSuspendAll();
 		{
-			free( pv );
+			__real_free( pv );
 			traceFREE( pv, 0 );
 		}
 		( void ) xTaskResumeAll();
