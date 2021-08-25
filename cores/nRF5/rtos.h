@@ -74,15 +74,8 @@ enum
   #define rtos_malloc_type(_type)   ((_type*) rtos_malloc(sizeof(_type)))
 #endif
 
-static inline void* rtos_malloc(size_t _size)
-{
-  return (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) ? malloc(_size) : pvPortMalloc(_size);
-}
-
-static inline void rtos_free( void *pv )
-{
-  return (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) ? free(pv) : vPortFree(pv);
-}
+#define rtos_malloc malloc
+#define rtos_free   free
 
 // Visible only with C++
 #ifdef __cplusplus
