@@ -36,10 +36,6 @@ delay_ns	KEYWORD2
 analogOversampling	KEYWORD2
 analogReadVDD	KEYWORD2
 
-# RTOS
-rtos_malloc	KEYWORD2
-rtos_free	KEYWORD2
-
 nrf52_flash_init	KEYWORD2
 nrf52_flash_erase_sector	KEYWORD2
 nrf52_flash_write	KEYWORD2
