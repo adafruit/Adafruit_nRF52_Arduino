@@ -43,8 +43,7 @@ enum
 {
   REPORT_ID_KEYBOARD = 1,
   REPORT_ID_CONSUMER_CONTROL,
-  REPORT_ID_MOUSE,
-  REPORT_ID_GAMEPAD
+  REPORT_ID_MOUSE
 };
 
 uint8_t const hid_report_descriptor[] =

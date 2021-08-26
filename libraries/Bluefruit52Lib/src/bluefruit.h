@@ -65,6 +65,7 @@
 #include "services/BLEBeacon.h"
 #include "services/BLEHidGeneric.h"
 #include "services/BLEHidAdafruit.h"
+#include "services/BLEHidGamepad.h"
 #include "services/BLEMidi.h"
 #include "services/EddyStone.h"
 

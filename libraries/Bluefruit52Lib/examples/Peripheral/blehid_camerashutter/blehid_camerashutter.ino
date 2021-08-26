@@ -29,12 +29,23 @@ BLEHidAdafruit blehid;
   uint8_t pinShutter = A0;
 #endif
 
+// Circuit Play Bluefruit has button active state = high
+#ifdef ARDUINO_NRF52840_CIRCUITPLAY
+  #define BTN_ACTIVE HIGH
+#else
+  #define BTN_ACTIVE LOW
+#endif
+
 void setup()
 {
   pinMode(pinShutter, INPUT_PULLUP);
 
   Serial.begin(115200);
+
+#if CFG_DEBUG
+  // Blocking wait for connection when debug mode is enabled via IDE
   while ( !Serial ) delay(10);   // for nrf52840 with native usb
+#endif
 
   Serial.println("Bluefruit52 HID Camera Shutter Example");
   Serial.println("--------------------------------------\n");
@@ -106,7 +117,7 @@ void startAdv(void)
 void loop()
 {
   // Skip if shutter pin is not Ground
-  if ( digitalRead(pinShutter) == 1 ) return;
+  if ( digitalRead(pinShutter) != BTN_ACTIVE ) return;
 
   // Make sure we are connected and bonded/paired
   for (uint16_t conn_hdl=0; conn_hdl < BLE_MAX_CONNECTION; conn_hdl++)

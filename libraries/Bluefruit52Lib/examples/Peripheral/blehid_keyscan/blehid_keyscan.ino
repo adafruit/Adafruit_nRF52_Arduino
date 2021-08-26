@@ -22,23 +22,43 @@
 BLEDis bledis;
 BLEHidAdafruit blehid;
 
+// use on-board button if available
+#ifdef PIN_BUTTON1
+  #define BTN1  PIN_BUTTON1
+#else
+  #define BTN1  A0
+#endif
+
+#ifdef PIN_BUTTON2
+  #define BTN2  PIN_BUTTON2
+#else
+  #define BTN2  A1
+#endif
+
+// Circuit Play Bluefruit has button active state = high
+#ifdef ARDUINO_NRF52840_CIRCUITPLAY
+  #define BTN_ACTIVE HIGH
+#else
+  #define BTN_ACTIVE LOW
+#endif
+
 // Array of pins and its keycode
-// For keycode definition see BLEHidGeneric.h
-uint8_t pins[]    = { A0, A1, A2, A3, A4, A5 };
-uint8_t hidcode[] = { HID_KEY_A, HID_KEY_B, HID_KEY_C ,HID_KEY_D, HID_KEY_E, HID_KEY_F };
+// For keycode definition: https://github.com/hathach/tinyusb/blob/master/src/class/hid/hid.h
+uint8_t pins[] = { BTN1, BTN2 };
+uint8_t hidcode[] = { HID_KEY_KEYPAD_0, HID_KEY_KEYPAD_1 };
 
 uint8_t pincount = sizeof(pins)/sizeof(pins[0]);
-
-// Modifier keys, only take cares of Shift
-// ATL, CTRL, CMD keys are left for user excersie.
-uint8_t shiftPin = 11;
 
 bool keyPressedPreviously = false;
 
 void setup() 
 {
   Serial.begin(115200);
-  while ( !Serial ) delay(10);   // for nrf52840 with native usb
+
+#if CFG_DEBUG
+  // Blocking wait for connection when debug mode is enabled via IDE
+  while ( !Serial ) delay(10);
+#endif
 
   Serial.println("Bluefruit52 HID Keyscan Example");
   Serial.println("-------------------------------\n");
@@ -65,9 +85,6 @@ void setup()
   {
     pinMode(pins[i], INPUT_PULLUP);
   }
-
-  // set up modifier key
-  pinMode(shiftPin, INPUT_PULLUP);
 
   /* Start BLE HID
    * Note: Apple requires BLE device must have min connection interval >= 20m
@@ -128,16 +145,10 @@ void loop()
   uint8_t count=0;
   uint8_t keycode[6] = { 0 };
 
-  // scan modifier key (only SHIFT), user implement ATL, CTRL, CMD if needed
-  if ( 0 == digitalRead(shiftPin) )
-  {
-    modifier |= KEYBOARD_MODIFIER_LEFTSHIFT;
-  }
-
   // scan normal key and send report
   for(uint8_t i=0; i < pincount; i++)
   {
-    if ( 0 == digitalRead(pins[i]) )
+    if ( BTN_ACTIVE == digitalRead(pins[i]) )
     {
       // if pin is active (low), add its hid code to key report
       keycode[count++] = hidcode[i];

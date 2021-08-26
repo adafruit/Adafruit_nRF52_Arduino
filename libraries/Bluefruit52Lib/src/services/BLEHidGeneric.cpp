@@ -69,14 +69,14 @@ BLEHidGeneric::BLEHidGeneric(uint8_t num_input, uint8_t num_output, uint8_t num_
   _chr_inputs = _chr_outputs = _chr_features = NULL;
   _chr_boot_keyboard_input = _chr_boot_keyboard_output = _chr_boot_mouse_input = NULL;
 
-  if ( _num_input   )
+  if ( _num_input )
   {
-    _chr_inputs   = new BLECharacteristic[_num_input];
+    _chr_inputs = new BLECharacteristic[_num_input];
   }
 
-  if ( _num_output  )
+  if ( _num_output )
   {
-    _chr_outputs  = new BLECharacteristic[_num_output];
+    _chr_outputs = new BLECharacteristic[_num_output];
   }
 
   if ( _num_feature )
