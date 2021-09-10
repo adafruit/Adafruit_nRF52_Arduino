@@ -1,31 +1,15 @@
-# Copyright (c) 2014-2015 Arduino LLC.  All right reserved.
-# Copyright (c) 2016 Sandeep Mistry All right reserved.
-# Copyright (c) 2017 Adafruit Industries.  All right reserved.
-#
-# This library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 2.1 of the License, or (at your option) any later version.
-#
-# This library is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with this library; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
 menu.softdevice=SoftDevice
 menu.debug=Debug
 
-# ----------------------------------
-# Bluefruit Feather nRF52832
-# ----------------------------------
+# -----------------------------------
+# Adafruit Feather nRF52832
+# -----------------------------------
 feather52832.name=Adafruit Feather nRF52832
-feather52832.bootloader.tool=bootburn
+
+# VID/PID for Bootloader, Arduino & CircuitPython
 
 # Upload
+feather52832.bootloader.tool=bootburn
 feather52832.upload.tool=nrfutil
 feather52832.upload.protocol=nrfutil
 feather52832.upload.use_1200bps_touch=false
@@ -40,12 +24,12 @@ feather52832.build.f_cpu=64000000
 feather52832.build.board=NRF52832_FEATHER
 feather52832.build.core=nRF5
 feather52832.build.variant=feather_nrf52832
-feather52832.build.usb_manufacturer="Adafruit LLC"
+feather52832.build.usb_manufacturer="Adafruit"
 feather52832.build.usb_product="Feather nRF52832"
 feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
 feather52832.build.ldscript=nrf52832_s132_v6.ld
 
-# SofDevice Menu
+# SoftDevice Menu
 feather52832.menu.softdevice.s132v6=S132 6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.1.1
@@ -62,12 +46,12 @@ feather52832.menu.debug.l3=Level 3 (Segger SystemView)
 feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 feather52832.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# ----------------------------------
-# Bluefruit Feather nRF52840 Express
-# ----------------------------------
+# -----------------------------------
+# Adafruit Feather nRF52840 Express
+# -----------------------------------
 feather52840.name=Adafruit Feather nRF52840 Express
 
-# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+# VID/PID for Bootloader, Arduino & CircuitPython
 feather52840.vid.0=0x239A
 feather52840.pid.0=0x8029
 feather52840.vid.1=0x239A
@@ -92,14 +76,14 @@ feather52840.build.f_cpu=64000000
 feather52840.build.board=NRF52840_FEATHER
 feather52840.build.core=nRF5
 feather52840.build.variant=feather_nrf52840_express
-feather52840.build.usb_manufacturer="Adafruit LLC"
+feather52840.build.usb_manufacturer="Adafruit"
 feather52840.build.usb_product="Feather nRF52840 Express"
 feather52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 feather52840.build.ldscript=nrf52840_s140_v6.ld
 feather52840.build.vid=0x239A
 feather52840.build.pid=0x8029
 
-# SofDevice Menu
+# SoftDevice Menu
 feather52840.menu.softdevice.s140v6=S140 6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.1.1
@@ -116,13 +100,12 @@ feather52840.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 feather52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-
-# ----------------------------------
-# Feather nRF52840 sense
-# ----------------------------------
+# -----------------------------------
+# Adafruit Feather nRF52840 Sense
+# -----------------------------------
 feather52840sense.name=Adafruit Feather nRF52840 Sense
 
-# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+# VID/PID for Bootloader, Arduino & CircuitPython
 feather52840sense.vid.0=0x239A
 feather52840sense.pid.0=0x8087
 feather52840sense.vid.1=0x239A
@@ -147,14 +130,14 @@ feather52840sense.build.f_cpu=64000000
 feather52840sense.build.board=NRF52840_FEATHER_SENSE
 feather52840sense.build.core=nRF5
 feather52840sense.build.variant=feather_nrf52840_sense
-feather52840sense.build.usb_manufacturer="Adafruit LLC"
+feather52840sense.build.usb_manufacturer="Adafruit"
 feather52840sense.build.usb_product="Feather nRF52840 Sense"
 feather52840sense.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 feather52840sense.build.ldscript=nrf52840_s140_v6.ld
 feather52840sense.build.vid=0x239A
 feather52840sense.build.pid=0x8087
 
-# SofDevice Menu
+# SoftDevice Menu
 feather52840sense.menu.softdevice.s140v6=S140 6.1.1
 feather52840sense.menu.softdevice.s140v6.build.sd_name=s140
 feather52840sense.menu.softdevice.s140v6.build.sd_version=6.1.1
@@ -171,13 +154,12 @@ feather52840sense.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840sense.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 feather52840sense.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-
-# ---------------------------------------------
-# Bluefruit ItsyBitsy nRF52840 Express
-# ---------------------------------------------
+# -----------------------------------
+# Adafruit ItsyBitsy nRF52840 Express
+# -----------------------------------
 itsybitsy52840.name=Adafruit ItsyBitsy nRF52840 Express
 
-# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+# VID/PID for Bootloader, Arduino & CircuitPython
 itsybitsy52840.vid.0=0x239A
 itsybitsy52840.pid.0=0x8051
 itsybitsy52840.vid.1=0x239A
@@ -199,18 +181,18 @@ itsybitsy52840.upload.maximum_data_size=237568
 # Build
 itsybitsy52840.build.mcu=cortex-m4
 itsybitsy52840.build.f_cpu=64000000
-itsybitsy52840.build.board=NRF52840_ITSYBITSY
+itsybitsy52840.build.board=NRF52840_ITSYBITSY -DARDUINO_NRF52_ITSYBITSY
 itsybitsy52840.build.core=nRF5
 itsybitsy52840.build.variant=itsybitsy_nrf52840_express
-itsybitsy52840.build.usb_manufacturer="Adafruit LLC"
+itsybitsy52840.build.usb_manufacturer="Adafruit"
 itsybitsy52840.build.usb_product="ItsyBitsy nRF52840 Express"
-itsybitsy52840.build.extra_flags=-DNRF52840_XXAA -DARDUINO_NRF52_ITSYBITSY {build.flags.usb}
+itsybitsy52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 itsybitsy52840.build.ldscript=nrf52840_s140_v6.ld
 itsybitsy52840.build.vid=0x239A
 itsybitsy52840.build.pid=0x8051
 
-# SofDevice Menu
-itsybitsy52840.menu.softdevice.s140v6=0.2.11 SoftDevice s140 6.1.1
+# SoftDevice Menu
+itsybitsy52840.menu.softdevice.s140v6=S140 6.1.1
 itsybitsy52840.menu.softdevice.s140v6.build.sd_name=s140
 itsybitsy52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 itsybitsy52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
@@ -226,20 +208,18 @@ itsybitsy52840.menu.debug.l3=Level 3 (Segger SystemView)
 itsybitsy52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 itsybitsy52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# ---------------------------------------------
-# Bluefruit Circuit Playground nRF52840 Express
-# ---------------------------------------------
+# -----------------------------------
+# Adafruit Circuit Playground Bluefruit
+# -----------------------------------
 cplaynrf52840.name=Adafruit Circuit Playground Bluefruit
 
-# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+# VID/PID for Bootloader, Arduino & CircuitPython
 cplaynrf52840.vid.0=0x239A
 cplaynrf52840.pid.0=0x8045
 cplaynrf52840.vid.1=0x239A
 cplaynrf52840.pid.1=0x0045
 cplaynrf52840.vid.2=0x239A
-cplaynrf52840.pid.2=0x0046
-cplaynrf52840.vid.3=0x239A
-cplaynrf52840.pid.3=0x8046
+cplaynrf52840.pid.2=0x8046
 
 # Upload
 cplaynrf52840.bootloader.tool=bootburn
@@ -256,14 +236,14 @@ cplaynrf52840.build.f_cpu=64000000
 cplaynrf52840.build.board=NRF52840_CIRCUITPLAY
 cplaynrf52840.build.core=nRF5
 cplaynrf52840.build.variant=circuitplayground_nrf52840
-cplaynrf52840.build.usb_manufacturer="Adafruit LLC"
+cplaynrf52840.build.usb_manufacturer="Adafruit"
 cplaynrf52840.build.usb_product="Circuit Playground Bluefruit"
 cplaynrf52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 cplaynrf52840.build.ldscript=nrf52840_s140_v6.ld
 cplaynrf52840.build.vid=0x239A
 cplaynrf52840.build.pid=0x8045
 
-# SofDevice Menu
+# SoftDevice Menu
 cplaynrf52840.menu.softdevice.s140v6=S140 6.1.1
 cplaynrf52840.menu.softdevice.s140v6.build.sd_name=s140
 cplaynrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
@@ -280,21 +260,18 @@ cplaynrf52840.menu.debug.l3=Level 3 (Segger SystemView)
 cplaynrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 cplaynrf52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-
-# ---------------------------------------------
-# Clue nRF52840
-# ---------------------------------------------
+# -----------------------------------
+# Adafruit CLUE
+# -----------------------------------
 cluenrf52840.name=Adafruit CLUE
 
-# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+# VID/PID for Bootloader, Arduino & CircuitPython
 cluenrf52840.vid.0=0x239A
-cluenrf52840.pid.0=0x8072
+cluenrf52840.pid.0=0x8071
 cluenrf52840.vid.1=0x239A
-cluenrf52840.pid.1=0x0072
+cluenrf52840.pid.1=0x0071
 cluenrf52840.vid.2=0x239A
-cluenrf52840.pid.2=0x0071
-cluenrf52840.vid.3=0x239A
-cluenrf52840.pid.3=0x8071
+cluenrf52840.pid.2=0x8072
 
 # Upload
 cluenrf52840.bootloader.tool=bootburn
@@ -311,14 +288,14 @@ cluenrf52840.build.f_cpu=64000000
 cluenrf52840.build.board=NRF52840_CLUE
 cluenrf52840.build.core=nRF5
 cluenrf52840.build.variant=clue_nrf52840
-cluenrf52840.build.usb_manufacturer="Adafruit LLC"
+cluenrf52840.build.usb_manufacturer="Adafruit"
 cluenrf52840.build.usb_product="CLUE"
 cluenrf52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 cluenrf52840.build.ldscript=nrf52840_s140_v6.ld
 cluenrf52840.build.vid=0x239A
 cluenrf52840.build.pid=0x8071
 
-# SofDevice Menu
+# SoftDevice Menu
 cluenrf52840.menu.softdevice.s140v6=S140 6.1.1
 cluenrf52840.menu.softdevice.s140v6.build.sd_name=s140
 cluenrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
@@ -335,12 +312,12 @@ cluenrf52840.menu.debug.l3=Level 3 (Segger SystemView)
 cluenrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 cluenrf52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# ----------------------------------
-# Metro nRF52840 Express
-# ----------------------------------
+# -----------------------------------
+# Adafruit Metro nRF52840 Express
+# -----------------------------------
 metro52840.name=Adafruit Metro nRF52840 Express
 
-# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+# VID/PID for Bootloader, Arduino & CircuitPython
 metro52840.vid.0=0x239A
 metro52840.pid.0=0x803F
 metro52840.vid.1=0x239A
@@ -365,14 +342,14 @@ metro52840.build.f_cpu=64000000
 metro52840.build.board=NRF52840_METRO
 metro52840.build.core=nRF5
 metro52840.build.variant=metro_nrf52840_express
-metro52840.build.usb_manufacturer="Adafruit LLC"
+metro52840.build.usb_manufacturer="Adafruit"
 metro52840.build.usb_product="Metro nRF52840 Express"
 metro52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 metro52840.build.ldscript=nrf52840_s140_v6.ld
 metro52840.build.vid=0x239A
 metro52840.build.pid=0x803F
 
-# SofDevice Menu
+# SoftDevice Menu
 metro52840.menu.softdevice.s140v6=S140 6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_name=s140
 metro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
@@ -390,22 +367,25 @@ metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 metro52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
 
-
-
 # -------------------------------------------------------
-# 
+#
 # Boards that aren't made by Adafruit
 #
 # -------------------------------------------------------
 
+# -----------------------------------
+# Nordic nRF52840 DK
+# -----------------------------------
+pca10056.name=Nordic nRF52840 DK
 
-# ----------------------------------
-# Nordic nRF52840DK (PCA10056)
-# ----------------------------------
-pca10056.name=Nordic nRF52840DK (PCA10056)
-pca10056.bootloader.tool=bootburn
+# VID/PID for Bootloader, Arduino & CircuitPython
+pca10056.vid.0=0x239A
+pca10056.pid.0=0x8029
+pca10056.vid.1=0x239A
+pca10056.pid.1=0x0029
 
 # Upload
+pca10056.bootloader.tool=bootburn
 pca10056.upload.tool=nrfutil
 pca10056.upload.protocol=nrfutil
 pca10056.upload.use_1200bps_touch=true
@@ -426,7 +406,7 @@ pca10056.build.ldscript=nrf52840_s140_v6.ld
 pca10056.build.vid=0x239A
 pca10056.build.pid=0x8029
 
-# SofDevice Menu
+# SoftDevice Menu
 pca10056.menu.softdevice.s140v6=S140 6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.1.1
@@ -443,20 +423,16 @@ pca10056.menu.debug.l3=Level 3 (Segger SystemView)
 pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 pca10056.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# ----------------------------------
+# -----------------------------------
 # Particle Xenon
-# ----------------------------------
+# -----------------------------------
 particle_xenon.name=Particle Xenon
 
-# VID/PID for bootloader with/without UF2, Arduino + Circuitpython App
+# VID/PID for Bootloader, Arduino & CircuitPython
 particle_xenon.vid.0=0x239A
 particle_xenon.pid.0=0x8029
 particle_xenon.vid.1=0x239A
 particle_xenon.pid.1=0x0029
-particle_xenon.vid.2=0x239A
-particle_xenon.pid.2=0x002A
-particle_xenon.vid.3=0x239A
-particle_xenon.pid.3=0x802A
 
 # Upload
 particle_xenon.bootloader.tool=bootburn
@@ -473,14 +449,14 @@ particle_xenon.build.f_cpu=64000000
 particle_xenon.build.board=PARTICLE_XENON
 particle_xenon.build.core=nRF5
 particle_xenon.build.variant=particle_xenon
-particle_xenon.build.usb_manufacturer="Particle Industries"
-particle_xenon.build.usb_product="Particle Xenon"
+particle_xenon.build.usb_manufacturer="Particle"
+particle_xenon.build.usb_product="Xenon"
 particle_xenon.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 particle_xenon.build.ldscript=nrf52840_s140_v6.ld
 particle_xenon.build.vid=0x239A
 particle_xenon.build.pid=0x8029
 
-# SofDevice Menu
+# SoftDevice Menu
 particle_xenon.menu.softdevice.s140v6=S140 6.1.1
 particle_xenon.menu.softdevice.s140v6.build.sd_name=s140
 particle_xenon.menu.softdevice.s140v6.build.sd_version=6.1.1
@@ -497,12 +473,12 @@ particle_xenon.menu.debug.l3=Level 3 (Segger SystemView)
 particle_xenon.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 particle_xenon.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# ----------------------------------
-# Raytac MDBT50Q - RX
-# ----------------------------------
-mdbt50qrx.name=Raytac MDBT50Q-RX Dongle
+# -----------------------------------
+# Raytac nRF52840 Dongle
+# -----------------------------------
+mdbt50qrx.name=Raytac nRF52840 Dongle
 
-# VID/PID for bootloader, Arduino + Circuitpython App
+# VID/PID for Bootloader, Arduino & CircuitPython
 mdbt50qrx.vid.0=0x239A
 mdbt50qrx.pid.0=0x810B
 mdbt50qrx.vid.1=0x239A
@@ -532,7 +508,7 @@ mdbt50qrx.build.ldscript=nrf52840_s140_v6.ld
 mdbt50qrx.build.vid=0x239A
 mdbt50qrx.build.pid=0x810B
 
-# SofDevice Menu
+# SoftDevice Menu
 mdbt50qrx.menu.softdevice.s140v6=S140 6.1.1
 mdbt50qrx.menu.softdevice.s140v6.build.sd_name=s140
 mdbt50qrx.menu.softdevice.s140v6.build.sd_version=6.1.1
