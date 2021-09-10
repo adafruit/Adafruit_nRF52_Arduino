@@ -134,6 +134,12 @@ make_board("cplaynrf52840", "circuitplayground_nrf52840", "Adafruit", "Circuit P
 make_board("cluenrf52840", "clue_nrf52840", "Adafruit", "CLUE", "NRF52840_CLUE",
            "0x239A", ["0x8071", "0x0071", "0x8072"])
 
+make_board("ledglasses_nrf52840", "ledglasses_nrf52840", "Adafruit", "LED Glasses Driver nRF52840", "NRF52840_LED_GLASSES",
+           "0x239A", ["0x810D", "0x010D", "0x810E"])
+
+make_board("mdbt50qrx", "raytac_mdbt50q_rx", "Raytac", "nRF52840 Dongle", "MDBT50Q_RX",
+           "0x239A", ["0x810B", "0x010B", "0x810C"])
+
 make_board("metro52840", "metro_nrf52840_express", "Adafruit", "Metro nRF52840 Express", "NRF52840_METRO",
            "0x239A", ["0x803F", "0x003F", "0x0040", "0x8040"])
 
@@ -150,6 +156,3 @@ make_board("pca10056", "pca10056", "Nordic", "nRF52840 DK", "NRF52840_PCA10056",
 
 make_board("particle_xenon", "particle_xenon", "Particle", "Xenon", "PARTICLE_XENON",
            "0x239A", ["0x8029", "0x0029"])
-
-make_board("mdbt50qrx", "raytac_mdbt50q_rx", "Raytac", "nRF52840 Dongle", "MDBT50Q_RX",
-           "0x239A", ["0x810B", "0x010B", "0x810C"])
