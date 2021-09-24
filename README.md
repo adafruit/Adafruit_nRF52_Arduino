@@ -10,8 +10,9 @@ This repository contains the Arduino BSP for Adafruit Bluefruit nRF52 series:
 - [Adafruit Feather nRF52840 Express](https://www.adafruit.com/product/4062)
 - [Adafruit Feather nRF52840 Sense](https://www.adafruit.com/product/4516)
 - [Adafruit ItsyBitsy nRF52840 Express](https://www.adafruit.com/product/4481)
+- [Adafruit LED Glasses Driver nRF52840](https://www.adafruit.com/product/5217)
 - Adafruit Metro nRF52840 Express
-- [Raytac MDBT50Q-RX](https://www.adafruit.com/product/5199)
+- [Raytac MDBT50Q-RX Dongle](https://www.adafruit.com/product/5199)
 
 Following boards are also included but are not officially supported:
 

@@ -1,5 +1,13 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 1.1.0 - 2021.09.24
+
+- Add **Adafruit LED Glasses Driver nRF52840** board support
+- Update UUID list
+- Add BLE Gamepad support with `BLEHidGamepad` class and example **Peripheral/blehid_gamepad/blehid_gamepad.ino**
+- Implemnent thread-safe malloc/free using --wrap linker option
+- Update bootloader binaries to 0.6.2
+
 ## 1.0.0 - 2021.08.18
 
 Core is stable enough to be released as 1.0.0. Following is chagnes since last release
