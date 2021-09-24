@@ -15,6 +15,7 @@ jobs:
         - 'feather52840'
         - 'feather52840sense'
         - 'itsybitsy52840'
+        - 'ledglasses_nrf52840'
 
     runs-on: ubuntu-latest
     

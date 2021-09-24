@@ -33,6 +33,9 @@ uint32_t bootloaderVersion = 0;
 
 void init( void )
 {
+  // clear reset reason: can save it for application usage if needed.
+  NRF_POWER->RESETREAS |= NRF_POWER->RESETREAS;
+
   // Retrieve bootloader version
   bootloaderVersion = BOOTLOADER_VERSION_REGISTER;
 
