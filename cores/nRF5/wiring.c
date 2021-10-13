@@ -69,7 +69,7 @@ void init( void )
 #endif
 }
 
-uint32_t getResetReason(void)
+uint32_t readResetReason(void)
 {
   return _reset_reason;
 }
