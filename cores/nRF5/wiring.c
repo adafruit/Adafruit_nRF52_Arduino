@@ -30,9 +30,12 @@ nrf_nvic_state_t nrf_nvic_state;
 // Must match temp register in bootloader
 #define BOOTLOADER_VERSION_REGISTER     NRF_TIMER2->CC[0]
 uint32_t bootloaderVersion = 0;
+static uint32_t _reset_reason = 0;
 
 void init( void )
 {
+  _reset_reason = NRF_POWER->RESETREAS;
+
   // clear reset reason: can save it for application usage if needed.
   NRF_POWER->RESETREAS |= NRF_POWER->RESETREAS;
 
@@ -64,6 +67,11 @@ void init( void )
 #ifdef NRF_P1
   NRF_P1->OUTSET = UINT32_MAX;
 #endif
+}
+
+uint32_t getResetReason(void)
+{
+  return _reset_reason;
 }
 
 void enterUf2Dfu(void)
