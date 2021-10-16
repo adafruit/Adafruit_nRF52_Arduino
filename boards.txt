@@ -576,3 +576,54 @@ particle_xenon.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 particle_xenon.menu.debug.l3=Level 3 (Segger SystemView)
 particle_xenon.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 particle_xenon.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+
+# -----------------------------------
+# Nordic nRF52833 DK
+# -----------------------------------
+pca10100.name=Nordic nRF52833 DK
+
+# VID/PID for Bootloader, Arduino & CircuitPython
+pca10100.vid.0=0x1915
+pca10100.pid.0=0x521F
+pca10100.vid.1=0x1915
+pca10100.pid.1=0x521F
+
+# Upload
+pca10100.bootloader.tool=bootburn
+pca10100.upload.tool=nrfutil
+pca10100.upload.protocol=nrfutil
+pca10100.upload.use_1200bps_touch=true
+pca10100.upload.wait_for_upload_port=true
+pca10100.upload.maximum_size=815104
+pca10100.upload.maximum_data_size=237568
+
+# Build
+pca10100.build.mcu=cortex-m4
+pca10100.build.f_cpu=64000000
+pca10100.build.board=NRF52833_PCA10100
+pca10100.build.core=nRF5
+pca10100.build.variant=pca10100
+pca10100.build.usb_manufacturer="Nordic"
+pca10100.build.usb_product="nRF52833 DK"
+pca10100.build.extra_flags=-DNRF52833_XXAA {build.flags.usb}
+pca10100.build.ldscript=nrf52833_s140_v6.ld
+pca10100.build.vid=0x1915
+pca10100.build.pid=0x521F
+
+# SoftDevice Menu
+pca10100.menu.softdevice.s140v6=S140 6.1.1
+pca10100.menu.softdevice.s140v6.build.sd_name=s140
+pca10100.menu.softdevice.s140v6.build.sd_version=6.1.1
+pca10100.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+pca10100.menu.debug.l0=Level 0 (Release)
+pca10100.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+pca10100.menu.debug.l1=Level 1 (Error Message)
+pca10100.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+pca10100.menu.debug.l2=Level 2 (Full Debug)
+pca10100.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+pca10100.menu.debug.l3=Level 3 (Segger SystemView)
+pca10100.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+pca10100.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
