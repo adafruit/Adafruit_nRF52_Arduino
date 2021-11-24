@@ -16,14 +16,14 @@
 #define ARDUINO_MAIN
 #include "Arduino.h"
 
-#if (CFG_LOGGER == 2)
-  #include <SEGGER_RTT.h>
-#endif
-
-// From the UI, setting debug level to 3 will enable SysView
 #if CFG_SYSVIEW
-#include "SEGGER_RTT.h"
-#include "SEGGER_SYSVIEW.h"
+  // Select Menu -> Debug -> Segger SystemView
+  #include "SEGGER_RTT.h"
+  #include "SEGGER_SYSVIEW.h"
+
+#elif CFG_LOGGER == 2
+  // Select Menu -> Debug Output -> Segger RTT
+  #include "SEGGER_RTT.h"
 #endif
 
 // DEBUG Level 1
@@ -119,20 +119,31 @@ extern "C"
 {
 
 // nanolib printf() retarget
+// Logger 0: Serial (CDC), 1 Serial1 (UART), 2 Segger RTT
 int _write (int fd, const void *buf, size_t count)
 {
   (void) fd;
-#if (CFG_LOGGER == 2)
-  unsigned numBytes = count;
-  SEGGER_RTT_Write(0, buf, numBytes);
-  return (int)count;
+
+  size_t ret = 0;
+
+#if CFG_LOGGER == 2 || CFG_SYSVIEW
+  SEGGER_RTT_Write(0, buf, count);
+  ret = count;
+
+#elif CFG_LOGGER == 1
+  if ( Serial1 )
+  {
+    ret = Serial1.write((const uint8_t *) buf, count);
+  }
+
 #else
   if ( Serial )
   {
-    return Serial.write( (const uint8_t *) buf, count);
+    ret = Serial.write((const uint8_t *) buf, count);
   }
 #endif
-  return 0;
+
+  return (int) ret;
 }
 
 }
