@@ -52,12 +52,6 @@ typedef struct
   ble_gap_id_key_t  peer_id;
 } bond_keys_t;
 
-typedef struct
-{
-  ble_gap_addr_t address;
-  char name[25];
-} bonded_device_info;
-
 void bond_init(void);
 void bond_clear_prph(void);
 void bond_clear_cntr(void);
@@ -71,7 +65,6 @@ bool bond_load_keys(uint8_t role, ble_gap_addr_t* peer_addr, bond_keys_t* bkeys)
 bool bond_save_cccd (uint8_t role, uint16_t conn_hdl, ble_gap_addr_t const* id_addr);
 bool bond_load_cccd (uint8_t role, uint16_t conn_hdl, ble_gap_addr_t const* id_addr);
 
-bool bond_get_list(uint8_t role, bonded_device_info* bondedPeers, uint32_t bondedPeersSize, uint32_t* actualBondedPeersSize);
 void bond_print_list(uint8_t role);
 
 #endif /* BONDING_H_ */

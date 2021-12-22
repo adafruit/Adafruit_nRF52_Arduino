@@ -292,47 +292,6 @@ bool bond_load_cccd(uint8_t role, uint16_t conn_hdl, ble_gap_addr_t const* id_ad
   return loaded;
 }
 
-bool bond_get_list(uint8_t role, bonded_device_info* bondedPeers, uint32_t bondedPeersSize, uint32_t* actualBondedPeersSize)
-{
-  char const * dpath = (role == BLE_GAP_ROLE_PERIPH ? BOND_DIR_PRPH : BOND_DIR_CNTR);
-
-  File dir(dpath, FILE_O_READ, InternalFS);
-  File file(InternalFS);
-
-  uint32_t peerIndex = 0;
-  while ((file = dir.openNextFile(FILE_O_READ)) && (peerIndex < bondedPeersSize))
-  {
-    if (!file.isDirectory())
-    {
-      int len = file.read();
-      bond_keys_t bondKeys{};
-      if (len == sizeof(bondKeys))
-      {
-        file.read(&bondKeys, len);
-
-        bonded_device_info deviceInfo{};
-        deviceInfo.address = bondKeys.peer_id.id_addr_info;
-
-        len = file.read();
-        if (len > 0)
-        {
-          file.read(deviceInfo.name, min(len, sizeof(deviceInfo.name)));
-        }
-
-        bondedPeers[peerIndex] = deviceInfo;
-        peerIndex++;
-      }
-    }
-
-    file.close();
-  }
-
-  file.close();
-  dir.close();
-  *actualBondedPeersSize = peerIndex;
-  return true;
-}
-
 void bond_print_list(uint8_t role)
 {
   char const * dpath = (role == BLE_GAP_ROLE_PERIPH ? BOND_DIR_PRPH : BOND_DIR_CNTR);

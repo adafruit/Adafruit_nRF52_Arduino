@@ -225,16 +225,6 @@ bool BLEHidAdafruit::mouseButtonRelease(uint16_t conn_hdl)
   return mouseReport(conn_hdl, 0, 0, 0, 0, 0);
 }
 
-bool BLEHidAdafruit::mouseButtonPressSpecific(uint16_t conn_hdl, uint8_t buttons)
-{
-  return mouseReport(conn_hdl, _mse_buttons | buttons, 0, 0, 0, 0);
-}
-
-bool BLEHidAdafruit::mouseButtonReleaseSpecific(uint16_t conn_hdl, uint8_t buttons)
-{
-  return mouseReport(conn_hdl, _mse_buttons & ~buttons, 0, 0, 0, 0);
-}
-
 bool BLEHidAdafruit::mouseMove(uint16_t conn_hdl, int8_t x, int8_t y)
 {
   return mouseReport(conn_hdl, _mse_buttons, x, y, 0, 0);
@@ -315,16 +305,6 @@ bool BLEHidAdafruit::mouseButtonPress(uint8_t buttons)
 bool BLEHidAdafruit::mouseButtonRelease(void)
 {
   return mouseButtonRelease(BLE_CONN_HANDLE_INVALID);
-}
-
-bool BLEHidAdafruit::mouseButtonPressSpecific(uint8_t buttons)
-{
-  return mouseButtonPressSpecific(BLE_CONN_HANDLE_INVALID, buttons);
-}
-
-bool BLEHidAdafruit::mouseButtonReleaseSpecific(uint8_t buttons)
-{
-  return mouseButtonReleaseSpecific(BLE_CONN_HANDLE_INVALID, buttons);
 }
 
 bool BLEHidAdafruit::mouseMove(int8_t x, int8_t y)

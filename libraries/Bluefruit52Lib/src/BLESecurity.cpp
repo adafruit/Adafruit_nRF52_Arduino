@@ -78,7 +78,9 @@ static void _passkey_display_cabllack_dfr(BLESecurity::pair_passkey_cb_t func, u
 
 static void _passkey_request_callback_dfr(BLESecurity::pair_passkey_req_cb_t func, uint16_t conn_hdl)
 {
-  func(conn_hdl);
+  uint8_t passkey[6];
+  func(conn_hdl, passkey);
+  sd_ble_gap_auth_key_reply(conn_hdl, BLE_GAP_AUTH_KEY_TYPE_PASSKEY, passkey);
 }
 
 BLESecurity::BLESecurity(void)
@@ -213,9 +215,10 @@ bool BLESecurity::setPairPasskeyCallback(pair_passkey_cb_t fp)
   return true;
 }
 
-void BLESecurity::setPairPasskeyRequestedCallback(pair_passkey_req_cb_t fp)
+void BLESecurity::setPairPasskeyRequestCallback(pair_passkey_req_cb_t fp)
 {
   _passkey_req_cb = fp;
+  _sec_param.mitm = 1;
 }
 
 void BLESecurity::setPairCompleteCallback(pair_complete_cb_t fp)
@@ -226,12 +229,6 @@ void BLESecurity::setPairCompleteCallback(pair_complete_cb_t fp)
 void BLESecurity::setSecuredCallback(secured_conn_cb_t fp)
 {
  _secured_cb = fp;
-}
-
-bool BLESecurity::enterRequestedPasskey(uint16_t conn_hdl, uint8_t const* passkey)
-{
-  VERIFY_STATUS(sd_ble_gap_auth_key_reply(conn_hdl, BLE_GAP_AUTH_KEY_TYPE_PASSKEY, passkey), false);
-  return true;
 }
 
 bool BLESecurity::_authenticate(uint16_t conn_hdl)

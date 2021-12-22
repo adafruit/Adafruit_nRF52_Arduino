@@ -35,8 +35,8 @@
 class BLESecurity
 {
   public:
-    typedef bool (*pair_passkey_cb_t ) (uint16_t conn_hdl, uint8_t const passkey[6], bool match_request);
-    typedef void (*pair_passkey_req_cb_t) (uint16_t conn_hdl);
+    typedef bool (*pair_passkey_cb_t) (uint16_t conn_hdl, uint8_t const passkey[6], bool match_request);
+    typedef void (*pair_passkey_req_cb_t) (uint16_t conn_hdl, uint8_t passkey[6]);
     typedef void (*pair_complete_cb_t) (uint16_t conn_hdl, uint8_t auth_status);
     typedef void (*secured_conn_cb_t) (uint16_t conn_hdl);
 
@@ -58,11 +58,9 @@ class BLESecurity
 
     //------------- Callbacks -------------//
     bool setPairPasskeyCallback(pair_passkey_cb_t fp);
-    void setPairPasskeyRequestedCallback(pair_passkey_req_cb_t fp);
+    void setPairPasskeyRequestCallback(pair_passkey_req_cb_t fp);
     void setPairCompleteCallback(pair_complete_cb_t fp);
     void setSecuredCallback(secured_conn_cb_t fp);
-
-    bool enterRequestedPasskey(uint16_t conn_hdl, uint8_t const* passkey);
 
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
