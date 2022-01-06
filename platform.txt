@@ -22,11 +22,11 @@ version=1.2.0
 # Compile variables
 # -----------------
 
-compiler.warning_flags=-w
-compiler.warning_flags.none=-w
-compiler.warning_flags.default=
-compiler.warning_flags.more=-Wall
-compiler.warning_flags.all=-Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-pointer-arith
+compiler.warning_flags=-Werror=return-type
+compiler.warning_flags.none=-Werror=return-type
+compiler.warning_flags.default=-Werror=return-type
+compiler.warning_flags.more=-Wall -Werror=return-type
+compiler.warning_flags.all=-Wall -Wextra -Werror=return-type -Wno-unused-parameter -Wno-missing-field-initializers -Wno-pointer-arith
 
 # Allow changing optimization settings via platform.local.txt / boards.local.txt
 compiler.optimization_flag=-Ofast
