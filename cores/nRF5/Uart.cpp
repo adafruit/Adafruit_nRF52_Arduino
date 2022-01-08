@@ -87,46 +87,9 @@ void Uart::begin(unsigned long baudrate, uint16_t config)
   } else {
     nrfUart->CONFIG = config | (UARTE_CONFIG_HWFC_Disabled << UARTE_CONFIG_HWFC_Pos);
   }
-
-  uint32_t nrfBaudRate;
-
-  if (baudrate <= 1200) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud1200;
-  } else if (baudrate <= 2400) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud2400;
-  } else if (baudrate <= 4800) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud4800;
-  } else if (baudrate <= 9600) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud9600;
-  } else if (baudrate <= 14400) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud14400;
-  } else if (baudrate <= 19200) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud19200;
-  } else if (baudrate <= 28800) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud28800;
-  } else if (baudrate <= 31250) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud31250;
-  } else if (baudrate <= 38400) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud38400;
-  } else if (baudrate <= 56000) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud56000;
-  } else if (baudrate <= 57600) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud57600;
-  } else if (baudrate <= 76800) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud76800;
-  } else if (baudrate <= 115200) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud115200;
-  } else if (baudrate <= 230400) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud230400;
-  } else if (baudrate <= 250000) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud250000;
-  } else if (baudrate <= 460800) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud460800;
-  } else if (baudrate <= 921600) {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud921600;
-  } else {
-    nrfBaudRate = UARTE_BAUDRATE_BAUDRATE_Baud1M;
-  }
+ 
+  const double regValue = 268.43f*(double)baudrate; /* 2^32 / 16000000 = 268.43f. more details here: https://devzone.nordicsemi.com/f/nordic-q-a/391/uart-baudrate-register-values */
+  const uint32_t nrfBaudRate = ((uint32_t)ab + 0x800) & 0xFFFFF000;
 
   nrfUart->BAUDRATE = nrfBaudRate;
 
