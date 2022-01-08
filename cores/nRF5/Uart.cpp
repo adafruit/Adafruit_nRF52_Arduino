@@ -89,7 +89,7 @@ void Uart::begin(unsigned long baudrate, uint16_t config)
   }
  
   const double regValue = 268.43f*(double)baudrate; /* 2^32 / 16000000 = 268.43f. more details here: https://devzone.nordicsemi.com/f/nordic-q-a/391/uart-baudrate-register-values */
-  const uint32_t nrfBaudRate = ((uint32_t)ab + 0x800) & 0xFFFFF000;
+  const uint32_t nrfBaudRate = ((uint32_t)regValue + 0x800) & 0xFFFFF000;
 
   nrfUart->BAUDRATE = nrfBaudRate;
 
