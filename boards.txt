@@ -1,5 +1,6 @@
 menu.softdevice=SoftDevice
 menu.debug=Debug
+menu.debug_output=Debug Output
 
 # -----------------------------------
 # Adafruit Feather nRF52832
@@ -45,6 +46,14 @@ feather52832.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 feather52832.menu.debug.l3=Level 3 (Segger SystemView)
 feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 feather52832.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# Debug Output Menu
+feather52832.menu.debug_output.serial=Serial
+feather52832.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+feather52832.menu.debug_output.serial1=Serial1
+feather52832.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+feather52832.menu.debug_output.rtt=Segger RTT
+feather52832.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
 
 # -----------------------------------
 # Adafruit Feather nRF52840 Express
@@ -100,6 +109,14 @@ feather52840.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 feather52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
+# Debug Output Menu
+feather52840.menu.debug_output.serial=Serial
+feather52840.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+feather52840.menu.debug_output.serial1=Serial1
+feather52840.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+feather52840.menu.debug_output.rtt=Segger RTT
+feather52840.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
+
 # -----------------------------------
 # Adafruit Feather nRF52840 Sense
 # -----------------------------------
@@ -153,6 +170,14 @@ feather52840sense.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 feather52840sense.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840sense.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 feather52840sense.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# Debug Output Menu
+feather52840sense.menu.debug_output.serial=Serial
+feather52840sense.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+feather52840sense.menu.debug_output.serial1=Serial1
+feather52840sense.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+feather52840sense.menu.debug_output.rtt=Segger RTT
+feather52840sense.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
 
 # -----------------------------------
 # Adafruit ItsyBitsy nRF52840 Express
@@ -208,6 +233,14 @@ itsybitsy52840.menu.debug.l3=Level 3 (Segger SystemView)
 itsybitsy52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 itsybitsy52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
+# Debug Output Menu
+itsybitsy52840.menu.debug_output.serial=Serial
+itsybitsy52840.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+itsybitsy52840.menu.debug_output.serial1=Serial1
+itsybitsy52840.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+itsybitsy52840.menu.debug_output.rtt=Segger RTT
+itsybitsy52840.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
+
 # -----------------------------------
 # Adafruit Circuit Playground Bluefruit
 # -----------------------------------
@@ -259,6 +292,14 @@ cplaynrf52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 cplaynrf52840.menu.debug.l3=Level 3 (Segger SystemView)
 cplaynrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 cplaynrf52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# Debug Output Menu
+cplaynrf52840.menu.debug_output.serial=Serial
+cplaynrf52840.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+cplaynrf52840.menu.debug_output.serial1=Serial1
+cplaynrf52840.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+cplaynrf52840.menu.debug_output.rtt=Segger RTT
+cplaynrf52840.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
 
 # -----------------------------------
 # Adafruit CLUE
@@ -312,6 +353,14 @@ cluenrf52840.menu.debug.l3=Level 3 (Segger SystemView)
 cluenrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 cluenrf52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
+# Debug Output Menu
+cluenrf52840.menu.debug_output.serial=Serial
+cluenrf52840.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+cluenrf52840.menu.debug_output.serial1=Serial1
+cluenrf52840.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+cluenrf52840.menu.debug_output.rtt=Segger RTT
+cluenrf52840.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
+
 # -----------------------------------
 # Adafruit LED Glasses Driver nRF52840
 # -----------------------------------
@@ -364,6 +413,14 @@ ledglasses_nrf52840.menu.debug.l3=Level 3 (Segger SystemView)
 ledglasses_nrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 ledglasses_nrf52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
+# Debug Output Menu
+ledglasses_nrf52840.menu.debug_output.serial=Serial
+ledglasses_nrf52840.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+ledglasses_nrf52840.menu.debug_output.serial1=Serial1
+ledglasses_nrf52840.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+ledglasses_nrf52840.menu.debug_output.rtt=Segger RTT
+ledglasses_nrf52840.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
+
 # -----------------------------------
 # Raytac nRF52840 Dongle
 # -----------------------------------
@@ -415,6 +472,14 @@ mdbt50qrx.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 mdbt50qrx.menu.debug.l3=Level 3 (Segger SystemView)
 mdbt50qrx.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 mdbt50qrx.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# Debug Output Menu
+mdbt50qrx.menu.debug_output.serial=Serial
+mdbt50qrx.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+mdbt50qrx.menu.debug_output.serial1=Serial1
+mdbt50qrx.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+mdbt50qrx.menu.debug_output.rtt=Segger RTT
+mdbt50qrx.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
 
 # -----------------------------------
 # Adafruit Metro nRF52840 Express
@@ -469,6 +534,14 @@ metro52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 metro52840.menu.debug.l3=Level 3 (Segger SystemView)
 metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 metro52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# Debug Output Menu
+metro52840.menu.debug_output.serial=Serial
+metro52840.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+metro52840.menu.debug_output.serial1=Serial1
+metro52840.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+metro52840.menu.debug_output.rtt=Segger RTT
+metro52840.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
 
 
 # -------------------------------------------------------
@@ -527,6 +600,14 @@ pca10056.menu.debug.l3=Level 3 (Segger SystemView)
 pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 pca10056.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
+# Debug Output Menu
+pca10056.menu.debug_output.serial=Serial
+pca10056.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+pca10056.menu.debug_output.serial1=Serial1
+pca10056.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+pca10056.menu.debug_output.rtt=Segger RTT
+pca10056.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
+
 # -----------------------------------
 # Particle Xenon
 # -----------------------------------
@@ -577,6 +658,13 @@ particle_xenon.menu.debug.l3=Level 3 (Segger SystemView)
 particle_xenon.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 particle_xenon.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
+# Debug Output Menu
+particle_xenon.menu.debug_output.serial=Serial
+particle_xenon.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+particle_xenon.menu.debug_output.serial1=Serial1
+particle_xenon.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+particle_xenon.menu.debug_output.rtt=Segger RTT
+particle_xenon.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
 
 # -----------------------------------
 # Nordic nRF52833 DK
@@ -627,3 +715,11 @@ pca10100.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
 pca10100.menu.debug.l3=Level 3 (Segger SystemView)
 pca10100.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 pca10100.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# Debug Output Menu
+pca10100.menu.debug_output.serial=Serial
+pca10100.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+pca10100.menu.debug_output.serial1=Serial1
+pca10100.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+pca10100.menu.debug_output.rtt=Segger RTT
+pca10100.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL

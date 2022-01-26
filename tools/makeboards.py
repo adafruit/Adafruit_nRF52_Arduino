@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from bokeh.palettes import name
 
 mcu_dict = {
     52832: {
@@ -102,17 +103,27 @@ def build_debug(name):
     print("%s.menu.debug.l3=Level 3 (Segger SystemView)" % name)
     print("%s.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3" % name)
     print("%s.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1" % name)
+    print()
 
+def build_debug_output(name):
+    print("# Debug Output Menu")
+    print("%s.menu.debug_output.serial=Serial" % name)
+    print("%s.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0" % name)
+    print("%s.menu.debug_output.serial1=Serial1" % name)
+    print("%s.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG" % name)
+    print("%s.menu.debug_output.rtt=Segger RTT" % name)
+    print("%s.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL" % name)
 
 def build_global_menu():
     print("menu.softdevice=SoftDevice")
     print("menu.debug=Debug")
-
+    print("menu.debug_output=Debug Output")
 
 def make_board(name, vendor_name, product_name, vid, pid, boarddefine, variant):
     build_header(name, vendor_name, product_name, vid, pid, boarddefine, variant)
     build_softdevice(name)
     build_debug(name)
+    build_debug_output(name)
 
 
 build_global_menu()
