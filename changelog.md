@@ -1,5 +1,12 @@
 # Adafruit nRF52 Arduino Core Changelog
 
+## 1.2.0
+
+- Add readResetReason()
+- Add menu debug out option to select output meessage via Serial, Serial1 or Segger RTT
+- Fix Wire bus issue when device does not response with ack/nack from previous transaction.
+- Update included TinyUSB library to version 1.7.0
+
 ## 1.1.0 - 2021.09.24
 
 - Add **Adafruit LED Glasses Driver nRF52840** board support
