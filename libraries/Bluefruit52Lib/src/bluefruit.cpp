@@ -607,19 +607,19 @@ bool AdafruitBluefruit::connected(uint16_t conn_hdl)
   return conn && conn->connected();
 }
 
-void AdafruitBluefruit::getConnectionHandles(uint16_t* connectionHandles, uint8_t maxConnectionHandleCount, uint8_t* actualConnectionHandleCount)
+uint8_t AdafruitBluefruit::getConnectedHandles(uint16_t* hdl_list, uint8_t max_count)
 {
   uint8_t count = 0;
-  for (uint16_t connectionHandle = 0; (connectionHandle < BLE_MAX_CONNECTION) && (count < maxConnectionHandleCount); ++connectionHandle)
+  for (uint16_t hdl = 0; (hdl < BLE_MAX_CONNECTION) && (count < max_count); ++hdl)
   {
-    if (this->connected(connectionHandle))
+    if (this->connected(hdl))
     {
-      connectionHandles[count] = connectionHandle;
+      hdl_list[count] = hdl;
       count++;
     }
   }
 
-  *actualConnectionHandleCount = count;
+  return count;
 }
 
 bool AdafruitBluefruit::disconnect(uint16_t conn_hdl)
