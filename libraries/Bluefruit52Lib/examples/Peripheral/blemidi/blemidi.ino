@@ -12,8 +12,11 @@
  any redistribution
 *********************************************************************/
 
-/* For BLE MIDI Setup
- * https://learn.adafruit.com/wireless-untztrument-using-ble-midi/overview
+/* This example requires following library
+ * - https://github.com/FortySevenEffects/arduino_midi_library/ (MIDI Library)
+ *
+ * For BLE MIDI Setup on PC/mobile checkout our learn guide
+ * - https://learn.adafruit.com/wireless-untztrument-using-ble-midi/ble-midi-setup
  */
 
 
