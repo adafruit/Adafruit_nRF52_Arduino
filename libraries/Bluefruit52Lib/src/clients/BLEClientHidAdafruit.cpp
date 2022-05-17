@@ -120,23 +120,10 @@ bool BLEClientHidAdafruit::discover(uint16_t conn_handle)
   _conn_hdl = BLE_CONN_HANDLE_INVALID; // make as invalid until we found all chars
 
   // Discover all characteristics
-  Bluefruit.Discovery.discoverCharacteristic(conn_handle, _protcol_mode, _kbd_boot_input, _kbd_boot_output, _hid_info, _hid_control, _gpd_report);
+  Bluefruit.Discovery.discoverCharacteristic(conn_handle, _protcol_mode, _kbd_boot_input, _kbd_boot_output, _mse_boot_input, _hid_info, _hid_control, _gpd_report);
 
-  Serial.print("_protcol_mode.discovered(): ");
-  Serial.println(_protcol_mode.discovered());
-
-  Serial.print("_hid_info.discovered(): ");
-  Serial.println(_hid_info.discovered());
-
-  Serial.print("_hid_control.discovered(): ");
-  Serial.println(_hid_control.discovered());
-
-  Serial.print("_gpd_report.discovered(): ");
-  Serial.println(_gpd_report.discovered());
-
-
-  VERIFY( /*_protcol_mode.discovered() &&*/ _hid_info.discovered() && _hid_control.discovered() );
-  // VERIFY ( keyboardPresent() || mousePresent() || gamepadPresent() );
+  VERIFY( _hid_info.discovered() && _hid_control.discovered() );
+  VERIFY (keyboardPresent() || mousePresent() || gamepadPresent());
 
   _conn_hdl = conn_handle;
   return true;
@@ -169,7 +156,7 @@ bool BLEClientHidAdafruit::setBootMode(bool boot)
  *------------------------------------------------------------------*/
 bool BLEClientHidAdafruit::keyboardPresent(void)
 {
-  return _kbd_boot_input.discovered() && _kbd_boot_output.discovered();
+  return _kbd_boot_input.discovered() && _kbd_boot_output.discovered() && _protcol_mode.discovered();
 }
 
 bool BLEClientHidAdafruit::enableKeyboard(void)
@@ -200,7 +187,7 @@ void BLEClientHidAdafruit::getKeyboardReport(hid_keyboard_report_t* report)
  *------------------------------------------------------------------*/
 bool BLEClientHidAdafruit::mousePresent(void)
 {
-  return _mse_boot_input.discovered();
+  return _mse_boot_input.discovered() && _protcol_mode.discovered();
 }
 
 bool BLEClientHidAdafruit::enableMouse(void)
