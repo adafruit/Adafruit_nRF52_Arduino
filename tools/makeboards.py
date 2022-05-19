@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from bokeh.palettes import name
 
 mcu_dict = {
     52832: {
@@ -119,8 +118,8 @@ def build_global_menu():
     print("menu.debug=Debug")
     print("menu.debug_output=Debug Output")
 
-def make_board(name, vendor_name, product_name, vid, pid, boarddefine, variant):
-    build_header(name, vendor_name, product_name, vid, pid, boarddefine, variant)
+def make_board(name, variant, vendor_name, product_name, boarddefine, vid, pid_list):
+    build_header(name, variant, vendor_name, product_name, boarddefine, vid, pid_list)
     build_softdevice(name)
     build_debug(name)
     build_debug_output(name)
