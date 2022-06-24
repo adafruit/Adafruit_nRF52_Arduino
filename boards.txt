@@ -631,7 +631,7 @@ particle_xenon.upload.maximum_data_size=237568
 # Build
 particle_xenon.build.mcu=cortex-m4
 particle_xenon.build.f_cpu=64000000
-particle_xenon.build.board=PARTICLE_XENON
+particle_xenon.build.board=PARTICLE_ARGON
 particle_xenon.build.core=nRF5
 particle_xenon.build.variant=particle_xenon
 particle_xenon.build.usb_manufacturer="Particle"
@@ -665,3 +665,61 @@ particle_xenon.menu.debug_output.serial1=Serial1
 particle_xenon.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
 particle_xenon.menu.debug_output.rtt=Segger RTT
 particle_xenon.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
+
+# -----------------------------------
+# Particle Argon
+# -----------------------------------
+particle_argon.name=Particle Argon
+
+# VID/PID for Bootloader, Arduino & CircuitPython
+particle_argon.vid.0=0x239A
+particle_argon.pid.0=0x8029
+particle_argon.vid.1=0x239A
+particle_argon.pid.1=0x0029
+
+# Upload
+particle_argon.bootloader.tool=bootburn
+particle_argon.upload.tool=nrfutil
+particle_argon.upload.protocol=nrfutil
+particle_argon.upload.use_1200bps_touch=true
+particle_argon.upload.wait_for_upload_port=true
+particle_argon.upload.maximum_size=815104
+particle_argon.upload.maximum_data_size=237568
+
+# Build
+particle_argon.build.mcu=cortex-m4
+particle_argon.build.f_cpu=64000000
+particle_argon.build.board=PARTICLE_ARGON
+particle_argon.build.core=nRF5
+particle_argon.build.variant=particle_argon
+particle_argon.build.usb_manufacturer="Particle"
+particle_argon.build.usb_product="Argon"
+particle_argon.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+particle_argon.build.ldscript=nrf52840_s140_v6.ld
+particle_argon.build.vid=0x239A
+particle_argon.build.pid=0x8029
+
+# SoftDevice Menu
+particle_argon.menu.softdevice.s140v6=S140 6.1.1
+particle_argon.menu.softdevice.s140v6.build.sd_name=s140
+particle_argon.menu.softdevice.s140v6.build.sd_version=6.1.1
+particle_argon.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+particle_argon.menu.debug.l0=Level 0 (Release)
+particle_argon.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+particle_argon.menu.debug.l1=Level 1 (Error Message)
+particle_argon.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+particle_argon.menu.debug.l2=Level 2 (Full Debug)
+particle_argon.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+particle_argon.menu.debug.l3=Level 3 (Segger SystemView)
+particle_argon.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+particle_argon.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# Debug Output Menu
+particle_argon.menu.debug_output.serial=Serial
+particle_argon.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+particle_argon.menu.debug_output.serial1=Serial1
+particle_argon.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+particle_argon.menu.debug_output.rtt=Segger RTT
+particle_argon.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL

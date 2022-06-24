@@ -166,3 +166,6 @@ make_board("pca10056", "pca10056", "Nordic", "nRF52840 DK", "NRF52840_PCA10056",
 
 make_board("particle_xenon", "particle_xenon", "Particle", "Xenon", "PARTICLE_XENON",
            "0x239A", ["0x8029", "0x0029"])
+
+make_board("particle_argon", "particle_argon", "Particle", "Argon", "PARTICLE_ARGON",
+           "0x239A", ["0x8029", "0x0029"])
