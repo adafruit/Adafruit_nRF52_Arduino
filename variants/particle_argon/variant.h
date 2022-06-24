@@ -90,6 +90,7 @@ static const uint8_t D17 = PIN_D17;
 static const uint8_t D18 = PIN_D18;
 static const uint8_t D19 = PIN_D19;
 static const uint8_t D20 = PIN_D20;
+static const uint8_t D21 = PIN_D21;
 
 // LEDs
 #define LEDS_NUMBER    1
@@ -124,9 +125,7 @@ static const uint8_t BUTTON_MODE =  BUTTON_DFU;
 #define NFC1                        (27)
 #define NFC2                        (28)
 
-/*
- * Analog pins
- */
+// Analog pins
 #define PIN_A0                      (29)
 #define PIN_A1                      (30)
 #define PIN_A2                      (31)
@@ -159,32 +158,28 @@ static const uint8_t A7 = PIN_A7;
 
 static const uint8_t AREF = PIN_AREF;
 
-/*
- * Serial interfaces
- */
+// Serial interfaces
 #define PIN_SERIAL1_TX         9
 #define PIN_SERIAL1_RX         10
-#define PIN_SERIAL1_CTS        4
-#define PIN_SERIAL1_RTS        3
+// #define PIN_SERIAL1_CTS        3
+// #define PIN_SERIAL1_RTS        2
 
 // ESP32 Network Co-Processor
-#define PIN_SERIAL_ESP32_RX    5
-#define PIN_SERIAL_ESP32_TX    4
-#define PIN_SERIAL_ESP32_CTS   6
-#define PIN_SERIAL_ESP32_RTS   8
+#define PIN_SERIAL2_RX      5
+#define PIN_SERIAL2_TX      4
+#define PIN_SERIAL2_CTS     6
+#define PIN_SERIAL2_RTS     8
 
-/*
- * SPI Interfaces
- */
-#define SPI_INTERFACES_COUNT 2
+// PI Interfaces
+#define SPI_INTERFACES_COUNT  2
 
-#define PIN_SPI_SS                  14
-#define PIN_SPI_MISO                11
-#define PIN_SPI_MOSI                12
-#define PIN_SPI_SCK                 13
-#define PIN_SPI1_MISO               4
-#define PIN_SPI1_MOSI               3
-#define PIN_SPI1_SCK                2
+#define PIN_SPI_SS          14
+#define PIN_SPI_MISO        11
+#define PIN_SPI_MOSI        12
+#define PIN_SPI_SCK         13
+#define PIN_SPI1_MISO       4
+#define PIN_SPI1_MOSI       3
+#define PIN_SPI1_SCK        2
 
 static const uint8_t SS   = PIN_SPI_SS;
 static const uint8_t MOSI = PIN_SPI_MOSI;
@@ -194,15 +189,13 @@ static const uint8_t MOSI1 = PIN_SPI1_MOSI;
 static const uint8_t MISO1 = PIN_SPI1_MISO;
 static const uint8_t SCK1  = PIN_SPI1_SCK;
 
-/*
- * Wire Interfaces
- */
+// Wire Interfaces
 #define WIRE_INTERFACES_COUNT 2
 
-#define PIN_WIRE_SDA               0
-#define PIN_WIRE_SCL               1
-#define PIN_WIRE1_SDA              2
-#define PIN_WIRE1_SCL              3
+#define PIN_WIRE_SDA         0
+#define PIN_WIRE_SCL         1
+#define PIN_WIRE1_SDA        2
+#define PIN_WIRE1_SCL        3
 
 // On-board QSPI Flash
 #define EXTERNAL_FLASH_DEVICES   MX25L3233F
