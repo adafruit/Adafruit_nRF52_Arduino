@@ -76,8 +76,8 @@ const uint32_t g_ADigitalPinMap[] =
   _PINNUM(0, 29),   // P0.29 (A3)
   _PINNUM(0, 30),   // P0.30 (A4)
   _PINNUM(0, 31),   // P0.31 (A5)
-  _PINNUM(0, 5),   // P0.05 (BAT_DET/VBAT)
-  _PINNUM(0, 2),   // P0.02 (AREF)
+  _PINNUM(0, 5),    // P0.05 (BAT_DET/VBAT)
+  _PINNUM(0, 2),    // P0.02 (AREF)
 
   // D37 .. D38
   // Power status
