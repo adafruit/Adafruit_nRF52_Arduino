@@ -631,7 +631,7 @@ particle_xenon.upload.maximum_data_size=237568
 # Build
 particle_xenon.build.mcu=cortex-m4
 particle_xenon.build.f_cpu=64000000
-particle_xenon.build.board=PARTICLE_ARGON
+particle_xenon.build.board=PARTICLE_XENON
 particle_xenon.build.core=nRF5
 particle_xenon.build.variant=particle_xenon
 particle_xenon.build.usb_manufacturer="Particle"
