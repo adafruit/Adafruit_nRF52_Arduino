@@ -18,7 +18,8 @@ Following boards are also included but are not officially supported:
 
 - [Nordic nRF52840DK PCA10056](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-DK)
 - [Particle Xenon](https://store.particle.io/products/xenon)
-
+- [Particle Argon](https://store.particle.io/products/argon)
+  
 ## BSP Installation
 
 There are two methods that you can use to install this BSP. We highly recommend the first option unless you wish to participate in active development of this codebase via Github.
