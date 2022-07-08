@@ -1,0 +1,25 @@
+{
+  "name": "Adafruit Bluefruit nRF52 Libraries",
+  "version": "0.21.0",
+  "description": "Arduino library for nRF52-based Adafruit Bluefruit LE modules",
+  "keywords": "bluefruit, ble",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/adafruit/Adafruit_nRF52_Arduino/tree/master/libraries/Bluefruit52Lib"
+  },
+  "authors":
+  [
+    {
+      "name": "Adafruit",
+      "email": "info@adafruit.com",
+    }
+  ],
+  "license": "BSD-3",
+  "frameworks": "arduino",
+  "platforms": "nordicnrf52",
+  "build":
+  {
+    "libLDFMode": "chain+"
+  }
+}
