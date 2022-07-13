@@ -23,10 +23,18 @@ default_boards = [
     'itsybitsy52840'
 ]
 
+def get_sd(name):
+    if '52832' in name:
+        return 's132v6'
+    elif '52833' in name:
+        return 's140v7'
+    else:
+        # most of the board is 52840
+        return 's140v6'
+
 # return [succeeded, failed, skipped]
 def build_sketch(variant, sketch):
-    fqbn = "adafruit:nrf52:{}:softdevice={},debug=l0".format(variant,
-                                                             's140v6' if variant != 'feather52832' else 's132v6')
+    fqbn = "adafruit:nrf52:{}:softdevice={},debug=l0".format(variant, get_sd(variant))
     ret = [0, 0, 0]
 
     # skip TinyUSB library examples for nRF52832
