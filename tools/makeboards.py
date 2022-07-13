@@ -3,23 +3,35 @@
 mcu_dict = {
     52832: {
         'flash_size': 290816,
-        'data_size': 52224,
+        'data_size': 51712,
         'extra_flags': '-DNRF52832_XXAA -DNRF52',
-        'ldscript': 'nrf52832_s132_v6.ld'
+        'ldscript': 'nrf52832_s132_v6.ld',
+        'uf2_family': 0x00
+    },
+    52833: {
+        'flash_size': 286720,
+        'data_size': 106496,
+        'extra_flags': '-DNRF52833_XXAA {build.flags.usb}',
+        'ldscript': 'nrf52833_s140_v7.ld',
+        'uf2_family': '0x621E937A'
     },
     52840: {
         'flash_size': 815104,
         'data_size': 237568,
         'extra_flags': '-DNRF52840_XXAA {build.flags.usb}',
-        'ldscript': 'nrf52840_s140_v6.ld'
+        'ldscript': 'nrf52840_s140_v6.ld',
+        'uf2_family': '0xADA52840'
     }
 }
 
 
 def get_mcu(name):
-    if name == 'feather52832':
+    if '52832' in name:
         return 52832
+    elif '52833' in name:
+        return 52833
     else:
+        # most of the board is 52840
         return 52840
 
 
@@ -68,22 +80,31 @@ def build_header(name, variant, vendor_name, product_name, boarddefine, vid, pid
     print('%s.build.usb_product="%s"' % (name, product_name))
 
     mcu = get_mcu(name)
-    print("%s.build.extra_flags=%s" % (name, mcu_dict[mcu]['extra_flags']))
-    print("%s.build.ldscript=%s" % (name, mcu_dict[mcu]['ldscript']))
+    mcu_info = mcu_dict[mcu]
+    print("%s.build.extra_flags=%s" % (name, mcu_info['extra_flags']))
+    print("%s.build.ldscript=%s" % (name, mcu_info['ldscript']))
     if mcu != 52832:
         print("%s.build.vid=%s" % (name, vid))
         print("%s.build.pid=%s" % (name, pid_list[0]))
+        print("%s.build.uf2_family=%s" % (name, mcu_info['uf2_family']))
     print()
 
 
 def build_softdevice(name):
     print("# SoftDevice Menu")
-    if get_mcu(name) == 52832:
+    mcu = get_mcu(name)
+    if mcu == 52832:
         print("%s.menu.softdevice.s132v6=S132 6.1.1" % name)
         print("%s.menu.softdevice.s132v6.build.sd_name=s132" % name)
         print("%s.menu.softdevice.s132v6.build.sd_version=6.1.1" % name)
         print("%s.menu.softdevice.s132v6.build.sd_fwid=0x00B7" % name)
+    elif mcu == 52833:
+        print("%s.menu.softdevice.s140v7=S140 7.3.0" % name)
+        print("%s.menu.softdevice.s140v7.build.sd_name=s140" % name)
+        print("%s.menu.softdevice.s140v7.build.sd_version=7.3.0" % name)
+        print("%s.menu.softdevice.s140v7.build.sd_fwid=0x0123" % name)
     else:
+        # 52840
         print("%s.menu.softdevice.s140v6=S140 6.1.1" % name)
         print("%s.menu.softdevice.s140v6.build.sd_name=s140" % name)
         print("%s.menu.softdevice.s140v6.build.sd_version=6.1.1" % name)
@@ -104,6 +125,7 @@ def build_debug(name):
     print("%s.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1" % name)
     print()
 
+
 def build_debug_output(name):
     print("# Debug Output Menu")
     print("%s.menu.debug_output.serial=Serial" % name)
@@ -111,12 +133,15 @@ def build_debug_output(name):
     print("%s.menu.debug_output.serial1=Serial1" % name)
     print("%s.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG" % name)
     print("%s.menu.debug_output.rtt=Segger RTT" % name)
-    print("%s.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL" % name)
+    print(
+        "%s.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL" % name)
+
 
 def build_global_menu():
     print("menu.softdevice=SoftDevice")
     print("menu.debug=Debug")
     print("menu.debug_output=Debug Output")
+
 
 def make_board(name, variant, vendor_name, product_name, boarddefine, vid, pid_list):
     build_header(name, variant, vendor_name, product_name, boarddefine, vid, pid_list)
@@ -127,24 +152,29 @@ def make_board(name, variant, vendor_name, product_name, boarddefine, vid, pid_l
 
 build_global_menu()
 
-make_board("feather52832", "feather_nrf52832", "Adafruit", "Feather nRF52832", "NRF52832_FEATHER",
-           "0x239A", [])
-make_board("feather52840", "feather_nrf52840_express", "Adafruit", "Feather nRF52840 Express", "NRF52840_FEATHER",
-           "0x239A", ["0x8029", "0x0029", "0x002A", "0x802A"])
-
-make_board("feather52840sense", "feather_nrf52840_sense", "Adafruit", "Feather nRF52840 Sense", "NRF52840_FEATHER_SENSE",
-           "0x239A", ["0x8087", "0x0087", "0x0088", "0x8088"])
-
-make_board("itsybitsy52840", "itsybitsy_nrf52840_express", "Adafruit", "ItsyBitsy nRF52840 Express", "NRF52840_ITSYBITSY -DARDUINO_NRF52_ITSYBITSY",
-           "0x239A", ["0x8051", "0x0051", "0x0052", "0x8052"])
-
-make_board("cplaynrf52840", "circuitplayground_nrf52840", "Adafruit", "Circuit Playground Bluefruit", "NRF52840_CIRCUITPLAY",
-           "0x239A", ["0x8045", "0x0045", "0x8046"])
-
 make_board("cluenrf52840", "clue_nrf52840", "Adafruit", "CLUE", "NRF52840_CLUE",
            "0x239A", ["0x8071", "0x0071", "0x8072"])
 
-make_board("ledglasses_nrf52840", "ledglasses_nrf52840", "Adafruit", "LED Glasses Driver nRF52840", "NRF52840_LED_GLASSES",
+make_board("cplaynrf52840", "circuitplayground_nrf52840", "Adafruit", "Circuit Playground Bluefruit",
+           "NRF52840_CIRCUITPLAY",
+           "0x239A", ["0x8045", "0x0045", "0x8046"])
+
+make_board("feather52832", "feather_nrf52832", "Adafruit", "Feather nRF52832", "NRF52832_FEATHER",
+           "0x239A", [])
+
+make_board("feather52840", "feather_nrf52840_express", "Adafruit", "Feather nRF52840 Express", "NRF52840_FEATHER",
+           "0x239A", ["0x8029", "0x0029", "0x002A", "0x802A"])
+
+make_board("feather52840sense", "feather_nrf52840_sense", "Adafruit", "Feather nRF52840 Sense",
+           "NRF52840_FEATHER_SENSE",
+           "0x239A", ["0x8087", "0x0087", "0x0088", "0x8088"])
+
+make_board("itsybitsy52840", "itsybitsy_nrf52840_express", "Adafruit", "ItsyBitsy nRF52840 Express",
+           "NRF52840_ITSYBITSY -DARDUINO_NRF52_ITSYBITSY",
+           "0x239A", ["0x8051", "0x0051", "0x0052", "0x8052"])
+
+make_board("ledglasses_nrf52840", "ledglasses_nrf52840", "Adafruit", "LED Glasses Driver nRF52840",
+           "NRF52840_LED_GLASSES",
            "0x239A", ["0x810D", "0x010D", "0x810E"])
 
 make_board("mdbt50qrx", "raytac_mdbt50q_rx", "Raytac", "nRF52840 Dongle", "MDBT50Q_RX",
@@ -152,6 +182,10 @@ make_board("mdbt50qrx", "raytac_mdbt50q_rx", "Raytac", "nRF52840 Dongle", "MDBT5
 
 make_board("metro52840", "metro_nrf52840_express", "Adafruit", "Metro nRF52840 Express", "NRF52840_METRO",
            "0x239A", ["0x803F", "0x003F", "0x0040", "0x8040"])
+
+# TODO currently shared PID with nrf52840
+make_board("feather52833", "feather_nrf52833_express", "Adafruit", "Feather nRF52833 Express", "NRF52833_FEATHER",
+           "0x239A", ["0x8029", "0x0029", "0x002A", "0x802A"])
 
 print()
 print()
@@ -161,8 +195,8 @@ print("# Boards that aren't made by Adafruit")
 print("#")
 print("# -------------------------------------------------------")
 
-make_board("pca10056", "pca10056", "Nordic", "nRF52840 DK", "NRF52840_PCA10056",
+make_board("particle_xenon", "particle_xenon", "Particle", "Xenon", "PARTICLE_XENON",
            "0x239A", ["0x8029", "0x0029"])
 
-make_board("particle_xenon", "particle_xenon", "Particle", "Xenon", "PARTICLE_XENON",
+make_board("pca10056", "pca10056", "Nordic", "nRF52840 DK", "NRF52840_PCA10056",
            "0x239A", ["0x8029", "0x0029"])
