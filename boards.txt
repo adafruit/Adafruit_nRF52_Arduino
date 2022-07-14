@@ -488,6 +488,12 @@ mdbt50qrx.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB
 mdbt50qrx.menu.debug_output.rtt=Segger RTT
 mdbt50qrx.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
 
+# -------------------------------------------------------
+#
+# Boards not yet in production
+#
+# -------------------------------------------------------
+
 # -----------------------------------
 # Adafruit Metro nRF52840 Express
 # -----------------------------------
@@ -617,7 +623,7 @@ feather52833.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_
 
 # -------------------------------------------------------
 #
-# Boards that aren't made by Adafruit
+# Boards by 3rd Party (not Adafruit)
 #
 # -------------------------------------------------------
 

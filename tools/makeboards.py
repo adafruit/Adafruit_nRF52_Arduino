@@ -180,6 +180,13 @@ make_board("ledglasses_nrf52840", "ledglasses_nrf52840", "Adafruit", "LED Glasse
 make_board("mdbt50qrx", "raytac_mdbt50q_rx", "Raytac", "nRF52840 Dongle", "MDBT50Q_RX",
            "0x239A", ["0x810B", "0x010B", "0x810C"])
 
+print()
+print("# -------------------------------------------------------")
+print("#")
+print("# Boards not yet in production")
+print("#")
+print("# -------------------------------------------------------")
+
 make_board("metro52840", "metro_nrf52840_express", "Adafruit", "Metro nRF52840 Express", "NRF52840_METRO",
            "0x239A", ["0x803F", "0x003F", "0x0040", "0x8040"])
 
@@ -191,7 +198,7 @@ print()
 print()
 print("# -------------------------------------------------------")
 print("#")
-print("# Boards that aren't made by Adafruit")
+print("# Boards by 3rd Party (not Adafruit)")
 print("#")
 print("# -------------------------------------------------------")
 
