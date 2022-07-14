@@ -1,8 +1,6 @@
 #**********************************************
 # Jlink with nrfjprog
 #**********************************************
-
-
 nrfjprog.name=J-Link for Bluefruit nRF52
 nrfjprog.program.tool=bootburn
 nrfjprog.program.cmd={runtime.tools.nrfjprog.path}/nrfjprog
