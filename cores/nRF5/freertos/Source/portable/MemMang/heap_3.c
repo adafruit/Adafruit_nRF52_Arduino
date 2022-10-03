@@ -59,6 +59,8 @@ task.h is included from an application file. */
 // require "-Wl,--wrap=malloc -Wl,--wrap=free" linker option
 extern void *__real_malloc(size_t size);
 extern void __real_free(void *ptr);
+extern void *__real_realloc(void *ptr, size_t _size);
+extern void *__real_calloc(size_t nmemb, size_t _size);
 
 void* __wrap_malloc (size_t c)
 {
@@ -69,6 +71,17 @@ void __wrap_free (void *ptr)
 {
   return (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING) ? vPortFree(ptr) : __real_free(ptr);
 }
+
+void* __wrap_realloc (void *ptr, size_t c)
+{
+  return (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING) ? pvPortRealloc(ptr, c) : __real_realloc(ptr, c);
+}
+
+void* __wrap_calloc (size_t nmemb, size_t c)
+{
+  return (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING) ? pvPortCalloc(nmemb, c) : __real_calloc(nmemb, c);
+}
+
 
 void *pvPortMalloc( size_t xWantedSize )
 {
@@ -106,4 +119,54 @@ void vPortFree( void *pv )
 		}
 		( void ) xTaskResumeAll();
 	}
+}
+/*-----------------------------------------------------------*/
+
+void *pvPortRealloc( void *ptr, size_t xWantedSize )
+{
+void *pvReturn;
+
+	vTaskSuspendAll();
+	{
+		pvReturn = __real_realloc( ptr, xWantedSize );
+		traceMALLOC( pvReturn, xWantedSize );
+	}
+	( void ) xTaskResumeAll();
+
+	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
+	{
+		if( pvReturn == NULL )
+		{
+			extern void vApplicationMallocFailedHook( void );
+			vApplicationMallocFailedHook();
+		}
+	}
+	#endif
+
+	return pvReturn;
+}
+/*-----------------------------------------------------------*/
+
+void *pvPortCalloc( size_t nmemb, size_t xWantedSize )
+{
+void *pvReturn;
+
+	vTaskSuspendAll();
+	{
+		pvReturn = __real_calloc( nmemb, xWantedSize );
+		traceMALLOC( pvReturn, xWantedSize );
+	}
+	( void ) xTaskResumeAll();
+
+	#if( configUSE_MALLOC_FAILED_HOOK == 1 )
+	{
+		if( pvReturn == NULL )
+		{
+			extern void vApplicationMallocFailedHook( void );
+			vApplicationMallocFailedHook();
+		}
+	}
+	#endif
+
+	return pvReturn;
 }

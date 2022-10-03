@@ -49,7 +49,7 @@ compiler.elf2bin.flags=-O binary
 compiler.elf2bin.cmd=arm-none-eabi-objcopy
 compiler.elf2hex.flags=-O ihex
 compiler.elf2hex.cmd=arm-none-eabi-objcopy
-compiler.ldflags=-mcpu={build.mcu} -mthumb {build.float_flags} -Wl,--cref -Wl,--check-sections -Wl,--gc-sections -Wl,--unresolved-symbols=report-all -Wl,--warn-common -Wl,--warn-section-align -Wl,--wrap=malloc -Wl,--wrap=free --specs=nano.specs --specs=nosys.specs
+compiler.ldflags=-mcpu={build.mcu} -mthumb {build.float_flags} -Wl,--cref -Wl,--check-sections -Wl,--gc-sections -Wl,--unresolved-symbols=report-all -Wl,--warn-common -Wl,--warn-section-align -Wl,--wrap=malloc -Wl,--wrap=free -Wl,--wrap=realloc -Wl,--wrap=calloc --specs=nano.specs --specs=nosys.specs
 compiler.size.cmd=arm-none-eabi-size
 
 # this can be overriden in boards.txt
