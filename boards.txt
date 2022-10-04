@@ -550,6 +550,122 @@ metro52840.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DE
 #
 # -------------------------------------------------------
 
+# ----------------------------------
+# Opossum Pouch
+# ----------------------------------
+op1.name=Opossum Pouch nRF52840 (op1)
+
+# VID/PID for Bootloader, Arduino & CircuitPython
+pca10056.vid.0=0x239A
+pca10056.pid.0=0x8029
+pca10056.vid.1=0x239A
+pca10056.pid.1=0x0029
+
+op1.bootloader.tool=bootburn
+
+# Upload
+op1.upload.tool=nrfutil
+op1.upload.protocol=nrfutil
+op1.upload.use_1200bps_touch=true
+op1.upload.wait_for_upload_port=true
+op1.upload.maximum_size=815104
+op1.upload.maximum_data_size=237568
+
+# Build
+op1.build.mcu=cortex-m4
+op1.build.f_cpu=64000000
+op1.build.board=NRF52833_op1
+op1.build.core=nRF5
+op1.build.variant=opossum_pouch_nrf52833
+op1.build.usb_manufacturer="Nordic"
+op1.build.usb_product="nRF52833"
+op1.build.extra_flags=-DNRF52833_XXAA {build.flags.usb}
+op1.build.ldscript=nrf52840_s140_v6.ld
+op1.build.vid=0x239A
+op1.build.pid=0x8029
+
+# SofDevice Menu
+op1.menu.softdevice.s140v6=0.3.2 SoftDevice s140 6.1.1
+op1.menu.softdevice.s140v6.build.sd_name=s140
+op1.menu.softdevice.s140v6.build.sd_version=6.1.1
+op1.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+op1.menu.debug.l0=Level 0 (Release)
+op1.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+op1.menu.debug.l1=Level 1 (Error Message)
+op1.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+op1.menu.debug.l2=Level 2 (Full Debug)
+op1.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+op1.menu.debug.l3=Level 3 (Segger SystemView)
+op1.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+op1.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# ----------------------------------
+# Opossum Pouch 2
+# ----------------------------------
+
+op2.name=Opossum Pouch nRF52833 (op2)
+# VID/PID for Bootloader, Arduino & CircuitPython
+op2.vid=0x239A
+op2.pid=0x8029
+op2.vid.0=0x1366
+op2.pid.0=0x1015
+
+
+# Upload
+op2.bootloader.tool=bootburn
+op2.upload.tool=nrfutil
+op2.upload.protocol=nrfutil
+op2.upload.use_1200bps_touch=true
+op2.upload.wait_for_upload_port=true
+op2.upload.maximum_size=507904
+op2.upload.maximum_data_size=237568
+
+
+# Build
+op2.build.mcu=cortex-m4
+op2.build.f_cpu=64000000
+op2.build.board=NRF52833_op2
+op2.build.core=nRF5
+op2.build.variant=opossum_pouch_nrf52833
+op2.build.variant_system_lib=
+op2.build.float_flags=-mfloat-abi=hard -mfpu=fpv4-sp-d16
+op2.build.ldscript=nrf52833_s140_v6.ld
+op2.build.vid=0x1366
+op2.build.pid=0x1015
+op2.build.lfclk_flags=-DUSE_LFXO
+op2.build.extra_flags=-DNRF52_SERIES -DNRF52833_XXAA {bootloader.flags} 
+
+op2.build.usb_manufacturer="Nordic"
+op2.build.usb_product="nRF52833"
+op2.build.extra_flags=-DNRF52833_XXAA {build.flags.usb}
+
+
+# SoftDevice Menu
+op2.menu.softdevice.s140v6=S140 6.1.1
+op2.menu.softdevice.s140v6.build.sd_name=s140
+op2.menu.softdevice.s140v6.build.sd_version=6.1.1
+op2.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+op2.menu.debug.l0=Level 0 (Release)
+op2.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+op2.menu.debug.l1=Level 1 (Error Message)
+op2.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+op2.menu.debug.l2=Level 2 (Full Debug)
+op2.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+op2.menu.debug.l3=Level 3 (Segger SystemView)
+op2.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+op2.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# Debug Output Menu
+op2.menu.debug_output.serial=Serial
+op2.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+op2.menu.debug_output.serial1=Serial1
+op2.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+op2.menu.debug_output.rtt=Segger RTT
+op2.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
 # -----------------------------------
 # Nordic nRF52840 DK
 # -----------------------------------

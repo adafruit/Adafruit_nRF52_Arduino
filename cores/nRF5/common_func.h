@@ -220,7 +220,7 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
 
   #define PRINT_LOCATION()
   #define PRINT_MESS(x)
-  #define PRTNT_HEAP()
+  #define PRINT_HEAP()
   #define PRINT_STR(x)
   #define PRINT_INT(x)
   #define PRINT_HEX(x)

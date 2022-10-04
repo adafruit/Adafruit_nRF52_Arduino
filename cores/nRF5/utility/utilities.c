@@ -39,9 +39,10 @@
 #include <string.h>
 #include <stdio.h>
 
+#ifdef SOFTDEVICE_PRESENT
 #include "nrf_sdm.h"
 #include "nrf52/nrf_mbr.h"
-
+#endif
 
 /******************************************************************************/
 /*!

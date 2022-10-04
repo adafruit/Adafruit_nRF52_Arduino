@@ -149,7 +149,7 @@ static inline bool is_tx_power_valid(int8_t power)
 {
 #if defined(NRF52832_XXAA)
   int8_t const accepted[] = { -40, -20, -16, -12, -8, -4, 0, 3, 4 };
-#elif defined( NRF52840_XXAA)
+#elif defined( NRF52840_XXAA)|| defined (NRF52833_XXAA)
   int8_t const accepted[] = { -40, -20, -16, -12, -8, -4, 0, 2, 3, 4, 5, 6, 7, 8 };
 #endif
 

@@ -55,6 +55,10 @@ POSSIBILITY OF SUCH DAMAGE.
     #ifndef NRF51
         #define NRF51
     #endif
+    #define nrf51_clock_hfxo_request hw_clock_hfxo_request
+    #define nrf51_clock_hfxo_release hw_clock_hfxo_release
+    int hw_clock_hfxo_request(void);
+    int hw_clock_hfxo_release(void);
 #endif
 
 /* Redefine "old" too-generic name NRF52 to NRF52832_XXAA to keep backwards compatibility. */
@@ -69,6 +73,10 @@ POSSIBILITY OF SUCH DAMAGE.
     #ifndef NRF52_SERIES
         #define NRF52_SERIES
     #endif
+    #define nrf52_clock_hfxo_request hw_clock_hfxo_request
+    #define nrf52_clock_hfxo_release hw_clock_hfxo_release
+    int hw_clock_hfxo_request(void);
+    int hw_clock_hfxo_release(void);
 #endif
 
 /* Define NRF53_SERIES for common use in nRF53 series devices. */
