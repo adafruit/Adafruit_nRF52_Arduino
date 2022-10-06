@@ -162,4 +162,8 @@ void resumeLoop(void);
 // Interrupts
 #define digitalPinToInterrupt(P)   ( P )
 
+// SdFat v2
+#define USE_BLOCK_DEVICE_INTERFACE  1
+#define FAT12_SUPPORT               1
+
 #endif // Arduino_h
