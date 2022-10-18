@@ -69,7 +69,7 @@ $ pip3 install adafruit-nrfutil --user
 
 ### Drivers
 
-- [SiLabs CP2104 driver](http://www.silabs.com/products/mcu/pages/usbtouartbridgevcpdrivers.aspx) is required for USB to Serial when using with Feather nRF52832
+- [SiLabs CP2104 driver](https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers?tab=downloads) is required for USB to Serial when using with Feather nRF52832
 
 ## Bootloader
 
