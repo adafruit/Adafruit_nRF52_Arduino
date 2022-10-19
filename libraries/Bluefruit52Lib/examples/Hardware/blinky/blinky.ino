@@ -19,8 +19,10 @@
 */
 
 #include <Arduino.h>
-#include <Adafruit_TinyUSB.h> // for Serial
 
+#if defined(USE_TINYUSB)
+#include <Adafruit_TinyUSB.h> // for Serial
+#endif
 
 // the setup function runs once when you press reset or power the board
 void setup() {
