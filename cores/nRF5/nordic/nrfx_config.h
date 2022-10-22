@@ -35,8 +35,9 @@
 #endif
 
 // NRFX temp
-#define NRFX_TEMP_ENABLED 1
-#define NRFX_TEMP_DEFAULT_CONFIG_IRQ_PRIORITY 7
-
+#ifdef NRF52840_XXAA
+  #define NRFX_TEMP_ENABLED 1
+  #define NRFX_TEMP_DEFAULT_CONFIG_IRQ_PRIORITY 7
+#endif
 
 #endif // NRFX_CONFIG_H__
