@@ -609,6 +609,58 @@ pca10056.menu.debug_output.rtt=Segger RTT
 pca10056.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
 
 # -----------------------------------
+# Nordic nRF52840 Dongle
+# -----------------------------------
+pca10059.name=Nordic nRF52840 Dongle
+# VID/PID for Bootloader, Arduino & CircuitPython
+pca10059.vid.0=0x239A
+pca10059.pid.0=0x8029
+pca10059.vid.1=0x239A
+pca10059.pid.1=0x0029
+# Upload
+pca10059.bootloader.tool=bootburn
+pca10059.upload.tool=nrfutil
+pca10059.upload.protocol=nrfutil
+pca10059.upload.use_1200bps_touch=true
+pca10059.upload.wait_for_upload_port=true
+pca10059.upload.maximum_size=815104
+pca10059.upload.maximum_data_size=237568
+# Build
+pca10059.build.mcu=cortex-m4
+pca10059.build.f_cpu=64000000
+pca10059.build.board=NRF52840_pca10059
+pca10059.build.core=nRF5
+pca10059.build.variant=pca10059
+pca10059.build.usb_manufacturer="Nordic"
+pca10059.build.usb_product="nRF52840 Dongle"
+pca10059.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+pca10059.build.ldscript=nrf52840_s140_v6.ld
+pca10059.build.vid=0x239A
+pca10059.build.pid=0x8029
+# SoftDevice Menu
+pca10059.menu.softdevice.s140v6=S140 6.1.1
+pca10059.menu.softdevice.s140v6.build.sd_name=s140
+pca10059.menu.softdevice.s140v6.build.sd_version=6.1.1
+pca10059.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+# Debug Menu
+pca10059.menu.debug.l0=Level 0 (Release)
+pca10059.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+pca10059.menu.debug.l1=Level 1 (Error Message)
+pca10059.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+pca10059.menu.debug.l2=Level 2 (Full Debug)
+pca10059.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+pca10059.menu.debug.l3=Level 3 (Segger SystemView)
+pca10059.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+pca10059.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+# Debug Output Menu
+pca10059.menu.debug_output.serial=Serial
+pca10059.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+pca10059.menu.debug_output.serial1=Serial1
+pca10059.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+pca10059.menu.debug_output.rtt=Segger RTT
+pca10059.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
+
+# -----------------------------------
 # Particle Xenon
 # -----------------------------------
 particle_xenon.name=Particle Xenon
