@@ -105,40 +105,6 @@ static const uint8_t A7  = PIN_A7 ;
 #define PIN_SERIAL2_RX      (8) 
 #define PIN_SERIAL2_TX      (6)
 
-/*
- * SPI Interfaces
- */
-// #define SPI_INTERFACES_COUNT 1
-
-// #define PIN_SPI_MISO         (46)
-// #define PIN_SPI_MOSI         (45)
-// #define PIN_SPI_SCK          (47)
-
-// static const uint8_t SS   = 44 ;
-// static const uint8_t MOSI = PIN_SPI_MOSI ;
-// static const uint8_t MISO = PIN_SPI_MISO ;
-// static const uint8_t SCK  = PIN_SPI_SCK ;
-
-/*
- * Wire Interfaces
- */
-// #define WIRE_INTERFACES_COUNT 1
-
-// #define PIN_WIRE_SDA         (26)
-// #define PIN_WIRE_SCL         (27)
-
-// QSPI Pins
-// #define PIN_QSPI_SCK         19
-// #define PIN_QSPI_CS          17
-// #define PIN_QSPI_IO0         20
-// #define PIN_QSPI_IO1         21
-// #define PIN_QSPI_IO2         22
-// #define PIN_QSPI_IO3         23
-
-// On-board QSPI Flash
-// #define EXTERNAL_FLASH_DEVICES   MX25R6435F
-// #define EXTERNAL_FLASH_USE_QSPI
-
 #ifdef __cplusplus
 }
 #endif
