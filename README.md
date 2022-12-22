@@ -17,6 +17,7 @@ This repository contains the Arduino BSP for Adafruit Bluefruit nRF52 series:
 Following boards are also included but are not officially supported:
 
 - [Nordic nRF52840DK PCA10056](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-DK)
+- [Nordic nRF52840 Dongle PCA10059](https://www.nordicsemi.com/Products/Development-hardware/nrf52840-dongle)
 - [Particle Xenon](https://store.particle.io/products/xenon)
 
 ## BSP Installation
