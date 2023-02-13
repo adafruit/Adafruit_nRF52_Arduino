@@ -665,3 +665,58 @@ particle_xenon.menu.debug_output.serial1=Serial1
 particle_xenon.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
 particle_xenon.menu.debug_output.rtt=Segger RTT
 particle_xenon.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
+
+# ----------------------------------
+# WisBlock Core RAK4631 Board
+# ----------------------------------
+WisBlockRAK4631.name=WisBlock RAK4631
+
+# VID/PID for Bootloader, Arduino & CircuitPython
+WisBlockRAK4631.vid.0=0x239A
+WisBlockRAK4631.pid.0=0x8029
+WisBlockRAK4631.vid.1=0x239A
+WisBlockRAK4631.pid.1=0x0029
+WisBlockRAK4631.vid.2=0x239A
+WisBlockRAK4631.pid.2=0x002A
+WisBlockRAK4631.vid.3=0x239A
+WisBlockRAK4631.pid.3=0x802A
+
+
+# Upload
+WisBlockRAK4631.bootloader.tool=bootburn
+WisBlockRAK4631.upload.tool=nrfutil
+WisBlockRAK4631.upload.protocol=nrfutil
+WisBlockRAK4631.upload.use_1200bps_touch=true
+WisBlockRAK4631.upload.wait_for_upload_port=true
+WisBlockRAK4631.upload.maximum_size=815104
+WisBlockRAK4631.upload.maximum_data_size=237568
+
+# Build
+WisBlockRAK4631.build.mcu=cortex-m4
+WisBlockRAK4631.build.f_cpu=64000000
+WisBlockRAK4631.build.board=WisBlock_RAK4631
+WisBlockRAK4631.build.core=nRF5
+WisBlockRAK4631.build.variant=WisBlock_RAK4631
+WisBlockRAK4631.build.usb_manufacturer="RAKwireless"
+WisBlockRAK4631.build.usb_product="WisBlock RAK4631"
+WisBlockRAK4631.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+WisBlockRAK4631.build.ldscript=nrf52840_s140_v6.ld
+WisBlockRAK4631.build.vid=0x239A
+WisBlockRAK4631.build.pid=0x8029
+
+# SoftDevice Menu
+WisBlockRAK4631.menu.softdevice.s140v6=S140  6.1.1
+WisBlockRAK4631.menu.softdevice.s140v6.build.sd_name=s140
+WisBlockRAK4631.menu.softdevice.s140v6.build.sd_version=6.1.1
+WisBlockRAK4631.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Debug Menu
+WisBlockRAK4631.menu.debug.l0=Level 0 (Release)
+WisBlockRAK4631.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+WisBlockRAK4631.menu.debug.l1=Level 1 (Error Message)
+WisBlockRAK4631.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+WisBlockRAK4631.menu.debug.l2=Level 2 (Full Debug)
+WisBlockRAK4631.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+WisBlockRAK4631.menu.debug.l3=Level 3 (Segger SystemView)
+WisBlockRAK4631.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+WisBlockRAK4631.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
