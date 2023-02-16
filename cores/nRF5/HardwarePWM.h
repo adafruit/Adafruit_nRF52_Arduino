@@ -94,6 +94,9 @@ class HardwarePWM
     // Remove a pin from PWM module
     bool removePin  (uint8_t pin);
 
+    // Remove all pins from PWM module
+    bool removeAllPins (void);
+
     // Get the mapped channel of a pin
     int  pin2channel(uint8_t pin) const
     {
