@@ -2,8 +2,13 @@ name: Build
 
 on: [pull_request, push]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   build:
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -16,8 +21,6 @@ jobs:
         - 'feather52840sense'
         - 'itsybitsy52840'
         - 'ledglasses_nrf52840'
-
-    runs-on: ubuntu-latest
     
     steps:
     - name: Setup Python
@@ -58,18 +61,11 @@ jobs:
 
         # Install library dependency
         arduino-cli lib install "Adafruit AHRS" "Adafruit APDS9960 Library" "Adafruit Arcada Library" "Adafruit BMP280 Library" "Adafruit Circuit Playground" "Adafruit EPD" "Adafruit GFX Library" "Adafruit HX8357 Library" "Adafruit ILI9341" "Adafruit LIS3MDL" "Adafruit LSM6DS" "Adafruit NeoPixel" "Adafruit NeoMatrix" "Adafruit Sensor Calibration" "Adafruit SHT31 Library" "Adafruit SSD1306" "Adafruit ST7735 and ST7789 Library" "SdFat - Adafruit Fork"
-        arduino-cli lib install "MIDI Library"
+        arduino-cli lib install "MIDI Library" "Firmata"
         
         # Arduino_TensorFlowLite is removed per maintainer request https://github.com/arduino/library-registry/pull/1748
         # Find a way to compile later, skip TFL example for now
         # arduino-cli lib install "Arduino_TensorFlowLite" 
-        
-        # TODO use firmata master to prevent build error with gcc v9 (should be remove after 2.5.9 is released)
-        # https://github.com/firmata/arduino/pull/438
-        git clone --depth 1 https://github.com/firmata/arduino.git $HOME/Arduino/libraries/firmata
-
-        # TODO temporarily remove TinyUSB pre-1.0.0 version install by arduino-cli
-        rm -r $HOME/Arduino/libraries/Adafruit_TinyUSB_Library
 
         # Library summary
         arduino-cli lib list
