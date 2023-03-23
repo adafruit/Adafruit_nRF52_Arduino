@@ -70,7 +70,9 @@ def build_a_example(arg):
 
         # Build with warnings
         if build_result.stderr:
+            print(f"::group::warning-message")
             print(build_result.stderr.decode("utf-8"))
+            print(f"::endgroup::")
 
     return ret
 
