@@ -55,6 +55,8 @@ class BLESecurity
 
     // resolve address with IRK to see if it matches
     bool resolveAddress(ble_gap_addr_t const * p_addr, ble_gap_irk_t const * irk);
+    
+    void setPairable(bool pairable);
 
     //------------- Callbacks -------------//
     bool setPairPasskeyCallback(pair_passkey_cb_t fp);
@@ -74,6 +76,7 @@ class BLESecurity
 
   private:
     ble_gap_sec_params_t _sec_param;
+    bool _pairable;
 
 #ifdef NRF_CRYPTOCELL
     nRFCrypto_ECC_PrivateKey _private_key;

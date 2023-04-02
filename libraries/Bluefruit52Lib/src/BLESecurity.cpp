@@ -90,6 +90,7 @@ BLESecurity::BLESecurity(void)
   _passkey_req_cb = NULL;
   _complete_cb = NULL;
   _secured_cb = NULL;
+  _pairable = true;
 }
 
 bool BLESecurity::begin(void)
@@ -182,6 +183,11 @@ bool BLESecurity::resolveAddress(ble_gap_addr_t const * p_addr, ble_gap_irk_t co
   swap_endian(ecb_data.ciphertext, SOC_ECB_CIPHERTEXT_LENGTH);
 
   return 0 == memcmp(hash, ecb_data.ciphertext, 3);
+}
+
+void BLESecurity::setPairable(bool pairable)
+{
+  _pairable = pairable;
 }
 
 // Use Legacy SC static Passkey
@@ -281,31 +287,37 @@ void BLESecurity::_eventHandler(ble_evt_t* evt)
       (void) peer;
       LOG_LV2("PAIR", "Peer Params: bond = %d, mitm = %d, lesc = %d, io_caps = %d",
                                     peer->bond, peer->mitm, peer->lesc, peer->io_caps);
-
-      ble_gap_sec_keyset_t keyset =
+      if(_pairable)
       {
-          .keys_own = {
-              .p_enc_key  = &_bond_keys.own_enc,
-              .p_id_key   = NULL,
-              .p_sign_key = NULL,
-              .p_pk       = NULL
-          },
+        ble_gap_sec_keyset_t keyset =
+        {
+            .keys_own = {
+                .p_enc_key  = &_bond_keys.own_enc,
+                .p_id_key   = NULL,
+                .p_sign_key = NULL,
+                .p_pk       = NULL
+            },
 
-          .keys_peer = {
-              .p_enc_key  = &_bond_keys.peer_enc,
-              .p_id_key   = &_bond_keys.peer_id,
-              .p_sign_key = NULL,
-              .p_pk       = NULL
-          }
-      };
+            .keys_peer = {
+                .p_enc_key  = &_bond_keys.peer_enc,
+                .p_id_key   = &_bond_keys.peer_id,
+                .p_sign_key = NULL,
+                .p_pk       = NULL
+            }
+        };
 
-      #ifdef NRF_CRYPTOCELL
-      keyset.keys_own.p_pk  = (ble_gap_lesc_p256_pk_t*) (_pubkey+1);
-      keyset.keys_peer.p_pk = (ble_gap_lesc_p256_pk_t*) (_peer_pubkey+1);
-      #endif
+        #ifdef NRF_CRYPTOCELL
+        keyset.keys_own.p_pk  = (ble_gap_lesc_p256_pk_t*) (_pubkey+1);
+        keyset.keys_peer.p_pk = (ble_gap_lesc_p256_pk_t*) (_peer_pubkey+1);
+        #endif
 
-      VERIFY_STATUS(sd_ble_gap_sec_params_reply(conn_hdl, BLE_GAP_SEC_STATUS_SUCCESS,
-                                                conn->getRole() == BLE_GAP_ROLE_PERIPH ? &_sec_param : NULL, &keyset), );
+        VERIFY_STATUS(sd_ble_gap_sec_params_reply(conn_hdl, BLE_GAP_SEC_STATUS_SUCCESS,
+                                                  conn->getRole() == BLE_GAP_ROLE_PERIPH ? &_sec_param : NULL, &keyset), );
+      }
+      else
+      {
+        VERIFY_STATUS(sd_ble_gap_sec_params_reply(conn_hdl, BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP, NULL, NULL), );
+      }
     }
     break;
 
