@@ -1,0 +1,14 @@
+//
+// Created by Charlie Bershatsky on 4/19/23.
+//
+
+#ifndef ADAFRUIT_NRF52_ARDUINO_BLECLIENTIAS_H
+#define ADAFRUIT_NRF52_ARDUINO_BLECLIENTIAS_H
+
+
+class BLEClientIas {
+
+};
+
+
+#endif //ADAFRUIT_NRF52_ARDUINO_BLECLIENTIAS_H
