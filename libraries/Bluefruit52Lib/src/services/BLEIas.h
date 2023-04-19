@@ -16,7 +16,7 @@ class BLEIas : public BLEService {
 protected:
     union {
         struct {
-            const uint8_t _alert_level; // UUID 0x2A06
+            uint8_t _alert_level; // UUID 0x2A06
         };
     };
 

@@ -23,13 +23,14 @@ bool BLEClientIas::discover(uint16_t conn_handle) {
 
 uint16_t BLEClientIas::getAlertLevel() {
 
-    uint16_t level = 0;
+    uint8_t level = 0;
+    ble_gattc_handle_range_t bck_range = Bluefruit.Discovery.getHandleRange();
 
     BLEClientCharacteristic chr(uuid);
     chr.begin(this);
 
     if (Bluefruit.Discovery.discoverCharacteristic(_conn_hdl, chr)) {
-        level = chr.read16();
+        level = chr.read8();
     }
 
     Bluefruit.Discovery.setHandleRange(bck_range);
