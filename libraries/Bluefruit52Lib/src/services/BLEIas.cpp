@@ -7,12 +7,13 @@
 #include "utility/utilities.h"
 #include "BLEService.h"
 
-BLEIas::BLEIas(void) : BLEService(UUID16_SVC_IMMEDIATE_ALERT) {
+BLEIas::BLEIas(void) :
+BLEService(UUID16_SVC_IMMEDIATE_ALERT), _alert(UUID16_SVC_IMMEDIATE_ALERT) {
 
 }
 
-void BLEIas::setAlertLevel(uint8_t alert_level) {
-    _alert_level = alert_level;
+void BLEIas::write(uint8_t alert_level) {
+    _alert.write8(alert_level);
 }
 
 err_t BLEIas::begin(void) {
@@ -20,14 +21,11 @@ err_t BLEIas::begin(void) {
     // Invoke the superclass begin()
     VERIFY_STATUS(BLEService::begin());
 
-    BLECharacteristic chars;
+    _alert.setProperties(CHR_PROPS_READ);
+    _alert.setPermission(SECMODE_OPEN, SECMODE_NO_ACCESS);
+    _alert.setFixedLen(1);
 
-    chars.setUuid(UUID16_CHR_ALERT_LEVEL);
-    chars.setTempMemory();
-    chars.setProperties(CHR_PROPS_READ);
-    chars.setFixedLen(sizeof(_alert_level));
-    VERIFY_STATUS(chars.begin());
-    chars.write8(_alert_level);
+    VERIFY_STATUS( _alert.begin() );
 
     return ERROR_NONE;
 

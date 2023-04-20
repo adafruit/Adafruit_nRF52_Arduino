@@ -14,16 +14,12 @@
 class BLEIas : public BLEService {
 
 protected:
-    union {
-        struct {
-            uint8_t _alert_level; // UUID 0x2A06
-        };
-    };
+    BLECharacteristic _alert;
 
 public:
     BLEIas(void);
 
-    void setAlertLevel(uint8_t alert_level);
+    void write(uint8_t level);
 
     virtual err_t begin(void);
 

@@ -19,6 +19,9 @@ public:
 
     uint16_t getAlertLevel (void);
 
+private:
+    BLEClientCharacteristic _alert;
+
 };
 
 
