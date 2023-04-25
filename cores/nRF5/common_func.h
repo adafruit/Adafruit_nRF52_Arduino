@@ -179,13 +179,13 @@ const char* dbg_err_str(int32_t err_id); // TODO move to other place
 #define PRINT_LOCATION()      PRINTF("%s: %d:\r\n", __PRETTY_FUNCTION__, __LINE__)
 #define PRINT_MESS(x)         PRINTF("%s: %d: %s \r\n"   , __FUNCTION__, __LINE__, (char*)(x))
 #define PRINT_HEAP()          if (CFG_DEBUG >= 3) PRINTF("\n%s: %d: Heap free: %d\r\n", __FUNCTION__, __LINE__, util_heap_get_free_size())
-#define PRINT_STR(x)          PRINTF("%s: %d: " #x " = %s\r\n"   , __FUNCTION__, __LINE__, (char*)(x) )
-#define PRINT_INT(x)          PRINTF("%s: %d: " #x " = %ld\r\n"  , __FUNCTION__, __LINE__, (uint32_t) (x) )
-#define PRINT_FLOAT(x)        PRINTF("%s: %d: " #x " = %f\r\n"  , __FUNCTION__, __LINE__, (float) (x) )
+#define PRINT_STR(x)          PRINTF(#x " = %s\r\n" , (char*)(x) )
+#define PRINT_INT(x)          PRINTF(#x " = %ld\r\n", (uint32_t) (x) )
+#define PRINT_FLOAT(x)        PRINTF(#x " = %f\r\n" , (float) (x) )
 
 #define PRINT_HEX(x) \
   do {\
-    PRINTF("%s: %d: " #x " = 0x", __PRETTY_FUNCTION__, __LINE__);\
+    PRINTF(#x " = 0x");\
     char fmt[] = "%00X\r\n";\
     fmt[2] += 2*sizeof(x); /* Hex with correct size */\
     PRINTF(fmt, (x) );\
