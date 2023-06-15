@@ -101,6 +101,18 @@ class BLEDiscovery
       return discoverCharacteristic(conn_handle, chr_arr, arrcount(chr_arr));
     }
 
+    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLEClientCharacteristic& chr1, BLEClientCharacteristic& chr2, BLEClientCharacteristic& chr3, BLEClientCharacteristic& chr4, BLEClientCharacteristic& chr5, BLEClientCharacteristic& chr6, BLEClientCharacteristic& chr7)
+    {
+      BLEClientCharacteristic* chr_arr[] = {&chr1, &chr2, &chr3, &chr4, &chr5, &chr6, &chr7};
+      return discoverCharacteristic(conn_handle, chr_arr, arrcount(chr_arr));
+    }
+
+    uint8_t  discoverCharacteristic(uint16_t conn_handle, BLEClientCharacteristic& chr1, BLEClientCharacteristic& chr2, BLEClientCharacteristic& chr3, BLEClientCharacteristic& chr4, BLEClientCharacteristic& chr5, BLEClientCharacteristic& chr6, BLEClientCharacteristic& chr7, BLEClientCharacteristic& chr8)
+    {
+      BLEClientCharacteristic* chr_arr[] = {&chr1, &chr2, &chr3, &chr4, &chr5, &chr6, &chr7, &chr8};
+      return discoverCharacteristic(conn_handle, chr_arr, arrcount(chr_arr));
+    }
+
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal

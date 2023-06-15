@@ -49,6 +49,7 @@ class BLEClientHidAdafruit : public BLEClientService
     // Callback Signatures
     typedef void (*kbd_callback_t ) (hid_keyboard_report_t* report);
     typedef void (*mse_callback_t ) (hid_mouse_report_t* report);
+    typedef void (*gpd_callback_t ) (hid_gamepad_report_t* report);
 
     BLEClientHidAdafruit(void);
 
@@ -74,16 +75,26 @@ class BLEClientHidAdafruit : public BLEClientService
 
     void getMouseReport(hid_mouse_report_t* report);
 
+    // Gamepad API
+    bool gamepadPresent(void);
+    bool enableGamepad(void);
+    bool disableGamepad(void);
+
+    void getGamepadReport(hid_gamepad_report_t* report);
+
     // Report callback
     void setKeyboardReportCallback(kbd_callback_t fp);
     void setMouseReportCallback(mse_callback_t fp);
+    void setGamepadReportCallback(gpd_callback_t fp);
 
   protected:
     kbd_callback_t _kbd_cb;
     mse_callback_t _mse_cb;
+    gpd_callback_t _gpd_cb;
 
     hid_keyboard_report_t _last_kbd_report;
     hid_mouse_report_t    _last_mse_report;
+    hid_gamepad_report_t  _last_gpd_report;
 
     // Only support Boot protocol for keyboard and Mouse
     BLEClientCharacteristic _protcol_mode;
@@ -95,11 +106,15 @@ class BLEClientHidAdafruit : public BLEClientService
 
     BLEClientCharacteristic _mse_boot_input;
 
+    BLEClientCharacteristic _gpd_report;
+
     void _handle_kbd_input(uint8_t* data, uint16_t len);
     void _handle_mse_input(uint8_t* data, uint16_t len);
+    void _handle_gpd_input(uint8_t* data, uint16_t len);
 
     friend void kbd_client_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
     friend void mse_client_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
+    friend void gpd_client_notify_cb(BLEClientCharacteristic* chr, uint8_t* data, uint16_t len);
 };
 
 
