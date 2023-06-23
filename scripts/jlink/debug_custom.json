@@ -1,0 +1,6 @@
+{
+  "servertype": "jlink",
+  "device": "nrf52840_xxaa",
+  "interface": "SWD",
+  "serverpath": "JLinkGDBServer"
+}
