@@ -70,6 +70,7 @@ def build_header(name, variant, vendor_name, product_name, boarddefine, vid, pid
     mcu = get_mcu(name)
     print(f"{name}.build.extra_flags={mcu_dict[mcu]['extra_flags']}")
     print(f"{name}.build.ldscript={mcu_dict[mcu]['ldscript']}")
+    print(f"{name}.build.openocdscript=scripts/openocd/daplink_nrf52.cfg")
     if mcu != 52832:
         print(f"{name}.build.vid={vid}")
         print(f"{name}.build.pid={pid_list[0]}")
@@ -77,7 +78,7 @@ def build_header(name, variant, vendor_name, product_name, boarddefine, vid, pid
 
 
 def build_softdevice(name):
-    print("# SoftDevice Menu")
+    print("# Menu: SoftDevice")
     if get_mcu(name) == 52832:
         print(f"{name}.menu.softdevice.s132v6=S132 6.1.1")
         print(f"{name}.menu.softdevice.s132v6.build.sd_name=s132")
@@ -92,7 +93,7 @@ def build_softdevice(name):
 
 
 def build_debug(name):
-    print("# Debug Menu")
+    print("# Menu: Debug Level")
     print(f"{name}.menu.debug.l0=Level 0 (Release)")
     print(f"{name}.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0")
     print(f"{name}.menu.debug.l1=Level 1 (Error Message)")
@@ -105,7 +106,7 @@ def build_debug(name):
     print()
 
 def build_debug_output(name):
-    print("# Debug Output Menu")
+    print("# Menu: Debug Port")
     print(f"{name}.menu.debug_output.serial=Serial")
     print(f"{name}.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0")
     print(f"{name}.menu.debug_output.serial1=Serial1")
@@ -115,8 +116,8 @@ def build_debug_output(name):
 
 def build_global_menu():
     print("menu.softdevice=SoftDevice")
-    print("menu.debug=Debug")
-    print("menu.debug_output=Debug Output")
+    print("menu.debug=Debug Level")
+    print("menu.debug_output=Debug Port")
 
 def make_board(name, variant, vendor_name, product_name, boarddefine, vid, pid_list):
     build_header(name, variant, vendor_name, product_name, boarddefine, vid, pid_list)
