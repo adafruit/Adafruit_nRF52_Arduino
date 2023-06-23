@@ -68,12 +68,6 @@ class HardwarePWM
 
     void setClockDiv(uint8_t div);      // value is PWM_PRESCALER_PRESCALER_DIV_x, DIV1 is 16Mhz
 
-    // Direct access to peripheral base address
-    NRF_PWM_Type * const baseAddr(void)
-    {
-      return _pwm;
-    }
-
     // Cooperative ownership sharing
 
     // returns true ONLY when (1) no PWM channel has a pin, and (2) the owner token is nullptr
