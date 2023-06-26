@@ -240,7 +240,7 @@ void BLEDiscovery::_eventHandler(ble_evt_t* evt)
 
       LOG_LV2("DISC", "[CHR] Characteristic Count: %d", chr_rsp->count);
 
-      for (uint8_t i; i < chr_rsp->count; i++) {
+      for (uint8_t i=0; i < chr_rsp->count; i++) {
         LOG_LV2("DISC", "[CHR] Characteristic #%d: 0x%04X", i, chr_rsp->chars[i].uuid.uuid);
       }
 
