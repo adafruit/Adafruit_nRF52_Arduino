@@ -205,6 +205,15 @@ bool HardwarePWM::removePin(uint8_t pin)
   return true;
 }
 
+bool HardwarePWM::removeAllPins(void)
+{
+  for(int ch=0; ch<MAX_CHANNELS; ch++)
+  {
+    _set_psel(ch, 0xFFFFFFFFUL);
+  }
+  return true;
+}
+
 bool HardwarePWM::writeChannel(uint8_t ch, uint16_t value, bool inverted)
 {
   VERIFY( ch < MAX_CHANNELS );
