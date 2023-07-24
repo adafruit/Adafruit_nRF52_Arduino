@@ -42,7 +42,7 @@
 BLEAdvertisingData::BLEAdvertisingData(void)
 {
   _count = 0;
-  varclr(_data);
+  arrclr(_data);
 }
 
 bool BLEAdvertisingData::addData(uint8_t type, const void* data, uint8_t len)
@@ -242,7 +242,7 @@ bool BLEAdvertisingData::setData(uint8_t const * data, uint8_t count)
 void BLEAdvertisingData::clearData(void)
 {
   _count = 0;
-  varclr(_data);
+  arrclr(_data);
 }
 
 /*------------------------------------------------------------------*/
