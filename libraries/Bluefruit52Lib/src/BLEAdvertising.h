@@ -72,7 +72,8 @@ class Advertisable
 class BLEAdvertisingData
 {
 protected:
-  uint8_t _data[BLE_GAP_ADV_SET_DATA_SIZE_MAX];
+  uint8_t _max_data_size;
+  uint8_t _data[BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED];
   uint8_t _count;
 
 public:
@@ -121,6 +122,10 @@ public:
   BLEAdvertising(void);
 
   void setType(uint8_t adv_type);
+  void setPrimaryPhy(uint8_t primary_phy);
+  void setSecondaryPhy(uint8_t secondary_phy);
+  void setFilterPolicy(uint8_t filter_policy);
+  void setMaxAdvEvts(uint8_t max_adv_evts);
   void setFastTimeout(uint16_t sec);
 
   void setSlowCallback(slow_callback_t fp);
@@ -150,6 +155,10 @@ public:
 private:
   uint8_t  _hdl;
   uint8_t  _type;
+  uint8_t  _primary_phy;
+  uint8_t  _secondary_phy;
+  uint8_t  _filter_policy;
+  uint8_t  _max_adv_evts;
   bool     _start_if_disconnect;
   bool     _runnning;
 

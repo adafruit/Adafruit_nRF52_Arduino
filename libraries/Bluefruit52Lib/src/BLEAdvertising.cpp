@@ -43,11 +43,12 @@ BLEAdvertisingData::BLEAdvertisingData(void)
 {
   _count = 0;
   arrclr(_data);
+  _max_data_size = BLE_GAP_ADV_SET_DATA_SIZE_MAX;
 }
 
 bool BLEAdvertisingData::addData(uint8_t type, const void* data, uint8_t len)
 {
-  VERIFY( _count + len + 2 <= BLE_GAP_ADV_SET_DATA_SIZE_MAX );
+  VERIFY( _count + len + 2 <= _max_data_size );
 
   uint8_t* adv_data = &_data[_count];
 
@@ -177,16 +178,16 @@ bool BLEAdvertisingData::addService(BLEClientService& service)
  */
 bool BLEAdvertisingData::addName(void)
 {
-  char name[BLE_GAP_ADV_SET_DATA_SIZE_MAX+1];
+  char name[_max_data_size+1];
 
   uint8_t type = BLE_GAP_AD_TYPE_COMPLETE_LOCAL_NAME;
   uint8_t len  = Bluefruit.getName(name, sizeof(name));
 
   // not enough for full name, chop it
-  if (_count + len + 2 > BLE_GAP_ADV_SET_DATA_SIZE_MAX)
+  if (_count + len + 2 > _max_data_size)
   {
     type = BLE_GAP_AD_TYPE_SHORT_LOCAL_NAME;
-    len  = BLE_GAP_ADV_SET_DATA_SIZE_MAX - (_count+2);
+    len  = _max_data_size - (_count+2);
   }
 
   VERIFY( addData(type, name, len) );
@@ -231,7 +232,7 @@ uint8_t* BLEAdvertisingData::getData(void)
 
 bool BLEAdvertisingData::setData(uint8_t const * data, uint8_t count)
 {
-  VERIFY( data && (count <= BLE_GAP_ADV_SET_DATA_SIZE_MAX) );
+  VERIFY( data && (count <= _max_data_size) );
 
   memcpy(_data, data, count);
   _count = count;
@@ -255,6 +256,11 @@ BLEAdvertising::BLEAdvertising(void)
   _start_if_disconnect = true;
   _runnning            = false;
 
+  _primary_phy         = BLE_GAP_PHY_AUTO;  // 1 Mbps will be used
+  _secondary_phy       = BLE_GAP_PHY_AUTO;  // 1 Mbps will be used
+  _filter_policy       = BLE_GAP_ADV_FP_ANY; // Allow scan requests and connect requests from any device
+  _max_adv_evts        = 0; // Maximum advertising events that shall be sent prior to disabling advertising
+
   _conn_mask           = 0;
 
   _fast_interval       = BLE_ADV_INTERVAL_FAST_DFLT;
@@ -275,6 +281,33 @@ void BLEAdvertising::setFastTimeout(uint16_t sec)
 void BLEAdvertising::setType(uint8_t adv_type)
 {
   _type = adv_type;
+  if (adv_type >= 0x08) {
+    _max_data_size = BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED;
+  } else if (adv_type >= 0x06) {
+    _max_data_size = BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_CONNECTABLE_MAX_SUPPORTED;
+  } else {
+    _max_data_size = BLE_GAP_ADV_SET_DATA_SIZE_MAX;
+  }
+}
+
+void BLEAdvertising::setPrimaryPhy(uint8_t primary_phy)
+{
+  _primary_phy = primary_phy;
+}
+
+void BLEAdvertising::setSecondaryPhy(uint8_t secondary_phy)
+{
+  _secondary_phy = secondary_phy;
+}
+
+void BLEAdvertising::setFilterPolicy(uint8_t filter_policy)
+{
+  _filter_policy = filter_policy;
+}
+
+void BLEAdvertising::setMaxAdvEvts(uint8_t max_adv_evts)
+{
+  _max_adv_evts = max_adv_evts;
 }
 
 /**
@@ -345,12 +378,12 @@ bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
     .interval      = interval                 , // advertising interval (in units of 0.625 ms)
     .duration      = (uint16_t) (timeout*100) , // in 10-ms unit
 
-    .max_adv_evts  = 0                        , // TODO can be used for fast/slow mode
+    .max_adv_evts  = _max_adv_evts            , // Maximum advertising events that shall be sent prior to disabling advertising. TODO can be used for fast/slow mode
     .channel_mask  = { 0, 0, 0, 0, 0 }        , // 40 channel, set 1 to disable
-    .filter_policy = BLE_GAP_ADV_FP_ANY       ,
+    .filter_policy = _filter_policy           , // ref.: BLE_GAP_ADV_FILTER_POLICIES
 
-    .primary_phy   = BLE_GAP_PHY_AUTO         , // 1 Mbps will be used
-    .secondary_phy = BLE_GAP_PHY_AUTO         , // 1 Mbps will be used
+    .primary_phy   = _primary_phy             , // PHY on which the primary advertising channel packets are transmitted
+    .secondary_phy = _secondary_phy           , // PHY on which the secondary advertising channel packets are transmitted
       // , .set_id, .scan_req_notification
   };
 
