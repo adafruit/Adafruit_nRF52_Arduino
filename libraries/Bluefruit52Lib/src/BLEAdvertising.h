@@ -134,6 +134,12 @@ public:
   bool setBeacon(BLEBeacon& beacon);
   bool setBeacon(EddyStoneUrl& eddy_url);
 
+  /// Advertise to a single peer instead of broadcasting
+  void setPeerAddress(const ble_gap_addr_t& peer_addr);
+
+  /// Revert to broadcast advertising
+  void removePeerAddress();
+
   bool isRunning(void);
 
   void restartOnDisconnect(bool enable);
@@ -152,6 +158,8 @@ private:
   uint8_t  _type;
   bool     _start_if_disconnect;
   bool     _runnning;
+  ble_gap_addr_t _peer_addr; //! Target address for an ADV_DIRECT_IND advertisement
+  bool _directed;            //! Whether the advertisements are directed or broadcast
 
   uint32_t _conn_mask;
 

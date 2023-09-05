@@ -265,6 +265,7 @@ BLEAdvertising::BLEAdvertising(void)
   _stop_timeout        = _left_timeout = 0;
   _stop_cb             = NULL;
   _slow_cb             = NULL;
+  _directed            = false; // Broadcast advertising is the default
 }
 
 void BLEAdvertising::setFastTimeout(uint16_t sec)
@@ -315,6 +316,17 @@ void BLEAdvertising::setStopCallback(stop_callback_t fp)
   _stop_cb = fp;
 }
 
+void BLEAdvertising::setPeerAddress(const ble_gap_addr_t& peer_addr)
+{
+    _directed  = true;
+    _peer_addr = peer_addr; // Copy address, used later in start function
+}
+
+void BLEAdvertising::removePeerAddress()
+{
+    _directed = false;
+}
+
 bool BLEAdvertising::isRunning(void)
 {
   return _runnning;
@@ -353,6 +365,11 @@ bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
     .secondary_phy = BLE_GAP_PHY_AUTO         , // 1 Mbps will be used
       // , .set_id, .scan_req_notification
   };
+
+  if (_directed) {
+      // Set target address when not using broadcasting
+      adv_para.p_peer_addr = &_peer_addr;
+  }
 
   // gap_adv long-live is required by SD v6
   static ble_gap_adv_data_t gap_adv =
@@ -465,4 +482,3 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
     default: break;
   }
 }
-
