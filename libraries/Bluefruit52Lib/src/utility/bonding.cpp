@@ -41,7 +41,10 @@
 #include "bonding.h"
 #include "bluefruit.h"
 
-using namespace Adafruit_LittleFS_Namespace;
+enum {
+  FO_READ = Adafruit_LittleFS_Namespace::FILE_O_READ,
+  FO_WRITE = Adafruit_LittleFS_Namespace::FILE_O_WRITE,
+};
 
 #define BOND_DEBUG        1
 
@@ -68,7 +71,7 @@ static void get_fname (char* fname, uint8_t role, uint8_t const mac[6])
       mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 }
 
-static bool bdata_skip_field(File* file)
+static bool bdata_skip_field(Adafruit_LittleFS_Namespace::File* file)
 {
   int len = file->read();
   VERIFY(len > 0);
@@ -77,7 +80,7 @@ static bool bdata_skip_field(File* file)
   return true;
 }
 
-static void bdata_write(File* file, void const* buffer, uint16_t bufsize)
+static void bdata_write(Adafruit_LittleFS_Namespace::File* file, void const* buffer, uint16_t bufsize)
 {
   file->write( (uint8_t) bufsize );
   file->write( (uint8_t const*) buffer, bufsize);
@@ -106,7 +109,7 @@ static void bond_save_keys_dfr (uint8_t role, uint16_t conn_hdl, bond_keys_t con
   // delete if file already exists
   if ( InternalFS.exists(filename) ) InternalFS.remove(filename);
 
-  File file(filename, FILE_O_WRITE, InternalFS);
+  Adafruit_LittleFS_Namespace::File file(filename, FO_WRITE, InternalFS);
   VERIFY(file,);
 
   //------------- save keys -------------//
@@ -150,8 +153,8 @@ bool bond_load_keys(uint8_t role, ble_gap_addr_t* addr, bond_keys_t* bkeys)
       char filename[BOND_FNAME_LEN];
       get_fname(filename, role, addr->addr);
 
-      File file(InternalFS);
-      if( file.open(filename, FILE_O_READ) )
+      Adafruit_LittleFS_Namespace::File file(InternalFS);
+      if( file.open(filename, FO_READ) )
       {
         int keylen = file.read();
         if ( keylen > 0 )
@@ -172,10 +175,10 @@ bool bond_load_keys(uint8_t role, ble_gap_addr_t* addr, bond_keys_t* bkeys)
       // Resolvable address, we have to go through the whole list to perform IRK Address matching
 
       char const * dpath = (role == BLE_GAP_ROLE_PERIPH ? BOND_DIR_PRPH : BOND_DIR_CNTR);
-      File dir(dpath, FILE_O_READ, InternalFS);
-      File file(InternalFS);
+      Adafruit_LittleFS_Namespace::File dir(dpath, FO_READ, InternalFS);
+      Adafruit_LittleFS_Namespace::File file(InternalFS);
 
-      while ( !ret && (file = dir.openNextFile(FILE_O_READ)) )
+      while ( !ret && (file = dir.openNextFile(FO_READ)) )
       {
         int keylen = file.read();
         if ( keylen == sizeof(bond_keys_t) )
@@ -217,7 +220,7 @@ static void bond_save_cccd_dfr (uint8_t role, uint16_t conn_hdl, ble_gap_addr_t 
   char filename[BOND_FNAME_LEN];
   get_fname(filename, role, id_addr->addr);
 
-  File file(filename, FILE_O_WRITE, InternalFS);
+  Adafruit_LittleFS_Namespace::File file(filename, FO_WRITE, InternalFS);
   VERIFY(file,);
 
   file.seek(0); // write mode start at the end, seek to beginning
@@ -266,7 +269,7 @@ bool bond_load_cccd(uint8_t role, uint16_t conn_hdl, ble_gap_addr_t const* id_ad
   char filename[BOND_FNAME_LEN];
   get_fname(filename, role, id_addr->addr);
 
-  File file(filename, FILE_O_READ, InternalFS);
+  Adafruit_LittleFS_Namespace::File file(filename, FO_READ, InternalFS);
   if ( file )
   {
     bdata_skip_field(&file); // skip key
@@ -298,10 +301,10 @@ void bond_print_list(uint8_t role)
 {
   char const * dpath = (role == BLE_GAP_ROLE_PERIPH ? BOND_DIR_PRPH : BOND_DIR_CNTR);
 
-  File dir(dpath, FILE_O_READ, InternalFS);
-  File file(InternalFS);
+  Adafruit_LittleFS_Namespace::File dir(dpath, FO_READ, InternalFS);
+  Adafruit_LittleFS_Namespace::File file(InternalFS);
 
-  while ( (file = dir.openNextFile(FILE_O_READ)) )
+  while ( (file = dir.openNextFile(FO_READ)) )
   {
     if ( !file.isDirectory() && bdata_skip_field(&file) ) // skip key
     {
