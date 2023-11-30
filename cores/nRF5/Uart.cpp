@@ -253,6 +253,12 @@ size_t Uart::write(const uint8_t *buffer, size_t size)
   return sent;
 }
 
+int Uart::availableForWrite(void) {
+  // UART does not use ring buffer for TX, therefore it is either busy or not
+  UBaseType_t available = uxSemaphoreGetCount(_end_tx_sem);
+  return available ? SERIAL_BUFFER_SIZE : 0;
+}
+
 //------------- Serial1 (or Serial in case of nRF52832) -------------//
 #ifdef NRF52832_XXAA
   Uart Serial( NRF_UARTE0, UARTE0_UART0_IRQn, PIN_SERIAL_RX, PIN_SERIAL_TX );

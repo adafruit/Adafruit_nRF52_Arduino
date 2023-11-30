@@ -70,6 +70,7 @@ class HardwareSerial : public Stream
     virtual void flush(void) = 0;
     virtual size_t write(uint8_t) = 0;
     virtual size_t write(const uint8_t *buffer, size_t size) = 0;
+    virtual int availableForWrite(void);
     using Print::write; // pull in write(str) from Print
     virtual operator bool() = 0;
 };
