@@ -17,7 +17,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 name=Adafruit nRF52 Boards
-version=1.3.0
+version=1.5.0
 
 # Compile variables
 # -----------------
@@ -128,11 +128,11 @@ recipe.size.regex.data=^(?:\.data|\.bss)\s+([0-9]+).*
 recipe.output.tmp_file={build.project_name}.hex
 recipe.output.save_file={build.project_name}.{build.variant}.hex
 
-#***************************************************
+# ------------------------------------------------
 # adafruit-nrfutil for uploading
 # https://github.com/adafruit/Adafruit_nRF52_nrfutil
 # pre-built binaries are provided for macos and windows
-#***************************************************
+# ------------------------------------------------
 tools.nrfutil.cmd=adafruit-nrfutil
 tools.nrfutil.cmd.windows={runtime.platform.path}/tools/adafruit-nrfutil/win32/adafruit-nrfutil.exe
 tools.nrfutil.cmd.macosx={runtime.platform.path}/tools/adafruit-nrfutil/macos/adafruit-nrfutil
@@ -141,12 +141,12 @@ tools.nrfutil.upload.params.verbose=--verbose
 tools.nrfutil.upload.params.quiet=
 tools.nrfutil.upload.pattern="{cmd}" {upload.verbose} dfu serial -pkg "{build.path}/{build.project_name}.zip" -p {serial.port} -b 115200 --singlebank
 
-#***************************************************
+# ---------------------------------------------------
 # Burning bootloader with either jlink or nrfutil
-#***************************************************
+# ---------------------------------------------------
 
 # Bootloader version
-tools.bootburn.bootloader.file={runtime.platform.path}/bootloader/{build.variant}/{build.variant}_bootloader-0.6.2_{build.sd_name}_{build.sd_version}
+tools.bootburn.bootloader.file={runtime.platform.path}/bootloader/{build.variant}/{build.variant}_bootloader-0.8.0_{build.sd_name}_{build.sd_version}
 
 tools.bootburn.bootloader.params.verbose=
 tools.bootburn.bootloader.params.quiet=
@@ -157,3 +157,26 @@ tools.bootburn.erase.params.verbose=
 tools.bootburn.erase.params.quiet=
 tools.bootburn.erase.pattern=
 
+# ----------------------------------------
+# Debugger configuration (general options)
+# ----------------------------------------
+# EXPERIMENTAL feature:
+#  - this is alpha and may be subject to change without notice
+debug.executable={build.path}/{build.project_name}.elf
+debug.toolchain=gcc
+debug.toolchain.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
+debug.toolchain.prefix=arm-none-eabi-
+
+debug.server=openocd
+debug.server.openocd.path={runtime.tools.openocd-0.11.0-arduino2.path}/bin/openocd
+debug.server.openocd.scripts_dir={runtime.tools.openocd-0.11.0-arduino2.path}/share/openocd/scripts/
+debug.server.openocd.script={runtime.platform.path}/{build.openocdscript}
+
+# JLinkServer is not supported by arduino-cli yet
+#   https://github.com/arduino/arduino-cli/blob/eca9d9a8f00582a08fadea8a4b7e3ef01b40d082/commands/debug/debug.go#L160
+# use debug_custom.json to run JLinkGDBServer instead
+#   https://docs.arduino.cc/tutorials/mkr-wifi-1010/mkr-jlink-setup
+#debug.server=jlink
+#debug.server.jlink.path=JLinkGDBServer
+#debug.server.jlink.device=nrf52840_xxaa
+#debug.server.jlink.script={runtime.platform.path}/{build.openocdscript}

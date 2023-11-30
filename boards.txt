@@ -1,6 +1,6 @@
 menu.softdevice=SoftDevice
-menu.debug=Debug
-menu.debug_output=Debug Output
+menu.debug=Debug Level
+menu.debug_output=Debug Port
 
 # -----------------------------------
 # Adafruit Feather nRF52832
@@ -29,14 +29,15 @@ feather52832.build.usb_manufacturer="Adafruit"
 feather52832.build.usb_product="Feather nRF52832"
 feather52832.build.extra_flags=-DNRF52832_XXAA -DNRF52
 feather52832.build.ldscript=nrf52832_s132_v6.ld
+feather52832.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
 
-# SoftDevice Menu
+# Menu: SoftDevice
 feather52832.menu.softdevice.s132v6=S132 6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_name=s132
 feather52832.menu.softdevice.s132v6.build.sd_version=6.1.1
 feather52832.menu.softdevice.s132v6.build.sd_fwid=0x00B7
 
-# Debug Menu
+# Menu: Debug Level
 feather52832.menu.debug.l0=Level 0 (Release)
 feather52832.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 feather52832.menu.debug.l1=Level 1 (Error Message)
@@ -47,7 +48,7 @@ feather52832.menu.debug.l3=Level 3 (Segger SystemView)
 feather52832.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 feather52832.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# Debug Output Menu
+# Menu: Debug Port
 feather52832.menu.debug_output.serial=Serial
 feather52832.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
 feather52832.menu.debug_output.serial1=Serial1
@@ -89,16 +90,17 @@ feather52840.build.usb_manufacturer="Adafruit"
 feather52840.build.usb_product="Feather nRF52840 Express"
 feather52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 feather52840.build.ldscript=nrf52840_s140_v6.ld
+feather52840.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
 feather52840.build.vid=0x239A
 feather52840.build.pid=0x8029
 
-# SoftDevice Menu
+# Menu: SoftDevice
 feather52840.menu.softdevice.s140v6=S140 6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_name=s140
 feather52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 feather52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Debug Menu
+# Menu: Debug Level
 feather52840.menu.debug.l0=Level 0 (Release)
 feather52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 feather52840.menu.debug.l1=Level 1 (Error Message)
@@ -109,7 +111,7 @@ feather52840.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 feather52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# Debug Output Menu
+# Menu: Debug Port
 feather52840.menu.debug_output.serial=Serial
 feather52840.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
 feather52840.menu.debug_output.serial1=Serial1
@@ -151,16 +153,17 @@ feather52840sense.build.usb_manufacturer="Adafruit"
 feather52840sense.build.usb_product="Feather nRF52840 Sense"
 feather52840sense.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 feather52840sense.build.ldscript=nrf52840_s140_v6.ld
+feather52840sense.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
 feather52840sense.build.vid=0x239A
 feather52840sense.build.pid=0x8087
 
-# SoftDevice Menu
+# Menu: SoftDevice
 feather52840sense.menu.softdevice.s140v6=S140 6.1.1
 feather52840sense.menu.softdevice.s140v6.build.sd_name=s140
 feather52840sense.menu.softdevice.s140v6.build.sd_version=6.1.1
 feather52840sense.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Debug Menu
+# Menu: Debug Level
 feather52840sense.menu.debug.l0=Level 0 (Release)
 feather52840sense.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 feather52840sense.menu.debug.l1=Level 1 (Error Message)
@@ -171,7 +174,7 @@ feather52840sense.menu.debug.l3=Level 3 (Segger SystemView)
 feather52840sense.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 feather52840sense.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# Debug Output Menu
+# Menu: Debug Port
 feather52840sense.menu.debug_output.serial=Serial
 feather52840sense.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
 feather52840sense.menu.debug_output.serial1=Serial1
@@ -213,16 +216,17 @@ itsybitsy52840.build.usb_manufacturer="Adafruit"
 itsybitsy52840.build.usb_product="ItsyBitsy nRF52840 Express"
 itsybitsy52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 itsybitsy52840.build.ldscript=nrf52840_s140_v6.ld
+itsybitsy52840.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
 itsybitsy52840.build.vid=0x239A
 itsybitsy52840.build.pid=0x8051
 
-# SoftDevice Menu
+# Menu: SoftDevice
 itsybitsy52840.menu.softdevice.s140v6=S140 6.1.1
 itsybitsy52840.menu.softdevice.s140v6.build.sd_name=s140
 itsybitsy52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 itsybitsy52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Debug Menu
+# Menu: Debug Level
 itsybitsy52840.menu.debug.l0=Level 0 (Release)
 itsybitsy52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 itsybitsy52840.menu.debug.l1=Level 1 (Error Message)
@@ -233,7 +237,7 @@ itsybitsy52840.menu.debug.l3=Level 3 (Segger SystemView)
 itsybitsy52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 itsybitsy52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# Debug Output Menu
+# Menu: Debug Port
 itsybitsy52840.menu.debug_output.serial=Serial
 itsybitsy52840.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
 itsybitsy52840.menu.debug_output.serial1=Serial1
@@ -273,16 +277,17 @@ cplaynrf52840.build.usb_manufacturer="Adafruit"
 cplaynrf52840.build.usb_product="Circuit Playground Bluefruit"
 cplaynrf52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 cplaynrf52840.build.ldscript=nrf52840_s140_v6.ld
+cplaynrf52840.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
 cplaynrf52840.build.vid=0x239A
 cplaynrf52840.build.pid=0x8045
 
-# SoftDevice Menu
+# Menu: SoftDevice
 cplaynrf52840.menu.softdevice.s140v6=S140 6.1.1
 cplaynrf52840.menu.softdevice.s140v6.build.sd_name=s140
 cplaynrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 cplaynrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Debug Menu
+# Menu: Debug Level
 cplaynrf52840.menu.debug.l0=Level 0 (Release)
 cplaynrf52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 cplaynrf52840.menu.debug.l1=Level 1 (Error Message)
@@ -293,7 +298,7 @@ cplaynrf52840.menu.debug.l3=Level 3 (Segger SystemView)
 cplaynrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 cplaynrf52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# Debug Output Menu
+# Menu: Debug Port
 cplaynrf52840.menu.debug_output.serial=Serial
 cplaynrf52840.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
 cplaynrf52840.menu.debug_output.serial1=Serial1
@@ -333,16 +338,17 @@ cluenrf52840.build.usb_manufacturer="Adafruit"
 cluenrf52840.build.usb_product="CLUE"
 cluenrf52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 cluenrf52840.build.ldscript=nrf52840_s140_v6.ld
+cluenrf52840.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
 cluenrf52840.build.vid=0x239A
 cluenrf52840.build.pid=0x8071
 
-# SoftDevice Menu
+# Menu: SoftDevice
 cluenrf52840.menu.softdevice.s140v6=S140 6.1.1
 cluenrf52840.menu.softdevice.s140v6.build.sd_name=s140
 cluenrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 cluenrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Debug Menu
+# Menu: Debug Level
 cluenrf52840.menu.debug.l0=Level 0 (Release)
 cluenrf52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 cluenrf52840.menu.debug.l1=Level 1 (Error Message)
@@ -353,7 +359,7 @@ cluenrf52840.menu.debug.l3=Level 3 (Segger SystemView)
 cluenrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 cluenrf52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# Debug Output Menu
+# Menu: Debug Port
 cluenrf52840.menu.debug_output.serial=Serial
 cluenrf52840.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
 cluenrf52840.menu.debug_output.serial1=Serial1
@@ -393,16 +399,17 @@ ledglasses_nrf52840.build.usb_manufacturer="Adafruit"
 ledglasses_nrf52840.build.usb_product="LED Glasses Driver nRF52840"
 ledglasses_nrf52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 ledglasses_nrf52840.build.ldscript=nrf52840_s140_v6.ld
+ledglasses_nrf52840.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
 ledglasses_nrf52840.build.vid=0x239A
 ledglasses_nrf52840.build.pid=0x810D
 
-# SoftDevice Menu
+# Menu: SoftDevice
 ledglasses_nrf52840.menu.softdevice.s140v6=S140 6.1.1
 ledglasses_nrf52840.menu.softdevice.s140v6.build.sd_name=s140
 ledglasses_nrf52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 ledglasses_nrf52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Debug Menu
+# Menu: Debug Level
 ledglasses_nrf52840.menu.debug.l0=Level 0 (Release)
 ledglasses_nrf52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 ledglasses_nrf52840.menu.debug.l1=Level 1 (Error Message)
@@ -413,7 +420,7 @@ ledglasses_nrf52840.menu.debug.l3=Level 3 (Segger SystemView)
 ledglasses_nrf52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 ledglasses_nrf52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# Debug Output Menu
+# Menu: Debug Port
 ledglasses_nrf52840.menu.debug_output.serial=Serial
 ledglasses_nrf52840.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
 ledglasses_nrf52840.menu.debug_output.serial1=Serial1
@@ -453,16 +460,17 @@ mdbt50qrx.build.usb_manufacturer="Raytac"
 mdbt50qrx.build.usb_product="nRF52840 Dongle"
 mdbt50qrx.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 mdbt50qrx.build.ldscript=nrf52840_s140_v6.ld
+mdbt50qrx.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
 mdbt50qrx.build.vid=0x239A
 mdbt50qrx.build.pid=0x810B
 
-# SoftDevice Menu
+# Menu: SoftDevice
 mdbt50qrx.menu.softdevice.s140v6=S140 6.1.1
 mdbt50qrx.menu.softdevice.s140v6.build.sd_name=s140
 mdbt50qrx.menu.softdevice.s140v6.build.sd_version=6.1.1
 mdbt50qrx.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Debug Menu
+# Menu: Debug Level
 mdbt50qrx.menu.debug.l0=Level 0 (Release)
 mdbt50qrx.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 mdbt50qrx.menu.debug.l1=Level 1 (Error Message)
@@ -473,7 +481,7 @@ mdbt50qrx.menu.debug.l3=Level 3 (Segger SystemView)
 mdbt50qrx.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 mdbt50qrx.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# Debug Output Menu
+# Menu: Debug Port
 mdbt50qrx.menu.debug_output.serial=Serial
 mdbt50qrx.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
 mdbt50qrx.menu.debug_output.serial1=Serial1
@@ -515,16 +523,17 @@ metro52840.build.usb_manufacturer="Adafruit"
 metro52840.build.usb_product="Metro nRF52840 Express"
 metro52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 metro52840.build.ldscript=nrf52840_s140_v6.ld
+metro52840.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
 metro52840.build.vid=0x239A
 metro52840.build.pid=0x803F
 
-# SoftDevice Menu
+# Menu: SoftDevice
 metro52840.menu.softdevice.s140v6=S140 6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_name=s140
 metro52840.menu.softdevice.s140v6.build.sd_version=6.1.1
 metro52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Debug Menu
+# Menu: Debug Level
 metro52840.menu.debug.l0=Level 0 (Release)
 metro52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 metro52840.menu.debug.l1=Level 1 (Error Message)
@@ -535,7 +544,7 @@ metro52840.menu.debug.l3=Level 3 (Segger SystemView)
 metro52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 metro52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# Debug Output Menu
+# Menu: Debug Port
 metro52840.menu.debug_output.serial=Serial
 metro52840.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
 metro52840.menu.debug_output.serial1=Serial1
@@ -545,9 +554,8 @@ metro52840.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DE
 
 
 # -------------------------------------------------------
-#
 # Boards that aren't made by Adafruit
-#
+# and are not officially supported
 # -------------------------------------------------------
 
 # -----------------------------------
@@ -580,16 +588,17 @@ pca10056.build.usb_manufacturer="Nordic"
 pca10056.build.usb_product="nRF52840 DK"
 pca10056.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 pca10056.build.ldscript=nrf52840_s140_v6.ld
+pca10056.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
 pca10056.build.vid=0x239A
 pca10056.build.pid=0x8029
 
-# SoftDevice Menu
+# Menu: SoftDevice
 pca10056.menu.softdevice.s140v6=S140 6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_name=s140
 pca10056.menu.softdevice.s140v6.build.sd_version=6.1.1
 pca10056.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Debug Menu
+# Menu: Debug Level
 pca10056.menu.debug.l0=Level 0 (Release)
 pca10056.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 pca10056.menu.debug.l1=Level 1 (Error Message)
@@ -600,7 +609,7 @@ pca10056.menu.debug.l3=Level 3 (Segger SystemView)
 pca10056.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 pca10056.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# Debug Output Menu
+# Menu: Debug Port
 pca10056.menu.debug_output.serial=Serial
 pca10056.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
 pca10056.menu.debug_output.serial1=Serial1
@@ -638,16 +647,17 @@ particle_xenon.build.usb_manufacturer="Particle"
 particle_xenon.build.usb_product="Xenon"
 particle_xenon.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 particle_xenon.build.ldscript=nrf52840_s140_v6.ld
+particle_xenon.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
 particle_xenon.build.vid=0x239A
 particle_xenon.build.pid=0x8029
 
-# SoftDevice Menu
+# Menu: SoftDevice
 particle_xenon.menu.softdevice.s140v6=S140 6.1.1
 particle_xenon.menu.softdevice.s140v6.build.sd_name=s140
 particle_xenon.menu.softdevice.s140v6.build.sd_version=6.1.1
 particle_xenon.menu.softdevice.s140v6.build.sd_fwid=0x00B6
 
-# Debug Menu
+# Menu: Debug Level
 particle_xenon.menu.debug.l0=Level 0 (Release)
 particle_xenon.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
 particle_xenon.menu.debug.l1=Level 1 (Error Message)
@@ -658,7 +668,7 @@ particle_xenon.menu.debug.l3=Level 3 (Segger SystemView)
 particle_xenon.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
 particle_xenon.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
 
-# Debug Output Menu
+# Menu: Debug Port
 particle_xenon.menu.debug_output.serial=Serial
 particle_xenon.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
 particle_xenon.menu.debug_output.serial1=Serial1

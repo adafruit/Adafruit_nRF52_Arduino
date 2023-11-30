@@ -3,7 +3,10 @@
 *.obj
 
 # Visual Studio Code
-**/.vscode/
+.vscode/
+.idea/
+.pio/
+.piopm
 
 # Executables
 *.out
@@ -20,4 +23,4 @@
 # Ignore local overrides of platform.txt and boards.txt,
 /boards.local.txt
 /platform.local.txt
-/libraries/**/build/
+
