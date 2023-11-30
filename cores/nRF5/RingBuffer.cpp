@@ -67,6 +67,14 @@ int RingBuffer::available()
 		return delta;
 }
 
+int RingBuffer::availableForStore() {
+  if (_iHead >= _iTail) {
+    return SERIAL_BUFFER_SIZE - 1 - _iHead + _iTail;
+  } else {
+    return _iTail - _iHead - 1;
+  }
+}
+
 int RingBuffer::peek()
 {
 	if(_iTail == _iHead)
