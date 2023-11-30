@@ -13,32 +13,34 @@
 *********************************************************************/
 #include <bluefruit.h>
 
-// Beacon uses the Manufacturer Specific Data field in the advertising
-// packet, which means you must provide a valid Manufacturer ID. Update
+// Beacon uses the Manufacturer Specific Data field in the advertising packet,
+// which means you must provide a valid Manufacturer ID. Update
 // the field below to an appropriate value. For a list of valid IDs see:
 // https://www.bluetooth.com/specifications/assigned-numbers/company-identifiers
-// 0x004C is Apple
-// 0x0822 is Adafruit
-// 0x0059 is Nordic
+// - 0x004C is Apple
+// - 0x0822 is Adafruit
+// - 0x0059 is Nordic
+// For testing with this sketch, you can use nRF Beacon app
+// - on Android you may need change the MANUFACTURER_ID to Nordic
+// - on iOS you may need to change the MANUFACTURER_ID to Apple.
+//   You will also need to "Add Other Beacon, then enter Major, Minor that you set in the sketch
 #define MANUFACTURER_ID   0x0059
 
 // "nRF Connect" app can be used to detect beacon
-uint8_t beaconUuid[16] =
-{
+uint8_t beaconUuid[16] = {
   0x01, 0x12, 0x23, 0x34, 0x45, 0x56, 0x67, 0x78,
   0x89, 0x9a, 0xab, 0xbc, 0xcd, 0xde, 0xef, 0xf0
 };
 
 // A valid Beacon packet consists of the following information:
 // UUID, Major, Minor, RSSI @ 1M
-BLEBeacon beacon(beaconUuid, 0x0102, 0x0304, -54);
+BLEBeacon beacon(beaconUuid, 1, 2, -54);
 
-void setup() 
-{
+void setup() {
   Serial.begin(115200);
 
   // Uncomment to blocking wait for Serial connection
-  // while ( !Serial ) delay(10);
+//  while ( !Serial ) delay(10);
 
   Serial.println("Bluefruit52 Beacon Example");
   Serial.println("--------------------------\n");
@@ -55,7 +57,10 @@ void setup()
   // Setup the advertising packet
   startAdv();
 
-  Serial.println("Broadcasting beacon, open your beacon app to test");
+  Serial.printf("Broadcasting beacon with MANUFACTURER_ID = 0x%04X\n", MANUFACTURER_ID);
+  Serial.println("open your beacon app to test such as: nRF Beacon");
+  Serial.println("- on Android you may need to change the MANUFACTURER_ID to 0x0059");
+  Serial.println("- on iOS you may need to change the MANUFACTURER_ID to 0x004C");
 
   // Suspend Loop() to save power, since we didn't have any code there
   suspendLoop();
@@ -78,17 +83,16 @@ void startAdv(void)
    * - Start(timeout) with timeout = 0 will advertise forever (until connected)
    * 
    * Apple Beacon specs
-   * - Type: Non connectable, undirected
+   * - Type: Non-connectable, scannable, undirected
    * - Fixed interval: 100 ms -> fast = slow = 100 ms
    */
-  //Bluefruit.Advertising.setType(BLE_GAP_ADV_TYPE_ADV_NONCONN_IND);
+  Bluefruit.Advertising.setType(BLE_GAP_ADV_TYPE_NONCONNECTABLE_SCANNABLE_UNDIRECTED);
   Bluefruit.Advertising.restartOnDisconnect(true);
   Bluefruit.Advertising.setInterval(160, 160);    // in unit of 0.625 ms
   Bluefruit.Advertising.setFastTimeout(30);      // number of seconds in fast mode
   Bluefruit.Advertising.start(0);                // 0 = Don't stop advertising after n seconds  
 }
 
-void loop() 
-{
+void loop() {
   // loop is already suspended, CPU will not run loop() at all
 }

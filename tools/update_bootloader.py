@@ -1,7 +1,6 @@
 import os
-import shutil
 import urllib.request
-import zipfile
+from multiprocessing import Pool
 
 # Get all variants
 all_variant = []
@@ -11,7 +10,7 @@ for entry in os.scandir("variants"):
 all_variant.sort()
 
 # Detect version in platform.txt
-version = '';
+version = ''
 with open('platform.txt') as pf:
     platform_txt = pf.read()
     e = '{build.variant}_bootloader-'
@@ -19,25 +18,36 @@ with open('platform.txt') as pf:
     v2 = platform_txt.index('_', v1)
     version = platform_txt[v1:v2]
 
-print('version {}'.format(version))
+print(f'version {version}')
 
-for variant in all_variant:
+
+# Download a variant's bootloader
+def download_variant(variant):
     # Download from bootloader release
-    name = '{}_bootloader-{}.zip'.format(variant, version)
-    url = 'https://github.com/adafruit/Adafruit_nRF52_Bootloader/releases/download/{}/{}'.format(version, name)
-    print("Downloading", name)
-    urllib.request.urlretrieve(url, name)
-
-    # remove existing bootloader
-    shutil.rmtree('bootloader/{}'.format(variant), ignore_errors=True)
-
-    # unzip
-    with zipfile.ZipFile(name, "r") as zip_ref:
-        zip_ref.extractall("bootloader/{}".format(variant))
-
-    # Remove update.uf2 for 832
+    sd_version = '6.1.1'
+    sd_name = 's140'
     if variant == 'feather_nrf52832':
-        os.remove("bootloader/{}/update-{}_nosd.uf2".format(variant, name[:-4]))
+        sd_name = 's132'
 
-    # remove zip file
-    os.remove(name)
+    f_zip = f'{variant}_bootloader-{version}_{sd_name}_{sd_version}.zip'
+    f_hex = f'{variant}_bootloader-{version}_{sd_name}_{sd_version}.hex'
+    f_uf2 = f'update-{variant}_bootloader-{version}_nosd.uf2'
+    url_prefix = f'https://github.com/adafruit/Adafruit_nRF52_Bootloader/releases/download/{version}/'
+
+    # remove existing bootloader files
+    for item in os.listdir(f'bootloader/{variant}'):
+        os.remove(os.path.join(f'bootloader/{variant}', item))
+
+    print(f"Downloading {f_zip}")
+    urllib.request.urlretrieve(url_prefix + f_zip, f'bootloader/{variant}/{f_zip}')
+
+    print(f"Downloading {f_hex}")
+    urllib.request.urlretrieve(url_prefix + f_hex, f'bootloader/{variant}/{f_hex}')
+
+    if sd_name != 's132':
+        print(f"Downloading {f_uf2}")
+        urllib.request.urlretrieve(url_prefix + f_uf2, f'bootloader/{variant}/{f_uf2}')
+
+if __name__ == "__main__":
+    with Pool() as p:
+        p.map(download_variant, all_variant)
