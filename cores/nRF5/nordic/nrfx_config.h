@@ -45,5 +45,8 @@
   #define NRFX_SPIM3_ENABLED  0
 #endif
 
+// NRFX temp
+#define NRFX_TEMP_ENABLED 1
+#define NRFX_TEMP_DEFAULT_CONFIG_IRQ_PRIORITY 7
 
 #endif // NRFX_CONFIG_H__
