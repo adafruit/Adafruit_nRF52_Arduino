@@ -315,6 +315,10 @@ void BLEAdvertising::setStopCallback(stop_callback_t fp)
   _stop_cb = fp;
 }
 
+void BLEAdvertising::setPeerAddress(const ble_gap_addr_t& peer_addr) {
+  _peer_addr = peer_addr;
+}
+
 bool BLEAdvertising::isRunning(void)
 {
   return _runnning;
@@ -338,8 +342,7 @@ void BLEAdvertising::restartOnDisconnect(bool enable)
 bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
 {
   // ADV Params
-  ble_gap_adv_params_t adv_para =
-  {
+  ble_gap_adv_params_t adv_para = {
     .properties    = { .type = _type, .anonymous  = 0 },
     .p_peer_addr   = NULL                     , // Undirected advertisement
     .interval      = interval                 , // advertising interval (in units of 0.625 ms)
@@ -354,9 +357,20 @@ bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
       // , .set_id, .scan_req_notification
   };
 
+  switch(_type) {
+    case BLE_GAP_ADV_TYPE_CONNECTABLE_NONSCANNABLE_DIRECTED_HIGH_DUTY_CYCLE:
+    case BLE_GAP_ADV_TYPE_CONNECTABLE_NONSCANNABLE_DIRECTED:
+    case BLE_GAP_ADV_TYPE_EXTENDED_CONNECTABLE_NONSCANNABLE_DIRECTED:
+    case BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_SCANNABLE_DIRECTED:
+    case BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_NONSCANNABLE_DIRECTED:
+      adv_para.p_peer_addr = &_peer_addr;
+      break;
+
+    default: break;
+  }
+
   // gap_adv long-live is required by SD v6
-  static ble_gap_adv_data_t gap_adv =
-  {
+  static ble_gap_adv_data_t gap_adv = {
       .adv_data      = { .p_data = _data, .len = _count },
       .scan_rsp_data = { .p_data = Bluefruit.ScanResponse.getData(), .len = Bluefruit.ScanResponse.count() }
   };
@@ -465,4 +479,3 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
     default: break;
   }
 }
-
