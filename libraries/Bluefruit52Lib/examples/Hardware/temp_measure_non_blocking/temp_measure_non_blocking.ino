@@ -9,7 +9,9 @@ nrfx_temp_config_t config = NRFX_TEMP_DEFAULT_CONFIG;
 
 // this function is called when the temperature measurement is ready
 void temp_handler(int32_t raw_temp) {
-  Serial.println(nrfx_temp_calculate(raw_temp));
+  float temp_c = raw_temp / 4.0;
+  Serial.print(temp_c);
+  Serial.println(" C");
 }
 
 void setup() {
