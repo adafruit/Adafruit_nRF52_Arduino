@@ -19,6 +19,7 @@ jobs:
         - 'feather52832'
         - 'feather52840'
         - 'feather52840sense'
+        - 'feather_nrf52840_sense_tft'
         - 'itsybitsy52840'
         - 'ledglasses_nrf52840'
     
@@ -29,7 +30,7 @@ jobs:
         python-version: '3.x'
         
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'true'
         

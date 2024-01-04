@@ -16,13 +16,13 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef _VARIANT_FEATHER52840_SENSE_
-#define _VARIANT_FEATHER52840_SENSE_
+#ifndef _VARIANT_CLUE52840_
+#define _VARIANT_CLUE52840_
 
 /** Master clock frequency */
 #define VARIANT_MCK       (64000000ul)
-
-#define USE_LFRC    // Board uses RC for LF
+#define USE_LFXO      // Board uses 32khz crystal for LF
+//#define USE_LFRC    // Board uses RC for LF
 
 /*----------------------------------------------------------------------------
  *        Headers
@@ -36,34 +36,25 @@ extern "C"
 #endif // __cplusplus
 
 // Number of pins defined in PinDescription array
-#define PINS_COUNT           (37)
-#define NUM_DIGITAL_PINS     (37)
-#define NUM_ANALOG_INPUTS    (6) // A6 is used for battery, A7 is analog reference
+#define PINS_COUNT           (47)
+#define NUM_DIGITAL_PINS     (47)
+#define NUM_ANALOG_INPUTS    (6) // A6 is for battery
 #define NUM_ANALOG_OUTPUTS   (0)
 
 // LEDs
 #define PIN_LED1             (13)
-#define PIN_LED2             (4)
+#define PIN_NEOPIXEL_POWER   (7)
 #define PIN_NEOPIXEL         (8)
 #define NEOPIXEL_NUM         1
 
 #define LED_BUILTIN          PIN_LED1
-#define LED_CONN             PIN_LED2
-
 #define LED_RED              PIN_LED1
-#define LED_BLUE             PIN_LED2
+#define LED_BLUE             PIN_LED1
 
 #define LED_STATE_ON         1         // State when LED is litted
 
-/*
- * Buttons
- */
-#define PIN_BUTTON1          (7)
-
-// Microphone
-#define PIN_PDM_DIN           34
-#define PIN_PDM_CLK           35
-#define PIN_PDM_PWR           -1  // not used
+// Buttons
+#define PIN_BUTTON1          (3)
 
 /*
  * Analog pins
@@ -75,7 +66,7 @@ extern "C"
 #define PIN_A4               (18)
 #define PIN_A5               (19)
 #define PIN_A6               (20)
-#define PIN_A7               (21)
+#define PIN_A7               (0xff) // to compile with Firmata library
 
 static const uint8_t A0  = PIN_A0 ;
 static const uint8_t A1  = PIN_A1 ;
@@ -87,25 +78,25 @@ static const uint8_t A6  = PIN_A6 ;
 static const uint8_t A7  = PIN_A7 ;
 #define ADC_RESOLUTION    14
 
-// Other pins
-#define PIN_AREF           PIN_A7
 #define PIN_VBAT           PIN_A6
-#define PIN_NFC1           (33)
-#define PIN_NFC2           (2)
-
-static const uint8_t AREF = PIN_AREF;
 
 /*
  * Serial interfaces
  */
-#define PIN_SERIAL1_RX       (1)
-#define PIN_SERIAL1_TX       (0)
+#define PIN_SERIAL1_RX       (0)
+#define PIN_SERIAL1_TX       (1)
 
 /*
  * SPI Interfaces
  */
 #define SPI_INTERFACES_COUNT 1
 
+// nRF52840 has only one SPIM3 runing at highspeed 32Mhz
+// This assign SPIM3 to either: SPI (0), SPI1 (1).
+// If not defined, default to 0 or SPI.
+#define SPI_32MHZ_INTERFACE  0
+
+// SPI
 #define PIN_SPI_MISO         (24)
 #define PIN_SPI_MOSI         (25)
 #define PIN_SPI_SCK          (26)
@@ -134,6 +125,24 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 // On-board QSPI Flash
 #define EXTERNAL_FLASH_DEVICES   GD25Q16C
 #define EXTERNAL_FLASH_USE_QSPI
+
+// Microphone
+#define PIN_PDM_DIN          33
+#define PIN_PDM_CLK          34
+#define PIN_PDM_PWR          PIN_SENSOR_POWER
+
+
+// On-board TFT display
+#define PIN_TFT_CS           35
+#define PIN_TFT_DC           36
+#define PIN_TFT_RST          37
+#define PIN_TFT_LITE         38
+
+// Other pins
+#define PIN_LSM6DS3_IRQ    (4)
+#define PIN_SENSOR_POWER   (21)
+#define PIN_NFC1           (39)
+#define PIN_NFC2           (40)
 
 #ifdef __cplusplus
 }
