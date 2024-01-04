@@ -183,6 +183,69 @@ feather52840sense.menu.debug_output.rtt=Segger RTT
 feather52840sense.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
 
 # -----------------------------------
+# Adafruit Feather nRF52840 Sense TFT
+# -----------------------------------
+feather_nrf52840_sense_tft.name=Adafruit Feather nRF52840 Sense TFT
+
+# VID/PID for Bootloader, Arduino & CircuitPython
+feather_nrf52840_sense_tft.vid.0=0x239A
+feather_nrf52840_sense_tft.pid.0=0x8087
+feather_nrf52840_sense_tft.vid.1=0x239A
+feather_nrf52840_sense_tft.pid.1=0x0087
+feather_nrf52840_sense_tft.vid.2=0x239A
+feather_nrf52840_sense_tft.pid.2=0x0088
+feather_nrf52840_sense_tft.vid.3=0x239A
+feather_nrf52840_sense_tft.pid.3=0x8088
+
+# Upload
+feather_nrf52840_sense_tft.bootloader.tool=bootburn
+feather_nrf52840_sense_tft.upload.tool=nrfutil
+feather_nrf52840_sense_tft.upload.protocol=nrfutil
+feather_nrf52840_sense_tft.upload.use_1200bps_touch=true
+feather_nrf52840_sense_tft.upload.wait_for_upload_port=true
+feather_nrf52840_sense_tft.upload.maximum_size=815104
+feather_nrf52840_sense_tft.upload.maximum_data_size=237568
+
+# Build
+feather_nrf52840_sense_tft.build.mcu=cortex-m4
+feather_nrf52840_sense_tft.build.f_cpu=64000000
+feather_nrf52840_sense_tft.build.board=NRF52840_FEATHER_SENSE_TFT
+feather_nrf52840_sense_tft.build.core=nRF5
+feather_nrf52840_sense_tft.build.variant=feather_nrf52840_sense_tft
+feather_nrf52840_sense_tft.build.usb_manufacturer="Adafruit"
+feather_nrf52840_sense_tft.build.usb_product="Feather nRF52840 Sense TFT"
+feather_nrf52840_sense_tft.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+feather_nrf52840_sense_tft.build.ldscript=nrf52840_s140_v6.ld
+feather_nrf52840_sense_tft.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
+feather_nrf52840_sense_tft.build.vid=0x239A
+feather_nrf52840_sense_tft.build.pid=0x8087
+
+# Menu: SoftDevice
+feather_nrf52840_sense_tft.menu.softdevice.s140v6=S140 6.1.1
+feather_nrf52840_sense_tft.menu.softdevice.s140v6.build.sd_name=s140
+feather_nrf52840_sense_tft.menu.softdevice.s140v6.build.sd_version=6.1.1
+feather_nrf52840_sense_tft.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Menu: Debug Level
+feather_nrf52840_sense_tft.menu.debug.l0=Level 0 (Release)
+feather_nrf52840_sense_tft.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+feather_nrf52840_sense_tft.menu.debug.l1=Level 1 (Error Message)
+feather_nrf52840_sense_tft.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+feather_nrf52840_sense_tft.menu.debug.l2=Level 2 (Full Debug)
+feather_nrf52840_sense_tft.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+feather_nrf52840_sense_tft.menu.debug.l3=Level 3 (Segger SystemView)
+feather_nrf52840_sense_tft.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+feather_nrf52840_sense_tft.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# Menu: Debug Port
+feather_nrf52840_sense_tft.menu.debug_output.serial=Serial
+feather_nrf52840_sense_tft.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+feather_nrf52840_sense_tft.menu.debug_output.serial1=Serial1
+feather_nrf52840_sense_tft.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+feather_nrf52840_sense_tft.menu.debug_output.rtt=Segger RTT
+feather_nrf52840_sense_tft.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
+
+# -----------------------------------
 # Adafruit ItsyBitsy nRF52840 Express
 # -----------------------------------
 itsybitsy52840.name=Adafruit ItsyBitsy nRF52840 Express

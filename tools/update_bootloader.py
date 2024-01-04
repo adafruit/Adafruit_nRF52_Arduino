@@ -35,8 +35,11 @@ def download_variant(variant):
     url_prefix = f'https://github.com/adafruit/Adafruit_nRF52_Bootloader/releases/download/{version}/'
 
     # remove existing bootloader files
-    for item in os.listdir(f'bootloader/{variant}'):
-        os.remove(os.path.join(f'bootloader/{variant}', item))
+    if os.path.exists(f'bootloader/{variant}'):
+        for item in os.listdir(f'bootloader/{variant}'):
+            os.remove(os.path.join(f'bootloader/{variant}', item))
+    else:
+        os.makedirs(f'bootloader/{variant}')
 
     print(f"Downloading {f_zip}")
     urllib.request.urlretrieve(url_prefix + f_zip, f'bootloader/{variant}/{f_zip}')

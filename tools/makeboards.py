@@ -145,6 +145,9 @@ adafruit_boards_list = [
     ["feather52840sense", "feather_nrf52840_sense", "Adafruit", "Feather nRF52840 Sense", "NRF52840_FEATHER_SENSE",
      "0x239A", ["0x8087", "0x0087", "0x0088", "0x8088"]],
 
+    ["feather_nrf52840_sense_tft", "feather_nrf52840_sense_tft", "Adafruit", "Feather nRF52840 Sense TFT", "NRF52840_FEATHER_SENSE_TFT",
+     "0x239A", ["0x8087", "0x0087", "0x0088", "0x8088"]], # TODO shared VID with sense for now
+
     ["itsybitsy52840", "itsybitsy_nrf52840_express", "Adafruit", "ItsyBitsy nRF52840 Express", "NRF52840_ITSYBITSY -DARDUINO_NRF52_ITSYBITSY",
      "0x239A", ["0x8051", "0x0051", "0x0052", "0x8052"]],
 
