@@ -87,15 +87,16 @@ const uint32_t g_ADigitalPinMap[] = {
 
 void initVariant()
 {
-  // power off LED, neopixel, sensor, tft backlight
+  // power on neopixel, sensor
   pinMode(PIN_LED1, OUTPUT);
   pinMode(PIN_NEOPIXEL_POWER, OUTPUT);
   pinMode(PIN_SENSOR_POWER, OUTPUT);
   pinMode(PIN_TFT_LITE, OUTPUT);
 
+  // turn off LED, tft backlight
   ledOff(PIN_LED1);
-  digitalWrite(PIN_NEOPIXEL_POWER, LOW);
-  digitalWrite(PIN_SENSOR_POWER, LOW);
+  digitalWrite(PIN_NEOPIXEL_POWER, HIGH);
+  digitalWrite(PIN_SENSOR_POWER, HIGH);
   digitalWrite(PIN_TFT_LITE, LOW);
 }
 

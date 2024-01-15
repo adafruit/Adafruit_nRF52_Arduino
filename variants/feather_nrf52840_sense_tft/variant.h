@@ -51,7 +51,7 @@ extern "C"
 #define LED_RED              PIN_LED1
 #define LED_BLUE             PIN_LED1
 
-#define LED_STATE_ON         1         // State when LED is litted
+#define LED_STATE_ON         1         // State when LED is lit
 
 // Buttons
 #define PIN_BUTTON1          (3)
@@ -83,8 +83,8 @@ static const uint8_t A7  = PIN_A7 ;
 /*
  * Serial interfaces
  */
-#define PIN_SERIAL1_RX       (0)
-#define PIN_SERIAL1_TX       (1)
+#define PIN_SERIAL1_RX       (1)
+#define PIN_SERIAL1_TX       (0)
 
 /*
  * SPI Interfaces
