@@ -196,7 +196,7 @@ uint8_t BLEScanner::parseReportByType(const ble_gap_evt_adv_report_t* report, ui
 
 bool BLEScanner::checkReportForUuid(const ble_gap_evt_adv_report_t* report, BLEUuid ble_uuid)
 {
-  const uint8_t* uuid;
+  uint8_t* uuid;
   uint8_t uuid_len = ble_uuid.size();
 
   uint8_t type_arr[2];
@@ -213,7 +213,7 @@ bool BLEScanner::checkReportForUuid(const ble_gap_evt_adv_report_t* report, BLEU
     type_arr[0] = BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_MORE_AVAILABLE;
     type_arr[1] = BLE_GAP_AD_TYPE_128BIT_SERVICE_UUID_COMPLETE;
 
-    uuid = ble_uuid._uuid128;
+    uuid = (uint8_t*) ble_uuid._uuid128;
   }
 
   uuid_len /= 8; // convert to number of bytes
