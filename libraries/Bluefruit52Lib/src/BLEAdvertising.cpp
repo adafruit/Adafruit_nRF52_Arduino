@@ -41,13 +41,17 @@
  *------------------------------------------------------------------*/
 BLEAdvertisingData::BLEAdvertisingData(void)
 {
-  _count = 0;
-  arrclr(_data);
+  clearData();
+}
+
+void BLEAdvertisingData::setMaxLen(uint8_t max_len)
+{
+  _max_len = max_len;
 }
 
 bool BLEAdvertisingData::addData(uint8_t type, const void* data, uint8_t len)
 {
-  VERIFY( _count + len + 2 <= BLE_GAP_ADV_SET_DATA_SIZE_MAX );
+  VERIFY( _count + len + 2 <= _max_len );
 
   uint8_t* adv_data = &_data[_count];
 
@@ -183,7 +187,7 @@ bool BLEAdvertisingData::addName(void)
   uint8_t len  = Bluefruit.getName(name, sizeof(name));
 
   // not enough for full name, chop it
-  if (_count + len + 2 > BLE_GAP_ADV_SET_DATA_SIZE_MAX)
+  if (_count + len + 2 > _max_len)
   {
     type = BLE_GAP_AD_TYPE_SHORT_LOCAL_NAME;
     len  = BLE_GAP_ADV_SET_DATA_SIZE_MAX - (_count+2);
@@ -231,7 +235,7 @@ uint8_t* BLEAdvertisingData::getData(void)
 
 bool BLEAdvertisingData::setData(uint8_t const * data, uint8_t count)
 {
-  VERIFY( data && (count <= BLE_GAP_ADV_SET_DATA_SIZE_MAX) );
+  VERIFY( data && (count <= _max_len) );
 
   memcpy(_data, data, count);
   _count = count;
@@ -243,6 +247,7 @@ void BLEAdvertisingData::clearData(void)
 {
   _count = 0;
   arrclr(_data);
+  _max_len = BLE_GAP_ADV_SET_DATA_SIZE_MAX;
 }
 
 /*------------------------------------------------------------------*/
@@ -275,6 +280,14 @@ void BLEAdvertising::setFastTimeout(uint16_t sec)
 void BLEAdvertising::setType(uint8_t adv_type)
 {
   _type = adv_type;
+  if (isExtended())
+  {
+    setMaxLen(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED);
+  }
+  else
+  {
+    setMaxLen(BLE_GAP_ADV_SET_DATA_SIZE_MAX);
+  }
 }
 
 /**
@@ -294,6 +307,22 @@ void BLEAdvertising::setInterval(uint16_t fast, uint16_t slow)
 void BLEAdvertising::setIntervalMS(uint16_t fast, uint16_t slow)
 {
   setInterval(MS1000TO625(fast), MS1000TO625(slow));
+}
+
+void BLEAdvertising::setMaxEvents(uint8_t maxEvents)
+{
+  _max_events = maxEvents;
+}
+
+void BLEAdvertising::setFilter(uint8_t filter)
+{
+  _filter = filter;
+}
+
+void BLEAdvertising::setPhy(uint8_t phy)
+{
+  _primary_phy = phy;
+  _secondary_phy = phy;
 }
 
 /**
@@ -324,6 +353,42 @@ bool BLEAdvertising::isRunning(void)
   return _runnning;
 }
 
+bool BLEAdvertising::isScannable(void)
+{
+ return _type == BLE_GAP_ADV_TYPE_CONNECTABLE_SCANNABLE_UNDIRECTED
+     || _type == BLE_GAP_ADV_TYPE_NONCONNECTABLE_SCANNABLE_UNDIRECTED
+     || _type == BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_SCANNABLE_UNDIRECTED
+     || _type == BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_SCANNABLE_DIRECTED;
+}
+
+bool BLEAdvertising::isConnectable(void)
+{
+  return _type == BLE_GAP_ADV_TYPE_CONNECTABLE_SCANNABLE_UNDIRECTED
+      || _type == BLE_GAP_ADV_TYPE_CONNECTABLE_NONSCANNABLE_DIRECTED_HIGH_DUTY_CYCLE
+      || _type == BLE_GAP_ADV_TYPE_CONNECTABLE_NONSCANNABLE_DIRECTED
+      || _type == BLE_GAP_ADV_TYPE_EXTENDED_CONNECTABLE_NONSCANNABLE_UNDIRECTED
+      || _type == BLE_GAP_ADV_TYPE_EXTENDED_CONNECTABLE_NONSCANNABLE_DIRECTED;
+}
+
+bool BLEAdvertising::isDirected(void)
+{
+  return _type == BLE_GAP_ADV_TYPE_CONNECTABLE_NONSCANNABLE_DIRECTED_HIGH_DUTY_CYCLE
+      || _type == BLE_GAP_ADV_TYPE_CONNECTABLE_NONSCANNABLE_DIRECTED
+      || _type == BLE_GAP_ADV_TYPE_EXTENDED_CONNECTABLE_NONSCANNABLE_DIRECTED
+      || _type == BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_SCANNABLE_DIRECTED
+      || _type == BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_NONSCANNABLE_DIRECTED;
+}
+
+bool BLEAdvertising::isExtended(void)
+{
+  return _type == BLE_GAP_ADV_TYPE_EXTENDED_CONNECTABLE_NONSCANNABLE_UNDIRECTED
+      || _type == BLE_GAP_ADV_TYPE_EXTENDED_CONNECTABLE_NONSCANNABLE_DIRECTED
+      || _type == BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_SCANNABLE_UNDIRECTED
+      || _type == BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_SCANNABLE_DIRECTED
+      || _type == BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_NONSCANNABLE_UNDIRECTED
+      || _type == BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_NONSCANNABLE_DIRECTED;
+}
+
 bool BLEAdvertising::setBeacon(BLEBeacon& beacon)
 {
   return beacon.start(*this);
@@ -348,32 +413,41 @@ bool BLEAdvertising::_start(uint16_t interval, uint16_t timeout)
     .interval      = interval                 , // advertising interval (in units of 0.625 ms)
     .duration      = (uint16_t) (timeout*100) , // in 10-ms unit
 
-    .max_adv_evts  = 0                        , // TODO can be used for fast/slow mode
-    .channel_mask  = { 0, 0, 0, 0, 0 }        , // 40 channel, set 1 to disable
-    .filter_policy = BLE_GAP_ADV_FP_ANY       ,
+    .max_adv_evts  = _max_events              , // can be used for fast/slow mode
+    .channel_mask  = { 0, 0, 0, 0, 0 }        , // 40 channel, set 1 to disable, e.g. { 0, 0, 0, 0, 0xA0 } for not primary 37 and 38
+    .filter_policy = _filter                  ,
 
-    .primary_phy   = BLE_GAP_PHY_AUTO         , // 1 Mbps will be used
-    .secondary_phy = BLE_GAP_PHY_AUTO         , // 1 Mbps will be used
+    .primary_phy   = (isExtended() ? _primary_phy : (uint8_t)BLE_GAP_PHY_AUTO) ,
+    .secondary_phy = _secondary_phy           ,
       // , .set_id, .scan_req_notification
   };
 
-  switch(_type) {
-    case BLE_GAP_ADV_TYPE_CONNECTABLE_NONSCANNABLE_DIRECTED_HIGH_DUTY_CYCLE:
-    case BLE_GAP_ADV_TYPE_CONNECTABLE_NONSCANNABLE_DIRECTED:
-    case BLE_GAP_ADV_TYPE_EXTENDED_CONNECTABLE_NONSCANNABLE_DIRECTED:
-    case BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_SCANNABLE_DIRECTED:
-    case BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_NONSCANNABLE_DIRECTED:
-      adv_para.p_peer_addr = &_peer_addr;
-      break;
-
-    default: break;
-  }
-
+  if (isDirected()) {
+  	adv_para.p_peer_addr = &_peer_addr;
+  }	
+  
   // gap_adv long-live is required by SD v6
   static ble_gap_adv_data_t gap_adv = {
       .adv_data      = { .p_data = _data, .len = _count },
       .scan_rsp_data = { .p_data = Bluefruit.ScanResponse.getData(), .len = Bluefruit.ScanResponse.count() }
   };
+
+  // no advertising data supported?
+  // https://infocenter.nordicsemi.com/topic/com.nordic.infocenter.s140.api.v7.3.0/group___b_l_e___g_a_p___a_d_v___t_y_p_e_s.html
+  if ( _type == BLE_GAP_ADV_TYPE_CONNECTABLE_NONSCANNABLE_DIRECTED
+    || _type == BLE_GAP_ADV_TYPE_CONNECTABLE_NONSCANNABLE_DIRECTED_HIGH_DUTY_CYCLE
+    || _type == BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_SCANNABLE_UNDIRECTED
+    || _type == BLE_GAP_ADV_TYPE_EXTENDED_NONCONNECTABLE_SCANNABLE_DIRECTED )
+  {
+    gap_adv.adv_data = { .p_data = nullptr, .len = 0 };
+  }
+
+  // no scan response data required?
+  if (!isScannable())
+  {
+    gap_adv.scan_rsp_data = { .p_data = nullptr, .len = 0 };
+  }
+
   VERIFY_STATUS( sd_ble_gap_adv_set_configure(&_hdl, &gap_adv, &adv_para), false );
   VERIFY_STATUS( sd_ble_gap_tx_power_set(BLE_GAP_TX_POWER_ROLE_ADV, _hdl, Bluefruit.getTxPower() ), false );
   VERIFY_STATUS( sd_ble_gap_adv_start(_hdl, CONN_CFG_PERIPHERAL), false );
@@ -472,6 +546,18 @@ void BLEAdvertising::_eventHandler(ble_evt_t* evt)
             // invoke stop callback
             if (_stop_cb) ada_callback(NULL, 0, _stop_cb);
           }
+        }
+      }else
+      {
+        if (evt->evt.gap_evt.params.adv_set_terminated.reason == BLE_GAP_EVT_ADV_SET_TERMINATED_REASON_LIMIT_REACHED)
+        {
+          _runnning = false;
+
+          // Stop advertising
+          Bluefruit._stopConnLed(); // stop blinking
+
+          // invoke stop callback
+          if (_stop_cb) ada_callback(NULL, 0, _stop_cb);
         }
       }
     break;
