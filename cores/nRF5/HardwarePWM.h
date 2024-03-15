@@ -41,7 +41,7 @@
 #include <atomic>
 #include <cstdint>
 
-#ifdef NRF52840_XXAA
+#if defined(NRF52840_XXAA) || defined(NRF52833_XXAA)
 #define HWPWM_MODULE_NUM    4
 #else
 #define HWPWM_MODULE_NUM    3

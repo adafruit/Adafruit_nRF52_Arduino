@@ -7,6 +7,12 @@ mcu_dict = {
         'extra_flags': '-DNRF52832_XXAA -DNRF52',
         'ldscript': 'nrf52832_s132_v6.ld'
     },
+    52833: {
+        'flash_size': 811008,
+        'data_size': 106496,
+        'extra_flags': '-DNRF52833_XXAA {build.flags.usb}',
+        'ldscript': 'nrf52833_s140_v7.ld'
+    }
     52840: {
         'flash_size': 815104,
         'data_size': 237568,
@@ -84,7 +90,12 @@ def build_softdevice(name):
         print(f"{name}.menu.softdevice.s132v6.build.sd_name=s132")
         print(f"{name}.menu.softdevice.s132v6.build.sd_version=6.1.1")
         print(f"{name}.menu.softdevice.s132v6.build.sd_fwid=0x00B7")
-    else:
+    elif get_mcu(name) == 52833:
+        print(f"{name}.menu.softdevice.s140v7=S140 7.2.0")
+        print(f"{name}.menu.softdevice.s140v7.build.sd_name=s140")
+        print(f"{name}.menu.softdevice.s140v7.build.sd_version=7.2.0")
+        print(f"{name}.menu.softdevice.s140v7.build.sd_fwid=0x0100")
+    elif get_mcu(name) == 52840:
         print(f"{name}.menu.softdevice.s140v6=S140 6.1.1")
         print(f"{name}.menu.softdevice.s140v6.build.sd_name=s140")
         print(f"{name}.menu.softdevice.s140v6.build.sd_version=6.1.1")
