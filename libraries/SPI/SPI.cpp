@@ -19,9 +19,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-// Due to nRF52832 Errata with SPIM, we will only use SPIM for 840 variant
+// Due to nRF52832 Errata with SPIM, we will only use SPIM for 840 and 833 variants
 // https://infocenter.nordicsemi.com/topic/errata_nRF52832_Rev2/ERR/nRF52832/Rev2/latest/anomaly_832_58.html
-#ifdef NRF52840_XXAA
+#if defined(NRF52840_XXAA) || defined(NRF52833_XXAA)
 
 #include "SPI.h"
 #include <Arduino.h>
@@ -289,4 +289,4 @@ SPIClass SPI(_SPI_DEV,  PIN_SPI_MISO,  PIN_SPI_SCK,  PIN_SPI_MOSI);
 SPIClass SPI1(_SPI1_DEV, PIN_SPI1_MISO, PIN_SPI1_SCK, PIN_SPI1_MOSI);
 #endif
 
-#endif // NRF52840_XXAA
+#endif // NRF52840_XXAA || NRF52833_XXAA
