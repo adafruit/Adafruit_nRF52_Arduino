@@ -91,10 +91,14 @@ def build_softdevice(name):
         print(f"{name}.menu.softdevice.s132v6.build.sd_version=6.1.1")
         print(f"{name}.menu.softdevice.s132v6.build.sd_fwid=0x00B7")
     elif get_mcu(name) == 52833:
-        print(f"{name}.menu.softdevice.s140v7=S140 7.2.0")
-        print(f"{name}.menu.softdevice.s140v7.build.sd_name=s140")
-        print(f"{name}.menu.softdevice.s140v7.build.sd_version=7.2.0")
-        print(f"{name}.menu.softdevice.s140v7.build.sd_fwid=0x0100")
+        print(f"{name}.menu.softdevice.s140v7_2_0=S140 7.2.0")
+        print(f"{name}.menu.softdevice.s140v7_2_0.build.sd_name=s140")
+        print(f"{name}.menu.softdevice.s140v7_2_0.build.sd_version=7.2.0")
+        print(f"{name}.menu.softdevice.s140v7_2_0.build.sd_fwid=0x0100")
+        print(f"{name}.menu.softdevice.s140v7_3_0=S140 7.3.0")
+        print(f"{name}.menu.softdevice.s140v7_3_0.build.sd_name=s140")
+        print(f"{name}.menu.softdevice.s140v7_3_0.build.sd_version=7.3.0")
+        print(f"{name}.menu.softdevice.s140v7_3_0.build.sd_fwid=0x0123")
     elif get_mcu(name) == 52840:
         print(f"{name}.menu.softdevice.s140v6=S140 6.1.1")
         print(f"{name}.menu.softdevice.s140v6.build.sd_name=s140")
