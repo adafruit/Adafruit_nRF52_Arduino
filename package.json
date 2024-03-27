@@ -1,0 +1,7 @@
+{
+  "description": "Adafruit Arduino Framework for NRF52",
+  "name": "framework-arduinoadafruitnrf52",
+  "system": "*",
+  "url": "https://github.com/adafruit/Adafruit_nRF52_Arduino",
+  "version": "0.21.0"
+}
