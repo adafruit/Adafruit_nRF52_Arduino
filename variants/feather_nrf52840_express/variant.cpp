@@ -71,7 +71,9 @@ const uint32_t g_ADigitalPinMap[] =
   // The remaining NFC pin
    9,  // D33 is P0.09 (NFC1, exposed only via test point on bottom of board)
 
-  // Thus, there are 34 defined pins
+  32+14, // D34 is P1.14
+
+  // Thus, there are 35 defined pins
 
   // The remaining pins are not usable:
   //
@@ -92,7 +94,6 @@ const uint32_t g_ADigitalPinMap[] =
   // 43,      // P1.11 is not connected per schematic
   // 44,      // P1.12 is not connected per schematic
   // 45,      // P1.13 is not connected per schematic
-  // 46,      // P1.14 is not connected per schematic
 };
 
 void initVariant()
@@ -103,5 +104,8 @@ void initVariant()
 
   pinMode(PIN_LED2, OUTPUT);
   ledOff(PIN_LED2);
+
+  pinMode(PIN_NEOPIXEL_POWER, OUTPUT);
+  digitalWrite(PIN_NEOPIXEL_POWER, HIGH);
 }
 
