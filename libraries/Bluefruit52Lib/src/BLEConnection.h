@@ -70,6 +70,8 @@ class BLEConnection
     // On-demand semaphore/data that are created on the fly
     SemaphoreHandle_t _hvc_sem;
 
+    TickType_t _waitForIndicateConfirmTimeout;
+
   public:
     BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const * evt_connected, uint8_t hvn_qsize, uint8_t wrcmd_qsize);
     virtual ~BLEConnection();
@@ -95,6 +97,7 @@ class BLEConnection
     bool disconnect(void);
 
     bool setTxPower(int8_t power); // set power for this connection
+    void setWaitForIndicateConfirmTimeout(uint16_t timeOutMs);
 
     bool requestDataLengthUpdate(ble_gap_data_length_params_t const *p_dl_params = NULL, ble_gap_data_length_limitation_t *p_dl_limitation = NULL);
     bool requestMtuExchange(uint16_t mtu);
@@ -116,8 +119,7 @@ class BLEConnection
     bool removeBondKey(void);
 
     bool saveCccd(void);
-    bool loadCccd(void);
-
+    bool loadCccd(void);    
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal code.
