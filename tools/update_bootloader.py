@@ -2,12 +2,6 @@ import os
 import urllib.request
 from multiprocessing import Pool
 
-# Get all variants
-all_variant = []
-for entry in os.scandir("variants"):
-    if entry.is_dir():
-        all_variant.append(entry.name)
-all_variant.sort()
 
 # Detect version in platform.txt
 version = ''
@@ -24,7 +18,7 @@ print(f'version {version}')
 def get_sd(name):
     if '52832' in name:
         return 's132_6.1.1'
-    elif '52833' in name:
+    elif '52833' in name or name == 'pca10100':
         return 's140_7.3.0'
     else:
         # most of the board is 52840
@@ -58,6 +52,14 @@ def download_variant(variant):
         print(f"Downloading {f_uf2}")
         urllib.request.urlretrieve(url_prefix + f_uf2, f'bootloader/{variant}/{f_uf2}')
 
+
 if __name__ == "__main__":
+    # Get all variants
+    all_variant = []
+    for entry in os.scandir("variants"):
+        if entry.is_dir():
+            all_variant.append(entry.name)
+    all_variant.sort()
+
     with Pool() as p:
         p.map(download_variant, all_variant)

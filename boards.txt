@@ -637,9 +637,9 @@ pca10056.name=Nordic nRF52840 DK
 
 # VID/PID for Bootloader, Arduino & CircuitPython
 pca10056.vid.0=0x239A
-pca10056.pid.0=0x8029
+pca10056.pid.0=0x80DA
 pca10056.vid.1=0x239A
-pca10056.pid.1=0x0029
+pca10056.pid.1=0x00DA
 
 # Upload
 pca10056.bootloader.tool=bootburn
@@ -662,7 +662,7 @@ pca10056.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 pca10056.build.ldscript=nrf52840_s140_v6.ld
 pca10056.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
 pca10056.build.vid=0x239A
-pca10056.build.pid=0x8029
+pca10056.build.pid=0x80DA
 pca10056.build.uf2_family=0xADA52840
 
 # Menu: SoftDevice
@@ -691,15 +691,75 @@ pca10056.menu.debug_output.rtt=Segger RTT
 pca10056.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
 
 # -----------------------------------
+# Nordic nRF52833 DK
+# -----------------------------------
+pca10100.name=Nordic nRF52833 DK
+
+# VID/PID for Bootloader, Arduino & CircuitPython
+pca10100.vid.0=0x239A
+pca10100.pid.0=0x80D8
+pca10100.vid.1=0x239A
+pca10100.pid.1=0x00D8
+
+# Upload
+pca10100.bootloader.tool=bootburn
+pca10100.upload.tool=nrfutil
+pca10100.upload.protocol=nrfutil
+pca10100.upload.use_1200bps_touch=true
+pca10100.upload.wait_for_upload_port=true
+pca10100.upload.maximum_size=286720
+pca10100.upload.maximum_data_size=106496
+
+# Build
+pca10100.build.mcu=cortex-m4
+pca10100.build.f_cpu=64000000
+pca10100.build.board=NRF52833_PCA10100
+pca10100.build.core=nRF5
+pca10100.build.variant=pca10100
+pca10100.build.usb_manufacturer="Nordic"
+pca10100.build.usb_product="nRF52833 DK"
+pca10100.build.extra_flags=-DNRF52833_XXAA {build.flags.usb}
+pca10100.build.ldscript=nrf52833_s140_v7.ld
+pca10100.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
+pca10100.build.vid=0x239A
+pca10100.build.pid=0x80D8
+pca10100.build.uf2_family=0x621E937A
+
+# Menu: SoftDevice
+pca10100.menu.softdevice.s140v7=S140 7.3.0
+pca10100.menu.softdevice.s140v7.build.sd_name=s140
+pca10100.menu.softdevice.s140v7.build.sd_version=7.3.0
+pca10100.menu.softdevice.s140v7.build.sd_fwid=0x0123
+
+# Menu: Debug Level
+pca10100.menu.debug.l0=Level 0 (Release)
+pca10100.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+pca10100.menu.debug.l1=Level 1 (Error Message)
+pca10100.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+pca10100.menu.debug.l2=Level 2 (Full Debug)
+pca10100.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+pca10100.menu.debug.l3=Level 3 (Segger SystemView)
+pca10100.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+pca10100.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# Menu: Debug Port
+pca10100.menu.debug_output.serial=Serial
+pca10100.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+pca10100.menu.debug_output.serial1=Serial1
+pca10100.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+pca10100.menu.debug_output.rtt=Segger RTT
+pca10100.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
+
+# -----------------------------------
 # Particle Xenon
 # -----------------------------------
 particle_xenon.name=Particle Xenon
 
 # VID/PID for Bootloader, Arduino & CircuitPython
 particle_xenon.vid.0=0x239A
-particle_xenon.pid.0=0x8029
+particle_xenon.pid.0=0x80DA
 particle_xenon.vid.1=0x239A
-particle_xenon.pid.1=0x0029
+particle_xenon.pid.1=0x00DA
 
 # Upload
 particle_xenon.bootloader.tool=bootburn
@@ -722,7 +782,7 @@ particle_xenon.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 particle_xenon.build.ldscript=nrf52840_s140_v6.ld
 particle_xenon.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
 particle_xenon.build.vid=0x239A
-particle_xenon.build.pid=0x8029
+particle_xenon.build.pid=0x80DA
 particle_xenon.build.uf2_family=0xADA52840
 
 # Menu: SoftDevice
