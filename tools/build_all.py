@@ -26,7 +26,7 @@ build_boards = []
 def get_sd(name):
     if '52832' in name:
         return 's132v6'
-    elif '52833' in name:
+    elif '52833' in name or name == 'pca10100':
         return 's140v7'
     else:
         # most of the board is 52840
