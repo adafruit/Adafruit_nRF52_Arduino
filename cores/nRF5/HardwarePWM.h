@@ -41,10 +41,10 @@
 #include <atomic>
 #include <cstdint>
 
-#ifdef NRF52840_XXAA
-#define HWPWM_MODULE_NUM    4
+#ifdef NRF_PWM3
+  #define HWPWM_MODULE_NUM    4
 #else
-#define HWPWM_MODULE_NUM    3
+  #define HWPWM_MODULE_NUM    3
 #endif
 
 class HardwarePWM

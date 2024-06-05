@@ -166,7 +166,7 @@ void setup()
   // changing the default "deferred" option to false to invoke callback immediately.
   // However, the transfer speed will be affected since immediate callback will block BLE task
   // to process data especially when tft.drawRGBBitmap() is calling.
-#ifdef NRF52840_XXAA
+#if defined(NRF52840_XXAA) || defined(NRF52833_XXAA)
   // 2nd argument is true to deferred callbacks i.e queue it up in separated callback Task
   bleuart.setRxCallback(bleuart_rx_callback, true);
 #else

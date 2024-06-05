@@ -6,6 +6,10 @@ nrfjprog.program.tool=bootburn
 nrfjprog.program.cmd={runtime.tools.nrfjprog.path}/nrfjprog
 nrfjprog.program.cmd.windows={runtime.tools.nrfjprog.path}/nrfjprog.exe
 
+# Use nrfjprog in PATH
+#nrfjprog.program.cmd=nrfjprog
+#nrfjprog.program.cmd.windows=nrfjprog.exe
+
 # Burn bootloader pattern
 nrfjprog.program.burn_pattern="{program.cmd}" --program "{bootloader.file}.hex" -f nrf52 --chiperase --reset
 

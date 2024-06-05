@@ -2,12 +2,6 @@ import os
 import urllib.request
 from multiprocessing import Pool
 
-# Get all variants
-all_variant = []
-for entry in os.scandir("variants"):
-    if entry.is_dir():
-        all_variant.append(entry.name)
-all_variant.sort()
 
 # Detect version in platform.txt
 version = ''
@@ -21,16 +15,23 @@ with open('platform.txt') as pf:
 print(f'version {version}')
 
 
+def get_sd(name):
+    if '52832' in name:
+        return 's132_6.1.1'
+    elif '52833' in name or name == 'pca10100':
+        return 's140_7.3.0'
+    else:
+        # most of the board is 52840
+        return 's140_6.1.1'
+
+
 # Download a variant's bootloader
 def download_variant(variant):
-    # Download from bootloader release
-    sd_version = '6.1.1'
-    sd_name = 's140'
-    if variant == 'feather_nrf52832':
-        sd_name = 's132'
+    sd = get_sd(variant)
 
-    f_zip = f'{variant}_bootloader-{version}_{sd_name}_{sd_version}.zip'
-    f_hex = f'{variant}_bootloader-{version}_{sd_name}_{sd_version}.hex'
+    # Download from bootloader release
+    f_zip = f'{variant}_bootloader-{version}_{sd}.zip'
+    f_hex = f'{variant}_bootloader-{version}_{sd}.hex'
     f_uf2 = f'update-{variant}_bootloader-{version}_nosd.uf2'
     url_prefix = f'https://github.com/adafruit/Adafruit_nRF52_Bootloader/releases/download/{version}/'
 
@@ -47,10 +48,18 @@ def download_variant(variant):
     print(f"Downloading {f_hex}")
     urllib.request.urlretrieve(url_prefix + f_hex, f'bootloader/{variant}/{f_hex}')
 
-    if sd_name != 's132':
+    if 's132' not in sd:
         print(f"Downloading {f_uf2}")
         urllib.request.urlretrieve(url_prefix + f_uf2, f'bootloader/{variant}/{f_uf2}')
 
+
 if __name__ == "__main__":
+    # Get all variants
+    all_variant = []
+    for entry in os.scandir("variants"):
+        if entry.is_dir():
+            all_variant.append(entry.name)
+    all_variant.sort()
+
     with Pool() as p:
         p.map(download_variant, all_variant)

@@ -23,13 +23,21 @@ default_boards = [
 ]
 build_boards = []
 
+def get_sd(name):
+    if '52832' in name:
+        return 's132v6'
+    elif '52833' in name or name == 'pca10100':
+        return 's140v7'
+    else:
+        # most of the board is 52840
+        return 's140v6'
 
 def build_a_example(arg):
     variant = arg[0]
     sketch = arg[1]
 
-    fqbn = "adafruit:nrf52:{}:softdevice={},debug=l0".format(variant,
-                                                             's140v6' if variant != 'feather52832' else 's132v6')
+    fqbn = "adafruit:nrf52:{}:softdevice={},debug=l0".format(variant, get_sd(variant))
+
     # succeeded, failed, skipped
     ret = [0, 0, 0]
 
