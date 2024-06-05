@@ -62,6 +62,7 @@
 #include "services/BLEDfu.h"
 #include "services/BLEUart.h"
 #include "services/BLEBas.h"
+#include "services/BLEIas.h"
 #include "services/BLEBeacon.h"
 #include "services/BLEHidGeneric.h"
 #include "services/BLEHidAdafruit.h"
@@ -75,6 +76,7 @@
 #include "clients/BLEClientCts.h"
 #include "clients/BLEClientHidAdafruit.h"
 #include "clients/BLEClientBas.h"
+#include "clients/BLEClientIas.h"
 
 #include "utility/AdaCallback.h"
 #include "utility/bonding.h"

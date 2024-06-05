@@ -2,7 +2,6 @@ import os
 import glob
 import sys
 import subprocess
-from subprocess import Popen, PIPE
 import time
 from multiprocessing import Pool
 
@@ -22,6 +21,7 @@ default_boards = [
     'feather52840sense',
     'itsybitsy52840'
 ]
+build_boards = []
 
 def get_sd(name):
     if '52832' in name:
@@ -32,31 +32,34 @@ def get_sd(name):
         # most of the board is 52840
         return 's140v6'
 
-# return [succeeded, failed, skipped]
-def build_sketch(variant, sketch):
+def build_a_example(arg):
+    variant = arg[0]
+    sketch = arg[1]
+
     fqbn = "adafruit:nrf52:{}:softdevice={},debug=l0".format(variant, get_sd(variant))
+
+    # succeeded, failed, skipped
     ret = [0, 0, 0]
 
-    # skip TinyUSB library examples for nRF52832
-    if variant == 'feather52832' and "libraries/Adafruit_TinyUSB_Arduino" in sketch:
-        return ret
-
     start_time = time.monotonic()
+
     # Skip if contains: ".board.test.skip" or ".all.test.skip"
     # Skip if not contains: ".board.test.only" for a specific board
     sketchdir = os.path.dirname(sketch)
-    if os.path.exists(sketchdir + '/.all.test.skip') or os.path.exists(sketchdir + '/.' + variant + '.test.skip') or \
-            (glob.glob(sketchdir + "/.*.test.only") and not os.path.exists(sketchdir + '/.' + variant + '.test.only')):
+    if os.path.exists(sketchdir + '/.all.test.skip') or os.path.exists(sketchdir + '/.' + variant + '.test.skip'):
+        success = SKIPPED
+        ret[2] = 1
+    elif glob.glob(sketchdir + "/.*.test.only") and not os.path.exists(sketchdir + '/.' + variant + '.test.only'):
         success = SKIPPED
         ret[2] = 1
     else:
-        build_result = subprocess.run("arduino-cli compile --warnings all --fqbn {} {}".format(fqbn, sketch),
-                                      shell=True, stdout=PIPE, stderr=PIPE)
+        build_result = subprocess.run("arduino-cli compile --warnings all --fqbn {} {}".format(fqbn, sketch), shell=True,
+                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         # get stderr into a form where warning/error was output to stderr
         if build_result.returncode != 0:
-            success = FAILED
             ret[1] = 1
+            success = FAILED
         else:
             ret[0] = 1
             if build_result.stderr:
@@ -67,6 +70,7 @@ def build_sketch(variant, sketch):
     build_duration = time.monotonic() - start_time
     print(build_format.format(sketch.split(os.path.sep)[1], os.path.basename(sketch), success,
                               '{:5.2f}s'.format(build_duration)))
+
     if success != SKIPPED:
         # Build failed
         if build_result.returncode != 0:
@@ -74,11 +78,14 @@ def build_sketch(variant, sketch):
 
         # Build with warnings
         if build_result.stderr:
+            print(f"::group::warning-message")
             print(build_result.stderr.decode("utf-8"))
+            print(f"::endgroup::")
+
     return ret
 
-# return [succeeded, failed, skipped]
-def build_variant(variant):
+
+def build_all_examples(variant):
     print('\n')
     print(build_separator)
     print('| {:^84} |'.format('Board ' + variant))
@@ -86,35 +93,39 @@ def build_variant(variant):
     print(build_format.format('Library', 'Example', '\033[39mResult\033[0m', 'Time'))
     print(build_separator)
 
-    with Pool(processes=os.cpu_count()) as pool:
-        pool_args = list((map(lambda e, b=variant: [b, e], all_examples)))
-        result = pool.starmap(build_sketch, pool_args)
+    args = [[variant, s] for s in all_examples]
+    with Pool() as pool:
+        result = pool.map(build_a_example, args)
         # sum all element of same index (column sum)
         return list(map(sum, list(zip(*result))))
 
-if __name__ == '__main__':
-    build_boards = []
 
+if __name__ == "__main__":
     # build all variants if input not existed
     if len(sys.argv) > 1:
         build_boards.append(sys.argv[1])
     else:
         build_boards = default_boards
 
+    # All examples in libraries except TinyUSB which has its own ci to build
     all_examples = list(glob.iglob('libraries/**/*.ino', recursive=True))
+    all_examples = [i for i in all_examples if "Adafruit_TinyUSB_Arduino" not in i]
     all_examples.sort()
 
-    total_time = time.monotonic()
+    build_time = time.monotonic()
 
+    # succeeded, failed, skipped
     total_result = [0, 0, 0]
+
     for board in build_boards:
-        ret = build_variant(board)
-        total_result = list(map(lambda x, y: x + y, total_result, ret))
+        fret = build_all_examples(board)
+        if len(fret) == len(total_result):
+            total_result = [total_result[i] + fret[i] for i in range(len(fret))]
+
+    build_time = time.monotonic() - build_time
 
     print(build_separator)
-    total_time = time.monotonic() - total_time
-    print("Build Summary: {} {}, {} {}, {} {} and took {:.2f}s".format(total_result[0], SUCCEEDED, total_result[1],
-                                                                       FAILED, total_result[2], SKIPPED, total_time))
+    print("Build Summary: {} {}, {} {}, {} {} and took {:.2f}s".format(total_result[0], SUCCEEDED, total_result[1], FAILED, total_result[2], SKIPPED, build_time))
     print(build_separator)
 
     sys.exit(total_result[1])

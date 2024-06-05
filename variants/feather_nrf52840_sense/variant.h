@@ -58,7 +58,7 @@ extern "C"
 /*
  * Buttons
  */
-#define PIN_BUTTON1             (7)
+#define PIN_BUTTON1          (7)
 
 // Microphone
 #define PIN_PDM_DIN           34

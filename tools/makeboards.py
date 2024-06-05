@@ -38,18 +38,18 @@ def get_mcu(name):
 def build_upload(name):
     mcu = get_mcu(name)
     print("# Upload")
-    print("%s.bootloader.tool=bootburn" % name)
-    print("%s.upload.tool=nrfutil" % name)
-    print("%s.upload.protocol=nrfutil" % name)
+    print(f"{name}.bootloader.tool=bootburn")
+    print(f"{name}.upload.tool=nrfutil")
+    print(f"{name}.upload.protocol=nrfutil")
     if mcu == 52832:
-        print("%s.upload.use_1200bps_touch=false" % name)
-        print("%s.upload.wait_for_upload_port=false" % name)
-        print("%s.upload.native_usb=false" % name)
+        print(f"{name}.upload.use_1200bps_touch=false")
+        print(f"{name}.upload.wait_for_upload_port=false")
+        print(f"{name}.upload.native_usb=false")
     else:
-        print("%s.upload.use_1200bps_touch=true" % name)
-        print("%s.upload.wait_for_upload_port=true" % name)
-    print("%s.upload.maximum_size=%d" % (name, mcu_dict[mcu]['flash_size']))
-    print("%s.upload.maximum_data_size=%d" % (name, mcu_dict[mcu]['data_size']))
+        print(f"{name}.upload.use_1200bps_touch=true")
+        print(f"{name}.upload.wait_for_upload_port=true")
+    print(f"{name}.upload.maximum_size={mcu_dict[mcu]['flash_size']}")
+    print(f"{name}.upload.maximum_data_size={mcu_dict[mcu]['data_size']}")
     print()
 
 
@@ -57,90 +57,88 @@ def build_header(name, variant, vendor_name, product_name, boarddefine, vid, pid
     prettyname = vendor_name + " " + product_name
     print()
     print("# -----------------------------------")
-    print("# %s" % prettyname)
+    print(f"# {prettyname}")
     print("# -----------------------------------")
-    print("%s.name=%s" % (name, prettyname))
+    print(f"{name}.name={prettyname}")
     print()
 
     print("# VID/PID for Bootloader, Arduino & CircuitPython")
     for i in range(len(pid_list)):
-        print("%s.vid.%d=%s" % (name, i, vid))
-        print("%s.pid.%d=%s" % (name, i, pid_list[i]))
+        print(f"{name}.vid.{i}={vid}")
+        print(f"{name}.pid.{i}={pid_list[i]}")
     print()
 
     build_upload(name)
 
     print("# Build")
-    print("%s.build.mcu=cortex-m4" % name)
-    print("%s.build.f_cpu=64000000" % name)
-    print("%s.build.board=%s" % (name, boarddefine))
-    print("%s.build.core=nRF5" % name)
-    print("%s.build.variant=%s" % (name, variant))
-    print('%s.build.usb_manufacturer="%s"' % (name, vendor_name))
-    print('%s.build.usb_product="%s"' % (name, product_name))
+    print(f"{name}.build.mcu=cortex-m4")
+    print(f"{name}.build.f_cpu=64000000")
+    print(f"{name}.build.board={boarddefine}")
+    print(f"{name}.build.core=nRF5")
+    print(f"{name}.build.variant={variant}")
+    print(f'{name}.build.usb_manufacturer="{vendor_name}"')
+    print(f'{name}.build.usb_product="{product_name}"')
 
     mcu = get_mcu(name)
     mcu_info = mcu_dict[mcu]
-    print("%s.build.extra_flags=%s" % (name, mcu_info['extra_flags']))
-    print("%s.build.ldscript=%s" % (name, mcu_info['ldscript']))
+    print(f"{name}.build.extra_flags={mcu_info['extra_flags']}")
+    print(f"{name}.build.ldscript={mcu_info['ldscript']}")
+    print(f"{name}.build.openocdscript=scripts/openocd/daplink_nrf52.cfg")
     if mcu != 52832:
-        print("%s.build.vid=%s" % (name, vid))
-        print("%s.build.pid=%s" % (name, pid_list[0]))
-        print("%s.build.uf2_family=%s" % (name, mcu_info['uf2_family']))
+        print(f"{name}.build.vid={vid}")
+        print(f"{name}.build.pid={pid_list[0]}")
+        print(f"{name}.build.uf2_family={mcu_info['uf2_family']}")
     print()
 
 
 def build_softdevice(name):
-    print("# SoftDevice Menu")
+    print("# Menu: SoftDevice")
     mcu = get_mcu(name)
     if mcu == 52832:
-        print("%s.menu.softdevice.s132v6=S132 6.1.1" % name)
-        print("%s.menu.softdevice.s132v6.build.sd_name=s132" % name)
-        print("%s.menu.softdevice.s132v6.build.sd_version=6.1.1" % name)
-        print("%s.menu.softdevice.s132v6.build.sd_fwid=0x00B7" % name)
+        print(f"{name}.menu.softdevice.s132v6=S132 6.1.1")
+        print(f"{name}.menu.softdevice.s132v6.build.sd_name=s132")
+        print(f"{name}.menu.softdevice.s132v6.build.sd_version=6.1.1")
+        print(f"{name}.menu.softdevice.s132v6.build.sd_fwid=0x00B7")
     elif mcu == 52833:
-        print("%s.menu.softdevice.s140v7=S140 7.3.0" % name)
-        print("%s.menu.softdevice.s140v7.build.sd_name=s140" % name)
-        print("%s.menu.softdevice.s140v7.build.sd_version=7.3.0" % name)
-        print("%s.menu.softdevice.s140v7.build.sd_fwid=0x0123" % name)
-    else:
-        # 52840
-        print("%s.menu.softdevice.s140v6=S140 6.1.1" % name)
-        print("%s.menu.softdevice.s140v6.build.sd_name=s140" % name)
-        print("%s.menu.softdevice.s140v6.build.sd_version=6.1.1" % name)
-        print("%s.menu.softdevice.s140v6.build.sd_fwid=0x00B6" % name)
+        print(f"{name}.menu.softdevice.s140v7=S140 7.3.0")
+        print(f"{name}.menu.softdevice.s140v7.build.sd_name=s140")
+        print(f"{name}.menu.softdevice.s140v7.build.sd_version=7.3.0")
+        print(f"{name}.menu.softdevice.s140v7.build.sd_fwid=0x0123")
+    elif mcu == 52840:
+        print(f"{name}.menu.softdevice.s140v6=S140 6.1.1")
+        print(f"{name}.menu.softdevice.s140v6.build.sd_name=s140")
+        print(f"{name}.menu.softdevice.s140v6.build.sd_version=6.1.1")
+        print(f"{name}.menu.softdevice.s140v6.build.sd_fwid=0x00B6")
     print()
 
 
 def build_debug(name):
-    print("# Debug Menu")
-    print("%s.menu.debug.l0=Level 0 (Release)" % name)
-    print("%s.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0" % name)
-    print("%s.menu.debug.l1=Level 1 (Error Message)" % name)
-    print("%s.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1" % name)
-    print("%s.menu.debug.l2=Level 2 (Full Debug)" % name)
-    print("%s.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2" % name)
-    print("%s.menu.debug.l3=Level 3 (Segger SystemView)" % name)
-    print("%s.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3" % name)
-    print("%s.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1" % name)
+    print("# Menu: Debug Level")
+    print(f"{name}.menu.debug.l0=Level 0 (Release)")
+    print(f"{name}.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0")
+    print(f"{name}.menu.debug.l1=Level 1 (Error Message)")
+    print(f"{name}.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1")
+    print(f"{name}.menu.debug.l2=Level 2 (Full Debug)")
+    print(f"{name}.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2")
+    print(f"{name}.menu.debug.l3=Level 3 (Segger SystemView)")
+    print(f"{name}.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3")
+    print(f"{name}.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1")
     print()
 
 
 def build_debug_output(name):
-    print("# Debug Output Menu")
-    print("%s.menu.debug_output.serial=Serial" % name)
-    print("%s.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0" % name)
-    print("%s.menu.debug_output.serial1=Serial1" % name)
-    print("%s.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG" % name)
-    print("%s.menu.debug_output.rtt=Segger RTT" % name)
-    print(
-        "%s.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL" % name)
-
+    print("# Menu: Debug Port")
+    print(f"{name}.menu.debug_output.serial=Serial")
+    print(f"{name}.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0")
+    print(f"{name}.menu.debug_output.serial1=Serial1")
+    print(f"{name}.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG")
+    print(f"{name}.menu.debug_output.rtt=Segger RTT")
+    print(f"{name}.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL")
 
 def build_global_menu():
     print("menu.softdevice=SoftDevice")
-    print("menu.debug=Debug")
-    print("menu.debug_output=Debug Output")
+    print("menu.debug=Debug Level")
+    print("menu.debug_output=Debug Port")
 
 
 def make_board(name, variant, vendor_name, product_name, boarddefine, vid, pid_list):
@@ -150,60 +148,71 @@ def make_board(name, variant, vendor_name, product_name, boarddefine, vid, pid_l
     build_debug_output(name)
 
 
+# ------------------------------
+# main
+# ------------------------------
 build_global_menu()
 
-make_board("cluenrf52840", "clue_nrf52840", "Adafruit", "CLUE", "NRF52840_CLUE",
-           "0x239A", ["0x8071", "0x0071", "0x8072"])
+# ------------------------------
+# Adafruit Boards
+# ------------------------------
 
-make_board("cplaynrf52840", "circuitplayground_nrf52840", "Adafruit", "Circuit Playground Bluefruit",
-           "NRF52840_CIRCUITPLAY",
-           "0x239A", ["0x8045", "0x0045", "0x8046"])
+adafruit_boards_list = [
+    ["feather52832", "feather_nrf52832", "Adafruit", "Feather nRF52832", "NRF52832_FEATHER",
+     "0x239A", []],
 
-make_board("feather52832", "feather_nrf52832", "Adafruit", "Feather nRF52832", "NRF52832_FEATHER",
-           "0x239A", [])
+    ["feather52840", "feather_nrf52840_express", "Adafruit", "Feather nRF52840 Express", "NRF52840_FEATHER",
+     "0x239A", ["0x8029", "0x0029", "0x002A", "0x802A"]],
 
-make_board("feather52840", "feather_nrf52840_express", "Adafruit", "Feather nRF52840 Express", "NRF52840_FEATHER",
-           "0x239A", ["0x8029", "0x0029", "0x002A", "0x802A"])
+    ["feather52840sense", "feather_nrf52840_sense", "Adafruit", "Feather nRF52840 Sense", "NRF52840_FEATHER_SENSE",
+     "0x239A", ["0x8087", "0x0087", "0x0088", "0x8088"]],
 
-make_board("feather52840sense", "feather_nrf52840_sense", "Adafruit", "Feather nRF52840 Sense",
-           "NRF52840_FEATHER_SENSE",
-           "0x239A", ["0x8087", "0x0087", "0x0088", "0x8088"])
+    ["feather_nrf52840_sense_tft", "feather_nrf52840_sense_tft", "Adafruit", "Feather nRF52840 Sense TFT", "NRF52840_FEATHER_SENSE_TFT",
+     "0x239A", ["0x8087", "0x0087", "0x0088", "0x8088"]], # TODO shared VID with sense for now
 
-make_board("itsybitsy52840", "itsybitsy_nrf52840_express", "Adafruit", "ItsyBitsy nRF52840 Express",
-           "NRF52840_ITSYBITSY -DARDUINO_NRF52_ITSYBITSY",
-           "0x239A", ["0x8051", "0x0051", "0x0052", "0x8052"])
+    ["itsybitsy52840", "itsybitsy_nrf52840_express", "Adafruit", "ItsyBitsy nRF52840 Express", "NRF52840_ITSYBITSY -DARDUINO_NRF52_ITSYBITSY",
+     "0x239A", ["0x8051", "0x0051", "0x0052", "0x8052"]],
 
-make_board("ledglasses_nrf52840", "ledglasses_nrf52840", "Adafruit", "LED Glasses Driver nRF52840",
-           "NRF52840_LED_GLASSES",
-           "0x239A", ["0x810D", "0x010D", "0x810E"])
+    ["cplaynrf52840", "circuitplayground_nrf52840", "Adafruit", "Circuit Playground Bluefruit", "NRF52840_CIRCUITPLAY",
+     "0x239A", ["0x8045", "0x0045", "0x8046"]],
 
-make_board("mdbt50qrx", "raytac_mdbt50q_rx", "Raytac", "nRF52840 Dongle", "MDBT50Q_RX",
-           "0x239A", ["0x810B", "0x010B", "0x810C"])
+    ["cluenrf52840", "clue_nrf52840", "Adafruit", "CLUE", "NRF52840_CLUE",
+     "0x239A", ["0x8071", "0x0071", "0x8072"]],
+
+    ["ledglasses_nrf52840", "ledglasses_nrf52840", "Adafruit", "LED Glasses Driver nRF52840", "NRF52840_LED_GLASSES",
+     "0x239A", ["0x810D", "0x010D", "0x810E"]],
+
+    ["mdbt50qrx", "raytac_mdbt50q_rx", "Raytac", "nRF52840 Dongle", "MDBT50Q_RX",
+     "0x239A", ["0x810B", "0x010B", "0x810C"]],
+
+    ["metro52840", "metro_nrf52840_express", "Adafruit", "Metro nRF52840 Express", "NRF52840_METRO",
+     "0x239A", ["0x803F", "0x003F", "0x0040", "0x8040"]],
+
+    # ["feather52833", "feather_nrf52833_express", "Adafruit", "Feather nRF52833 Express", "NRF52833_FEATHER",
+    #            "0x239A", ["0x8029", "0x0029", "0x002A", "0x802A"]],
+]
+
+for b in adafruit_boards_list:
+    make_board(*b)
+
+# ------------------------------
+# 3rd Party Boards
+# ------------------------------
 
 print()
-print("# -------------------------------------------------------")
-print("#")
-print("# Boards not yet in production")
-print("#")
-print("# -------------------------------------------------------")
-
-make_board("metro52840", "metro_nrf52840_express", "Adafruit", "Metro nRF52840 Express", "NRF52840_METRO",
-           "0x239A", ["0x803F", "0x003F", "0x0040", "0x8040"])
-
-# TODO currently shared PID with nrf52840
-make_board("feather52833", "feather_nrf52833_express", "Adafruit", "Feather nRF52833 Express", "NRF52833_FEATHER",
-           "0x239A", ["0x8029", "0x0029", "0x002A", "0x802A"])
-
-print()
 print()
 print("# -------------------------------------------------------")
-print("#")
-print("# Boards by 3rd Party (not Adafruit)")
-print("#")
+print("# Boards that aren't made by Adafruit")
+print("# and are not officially supported")
 print("# -------------------------------------------------------")
 
-make_board("particle_xenon", "particle_xenon", "Particle", "Xenon", "PARTICLE_XENON",
-           "0x239A", ["0x8029", "0x0029"])
+thirdparty_boards_list = [
+    ["pca10056", "pca10056", "Nordic", "nRF52840 DK", "NRF52840_PCA10056",
+     "0x239A", ["0x8029", "0x0029"]],
 
-make_board("pca10056", "pca10056", "Nordic", "nRF52840 DK", "NRF52840_PCA10056",
-           "0x239A", ["0x8029", "0x0029"])
+    ["particle_xenon", "particle_xenon", "Particle", "Xenon", "PARTICLE_XENON",
+     "0x239A", ["0x8029", "0x0029"]],
+]
+
+for b in thirdparty_boards_list:
+    make_board(*b)
