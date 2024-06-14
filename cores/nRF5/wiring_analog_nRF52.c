@@ -284,6 +284,13 @@ uint32_t analogReadVDD( void )
   return analogRead_internal(SAADC_CH_PSELP_PSELP_VDD);
 }
 
+#ifdef SAADC_CH_PSELP_PSELP_VDDHDIV5
+uint32_t analogReadVDDHDIV5( void )
+{
+  return analogRead_internal(SAADC_CH_PSELP_PSELP_VDDHDIV5);
+}
+#endif
+
 void analogCalibrateOffset( void )
 {
   // Enable the SAADC

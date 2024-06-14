@@ -92,6 +92,14 @@ extern uint32_t analogRead( uint32_t ulPin ) ;
  */
 extern uint32_t analogReadVDD( void ) ;
 
+#ifdef SAADC_CH_PSELP_PSELP_VDDHDIV5
+/*
+ * \brief Read the value from the vddh pin with div5.
+ *
+ * \return Read value from vddh pin with div5, if no error.
+ */
+extern uint32_t analogReadVDDHDIV5( void ) ;
+#endif
 
 /*
  * \brief Set the resolution of analogRead return values. Default is 10 bits (range from 0 to 1023).
