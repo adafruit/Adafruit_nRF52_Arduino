@@ -68,6 +68,7 @@ bool File::_open_file (char const *filepath, uint8_t mode)
       PRINT_LFS_ERR(rc);
       // free memory
       rtos_free(_file);
+      _file = NULL;
       return false;
     }
 
@@ -93,6 +94,7 @@ bool File::_open_dir (char const *filepath)
     PRINT_LFS_ERR(rc);
     // free memory
     rtos_free(_dir);
+    _dir = NULL;
     return false;
   }
 
