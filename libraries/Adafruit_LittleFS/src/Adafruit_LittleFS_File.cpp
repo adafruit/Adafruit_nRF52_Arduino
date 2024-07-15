@@ -37,6 +37,7 @@ File::File (Adafruit_LittleFS &fs)
   _fs = &fs;
   _is_dir = false;
   _name[0] = 0;
+  _name[LFS_NAME_MAX] = 0;
   _dir_path = NULL;
 
   _dir = NULL;
