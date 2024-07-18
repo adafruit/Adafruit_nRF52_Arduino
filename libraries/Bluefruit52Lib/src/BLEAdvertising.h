@@ -72,11 +72,15 @@ class Advertisable
 class BLEAdvertisingData
 {
 protected:
-  uint8_t _data[BLE_GAP_ADV_SET_DATA_SIZE_MAX];
+  uint8_t _max_len = BLE_GAP_ADV_SET_DATA_SIZE_MAX;
+  uint8_t _data[BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_CONNECTABLE_MAX_SUPPORTED];
   uint8_t _count;
 
 public:
   BLEAdvertisingData(void);
+
+  // @param max_len must be set before adding data, defaults to BLE_GAP_ADV_SET_DATA_SIZE_MAX
+  void setMaxLen(uint8_t max_len);
 
   /*------------- Adv Data -------------*/
   bool addData(uint8_t type, const void* data, uint8_t len);
@@ -120,6 +124,7 @@ public:
 
   BLEAdvertising(void);
 
+  // must be set as first property after clear for extended advertising
   void setType(uint8_t adv_type);
   void setFastTimeout(uint16_t sec);
 
@@ -128,6 +133,10 @@ public:
 
   void setInterval  (uint16_t fast, uint16_t slow);
   void setIntervalMS(uint16_t fast, uint16_t slow);
+
+  void setMaxEvents(uint8_t maxEvents);
+  void setFilter(uint8_t filter);
+  void setPhy(uint8_t phy);
 
   uint16_t getInterval(void);
 
@@ -138,6 +147,10 @@ public:
   void setPeerAddress(const ble_gap_addr_t& peer_addr);
 
   bool isRunning(void);
+  bool isScannable(void);
+  bool isConnectable(void);
+  bool isDirected(void);
+  bool isExtended(void);
 
   void restartOnDisconnect(bool enable);
   bool start(uint16_t timeout = 0);
@@ -153,6 +166,10 @@ public:
 private:
   uint8_t  _hdl;
   uint8_t  _type;
+  uint8_t  _max_events = 0; // initially time limited
+  uint8_t  _filter = BLE_GAP_ADV_FP_ANY;
+  uint8_t  _primary_phy = BLE_GAP_PHY_AUTO;
+  uint8_t  _secondary_phy = BLE_GAP_PHY_AUTO;
   bool     _start_if_disconnect;
   bool     _runnning;
   ble_gap_addr_t _peer_addr; //! Target address for an ADV_DIRECT_IND advertisement
