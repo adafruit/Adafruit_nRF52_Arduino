@@ -23,26 +23,32 @@
 #include <sys/stat.h>
 #include <malloc.h>
 
+__attribute__((weak))
 void *operator new(size_t size) {
   return rtos_malloc(size);
 }
 
+__attribute__((weak))
 void *operator new[](size_t size) {
   return rtos_malloc(size);
 }
 
+__attribute__((weak))
 void operator delete(void * ptr) {
   rtos_free(ptr);
 }
 
+__attribute__((weak))
 void operator delete[](void * ptr) {
   rtos_free(ptr);
 }
 
+__attribute__((weak))
 void operator delete(void * ptr, unsigned int) {
   rtos_free(ptr);
 }
 
+__attribute__((weak))
 void operator delete[](void * ptr, unsigned int) {
   rtos_free(ptr);
 }
