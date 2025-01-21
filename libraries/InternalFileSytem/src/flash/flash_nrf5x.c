@@ -64,7 +64,8 @@ void flash_nrf5x_event_cb (uint32_t event)
 
 // When soft device is enabled, flash ops are async
 // Eventual success is reported via callback, which we await
-static uint32_t wait_for_async_flash_op_completion(uint32_t initial_result) {
+static uint32_t wait_for_async_flash_op_completion(uint32_t initial_result) 
+{
   // If initial result not NRF_SUCCESS, no need to await callback
   // We will pass the initial result (failure) straight through
   int32_t result = initial_result;
@@ -76,18 +77,21 @@ static uint32_t wait_for_async_flash_op_completion(uint32_t initial_result) {
     xSemaphoreTake(_sem, portMAX_DELAY);
     
     // If completed successfully
-    if (_flash_op_result == NRF_EVT_FLASH_OPERATION_SUCCESS) 
-      result = NRF_SUCCESS;
+    if (_flash_op_result == NRF_EVT_FLASH_OPERATION_SUCCESS) { 
+      result = NRF_SUCCESS; 
+    }
 
     // If general failure.
     // The comment on NRF_EVT_FLASH_OPERATION_ERROR describes it as a timeout,
     // so we're using a similar error when translating from NRF_SOC_EVTS type to the global NRF52 error defines
-    else if (_flash_op_result == NRF_EVT_FLASH_OPERATION_ERROR) 
-      result = NRF_ERROR_TIMEOUT;
+    else if (_flash_op_result == NRF_EVT_FLASH_OPERATION_ERROR) { 
+      result = NRF_ERROR_TIMEOUT; 
+    }
     
     // If this assert triggers, we need to implement a new NRF_SOC_EVTS value
-    else 
-      assert(false);
+    else { 
+      assert(false); 
+    }
   }
   
   return result;
@@ -147,8 +151,7 @@ bool flash_nrf5x_erase(uint32_t addr)
 static bool fal_erase (uint32_t addr)
 {
   // Init semaphore for first call
-  if ( _sem == NULL )
-  {
+  if ( _sem == NULL ) {
     _sem = xSemaphoreCreateBinary();
     VERIFY(_sem);
   }
@@ -164,9 +167,15 @@ static bool fal_erase (uint32_t addr)
   for (uint8_t attempt = 0; attempt < MAX_RETRY; ++attempt) {
     err = sd_flash_page_erase(addr / FLASH_NRF52_PAGE_SIZE);
 
-    if(sd_en) err = wait_for_async_flash_op_completion(err); // Only async if soft device enabled
-    if (err == NRF_SUCCESS) break;
-    if (err == NRF_ERROR_BUSY) delay(1);
+    if (sd_en) { 
+      err = wait_for_async_flash_op_completion(err); // Only async if soft device enabled
+    }
+    if (err == NRF_SUCCESS) {
+      break;
+    }
+    if (err == NRF_ERROR_BUSY) {
+      delay(1);
+    }
   }
   VERIFY_STATUS(err, false); // Return false if all retries fail
 
@@ -190,9 +199,15 @@ static uint32_t fal_program (uint32_t dst, void const * src, uint32_t len)
   for (uint8_t attempt = 0; attempt < MAX_RETRY; ++attempt) {
     err = sd_flash_write((uint32_t*) dst, (uint32_t const *) src, len/4);
 
-    if(sd_en) err = wait_for_async_flash_op_completion(err); // Only async if soft device enabled
-    if (err == NRF_SUCCESS) break;
-    if (err == NRF_ERROR_BUSY) delay(1);
+    if (sd_en) {
+      err = wait_for_async_flash_op_completion(err); // Only async if soft device enabled
+    }
+    if (err == NRF_SUCCESS) { 
+      break; 
+    }
+    if (err == NRF_ERROR_BUSY) {
+      delay(1);
+    }
   }
   VERIFY_STATUS(err, 0); // Return 0 if all retries fail
 
@@ -202,9 +217,15 @@ static uint32_t fal_program (uint32_t dst, void const * src, uint32_t len)
   for (uint8_t attempt = 0; attempt < MAX_RETRY; ++attempt) {
     err = sd_flash_write((uint32_t*) dst, (uint32_t const *) src, len/8);
 
-    if(sd_en) err = wait_for_async_flash_op_completion(err); // Only async if soft device enabled
-    if (err == NRF_SUCCESS) break;
-    if (err == NRF_ERROR_BUSY) delay(1);
+    if (sd_en) { 
+      err = wait_for_async_flash_op_completion(err); // Only async if soft device enabled
+    }
+    if (err == NRF_SUCCESS) {
+      break;
+    }
+    if (err == NRF_ERROR_BUSY) {
+      delay(1);
+    }
   }
   VERIFY_STATUS(err, 0); // Return 0 if all retries fail
 
@@ -213,9 +234,15 @@ static uint32_t fal_program (uint32_t dst, void const * src, uint32_t len)
   for (uint8_t attempt = 0; attempt < MAX_RETRY; ++attempt) {
     err = sd_flash_write((uint32_t*) (dst+ len/2), (uint32_t const *) (src + len/2), len/8);
 
-    if(sd_en) err = wait_for_async_flash_op_completion(err); // Only async if soft device enabled
-    if (err == NRF_SUCCESS) break;
-    if (err == NRF_ERROR_BUSY) delay(1);
+    if (sd_en) {
+      err = wait_for_async_flash_op_completion(err); // Only async if soft device enabled
+    }
+    if (err == NRF_SUCCESS) {
+      break;
+    }
+    if (err == NRF_ERROR_BUSY) {
+      delay(1);
+    }
   }
   VERIFY_STATUS(err, 0); // Return 0 if all retries fail
 #endif
