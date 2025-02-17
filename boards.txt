@@ -809,3 +809,63 @@ particle_xenon.menu.debug_output.serial1=Serial1
 particle_xenon.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
 particle_xenon.menu.debug_output.rtt=Segger RTT
 particle_xenon.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
+
+# -----------------------------------
+# eAFAQ Omnimo nRF52840
+# -----------------------------------
+omnimo52840.name=eAFAQ Omnimo nRF52840
+
+# VID/PID for Bootloader, Arduino & CircuitPython
+omnimo52840.vid.0=0x1209
+omnimo52840.pid.0=0xCECE
+omnimo52840.vid.1=0x1209
+omnimo52840.pid.1=0xCECE
+
+# Upload
+omnimo52840.bootloader.tool=bootburn
+omnimo52840.upload.tool=nrfutil
+omnimo52840.upload.protocol=nrfutil
+omnimo52840.upload.use_1200bps_touch=true
+omnimo52840.upload.wait_for_upload_port=true
+omnimo52840.upload.maximum_size=815104
+omnimo52840.upload.maximum_data_size=237568
+
+# Build
+omnimo52840.build.mcu=cortex-m4
+omnimo52840.build.f_cpu=64000000
+omnimo52840.build.board=NRF52840_OMNIMO
+omnimo52840.build.core=nRF5
+omnimo52840.build.variant=omnimo_nrf52840
+omnimo52840.build.usb_manufacturer="eAFAQ"
+omnimo52840.build.usb_product="Omnimo nRF52840"
+omnimo52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
+omnimo52840.build.ldscript=nrf52840_s140_v6.ld
+omnimo52840.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
+omnimo52840.build.vid=0x239A
+omnimo52840.build.pid=0x8029
+
+# Menu: SoftDevice
+omnimo52840.menu.softdevice.s140v6=S140 6.1.1
+omnimo52840.menu.softdevice.s140v6.build.sd_name=s140
+omnimo52840.menu.softdevice.s140v6.build.sd_version=6.1.1
+omnimo52840.menu.softdevice.s140v6.build.sd_fwid=0x00B6
+
+# Menu: Debug Level
+omnimo52840.menu.debug.l0=Level 0 (Release)
+omnimo52840.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+omnimo52840.menu.debug.l1=Level 1 (Error Message)
+omnimo52840.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+omnimo52840.menu.debug.l2=Level 2 (Full Debug)
+omnimo52840.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+omnimo52840.menu.debug.l3=Level 3 (Segger SystemView)
+omnimo52840.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+omnimo52840.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# Menu: Debug Port
+omnimo52840.menu.debug_output.serial=Serial
+omnimo52840.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+omnimo52840.menu.debug_output.serial1=Serial1
+omnimo52840.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+omnimo52840.menu.debug_output.rtt=Segger RTT
+omnimo52840.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
+
