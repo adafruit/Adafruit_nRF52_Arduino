@@ -818,8 +818,7 @@ omnimo52840.name=eAFAQ Omnimo nRF52840
 # VID/PID for Bootloader, Arduino & CircuitPython
 omnimo52840.vid.0=0x1209
 omnimo52840.pid.0=0xCECE
-omnimo52840.vid.1=0x1209
-omnimo52840.pid.1=0xCECE
+
 
 # Upload
 omnimo52840.bootloader.tool=bootburn
@@ -841,8 +840,8 @@ omnimo52840.build.usb_product="Omnimo nRF52840"
 omnimo52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 omnimo52840.build.ldscript=nrf52840_s140_v6.ld
 omnimo52840.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
-omnimo52840.build.vid=0x239A
-omnimo52840.build.pid=0x8029
+omnimo52840.build.vid=0x1209
+omnimo52840.build.pid=0xCECE
 
 # Menu: SoftDevice
 omnimo52840.menu.softdevice.s140v6=S140 6.1.1
