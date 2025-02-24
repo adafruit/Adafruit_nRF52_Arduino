@@ -198,7 +198,7 @@ thirdparty_boards_list = [
     [52840, "pca10056", "pca10056", "Nordic", "nRF52840 DK", "NRF52840_PCA10056", "0x239A", ["0x80DA", "0x00DA"]],
     [52833, "pca10100", "pca10100", "Nordic", "nRF52833 DK", "NRF52833_PCA10100", "0x239A", ["0x80D8", "0x00D8"]],
     [52840, "particle_xenon", "particle_xenon", "Particle", "Xenon", "PARTICLE_XENON", "0x239A", ["0x80DA", "0x00DA"]],
-    [52840, "omnimo52840", "omnimo_nrf52840", "eAFAQ", "Omnimo nRF52840", "NRF52840_OMNIMO", "0x1209", ["0xCECE", "0xCECE"]],
+    [52840, "omnimo52840", "omnimo_nrf52840", "eAFAQ", "Omnimo nRF52840", "NRF52840_OMNIMO", "0x1209", ["0xCECE"]],
 ]
 
 for b in thirdparty_boards_list:
