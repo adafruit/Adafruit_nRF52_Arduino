@@ -47,15 +47,14 @@ extern "C"
 #define PIN_LED2             (4)
 #define PIN_NEOPIXEL         (8)
 #define NEOPIXEL_NUM         1
-// Redefine
-#define LED1                 PIN_LED1
-#define LED2                 PIN_LED2
+
+static const uint8_t LED1  = PIN_LED1 ;
+static const uint8_t LED2  = PIN_LED2 ;
 
 #define LED_BUILTIN          PIN_LED1
 #define LED_CONN             PIN_LED2
 
-#define LED_GREEN            PIN_LED1
-#define LED_RED              PIN_LED1 // for compatibility with Feather nRF52840 Express
+#define LED_RED              PIN_LED1
 #define LED_BLUE             PIN_LED2
 
 #define LED_STATE_ON         1         // State when LED is litted
@@ -65,9 +64,9 @@ extern "C"
 #define PIN_BTN1             (7)
 #define PIN_BUTTON2          (37)
 #define PIN_BTN2             (37)
-// Redefine
-#define BTN1                 PIN_BTN1
-#define BTN2                 PIN_BTN2
+
+static const uint8_t BTN1  = PIN_BTN1 ;
+static const uint8_t BTN2  = PIN_BTN2 ;
 
 // Analog Pins //////////////
 #define PIN_A0               (14)
@@ -95,9 +94,9 @@ static const uint8_t A7  = PIN_A7 ;
 // NFC Pins /////////////////
 #define PIN_NFC1           (33)
 #define PIN_NFC2           (34)
-// Redefine
-#define NFC1               PIN_NFC1
-#define NFC2               PIN_NFC2
+
+static const uint8_t NFC1 = PIN_NFC1 ;
+static const uint8_t NFC2 = PIN_NFC2 ;
 
 // Feather UART Pins ////////
 #define PIN_SERIAL1_RX       (1)
@@ -146,20 +145,19 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 #define PIN_mikroBUS_MISO     (0)
 #define PIN_mikroBUS_MOSI     (2)
 
-// Redefine
-#define mikroBUS_PWM          PIN_mikroBUS_PWM
-#define mikroBUS_INT          PIN_mikroBUS_INT
-#define mikroBUS_RX           PIN_mikroBUS_RX
-#define mikroBUS_TX           PIN_mikroBUS_TX
-#define mikroBUS_SCL          PIN_mikroBUS_SCL
-#define mikroBUS_SDA          PIN_mikroBUS_SDA
+static const uint8_t mikroBUS_PWM  = PIN_mikroBUS_PWM ;
+static const uint8_t mikroBUS_INT  = PIN_mikroBUS_INT ;
+static const uint8_t mikroBUS_RX   = PIN_mikroBUS_RX ;
+static const uint8_t mikroBUS_TX   = PIN_mikroBUS_TX ;
+static const uint8_t mikroBUS_SCL  = PIN_mikroBUS_SCL ;
+static const uint8_t mikroBUS_SDA  = PIN_mikroBUS_SDA ;
 
-#define mikroBUS_AN           PIN_mikroBUS_AN
-#define mikroBUS_RST          PIN_mikroBUS_RST
-#define mikroBUS_CS           PIN_mikroBUS_CS
-#define mikroBUS_SCK          PIN_mikroBUS_SCK
-#define mikroBUS_MISO         PIN_mikroBUS_MISO
-#define mikroBUS_MOSI         PIN_mikroBUS_MOSI
+static const uint8_t mikroBUS_AN   = PIN_mikroBUS_AN ;
+static const uint8_t mikroBUS_RST  = PIN_mikroBUS_RST ;
+static const uint8_t mikroBUS_CS   = PIN_mikroBUS_CS ;
+static const uint8_t mikroBUS_SCK  = PIN_mikroBUS_SCK ;
+static const uint8_t mikroBUS_MISO = PIN_mikroBUS_MISO ;
+static const uint8_t mikroBUS_MOSI = PIN_mikroBUS_MOSI ;
 
 // PMOD Pins ////////////////
 #define PIN_PMOD1             (17)
@@ -170,22 +168,22 @@ static const uint8_t SCK  = PIN_SPI_SCK ;
 #define PIN_PMOD6             (40)
 #define PIN_PMOD7             (41)
 #define PIN_PMOD8             (42)
-// Redefine
-#define PMOD1                 PIN_PMOD1
-#define PMOD2                 PIN_PMOD2
-#define PMOD3                 PIN_PMOD3
-#define PMOD4                 PIN_PMOD4
-#define PMOD5                 PIN_PMOD5
-#define PMOD6                 PIN_PMOD6
-#define PMOD7                 PIN_PMOD7
-#define PMOD8                 PIN_PMOD8
+
+static const uint8_t PMOD1  = PIN_PMOD1 ;
+static const uint8_t PMOD2  = PIN_PMOD2 ;
+static const uint8_t PMOD3  = PIN_PMOD3 ;
+static const uint8_t PMOD4  = PIN_PMOD4 ;
+static const uint8_t PMOD5  = PIN_PMOD5 ;
+static const uint8_t PMOD6  = PIN_PMOD6 ;
+static const uint8_t PMOD7  = PIN_PMOD7 ;
+static const uint8_t PMOD8  = PIN_PMOD8 ;
 
 // Qwiic Pins ///////////////
 #define PIN_QWIIC_SCL         (35)
 #define PIN_QWIIC_SDA         (36)
-// Redefine
-#define QWIIC_SCL             PIN_QWIIC_SCL
-#define QWIIC_SDA             PIN_QWIIC_SDA
+
+static const uint8_t QWIIC_SCL = PIN_QWIIC_SCL ;
+static const uint8_t QWIIC_SDA = PIN_QWIIC_SDA ;
 
 // QSPI Pins ////////////////
 #define PIN_QSPI_SCK         27
