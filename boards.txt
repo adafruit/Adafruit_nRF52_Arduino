@@ -816,9 +816,10 @@ particle_xenon.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUS
 omnimo52840.name=eAFAQ Omnimo nRF52840
 
 # VID/PID for Bootloader, Arduino & CircuitPython
-omnimo52840.vid.0=0x1209
-omnimo52840.pid.0=0xCECE
-
+omnimo52840.vid.0=0x239A
+omnimo52840.pid.0=0x80D8
+omnimo52840.vid.1=0x239A
+omnimo52840.pid.1=0x00D8
 
 # Upload
 omnimo52840.bootloader.tool=bootburn
@@ -840,8 +841,9 @@ omnimo52840.build.usb_product="Omnimo nRF52840"
 omnimo52840.build.extra_flags=-DNRF52840_XXAA {build.flags.usb}
 omnimo52840.build.ldscript=nrf52840_s140_v6.ld
 omnimo52840.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
-omnimo52840.build.vid=0x1209
-omnimo52840.build.pid=0xCECE
+omnimo52840.build.vid=0x239A
+omnimo52840.build.pid=0x8029
+omnimo52840.build.uf2_family=0xADA52840
 
 # Menu: SoftDevice
 omnimo52840.menu.softdevice.s140v6=S140 6.1.1
@@ -867,4 +869,3 @@ omnimo52840.menu.debug_output.serial1=Serial1
 omnimo52840.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
 omnimo52840.menu.debug_output.rtt=Segger RTT
 omnimo52840.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
-
