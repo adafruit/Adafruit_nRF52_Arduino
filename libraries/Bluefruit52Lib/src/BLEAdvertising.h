@@ -154,7 +154,7 @@ private:
   uint8_t  _hdl;
   uint8_t  _type;
   bool     _start_if_disconnect;
-  bool     _runnning;
+  bool     _running;
   ble_gap_addr_t _peer_addr; //! Target address for an ADV_DIRECT_IND advertisement
 
   uint32_t _conn_mask;
