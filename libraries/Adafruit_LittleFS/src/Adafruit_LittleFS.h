@@ -70,6 +70,10 @@ class Adafruit_LittleFS
     // format file system
     bool format (void);
 
+    size_t usedBlocks();
+    size_t usedBytes();
+    size_t totalBytes();
+
     /*------------------------------------------------------------------*/
     /* INTERNAL USAGE ONLY
      * Although declare as public, it is meant to be invoked by internal
