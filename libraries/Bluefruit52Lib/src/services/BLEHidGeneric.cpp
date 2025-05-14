@@ -127,6 +127,15 @@ void BLEHidGeneric::setOutputReportCallback(uint8_t reportID, BLECharacteristic:
   if ( idx < _num_output ) _chr_outputs[idx].setWriteCallback(fp);
 }
 
+void BLEHidGeneric::setFeatureReportCallback(uint8_t reportID, BLECharacteristic::write_cb_t fp)
+{
+  // index is ID-1
+  uint8_t const idx =  ( reportID ? (reportID - 1) : 0 );
+
+  // report mode
+  if (idx < _num_feature) _chr_features[idx].setWriteCallback(fp);
+}
+
 /*------------------------------------------------------------------*/
 /* Callbacks
  *------------------------------------------------------------------*/
@@ -191,6 +200,21 @@ err_t BLEHidGeneric::begin(void)
     VERIFY_STATUS( _chr_outputs[i].begin() );
 
     _chr_outputs[i].write8(0);
+  }
+
+  // Feature reports
+  for (uint8_t i = 0; i < _num_feature; i++)
+  {
+    _chr_features[i].setUuid(UUID16_CHR_REPORT);
+    _chr_features[i].setProperties(CHR_PROPS_READ | CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP);
+    _chr_features[i].setPermission(SECMODE_OPEN, SECMODE_OPEN);
+    _chr_features[i].setReportRefDescriptor(i+1, REPORT_TYPE_FEATURE);
+
+    // Input report len is configured, else variable len up to 255
+    if ( _feature_len ) _chr_features[i].setFixedLen( _feature_len[i] );
+
+    VERIFY_STATUS(_chr_features[i].begin());
+    _chr_features[i].write8(0);                 //  default value
   }
 
   // Report Map (HID Report Descriptor)
@@ -283,6 +307,12 @@ bool BLEHidGeneric::bootMouseReport(void const* data, int len)
   return bootMouseReport(BLE_CONN_HANDLE_INVALID, data, len);
 }
 
+bool BLEHidGeneric::featureReport(uint8_t reportID, void const* data, int len)
+{
+    uint8_t idx = reportID ? reportID - 1 : 0;
+    if (idx >= _num_feature) return false;
+    return _chr_features[idx].write((uint8_t const*) data, len);
+}
 
 // Conversion table from Ascii to keycode (shift, keycode)
 const uint8_t hid_ascii_to_keycode[128][2] = { HID_ASCII_TO_KEYCODE };
