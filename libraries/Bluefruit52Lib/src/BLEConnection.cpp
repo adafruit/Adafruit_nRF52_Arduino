@@ -64,6 +64,8 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
   _hvc_received = false;
 
   _ediv = 0xFFFF;
+
+  _waitForIndicateConfirmTimeout = portMAX_DELAY;
 }
 
 BLEConnection::~BLEConnection()
@@ -285,13 +287,18 @@ bool BLEConnection::requestPairing(void)
   return Bluefruit.Security._authenticate(_conn_hdl);
 }
 
+void BLEConnection::setWaitForIndicateConfirmTimeout(uint16_t timeOutMs)
+{
+  _waitForIndicateConfirmTimeout = pdMS_TO_TICKS (timeOutMs);
+}
+
 bool BLEConnection::waitForIndicateConfirm(void)
 {
   // on the fly semaphore
   _hvc_sem = xSemaphoreCreateBinary();
 
   _hvc_received = false;
-  xSemaphoreTake(_hvc_sem, portMAX_DELAY);
+  xSemaphoreTake(_hvc_sem, _waitForIndicateConfirmTimeout);
 
   vSemaphoreDelete(_hvc_sem);
   _hvc_sem = NULL;
