@@ -63,12 +63,15 @@ class BLEHidGeneric : public BLEService
 
     void setOutputReportCallback(uint8_t reportID, BLECharacteristic::write_cb_t fp);
 
+    void setFeatureReportCallback(uint8_t reportID, BLECharacteristic::write_cb_t fp);
+
     virtual err_t begin(void);
 
     bool isBootMode(void) { return !_report_mode; }
 
     // Send Report to default connection
     bool inputReport(uint8_t reportID, void const* data, int len);
+    bool featureReport(uint8_t reportID, void const* data, int len);
     bool bootKeyboardReport(void const* data, int len);
     bool bootMouseReport(void const* data, int len);
 
