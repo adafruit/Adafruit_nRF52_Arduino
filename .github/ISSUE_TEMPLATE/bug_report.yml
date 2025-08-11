@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a problem with TinyUSB Library
+description: Report a problem with the Adafruit nRF52 Arduino Core
 labels: 'Bug'
 body:
   - type: markdown

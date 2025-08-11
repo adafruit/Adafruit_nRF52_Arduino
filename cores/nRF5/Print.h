@@ -98,6 +98,8 @@ class Print
     {
       return printBufferReverse((uint8_t const*) buffer, size, delim, byteline);
     }
+
+    virtual void flush() { /* Empty implementation for backward compatibility */ }
 };
 
 #endif
