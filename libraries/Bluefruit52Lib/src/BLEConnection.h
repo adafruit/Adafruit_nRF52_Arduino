@@ -51,6 +51,7 @@ class BLEConnection
     uint16_t _sup_timeout;
     uint16_t _data_length;
     uint8_t  _phy;
+    uint8_t  _hvn_qsize;
 
     uint8_t  _role;
     uint16_t _ediv;

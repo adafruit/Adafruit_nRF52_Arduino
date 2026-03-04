@@ -54,6 +54,7 @@ BLEConnection::BLEConnection(uint16_t conn_hdl, ble_gap_evt_connected_t const* e
   _peer_addr = evt_connected->peer_addr;
   _role = evt_connected->role;
 
+  _hvn_qsize = hvn_qsize;
   _hvn_sem   = xSemaphoreCreateCounting(hvn_qsize, hvn_qsize);
   _wrcmd_sem = xSemaphoreCreateCounting(wrcmd_qsize, wrcmd_qsize);
 
@@ -304,6 +305,16 @@ void BLEConnection::_eventHandler(ble_evt_t* evt)
   switch(evt->header.evt_id)
   {
     case BLE_GAP_EVT_DISCONNECTED:
+      // Restore notification semaphore to full count
+      // This fixes lockup when disconnect occurs with notifications in flight
+      while (uxSemaphoreGetCount(_hvn_sem) < _hvn_qsize) {
+        xSemaphoreGive(_hvn_sem);
+      }
+      // Release indication semaphore if waiting
+      if (_hvc_sem) {
+        _hvc_received = false;
+        xSemaphoreGive(_hvc_sem);
+      }
       // mark as disconnected
       _connected = false;
     break;
