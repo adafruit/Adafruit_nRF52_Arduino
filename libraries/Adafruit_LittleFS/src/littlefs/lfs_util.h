@@ -30,13 +30,6 @@
 #ifndef LFS_NO_ASSERT
 #include <assert.h>
 #endif
-
-#if !CFG_DEBUG
-#define LFS_NO_DEBUG
-#define LFS_NO_WARN
-#define LFS_NO_ERROR
-#endif
-
 #if !defined(LFS_NO_DEBUG) || !defined(LFS_NO_WARN) || !defined(LFS_NO_ERROR)
 #include <stdio.h>
 #endif
@@ -168,8 +161,7 @@ void lfs_crc(uint32_t *crc, const void *buffer, size_t size);
 // Allocate memory, only used if buffers are not provided to littlefs
 static inline void *lfs_malloc(size_t size) {
 #ifndef LFS_NO_MALLOC
-    extern void *pvPortMalloc( size_t xWantedSize );
-    return pvPortMalloc(size);
+    return malloc(size);
 #else
     (void)size;
     return NULL;
@@ -179,8 +171,7 @@ static inline void *lfs_malloc(size_t size) {
 // Deallocate memory, only used if buffers are not provided to littlefs
 static inline void lfs_free(void *p) {
 #ifndef LFS_NO_MALLOC
-    extern void vPortFree( void *pv );
-    vPortFree(p);
+    free(p);
 #else
     (void)p;
 #endif
