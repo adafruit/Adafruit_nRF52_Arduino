@@ -1,0 +1,5 @@
+{
+  "name": "framework-arduinoadafruitnrf52",
+  "version": "1.10700.1",
+  "description": "Arduino framework for Adafruit nRF52 boards (MeshCore fork with LittleFS v1.7.2 and Bluefruit fixes)"
+}
