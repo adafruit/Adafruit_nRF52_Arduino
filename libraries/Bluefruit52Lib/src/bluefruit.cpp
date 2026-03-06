@@ -109,10 +109,10 @@ void adafruit_soc_task(void* arg);
 /*------------------------------------------------------------------*/
 /* INTERNAL FUNCTION
  *------------------------------------------------------------------*/
-static void bluefruit_blinky_cb( TimerHandle_t xTimer )
+void bluefruit_blinky_cb( TimerHandle_t xTimer )
 {
   (void) xTimer;
-  digitalToggle(LED_BLUE);
+  if ( Bluefruit._led_conn ) digitalToggle(LED_BLUE);
 }
 
 static void nrf_error_cb(uint32_t id, uint32_t pc, uint32_t info)

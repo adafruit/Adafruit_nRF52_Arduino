@@ -256,6 +256,7 @@ class AdafruitBluefruit
     friend void SD_EVT_IRQHandler(void);
     friend void adafruit_ble_task(void* arg);
     friend void adafruit_soc_task(void* arg);
+    friend void bluefruit_blinky_cb(TimerHandle_t xTimer);
     friend class BLECentral;
 };
 
