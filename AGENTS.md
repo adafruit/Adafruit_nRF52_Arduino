@@ -40,7 +40,7 @@ python3 tools/build_all.py
 ## Architecture
 
 ### Core (`cores/nRF5/`)
-Arduino core implementation. Entry point is `main.cpp` which initializes hardware, creates FreeRTOS tasks (`loop_task` and `callback_task`), and starts the scheduler. Standard Arduino wiring functions (`wiring_digital.c`, `wiring_analog_nRF52.c`, etc.) wrap Nordic nrfx HAL calls.
+Arduino core implementation. Entry point is `main.cpp` which initializes hardware, creates the main FreeRTOS task (`loop_task`), calls `ada_callback_init(...)` to set up the callback task (`adafruit_callback_task` in `cores/nRF5/utility/AdaCallback.c`), and starts the scheduler. Standard Arduino wiring functions (`wiring_digital.c`, `wiring_analog_nRF52.c`, etc.) wrap Nordic nrfx HAL calls.
 
 Key subsystems:
 - **FreeRTOS** (`freertos/`) — all blocking Arduino functions use RTOS primitives internally
@@ -76,6 +76,6 @@ git submodule update --init
 
 - Compiler flags include `-Werror=return-type -Wall -Wextra` — all functions must have return statements
 - C standard: `gnu11`, C++ standard: `gnu++11` with `-fno-rtti -fno-exceptions`
-- Board variant names in `boards.txt` must match directory names in `variants/`
+- In `boards.txt`, each `*.build.variant` value must match a directory name under `variants/` (board IDs like `feather52840` may differ from the variant directory, e.g. `variants/feather_nrf52840_express`)
 - FreeRTOS task priorities: `TASK_PRIO_LOWEST` (0) through `TASK_PRIO_HIGHEST` (4)
 - `initVariant()` is a weak symbol — boards override it in `variant.cpp` for board-specific init
