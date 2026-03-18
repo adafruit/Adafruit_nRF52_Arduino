@@ -561,9 +561,11 @@ int8_t AdafruitBluefruit::getTxPower(void)
   return _tx_power;
 }
 
-void AdafruitBluefruit::autoConnLed(bool enabled)
-{
+void AdafruitBluefruit::autoConnLed(bool enabled) {
   _led_conn = enabled;
+  if (!enabled) {
+    xTimerStop(_led_blink_th, 0);
+  }
 }
 
 void AdafruitBluefruit::setConnLedInterval(uint32_t ms)
