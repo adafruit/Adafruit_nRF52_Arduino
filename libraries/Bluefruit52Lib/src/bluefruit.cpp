@@ -563,13 +563,16 @@ int8_t AdafruitBluefruit::getTxPower(void)
 
 void AdafruitBluefruit::autoConnLed(bool enabled) {
   _led_conn = enabled;
-  if (!enabled) {
+  if (!enabled && _led_blink_th != NULL) {
     xTimerStop(_led_blink_th, 0);
   }
 }
 
 void AdafruitBluefruit::setConnLedInterval(uint32_t ms)
 {
+  // Timer is created in begin(); if called earlier, just ignore.
+  if (_led_blink_th == NULL) return;
+
   BaseType_t active = xTimerIsTimerActive(_led_blink_th);
   xTimerChangePeriod(_led_blink_th, ms2tick(ms), 0);
 
