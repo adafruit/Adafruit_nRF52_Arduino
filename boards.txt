@@ -631,6 +631,60 @@ metro52840.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DE
 # -------------------------------------------------------
 
 # -----------------------------------
+# Nordic nRF52832 DK (PCA10040)
+# -----------------------------------
+pca10040.name=Nordic nRF52832 DK (PCA10040)
+
+# VID/PID for Bootloader, Arduino & CircuitPython
+
+# Upload
+pca10040.bootloader.tool=bootburn
+pca10040.upload.tool=nrfutil
+pca10040.upload.protocol=nrfutil
+pca10040.upload.use_1200bps_touch=false
+pca10040.upload.wait_for_upload_port=false
+pca10040.upload.native_usb=false
+pca10040.upload.maximum_size=290816
+pca10040.upload.maximum_data_size=51712
+
+# Build
+pca10040.build.mcu=cortex-m4
+pca10040.build.f_cpu=64000000
+pca10040.build.board=NRF52832_PCA10040
+pca10040.build.core=nRF5
+pca10040.build.variant=pca10040
+pca10040.build.usb_manufacturer="Nordic"
+pca10040.build.usb_product="nRF52832 DK"
+pca10040.build.extra_flags=-DNRF52832_XXAA -DNRF52
+pca10040.build.ldscript=nrf52832_s132_v6.ld
+pca10040.build.openocdscript=scripts/openocd/daplink_nrf52.cfg
+
+# Menu: SoftDevice
+pca10040.menu.softdevice.s132v6=S132 6.1.1
+pca10040.menu.softdevice.s132v6.build.sd_name=s132
+pca10040.menu.softdevice.s132v6.build.sd_version=6.1.1
+pca10040.menu.softdevice.s132v6.build.sd_fwid=0x00B7
+
+# Menu: Debug Level
+pca10040.menu.debug.l0=Level 0 (Release)
+pca10040.menu.debug.l0.build.debug_flags=-DCFG_DEBUG=0
+pca10040.menu.debug.l1=Level 1 (Error Message)
+pca10040.menu.debug.l1.build.debug_flags=-DCFG_DEBUG=1
+pca10040.menu.debug.l2=Level 2 (Full Debug)
+pca10040.menu.debug.l2.build.debug_flags=-DCFG_DEBUG=2
+pca10040.menu.debug.l3=Level 3 (Segger SystemView)
+pca10040.menu.debug.l3.build.debug_flags=-DCFG_DEBUG=3
+pca10040.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1
+
+# Menu: Debug Port
+pca10040.menu.debug_output.serial=Serial
+pca10040.menu.debug_output.serial.build.logger_flags=-DCFG_LOGGER=0
+pca10040.menu.debug_output.serial1=Serial1
+pca10040.menu.debug_output.serial1.build.logger_flags=-DCFG_LOGGER=1 -DCFG_TUSB_DEBUG=CFG_DEBUG
+pca10040.menu.debug_output.rtt=Segger RTT
+pca10040.menu.debug_output.rtt.build.logger_flags=-DCFG_LOGGER=2 -DCFG_TUSB_DEBUG=CFG_DEBUG -DSEGGER_RTT_MODE_DEFAULT=SEGGER_RTT_MODE_BLOCK_IF_FIFO_FULL
+
+# -----------------------------------
 # Nordic nRF52840 DK
 # -----------------------------------
 pca10056.name=Nordic nRF52840 DK
