@@ -1,0 +1,45 @@
+name: PlatformIO Package Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Package version without the leading v
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: recursive
+
+    - name: Build PlatformIO package
+      run: bash tools/build-platformio-package.sh "${{ inputs.version }}"
+
+    - name: Publish GitHub release
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PACKAGE_VERSION: ${{ inputs.version }}
+        RELEASE_TAG: v${{ inputs.version }}
+      run: |
+        cat > release-notes.txt <<EOF
+        PlatformIO package release for framework-arduinoadafruitnrf52
+
+        Package version: ${PACKAGE_VERSION}
+        Source commit: ${GITHUB_SHA}
+        EOF
+
+        gh release create "${RELEASE_TAG}" \
+          "dist/framework-arduinoadafruitnrf52.tar.bz2" \
+          --target "${GITHUB_SHA}" \
+          --title "${RELEASE_TAG}" \
+          --notes-file release-notes.txt

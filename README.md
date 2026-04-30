@@ -19,6 +19,32 @@ Following boards are also included but are not officially supported:
 - [Nordic nRF52840DK PCA10056](https://www.nordicsemi.com/Software-and-Tools/Development-Kits/nRF52840-DK)
 - [Particle Xenon](https://store.particle.io/products/xenon)
 
+## PlatformIO Package Releases
+
+This fork can publish a PlatformIO framework package tarball named `framework-arduinoadafruitnrf52` from GitHub Releases.
+
+Consumer projects can override the framework selected by a PlatformIO platform, such as Seeed's `platform-seeedboards`, by pinning the release asset directly:
+
+```ini
+platform_packages =
+  framework-arduinoadafruitnrf52 @ https://github.com/stealth30110/Adafruit_nRF52_Arduino/releases/download/vX.Y.Z/framework-arduinoadafruitnrf52.tar.bz2
+```
+
+Notes:
+
+- This replaces local edits under `.pio-core/packages/...` with a versioned release artifact.
+- Consumers should pin an explicit release version for reproducible builds.
+- Publish this fork with a version higher than the currently published PlatformIO package lineage. As of 2026-04-30, `framework-arduinoadafruitnrf52` is at `1.107`, so this fork should start at `1.107.1` or above.
+- The release tarball is built by the `PlatformIO Package Release` GitHub Actions workflow in this repository.
+
+For commit-driven integration builds, the `PlatformIO Package CI` workflow runs on each push to `main`, computes a package version as `<base-version>.<github-run-number>`, uploads the tarball as a workflow artifact, and refreshes a rolling prerelease asset at:
+
+```text
+https://github.com/stealth30110/Adafruit_nRF52_Arduino/releases/download/dev/framework-arduinoadafruitnrf52.tar.bz2
+```
+
+That rolling URL is convenient for testing, but consumers that need reproducible builds should still pin an explicit versioned release instead of `dev`.
+
 ## BSP Installation
 
 There are two methods that you can use to install this BSP. We highly recommend the first option unless you wish to participate in active development of this codebase via Github.

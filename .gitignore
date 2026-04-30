@@ -25,3 +25,6 @@
 /boards.local.txt
 /platform.local.txt
 
+.codex
+
+dist/

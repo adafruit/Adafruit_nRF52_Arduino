@@ -1,0 +1,84 @@
+name: PlatformIO Package CI
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      base_version:
+        description: Base package version in MAJOR.MINOR form
+        required: false
+        default: "1.107"
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    env:
+      DEFAULT_BASE_VERSION: "1.107"
+      CI_RELEASE_TAG: dev
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: recursive
+
+    - name: Compute package version
+      id: version
+      env:
+        INPUT_BASE_VERSION: ${{ inputs.base_version }}
+      run: |
+        base_version="${INPUT_BASE_VERSION:-${DEFAULT_BASE_VERSION}}"
+        package_version="$(bash tools/compute-platformio-package-version.sh "${base_version}" "${GITHUB_RUN_NUMBER}")"
+        short_sha="$(git rev-parse --short=12 HEAD)"
+
+        echo "base_version=${base_version}" >> "${GITHUB_OUTPUT}"
+        echo "package_version=${package_version}" >> "${GITHUB_OUTPUT}"
+        echo "short_sha=${short_sha}" >> "${GITHUB_OUTPUT}"
+
+    - name: Build PlatformIO package
+      run: bash tools/build-platformio-package.sh "${{ steps.version.outputs.package_version }}"
+
+    - name: Upload workflow artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: framework-arduinoadafruitnrf52-${{ steps.version.outputs.package_version }}-${{ steps.version.outputs.short_sha }}
+        path: dist/framework-arduinoadafruitnrf52.tar.bz2
+        if-no-files-found: error
+
+    - name: Publish rolling CI release asset
+      env:
+        GH_TOKEN: ${{ github.token }}
+        RELEASE_TAG: ${{ env.CI_RELEASE_TAG }}
+        PACKAGE_VERSION: ${{ steps.version.outputs.package_version }}
+        SHORT_SHA: ${{ steps.version.outputs.short_sha }}
+      run: |
+        cat > release-notes.txt <<EOF
+        Rolling CI package for framework-arduinoadafruitnrf52
+
+        Package version: ${PACKAGE_VERSION}
+        Source commit: ${GITHUB_SHA}
+        Short commit: ${SHORT_SHA}
+        Workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+        EOF
+
+        if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+          gh release upload "${RELEASE_TAG}" dist/framework-arduinoadafruitnrf52.tar.bz2 --clobber
+          gh release edit "${RELEASE_TAG}" \
+            --title "${RELEASE_TAG}" \
+            --notes-file release-notes.txt \
+            --prerelease
+        else
+          gh release create "${RELEASE_TAG}" \
+            dist/framework-arduinoadafruitnrf52.tar.bz2 \
+            --target "${GITHUB_SHA}" \
+            --title "${RELEASE_TAG}" \
+            --notes-file release-notes.txt \
+            --prerelease
+        fi

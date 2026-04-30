@@ -1,0 +1,19 @@
+{
+  "name": "framework-arduinoadafruitnrf52",
+  "version": "1.107.0-dev",
+  "description": "Arduino Wiring-based Framework for Nordic Semiconductor nRF52 BLE SoC",
+  "keywords": [
+    "framework",
+    "arduino",
+    "nrf52"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stealth30110/Adafruit_nRF52_Arduino"
+  },
+  "homepage": "https://github.com/stealth30110/Adafruit_nRF52_Arduino",
+  "license": "LGPL-2.1-or-later",
+  "system": [
+    "*"
+  ]
+}
