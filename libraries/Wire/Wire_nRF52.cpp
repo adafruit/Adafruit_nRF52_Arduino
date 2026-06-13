@@ -158,9 +158,10 @@ uint8_t TwoWire::requestFrom(uint8_t address, size_t quantity, bool stopBit)
 
   _p_twim->ADDRESS = address;
 
-  _p_twim->TASKS_RESUME = 0x1UL;
   _p_twim->RXD.PTR = (uint32_t)rxBuffer._aucBuffer;
   _p_twim->RXD.MAXCNT = quantity;
+  __DMB();
+  _p_twim->TASKS_RESUME = 0x1UL;
   _p_twim->TASKS_STARTRX = 0x1UL;
 
   while(!_p_twim->EVENTS_RXSTARTED && !_p_twim->EVENTS_ERROR);
@@ -213,18 +214,17 @@ void TwoWire::beginTransmission(uint8_t address) {
 //  4 : Other error
 uint8_t TwoWire::endTransmission(bool stopBit)
 {
-  transmissionBegun = false ;
+  transmissionBegun = false;
 
   // Start I2C transmission
   _p_twim->ADDRESS = txAddress;
 
+  _p_twim->TXD.PTR = (uint32_t)txBuffer._aucBuffer;
+  _p_twim->TXD.MAXCNT = txBuffer.available();
+  __DMB();
   // just in case twi is stopped by bus error such as secondary device reset/stalled without replying ACK/NACK
   _p_twim->EVENTS_STOPPED = 0x0UL;
   _p_twim->TASKS_RESUME = 0x1UL;
-
-  _p_twim->TXD.PTR = (uint32_t)txBuffer._aucBuffer;
-  _p_twim->TXD.MAXCNT = txBuffer.available();
-
   _p_twim->TASKS_STARTTX = 0x1UL;
 
   while(!_p_twim->EVENTS_TXSTARTED && !_p_twim->EVENTS_ERROR);
