@@ -278,6 +278,77 @@ uint8_t TwoWire::endTransmission()
   return endTransmission(true);
 }
 
+// Combined write-then-read using TWIM hardware SHORTS.
+//
+// Performs a single atomic I2C transaction:
+//   START → addr+W → [write_buffer] → REPEATED-START → addr+R → [read_buffer] → STOP
+//
+// The LASTTX_STARTRX SHORT ensures the transition from TX to RX happens in
+// hardware without CPU involvement. EasyDMA completes the full sequence
+// autonomously, so SoftDevice preemption cannot cause partial transfers.
+//
+// Both buffers must be in RAM (EasyDMA cannot access flash).
+// read_len must not exceed 1023 (TWIM RXD.MAXCNT is 10-bit).
+//
+// Returns 0 on success, or Wire-compatible error codes (2=ANACK, 3=DNACK, 4=other).
+uint8_t TwoWire::writeThenRead(uint8_t address,
+                               const uint8_t *write_buffer, size_t write_len,
+                               uint8_t *read_buffer, size_t read_len)
+{
+  if (write_len == 0 || read_len == 0)
+  {
+    return 4;
+  }
+
+  _p_twim->ADDRESS = address;
+
+  _p_twim->TXD.PTR    = (uint32_t)write_buffer;
+  _p_twim->TXD.MAXCNT = write_len;
+  _p_twim->RXD.PTR    = (uint32_t)read_buffer;
+  _p_twim->RXD.MAXCNT = read_len;
+
+  _p_twim->SHORTS = TWIM_SHORTS_LASTTX_STARTRX_Msk |
+                     TWIM_SHORTS_LASTRX_STOP_Msk;
+
+  _p_twim->ERRORSRC       = 0xFFFFFFFFUL;
+  _p_twim->EVENTS_STOPPED = 0x0UL;
+  _p_twim->EVENTS_ERROR   = 0x0UL;
+  __DMB();
+  _p_twim->TASKS_STARTTX  = 0x1UL;
+
+  uint32_t timeout = 1000000u;
+  while (!_p_twim->EVENTS_STOPPED && !_p_twim->EVENTS_ERROR && --timeout);
+
+  _p_twim->SHORTS = 0;
+
+  if (_p_twim->EVENTS_ERROR || timeout == 0)
+  {
+    _p_twim->EVENTS_ERROR = 0x0UL;
+
+    uint32_t error = _p_twim->ERRORSRC;
+    _p_twim->ERRORSRC = error;
+
+    _p_twim->EVENTS_STOPPED = 0x0UL;
+    _p_twim->TASKS_STOP = 0x1UL;
+    while (!_p_twim->EVENTS_STOPPED);
+    _p_twim->EVENTS_STOPPED = 0x0UL;
+
+    if (timeout == 0) return 4;
+    if (error == TWIM_ERRORSRC_ANACK_Msk) return 2;
+    if (error == TWIM_ERRORSRC_DNACK_Msk) return 3;
+    return 4;
+  }
+
+  _p_twim->EVENTS_STOPPED = 0x0UL;
+
+  if (_p_twim->RXD.AMOUNT != read_len)
+  {
+    return 4;
+  }
+
+  return 0;
+}
+
 size_t TwoWire::write(uint8_t ucData)
 {
   // No writing, without begun transmission or a full buffer

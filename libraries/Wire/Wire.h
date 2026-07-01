@@ -33,6 +33,7 @@
 class TwoWire : public Stream
 {
   public:
+    uint8_t writeThenRead(uint8_t address, const uint8_t *write_buffer, size_t write_len, uint8_t *read_buffer, size_t read_len);
     TwoWire(NRF_TWIM_Type * p_twim, NRF_TWIS_Type * p_twis, IRQn_Type IRQn, uint8_t pinSDA, uint8_t pinSCL);
     void begin();
     void begin(uint8_t);
