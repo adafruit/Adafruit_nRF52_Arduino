@@ -32,8 +32,8 @@
 
 class TwoWire : public Stream
 {
-  public:
-    TwoWire(NRF_TWIM_Type * p_twim, NRF_TWIS_Type * p_twis, IRQn_Type IRQn, uint8_t pinSDA, uint8_t pinSCL);
+public:
+    TwoWire(NRF_TWIM_Type *p_twim, NRF_TWIS_Type *p_twis, IRQn_Type IRQn, uint8_t pinSDA, uint8_t pinSCL);
     void begin();
     void begin(uint8_t);
     void end();
@@ -48,7 +48,35 @@ class TwoWire : public Stream
     uint8_t requestFrom(uint8_t address, size_t quantity);
 
     size_t write(uint8_t data);
-    size_t write(const uint8_t * data, size_t quantity);
+    size_t write(const uint8_t *data, size_t quantity);
+
+    // Performs one combined I2C write-then-read transaction:
+    //
+    //   START -> address+W -> [txBuffer] -> REPEATED START
+    //         -> address+R -> [rxBuffer] -> STOP
+    //
+    // txBuffer points to the bytes transmitted before the repeated START.
+    // txQuantity is the number of bytes to transmit from txBuffer.
+    //
+    // rxBuffer points to storage for bytes received after the repeated START.
+    // rxQuantity is the number of bytes to receive into rxBuffer.
+    //
+    // On NRF TWIM, this is hardware-sequenced using LASTTX_STARTRX, so the
+    // transition from TX to RX does not depend on CPU scheduling. This prevents
+    // SoftDevice/CPU preemption from splitting the write phase from the read
+    // phase.
+    // See:
+    //    - https://www.i2c-bus.org/repeated-start-condition/
+    //    - https://docs.nordicsemi.com/r/bundle/ps_nrf52832/page/twim.html
+    //
+    // Both buffers must be in RAM; EasyDMA cannot access flash.
+    // rxQuantity must not exceed 1023 because TWIM RXD.MAXCNT is 10-bit.
+    //
+    // Returns 0 on success, or Wire-compatible error codes:
+    //   2 = address NACK
+    //   3 = data NACK
+    //   4 = other errorf
+    uint8_t writeThenRead(uint8_t address, const uint8_t *txBuffer, size_t txQuantity, uint8_t *rxBuffer, size_t rxQuantity);
 
     virtual int available(void);
     virtual int read(void);

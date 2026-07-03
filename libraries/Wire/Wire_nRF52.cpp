@@ -158,9 +158,10 @@ uint8_t TwoWire::requestFrom(uint8_t address, size_t quantity, bool stopBit)
 
   _p_twim->ADDRESS = address;
 
-  _p_twim->TASKS_RESUME = 0x1UL;
   _p_twim->RXD.PTR = (uint32_t)rxBuffer._aucBuffer;
   _p_twim->RXD.MAXCNT = quantity;
+  __DMB();
+  _p_twim->TASKS_RESUME = 0x1UL;
   _p_twim->TASKS_STARTRX = 0x1UL;
 
   while(!_p_twim->EVENTS_RXSTARTED && !_p_twim->EVENTS_ERROR);
@@ -213,18 +214,17 @@ void TwoWire::beginTransmission(uint8_t address) {
 //  4 : Other error
 uint8_t TwoWire::endTransmission(bool stopBit)
 {
-  transmissionBegun = false ;
+  transmissionBegun = false;
 
   // Start I2C transmission
   _p_twim->ADDRESS = txAddress;
 
+  _p_twim->TXD.PTR = (uint32_t)txBuffer._aucBuffer;
+  _p_twim->TXD.MAXCNT = txBuffer.available();
+  __DMB();
   // just in case twi is stopped by bus error such as secondary device reset/stalled without replying ACK/NACK
   _p_twim->EVENTS_STOPPED = 0x0UL;
   _p_twim->TASKS_RESUME = 0x1UL;
-
-  _p_twim->TXD.PTR = (uint32_t)txBuffer._aucBuffer;
-  _p_twim->TXD.MAXCNT = txBuffer.available();
-
   _p_twim->TASKS_STARTTX = 0x1UL;
 
   while(!_p_twim->EVENTS_TXSTARTED && !_p_twim->EVENTS_ERROR);
@@ -276,6 +276,70 @@ uint8_t TwoWire::endTransmission(bool stopBit)
 uint8_t TwoWire::endTransmission()
 {
   return endTransmission(true);
+}
+
+// NRF TWIM implementation note:
+//
+// This uses LASTTX_STARTRX and LASTRX_STOP SHORTS so the TX->RX transition and
+// final STOP are hardware-sequenced. Once TASKS_STARTTX is triggered, EasyDMA
+// performs the full combined transaction without CPU intervention at the
+// repeated-start boundary.
+//
+// Both txBuffer and rxBuffer must be in RAM; EasyDMA cannot access flash.
+// rxQuantity must not exceed 1023 because TWIM RXD.MAXCNT is 10-bit.
+uint8_t TwoWire::writeThenRead(uint8_t address, const uint8_t *txBuffer, size_t txQuantity, uint8_t *rxBuffer, size_t rxQuantity)
+{
+  if (txQuantity == 0 || rxQuantity == 0)
+  {
+    return 4;
+  }
+
+  _p_twim->ADDRESS = address;
+
+  _p_twim->TXD.PTR    = (uint32_t)txBuffer;
+  _p_twim->TXD.MAXCNT = txQuantity;
+  _p_twim->RXD.PTR    = (uint32_t)rxBuffer;
+  _p_twim->RXD.MAXCNT = rxQuantity;
+
+  _p_twim->SHORTS = TWIM_SHORTS_LASTTX_STARTRX_Msk | TWIM_SHORTS_LASTRX_STOP_Msk;
+
+  _p_twim->ERRORSRC       = 0xFFFFFFFFUL;
+  _p_twim->EVENTS_STOPPED = 0x0UL;
+  _p_twim->EVENTS_ERROR   = 0x0UL;
+  __DMB();
+  _p_twim->TASKS_STARTTX = 0x1UL;
+
+  uint32_t timeout = 1000000u;
+  while (!_p_twim->EVENTS_STOPPED && !_p_twim->EVENTS_ERROR && --timeout);
+
+  _p_twim->SHORTS = 0;
+
+  if (_p_twim->EVENTS_ERROR || timeout == 0)
+  {
+    _p_twim->EVENTS_ERROR = 0x0UL;
+
+    uint32_t error    = _p_twim->ERRORSRC;
+    _p_twim->ERRORSRC = error;
+
+    _p_twim->EVENTS_STOPPED = 0x0UL;
+    _p_twim->TASKS_STOP     = 0x1UL;
+    while (!_p_twim->EVENTS_STOPPED);
+    _p_twim->EVENTS_STOPPED = 0x0UL;
+
+    if (timeout == 0) return 4;
+    if (error == TWIM_ERRORSRC_ANACK_Msk) return 2;
+    if (error == TWIM_ERRORSRC_DNACK_Msk) return 3;
+    return 4;
+  }
+
+  _p_twim->EVENTS_STOPPED = 0x0UL;
+
+  if (_p_twim->RXD.AMOUNT != rxQuantity)
+  {
+    return 4;
+  }
+
+  return 0;
 }
 
 size_t TwoWire::write(uint8_t ucData)
