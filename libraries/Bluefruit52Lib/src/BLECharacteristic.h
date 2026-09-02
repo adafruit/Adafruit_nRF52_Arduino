@@ -153,7 +153,7 @@ class BLECharacteristic
 
     /*------------- Notify multiple connections -------------*/
 //    bool notify   (uint16_t conn_hdl);
-    bool notify   (uint16_t conn_hdl, const void* data, uint16_t len);
+    bool notify   (uint16_t conn_hdl, const void* data, uint16_t len, uint32_t hvn_timeout_ms = BLE_GENERIC_TIMEOUT);
     bool notify   (uint16_t conn_hdl, const char* str);
 
     bool notify8  (uint16_t conn_hdl, uint8_t  num);

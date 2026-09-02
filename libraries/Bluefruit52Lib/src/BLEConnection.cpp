@@ -229,9 +229,9 @@ void BLEConnection::stopRssi(void)
   sd_ble_gap_rssi_stop(_conn_hdl);
 }
 
-bool BLEConnection::getHvnPacket (void)
+bool BLEConnection::getHvnPacket (uint32_t timeout_ms)
 {
-  return xSemaphoreTake(_hvn_sem, ms2tick(BLE_GENERIC_TIMEOUT));
+  return xSemaphoreTake(_hvn_sem, ms2tick(timeout_ms));
 }
 
 bool BLEConnection::releaseHvnPacket(void)

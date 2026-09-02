@@ -704,7 +704,7 @@ bool BLECharacteristic::notifyEnabled(uint16_t conn_hdl)
   return  (getCccd(conn_hdl) & BLE_GATT_HVX_NOTIFICATION);
 }
 
-bool BLECharacteristic::notify(uint16_t conn_hdl, const void* data, uint16_t len)
+bool BLECharacteristic::notify(uint16_t conn_hdl, const void* data, uint16_t len, uint32_t hvn_timeout_ms)
 {
   VERIFY( _properties.notify );
 
@@ -725,7 +725,7 @@ bool BLECharacteristic::notify(uint16_t conn_hdl, const void* data, uint16_t len
     while ( remaining )
     {
       // Failed if there is no free buffer
-      if ( !conn->getHvnPacket() ) return false;
+      if ( !conn->getHvnPacket(hvn_timeout_ms) ) return false;
 
       uint16_t packet_len = min16(max_payload, remaining);
 

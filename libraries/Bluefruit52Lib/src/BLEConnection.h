@@ -107,7 +107,7 @@ class BLEConnection
     int8_t getRssi(void);
     void stopRssi(void);
 
-    bool getHvnPacket(void);
+    bool getHvnPacket(uint32_t timeout_ms = BLE_GENERIC_TIMEOUT);
     bool releaseHvnPacket(void);
     bool getWriteCmdPacket(void);
     bool prepareForIndicateConfirm(void);
