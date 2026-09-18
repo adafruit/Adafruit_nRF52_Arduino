@@ -31,6 +31,9 @@ void pinMode( uint32_t ulPin, uint32_t ulMode )
     return;
   }
 
+  // pinMode() takes the pin back from analogWrite(), see issue #447
+  analogWriteReleasePin(ulPin);
+
   ulPin = g_ADigitalPinMap[ulPin];
 
   NRF_GPIO_Type * port = nrf_gpio_pin_port_decode(&ulPin);
