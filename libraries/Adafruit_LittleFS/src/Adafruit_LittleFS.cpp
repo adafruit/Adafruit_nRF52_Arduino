@@ -30,6 +30,9 @@
 
 using namespace Adafruit_LittleFS_Namespace;
 
+// Maximum path component length for LittleFS
+// This is a reasonable limit for embedded systems
+#define LFS_MAX_PATH_COMPONENT 64
 
 //--------------------------------------------------------------------+
 // Implementation
@@ -158,18 +161,35 @@ bool Adafruit_LittleFS::mkdir (char const *filepath)
   // make intermediate parent directory(ies)
   while ( NULL != (slash = strchr(slash, '/')) )
   {
-    char parent[slash - filepath + 1] = { 0 };
-    memcpy(parent, filepath, slash - filepath);
+    size_t parent_len = slash - filepath;
+    
+    // Safety check: reject paths that exceed our buffer size
+    // This prevents stack overflow and gives clear error
+    if ( parent_len >= LFS_MAX_PATH_COMPONENT )
+    {
+      // Path component too long - reject it
+      // LFS_ERR_NAMETOOLONG is ideal, fall back to LFS_ERR_INVAL
+      PRINT_LFS_ERR(LFS_ERR_INVAL);
+      ret = false;
+      break;
+    }
+    
+    // Use fixed-size static buffer instead of VLA
+    // 256 bytes is stack-safe even on constrained systems
+    char parent[LFS_MAX_PATH_COMPONENT] = { 0 };
+    memcpy(parent, filepath, parent_len);
+    // Note: parent is null-terminated by initialization with = { 0 }
 
     int rc = lfs_mkdir(&_lfs, parent);
     if ( rc != LFS_ERR_OK && rc != LFS_ERR_EXIST )
     {
       PRINT_LFS_ERR(rc);
       ret = false;
-      break;
+      break;  // ← Early exit on error
     }
     slash++;
   }
+  
   // make the final requested directory
   if (ret)
   {
