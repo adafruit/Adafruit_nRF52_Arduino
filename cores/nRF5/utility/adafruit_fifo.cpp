@@ -88,19 +88,13 @@ Adafruit_FIFO::~Adafruit_FIFO()
 
 /******************************************************************************/
 /*!
-    @brief  Clear the FIFO, also aborts any two-phase read (readStart)
+    @brief  Clear the FIFO
 */
 /******************************************************************************/
 void Adafruit_FIFO::clear(void)
 {
-  // This will abort any in-process read
-  if ( _read_count != 0 )
-  {
-    _read_count = 0;
-    _mutex_unlock();
-  }
   _mutex_lock();
-  _rd_idx = _wr_idx = _count = 0;
+  _rd_idx = _wr_idx = _count = _read_count = 0;
   _mutex_unlock();
 }
 
