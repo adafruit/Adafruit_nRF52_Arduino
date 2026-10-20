@@ -55,7 +55,7 @@ Adafruit_FIFO::Adafruit_FIFO(uint8_t item_size, uint16_t depth)
   _depth        = depth;
   _overwritable = false;
 
-  _count = _wr_idx = _rd_idx = 0;
+  _count = _wr_idx = _rd_idx = _read_count = 0;
 }
 
 void Adafruit_FIFO::begin(void)
