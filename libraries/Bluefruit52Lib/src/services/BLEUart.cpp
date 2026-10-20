@@ -307,12 +307,13 @@ bool BLEUart::flushTXD(uint16_t conn_hdl)
   uint8_t* ff_data = (uint8_t*) rtos_malloc( gatt_mtu );
   VERIFY(ff_data);
 
-  uint16_t len = _tx_fifo->read(ff_data, gatt_mtu);
+  uint16_t len = _tx_fifo->readStart(ff_data, gatt_mtu);
   bool result = true;
 
   if ( len )
   {
     result = _txd.notify(conn_hdl, ff_data, len);
+    _tx_fifo->readEnd( result ? len : 0 );
   }
 
   rtos_free(ff_data);
