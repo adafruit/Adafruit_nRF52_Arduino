@@ -264,7 +264,7 @@ size_t BLEUart::write(uint16_t conn_hdl, const uint8_t *content, size_t len)
     else
     {
       // TX fifo has enough data, send notify right away
-      VERIFY( flushTXD(conn_hdl), 0);
+      VERIFY( flushTXD(conn_hdl), written);
 
       // still more data left, send them all
       if ( written < len )
