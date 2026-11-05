@@ -66,7 +66,7 @@ BOARDS['nrf52840dk'] = {'fqbn': board_fqbn('pca10056', 'nrf52840'), 'family': 'n
                         'base_exclude': ((0x10001000, 0x10002000),)}
 # nRF52833 has no CI board: the DK's id builds as its family's representative
 BOARDS['pca10100'] = {'fqbn': board_fqbn('pca10100', 'nrf52833'), 'family': 'nrf52833', 'filters': 'pca10100'}
-# SystemView compiles only under debug=l3 (boards.txt's CFG_SYSVIEW=1), which no CI build selects: a change to it also
+# SystemView compiles only under debug=l3 (boards.txt's CFG_SYSVIEW=1), which no CI build selects: a core change also
 # builds SYSVIEW_SKETCH, the only sketch eligible on this board
 SYSVIEW_BOARD = 'feather52840_sysview'
 BOARDS[SYSVIEW_BOARD] = {'fqbn': board_fqbn('feather52840', 'nrf52840', 'l3'), 'family': 'nrf52840',
@@ -133,16 +133,15 @@ def classify_source(path):
     for prefix, why in UNCOVERED.items():
         if path.startswith(prefix):
             return 'uncovered', None, why
-    if path.startswith('cores/nRF5/sysview/'):
-        return 'boards', tuple(b for f in REPRESENTATIVES.values() for b in f) + (SYSVIEW_BOARD,), \
-            'SEGGER SystemView: every representative, and one sketch under debug=l3, the menu that compiles it'
     m = re.match(r'cores/nRF5/linker/(\w+\.ld)$', path)
     if m and m.group(1) != 'nrf52_common.ld':
         boards = boards_where('ldscript', m.group(1))
         return ('boards', tuple(boards), f'linker script {m.group(1)}') if boards else \
             ('uncovered', None, f'linker script {m.group(1)} is used by no boards.txt board')
     if path.startswith('cores/'):
-        return 'shared', None, 'core runtime'
+        return 'boards', tuple(b for f in REPRESENTATIVES.values() for b in f) + (SYSVIEW_BOARD,), \
+            'core runtime: every representative, and one sketch under debug=l3, the menu that compiles SystemView ' \
+            'and the core\'s #if CFG_SYSVIEW code'
     if path.startswith('variants/'):
         variant = path.split('/')[1]
         boards = boards_where('variant', variant)

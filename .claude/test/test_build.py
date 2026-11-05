@@ -135,8 +135,9 @@ class Eligibility(unittest.TestCase):
 
 class Selection(unittest.TestCase):
     def test_rules(self):
-        cases = {'cores/nRF5/wiring.c': ('shared', None),
-                 'cores/nRF5/freertos/Source/tasks.c': ('shared', None),
+        core = ('boards', tuple(b for f in cb.REPRESENTATIVES.values() for b in f) + (cb.SYSVIEW_BOARD,))
+        cases = {'cores/nRF5/wiring.c': core,
+                 'cores/nRF5/freertos/Source/tasks.c': core,
                  'libraries/Adafruit_TinyUSB_Arduino': ('shared', None),
                  'libraries/InternalFileSytem/src/InternalFileSystem.cpp': ('shared', None),
                  'libraries/Servo/src/Servo.h': ('sketches', [e for e in E.examples()
@@ -165,13 +166,15 @@ class Selection(unittest.TestCase):
         self.assertEqual((effect, sorted(boards)), ('boards', ['nrf52840dk']))
         effect, boards, _ = E.classify('cores/nRF5/linker/nrf52833_s140_v7.ld')
         self.assertEqual((effect, sorted(boards)), ('boards', ['pca10100']))
-        self.assertEqual(E.classify('cores/nRF5/linker/nrf52_common.ld')[0], 'shared')
+        self.assertEqual(E.classify('cores/nRF5/linker/nrf52_common.ld')[:2], E.classify('cores/nRF5/wiring.c')[:2])
         self.assertEqual(E.classify('variants/nowhere/variant.h')[0], 'uncovered')
 
-    def test_systemview_builds_every_representative_and_one_sketch_with_it_enabled(self):
-        # SEGGER_SYSVIEW_FreeRTOS.c is all under #if CFG_SYSVIEW, which only boards.txt's debug=l3 menu sets
+    def test_core_builds_every_representative_and_one_sketch_with_systemview_enabled(self):
+        # SEGGER_SYSVIEW_FreeRTOS.c is all under #if CFG_SYSVIEW, which only boards.txt's debug=l3 menu sets, and so
+        # are blocks of main.cpp and FreeRTOSConfig.h
         reps = sorted(b for f in cb.REPRESENTATIVES.values() for b in f)
-        for path in ('cores/nRF5/sysview/SEGGER_SYSVIEW_FreeRTOS.c', 'cores/nRF5/sysview/SEGGER/SEGGER_SYSVIEW.c'):
+        for path in ('cores/nRF5/sysview/SEGGER_SYSVIEW_FreeRTOS.c', 'cores/nRF5/sysview/SEGGER/SEGGER_SYSVIEW.c',
+                     'cores/nRF5/main.cpp', 'cores/nRF5/freertos/config/FreeRTOSConfig.h'):
             sel = E.select([path])
             self.assertEqual(sel['uncovered'], [], path)
             enabled = {b: x for b, x in sel['builds'].items() if E.fqbn(b, x[0]).endswith(',debug=l3')}
@@ -188,7 +191,8 @@ class Selection(unittest.TestCase):
 
     def test_core_change_runs_the_farm_board_and_names_832_and_833_uncovered(self):
         sel = E.select(['cores/nRF5/wiring.c'], roster=['nrf52840dk'])
-        self.assertEqual(sorted(sel['builds']), sorted(b for f in cb.REPRESENTATIVES.values() for b in f))
+        self.assertEqual(sorted(sel['builds']),
+                         sorted([b for f in cb.REPRESENTATIVES.values() for b in f] + [cb.SYSVIEW_BOARD]))
         self.assertEqual(sel['hil']['boards'], ['nrf52840dk'])
         self.assertEqual(sorted(u['family'] for u in sel['hil']['uncovered']), ['nrf52832', 'nrf52833'])
 
