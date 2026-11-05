@@ -1,0 +1,19 @@
+repos:
+- repo: https://github.com/pre-commit/mirrors-clang-format
+  rev: v15.0.7
+  hooks:
+  - id: clang-format
+    # only the HIL sketches: the core's existing code is not reformatted
+    files: ^test/hil/
+    types_or: [c++, c, header]
+
+- repo: local
+  hooks:
+  - id: agent-contract-tests
+    name: agent contract tests
+    # the installed agentrc on a dev PC; in CI the pinned one, fetched first
+    entry: python3 .claude/skills/hil-contract/scripts/agentrc_pin.py test
+    language: python
+    additional_dependencies: [pyserial==3.5]
+    pass_filenames: false
+    files: ^(\.claude/|test/hil/|bootloader/pca10056/|cores/nRF5/linker/|boards\.txt$|platform\.txt$|tools/(build_all|makeboards)\.py$|\.github/workflows/githubci\.yml$)

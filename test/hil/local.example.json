@@ -1,0 +1,19 @@
+{
+  "boards": [
+    {
+      "name": "nrf52840dk",
+      "uid": "<the DUT's USB serial under Arduino firmware: hil_test.py commission prints it>",
+      "flasher": {
+        "name": "jlink",
+        "uid": "<the DK's J-Link serial number>",
+        "args": "-device nrf52840_xxaa"
+      },
+      "debug": {
+        "openocd": "-f interface/jlink.cfg -c \"transport select swd\" -c \"adapter speed 4000\" -f target/nrf52.cfg"
+      },
+      "arduino": {
+        "tests": ["cdc", "rtos"]
+      }
+    }
+  ]
+}
