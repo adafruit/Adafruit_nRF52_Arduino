@@ -155,7 +155,7 @@ class Selection(unittest.TestCase):
         effect, boards, _ = E.classify('variants/feather_nrf52840_express/variant.cpp')
         self.assertEqual((effect, sorted(boards)), ('boards', ['feather52840']))
         effect, boards, _ = E.classify('variants/pca10056/variant.h')
-        self.assertEqual((effect, sorted(boards)), ('boards', ['nrf52840dk', 'pca10056']))
+        self.assertEqual((effect, sorted(boards)), ('boards', ['nrf52840dk']))
         effect, boards, _ = E.classify('cores/nRF5/linker/nrf52833_s140_v7.ld')
         self.assertEqual((effect, sorted(boards)), ('boards', ['pca10100']))
         self.assertEqual(E.classify('cores/nRF5/linker/nrf52_common.ld')[0], 'shared')
@@ -196,6 +196,10 @@ class Identity(unittest.TestCase):
         self.assertIsNone(self.commands('-O2'))
         self.assertIsNone(self.commands('-DUSB_VID=0x239A -DUSB_PID=0x8029', '-DUSB_VID=0x239A -DUSB_PID=0x802A'))
         self.assertIsNone(cb.vid_pid(Path(self.tmp.name) / 'missing'))
+
+    def test_vid_pid_takes_c_integer_suffixes_and_refuses_non_numbers(self):
+        self.assertEqual(self.commands('-DUSB_VID=0x239Au -DUSB_PID=0x80DAUL'), '239a:80da')
+        self.assertIsNone(self.commands('-DUSB_VID=VENDOR -DUSB_PID=0x80DA'))
 
 
 if __name__ == '__main__':

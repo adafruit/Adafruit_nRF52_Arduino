@@ -98,9 +98,10 @@ CONTRACT_FILES = ('.claude/skills/build/scripts/check_build.py', '.claude/skills
                   '.claude/skills/hil-contract/scripts/agentrc_pin.py', 'test/hil/agentrc.json')
 AGENTRC = None   # set by engine(): agentrc_pin.identity()
 
-# every other boards.txt board builds only when its own variant changes
+# every other boards.txt board builds only when its own variant changes; one entry per FQBN, so the rig board
+# stands for its boards.txt id
 for _id, _b in boards_txt().items():
-    if _id not in BOARDS and _b['family']:
+    if _b['family'] and board_fqbn(_id, _b['family']) not in {b['fqbn'] for b in BOARDS.values()}:
         BOARDS[_id] = {'fqbn': board_fqbn(_id, _b['family']), 'family': _b['family'], 'filters': _id}
 
 
@@ -175,7 +176,11 @@ def vid_pid(build_dir, board=None, roster_entry=None):
             return None
         flags = dict(a[2:].split('=', 1) for a in argv if a.startswith(('-DUSB_VID=', '-DUSB_PID=')))
         if 'USB_VID' in flags and 'USB_PID' in flags:
-            seen.add(f'{int(flags["USB_VID"], 0):04x}:{int(flags["USB_PID"], 0):04x}')
+            try:   # a C literal's integer suffix (0x239Au) is not Python's
+                vid, pid = (int(re.sub(r'[uUlL]+$', '', flags[k]), 0) for k in ('USB_VID', 'USB_PID'))
+            except ValueError:
+                return None
+            seen.add(f'{vid:04x}:{pid:04x}')
     return seen.pop() if len(seen) == 1 else None
 
 
