@@ -50,9 +50,10 @@ pass with no build or test run is "nothing to build": say so in `notes`. Exit 3 
 
 - **Selection is the script's**, first match per path; `paths[].reason` says why:
   - a changed file of a bundled library's sketch builds that sketch wherever it is eligible;
-  - any `cores/nRF5/` file builds every representative, FreeRTOS and SEGGER SystemView included (`debug=l3`, the
-    menu that compiles SystemView, is no CI build); a linker script (`cores/nRF5/linker/<ld>`) every `boards.txt`
-    board linking with it;
+  - any `cores/nRF5/` file builds every representative, FreeRTOS included; a SEGGER SystemView file
+    (`cores/nRF5/sysview/`) also builds `SYSVIEW_SKETCH` on `feather52840_sysview`, under `debug=l3`, the only menu
+    that compiles SystemView (`CFG_SYSVIEW=1`) and no CI build; `#if CFG_SYSVIEW` code elsewhere gets no such build;
+    a linker script (`cores/nRF5/linker/<ld>`) every `boards.txt` board linking with it;
   - `variants/<v>/` every `boards.txt` board on that variant, CI's or not; `boards.txt` and `platform.txt` CI's
     whole matrix, the nRF52833 representative and the rig board;
   - the TinyUSB gitlink, `Adafruit_LittleFS`, `InternalFileSytem`, SPI and Wire (`SHARED_LIBRARIES`) every
@@ -66,10 +67,13 @@ pass with no build or test run is "nothing to build": say so in `notes`. Exit 3 
     table to CI's matrix and `build_all.py`'s SoftDevice choice, and `boards.txt` to `makeboards.py`'s output.
 - **Boards** (`BOARDS`): CI's matrix with `tools/build_all.py`'s FQBNs
   (`adafruit:nrf52:<id>:softdevice=<s132v6|s140v6>,debug=l0`), its skip markers and its own skip (the bundled
-  TinyUSB's examples, which its own CI builds); every other `boards.txt` board, built only when its variant or linker
+  TinyUSB's examples, which its own CI builds), plus the bundled nRFCrypto's examples off nRF52840 (no CC310 in
+  the MDK; its markers miss `pca10100`); every other `boards.txt` board, built only when its variant or linker
   script changes; `pca10100` (the nRF52833 DK, `softdevice=s140v7`), the nRF52833 representative with no CI board;
-  and the rig board `nrf52840dk`, boards.txt's `pca10056`. Representatives: `feather52832` (nRF52832, no USB),
-  `pca10100` (nRF52833), `feather52840` and `nrf52840dk` (nRF52840).
+  the rig board `nrf52840dk`, boards.txt's `pca10056`; and `feather52840_sysview`, feather52840 at `debug=l3`,
+  where only `SYSVIEW_SKETCH` (blinky) is eligible, built for a SystemView change or a change to that sketch.
+  Representatives: `feather52832` (nRF52832, no USB), `pca10100` (nRF52833), `feather52840` and `nrf52840dk`
+  (nRF52840).
 - **Sketches** are every `.ino` dir under `libraries/`, as CI scans them. The contract tests pin the ones no CI board
   builds (`unbuildable_examples()`). A sketch that cannot build on a board carries that board's `.<id>.test.skip`
   marker (`adc_vbat` on the boards whose variant has no `PIN_VBAT`).

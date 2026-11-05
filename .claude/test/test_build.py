@@ -124,12 +124,19 @@ class Eligibility(unittest.TestCase):
         self.assertFalse(E.eligible('nrf52840dk', ex))   # .pca10056.test.skip: the DK has no VBAT divider
         self.assertTrue(E.eligible('feather52840', ex))
 
+    def test_nrfcrypto_examples_build_only_on_nrf52840(self):
+        # Adafruit_nRFCrypto.cpp #errors without NRF_CRYPTOCELL, which only the nRF52840 MDK defines
+        examples = [e for e in E.examples() if e.startswith('libraries/Adafruit_nRFCrypto/')]
+        self.assertTrue(examples)
+        for b in cb.BOARDS:
+            self.assertEqual([E.eligible(b, e) for e in examples],
+                             [cb.BOARDS[b]['family'] == 'nrf52840' and b != cb.SYSVIEW_BOARD] * len(examples), b)
+
 
 class Selection(unittest.TestCase):
     def test_rules(self):
         cases = {'cores/nRF5/wiring.c': ('shared', None),
                  'cores/nRF5/freertos/Source/tasks.c': ('shared', None),
-                 'cores/nRF5/sysview/SEGGER/SEGGER_SYSVIEW.c': ('shared', None),
                  'libraries/Adafruit_TinyUSB_Arduino': ('shared', None),
                  'libraries/InternalFileSytem/src/InternalFileSystem.cpp': ('shared', None),
                  'libraries/Servo/src/Servo.h': ('sketches', [e for e in E.examples()
@@ -160,6 +167,19 @@ class Selection(unittest.TestCase):
         self.assertEqual((effect, sorted(boards)), ('boards', ['pca10100']))
         self.assertEqual(E.classify('cores/nRF5/linker/nrf52_common.ld')[0], 'shared')
         self.assertEqual(E.classify('variants/nowhere/variant.h')[0], 'uncovered')
+
+    def test_systemview_builds_every_representative_and_one_sketch_with_it_enabled(self):
+        # SEGGER_SYSVIEW_FreeRTOS.c is all under #if CFG_SYSVIEW, which only boards.txt's debug=l3 menu sets
+        reps = sorted(b for f in cb.REPRESENTATIVES.values() for b in f)
+        for path in ('cores/nRF5/sysview/SEGGER_SYSVIEW_FreeRTOS.c', 'cores/nRF5/sysview/SEGGER/SEGGER_SYSVIEW.c'):
+            sel = E.select([path])
+            self.assertEqual(sel['uncovered'], [], path)
+            enabled = {b: x for b, x in sel['builds'].items() if E.fqbn(b, x[0]).endswith(',debug=l3')}
+            self.assertTrue(enabled, f'{path}: no selected build compiles SystemView')
+            self.assertEqual(sorted(set(sel['builds']) - set(enabled)), reps, path)
+            self.assertEqual(list(enabled.values()), [[cb.SYSVIEW_SKETCH]], path)
+            self.assertIn(f'\n{cb.board_id(next(iter(enabled)))}.menu.debug.l3.build.sysview_flags=-DCFG_SYSVIEW=1\n',
+                          (ROOT / 'boards.txt').read_text())
 
     def test_boards_txt_builds_ci_the_833_representative_and_the_rig_board(self):
         effect, boards, _ = E.classify('boards.txt')

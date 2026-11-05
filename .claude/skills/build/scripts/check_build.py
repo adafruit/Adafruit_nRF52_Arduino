@@ -46,8 +46,8 @@ def boards_txt():
             for i, v in out.items() if 'variant' in v}
 
 
-def board_fqbn(board_id, family):
-    return f'adafruit:nrf52:{board_id}:softdevice={SOFTDEVICE[family]},debug=l0'   # tools/build_all.py's
+def board_fqbn(board_id, family, debug='l0'):
+    return f'adafruit:nrf52:{board_id}:softdevice={SOFTDEVICE[family]},debug={debug}'   # tools/build_all.py's
 
 
 # CI's matrix (.github/workflows/githubci.yml); a board's name is its boards.txt id, which its .<id>.test.skip and
@@ -66,6 +66,12 @@ BOARDS['nrf52840dk'] = {'fqbn': board_fqbn('pca10056', 'nrf52840'), 'family': 'n
                         'base_exclude': ((0x10001000, 0x10002000),)}
 # nRF52833 has no CI board: the DK's id builds as its family's representative
 BOARDS['pca10100'] = {'fqbn': board_fqbn('pca10100', 'nrf52833'), 'family': 'nrf52833', 'filters': 'pca10100'}
+# SystemView compiles only under debug=l3 (boards.txt's CFG_SYSVIEW=1), which no CI build selects: a change to it also
+# builds SYSVIEW_SKETCH, the only sketch eligible on this board
+SYSVIEW_BOARD = 'feather52840_sysview'
+BOARDS[SYSVIEW_BOARD] = {'fqbn': board_fqbn('feather52840', 'nrf52840', 'l3'), 'family': 'nrf52840',
+                         'filters': 'feather52840'}
+SYSVIEW_SKETCH = 'libraries/Bluefruit52Lib/examples/Hardware/blinky'
 REPRESENTATIVES = {'nrf52832': ['feather52832'], 'nrf52833': ['pca10100'], 'nrf52840': ['feather52840', 'nrf52840dk']}
 # the sketches a HIL record carries, the first also the restoration image: it writes no flash
 HIL_SKETCHES = {'device': ('test/hil/core_cdc', 'test/hil/core_rtos')}
@@ -110,9 +116,9 @@ def board_id(board):
 
 
 def boards_where(key, value):
-    """The board names (rig boards included) whose boards.txt id has build.<key> == value."""
+    """The board names (rig boards included, the SystemView board not) whose boards.txt id has build.<key> == value."""
     ids = {i for i, b in boards_txt().items() if b[key] == value}
-    return [b for b in BOARDS if board_id(b) in ids]
+    return [b for b in BOARDS if board_id(b) in ids and b != SYSVIEW_BOARD]
 
 
 def library_sketches(lib):
@@ -128,7 +134,8 @@ def classify_source(path):
         if path.startswith(prefix):
             return 'uncovered', None, why
     if path.startswith('cores/nRF5/sysview/'):
-        return 'shared', None, 'SEGGER SystemView, built only under debug=l3: the default builds compile none of it'
+        return 'boards', tuple(b for f in REPRESENTATIVES.values() for b in f) + (SYSVIEW_BOARD,), \
+            'SEGGER SystemView: every representative, and one sketch under debug=l3, the menu that compiles it'
     m = re.match(r'cores/nRF5/linker/(\w+\.ld)$', path)
     if m and m.group(1) != 'nrf52_common.ld':
         boards = boards_where('ldscript', m.group(1))
@@ -157,8 +164,12 @@ def classify_source(path):
 
 
 def exclude(board, example):
-    """tools/build_all.py's own skip: the bundled TinyUSB's examples, which its own CI builds."""
-    return example.startswith('libraries/Adafruit_TinyUSB_Arduino/')
+    """tools/build_all.py's own skip: the bundled TinyUSB's examples, which its own CI builds; every sketch but
+    SYSVIEW_SKETCH on the SystemView board; and the bundled nRFCrypto's examples off nRF52840, the only MDK defining
+    the NRF_CRYPTOCELL its source #errors without (its markers name feather52832 and feather52833, not pca10100)."""
+    return (example.startswith('libraries/Adafruit_TinyUSB_Arduino/') or
+            board == SYSVIEW_BOARD and example != SYSVIEW_SKETCH or
+            example.startswith('libraries/Adafruit_nRFCrypto/') and BOARDS[board]['family'] != 'nrf52840')
 
 
 def vid_pid(build_dir, board=None, roster_entry=None):
