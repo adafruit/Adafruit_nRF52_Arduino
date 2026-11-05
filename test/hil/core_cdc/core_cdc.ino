@@ -96,7 +96,9 @@ void loop() {
     }
     if (c == '\n') {
       line[n] = 0;
-      if (!overlong) {
+      if (overlong) {
+        Serial.println("HIL_RESULT - ? REJECT why=overlong");
+      } else {
         handle(line);
       }
       n = 0;
