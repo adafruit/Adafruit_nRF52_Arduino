@@ -59,9 +59,10 @@ deadline):
   the two exchanges widened by 1%, `micros()` must agree with `millis()` within 2 ms, and `delay(1000)` measured by
   `micros()` must take 1000 to 1002 ms, widened by 1%; then two FreeRTOS worker tasks each queue a message every
   10 ms (10 ticks of 1/1024 s) and a `SoftwareTimer` ticks every 50 ms (51 ticks) while `loop()` drains the queue for
-  1 s: each worker's count must lie within its tick-rounded period's bound and the timer's within 1.5 ticks of
-  expected (`rtos_problem`). A coarse functional bound on the FreeRTOS tick (RTC1 on the 32.768 kHz clock), no clock
-  accuracy claim. Neither sketch starts the SoftDevice or mounts InternalFileSystem.
+  1 s: each worker's count must lie between 90% of the count at 10-tick periods (`WORK_LATENESS`: `vTaskDelay` is
+  relative, so a period also takes the wait before the worker runs again) and the count at 9-tick periods plus 2, and
+  the timer's within 1.5 ticks of expected (`rtos_problem`). A coarse functional bound on the FreeRTOS tick (RTC1 on
+  the 32.768 kHz clock), no clock accuracy claim. Neither sketch starts the SoftDevice or mounts InternalFileSystem.
 
 `-b` narrows the boards. The PR-scoped selector is the build contract's:
 
@@ -94,7 +95,12 @@ row's `base` names `matched` or the run that differed. UICR is excluded: never r
 board's UICR (bootloader and MBR settings addresses, APPROTECT, REGOUT0) is whatever its last full programming left.
 The base HEX itself sets the bootloader address only there (`NRFFW[0]`), and the MBR reads its own flash word at
 0xFF8 first, so the base holds that word erased: with UICR erased too the MBR boots the SoftDevice and the sketch
-directly, skipping the bootloader (S140 SoftDevice Specification §12.3).
+directly, skipping the bootloader (S140 SoftDevice Specification §12.3). The MBR reads `NRFFW[0]` only while 0xFF8
+is erased and runs the bootloader at the address it holds (§12.2, §12.3), so a restored `core_cdc` boots only while
+`NRFFW[0]` is erased or 0xF4000, the bundled bootloader. Any other value needs a manual recovery under a hold, outside
+this harness, then a reset, which UICR takes effect after: an NVMC `ERASEUICR` over J-Link, which sets every UICR bit
+to 1, APPROTECT and REGOUT0 included (nRF52840 Product Specification §4.3.4), or a write of `NRFFW[0]` (0x10001014),
+which can only clear bits (§4.3.1, §4.3.3).
 
 ## Execution
 
@@ -130,7 +136,8 @@ caller retries a fail once under a new run id, per the `hil` Caller rules.
 Adafruit TinyUSB Arduino's Recovery, run in this core's attempt dir with its roster and records. The battery writes
 the base image's runs (outside the application span, never UICR) and the application span `[0x26000, 0xED000)`,
 never InternalFileSystem at 0xED000, and keeps no state across sketches, so restoring `core_cdc` over a checked base
-is the whole cleanup. A base rewrite that failed leaves the base unknown: the restore checks and rewrites it again.
+is the whole cleanup while UICR `NRFFW[0]` is erased or 0xF4000; any other value needs Build's manual recovery. A base
+rewrite that failed leaves the base unknown: the restore checks and rewrites it again.
 
 ## Limits
 

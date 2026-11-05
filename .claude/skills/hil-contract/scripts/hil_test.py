@@ -57,6 +57,9 @@ TIMING_TOLERANCE = 0.01
 RTOS_MS = 1000   # how long core_rtos runs its two workers and its timer
 # core_rtos's periods (WORK_MS, TIMER_MS) as whole ticks: vTaskDelay(10 ms) = 10 ticks, a 50 ms timer = 51 ticks
 WORK_TICKS, TIMER_TICKS, TICK_HZ = 10, 51, 1024
+# vTaskDelay is relative, so a worker's period also takes the wait before it runs again: its count may fall this
+# fraction below the 10-tick count
+WORK_LATENESS = 0.1
 
 E = None   # agentrc's arduino_hil, bound to this profile by engine()
 
@@ -202,7 +205,7 @@ def rtos_problem(f):
     if not RTOS_MS <= ms <= RTOS_MS + 50:
         return f'RTOS ran {ms} ms for {RTOS_MS}'
     # vTaskDelay(n) blocks n - 1 to n tick periods; each worker also queued once before its first delay
-    lo, hi = ms * TICK_HZ / 1000 / WORK_TICKS * 0.9, ms * TICK_HZ / 1000 / (WORK_TICKS - 1) + 2
+    lo, hi = ms * TICK_HZ / 1000 / WORK_TICKS * (1 - WORK_LATENESS), ms * TICK_HZ / 1000 / (WORK_TICKS - 1) + 2
     slow = {k: v for k, v in (('a', a), ('b', b)) if not lo <= v <= hi}
     if slow:
         return f'worker messages {slow} outside [{lo:.0f}, {hi:.0f}] over {ms} ms'
