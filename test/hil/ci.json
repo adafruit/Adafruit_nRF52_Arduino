@@ -1,0 +1,15 @@
+{
+  "boards": [
+    {
+      "name": "nrf52840dk",
+      "uid": "2467EB236E0E4F2D",
+      "probe": "683944004",
+      "debug": {
+        "openocd": "-f interface/jlink.cfg -c \"transport select swd\" -c \"adapter speed 4000\" -f target/nrf52.cfg"
+      },
+      "arduino": {
+        "tests": ["cdc", "rtos"]
+      }
+    }
+  ]
+}

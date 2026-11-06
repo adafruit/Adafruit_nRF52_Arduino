@@ -25,3 +25,9 @@
 /boards.local.txt
 /platform.local.txt
 
+
+# agent build and HIL contracts
+__pycache__/
+/build/
+/test/hil/local.json
+/.hil-remote/
