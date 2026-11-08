@@ -31,6 +31,14 @@ extern "C" {
 
 #include <Adafruit_TinyUSB.h> // for Serial
 
+// Guards against a permanent MCU hang in the EVENTS_* poll loops below: on some
+// boards, probing an I2C address with nothing attached (or without pull-ups)
+// can leave the TWIM peripheral never raising the expected event or EVENTS_ERROR,
+// so an unbounded while(!event) spins forever. See adafruit/Adafruit_nRF52_Arduino#771.
+#ifndef I2C_TWIM_TIMEOUT_MS
+#define I2C_TWIM_TIMEOUT_MS 100
+#endif
+
 static volatile uint32_t* pincfg_reg(uint32_t pin)
 {
   NRF_GPIO_Type * port = nrf_gpio_pin_port_decode(&pin);
@@ -163,28 +171,49 @@ uint8_t TwoWire::requestFrom(uint8_t address, size_t quantity, bool stopBit)
   _p_twim->RXD.MAXCNT = quantity;
   _p_twim->TASKS_STARTRX = 0x1UL;
 
-  while(!_p_twim->EVENTS_RXSTARTED && !_p_twim->EVENTS_ERROR);
+  bool timed_out = false;
+  uint32_t wait_start = millis();
+  while(!_p_twim->EVENTS_RXSTARTED && !_p_twim->EVENTS_ERROR) {
+    if (millis() - wait_start > I2C_TWIM_TIMEOUT_MS) { timed_out = true; break; }
+  }
   _p_twim->EVENTS_RXSTARTED = 0x0UL;
 
-  while(!_p_twim->EVENTS_LASTRX && !_p_twim->EVENTS_ERROR);
+  if (!timed_out) {
+    wait_start = millis();
+    while(!_p_twim->EVENTS_LASTRX && !_p_twim->EVENTS_ERROR) {
+      if (millis() - wait_start > I2C_TWIM_TIMEOUT_MS) { timed_out = true; break; }
+    }
+  }
   _p_twim->EVENTS_LASTRX = 0x0UL;
 
-  if (stopBit || _p_twim->EVENTS_ERROR)
+  if (stopBit || _p_twim->EVENTS_ERROR || timed_out)
   {
     _p_twim->TASKS_STOP = 0x1UL;
-    while(!_p_twim->EVENTS_STOPPED);
+    wait_start = millis();
+    while(!_p_twim->EVENTS_STOPPED) {
+      if (millis() - wait_start > I2C_TWIM_TIMEOUT_MS) break;
+    }
     _p_twim->EVENTS_STOPPED = 0x0UL;
   }
   else
   {
     _p_twim->TASKS_SUSPEND = 0x1UL;
-    while(!_p_twim->EVENTS_SUSPENDED);
+    wait_start = millis();
+    while(!_p_twim->EVENTS_SUSPENDED) {
+      if (millis() - wait_start > I2C_TWIM_TIMEOUT_MS) break;
+    }
     _p_twim->EVENTS_SUSPENDED = 0x0UL;
   }
 
   if (_p_twim->EVENTS_ERROR)
   {
     _p_twim->EVENTS_ERROR = 0x0UL;
+  }
+
+  // on timeout nothing was actually clocked in - report 0 bytes rather than
+  // whatever stale RXD.AMOUNT is left over from a previous transaction
+  if (timed_out) {
+    return 0;
   }
 
   byteRead = rxBuffer._iHead = _p_twim->RXD.AMOUNT;
@@ -227,24 +256,37 @@ uint8_t TwoWire::endTransmission(bool stopBit)
 
   _p_twim->TASKS_STARTTX = 0x1UL;
 
-  while(!_p_twim->EVENTS_TXSTARTED && !_p_twim->EVENTS_ERROR);
+  bool timed_out = false;
+  uint32_t wait_start = millis();
+  while(!_p_twim->EVENTS_TXSTARTED && !_p_twim->EVENTS_ERROR) {
+    if (millis() - wait_start > I2C_TWIM_TIMEOUT_MS) { timed_out = true; break; }
+  }
   _p_twim->EVENTS_TXSTARTED = 0x0UL;
 
-  if (txBuffer.available()) {
-    while(!_p_twim->EVENTS_LASTTX && !_p_twim->EVENTS_ERROR);
+  if (!timed_out && txBuffer.available()) {
+    wait_start = millis();
+    while(!_p_twim->EVENTS_LASTTX && !_p_twim->EVENTS_ERROR) {
+      if (millis() - wait_start > I2C_TWIM_TIMEOUT_MS) { timed_out = true; break; }
+    }
   }
   _p_twim->EVENTS_LASTTX = 0x0UL;
 
-  if (stopBit || _p_twim->EVENTS_ERROR)
+  if (stopBit || _p_twim->EVENTS_ERROR || timed_out)
   {
     _p_twim->TASKS_STOP = 0x1UL;
-    while(!_p_twim->EVENTS_STOPPED);
+    wait_start = millis();
+    while(!_p_twim->EVENTS_STOPPED) {
+      if (millis() - wait_start > I2C_TWIM_TIMEOUT_MS) break;
+    }
     _p_twim->EVENTS_STOPPED = 0x0UL;
   }
   else
   {
     _p_twim->TASKS_SUSPEND = 0x1UL;
-    while(!_p_twim->EVENTS_SUSPENDED);
+    wait_start = millis();
+    while(!_p_twim->EVENTS_SUSPENDED) {
+      if (millis() - wait_start > I2C_TWIM_TIMEOUT_MS) break;
+    }
     _p_twim->EVENTS_SUSPENDED = 0x0UL;
   }
 
@@ -268,6 +310,14 @@ uint8_t TwoWire::endTransmission(bool stopBit)
     {
       return 4;
     }
+  }
+
+  // hardware never raised EVENTS_ERROR but also never completed the transaction -
+  // report it as a failure so callers (e.g. an I2C bus scan) don't mistake a dead
+  // bus for a device that ACKed. See adafruit/Adafruit_nRF52_Arduino#771.
+  if (timed_out)
+  {
+    return 4;
   }
 
   return 0;
