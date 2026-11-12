@@ -51,6 +51,7 @@ class Adafruit_FIFO
     volatile uint16_t _count        ; ///< number of items in queue
     volatile uint16_t _wr_idx       ; ///< write pointer
     volatile uint16_t _rd_idx       ; ///< read pointer
+    volatile uint16_t _read_count   ; ///< read transaction item count
 
     SemaphoreHandle_t _mutex;
 
@@ -78,6 +79,9 @@ class Adafruit_FIFO
     uint16_t read(void* buffer);
     uint16_t read(void * buffer, uint16_t n);
 
+    uint16_t readStart(void* buffer, uint16_t n);
+    void     readEnd(uint16_t n);
+
     bool peekAt(uint16_t position, void * buffer);
     bool peek(void* buffer) { return peekAt(0, buffer); }
 
@@ -85,6 +89,7 @@ class Adafruit_FIFO
     inline bool     full(void)      { return _count == _depth; }
     inline uint16_t count(void)     { return _count;           }
     inline uint16_t remaining(void) { return _depth - _count;  }
+    inline uint16_t waiting(void)   { return _read_count;      }
 };
 
 #endif /* _Adafruit_FIFO_H_ */

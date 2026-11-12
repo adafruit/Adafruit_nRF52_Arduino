@@ -55,7 +55,7 @@ Adafruit_FIFO::Adafruit_FIFO(uint8_t item_size, uint16_t depth)
   _depth        = depth;
   _overwritable = false;
 
-  _count = _wr_idx = _rd_idx = 0;
+  _count = _wr_idx = _rd_idx = _read_count = 0;
 }
 
 void Adafruit_FIFO::begin(void)
@@ -94,7 +94,7 @@ Adafruit_FIFO::~Adafruit_FIFO()
 void Adafruit_FIFO::clear(void)
 {
   _mutex_lock();
-  _rd_idx = _wr_idx = _count = 0;
+  _rd_idx = _wr_idx = _count = _read_count = 0;
   _mutex_unlock();
 }
 
@@ -240,6 +240,79 @@ uint16_t Adafruit_FIFO::read(void * buffer, uint16_t count)
   _mutex_unlock();
 
   return n;
+}
+
+/******************************************************************************/
+/*!
+    @brief  Read multiple items to an array and lock the FIFO until readEnd
+
+    @param[in] buffer
+               Memory address of the item's array
+    @param[in] n
+               Number of items to read
+
+    @return    Number of read items
+*/
+/******************************************************************************/
+uint16_t Adafruit_FIFO::readStart(void* buffer, uint16_t n)
+{
+  if ( !buffer || n == 0 ) return 0;
+
+  // Don't allow a second readStart before readEnd.
+  if ( _read_count != 0 ) return 0;
+
+  _mutex_lock();
+
+  uint16_t count = min(n, _count);
+
+  if ( count == 0 )
+  {
+    _mutex_unlock();
+    return 0;
+  }
+
+  // Copy without consuming the items.
+  uint16_t first = min(count, (uint16_t)(_depth - _rd_idx));
+
+  memcpy(buffer,
+         _buffer + (_rd_idx * _item_size),
+         first * _item_size);
+
+  // Copy any remaining items after wrapping around.
+  if ( count > first )
+  {
+    memcpy((uint8_t*)buffer + first * _item_size,
+           _buffer,
+           (count - first) * _item_size);
+  }
+
+  _read_count = count;
+
+  // Keep the mutex locked until readEnd().
+  return count;
+}
+
+/******************************************************************************/
+/*!
+    @brief  Removes items from FIFO following a readStart and releases lock
+
+    @param[in] n
+               Number of items to remove
+*/
+/******************************************************************************/
+void Adafruit_FIFO::readEnd(uint16_t n)
+{
+  if ( _read_count == 0 ) return;
+
+  // Consume no more than readStart() copied.
+  if ( n > _read_count ) n = _read_count;
+
+  _rd_idx = (_rd_idx + n) % _depth;
+  _count -= n;
+
+  _read_count = 0;
+
+  _mutex_unlock();
 }
 
 /******************************************************************************/
