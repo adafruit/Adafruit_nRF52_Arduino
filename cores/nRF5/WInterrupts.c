@@ -37,7 +37,8 @@
 #define GPIOTE_CONFIG_PORT_PIN_Msk GPIOTE_CONFIG_PSEL_Msk
 #endif
 
-static voidFuncPtr callbacksInt[NUMBER_OF_GPIO_TE];
+static voidFuncPtrArg callbacksInt[NUMBER_OF_GPIO_TE];
+static void* callbackArgs[NUMBER_OF_GPIO_TE];
 static bool callbackDeferred[NUMBER_OF_GPIO_TE];
 static int8_t channelMap[NUMBER_OF_GPIO_TE];
 static int enabled = 0;
@@ -46,6 +47,7 @@ static int enabled = 0;
 static void __initialize()
 {
   memset(callbacksInt, 0, sizeof(callbacksInt));
+  memset(callbackArgs, 0, sizeof(callbackArgs));
   memset(channelMap, -1, sizeof(channelMap));
   memset(callbackDeferred, 0, sizeof(callbackDeferred));
 
@@ -55,13 +57,22 @@ static void __initialize()
   NVIC_EnableIRQ(GPIOTE_IRQn);
 }
 
+/* Trampoline storing a no-argument callback as a one-argument one, so a single
+ * code path (and a single callbacksInt[]) can serve attachInterrupt() and
+ * attachInterruptArg() alike. */
+static void _callNoArgCallback(void *callback)
+{
+  ((voidFuncPtr) callback)();
+}
+
 /*
- * \brief Specifies a named Interrupt Service Routine (ISR) to call when an interrupt occurs.
- *        Replaces any previous function that was attached to the interrupt.
+ * \brief Specifies a named Interrupt Service Routine (ISR), along with an argument to pass
+ *        it, to call when an interrupt occurs. Replaces any previous function that was
+ *        attached to the interrupt.
  *
  * \return Interrupt Mask
  */
-int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
+int attachInterruptArg(uint32_t pin, voidFuncPtrArg handler, void *arg, uint32_t mode)
 {
   if (!enabled) {
     __initialize();
@@ -132,9 +143,10 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
     return 0; // no channel available
   }
 
-  channelMap[ch]         = pin;      // harmless for existing channel
-  callbacksInt[ch]       = callback; // caller might be updating this for existing channel
-  callbackDeferred[ch]   = deferred; // caller might be updating this for existing channel
+  channelMap[ch]       = pin;      // harmless for existing channel
+  callbacksInt[ch]     = handler;  // caller might be updating this for existing channel
+  callbackArgs[ch]     = arg;      // caller might be updating this for existing channel
+  callbackDeferred[ch] = deferred; // caller might be updating this for existing channel
 
   uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
   tmp &= oldRegMask;
@@ -149,6 +161,17 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
 
   // Finally, indicate to caller the allocated / updated channel
   return (1 << ch);
+}
+
+/*
+ * \brief Specifies a named Interrupt Service Routine (ISR) to call when an interrupt occurs.
+ *        Replaces any previous function that was attached to the interrupt.
+ *
+ * \return Interrupt Mask
+ */
+int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
+{
+  return attachInterruptArg(pin, _callNoArgCallback, (void *) callback, mode);
 }
 
 /*
@@ -171,6 +194,7 @@ void detachInterrupt(uint32_t pin)
       // now cleanup the rest of the use of the channel
       channelMap[ch] = -1;
       callbacksInt[ch] = NULL;
+      callbackArgs[ch] = NULL;
       callbackDeferred[ch] = false;
       break;
     }
@@ -199,9 +223,9 @@ void GPIOTE_IRQHandler()
     if (channelMap[ch] != -1 && callbacksInt[ch]) {
       if ( callbackDeferred[ch] ) {
         // Adafruit defer callback to non-isr if configured so
-        ada_callback(NULL, 0, callbacksInt[ch]);
+        ada_callback(NULL, 0, callbacksInt[ch], (uint32_t) callbackArgs[ch]);
       } else {
-        callbacksInt[ch]();
+        callbacksInt[ch](callbackArgs[ch]);
       }
     }
 
