@@ -65,6 +65,31 @@ static void _callNoArgCallback(void *callback)
   ((voidFuncPtr) callback)();
 }
 
+/* taskENTER_CRITICAL()/taskEXIT_CRITICAL() must not be called from interrupt context: unlike
+ * the _FROM_ISR() pair, exiting them unconditionally zeroes a nesting counter and clears
+ * BASEPRI, which can turn interrupts back on from underneath an outer ISR-side critical
+ * section before that caller is done with it. Pick the ISR-safe pair when called from one,
+ * so attachInterruptArg()/detachInterrupt() are safe whether called from a task or an ISR
+ * (e.g. a non-deferred callback detaching itself). */
+static UBaseType_t _criticalEnter(bool *fromISR)
+{
+  *fromISR = isInISR();
+  if (*fromISR) {
+    return taskENTER_CRITICAL_FROM_ISR();
+  }
+  taskENTER_CRITICAL();
+  return 0;
+}
+
+static void _criticalExit(bool fromISR, UBaseType_t savedMask)
+{
+  if (fromISR) {
+    taskEXIT_CRITICAL_FROM_ISR(savedMask);
+  } else {
+    taskEXIT_CRITICAL();
+  }
+}
+
 /*
  * \brief Specifies a named Interrupt Service Routine (ISR), along with an argument to pass
  *        it, to call when an interrupt occurs. Replaces any previous function that was
@@ -147,7 +172,8 @@ int attachInterruptArg(uint32_t pin, voidFuncPtrArg handler, void *arg, uint32_t
   // GPIOTE_IRQHandler and task switches, so neither ever observes it half-applied. This
   // nests correctly with any critical section (FreeRTOS's or the SoftDevice's) the caller
   // may already be in, unlike disabling/re-enabling GPIOTE_IRQn directly would.
-  taskENTER_CRITICAL();
+  bool criticalFromISR;
+  UBaseType_t const criticalMask = _criticalEnter(&criticalFromISR);
 
   channelMap[ch]       = pin;      // harmless for existing channel
   callbacksInt[ch]     = handler;  // caller might be updating this for existing channel
@@ -165,7 +191,7 @@ int attachInterruptArg(uint32_t pin, voidFuncPtrArg handler, void *arg, uint32_t
     NRF_GPIOTE->INTENSET = (1 << ch);
   }
 
-  taskEXIT_CRITICAL();
+  _criticalExit(criticalFromISR, criticalMask);
 
   // Finally, indicate to caller the allocated / updated channel
   return (1 << ch);
@@ -197,7 +223,8 @@ void detachInterrupt(uint32_t pin)
     if ((uint32_t)channelMap[ch] == pin) {
       // Same protection as attachInterruptArg(): keep GPIOTE_IRQHandler and other tasks
       // from observing this channel's state half torn-down.
-      taskENTER_CRITICAL();
+      bool criticalFromISR;
+      UBaseType_t const criticalMask = _criticalEnter(&criticalFromISR);
 
       NRF_GPIOTE->INTENCLR = (1 << ch);
       NRF_GPIOTE->CONFIG[ch] = 0;
@@ -209,7 +236,7 @@ void detachInterrupt(uint32_t pin)
       callbackArgs[ch] = NULL;
       callbackDeferred[ch] = false;
 
-      taskEXIT_CRITICAL();
+      _criticalExit(criticalFromISR, criticalMask);
       break;
     }
   }
