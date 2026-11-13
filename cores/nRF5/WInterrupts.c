@@ -143,6 +143,14 @@ int attachInterruptArg(uint32_t pin, voidFuncPtrArg handler, void *arg, uint32_t
     ((polarity                 << GPIOTE_CONFIG_POLARITY_Pos) & GPIOTE_CONFIG_POLARITY_Msk) |
     ((GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos    ) & GPIOTE_CONFIG_MODE_Msk    ) ;
 
+  // Hold the channel scan, selection, and configuration all under one critical section, so
+  // a concurrent attach/detach (from another task or an ISR) can't race this call to the
+  // same channel, and GPIOTE_IRQHandler never observes a channel half-applied. This nests
+  // correctly with any critical section (FreeRTOS's or the SoftDevice's) the caller may
+  // already be in, unlike disabling/re-enabling GPIOTE_IRQn directly would.
+  bool criticalFromISR;
+  UBaseType_t const criticalMask = _criticalEnter(&criticalFromISR);
+
   int ch = -1;
   int newChannel = 0;
 
@@ -165,15 +173,9 @@ int attachInterruptArg(uint32_t pin, voidFuncPtrArg handler, void *arg, uint32_t
   }
   // if no channel found, exit
   if (ch == -1) {
+    _criticalExit(criticalFromISR, criticalMask);
     return 0; // no channel available
   }
-
-  // Protect the whole channel update (software state and GPIOTE config alike) from both
-  // GPIOTE_IRQHandler and task switches, so neither ever observes it half-applied. This
-  // nests correctly with any critical section (FreeRTOS's or the SoftDevice's) the caller
-  // may already be in, unlike disabling/re-enabling GPIOTE_IRQn directly would.
-  bool criticalFromISR;
-  UBaseType_t const criticalMask = _criticalEnter(&criticalFromISR);
 
   channelMap[ch]       = pin;      // harmless for existing channel
   callbacksInt[ch]     = handler;  // caller might be updating this for existing channel
@@ -219,13 +221,13 @@ void detachInterrupt(uint32_t pin)
 
   pin = g_ADigitalPinMap[pin];
 
+  // Same protection as attachInterruptArg(): hold the channel scan and teardown under one
+  // critical section, so neither GPIOTE_IRQHandler nor another task/ISR can race it.
+  bool criticalFromISR;
+  UBaseType_t const criticalMask = _criticalEnter(&criticalFromISR);
+
   for (int ch = 0; ch < NUMBER_OF_GPIO_TE; ch++) {
     if ((uint32_t)channelMap[ch] == pin) {
-      // Same protection as attachInterruptArg(): keep GPIOTE_IRQHandler and other tasks
-      // from observing this channel's state half torn-down.
-      bool criticalFromISR;
-      UBaseType_t const criticalMask = _criticalEnter(&criticalFromISR);
-
       NRF_GPIOTE->INTENCLR = (1 << ch);
       NRF_GPIOTE->CONFIG[ch] = 0;
       NRF_GPIOTE->EVENTS_IN[ch] = 0; // clear any final events
@@ -235,11 +237,11 @@ void detachInterrupt(uint32_t pin)
       callbacksInt[ch] = NULL;
       callbackArgs[ch] = NULL;
       callbackDeferred[ch] = false;
-
-      _criticalExit(criticalFromISR, criticalMask);
       break;
     }
   }
+
+  _criticalExit(criticalFromISR, criticalMask);
 }
 
 void GPIOTE_IRQHandler()
