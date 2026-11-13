@@ -143,20 +143,16 @@ int attachInterruptArg(uint32_t pin, voidFuncPtrArg handler, void *arg, uint32_t
     return 0; // no channel available
   }
 
-  channelMap[ch] = pin; // harmless for existing channel
+  // Protect the whole channel update (software state and GPIOTE config alike) from both
+  // GPIOTE_IRQHandler and task switches, so neither ever observes it half-applied. This
+  // nests correctly with any critical section (FreeRTOS's or the SoftDevice's) the caller
+  // may already be in, unlike disabling/re-enabling GPIOTE_IRQn directly would.
+  taskENTER_CRITICAL();
 
-  // Keep GPIOTE_IRQHandler from running while handler/arg/deferred (which it reads together)
-  // are updated for this channel, so it can never see a new handler paired with a stale arg.
-  // Restore rather than force the IRQ back on, so a caller (or SoftDevice critical region)
-  // that already had it disabled around this call isn't overridden.
-  uint32_t const irqWasEnabled = NVIC_GetEnableIRQ(GPIOTE_IRQn);
-  NVIC_DisableIRQ(GPIOTE_IRQn);
+  channelMap[ch]       = pin;      // harmless for existing channel
   callbacksInt[ch]     = handler;  // caller might be updating this for existing channel
   callbackArgs[ch]     = arg;      // caller might be updating this for existing channel
   callbackDeferred[ch] = deferred; // caller might be updating this for existing channel
-  if (irqWasEnabled) {
-    NVIC_EnableIRQ(GPIOTE_IRQn);
-  }
 
   uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
   tmp &= oldRegMask;
@@ -168,6 +164,8 @@ int attachInterruptArg(uint32_t pin, voidFuncPtrArg handler, void *arg, uint32_t
     NRF_GPIOTE->EVENTS_IN[ch] = 0;
     NRF_GPIOTE->INTENSET = (1 << ch);
   }
+
+  taskEXIT_CRITICAL();
 
   // Finally, indicate to caller the allocated / updated channel
   return (1 << ch);
@@ -197,6 +195,10 @@ void detachInterrupt(uint32_t pin)
 
   for (int ch = 0; ch < NUMBER_OF_GPIO_TE; ch++) {
     if ((uint32_t)channelMap[ch] == pin) {
+      // Same protection as attachInterruptArg(): keep GPIOTE_IRQHandler and other tasks
+      // from observing this channel's state half torn-down.
+      taskENTER_CRITICAL();
+
       NRF_GPIOTE->INTENCLR = (1 << ch);
       NRF_GPIOTE->CONFIG[ch] = 0;
       NRF_GPIOTE->EVENTS_IN[ch] = 0; // clear any final events
@@ -206,6 +208,8 @@ void detachInterrupt(uint32_t pin)
       callbacksInt[ch] = NULL;
       callbackArgs[ch] = NULL;
       callbackDeferred[ch] = false;
+
+      taskEXIT_CRITICAL();
       break;
     }
   }
