@@ -147,11 +147,16 @@ int attachInterruptArg(uint32_t pin, voidFuncPtrArg handler, void *arg, uint32_t
 
   // Keep GPIOTE_IRQHandler from running while handler/arg/deferred (which it reads together)
   // are updated for this channel, so it can never see a new handler paired with a stale arg.
+  // Restore rather than force the IRQ back on, so a caller (or SoftDevice critical region)
+  // that already had it disabled around this call isn't overridden.
+  uint32_t const irqWasEnabled = NVIC_GetEnableIRQ(GPIOTE_IRQn);
   NVIC_DisableIRQ(GPIOTE_IRQn);
   callbacksInt[ch]     = handler;  // caller might be updating this for existing channel
   callbackArgs[ch]     = arg;      // caller might be updating this for existing channel
   callbackDeferred[ch] = deferred; // caller might be updating this for existing channel
-  NVIC_EnableIRQ(GPIOTE_IRQn);
+  if (irqWasEnabled) {
+    NVIC_EnableIRQ(GPIOTE_IRQn);
+  }
 
   uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
   tmp &= oldRegMask;
