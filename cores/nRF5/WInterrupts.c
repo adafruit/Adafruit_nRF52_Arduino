@@ -143,10 +143,15 @@ int attachInterruptArg(uint32_t pin, voidFuncPtrArg handler, void *arg, uint32_t
     return 0; // no channel available
   }
 
-  channelMap[ch]       = pin;      // harmless for existing channel
+  channelMap[ch] = pin; // harmless for existing channel
+
+  // Keep GPIOTE_IRQHandler from running while handler/arg/deferred (which it reads together)
+  // are updated for this channel, so it can never see a new handler paired with a stale arg.
+  NVIC_DisableIRQ(GPIOTE_IRQn);
   callbacksInt[ch]     = handler;  // caller might be updating this for existing channel
   callbackArgs[ch]     = arg;      // caller might be updating this for existing channel
   callbackDeferred[ch] = deferred; // caller might be updating this for existing channel
+  NVIC_EnableIRQ(GPIOTE_IRQn);
 
   uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
   tmp &= oldRegMask;
@@ -171,7 +176,7 @@ int attachInterruptArg(uint32_t pin, voidFuncPtrArg handler, void *arg, uint32_t
  */
 int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
 {
-  return attachInterruptArg(pin, _callNoArgCallback, (void *) callback, mode);
+  return attachInterruptArg(pin, callback ? _callNoArgCallback : NULL, (void *) callback, mode);
 }
 
 /*
