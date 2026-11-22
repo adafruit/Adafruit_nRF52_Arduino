@@ -9,6 +9,12 @@ repos:
 
 - repo: local
   hooks:
+  - id: no-symlinks
+    name: no symlinks (the Arduino Library Manager rejects them)
+    entry: python3 -c "import subprocess,sys; links=[l.split('\t',1)[1] for l in subprocess.check_output(['git','ls-files','-s'],text=True).splitlines() if l.startswith('120000 ')]; print('symlinks block Arduino Library Manager releases (arduino-lint LS005):', *links, sep='\n  ') if links else None; sys.exit(1 if links else 0)"
+    language: system
+    pass_filenames: false
+    always_run: true
   - id: agent-contract-tests
     name: agent contract tests
     # the installed agentrc on a dev PC; in CI the pinned one, fetched first
