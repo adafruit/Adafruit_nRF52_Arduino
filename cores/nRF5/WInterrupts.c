@@ -37,7 +37,8 @@
 #define GPIOTE_CONFIG_PORT_PIN_Msk GPIOTE_CONFIG_PSEL_Msk
 #endif
 
-static voidFuncPtr callbacksInt[NUMBER_OF_GPIO_TE];
+static voidFuncPtrArg callbacksInt[NUMBER_OF_GPIO_TE];
+static void* callbackArgs[NUMBER_OF_GPIO_TE];
 static bool callbackDeferred[NUMBER_OF_GPIO_TE];
 static int8_t channelMap[NUMBER_OF_GPIO_TE];
 static int enabled = 0;
@@ -46,6 +47,7 @@ static int enabled = 0;
 static void __initialize()
 {
   memset(callbacksInt, 0, sizeof(callbacksInt));
+  memset(callbackArgs, 0, sizeof(callbackArgs));
   memset(channelMap, -1, sizeof(channelMap));
   memset(callbackDeferred, 0, sizeof(callbackDeferred));
 
@@ -55,13 +57,52 @@ static void __initialize()
   NVIC_EnableIRQ(GPIOTE_IRQn);
 }
 
+/* Trampoline storing a no-argument callback as a one-argument one, so a single
+ * code path (and a single callbacksInt[]) can serve attachInterrupt() and
+ * attachInterruptArg() alike. */
+static void _callNoArgCallback(void *callback)
+{
+  ((voidFuncPtr) callback)();
+}
+
+/* taskENTER_CRITICAL()/taskEXIT_CRITICAL() must not be called from interrupt context: unlike
+ * the _FROM_ISR() pair, exiting them unconditionally zeroes a nesting counter and clears
+ * BASEPRI, which can turn interrupts back on from underneath an outer ISR-side critical
+ * section before that caller is done with it. Pick the ISR-safe pair when called from one,
+ * so attachInterruptArg()/detachInterrupt() are safe whether called from a task or an ISR
+ * (e.g. a non-deferred callback detaching itself). */
+typedef struct {
+  bool fromISR;
+  UBaseType_t mask;
+} _criticalState;
+
+static _criticalState _criticalEnter(void)
+{
+  if (isInISR()) {
+    return (_criticalState){.fromISR = true, .mask = taskENTER_CRITICAL_FROM_ISR()};
+  } else {
+    taskENTER_CRITICAL();
+    return (_criticalState){.fromISR = false, .mask = 0};
+  }
+}
+
+static void _criticalExit(_criticalState const *state)
+{
+  if (state->fromISR) {
+    taskEXIT_CRITICAL_FROM_ISR(state->mask);
+  } else {
+    taskEXIT_CRITICAL();
+  }
+}
+
 /*
- * \brief Specifies a named Interrupt Service Routine (ISR) to call when an interrupt occurs.
- *        Replaces any previous function that was attached to the interrupt.
+ * \brief Specifies a named Interrupt Service Routine (ISR), along with an argument to pass
+ *        it, to call when an interrupt occurs. Replaces any previous function that was
+ *        attached to the interrupt.
  *
  * \return Interrupt Mask
  */
-int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
+int attachInterruptArg(uint32_t pin, voidFuncPtrArg handler, void *arg, uint32_t mode)
 {
   if (!enabled) {
     __initialize();
@@ -107,6 +148,13 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
     ((polarity                 << GPIOTE_CONFIG_POLARITY_Pos) & GPIOTE_CONFIG_POLARITY_Msk) |
     ((GPIOTE_CONFIG_MODE_Event << GPIOTE_CONFIG_MODE_Pos    ) & GPIOTE_CONFIG_MODE_Msk    ) ;
 
+  // Hold the channel scan, selection, and configuration all under one critical section, so
+  // a concurrent attach/detach (from another task or an ISR) can't race this call to the
+  // same channel, and GPIOTE_IRQHandler never observes a channel half-applied. This nests
+  // correctly with any critical section (FreeRTOS's or the SoftDevice's) the caller may
+  // already be in, unlike disabling/re-enabling GPIOTE_IRQn directly would.
+  _criticalState const criticalState = _criticalEnter();
+
   int ch = -1;
   int newChannel = 0;
 
@@ -129,12 +177,14 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
   }
   // if no channel found, exit
   if (ch == -1) {
+    _criticalExit(&criticalState);
     return 0; // no channel available
   }
 
-  channelMap[ch]         = pin;      // harmless for existing channel
-  callbacksInt[ch]       = callback; // caller might be updating this for existing channel
-  callbackDeferred[ch]   = deferred; // caller might be updating this for existing channel
+  channelMap[ch]       = pin;      // harmless for existing channel
+  callbacksInt[ch]     = handler;  // caller might be updating this for existing channel
+  callbackArgs[ch]     = arg;      // caller might be updating this for existing channel
+  callbackDeferred[ch] = deferred; // caller might be updating this for existing channel
 
   uint32_t tmp = NRF_GPIOTE->CONFIG[ch];
   tmp &= oldRegMask;
@@ -147,8 +197,21 @@ int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
     NRF_GPIOTE->INTENSET = (1 << ch);
   }
 
+  _criticalExit(&criticalState);
+
   // Finally, indicate to caller the allocated / updated channel
   return (1 << ch);
+}
+
+/*
+ * \brief Specifies a named Interrupt Service Routine (ISR) to call when an interrupt occurs.
+ *        Replaces any previous function that was attached to the interrupt.
+ *
+ * \return Interrupt Mask
+ */
+int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode)
+{
+  return attachInterruptArg(pin, callback ? _callNoArgCallback : NULL, (void *) callback, mode);
 }
 
 /*
@@ -162,6 +225,10 @@ void detachInterrupt(uint32_t pin)
 
   pin = g_ADigitalPinMap[pin];
 
+  // Same protection as attachInterruptArg(): hold the channel scan and teardown under one
+  // critical section, so neither GPIOTE_IRQHandler nor another task/ISR can race it.
+  _criticalState const criticalState = _criticalEnter();
+
   for (int ch = 0; ch < NUMBER_OF_GPIO_TE; ch++) {
     if ((uint32_t)channelMap[ch] == pin) {
       NRF_GPIOTE->INTENCLR = (1 << ch);
@@ -171,10 +238,13 @@ void detachInterrupt(uint32_t pin)
       // now cleanup the rest of the use of the channel
       channelMap[ch] = -1;
       callbacksInt[ch] = NULL;
+      callbackArgs[ch] = NULL;
       callbackDeferred[ch] = false;
       break;
     }
   }
+
+  _criticalExit(&criticalState);
 }
 
 void GPIOTE_IRQHandler()
@@ -199,9 +269,9 @@ void GPIOTE_IRQHandler()
     if (channelMap[ch] != -1 && callbacksInt[ch]) {
       if ( callbackDeferred[ch] ) {
         // Adafruit defer callback to non-isr if configured so
-        ada_callback(NULL, 0, callbacksInt[ch]);
+        ada_callback(NULL, 0, callbacksInt[ch], (uint32_t) callbackArgs[ch]);
       } else {
-        callbacksInt[ch]();
+        callbacksInt[ch](callbackArgs[ch]);
       }
     }
 

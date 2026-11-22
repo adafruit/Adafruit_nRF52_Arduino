@@ -37,6 +37,7 @@ extern "C" {
 #define EXTERNAL 0
 
 typedef void (*voidFuncPtr)(void);
+typedef void (*voidFuncPtrArg)(void *);
 
 /*
  * \brief Specifies a named Interrupt Service Routine (ISR) to call when an interrupt occurs.
@@ -45,6 +46,15 @@ typedef void (*voidFuncPtr)(void);
  * \return Interrupt Mask
  */
 int attachInterrupt(uint32_t pin, voidFuncPtr callback, uint32_t mode);
+
+/*
+ * \brief Specifies a named Interrupt Service Routine (ISR), along with an argument to pass
+ *        it, to call when an interrupt occurs. Replaces any previous function that was
+ *        attached to the interrupt.
+ *
+ * \return Interrupt Mask
+ */
+int attachInterruptArg(uint32_t pin, voidFuncPtrArg handler, void *arg, uint32_t mode);
 
 /*
  * \brief Turns off the given interrupt.
