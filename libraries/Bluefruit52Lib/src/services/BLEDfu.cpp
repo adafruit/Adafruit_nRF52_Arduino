@@ -179,6 +179,10 @@ static void bledfu_control_wr_authorize_cb(uint16_t conn_hdl, BLECharacteristic*
 
       __set_CONTROL(0); // switch to MSP, required if using FreeRTOS
       bootloader_util_app_start(NRF_UICR->NRFFW[0]);
+      // Prevent tail call optimization with an empty asm volatile:
+      // otherwise, newer gcc versions emit instructions to adjust the stack
+      // and since we just switched to MSP, that leads to a crash in DFU OTA
+      __asm__ volatile("");
     }
   }
 }
