@@ -116,6 +116,13 @@ extern void analogReadResolution(int res);
 extern void analogWriteResolution(uint8_t res);
 
 /*
+ * \brief Detach a pin from PWM if analogWrite() attached it. Called by pinMode().
+ *
+ * \param pin
+ */
+extern void analogWriteReleasePin(uint32_t pin);
+
+/*
  * \brief Set the ADC sample time. Default is 3us (appropriate for low source resistance).
  * See the chart of appropriate sample time vs. source resistance in the SAADC section
  * of the Nordic nrf52 product specification.

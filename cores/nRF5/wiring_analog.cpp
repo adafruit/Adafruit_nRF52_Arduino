@@ -114,4 +114,32 @@ void analogWrite( uint32_t pin, uint32_t value )
   return;
 }
 
+/**
+ * Detach a pin from PWM if it was attached by analogWrite(), so that
+ * GPIO control takes effect again. Called by pinMode().
+ * Pins attached by other HwPWMx users are left alone.
+ *
+ * The PWM instance is stopped and released once its last pin is removed,
+ * otherwise it would stay enabled and owned with nothing to drive, and
+ * Servo or tone() could never acquire it. analogWriteResolution() is
+ * unaffected: _analogResolution is re-applied when an instance is acquired.
+ *
+ * @param pin
+ */
+void analogWriteReleasePin( uint32_t pin )
+{
+  for(int i=0; i<HWPWM_MODULE_NUM; i++)
+  {
+    if ( HwPWMx[i]->isOwner(ANALOG_TOKEN) && HwPWMx[i]->removePin(pin) )
+    {
+      if ( HwPWMx[i]->usedChannelCount() == 0 )
+      {
+        HwPWMx[i]->stop();
+        HwPWMx[i]->releaseOwnership(ANALOG_TOKEN);
+      }
+      return;
+    }
+  }
+}
+
 } // end extern "C"
