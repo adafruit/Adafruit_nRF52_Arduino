@@ -50,14 +50,15 @@ performs no rig-wide operation. **Farm check**: tinyusb's launcher,
 
 A fixed battery per board, the roster's `arduino.tests`, each over the DUT's USB CDC (TinyUSB, served by the core's
 USB task) with a reply line carrying its command's nonce (a missing, stale or other reply fails the test at its
-deadline):
+deadline). `cdc` and the timing half of `rtos` are agentrc `arduino_hil.py`'s shared core battery (`CORE_TESTS`,
+`core_timing_check`); the RTOS exchange is this core's (`hil_test.py`):
 
 - `cdc` (`test/hil/core_cdc/`, also the restoration check): `INFO` must report `stack=tinyusb` and the board's chip
   family; `ECHO` of 1, 63, 64, 65 and 1000 random bytes must return every byte as sent, then a `PASS` line with their
   length and crc32.
 - `rtos` (`test/hil/core_rtos/`): `millis()` read twice 3 s apart must lie within the host's monotonic bracket of
-  the two exchanges widened by 1%, `micros()` must agree with `millis()` within 2 ms, and `delay(1000)` measured by
-  `micros()` must take 1000 to 1002 ms, widened by 1%; then two FreeRTOS worker tasks each queue a message every
+  the two exchanges, `micros()` must agree with `millis()` within 2 ms, and `delay(1000)` measured by `micros()` must
+  take 1000 to 1002 ms, both widened by 1% and by 1 ms; then two FreeRTOS worker tasks each queue a message every
   10 ms (10 ticks of 1/1024 s) and a `SoftwareTimer` ticks every 50 ms (51 ticks) while `loop()` drains the queue for
   1 s: each worker's count must lie between 90% of the count at 10-tick periods (`WORK_LATENESS`: `vTaskDelay` is
   relative, so a period also takes the wait before the worker runs again) and the count at 9-tick periods plus 2, and

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""The HIL profile: the host side of the HIL sketches' serial protocol against a simulated DUT, the rosters, and the
-profile bound to agentrc's arduino_hil.py. The simulation proves the host's parsing and verdicts only; what the
-firmware does is a farm run's evidence."""
+"""The HIL profile: its tests (agentrc arduino_hil.py's shared core battery and this core's RTOS check) against a
+simulated DUT, the rosters, and the profile bound to agentrc's arduino_hil.py. The simulation proves the host's
+parsing and verdicts only; what the firmware does is a farm run's evidence."""
 import json
 import sys
 import tempfile
@@ -19,7 +19,7 @@ BOARD = {'name': 'nrf52840dk'}
 
 
 class FakeClock:
-    """hil_test's `time`: the host clock moves only on sleep() and on the FakeDut's port I/O, so every exchange takes
+    """arduino_hil's `time`: the host clock moves only on sleep() and on the FakeDut's port I/O, so every exchange takes
     the same host time whatever the machine's load."""
 
     def __init__(self):
@@ -35,16 +35,15 @@ class FakeClock:
 class FakeDut:
     """core_cdc's and core_rtos's protocol (test/hil/core_cdc/core_cdc.ino, test/hil/core_rtos/core_rtos.ino) over a
     byte stream, each write and read taking IO_US of the host's clock, with millis() running `rate` and micros()
-    `us_rate` times the host's clock, `wrong_len` added to each echo's reported length and `rtos` the RTOS reply's
-    counts."""
+    `us_rate` times the host's clock, `wrong_len` added to each echo's reported length, `delay_us` the DELAY reply's
+    and `rtos` the RTOS reply's counts."""
     IO_US = 1000
 
-    def __init__(self, clock, stack='tinyusb', chip='nrf52840', rate=1.0, us_rate=1.0, corrupt=False, wrong_len=0,
-                 delay_us=1000000, status='PASS', rtos=None):
+    def __init__(self, clock, stack='tinyusb', chip='nrf52840', rate=1.0, us_rate=1.0, wrong_len=0,
+                 delay_us=1000000, rtos=None):
         self.clock, self.stack, self.chip, self.rate, self.us_rate = clock, stack, chip, rate, us_rate
-        self.corrupt, self.wrong_len, self.delay_us = corrupt, wrong_len, delay_us
+        self.wrong_len, self.delay_us = wrong_len, delay_us
         self.rtos = rtos or {'ms': 1002, 'a': 103, 'b': 103, 'timer': 20}   # nrf52-core-hil-1 on the DK
-        self.status = status   # what every HIL_RESULT reports
         self.out, self.pending = b'', b''
         self.echo = None   # (nonce, bytes left, bytes so far)
         self.closed = False
@@ -72,11 +71,11 @@ class FakeDut:
                 nonce, left, seen = self.echo
                 take, self.pending = self.pending[:left], self.pending[left:]
                 seen += take
-                self.out += bytes([take[0] ^ 1]) + take[1:] if self.corrupt and take else take
+                self.out += take
                 left -= len(take)
                 self.echo = (nonce, left, seen) if left else None
                 if not left:
-                    self.out += (f'\r\nHIL_RESULT {nonce} echo {self.status} len={len(seen) + self.wrong_len} '
+                    self.out += (f'\r\nHIL_RESULT {nonce} echo PASS len={len(seen) + self.wrong_len} '
                                  f'crc={zlib.crc32(seen):08x}\r\n').encode()
                 continue
             if b'\n' not in self.pending:
@@ -94,11 +93,11 @@ class FakeDut:
             return
         elif cmd == 'TIME':
             ms, us = int(self.clock.us * self.rate) // 1000, int(self.clock.us * self.us_rate)
-            reply = f'HIL_RESULT {nonce} time {self.status} ms={ms} us={us}'
+            reply = f'HIL_RESULT {nonce} time PASS ms={ms} us={us}'
         elif cmd == 'DELAY':
-            reply = f'HIL_RESULT {nonce} delay {self.status} ms={w[2]} us={self.delay_us}'
+            reply = f'HIL_RESULT {nonce} delay PASS ms={w[2]} us={self.delay_us}'
         elif cmd == 'RTOS':
-            reply = f'HIL_RESULT {nonce} rtos {self.status} ' + ' '.join(f'{k}={v}' for k, v in self.rtos.items())
+            reply = f'HIL_RESULT {nonce} rtos PASS ' + ' '.join(f'{k}={v}' for k, v in self.rtos.items())
         else:
             reply = f'HIL_RESULT {nonce} ? REJECT why=unknown'
         self.out += (reply + '\r\n').encode()
@@ -109,39 +108,39 @@ class Protocol(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.clock = FakeClock()
-        clock = mock.patch.object(ht, 'time', self.clock)
-        clock.start()
-        self.addCleanup(clock.stop)
+        for patch in (mock.patch.object(E, 'time', self.clock),
+                      mock.patch.object(E, 'node', return_value='/dev/ttyACM0')):
+            patch.start()
+            self.addCleanup(patch.stop)
 
     def dut(self, **kw):
         return FakeDut(self.clock, **kw)
 
     def run_test(self, fn, dut, timeout=5):
-        with mock.patch.object(ht, 'open_console', return_value=('/dev/ttyACM0', dut)):
+        with mock.patch('serial.Serial', return_value=dut):
             result = fn({'dir': '/x'}, 'abcd1234', self.clock.monotonic() + timeout, None, self.tmp.name, BOARD)
         self.assertTrue(dut.closed)
         self.assertTrue((Path(self.tmp.name) / 'core-abcd1234.log').is_file())
         return result
 
+    def log(self):
+        return (Path(self.tmp.name) / 'core-abcd1234.log').read_text()
+
     def test_cdc_passes(self):
-        ok, detail = self.run_test(ht.test_cdc, self.dut())
+        ok, detail = self.run_test(E.test_func('cdc'), self.dut())
         self.assertTrue(ok, detail)
         self.assertIn('echoed [1, 63, 64, 65, 1000] bytes', detail)
 
     def test_cdc_fails_on_another_chip_or_stack(self):
-        ok, detail = self.run_test(ht.test_cdc, self.dut(chip='nrf52833'))
+        ok, detail = self.run_test(E.test_func('cdc'), self.dut(chip='nrf52833'))
         self.assertFalse(ok)
         self.assertIn("'chip': 'nrf52833'", detail)
-        ok, detail = self.run_test(ht.test_cdc, self.dut(stack='arduino'))
+        ok, detail = self.run_test(E.test_func('cdc'), self.dut(stack='arduino'))
         self.assertFalse(ok)
-
-    def test_cdc_fails_on_corrupted_echo(self):
-        ok, detail = self.run_test(ht.test_cdc, self.dut(corrupt=True))
-        self.assertFalse(ok)
-        self.assertIn('differing', detail)
+        self.assertIn("'stack': 'arduino'", detail)
 
     def test_cdc_fails_on_a_wrong_echo_length(self):
-        ok, detail = self.run_test(ht.test_cdc, self.dut(wrong_len=1))
+        ok, detail = self.run_test(E.test_func('cdc'), self.dut(wrong_len=1))
         self.assertFalse(ok)
         self.assertIn('ECHO 1: result', detail)
 
@@ -150,20 +149,21 @@ class Protocol(unittest.TestCase):
         self.assertTrue(ok, detail)
         self.assertIn('rtos 1002 ms a=103 b=103 timer=20', detail)
 
-    def test_rtos_fails_on_a_clock_off_by_more_than_the_bound(self):
+    def test_rtos_fails_on_the_timing_check_before_its_rtos_exchange(self):
         ok, detail = self.run_test(ht.test_rtos, self.dut(rate=1.05))
         self.assertFalse(ok)
         self.assertIn('millis()', detail)
+        self.assertNotIn('> RTOS', self.log())
 
     def test_rtos_fails_on_micros_off_while_millis_agrees(self):
         ok, detail = self.run_test(ht.test_rtos, self.dut(us_rate=1.05))
         self.assertFalse(ok)
-        self.assertIn('micros()', detail)
+        self.assertIn('micros() advanced', detail)
 
     def test_rtos_fails_on_a_short_delay(self):
         ok, detail = self.run_test(ht.test_rtos, self.dut(delay_us=900000))
         self.assertFalse(ok)
-        self.assertIn('delay(1000)', detail)
+        self.assertIn('delay(1000) 900.0 ms outside', detail)
 
     def test_rtos_fails_on_a_stalled_worker_or_timer(self):
         for rtos, why in (({'ms': 1002, 'a': 103, 'b': 4, 'timer': 20}, "worker messages {'b': 4}"),
@@ -183,36 +183,42 @@ class Protocol(unittest.TestCase):
         for a in (92, 116):
             self.assertIn('worker messages', ht.rtos_problem({'ms': '1000', 'a': str(a), 'b': str(a), 'timer': '20'}))
 
+    def test_rtos_fails_on_a_rejected_rtos_reply(self):
+        dut = self.dut()
+        command = dut.command
+
+        def reject_rtos(line):
+            if line.startswith('RTOS'):
+                dut.out += f'HIL_RESULT {line.split()[1]} rtos REJECT why=busy\r\n'.encode()
+            else:
+                command(line)
+        dut.command = reject_rtos
+        ok, detail = self.run_test(ht.test_rtos, dut)
+        self.assertFalse(ok)
+        self.assertIn('rtos: HIL_RESULT abcd1234r rtos REJECT', detail)
+
     def test_a_reply_with_another_nonce_times_out(self):
         dut = self.dut()
         dut.command = lambda line: setattr(dut, 'out', dut.out + b'HIL_INFO other stack=tinyusb\r\n')
-        with self.assertRaises(TimeoutError):
-            self.run_test(ht.test_cdc, dut, timeout=0.5)
-
-    def test_a_reply_other_than_pass_fails(self):
-        for fn in (ht.test_cdc, ht.test_rtos):
-            with self.subTest(fn=fn):
-                ok, detail = self.run_test(fn, self.dut(status='REJECT'))
-                self.assertFalse(ok)
-                self.assertIn('REJECT', detail)
+        for fn in (E.test_func('cdc'), ht.test_rtos):
+            with self.subTest(fn=fn), self.assertRaisesRegex(TimeoutError, 'no reply for nonce abcd1234i'):
+                self.run_test(fn, dut, timeout=0.5)
 
     def test_info_answered_by_a_result_fails(self):
         dut = self.dut()
-        info = dut.command
+        command = dut.command
 
-        def command(line):
+        def result_for_info(line):
             if line.startswith('INFO'):
                 dut.out += f'HIL_RESULT {line.split()[1]} ? REJECT why=unknown\r\n'.encode()
             else:
-                info(line)
-        dut.command = command
-        ok, detail = self.run_test(ht.test_cdc, dut)
-        self.assertFalse(ok)
-        self.assertIn('INFO answered', detail)
-
-    def test_timing_bracket(self):
-        self.assertEqual(ht.timing_problem(1000, 995, 1005), '')
-        self.assertIn('outside', ht.timing_problem(1100, 995, 1005))
+                command(line)
+        dut.command = result_for_info
+        for fn in (E.test_func('cdc'), ht.test_rtos):
+            with self.subTest(fn=fn):
+                ok, detail = self.run_test(fn, dut)
+                self.assertFalse(ok)
+                self.assertIn('INFO answered HIL_RESULT abcd1234i', detail)
 
 
 class Rosters(unittest.TestCase):
@@ -233,6 +239,9 @@ class Profile(unittest.TestCase):
     def test_tests_and_sketches_agree(self):
         sketches = {Path(s).name for s in ht.BUILD.HIL_SKETCHES['device']}
         self.assertEqual(set(ht.TESTS.values()), sketches)   # the engine's bind() checks the restore and the roles
+
+    def test_rtos_is_this_cores_own_check(self):
+        self.assertIs(E.test_func('rtos'), ht.test_rtos)
 
     def test_engine_is_bound_to_this_profile(self):
         self.assertIs(E.P, ht)
