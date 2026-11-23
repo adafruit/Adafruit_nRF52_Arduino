@@ -1,4 +1,8 @@
 {
   "url": "https://github.com/hathach/agentrc.git",
-  "commit": "2eb13e054695fef82fa4173e0e682c4657d30a78"
+  "commit": "e6cd302c7e5f310d0fb3d302b5dfedc1022a6dff",
+  "cache_namespace": "adafruit-nrf52",
+  "profile_api": 1,
+  "features": ["core", "base", "battery"],
+  "extra_engines": []
 }
