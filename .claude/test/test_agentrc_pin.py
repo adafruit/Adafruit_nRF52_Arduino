@@ -182,13 +182,13 @@ class Installed(Env):
                 self.assertRaisesRegex(agentrc_pin.PinError, 'implements profile API'):
             agentrc_pin.load(agentrc_pin.ENGINES[0])
 
-    def test_engines_without_core_mode_or_base_images_are_refused_before_loading(self):
-        for features in ((), ('core',)):
+    def test_engines_without_core_mode_base_images_or_the_battery_are_refused_before_loading(self):
+        for features, missing in (((), 'base'), (('core',), 'base'), (('core', 'base'), 'battery')):
             with self.subTest(features=features):
                 (self.repo / agentrc_pin.ENGINES[0]).write_text(
                     f'FILES = ({HIL_LOAD!r},)\nPROFILE_API = 1\nPROFILE_FEATURES = {features!r}\n')
                 with mock.patch.object(agentrc_pin, 'loader', side_effect=AssertionError('loaded')), \
-                        self.assertRaisesRegex(agentrc_pin.PinError, 'lacks .*base'):
+                        self.assertRaisesRegex(agentrc_pin.PinError, f'lacks .*{missing}'):
                     agentrc_pin.load(agentrc_pin.ENGINES[0])
 
     def test_check_and_test_never_fetch(self):

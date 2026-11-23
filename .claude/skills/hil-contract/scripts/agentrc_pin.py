@@ -29,9 +29,9 @@ INSTALL_HINT = ('install agentrc with its arduino skill (python3 <agentrc checko
                 'or set AGENTRC_DIR to such a checkout')
 MANIFEST = 'manifest.json'
 PROFILE_API = 1   # arduino_build.py's PROFILE_API: the engines' profile interface these profiles implement
-# arduino_build.py's PROFILE_FEATURES entries beyond API 1 this core needs: core mode (PLATFORM profiles) and a rig
-# board's base image (BOARDS base)
-FEATURES = ('core', 'base')
+# arduino_build.py's PROFILE_FEATURES entries beyond API 1 this core needs: core mode (PLATFORM profiles), a rig
+# board's base image (BOARDS base) and arduino_hil's shared core battery (CORE_TESTS)
+FEATURES = ('core', 'base', 'battery')
 # the agentrc engines the contracts run; their FILES closures are what a staged rig tree carries and a record binds
 ENGINES = ('skills/arduino/scripts/arduino_build.py', 'skills/arduino/scripts/arduino_hil.py',
            'skills/arduino/scripts/arduino_remote.py')
@@ -219,7 +219,7 @@ def selected():
     missing = [f for f in FEATURES if f not in (literal(r, ENGINES[0], 'PROFILE_FEATURES') or ())]
     if missing:
         raise PinError(f'agentrc at {r} lacks {missing} ({ENGINES[0]} PROFILE_FEATURES): use an agentrc with core '
-                       'mode and base images', INSTALL_HINT)
+                       'mode, base images and the core battery', INSTALL_HINT)
     return src, r, files
 
 
