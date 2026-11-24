@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """agentrc_pin.py as this core configures and selects it: test/hil/agentrc.json's values and the identity this core's
-profile binds. The bootstrap's common behaviour and this core's conformance (canonical copy, contract files, closure,
-staged round trip) are agentrc's, checked by `agentrc_pin.py test` before these run; nothing here is fetched or
-reaches a rig."""
+profile binds, and agentrc's conformance check, which check_build.py's direct run of this file would otherwise skip
+(hathach/agentrc#585). Nothing here is fetched or reaches a rig."""
 import sys
 import unittest
 from pathlib import Path
@@ -30,6 +29,15 @@ class Selected(unittest.TestCase):
         ident = agentrc_pin.identity()
         self.assertEqual(ident['source'], 'pin' if agentrc_pin.ci() else 'installed')
         self.assertIs(hil_test.BUILD.AGENTRC, ident)
+
+
+class Conformance(unittest.TestCase):
+    def test_bootstrap_is_the_canonical_copy(self):
+        canonical = agentrc_pin.check() / agentrc_pin.SELF
+        self.assertEqual(Path(agentrc_pin.__file__).read_bytes(), canonical.read_bytes())
+
+    def test_conforms(self):
+        self.assertEqual(agentrc_pin.conformance(), [])
 
 
 if __name__ == '__main__':
