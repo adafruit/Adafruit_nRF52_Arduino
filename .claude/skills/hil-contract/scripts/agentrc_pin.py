@@ -13,8 +13,10 @@ Selection, once per process: a staged tree's agentrc/ (outer manifest.json, no .
 (GITHUB_ACTIONS or CI true), else "${AGENTRC_DIR:-$HOME/.claude}", never fetched locally. Identity, closure,
 loading and staging use agentrc_source and hil_load; drift is checked on every load and record binding.
 A staged tree needs agentrc/manifest.json as well as the outer manifest. Older trees must be staged again.
+A consumer's scripts and tests use config(), identity(), load(), stage() and conformance(); the rest is internal.
 
-  test   compare this copy with the selected canonical file, then run .claude/test; CI fetches first
+  test   compare this copy with the selected canonical file, check conformance(), then run .claude/test; CI
+         fetches first
   fetch  CI only: fetch the pin into <cache_namespace>/agentrc-<commit>, outside this checkout
   check  validate the selected identity without fetching, print its checkout root
 """
@@ -40,11 +42,17 @@ INSTALL_HINT = (
 )
 STAGE_HINT = "stage the tree again with hil_remote.py"
 MANIFEST = "manifest.json"
+PROFILE = ".claude/skills/build/scripts/check_build.py"
+BOOTSTRAP = ".claude/skills/hil-contract/scripts/agentrc_pin.py"
 SELF = "skills/arduino/scripts/agentrc_pin.py"
 SOURCE = "skills/hil/scripts/agentrc_source.py"
 LOADER = "skills/hil/scripts/hil_load.py"
 SOURCE_API = 1
-FILES = ("skills/hil/scripts/agentrc_source.py", "skills/hil/scripts/hil_load.py")
+FILES = (
+    "skills/arduino/scripts/pin_conformance.py",
+    "skills/hil/scripts/agentrc_source.py",
+    "skills/hil/scripts/hil_load.py",
+)
 ENGINES = (
     "skills/arduino/scripts/arduino_build.py",
     "skills/arduino/scripts/arduino_hil.py",
@@ -303,6 +311,35 @@ def check():
     return Path(ident["root"])
 
 
+def stage(into, name="agentrc"):
+    """Copy the selected closure into <into>/<name> with its manifest, as a rig tree carries it; {into-relative path:
+    sha256}, the manifest included."""
+    helper, _, ident = _selection()
+    try:
+        return helper.stage(ident, into, name=name)
+    except (helper.SourceError, OSError) as e:
+        raise PinError(str(e), "rerun with an unchanged agentrc checkout") from None
+
+
+def conformance():
+    """Why this consumer's rig trees would not load the selected agentrc as this checkout does, [] when nothing
+    (pin_conformance.py's problems()). `test` runs it before the consumer's tests."""
+    conform = load("skills/arduino/scripts/pin_conformance.py")
+    try:
+        return conform.problems(
+            ROOT,
+            ident=identity(),
+            stage=stage,
+            required=(*ENGINES, SELF, *FILES, *config()["extra_engines"]),
+            profile=PROFILE,
+            bootstrap=BOOTSTRAP,
+            pin_file=PIN_FILE.relative_to(ROOT).as_posix(),
+            manifest=MANIFEST,
+        )
+    except conform.ConformanceError as e:
+        raise PinError(str(e)) from None
+
+
 def test():
     if source() == "pin":
         fetch()
@@ -314,6 +351,9 @@ def test():
             f"bootstrap copy {consumer} differs from {canonical}",
             f"copy {canonical} verbatim to {consumer} and repin test/hil/agentrc.json to that agentrc commit",
         )
+    problems = conformance()
+    if problems:
+        raise PinError("this consumer does not conform: " + "; ".join(problems))
     # A hook's GIT_DIR or GIT_INDEX_FILE would aim tests' scratch-repository commands at the caller's checkout.
     env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
     if identity()["source"] == "installed":

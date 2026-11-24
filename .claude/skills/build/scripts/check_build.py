@@ -210,7 +210,7 @@ def main(argv=None):
     try:
         eng = engine()
     except agentrc_pin.PinError as e:
-        print(json.dumps({'version': 2, 'pass': False, 'error': str(e), 'remedy': e.remedy}))
+        print(json.dumps({'version': 3, 'pass': False, 'error': str(e), 'remedy': e.remedy}))
         return 2
     return eng.main(argv)
 
